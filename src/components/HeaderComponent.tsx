@@ -102,6 +102,19 @@ export default function Header() {
                   <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#007AFF]"></div>
                 )}
               </Link>
+              <Link 
+                href="/tasks" 
+                className={`text-base font-medium transition-colors flex items-center h-full relative ${
+                  isActive('/tasks') 
+                    ? 'text-gray-900' 
+                    : 'text-gray-600 hover:text-[#007AFF]'
+                }`}
+              >
+                Tasks
+                {isActive('/tasks') && (
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#007AFF]"></div>
+                )}
+              </Link>
             </nav>
           </div>
 
@@ -220,6 +233,16 @@ export default function Header() {
                 }`}
               >
                 Challenges
+              </Link>
+              <Link 
+                href="/tasks" 
+                className={`block px-4 py-2 transition-colors ${
+                  isActive('/tasks') 
+                    ? 'text-[#007AFF] bg-blue-50' 
+                    : 'text-gray-600 hover:text-[#007AFF]'
+                }`}
+              >
+                Tasks
               </Link>
             </nav>
           </div>

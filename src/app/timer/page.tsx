@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { SessionTimer } from '@/components/SessionTimer';
+import { SessionTimerEnhanced } from '@/components/SessionTimerEnhanced';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import Header from '@/components/HeaderComponent';
 
@@ -10,7 +10,9 @@ export default function TimerPage() {
     <ProtectedRoute>
       <div className="min-h-screen bg-gray-50">
         <Header />
-        <SessionTimer />
+        <div className="max-w-4xl mx-auto p-6">
+          <SessionTimerEnhanced projectId="" />
+        </div>
       </div>
     </ProtectedRoute>
   );

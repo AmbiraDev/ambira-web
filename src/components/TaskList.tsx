@@ -202,7 +202,7 @@ export const TaskList: React.FC<TaskListProps> = ({
         </div>
       ) : (
         <DragDropContext onDragEnd={handleDragEnd}>
-          <Droppable droppableId={`tasks-${status}`}>
+          <Droppable droppableId={`tasks-${status}`} isDropDisabled={status !== 'active'}>
             {(provided, snapshot) => (
               <div
                 ref={provided.innerRef}
