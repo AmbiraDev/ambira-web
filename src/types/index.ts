@@ -44,6 +44,48 @@ export interface Task {
   status: 'active' | 'completed' | 'archived';
   createdAt: Date;
   completedAt?: Date;
+  order?: number; // For drag and drop ordering
+}
+
+// Task management interfaces
+export interface CreateTaskData {
+  name: string;
+  projectId: string;
+}
+
+export interface UpdateTaskData {
+  name?: string;
+  status?: 'active' | 'completed' | 'archived';
+  order?: number;
+}
+
+export interface BulkTaskUpdate {
+  taskIds: string[];
+  status: 'active' | 'completed' | 'archived';
+}
+
+export interface TaskStats {
+  totalTasks: number;
+  activeTasks: number;
+  completedTasks: number;
+  archivedTasks: number;
+  tasksCompletedToday: number;
+  tasksCompletedThisWeek: number;
+  averageTasksPerSession: number;
+  mostProductiveHour: number;
+}
+
+export interface TaskContextType {
+  tasks: Task[];
+  isLoading: boolean;
+  error: string | null;
+  createTask: (data: CreateTaskData) => Promise<Task>;
+  updateTask: (id: string, data: UpdateTaskData) => Promise<Task>;
+  deleteTask: (id: string) => Promise<void>;
+  bulkUpdateTasks: (update: BulkTaskUpdate) => Promise<void>;
+  getProjectTasks: (projectId: string) => Promise<Task[]>;
+  getTaskStats: (projectId: string) => Promise<TaskStats>;
+  loadProjectTasks: (projectId: string) => Promise<void>;
 }
 
 export interface Session {

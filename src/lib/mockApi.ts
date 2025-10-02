@@ -14,7 +14,11 @@ import {
   SessionFilters,
   SessionSort,
   SessionListResponse,
-  Task
+  Task,
+  CreateTaskData,
+  UpdateTaskData,
+  BulkTaskUpdate,
+  TaskStats
 } from '@/types';
 
 // Mock users database (in memory)
@@ -479,12 +483,37 @@ export const mockTaskApi = {
     return mockTasks.filter(task => task.projectId === projectId);
   },
 
-  updateTaskStatus: async (taskId: string, status: 'active' | 'completed' | 'archived', token: string): Promise<Task> => {
+  createTask: async (data: CreateTaskData, token: string): Promise<Task> => {
     // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise(resolve => setTimeout(resolve, 800));
 
     const userId = getCurrentUserId(token);
-    const taskIndex = mockTasks.findIndex(t => t.id === taskId);
+    
+    // Verify project belongs to user
+    const project = mockProjects.find(p => p.id === data.projectId && p.userId === userId);
+    if (!project) {
+      throw new Error('Project not found');
+    }
+
+    const newTask: Task = {
+      id: `task_${Date.now()}`,
+      projectId: data.projectId,
+      name: data.name,
+      status: 'active',
+      createdAt: new Date(),
+      order: mockTasks.filter(t => t.projectId === data.projectId).length,
+    };
+
+    mockTasks.push(newTask);
+    return newTask;
+  },
+
+  updateTask: async (id: string, data: UpdateTaskData, token: string): Promise<Task> => {
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 600));
+
+    const userId = getCurrentUserId(token);
+    const taskIndex = mockTasks.findIndex(t => t.id === id);
     
     if (taskIndex === -1) {
       throw new Error('Task not found');
@@ -499,11 +528,103 @@ export const mockTaskApi = {
 
     mockTasks[taskIndex] = {
       ...task,
-      status,
-      completedAt: status === 'completed' ? new Date() : undefined,
+      ...data,
+      completedAt: data.status === 'completed' ? new Date() : (data.status === 'active' ? undefined : task.completedAt),
     };
 
     return mockTasks[taskIndex];
+  },
+
+  deleteTask: async (id: string, token: string): Promise<void> => {
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    const userId = getCurrentUserId(token);
+    const taskIndex = mockTasks.findIndex(t => t.id === id);
+    
+    if (taskIndex === -1) {
+      throw new Error('Task not found');
+    }
+
+    // Verify task belongs to user's project
+    const task = mockTasks[taskIndex];
+    const project = mockProjects.find(p => p.id === task.projectId && p.userId === userId);
+    if (!project) {
+      throw new Error('Task not found');
+    }
+
+    mockTasks.splice(taskIndex, 1);
+  },
+
+  bulkUpdateTasks: async (update: BulkTaskUpdate, token: string): Promise<void> => {
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 800));
+
+    const userId = getCurrentUserId(token);
+    
+    // Verify all tasks belong to user's projects
+    for (const taskId of update.taskIds) {
+      const task = mockTasks.find(t => t.id === taskId);
+      if (!task) {
+        throw new Error(`Task ${taskId} not found`);
+      }
+      
+      const project = mockProjects.find(p => p.id === task.projectId && p.userId === userId);
+      if (!project) {
+        throw new Error(`Task ${taskId} not found`);
+      }
+    }
+
+    // Update all tasks
+    update.taskIds.forEach(taskId => {
+      const taskIndex = mockTasks.findIndex(t => t.id === taskId);
+      if (taskIndex !== -1) {
+        mockTasks[taskIndex] = {
+          ...mockTasks[taskIndex],
+          status: update.status,
+          completedAt: update.status === 'completed' ? new Date() : undefined,
+        };
+      }
+    });
+  },
+
+  getTaskStats: async (projectId: string, token: string): Promise<TaskStats> => {
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 700));
+
+    const userId = getCurrentUserId(token);
+    
+    // Verify project belongs to user
+    const project = mockProjects.find(p => p.id === projectId && p.userId === userId);
+    if (!project) {
+      throw new Error('Project not found');
+    }
+
+    const projectTasks = mockTasks.filter(task => task.projectId === projectId);
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const weekStart = new Date(today.getTime() - (today.getDay() * 24 * 60 * 60 * 1000));
+
+    const stats: TaskStats = {
+      totalTasks: projectTasks.length,
+      activeTasks: projectTasks.filter(t => t.status === 'active').length,
+      completedTasks: projectTasks.filter(t => t.status === 'completed').length,
+      archivedTasks: projectTasks.filter(t => t.status === 'archived').length,
+      tasksCompletedToday: projectTasks.filter(t => 
+        t.status === 'completed' && t.completedAt && t.completedAt >= today
+      ).length,
+      tasksCompletedThisWeek: projectTasks.filter(t => 
+        t.status === 'completed' && t.completedAt && t.completedAt >= weekStart
+      ).length,
+      averageTasksPerSession: Math.floor(Math.random() * 5) + 1, // Mock data
+      mostProductiveHour: Math.floor(Math.random() * 24), // Mock data
+    };
+
+    return stats;
+  },
+
+  updateTaskStatus: async (taskId: string, status: 'active' | 'completed' | 'archived', token: string): Promise<Task> => {
+    return mockTaskApi.updateTask(taskId, { status }, token);
   },
 };
 

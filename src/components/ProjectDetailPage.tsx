@@ -4,7 +4,9 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Project, ProjectStats } from '@/types';
 import { useProject, useProjects } from '@/contexts/ProjectsContext';
+import { useTasks } from '@/contexts/TasksContext';
 import { CreateProjectModal } from './CreateProjectModal';
+import { TaskList } from './TaskList';
 
 interface ProjectDetailPageProps {
   projectId: string;
@@ -16,17 +18,20 @@ export const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({ projectId 
   const router = useRouter();
   const { project, isLoading } = useProject(projectId);
   const { getProjectStats, updateProject, deleteProject, archiveProject } = useProjects();
+  const { tasks, createTask, updateTask, deleteTask, bulkUpdateTasks, loadProjectTasks } = useTasks();
   const [activeTab, setActiveTab] = useState<TabType>('overview');
   const [stats, setStats] = useState<ProjectStats | null>(null);
   const [isLoadingStats, setIsLoadingStats] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [selectedTaskIds, setSelectedTaskIds] = useState<string[]>([]);
 
-  // Load project stats
+  // Load project stats and tasks
   useEffect(() => {
     if (project) {
       loadStats();
+      loadProjectTasks(projectId);
     }
-  }, [project]);
+  }, [project, projectId, loadProjectTasks]);
 
   const loadStats = async () => {
     try {
@@ -66,6 +71,14 @@ export const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({ projectId 
         console.error('Failed to delete project:', error);
       }
     }
+  };
+
+  const handleToggleTaskSelection = (taskId: string) => {
+    setSelectedTaskIds(prev => 
+      prev.includes(taskId) 
+        ? prev.filter(id => id !== taskId)
+        : [...prev, taskId]
+    );
   };
 
   if (isLoading) {
@@ -195,7 +208,16 @@ export const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({ projectId 
           <OverviewTab project={project} stats={stats} isLoadingStats={isLoadingStats} />
         )}
         {activeTab === 'tasks' && (
-          <TasksTab project={project} />
+          <TasksTab 
+            project={project} 
+            tasks={tasks}
+            onCreateTask={createTask}
+            onUpdateTask={updateTask}
+            onDeleteTask={deleteTask}
+            onBulkUpdateTasks={bulkUpdateTasks}
+            selectedTaskIds={selectedTaskIds}
+            onToggleTaskSelection={handleToggleTaskSelection}
+          />
         )}
         {activeTab === 'sessions' && (
           <SessionsTab project={project} />
@@ -329,21 +351,68 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ project, stats, isLoadingStat
 // Tasks Tab Component
 interface TasksTabProps {
   project: Project;
+  tasks: any[];
+  onCreateTask: (data: { name: string; projectId: string }) => Promise<void>;
+  onUpdateTask: (id: string, data: any) => Promise<void>;
+  onDeleteTask: (id: string) => Promise<void>;
+  onBulkUpdateTasks: (update: any) => Promise<void>;
+  selectedTaskIds: string[];
+  onToggleTaskSelection: (taskId: string) => void;
 }
 
-const TasksTab: React.FC<TasksTabProps> = ({ project }) => {
+type TaskSubTabType = 'active' | 'completed' | 'archived';
+
+const TasksTab: React.FC<TasksTabProps> = ({ 
+  project, 
+  tasks, 
+  onCreateTask, 
+  onUpdateTask, 
+  onDeleteTask, 
+  onBulkUpdateTasks,
+  selectedTaskIds,
+  onToggleTaskSelection
+}) => {
+  const [activeSubTab, setActiveSubTab] = React.useState<TaskSubTabType>('active');
+
+  const subTabs = [
+    { id: 'active', label: 'Active', icon: '⭕' },
+    { id: 'completed', label: 'Completed', icon: '✅' },
+    { id: 'archived', label: 'Archived', icon: '📦' },
+  ] as const;
+
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h3 className="text-lg font-semibold text-gray-900">Tasks</h3>
-        <button className="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors">
-          Add Task
-        </button>
+    <div className="space-y-6">
+      {/* Sub-tabs */}
+      <div className="flex border-b border-gray-200">
+        {subTabs.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveSubTab(tab.id)}
+            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+              activeSubTab === tab.id
+                ? 'border-orange-500 text-orange-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            <span className="mr-2">{tab.icon}</span>
+            {tab.label}
+          </button>
+        ))}
       </div>
-      <div className="text-center py-8 text-gray-500">
-        <div className="text-4xl mb-2">✅</div>
-        <p>Task management coming soon</p>
-      </div>
+
+      {/* Task list for current sub-tab */}
+      <TaskList
+        tasks={tasks}
+        projectId={project.id}
+        status={activeSubTab}
+        onUpdateTask={onUpdateTask}
+        onDeleteTask={onDeleteTask}
+        onCreateTask={onCreateTask}
+        onBulkUpdateTasks={onBulkUpdateTasks}
+        showBulkActions={true}
+        selectedTaskIds={selectedTaskIds}
+        onToggleTaskSelection={onToggleTaskSelection}
+      />
     </div>
   );
 };

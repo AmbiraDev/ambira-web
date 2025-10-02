@@ -4,6 +4,7 @@ import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProjectsProvider } from "@/contexts/ProjectsContext";
 import { TimerProvider } from "@/contexts/TimerContext";
+import { TasksProvider } from "@/contexts/TasksContext";
 
 const dmSans = DM_Sans({
   variable: "--font-dm-sans",
@@ -35,9 +36,11 @@ export default function RootLayout({
       >
         <AuthProvider>
           <ProjectsProvider>
-            <TimerProvider>
-              {children}
-            </TimerProvider>
+            <TasksProvider>
+              <TimerProvider>
+                {children}
+              </TimerProvider>
+            </TasksProvider>
           </ProjectsProvider>
         </AuthProvider>
       </body>

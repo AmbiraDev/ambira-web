@@ -85,17 +85,23 @@
 - [x] Create project archiving functionality
 
 ### Task Management
-- [ ] Create task CRUD API endpoints
-- [ ] Build Tasks tab in project detail page
-- [ ] Create Active/Completed/Archived task tabs
-- [ ] Build task input with "Add Task" button
-- [ ] Implement task checkbox functionality
-- [ ] Add inline task editing
-- [ ] Create task status management
-- [ ] Build task archive/restore functionality
-- [ ] Add task deletion with confirmation
-- [ ] Create TaskList reusable component
-- [ ] Implement optimistic updates
+- [x] Create task CRUD API endpoints
+- [x] Build Tasks tab in project detail page
+- [x] Create Active/Completed/Archived task tabs
+- [x] Build task input with "Add Task" button
+- [x] Implement task checkbox functionality
+- [x] Add inline task editing
+- [x] Create task status management
+- [x] Build task archive/restore functionality
+- [x] Add task deletion with confirmation
+- [x] Create TaskList reusable component
+- [x] Implement drag and drop reordering with react-beautiful-dnd
+- [x] Add bulk actions (Complete all, Archive completed)
+- [x] Create task statistics and analytics
+- [x] Integrate tasks with timer system
+- [x] Add optimistic updates for better UX
+- [x] Create TaskTimer component for session task management
+- [x] Add task completion tracking during timer sessions
 - [ ] Add keyboard navigation support
 - [ ] Allow duplicate task names
 - [ ] Ensure task persistence across sessions

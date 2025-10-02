@@ -122,6 +122,29 @@ Create a new React application using Vite with TypeScript. Set up the following 
 Include TypeScript interfaces for core data types (User, Project, Session, Task). Set up ESLint and Prettier for code consistency. Create a simple home page that displays "Welcome to Productivity Tracker" to verify everything works.
 ```
 
+```
+Create a new web application using Next.js with TypeScript. Set up the following foundation:
+
+1. Initialize a Next.js TypeScript project (App Router)
+2. Install and configure Tailwind CSS with an electric-blue + white theme (primary electric blue, clean white surfaces; optional success green)
+3. Create a basic routing structure with these routes (App Router folders/files):
+   - / (Home/Feed)
+   - /login and /signup (Authentication)
+   - /projects and /projects/[id] (Project management)
+   - /profile/[username] (User profiles)
+   - /groups and /groups/[id] (Groups)
+   - /settings (User settings)
+
+4. Create a responsive layout component with:
+   - Desktop: Fixed header with navigation, main content area, optional sidebars
+   - Mobile: Bottom navigation bar with core actions
+   - A floating action button (FAB) for quick session start
+
+
+Set up ESLint and Prettier for code consistency. Create a simple home page that displays "Welcome to Productivity Tracker" to verify everything works.
+
+```
+
 ### Prompt 2: Authentication Foundation
 ```text
 Build a complete authentication system with the following requirements:
