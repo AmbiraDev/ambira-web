@@ -47,9 +47,7 @@ function CreateProjectContent() {
       newErrors.name = 'Project name must be less than 50 characters';
     }
 
-    if (!formData.description.trim()) {
-      newErrors.description = 'Project description is required';
-    } else if (formData.description.length > 200) {
+    if (formData.description.trim() && formData.description.length > 200) {
       newErrors.description = 'Description must be less than 200 characters';
     }
 
@@ -152,7 +150,7 @@ function CreateProjectContent() {
               {/* Description */}
               <div>
                 <label htmlFor="description" className="block text-sm font-semibold text-gray-900 mb-2">
-                  Description *
+                  Description
                 </label>
                 <textarea
                   id="description"
@@ -161,7 +159,7 @@ function CreateProjectContent() {
                   className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] resize-none transition-colors ${
                     errors.description ? 'border-red-500' : 'border-gray-300'
                   }`}
-                  placeholder="Describe your project"
+                  placeholder="Describe your project (optional)"
                   rows={3}
                   maxLength={200}
                 />
