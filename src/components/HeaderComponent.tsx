@@ -2,17 +2,25 @@
 
 import Link from 'next/link';
 import { useState, useEffect, useRef } from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useTimer } from '@/contexts/TimerContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { Search, X, ChevronDown, Bell, Plus, Menu } from 'lucide-react';
 
 export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchFilter, setSearchFilter] = useState<'people' | 'groups' | 'challenges'>('people');
+  const [isFilterDropdownOpen, setIsFilterDropdownOpen] = useState(false);
   const profileCloseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const pathname = usePathname();
-  const { timerState } = useTimer();
+  const router = useRouter();
+  const { timerState, getElapsedTime, getFormattedTime } = useTimer();
   const { user, logout } = useAuth();
+  const [headerTimer, setHeaderTimer] = useState<string>('');
 
   const isActive = (path: string) => {
     if (path === '/') {
@@ -21,12 +29,58 @@ export default function Header() {
     return pathname.startsWith(path);
   };
 
+  // Focus search input when search opens
+  useEffect(() => {
+    if (isSearchOpen && searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  }, [isSearchOpen]);
+
+  // Update header timer display when there is an active/paused session and we are not on the timer page
+  useEffect(() => {
+    const onTimerPage = pathname.startsWith('/timer');
+    const hasActiveOrPaused = !!(timerState.currentProject && (timerState.isRunning || timerState.pausedDuration > 0));
+
+    if (!hasActiveOrPaused || onTimerPage) {
+      setHeaderTimer('');
+      return;
+    }
+
+    const update = () => {
+      const secs = getElapsedTime();
+      setHeaderTimer(getFormattedTime(secs));
+    };
+
+    update();
+    const interval = setInterval(update, 1000);
+    return () => clearInterval(interval);
+  }, [pathname, timerState.currentProject, timerState.isRunning, timerState.pausedDuration, getElapsedTime, getFormattedTime]);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}&type=${searchFilter}`);
+      setIsSearchOpen(false);
+      setSearchQuery('');
+    }
+  };
+
+  const getFilterLabel = () => {
+    switch (searchFilter) {
+      case 'people': return 'People';
+      case 'groups': return 'Groups';
+      case 'challenges': return 'Challenges';
+      default: return 'People';
+    }
+  };
+
   return (
-    <header className="sticky top-0 left-0 right-0 z-50 bg-white">
+    <header className="sticky top-0 left-0 right-0 z-50 bg-white border-b border-gray-200">
         <div className="max-w-[1400px] mx-auto px-4">
           <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <div className="flex items-center space-x-8">
+          {/* Left side: Logo + Search + Navigation */}
+          <div className="flex items-center space-x-4">
+            {/* Logo */}
             <Link href="/" className="flex items-center space-x-3">
               <div className="w-8 h-8 bg-[#007AFF] rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-lg">A</span>
@@ -34,84 +88,174 @@ export default function Header() {
               <span className="text-xl font-bold text-gray-900 hidden sm:inline">Ambira</span>
             </Link>
 
-            {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center space-x-8 h-16">
-              <Link 
-                href="/" 
-                className={`text-base font-medium transition-colors flex items-center h-full relative ${
-                  isActive('/') 
-                    ? 'text-gray-900' 
-                    : 'text-gray-600 hover:text-[#007AFF]'
-                }`}
+            {/* Search Area */}
+            {isSearchOpen ? (
+              <div className="flex items-center space-x-2">
+                <form onSubmit={handleSearch} className="flex items-center space-x-2">
+                  {/* Filter Dropdown */}
+                  <div className="relative">
+                    <button
+                      type="button"
+                      onClick={() => setIsFilterDropdownOpen(!isFilterDropdownOpen)}
+                      className="flex items-center space-x-1.5 px-3 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors whitespace-nowrap text-sm"
+                    >
+                      <span className="font-medium">{getFilterLabel()}</span>
+                      <ChevronDown className="w-4 h-4" />
+                    </button>
+
+                    {/* Dropdown Menu */}
+                    {isFilterDropdownOpen && (
+                      <div className="absolute top-full left-0 mt-1 w-40 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSearchFilter('people');
+                            setIsFilterDropdownOpen(false);
+                          }}
+                          className={`w-full text-left px-4 py-2 transition-colors ${
+                            searchFilter === 'people' ? 'bg-blue-50 text-[#007AFF]' : 'text-gray-700 hover:bg-gray-50'
+                          }`}
+                        >
+                          People
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSearchFilter('groups');
+                            setIsFilterDropdownOpen(false);
+                          }}
+                          className={`w-full text-left px-4 py-2 transition-colors ${
+                            searchFilter === 'groups' ? 'bg-blue-50 text-[#007AFF]' : 'text-gray-700 hover:bg-gray-50'
+                          }`}
+                        >
+                          Groups
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSearchFilter('challenges');
+                            setIsFilterDropdownOpen(false);
+                          }}
+                          className={`w-full text-left px-4 py-2 transition-colors ${
+                            searchFilter === 'challenges' ? 'bg-blue-50 text-[#007AFF]' : 'text-gray-700 hover:bg-gray-50'
+                          }`}
+                        >
+                          Challenges
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Search Input */}
+                  <div className="relative w-80">
+                    <input
+                      ref={searchInputRef}
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder={`Search ${getFilterLabel().toLowerCase()}...`}
+                      className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:border-transparent text-sm"
+                    />
+                    <Search className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                  </div>
+                </form>
+
+                {/* Close Button */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsSearchOpen(false);
+                    setSearchQuery('');
+                    setIsFilterDropdownOpen(false);
+                  }}
+                  className="p-2 text-gray-600 hover:text-gray-900 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            ) : (
+              <button 
+                onClick={() => setIsSearchOpen(true)}
+                className="p-2 text-gray-600 hover:text-[#007AFF] transition-colors"
               >
-                Dashboard
-                {isActive('/') && (
-                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#007AFF]"></div>
-                )}
-              </Link>
-              <Link 
-                href="/projects" 
-                className={`text-base font-medium transition-colors flex items-center h-full relative ${
-                  isActive('/projects') 
-                    ? 'text-gray-900' 
-                    : 'text-gray-600 hover:text-[#007AFF]'
-                }`}
-              >
-                Projects
-                {isActive('/projects') && (
-                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#007AFF]"></div>
-                )}
-              </Link>
-              <Link 
-                href="/groups" 
-                className={`text-base font-medium transition-colors flex items-center h-full relative ${
-                  isActive('/groups') 
-                    ? 'text-gray-900' 
-                    : 'text-gray-600 hover:text-[#007AFF]'
-                }`}
-              >
-                Groups
-                {isActive('/groups') && (
-                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#007AFF]"></div>
-                )}
-              </Link>
-              <Link 
-                href="/challenges" 
-                className={`text-base font-medium transition-colors flex items-center h-full relative ${
-                  isActive('/challenges') 
-                    ? 'text-gray-900' 
-                    : 'text-gray-600 hover:text-[#007AFF]'
-                }`}
-              >
-                Challenges
-                {isActive('/challenges') && (
-                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#007AFF]"></div>
-                )}
-              </Link>
-              <Link 
-                href="/tasks" 
-                className={`text-base font-medium transition-colors flex items-center h-full relative ${
-                  isActive('/tasks') 
-                    ? 'text-gray-900' 
-                    : 'text-gray-600 hover:text-[#007AFF]'
-                }`}
-              >
-                Tasks
-                {isActive('/tasks') && (
-                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#007AFF]"></div>
-                )}
-              </Link>
-            </nav>
+                <Search className="w-5 h-5" />
+              </button>
+            )}
+
+            {/* Desktop Navigation - Only show when search is closed */}
+            {!isSearchOpen && (
+              <nav className="hidden md:flex items-center space-x-8 h-16">
+                <Link 
+                  href="/" 
+                  className={`text-base font-medium transition-colors flex items-center h-full relative ${
+                    isActive('/') 
+                      ? 'text-gray-900' 
+                      : 'text-gray-600 hover:text-[#007AFF]'
+                  }`}
+                >
+                  Dashboard
+                  {isActive('/') && (
+                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#007AFF]"></div>
+                  )}
+                </Link>
+                <Link 
+                  href="/projects" 
+                  className={`text-base font-medium transition-colors flex items-center h-full relative ${
+                    isActive('/projects') 
+                      ? 'text-gray-900' 
+                      : 'text-gray-600 hover:text-[#007AFF]'
+                  }`}
+                >
+                  Projects
+                  {isActive('/projects') && (
+                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#007AFF]"></div>
+                  )}
+                </Link>
+                <Link 
+                  href="/groups" 
+                  className={`text-base font-medium transition-colors flex items-center h-full relative ${
+                    isActive('/groups') 
+                      ? 'text-gray-900' 
+                      : 'text-gray-600 hover:text-[#007AFF]'
+                  }`}
+                >
+                  Groups
+                  {isActive('/groups') && (
+                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#007AFF]"></div>
+                  )}
+                </Link>
+                <Link 
+                  href="/challenges" 
+                  className={`text-base font-medium transition-colors flex items-center h-full relative ${
+                    isActive('/challenges') 
+                      ? 'text-gray-900' 
+                      : 'text-gray-600 hover:text-[#007AFF]'
+                  }`}
+                >
+                  Challenges
+                  {isActive('/challenges') && (
+                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#007AFF]"></div>
+                  )}
+                </Link>
+                <Link 
+                  href="/tasks" 
+                  className={`text-base font-medium transition-colors flex items-center h-full relative ${
+                    isActive('/tasks') 
+                      ? 'text-gray-900' 
+                      : 'text-gray-600 hover:text-[#007AFF]'
+                  }`}
+                >
+                  Tasks
+                  {isActive('/tasks') && (
+                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#007AFF]"></div>
+                  )}
+                </Link>
+              </nav>
+            )}
           </div>
 
           {/* Right side actions */}
           <div className="flex items-center space-x-3">
-            {/* Search icon */}
-            <button className="p-2 text-gray-600 hover:text-[#007AFF] transition-colors hidden md:block">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </button>
 
             {/* Session Status / Start Session Button */}
             {timerState.currentProject && (timerState.isRunning || timerState.pausedDuration > 0) ? (
@@ -120,7 +264,7 @@ export default function Header() {
                 className="hidden md:flex items-center space-x-2 px-4 py-1.5 bg-green-600 text-white text-sm font-medium rounded hover:bg-green-700 transition-colors"
               >
                 <div className="w-2 h-2 rounded-full bg-green-300" />
-                <span>Active</span>
+                <span>{pathname.startsWith('/timer') ? 'Active' : headerTimer || 'Active'}</span>
               </Link>
             ) : (
               <Link 
@@ -133,9 +277,7 @@ export default function Header() {
 
             {/* Notifications */}
             <button className="p-2 text-gray-600 hover:text-[#007AFF] transition-colors">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-              </svg>
+              <Bell className="w-5 h-5" />
             </button>
 
             {/* Profile with dropdown (opens on hover, with small close delay) */}
@@ -163,9 +305,7 @@ export default function Header() {
                     {user ? user.name.charAt(0).toUpperCase() : 'U'}
                   </span>
                 </div>
-                <svg className="w-4 h-4 hidden md:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
+                <ChevronDown className="w-4 h-4 hidden md:block" />
               </button>
 
               {/* Dropdown Menu */}
@@ -211,9 +351,7 @@ export default function Header() {
 
             {/* Plus button */}
             <button className="p-2 text-gray-600 hover:text-[#007AFF] transition-colors">
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
+              <Plus className="w-5 h-5" />
             </button>
 
             {/* Mobile menu button */}
@@ -221,13 +359,10 @@ export default function Header() {
               className="md:hidden p-2 text-gray-600 hover:text-[#007AFF] transition-colors"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
+              <Menu className="w-5 h-5" />
             </button>
           </div>
         </div>
-
 
         {/* Mobile Navigation */}
         {isMobileMenuOpen && (

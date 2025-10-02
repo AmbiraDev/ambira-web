@@ -53,3 +53,30 @@ const sessionStorageMock = {
 Object.defineProperty(window, 'sessionStorage', {
   value: sessionStorageMock,
 })
+
+// Provide a minimal global fetch for libraries that expect it in Node test env
+if (typeof global.fetch === 'undefined') {
+  global.fetch = jest.fn(async () => ({
+    ok: true,
+    status: 200,
+    json: async () => ({}),
+    text: async () => '',
+  }))
+}
+
+// Provide a default axios mock so tests don't need to re-declare it and to avoid TDZ issues
+jest.mock('axios', () => {
+  const mockAxios = {
+    interceptors: {
+      request: { use: jest.fn() },
+      response: { use: jest.fn() },
+    },
+    post: jest.fn(),
+    get: jest.fn(),
+    put: jest.fn(),
+    delete: jest.fn(),
+  }
+  return {
+    create: jest.fn(() => mockAxios),
+  }
+})

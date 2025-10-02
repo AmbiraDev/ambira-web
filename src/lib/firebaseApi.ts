@@ -534,42 +534,75 @@ export const firebaseUserApi = {
     }
   },
 
-  // Search users
-  searchUsers: async (query: string, page: number = 1, limitCount: number = 20): Promise<{
+  // Search users by username and name (case-insensitive, prefix match)
+  searchUsers: async (searchTerm: string, page: number = 1, limitCount: number = 20): Promise<{
     users: UserSearchResult[];
     totalCount: number;
     hasMore: boolean;
   }> => {
     try {
-      const usersQuery = query(
+      const term = (searchTerm || '').trim();
+      if (!term) {
+        return { users: [], totalCount: 0, hasMore: false };
+      }
+
+      // 1) Search by username prefix
+      const usernameQ = query(
         collection(db, 'users'),
-        where('username', '>=', query),
-        where('username', '<=', query + '\uf8ff'),
         orderBy('username'),
+        where('username', '>=', term),
+        where('username', '<=', term + '\uf8ff'),
         limit(limitCount)
       );
-      
-      const querySnapshot = await getDocs(usersQuery);
-      const users: UserSearchResult[] = [];
-      
-      querySnapshot.forEach(doc => {
-        const userData = doc.data();
-        users.push({
-          id: doc.id,
+
+      // 2) Search by name prefix (requires 'name' field present)
+      const nameQ = query(
+        collection(db, 'users'),
+        orderBy('name'),
+        where('name', '>=', term),
+        where('name', '<=', term + '\uf8ff'),
+        limit(limitCount)
+      );
+
+      const [usernameSnap, nameSnap] = await Promise.all([
+        getDocs(usernameQ),
+        getDocs(nameQ),
+      ]);
+
+      // Merge and de-duplicate results, prefer username matches first
+      const byId: Record<string, UserSearchResult> = {};
+      const pushDoc = (docSnap: any) => {
+        const userData = docSnap.data();
+        byId[docSnap.id] = {
+          id: docSnap.id,
           username: userData.username,
           name: userData.name,
           bio: userData.bio,
           profilePicture: userData.profilePicture,
           followersCount: userData.followersCount || 0,
-          isFollowing: false // Will be updated based on follow status
-        });
-      });
-      
-      return {
-        users,
-        totalCount: users.length,
-        hasMore: users.length === limitCount
+          isFollowing: false,
+        } as UserSearchResult;
       };
+
+      usernameSnap.forEach(pushDoc);
+      nameSnap.forEach((d) => {
+        if (!byId[d.id]) pushDoc(d);
+      });
+
+      // Convert to array and apply a basic relevance sort: exact prefix on username > name > others
+      const users = Object.values(byId).sort((a, b) => {
+        const t = term.toLowerCase();
+        const aUser = a.username?.toLowerCase() || '';
+        const bUser = b.username?.toLowerCase() || '';
+        const aName = a.name?.toLowerCase() || '';
+        const bName = b.name?.toLowerCase() || '';
+
+        const aScore = (aUser.startsWith(t) ? 2 : 0) + (aName.startsWith(t) ? 1 : 0);
+        const bScore = (bUser.startsWith(t) ? 2 : 0) + (bName.startsWith(t) ? 1 : 0);
+        return bScore - aScore;
+      }).slice(0, limitCount);
+
+      return { users, totalCount: users.length, hasMore: users.length === limitCount };
     } catch (error: any) {
       throw new Error(error.message || 'Failed to search users');
     }

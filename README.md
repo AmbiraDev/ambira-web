@@ -49,6 +49,7 @@ A social productivity tracking application built with Next.js, TypeScript, and T
   - Bottom navigation with user links
   - Profile links throughout the app
   - Users discovery page with search and suggestions
+  - Active session indicator shows live elapsed time in header when not on `/timer`; on `/timer` it displays "Active" to avoid duplicate timers
 
 ### 🎨 Design System
 - **Electric Blue Primary Color** (#007AFF) for logos, buttons, and accents
