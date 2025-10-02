@@ -360,8 +360,25 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
         privateNotes,
       };
 
-      // Save session to Firebase
-      const session = await firebaseSessionApi.createSession(sessionData);
+      // Save session to Firebase and create post if visibility allows
+      let session: Session;
+      let post: any;
+      
+      if (options?.visibility && options.visibility !== 'private') {
+        // Create session with post for non-private sessions
+        const result = await firebaseSessionApi.createSessionWithPost(
+          sessionData,
+          description || `Completed ${title}`,
+          options.visibility
+        );
+        session = result.session;
+        post = result.post;
+        console.log('Session and post created:', { session, post });
+      } else {
+        // Create private session only
+        session = await firebaseSessionApi.createSession(sessionData);
+        console.log('Private session created:', session);
+      }
 
       // Clear active session
       await firebaseSessionApi.clearActiveSession();

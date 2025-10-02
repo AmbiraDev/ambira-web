@@ -35,7 +35,7 @@ export const SaveSession: React.FC<SaveSessionProps> = ({
     startTime: new Date(),
     taskIds: [],
     tags: [],
-    visibility: 'private',
+    visibility: 'everyone',
     privateNotes: '',
     ...initialData
   });

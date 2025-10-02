@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { ManualEntry } from './ManualEntry';
+import { firebaseApi } from '@/lib/firebaseApi';
 
 export const FABMenu: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -18,10 +19,23 @@ export const FABMenu: React.FC = () => {
   const handleSaveSession = async (data: any) => {
     try {
       setIsLoading(true);
-      // TODO: Implement Firebase session API
-      console.log('Session data:', data);
+      
+      // Create session and post if visibility allows
+      if (data.visibility !== 'private') {
+        // Create session with post for non-private sessions
+        const { session, post } = await firebaseApi.session.createSessionWithPost(
+          data,
+          data.description || `Completed ${data.title}`,
+          data.visibility
+        );
+        console.log('Session and post created:', { session, post });
+      } else {
+        // Create private session only
+        const session = await firebaseApi.session.createSession(data);
+        console.log('Private session created:', session);
+      }
+      
       setShowManualEntry(false);
-      // You could add a toast notification here
       console.log('Session saved successfully!');
     } catch (error) {
       console.error('Failed to save session:', error);

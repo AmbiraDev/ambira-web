@@ -294,7 +294,7 @@ export const PostsContent: React.FC<PostsContentProps> = ({ userId, isOwnProfile
       try {
         setIsLoading(true);
         setError(null);
-        const userPosts = await firebasePostApi.getUserPosts(userId, 20);
+        const userPosts = await firebasePostApi.getUserPosts(userId, 20, isOwnProfile);
         setPosts(userPosts);
       } catch (err: any) {
         console.error('Failed to load user posts:', err);

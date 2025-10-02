@@ -10,6 +10,7 @@ interface PostInteractionsProps {
   onSupport: (postId: string) => Promise<void>;
   onRemoveSupport: (postId: string) => Promise<void>;
   onShare: (postId: string) => Promise<void>;
+  onCommentClick?: () => void;
   className?: string;
 }
 
@@ -21,6 +22,7 @@ export const PostInteractions: React.FC<PostInteractionsProps> = ({
   onSupport,
   onRemoveSupport,
   onShare,
+  onCommentClick,
   className = ''
 }) => {
   const [isSupporting, setIsSupporting] = useState(false);
@@ -89,7 +91,10 @@ export const PostInteractions: React.FC<PostInteractionsProps> = ({
         </button>
 
         {/* Comments */}
-        <button className="flex items-center gap-1.5 px-3 py-2 rounded-lg font-medium text-gray-600 hover:bg-gray-100 hover:text-blue-600 transition-all">
+        <button
+          onClick={onCommentClick}
+          className="flex items-center gap-1.5 px-3 py-2 rounded-lg font-medium text-gray-600 hover:bg-gray-100 hover:text-blue-600 transition-all"
+        >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
             <path
               strokeLinecap="round"

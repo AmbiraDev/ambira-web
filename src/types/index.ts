@@ -204,11 +204,86 @@ export interface Comment {
   id: string;
   postId: string;
   userId: string;
-  parentId?: string;
+  parentId?: string; // For nested replies
   content: string;
   likeCount: number;
+  replyCount: number;
+  isLiked?: boolean; // Whether current user has liked this comment
+  isEdited: boolean;
   createdAt: Date;
   updatedAt: Date;
+  // Populated fields
+  user?: User;
+}
+
+export interface CommentWithDetails extends Comment {
+  user: User;
+  replies?: CommentWithDetails[];
+}
+
+export interface CreateCommentData {
+  postId: string;
+  content: string;
+  parentId?: string;
+}
+
+export interface UpdateCommentData {
+  content: string;
+}
+
+export interface CommentLike {
+  id: string;
+  commentId: string;
+  userId: string;
+  createdAt: Date;
+}
+
+export interface CommentsResponse {
+  comments: CommentWithDetails[];
+  hasMore: boolean;
+  nextCursor?: string;
+}
+
+export interface Notification {
+  id: string;
+  userId: string;
+  type: 'follow' | 'support' | 'comment' | 'mention' | 'reply' | 'achievement' | 'streak' | 'group' | 'challenge';
+  title: string;
+  message: string;
+  linkUrl?: string;
+  isRead: boolean;
+  createdAt: Date;
+  // Additional metadata based on type
+  actorId?: string; // User who triggered the notification
+  postId?: string;
+  commentId?: string;
+  groupId?: string;
+  challengeId?: string;
+}
+
+export interface NotificationPreferences {
+  email: {
+    follows: boolean;
+    supports: boolean;
+    comments: boolean;
+    mentions: boolean;
+    replies: boolean;
+    achievements: boolean;
+    streaks: boolean;
+    groupPosts: boolean;
+    challenges: boolean;
+  };
+  inApp: {
+    follows: boolean;
+    supports: boolean;
+    comments: boolean;
+    mentions: boolean;
+    replies: boolean;
+    achievements: boolean;
+    streaks: boolean;
+    groupPosts: boolean;
+    challenges: boolean;
+  };
 }
 
 export interface Follow {

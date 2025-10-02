@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import Header from '@/components/HeaderComponent';
+import NotificationSettings from '@/components/NotificationSettings';
 import { 
   User, 
   Shield, 
@@ -251,10 +252,7 @@ export default function SettingsPage() {
                 )}
 
                 {activeTab === 'notifications' && (
-                  <div>
-                    <h2 className="text-2xl font-bold text-gray-900 mb-6">Email Notifications</h2>
-                    <p className="text-gray-600">Manage your email notification preferences.</p>
-                  </div>
+                  <NotificationSettings />
                 )}
 
                 {activeTab === 'display' && (

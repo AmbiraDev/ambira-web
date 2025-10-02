@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { PostWithDetails, User } from '@/types';
 import PostStats from './PostStats';
 import PostInteractions from './PostInteractions';
+import CommentList from './CommentList';
 
 interface PostCardProps {
   post: PostWithDetails;
@@ -11,6 +12,7 @@ interface PostCardProps {
   onRemoveSupport: (postId: string) => Promise<void>;
   onShare: (postId: string) => Promise<void>;
   className?: string;
+  showComments?: boolean;
 }
 
 export const PostCard: React.FC<PostCardProps> = ({
@@ -18,9 +20,11 @@ export const PostCard: React.FC<PostCardProps> = ({
   onSupport,
   onRemoveSupport,
   onShare,
-  className = ''
+  className = '',
+  showComments = false
 }) => {
   const [showMenu, setShowMenu] = useState(false);
+  const [showCommentSection, setShowCommentSection] = useState(showComments);
   
   const formatTimeAgo = (date: Date): string => {
     const now = new Date();
@@ -177,7 +181,15 @@ export const PostCard: React.FC<PostCardProps> = ({
         onSupport={onSupport}
         onRemoveSupport={onRemoveSupport}
         onShare={onShare}
+        onCommentClick={() => setShowCommentSection(!showCommentSection)}
       />
+
+      {/* Comments Section */}
+      {showCommentSection && (
+        <div className="border-t border-gray-200">
+          <CommentList postId={post.id} initialCommentCount={post.commentCount} />
+        </div>
+      )}
     </article>
   );
 };

@@ -30,7 +30,7 @@ export const ManualEntry: React.FC<ManualEntryProps> = ({
     startTime: new Date(),
     taskIds: [],
     tags: [],
-    visibility: 'private',
+    visibility: 'everyone',
     howFelt: 3,
     privateNotes: '',
   });

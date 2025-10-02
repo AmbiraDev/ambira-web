@@ -7,6 +7,7 @@ import { Project, Task } from '@/types';
 import { TimerDisplay } from './TimerDisplay';
 import { TimerControls } from './TimerControls';
 import { SaveSession } from './SaveSession';
+import { firebaseApi } from '@/lib/firebaseApi';
 
 interface SessionTimerProps {
   className?: string;
@@ -235,9 +236,22 @@ export const SessionTimer: React.FC<SessionTimerProps> = ({ className = '' }) =>
         <SaveSession
           onSave={async (data) => {
             try {
-              const token = getAuthToken();
-              // TODO: Create session in Firebase
-              console.log('Create session:', data); // await mockSessionApi.createSession(data, token);
+              // Create session and post if visibility allows
+              if (data.visibility !== 'private') {
+                // Show post creation modal for non-private sessions
+                // For now, we'll create the session with a basic post
+                const { session, post } = await firebaseApi.session.createSessionWithPost(
+                  data,
+                  data.description || `Completed ${data.title}`,
+                  data.visibility
+                );
+                console.log('Session and post created:', { session, post });
+              } else {
+                // Create private session only
+                const session = await firebaseApi.session.createSession(data);
+                console.log('Private session created:', session);
+              }
+              
               setShowFinishModal(false);
               // Timer will be finished by the context
             } catch (error) {
@@ -254,7 +268,7 @@ export const SessionTimer: React.FC<SessionTimerProps> = ({ className = '' }) =>
             startTime: timerState.startTime || new Date(),
             taskIds: timerState.selectedTasks.map(task => task.id),
             tags: [],
-            visibility: 'private',
+            visibility: 'everyone',
             howFelt: 3,
             privateNotes: '',
           }}

@@ -74,7 +74,14 @@ import {
   UpdatePostData,
   PostSupport,
   FeedResponse,
-  FeedFilters
+  FeedFilters,
+  Comment,
+  CommentWithDetails,
+  CreateCommentData,
+  UpdateCommentData,
+  CommentLike,
+  CommentsResponse,
+  Notification
 } from '@/types';
 
 // Helper function to convert Firestore timestamp to Date
@@ -1607,6 +1614,7 @@ export const firebasePostApi = {
 
       const postData = {
         ...data,
+        userId: auth.currentUser.uid,
         supportCount: 0,
         commentCount: 0,
         createdAt: serverTimestamp(),
@@ -1926,14 +1934,28 @@ export const firebasePostApi = {
   },
 
   // Get user's posts
-  getUserPosts: async (userId: string, limitCount: number = 20): Promise<PostWithDetails[]> => {
+  getUserPosts: async (userId: string, limitCount: number = 20, isOwnProfile: boolean = false): Promise<PostWithDetails[]> => {
     try {
-      const postsQuery = query(
-        collection(db, 'posts'),
-        where('userId', '==', userId),
-        orderBy('createdAt', 'desc'),
-        limit(limitCount)
-      );
+      let postsQuery;
+      
+      if (isOwnProfile) {
+        // Show all posts for own profile
+        postsQuery = query(
+          collection(db, 'posts'),
+          where('userId', '==', userId),
+          orderBy('createdAt', 'desc'),
+          limit(limitCount)
+        );
+      } else {
+        // Show only public posts for other profiles
+        postsQuery = query(
+          collection(db, 'posts'),
+          where('userId', '==', userId),
+          where('visibility', '==', 'everyone'),
+          orderBy('createdAt', 'desc'),
+          limit(limitCount)
+        );
+      }
 
       const querySnapshot = await getDocs(postsQuery);
       const posts: PostWithDetails[] = [];
@@ -2018,6 +2040,476 @@ export const firebasePostApi = {
   }
 };
 
+// Firebase Comment API
+export const firebaseCommentApi = {
+  // Create a comment
+  createComment: async (data: CreateCommentData): Promise<CommentWithDetails> => {
+    try {
+      if (!auth.currentUser) {
+        throw new Error('User not authenticated');
+      }
+
+      const userId = auth.currentUser.uid;
+      
+      // Extract mentions from content
+      const mentionRegex = /@(\w+)/g;
+      const mentions = [...data.content.matchAll(mentionRegex)].map(match => match[1]);
+      
+      const commentData = {
+        postId: data.postId,
+        userId,
+        parentId: data.parentId,
+        content: data.content,
+        likeCount: 0,
+        replyCount: 0,
+        isEdited: false,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      };
+      
+      const docRef = await addDoc(collection(db, 'comments'), commentData);
+      
+      // Increment comment count on post
+      const postRef = doc(db, 'posts', data.postId);
+      await updateDoc(postRef, {
+        commentCount: increment(1)
+      });
+      
+      // If this is a reply, increment reply count on parent comment
+      if (data.parentId) {
+        const parentCommentRef = doc(db, 'comments', data.parentId);
+        await updateDoc(parentCommentRef, {
+          replyCount: increment(1)
+        });
+      }
+      
+      // Get user data
+      const userDoc = await getDoc(doc(db, 'users', userId));
+      const userData = userDoc.data();
+      
+      // Create notifications for mentions
+      if (mentions.length > 0) {
+        // Get users by username
+        const usersQuery = query(
+          collection(db, 'users'),
+          where('username', 'in', mentions)
+        );
+        const usersSnapshot = await getDocs(usersQuery);
+        
+        const notificationPromises = usersSnapshot.docs.map(async (userDoc) => {
+          const mentionedUserId = userDoc.id;
+          if (mentionedUserId !== userId) {
+            // Create notification
+            await addDoc(collection(db, 'notifications'), {
+              userId: mentionedUserId,
+              type: 'mention',
+              title: 'New mention',
+              message: `${userData?.name} mentioned you in a comment`,
+              linkUrl: `/posts/${data.postId}`,
+              actorId: userId,
+              postId: data.postId,
+              commentId: docRef.id,
+              isRead: false,
+              createdAt: serverTimestamp()
+            });
+          }
+        });
+        
+        await Promise.all(notificationPromises);
+      }
+      
+      // Create notification for post owner (if not commenting on own post)
+      if (!data.parentId) {
+        const postDoc = await getDoc(postRef);
+        const postData = postDoc.data();
+        
+        if (postData && postData.userId !== userId) {
+          await addDoc(collection(db, 'notifications'), {
+            userId: postData.userId,
+            type: 'comment',
+            title: 'New comment',
+            message: `${userData?.name} commented on your post`,
+            linkUrl: `/posts/${data.postId}`,
+            actorId: userId,
+            postId: data.postId,
+            commentId: docRef.id,
+            isRead: false,
+            createdAt: serverTimestamp()
+          });
+        }
+      } else {
+        // Create notification for parent comment owner (if replying to someone else)
+        const parentCommentDoc = await getDoc(doc(db, 'comments', data.parentId));
+        const parentCommentData = parentCommentDoc.data();
+        
+        if (parentCommentData && parentCommentData.userId !== userId) {
+          await addDoc(collection(db, 'notifications'), {
+            userId: parentCommentData.userId,
+            type: 'reply',
+            title: 'New reply',
+            message: `${userData?.name} replied to your comment`,
+            linkUrl: `/posts/${data.postId}`,
+            actorId: userId,
+            postId: data.postId,
+            commentId: docRef.id,
+            isRead: false,
+            createdAt: serverTimestamp()
+          });
+        }
+      }
+      
+      return {
+        id: docRef.id,
+        postId: data.postId,
+        userId,
+        parentId: data.parentId,
+        content: data.content,
+        likeCount: 0,
+        replyCount: 0,
+        isLiked: false,
+        isEdited: false,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        user: {
+          id: userId,
+          email: userData?.email || '',
+          name: userData?.name || '',
+          username: userData?.username || '',
+          bio: userData?.bio,
+          location: userData?.location,
+          profilePicture: userData?.profilePicture,
+          createdAt: convertTimestamp(userData?.createdAt) || new Date(),
+          updatedAt: convertTimestamp(userData?.updatedAt) || new Date(),
+        }
+      };
+    } catch (error: any) {
+      throw new Error(getErrorMessage(error, 'Failed to create comment'));
+    }
+  },
+
+  // Update a comment
+  updateComment: async (commentId: string, data: UpdateCommentData): Promise<Comment> => {
+    try {
+      if (!auth.currentUser) {
+        throw new Error('User not authenticated');
+      }
+
+      const commentRef = doc(db, 'comments', commentId);
+      const commentDoc = await getDoc(commentRef);
+      
+      if (!commentDoc.exists()) {
+        throw new Error('Comment not found');
+      }
+      
+      const commentData = commentDoc.data();
+      
+      if (commentData.userId !== auth.currentUser.uid) {
+        throw new Error('Not authorized to edit this comment');
+      }
+      
+      await updateDoc(commentRef, {
+        content: data.content,
+        isEdited: true,
+        updatedAt: serverTimestamp()
+      });
+      
+      return {
+        id: commentId,
+        ...commentData,
+        content: data.content,
+        isEdited: true,
+        createdAt: convertTimestamp(commentData.createdAt),
+        updatedAt: new Date()
+      } as Comment;
+    } catch (error: any) {
+      throw new Error(getErrorMessage(error, 'Failed to update comment'));
+    }
+  },
+
+  // Delete a comment
+  deleteComment: async (commentId: string): Promise<void> => {
+    try {
+      if (!auth.currentUser) {
+        throw new Error('User not authenticated');
+      }
+
+      const commentRef = doc(db, 'comments', commentId);
+      const commentDoc = await getDoc(commentRef);
+      
+      if (!commentDoc.exists()) {
+        throw new Error('Comment not found');
+      }
+      
+      const commentData = commentDoc.data();
+      
+      if (commentData.userId !== auth.currentUser.uid) {
+        throw new Error('Not authorized to delete this comment');
+      }
+      
+      // Delete all replies to this comment
+      const repliesQuery = query(
+        collection(db, 'comments'),
+        where('parentId', '==', commentId)
+      );
+      const repliesSnapshot = await getDocs(repliesQuery);
+      
+      const batch = writeBatch(db);
+      
+      repliesSnapshot.docs.forEach((doc) => {
+        batch.delete(doc.ref);
+      });
+      
+      batch.delete(commentRef);
+      
+      await batch.commit();
+      
+      // Decrement comment count on post
+      const postRef = doc(db, 'posts', commentData.postId);
+      await updateDoc(postRef, {
+        commentCount: increment(-1 - repliesSnapshot.size) // -1 for the comment itself, and -repliesSnapshot.size for replies
+      });
+      
+      // If this is a reply, decrement reply count on parent comment
+      if (commentData.parentId) {
+        const parentCommentRef = doc(db, 'comments', commentData.parentId);
+        await updateDoc(parentCommentRef, {
+          replyCount: increment(-1)
+        });
+      }
+    } catch (error: any) {
+      throw new Error(getErrorMessage(error, 'Failed to delete comment'));
+    }
+  },
+
+  // Like a comment
+  likeComment: async (commentId: string): Promise<void> => {
+    try {
+      if (!auth.currentUser) {
+        throw new Error('User not authenticated');
+      }
+
+      const userId = auth.currentUser.uid;
+      const likeId = `${userId}_${commentId}`;
+      const likeRef = doc(db, 'commentLikes', likeId);
+      
+      const likeDoc = await getDoc(likeRef);
+      
+      if (likeDoc.exists()) {
+        throw new Error('Already liked this comment');
+      }
+      
+      await setDoc(likeRef, {
+        commentId,
+        userId,
+        createdAt: serverTimestamp()
+      });
+      
+      // Increment like count on comment
+      const commentRef = doc(db, 'comments', commentId);
+      await updateDoc(commentRef, {
+        likeCount: increment(1)
+      });
+    } catch (error: any) {
+      throw new Error(getErrorMessage(error, 'Failed to like comment'));
+    }
+  },
+
+  // Unlike a comment
+  unlikeComment: async (commentId: string): Promise<void> => {
+    try {
+      if (!auth.currentUser) {
+        throw new Error('User not authenticated');
+      }
+
+      const userId = auth.currentUser.uid;
+      const likeId = `${userId}_${commentId}`;
+      const likeRef = doc(db, 'commentLikes', likeId);
+      
+      const likeDoc = await getDoc(likeRef);
+      
+      if (!likeDoc.exists()) {
+        throw new Error('Comment not liked');
+      }
+      
+      await deleteDoc(likeRef);
+      
+      // Decrement like count on comment
+      const commentRef = doc(db, 'comments', commentId);
+      await updateDoc(commentRef, {
+        likeCount: increment(-1)
+      });
+    } catch (error: any) {
+      throw new Error(getErrorMessage(error, 'Failed to unlike comment'));
+    }
+  },
+
+  // Get comments for a post (with pagination)
+  getPostComments: async (
+    postId: string, 
+    limitCount: number = 20, 
+    lastDoc?: DocumentSnapshot
+  ): Promise<CommentsResponse> => {
+    try {
+      if (!auth.currentUser) {
+        throw new Error('User not authenticated');
+      }
+
+      const userId = auth.currentUser.uid;
+      
+      // Get top-level comments (no parentId)
+      // Note: Firestore doesn't support querying for undefined, so we check for both null and absence
+      let q;
+      
+      if (lastDoc) {
+        q = query(
+          collection(db, 'comments'),
+          where('postId', '==', postId),
+          orderBy('createdAt', 'desc'),
+          startAfter(lastDoc),
+          limit(limitCount + 1)
+        );
+      } else {
+        q = query(
+          collection(db, 'comments'),
+          where('postId', '==', postId),
+          orderBy('createdAt', 'desc'),
+          limit(limitCount + 1)
+        );
+      }
+      
+      const snapshot = await getDocs(q);
+      
+      // Filter for top-level comments only (no parentId)
+      const topLevelDocs = snapshot.docs.filter(doc => !doc.data().parentId);
+      
+      const hasMore = topLevelDocs.length > limitCount;
+      const docs = hasMore ? topLevelDocs.slice(0, -1) : topLevelDocs;
+      
+      // Get all comment likes for current user in one query
+      const commentIds = docs.map(d => d.id);
+      const likesQuery = query(
+        collection(db, 'commentLikes'),
+        where('userId', '==', userId),
+        where('commentId', 'in', commentIds.length > 0 ? commentIds : [''])
+      );
+      const likesSnapshot = await getDocs(likesQuery);
+      const likedCommentIds = new Set(likesSnapshot.docs.map(d => d.data().commentId));
+      
+      // Build comments with user details
+      const comments: CommentWithDetails[] = await Promise.all(
+        docs.map(async (docSnapshot) => {
+          const data = docSnapshot.data();
+          
+          // Get user data
+          const userDoc = await getDoc(doc(db, 'users', data.userId));
+          const userData = userDoc.data();
+          
+          return {
+            id: docSnapshot.id,
+            postId: data.postId,
+            userId: data.userId,
+            parentId: data.parentId,
+            content: data.content,
+            likeCount: data.likeCount || 0,
+            replyCount: data.replyCount || 0,
+            isLiked: likedCommentIds.has(docSnapshot.id),
+            isEdited: data.isEdited || false,
+            createdAt: convertTimestamp(data.createdAt),
+            updatedAt: convertTimestamp(data.updatedAt),
+            user: {
+              id: data.userId,
+              email: userData?.email || '',
+              name: userData?.name || '',
+              username: userData?.username || '',
+              bio: userData?.bio,
+              location: userData?.location,
+              profilePicture: userData?.profilePicture,
+              createdAt: convertTimestamp(userData?.createdAt) || new Date(),
+              updatedAt: convertTimestamp(userData?.updatedAt) || new Date(),
+            }
+          };
+        })
+      );
+      
+      return {
+        comments,
+        hasMore,
+        nextCursor: hasMore ? docs[docs.length - 1].id : undefined
+      };
+    } catch (error: any) {
+      throw new Error(getErrorMessage(error, 'Failed to get comments'));
+    }
+  },
+
+  // Get replies for a comment
+  getReplies: async (commentId: string): Promise<CommentWithDetails[]> => {
+    try {
+      if (!auth.currentUser) {
+        throw new Error('User not authenticated');
+      }
+
+      const userId = auth.currentUser.uid;
+      
+      const q = query(
+        collection(db, 'comments'),
+        where('parentId', '==', commentId),
+        orderBy('createdAt', 'asc')
+      );
+      
+      const snapshot = await getDocs(q);
+      
+      // Get all comment likes for current user in one query
+      const commentIds = snapshot.docs.map(d => d.id);
+      const likesQuery = query(
+        collection(db, 'commentLikes'),
+        where('userId', '==', userId),
+        where('commentId', 'in', commentIds.length > 0 ? commentIds : [''])
+      );
+      const likesSnapshot = await getDocs(likesQuery);
+      const likedCommentIds = new Set(likesSnapshot.docs.map(d => d.data().commentId));
+      
+      const replies: CommentWithDetails[] = await Promise.all(
+        snapshot.docs.map(async (docSnapshot) => {
+          const data = docSnapshot.data();
+          
+          // Get user data
+          const userDoc = await getDoc(doc(db, 'users', data.userId));
+          const userData = userDoc.data();
+          
+          return {
+            id: docSnapshot.id,
+            postId: data.postId,
+            userId: data.userId,
+            parentId: data.parentId,
+            content: data.content,
+            likeCount: data.likeCount || 0,
+            replyCount: data.replyCount || 0,
+            isLiked: likedCommentIds.has(docSnapshot.id),
+            isEdited: data.isEdited || false,
+            createdAt: convertTimestamp(data.createdAt),
+            updatedAt: convertTimestamp(data.updatedAt),
+            user: {
+              id: data.userId,
+              email: userData?.email || '',
+              name: userData?.name || '',
+              username: userData?.username || '',
+              bio: userData?.bio,
+              location: userData?.location,
+              profilePicture: userData?.profilePicture,
+              createdAt: convertTimestamp(userData?.createdAt) || new Date(),
+              updatedAt: convertTimestamp(userData?.updatedAt) || new Date(),
+            }
+          };
+        })
+      );
+      
+      return replies;
+    } catch (error: any) {
+      throw new Error(getErrorMessage(error, 'Failed to get replies'));
+    }
+  }
+};
+
 // Export combined API
 export const firebaseApi = {
   auth: firebaseAuthApi,
@@ -2025,7 +2517,8 @@ export const firebaseApi = {
   project: firebaseProjectApi,
   task: firebaseTaskApi,
   session: firebaseSessionApi,
-  post: firebasePostApi
+  post: firebasePostApi,
+  comment: firebaseCommentApi
 };
 
 // Note: increment is imported from firebase/firestore above

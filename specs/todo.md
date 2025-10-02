@@ -237,16 +237,16 @@
 - [X] Update counts immediately
 
 ### Comments
-- [ ] Create comments table with nesting
-- [ ] Build comment API endpoints
-- [ ] Create comment thread component
-- [ ] Implement nested replies (2 levels)
-- [ ] Add comment composer
-- [ ] Build @mention autocomplete
-- [ ] Add edit/delete for own comments
-- [ ] Create like functionality for comments
-- [ ] Add comment notifications
-- [ ] Implement "Load more" for long threads
+- [X] Create comments table with nesting
+- [X] Build comment API endpoints
+- [X] Create comment thread component
+- [X] Implement nested replies (3 levels max)
+- [X] Add comment composer
+- [X] Build @mention autocomplete
+- [X] Add edit/delete for own comments
+- [X] Create like functionality for comments
+- [X] Add comment notifications
+- [X] Implement "Load more" for long threads
 
 ### Post Management
 - [ ] Add edit post functionality
