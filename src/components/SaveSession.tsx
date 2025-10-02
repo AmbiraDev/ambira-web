@@ -2,6 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { SessionFormProps, SessionFormData, Project, Task } from '@/types';
+import { firebaseApi } from '@/lib/firebaseApi';
+import { useAuth } from '@/contexts/AuthContext';
+import PostCreationModal from './PostCreationModal';
 
 interface SaveSessionProps {
   onSave: (data: SessionFormData) => Promise<void>;
@@ -24,6 +27,7 @@ export const SaveSession: React.FC<SaveSessionProps> = ({
   initialData,
   isLoading = false
 }) => {
+  const { user } = useAuth();
   const [formData, setFormData] = useState<SessionFormData>({
     projectId: '',
     title: '',
@@ -42,6 +46,9 @@ export const SaveSession: React.FC<SaveSessionProps> = ({
   const [tasks, setTasks] = useState<Task[]>([]);
   const [selectedTasks, setSelectedTasks] = useState<Task[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [showPostModal, setShowPostModal] = useState(false);
+  const [createdSession, setCreatedSession] = useState<any>(null);
+  const [createdProject, setCreatedProject] = useState<Project | null>(null);
 
   // TODO: Implement Firebase API calls
   // Helper function to get auth token
@@ -53,10 +60,10 @@ export const SaveSession: React.FC<SaveSessionProps> = ({
   // Load projects on mount
   useEffect(() => {
     const loadProjects = async () => {
+      if (!user) return;
+      
       try {
-        const token = getAuthToken();
-        // TODO: Load projects from Firebase
-        const projectList = []; // await mockProjectApiLocal.getProjects(token);
+        const projectList = await firebaseApi.project.getProjects();
         setProjects(projectList);
         
         // Set initial project if provided
@@ -69,7 +76,7 @@ export const SaveSession: React.FC<SaveSessionProps> = ({
     };
 
     loadProjects();
-  }, [initialData.projectId, formData.projectId]);
+  }, [user, initialData.projectId, formData.projectId]);
 
   // Load tasks when project changes
   useEffect(() => {
@@ -81,9 +88,7 @@ export const SaveSession: React.FC<SaveSessionProps> = ({
       }
 
       try {
-        const token = getAuthToken();
-        // TODO: Load tasks from Firebase
-        const taskList = []; // await mockTaskApiLocal.getProjectTasks(formData.projectId, token);
+        const taskList = await firebaseApi.task.getProjectTasks(formData.projectId);
         setTasks(taskList.filter(task => task.status === 'active'));
         
         // Set selected tasks from initial data
@@ -181,11 +186,46 @@ export const SaveSession: React.FC<SaveSessionProps> = ({
     }
 
     try {
-      await onSave(formData);
+      // Create session in Firebase
+      const sessionData = {
+        projectId: formData.projectId,
+        title: formData.title,
+        description: formData.description,
+        duration: formData.duration,
+        startTime: formData.startTime,
+        taskIds: formData.taskIds || [],
+        tags: formData.tags,
+        howFelt: formData.howFelt,
+        privateNotes: formData.privateNotes
+      };
+
+      const session = await firebaseApi.session.createSession(sessionData);
+      const project = projects.find(p => p.id === formData.projectId);
+      
+      setCreatedSession(session);
+      setCreatedProject(project || null);
+
+      // If visibility is not private, show post creation modal
+      if (formData.visibility !== 'private') {
+        setShowPostModal(true);
+      } else {
+        // Just save session and close
+        await onSave(formData);
+      }
     } catch (error) {
       console.error('Failed to save session:', error);
       setErrors({ submit: 'Failed to save session. Please try again.' });
     }
+  };
+
+  const handlePostSuccess = async (postId?: string) => {
+    await onSave(formData);
+    setShowPostModal(false);
+  };
+
+  const handlePostCancel = () => {
+    setShowPostModal(false);
+    await onSave(formData);
   };
 
   const formatDuration = (seconds: number): string => {
@@ -407,6 +447,17 @@ export const SaveSession: React.FC<SaveSessionProps> = ({
           </form>
         </div>
       </div>
+
+      {/* Post Creation Modal */}
+      {createdSession && createdProject && (
+        <PostCreationModal
+          session={createdSession}
+          project={createdProject}
+          isOpen={showPostModal}
+          onClose={handlePostCancel}
+          onSuccess={handlePostSuccess}
+        />
+      )}
     </div>
   );
 };

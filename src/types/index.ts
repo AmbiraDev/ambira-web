@@ -115,8 +115,48 @@ export interface Post {
   content: string;
   supportCount: number;
   commentCount: number;
+  isSupported?: boolean; // Whether current user has supported this post
   createdAt: Date;
   updatedAt: Date;
+  // Populated fields
+  user?: User;
+  session?: Session;
+  project?: Project;
+}
+
+export interface PostWithDetails extends Post {
+  user: User;
+  session: Session;
+  project: Project;
+}
+
+export interface CreatePostData {
+  sessionId: string;
+  content: string;
+  visibility: 'everyone' | 'followers' | 'private';
+}
+
+export interface UpdatePostData {
+  content?: string;
+}
+
+export interface PostSupport {
+  id: string;
+  postId: string;
+  userId: string;
+  createdAt: Date;
+}
+
+export interface FeedResponse {
+  posts: PostWithDetails[];
+  hasMore: boolean;
+  nextCursor?: string;
+}
+
+export interface FeedFilters {
+  type?: 'following' | 'trending' | 'recent';
+  projectId?: string;
+  userId?: string;
 }
 
 export interface Group {

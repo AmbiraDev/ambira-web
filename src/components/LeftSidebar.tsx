@@ -230,23 +230,6 @@ function LeftSidebar() {
           </div>
         </div>
 
-        {/* Relative Effort */}
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center space-x-2">
-              <div className="w-3 h-3 bg-[#FC4C02] rounded-full"></div>
-              <span className="text-xs font-medium text-gray-600">RELATIVE EFFORT</span>
-            </div>
-            <button className="text-gray-400 hover:text-gray-600">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </button>
-          </div>
-          <div className="text-xs text-gray-600 mb-2">LAST WEEK</div>
-          <div className="text-lg font-semibold text-gray-900 mb-2">Recovery Week</div>
-          <p className="text-xs text-gray-600">Based on your heart rate data, your training last week was less intense than usual. Way to recover intelligently.</p>
-        </div>
       </div>
     </aside>
   );

@@ -67,7 +67,14 @@ import {
   SessionFormData,
   SessionFilters,
   SessionSort,
-  SessionListResponse
+  SessionListResponse,
+  Post,
+  PostWithDetails,
+  CreatePostData,
+  UpdatePostData,
+  PostSupport,
+  FeedResponse,
+  FeedFilters
 } from '@/types';
 
 // Helper function to convert Firestore timestamp to Date
@@ -973,12 +980,629 @@ export const firebaseTaskApi = {
   },
 };
 
+// Firebase Session API
+export const firebaseSessionApi = {
+  // Create a new session
+  createSession: async (data: CreateSessionData): Promise<Session> => {
+    try {
+      if (!auth.currentUser) {
+        throw new Error('User not authenticated');
+      }
+
+      // Get selected tasks
+      const selectedTasks = [];
+      if (data.taskIds && data.taskIds.length > 0) {
+        // Fetch task data for each task ID
+        for (const taskId of data.taskIds) {
+          try {
+            // Try to find task in project subcollections first
+            const projectsQuery = query(
+              collection(db, 'projects', auth.currentUser.uid, 'userProjects')
+            );
+            const projectsSnapshot = await getDocs(projectsQuery);
+            
+            let taskFound = false;
+            for (const projectDoc of projectsSnapshot.docs) {
+              const taskDoc = await getDoc(doc(db, 'projects', auth.currentUser.uid, 'userProjects', projectDoc.id, 'tasks', taskId));
+              if (taskDoc.exists()) {
+                const taskData = taskDoc.data();
+                selectedTasks.push({
+                  id: taskId,
+                  projectId: projectDoc.id,
+                  name: taskData.name,
+                  status: taskData.status || 'active',
+                  createdAt: convertTimestamp(taskData.createdAt),
+                  updatedAt: convertTimestamp(taskData.updatedAt),
+                  completedAt: taskData.completedAt ? convertTimestamp(taskData.completedAt) : undefined
+                });
+                taskFound = true;
+                break;
+              }
+            }
+            
+            // If not found in projects, try unassigned tasks
+            if (!taskFound) {
+              const taskDoc = await getDoc(doc(db, 'users', auth.currentUser.uid, 'tasks', taskId));
+              if (taskDoc.exists()) {
+                const taskData = taskDoc.data();
+                selectedTasks.push({
+                  id: taskId,
+                  projectId: null,
+                  name: taskData.name,
+                  status: taskData.status || 'active',
+                  createdAt: convertTimestamp(taskData.createdAt),
+                  updatedAt: convertTimestamp(taskData.updatedAt),
+                  completedAt: taskData.completedAt ? convertTimestamp(taskData.completedAt) : undefined
+                });
+              }
+            }
+          } catch (error) {
+            console.warn(`Failed to fetch task ${taskId}:`, error);
+          }
+        }
+      }
+
+      const sessionData = {
+        ...data,
+        tasks: selectedTasks,
+        visibility: 'private', // Default to private
+        isArchived: false,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      };
+
+      const docRef = await addDoc(collection(db, 'sessions'), sessionData);
+
+      const newSession: Session = {
+        id: docRef.id,
+        userId: auth.currentUser.uid,
+        projectId: data.projectId,
+        title: data.title,
+        description: data.description,
+        duration: data.duration,
+        startTime: data.startTime,
+        tasks: selectedTasks,
+        tags: data.tags || [],
+        visibility: 'private',
+        howFelt: data.howFelt,
+        privateNotes: data.privateNotes,
+        isArchived: false,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+
+      return newSession;
+    } catch (error: any) {
+      throw new Error(getErrorMessage(error, 'Failed to create session'));
+    }
+  },
+
+  // Create session and post if visibility allows
+  createSessionWithPost: async (
+    sessionData: CreateSessionData,
+    postContent: string,
+    visibility: 'everyone' | 'followers' | 'private'
+  ): Promise<{ session: Session; post?: Post }> => {
+    try {
+      // Create session first
+      const session = await firebaseSessionApi.createSession(sessionData);
+      
+      // Update session visibility
+      await updateDoc(doc(db, 'sessions', session.id), {
+        visibility,
+        updatedAt: serverTimestamp()
+      });
+
+      let post: Post | undefined;
+      
+      // Create post if not private
+      if (visibility !== 'private') {
+        post = await firebasePostApi.createPost({
+          sessionId: session.id,
+          content: postContent,
+          visibility
+        });
+      }
+
+      return { session: { ...session, visibility }, post };
+    } catch (error: any) {
+      throw new Error(getErrorMessage(error, 'Failed to create session with post'));
+    }
+  },
+
+  // Get user's sessions
+  getSessions: async (
+    page: number = 1,
+    limitCount: number = 20,
+    filters: SessionFilters = {}
+  ): Promise<SessionListResponse> => {
+    try {
+      if (!auth.currentUser) {
+        throw new Error('User not authenticated');
+      }
+
+      let sessionsQuery = query(
+        collection(db, 'sessions'),
+        where('userId', '==', auth.currentUser.uid),
+        orderBy('startTime', 'desc'),
+        limit(limitCount)
+      );
+
+      if (filters.projectId) {
+        sessionsQuery = query(
+          collection(db, 'sessions'),
+          where('userId', '==', auth.currentUser.uid),
+          where('projectId', '==', filters.projectId),
+          orderBy('startTime', 'desc'),
+          limit(limitCount)
+        );
+      }
+
+      const querySnapshot = await getDocs(sessionsQuery);
+      const sessions: Session[] = [];
+
+      querySnapshot.forEach(doc => {
+        const data = doc.data();
+        sessions.push({
+          id: doc.id,
+          userId: data.userId,
+          projectId: data.projectId,
+          title: data.title,
+          description: data.description,
+          duration: data.duration,
+          startTime: convertTimestamp(data.startTime),
+          tasks: data.tasks || [],
+          tags: data.tags || [],
+          visibility: data.visibility || 'private',
+          howFelt: data.howFelt,
+          privateNotes: data.privateNotes,
+          isArchived: data.isArchived || false,
+          createdAt: convertTimestamp(data.createdAt),
+          updatedAt: convertTimestamp(data.updatedAt)
+        });
+      });
+
+      return {
+        sessions,
+        totalCount: sessions.length,
+        hasMore: querySnapshot.docs.length === limitCount
+      };
+    } catch (error: any) {
+      throw new Error(getErrorMessage(error, 'Failed to get sessions'));
+    }
+  }
+};
+
+// Firebase Post API
+export const firebasePostApi = {
+  // Create a new post
+  createPost: async (data: CreatePostData): Promise<Post> => {
+    try {
+      if (!auth.currentUser) {
+        throw new Error('User not authenticated');
+      }
+
+      const postData = {
+        ...data,
+        supportCount: 0,
+        commentCount: 0,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      };
+
+      const docRef = await addDoc(collection(db, 'posts'), postData);
+
+      return {
+        id: docRef.id,
+        sessionId: data.sessionId,
+        userId: auth.currentUser.uid,
+        content: data.content,
+        supportCount: 0,
+        commentCount: 0,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+    } catch (error: any) {
+      throw new Error(getErrorMessage(error, 'Failed to create post'));
+    }
+  },
+
+  // Get posts for feed
+  getFeedPosts: async (
+    limitCount: number = 20,
+    cursor?: string,
+    filters: FeedFilters = {}
+  ): Promise<FeedResponse> => {
+    try {
+      if (!auth.currentUser) {
+        throw new Error('User not authenticated');
+      }
+
+      let postsQuery = query(
+        collection(db, 'posts'),
+        orderBy('createdAt', 'desc'),
+        limit(limitCount + 1) // Get one extra to check if there are more
+      );
+
+      if (cursor) {
+        const cursorDoc = await getDoc(doc(db, 'posts', cursor));
+        if (cursorDoc.exists()) {
+          postsQuery = query(
+            collection(db, 'posts'),
+            orderBy('createdAt', 'desc'),
+            startAfter(cursorDoc),
+            limit(limitCount + 1)
+          );
+        }
+      }
+
+      const querySnapshot = await getDocs(postsQuery);
+      const posts: PostWithDetails[] = [];
+
+      // Process posts in batches to populate user and session data
+      const batchSize = 10;
+      const postDocs = querySnapshot.docs.slice(0, limitCount);
+      
+      for (let i = 0; i < postDocs.length; i += batchSize) {
+        const batch = postDocs.slice(i, i + batchSize);
+        const batchPromises = batch.map(async (postDoc) => {
+          const postData = postDoc.data();
+          
+          // Get user data
+          const userDoc = await getDoc(doc(db, 'users', postData.userId));
+          const userData = userDoc.data();
+          
+          // Get session data
+          const sessionDoc = await getDoc(doc(db, 'sessions', postData.sessionId));
+          const sessionData = sessionDoc.data();
+          
+          // Get project data
+          let projectData = null;
+          if (sessionData?.projectId) {
+            const projectDoc = await getDoc(doc(db, 'projects', postData.userId, 'userProjects', sessionData.projectId));
+            projectData = projectDoc.data();
+          }
+
+          // Check if current user has supported this post
+          const supportDoc = await getDoc(doc(db, 'postSupports', `${auth.currentUser!.uid}_${postDoc.id}`));
+          const isSupported = supportDoc.exists();
+
+          return {
+            id: postDoc.id,
+            sessionId: postData.sessionId,
+            userId: postData.userId,
+            content: postData.content,
+            supportCount: postData.supportCount || 0,
+            commentCount: postData.commentCount || 0,
+            isSupported,
+            createdAt: convertTimestamp(postData.createdAt),
+            updatedAt: convertTimestamp(postData.updatedAt),
+            user: {
+              id: userData?.id || postData.userId,
+              email: userData?.email || '',
+              name: userData?.name || 'Unknown User',
+              username: userData?.username || 'unknown',
+              bio: userData?.bio,
+              location: userData?.location,
+              profilePicture: userData?.profilePicture,
+              createdAt: convertTimestamp(userData?.createdAt) || new Date(),
+              updatedAt: convertTimestamp(userData?.updatedAt) || new Date()
+            },
+            session: sessionData ? {
+              id: sessionData.id || postData.sessionId,
+              userId: sessionData.userId || postData.userId,
+              projectId: sessionData.projectId,
+              title: sessionData.title,
+              description: sessionData.description,
+              duration: sessionData.duration,
+              startTime: convertTimestamp(sessionData.startTime),
+              tasks: sessionData.tasks || [],
+              tags: sessionData.tags || [],
+              visibility: sessionData.visibility || 'everyone',
+              howFelt: sessionData.howFelt,
+              privateNotes: sessionData.privateNotes,
+              isArchived: sessionData.isArchived || false,
+              createdAt: convertTimestamp(sessionData.createdAt) || new Date(),
+              updatedAt: convertTimestamp(sessionData.updatedAt) || new Date()
+            } : {} as Session,
+            project: projectData ? {
+              id: projectData.id || sessionData?.projectId,
+              userId: projectData.userId || postData.userId,
+              name: projectData.name,
+              description: projectData.description,
+              icon: projectData.icon,
+              color: projectData.color,
+              weeklyTarget: projectData.weeklyTarget,
+              totalTarget: projectData.totalTarget,
+              status: projectData.status || 'active',
+              createdAt: convertTimestamp(projectData.createdAt) || new Date(),
+              updatedAt: convertTimestamp(projectData.updatedAt) || new Date()
+            } : {} as Project
+          };
+        });
+        
+        const batchResults = await Promise.all(batchPromises);
+        posts.push(...batchResults);
+      }
+
+      const hasMore = querySnapshot.docs.length > limitCount;
+      const nextCursor = hasMore ? querySnapshot.docs[limitCount - 1]?.id : undefined;
+
+      return {
+        posts,
+        hasMore,
+        nextCursor
+      };
+    } catch (error: any) {
+      throw new Error(getErrorMessage(error, 'Failed to get feed posts'));
+    }
+  },
+
+  // Support a post
+  supportPost: async (postId: string): Promise<void> => {
+    try {
+      if (!auth.currentUser) {
+        throw new Error('User not authenticated');
+      }
+
+      const batch = writeBatch(db);
+
+      // Add support relationship
+      const supportId = `${auth.currentUser.uid}_${postId}`;
+      batch.set(doc(db, 'postSupports', supportId), {
+        postId,
+        userId: auth.currentUser.uid,
+        createdAt: serverTimestamp()
+      });
+
+      // Increment support count
+      const postRef = doc(db, 'posts', postId);
+      batch.update(postRef, {
+        supportCount: increment(1),
+        updatedAt: serverTimestamp()
+      });
+
+      await batch.commit();
+    } catch (error: any) {
+      throw new Error(getErrorMessage(error, 'Failed to support post'));
+    }
+  },
+
+  // Remove support from a post
+  removeSupport: async (postId: string): Promise<void> => {
+    try {
+      if (!auth.currentUser) {
+        throw new Error('User not authenticated');
+      }
+
+      const batch = writeBatch(db);
+
+      // Remove support relationship
+      const supportId = `${auth.currentUser.uid}_${postId}`;
+      batch.delete(doc(db, 'postSupports', supportId));
+
+      // Decrement support count
+      const postRef = doc(db, 'posts', postId);
+      batch.update(postRef, {
+        supportCount: increment(-1),
+        updatedAt: serverTimestamp()
+      });
+
+      await batch.commit();
+    } catch (error: any) {
+      throw new Error(getErrorMessage(error, 'Failed to remove support'));
+    }
+  },
+
+  // Update post
+  updatePost: async (postId: string, data: UpdatePostData): Promise<Post> => {
+    try {
+      if (!auth.currentUser) {
+        throw new Error('User not authenticated');
+      }
+
+      const updateData = {
+        ...data,
+        updatedAt: serverTimestamp()
+      };
+
+      await updateDoc(doc(db, 'posts', postId), updateData);
+
+      // Get updated post
+      const postDoc = await getDoc(doc(db, 'posts', postId));
+      const postData = postDoc.data()!;
+
+      return {
+        id: postId,
+        sessionId: postData.sessionId,
+        userId: postData.userId,
+        content: postData.content,
+        supportCount: postData.supportCount || 0,
+        commentCount: postData.commentCount || 0,
+        createdAt: convertTimestamp(postData.createdAt),
+        updatedAt: convertTimestamp(postData.updatedAt)
+      };
+    } catch (error: any) {
+      throw new Error(getErrorMessage(error, 'Failed to update post'));
+    }
+  },
+
+  // Delete post
+  deletePost: async (postId: string): Promise<void> => {
+    try {
+      if (!auth.currentUser) {
+        throw new Error('User not authenticated');
+      }
+
+      // Verify post belongs to user
+      const postDoc = await getDoc(doc(db, 'posts', postId));
+      const postData = postDoc.data();
+      
+      if (!postData || postData.userId !== auth.currentUser.uid) {
+        throw new Error('Post not found or access denied');
+      }
+
+      await deleteDoc(doc(db, 'posts', postId));
+    } catch (error: any) {
+      throw new Error(getErrorMessage(error, 'Failed to delete post'));
+    }
+  },
+
+  // Listen to real-time updates for support counts
+  listenToPostUpdates: (postIds: string[], callback: (updates: Record<string, { supportCount: number; isSupported: boolean }>) => void) => {
+    if (!auth.currentUser) return () => {};
+
+    const unsubscribers: (() => void)[] = [];
+
+    postIds.forEach(postId => {
+      // Listen to post support count changes
+      const postUnsubscribe = onSnapshot(
+        doc(db, 'posts', postId),
+        (postDoc) => {
+          if (postDoc.exists()) {
+            const postData = postDoc.data();
+            callback({
+              [postId]: {
+                supportCount: postData.supportCount || 0,
+                isSupported: false // Will be updated by support listener
+              }
+            });
+          }
+        },
+        (error) => {
+          console.error(`Error listening to post ${postId}:`, error);
+        }
+      );
+
+      // Listen to user's support status for this post
+      const supportUnsubscribe = onSnapshot(
+        doc(db, 'postSupports', `${auth.currentUser!.uid}_${postId}`),
+        (supportDoc) => {
+          callback({
+            [postId]: {
+              supportCount: 0, // Will be updated by post listener
+              isSupported: supportDoc.exists()
+            }
+          });
+        },
+        (error) => {
+          // Ignore errors for support docs that don't exist
+          if (error.code !== 'permission-denied') {
+            console.error(`Error listening to support for post ${postId}:`, error);
+          }
+        }
+      );
+
+      unsubscribers.push(postUnsubscribe, supportUnsubscribe);
+    });
+
+    // Return cleanup function
+    return () => {
+      unsubscribers.forEach(unsubscribe => unsubscribe());
+    };
+  },
+
+  // Get user's posts
+  getUserPosts: async (userId: string, limitCount: number = 20): Promise<PostWithDetails[]> => {
+    try {
+      const postsQuery = query(
+        collection(db, 'posts'),
+        where('userId', '==', userId),
+        orderBy('createdAt', 'desc'),
+        limit(limitCount)
+      );
+
+      const querySnapshot = await getDocs(postsQuery);
+      const posts: PostWithDetails[] = [];
+
+      // Process posts to populate data
+      for (const postDoc of querySnapshot.docs) {
+        const postData = postDoc.data();
+        
+        // Get user data
+        const userDoc = await getDoc(doc(db, 'users', postData.userId));
+        const userData = userDoc.data();
+        
+        // Get session data
+        const sessionDoc = await getDoc(doc(db, 'sessions', postData.sessionId));
+        const sessionData = sessionDoc.data();
+        
+        // Get project data
+        let projectData = null;
+        if (sessionData?.projectId) {
+          const projectDoc = await getDoc(doc(db, 'projects', postData.userId, 'userProjects', sessionData.projectId));
+          projectData = projectDoc.data();
+        }
+
+        posts.push({
+          id: postDoc.id,
+          sessionId: postData.sessionId,
+          userId: postData.userId,
+          content: postData.content,
+          supportCount: postData.supportCount || 0,
+          commentCount: postData.commentCount || 0,
+          isSupported: false, // Will be updated based on current user
+          createdAt: convertTimestamp(postData.createdAt),
+          updatedAt: convertTimestamp(postData.updatedAt),
+          user: {
+            id: userData?.id || postData.userId,
+            email: userData?.email || '',
+            name: userData?.name || 'Unknown User',
+            username: userData?.username || 'unknown',
+            bio: userData?.bio,
+            location: userData?.location,
+            profilePicture: userData?.profilePicture,
+            createdAt: convertTimestamp(userData?.createdAt) || new Date(),
+            updatedAt: convertTimestamp(userData?.updatedAt) || new Date()
+          },
+          session: sessionData ? {
+            id: sessionData.id || postData.sessionId,
+            userId: sessionData.userId || postData.userId,
+            projectId: sessionData.projectId,
+            title: sessionData.title,
+            description: sessionData.description,
+            duration: sessionData.duration,
+            startTime: convertTimestamp(sessionData.startTime),
+            tasks: sessionData.tasks || [],
+            tags: sessionData.tags || [],
+            visibility: sessionData.visibility || 'everyone',
+            howFelt: sessionData.howFelt,
+            privateNotes: sessionData.privateNotes,
+            isArchived: sessionData.isArchived || false,
+            createdAt: convertTimestamp(sessionData.createdAt) || new Date(),
+            updatedAt: convertTimestamp(sessionData.updatedAt) || new Date()
+          } : {} as Session,
+          project: projectData ? {
+            id: projectData.id || sessionData?.projectId,
+            userId: projectData.userId || postData.userId,
+            name: projectData.name,
+            description: projectData.description,
+            icon: projectData.icon,
+            color: projectData.color,
+            weeklyTarget: projectData.weeklyTarget,
+            totalTarget: projectData.totalTarget,
+            status: projectData.status || 'active',
+            createdAt: convertTimestamp(projectData.createdAt) || new Date(),
+            updatedAt: convertTimestamp(projectData.updatedAt) || new Date()
+          } : {} as Project
+        });
+      }
+
+      return posts;
+    } catch (error: any) {
+      throw new Error(getErrorMessage(error, 'Failed to get user posts'));
+    }
+  }
+};
+
 // Export combined API
 export const firebaseApi = {
   auth: firebaseAuthApi,
   user: firebaseUserApi,
   project: firebaseProjectApi,
-  task: firebaseTaskApi
+  task: firebaseTaskApi,
+  session: firebaseSessionApi,
+  post: firebasePostApi
 };
 
 // Note: increment is imported from firebase/firestore above
