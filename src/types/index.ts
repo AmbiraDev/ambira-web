@@ -80,7 +80,7 @@ export interface TaskContextType {
   isLoading: boolean;
   error: string | null;
   createTask: (data: CreateTaskData) => Promise<Task>;
-  updateTask: (id: string, data: UpdateTaskData) => Promise<Task>;
+  updateTask: (id: string, data: UpdateTaskData, projectId?: string) => Promise<Task>;
   deleteTask: (id: string) => Promise<void>;
   bulkUpdateTasks: (update: BulkTaskUpdate) => Promise<void>;
   getProjectTasks: (projectId: string) => Promise<Task[]>;

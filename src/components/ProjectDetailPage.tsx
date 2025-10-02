@@ -28,6 +28,7 @@ export const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({ projectId 
   // Load project stats and tasks
   useEffect(() => {
     if (project) {
+      console.log('Loading tasks for project:', projectId, project.name);
       loadStats();
       loadProjectTasks(projectId);
     }
@@ -373,6 +374,11 @@ const TasksTab: React.FC<TasksTabProps> = ({
   onToggleTaskSelection
 }) => {
   const [activeSubTab, setActiveSubTab] = React.useState<TaskSubTabType>('active');
+
+  // Debug logging
+  React.useEffect(() => {
+    console.log('TasksTab received tasks:', tasks.length, tasks);
+  }, [tasks]);
 
   const subTabs = [
     { id: 'active', label: 'Active', icon: '⭕' },

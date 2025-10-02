@@ -23,7 +23,7 @@ export const GlobalTasks: React.FC<GlobalTasksProps> = ({
   const { tasks, createTask, updateTask, deleteTask, bulkUpdateTasks, loadProjectTasksAndAdd, getAllTasks } = useTasks();
   const { projects } = useProjects();
   const [filterProject, setFilterProject] = useState<string>('all');
-  const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'completed' | 'archived'>('all');
+  const [filterStatus, setFilterStatus] = useState<'active' | 'completed' | 'archived'>('active');
   const [selectedTasks, setSelectedTasks] = useState<string[]>([]);
   const [isCreating, setIsCreating] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -59,9 +59,18 @@ export const GlobalTasks: React.FC<GlobalTasksProps> = ({
   const filteredTasks = tasks.filter(task => {
     const projectMatch = filterProject === 'all' || 
       (filterProject === 'unassigned' ? !task.projectId : task.projectId === filterProject);
-    const statusMatch = filterStatus === 'all' || task.status === filterStatus;
+    const statusMatch = task.status === filterStatus;
     return projectMatch && statusMatch;
   });
+
+  // Get task counts for each status
+  const getTaskCount = (status: 'active' | 'completed' | 'archived') => {
+    return tasks.filter(task => {
+      const projectMatch = filterProject === 'all' || 
+        (filterProject === 'unassigned' ? !task.projectId : task.projectId === filterProject);
+      return projectMatch && task.status === status;
+    }).length;
+  };
 
   const handleCreateTask = async (data: CreateTaskData) => {
     try {
@@ -91,6 +100,23 @@ export const GlobalTasks: React.FC<GlobalTasksProps> = ({
           : [...prev, taskId]
       );
     }
+  };
+
+  // Wrapper functions that include projectId
+  const handleUpdateTask = async (id: string, data: any) => {
+    const task = tasks.find(t => t.id === id);
+    if (!task?.projectId) {
+      throw new Error('Task must be assigned to a project');
+    }
+    return updateTask(id, data, task.projectId);
+  };
+
+  const handleDeleteTask = async (id: string) => {
+    const task = tasks.find(t => t.id === id);
+    if (!task?.projectId) {
+      throw new Error('Task must be assigned to a project');
+    }
+    return deleteTask(id, task.projectId);
   };
 
   const getProjectName = (projectId: string | undefined) => {
@@ -147,18 +173,25 @@ export const GlobalTasks: React.FC<GlobalTasksProps> = ({
           </select>
         </div>
 
-        <div className="flex items-center gap-2">
-          <label className="text-sm font-medium text-gray-700">Status:</label>
-          <select
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value as any)}
-            className="px-3 py-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-          >
-            <option value="all">All Status</option>
-            <option value="active">Active</option>
-            <option value="completed">Completed</option>
-            <option value="archived">Archived</option>
-          </select>
+        {/* Status tabs */}
+        <div className="flex bg-gray-100 rounded-lg p-1">
+          {[
+            { id: 'active', label: 'Active', count: getTaskCount('active') },
+            { id: 'completed', label: 'Completed', count: getTaskCount('completed') },
+            { id: 'archived', label: 'Archived', count: getTaskCount('archived') }
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setFilterStatus(tab.id as any)}
+              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+                filterStatus === tab.id
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              {tab.label} ({tab.count})
+            </button>
+          ))}
         </div>
       </div>
 
@@ -168,19 +201,13 @@ export const GlobalTasks: React.FC<GlobalTasksProps> = ({
         <div className="flex gap-4">
           <div className="flex-1">
             <TaskInput
-              projectId={filterProject === 'all' || filterProject === 'unassigned' ? '' : filterProject}
+              projectId={filterProject === 'all' ? '' : filterProject === 'unassigned' ? '' : filterProject}
               onCreateTask={handleCreateTask}
               isLoading={isCreating}
-              placeholder={filterProject === 'all' || filterProject === 'unassigned' ? "Select a project first..." : "Enter task name..."}
-              disabled={filterProject === 'all' || filterProject === 'unassigned'}
+              placeholder="Enter task name..."
+              disabled={false}
             />
           </div>
-          {filterProject !== 'all' && filterProject !== 'unassigned' && (
-            <div className="flex items-center gap-2 text-sm text-gray-600">
-              <span>Will be added to:</span>
-              <span className="font-medium">{getProjectName(filterProject)}</span>
-            </div>
-          )}
         </div>
       </div>
 
@@ -254,8 +281,8 @@ export const GlobalTasks: React.FC<GlobalTasksProps> = ({
                       <div className="flex-1">
                         <TaskItem
                           task={task}
-                          onUpdateTask={updateTask}
-                          onDeleteTask={deleteTask}
+                          onUpdateTask={handleUpdateTask}
+                          onDeleteTask={handleDeleteTask}
                           isSelected={currentSelectedTasks.includes(task.id)}
                           onToggleSelect={handleTaskToggle}
                           showCheckbox={true}
@@ -269,7 +296,7 @@ export const GlobalTasks: React.FC<GlobalTasksProps> = ({
                           <select
                             onChange={(e) => {
                               if (e.target.value) {
-                                updateTask(task.id, { projectId: e.target.value });
+                                handleUpdateTask(task.id, { projectId: e.target.value });
                               }
                             }}
                             className="text-xs border border-gray-300 rounded px-2 py-1"

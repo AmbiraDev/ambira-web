@@ -78,7 +78,7 @@ export const TasksProvider: React.FC<TasksProviderProps> = ({ children }) => {
   }, [getProjectTasks]);
 
   // Update a task
-  const updateTask = useCallback(async (id: string, data: UpdateTaskData, projectId: string): Promise<Task> => {
+  const updateTask = useCallback(async (id: string, data: UpdateTaskData, projectId?: string): Promise<Task> => {
     try {
       setIsLoading(true);
       setError(null);
@@ -155,17 +155,37 @@ export const TasksProvider: React.FC<TasksProviderProps> = ({ children }) => {
   // Load tasks for a project and update state
   const loadProjectTasks = useCallback(async (projectId: string) => {
     try {
+      console.log('TasksContext: Loading tasks for project:', projectId);
       setIsLoading(true);
       setError(null);
       const projectTasks = await getProjectTasks(projectId);
-      setTasks(projectTasks);
+      console.log('TasksContext: Loaded tasks:', projectTasks.length, projectTasks);
+      
+      // Migrate any 'pending' tasks to 'active' status
+      const tasksToUpdate = projectTasks.filter(task => task.status === 'pending');
+      if (tasksToUpdate.length > 0) {
+        console.log('TasksContext: Migrating pending tasks to active:', tasksToUpdate.length);
+        for (const task of tasksToUpdate) {
+          try {
+            await updateTask(task.id, { status: 'active' }, projectId);
+          } catch (error) {
+            console.error('TasksContext: Error migrating task:', task.id, error);
+          }
+        }
+        // Reload tasks after migration
+        const updatedTasks = await getProjectTasks(projectId);
+        setTasks(updatedTasks);
+      } else {
+        setTasks(projectTasks);
+      }
     } catch (error) {
+      console.error('TasksContext: Error loading tasks:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to load tasks';
       setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
-  }, [getProjectTasks]);
+  }, [getProjectTasks, updateTask]);
 
   // Load tasks for a project and add to existing tasks (for GlobalTasks)
   const loadProjectTasksAndAdd = useCallback(async (projectId: string) => {

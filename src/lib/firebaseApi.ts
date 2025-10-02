@@ -35,6 +35,7 @@ import { db, auth, storage } from './firebase';
 
 // Helper function for safe error handling
 const getErrorMessage = (error: any, defaultMessage: string): string => {
+  if (!error) return defaultMessage;
   if (error?.message) return error.message;
   if (error?.toString) return error.toString();
   return defaultMessage;
@@ -773,21 +774,28 @@ export const firebaseTaskApi = {
         throw new Error('User not authenticated');
       }
       
+      console.log('Firebase API: Getting tasks for project:', projectId, 'User:', auth.currentUser.uid);
       const tasksQuery = query(
         collection(db, 'projects', auth.currentUser.uid, 'userProjects', projectId, 'tasks'),
         orderBy('createdAt', 'desc')
       );
       
       const tasksSnapshot = await getDocs(tasksQuery);
-      return tasksSnapshot.docs.map(doc => ({
+      console.log('Firebase API: Found tasks:', tasksSnapshot.docs.length);
+      
+      const tasks = tasksSnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
         createdAt: convertTimestamp(doc.data().createdAt),
         updatedAt: convertTimestamp(doc.data().updatedAt),
         completedAt: doc.data().completedAt ? convertTimestamp(doc.data().completedAt) : undefined,
       })) as Task[];
+      
+      console.log('Firebase API: Processed tasks:', tasks);
+      return tasks;
     } catch (error: any) {
-      throw new Error(error.message || 'Failed to get project tasks');
+      console.error('Firebase API: Error getting project tasks:', error);
+      throw new Error(getErrorMessage(error, 'Failed to get project tasks'));
     }
   },
 
@@ -833,7 +841,7 @@ export const firebaseTaskApi = {
       
       const taskData = {
         ...data,
-        status: 'pending',
+        status: 'active',
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
         userId: auth.currentUser.uid,
@@ -867,7 +875,7 @@ export const firebaseTaskApi = {
   },
 
   // Update a task
-  updateTask: async (id: string, data: UpdateTaskData, projectId: string): Promise<Task> => {
+  updateTask: async (id: string, data: UpdateTaskData, projectId?: string): Promise<Task> => {
     try {
       if (!auth.currentUser) {
         throw new Error('User not authenticated');
@@ -879,10 +887,16 @@ export const firebaseTaskApi = {
         completedAt: data.status === 'completed' ? serverTimestamp() : null,
       };
       
-      await updateDoc(
-        doc(db, 'projects', auth.currentUser.uid, 'userProjects', projectId, 'tasks', id),
-        updateData
-      );
+      let docRef;
+      if (projectId) {
+        // Update task in project subcollection
+        docRef = doc(db, 'projects', auth.currentUser.uid, 'userProjects', projectId, 'tasks', id);
+      } else {
+        // Update unassigned task
+        docRef = doc(db, 'users', auth.currentUser.uid, 'tasks', id);
+      }
+      
+      await updateDoc(docRef, updateData);
       
       // Return updated task (would need to fetch from DB for complete data)
       return {

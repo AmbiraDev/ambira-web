@@ -2,11 +2,13 @@
 
 import React, { useState } from 'react';
 import { Task, UpdateTaskData } from '@/types';
+import { Edit, Archive, Trash2 } from 'lucide-react';
 
 interface TaskItemProps {
   task: Task;
-  onUpdateTask: (id: string, data: UpdateTaskData) => Promise<void>;
+  onUpdateTask: (id: string, data: UpdateTaskData, projectId?: string) => Promise<void>;
   onDeleteTask: (id: string) => Promise<void>;
+  projectId?: string;
   isSelected?: boolean;
   onToggleSelect?: (id: string) => void;
   showCheckbox?: boolean;
@@ -20,6 +22,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({
   task,
   onUpdateTask,
   onDeleteTask,
+  projectId,
   isSelected = false,
   onToggleSelect,
   showCheckbox = false,
@@ -36,8 +39,24 @@ export const TaskItem: React.FC<TaskItemProps> = ({
     
     try {
       setIsUpdating(true);
+      
+      // If marking as complete, add visual feedback first
+      if (task.status === 'active') {
+        // Add strike-through effect immediately
+        const taskElement = document.querySelector(`[data-task-id="${task.id}"]`);
+        if (taskElement) {
+          const taskNameElement = taskElement.querySelector('span');
+          if (taskNameElement) {
+            taskNameElement.classList.add('line-through', 'opacity-60');
+          }
+        }
+        
+        // Wait a moment for visual effect, then update status
+        await new Promise(resolve => setTimeout(resolve, 300));
+      }
+      
       const newStatus = task.status === 'completed' ? 'active' : 'completed';
-      await onUpdateTask(task.id, { status: newStatus });
+      await onUpdateTask(task.id, { status: newStatus }, projectId);
     } catch (error) {
       console.error('Failed to update task status:', error);
     } finally {
@@ -50,7 +69,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({
     
     try {
       setIsUpdating(true);
-      await onUpdateTask(task.id, { status: 'archived' });
+      await onUpdateTask(task.id, { status: 'archived' }, projectId);
     } catch (error) {
       console.error('Failed to archive task:', error);
     } finally {
@@ -85,11 +104,11 @@ export const TaskItem: React.FC<TaskItemProps> = ({
   const getStatusIcon = () => {
     switch (task.status) {
       case 'completed':
-        return '✅';
+        return '✓';
       case 'archived':
         return '📦';
       default:
-        return '⭕';
+        return '';
     }
   };
 
@@ -135,27 +154,30 @@ export const TaskItem: React.FC<TaskItemProps> = ({
   }
 
   return (
-    <div className={`flex items-center gap-3 p-3 bg-white border border-gray-200 rounded-lg transition-colors ${
-      isSelected ? 'bg-orange-50 border-orange-200' : 'hover:bg-gray-50'
-    }`}>
-      {/* Selection checkbox */}
-      {showCheckbox && (
-        <input
-          type="checkbox"
-          checked={isSelected}
-          onChange={() => onToggleSelect?.(task.id)}
-          className="w-4 h-4 text-orange-600 border-gray-300 rounded focus:ring-orange-500"
-        />
-      )}
-
-      {/* Status icon */}
+    <div 
+      data-task-id={task.id}
+      className={`flex items-center gap-3 p-3 bg-white border border-gray-200 rounded-lg transition-colors ${
+        isSelected ? 'bg-orange-50 border-orange-200' : 'hover:bg-gray-50'
+      }`}
+    >
+      {/* Status button - black circle */}
       <button
         onClick={handleStatusToggle}
         disabled={isUpdating}
-        className="text-lg hover:scale-110 transition-transform disabled:opacity-50"
+        className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all duration-300 disabled:opacity-50 ${
+          task.status === 'completed' 
+            ? 'bg-green-500 border-green-500' 
+            : task.status === 'archived'
+            ? 'bg-gray-400 border-gray-400'
+            : 'border-gray-800 hover:border-gray-600'
+        }`}
         title={task.status === 'completed' ? 'Mark as active' : 'Mark as completed'}
       >
-        {getStatusIcon()}
+        <span className={`text-xs ${
+          task.status === 'completed' ? 'text-white' : 'text-gray-800'
+        }`}>
+          {getStatusIcon()}
+        </span>
       </button>
 
       {/* Task name */}
@@ -180,7 +202,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({
             className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
             title="Edit task"
           >
-            ✏️
+            <Edit className="w-4 h-4" />
           </button>
         )}
         
@@ -191,7 +213,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({
             className="p-1 text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50"
             title="Archive task"
           >
-            📦
+            <Archive className="w-4 h-4" />
           </button>
         )}
         
@@ -201,7 +223,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({
           className="p-1 text-gray-400 hover:text-red-600 transition-colors disabled:opacity-50"
           title="Delete task"
         >
-          🗑️
+          <Trash2 className="w-4 h-4" />
         </button>
       </div>
     </div>

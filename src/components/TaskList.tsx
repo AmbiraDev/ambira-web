@@ -36,7 +36,13 @@ export const TaskList: React.FC<TaskListProps> = ({
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
 
-  const filteredTasks = tasks.filter(task => task.status === status);
+  const filteredTasks = tasks.filter(task => {
+    // Handle both 'pending' (old) and 'active' (new) statuses
+    if (status === 'active') {
+      return task.status === 'active' || task.status === 'pending';
+    }
+    return task.status === status;
+  });
   const selectedTasks = filteredTasks.filter(task => selectedTaskIds.includes(task.id));
 
   const handleDragEnd = async (result: DropResult) => {
@@ -107,12 +113,22 @@ export const TaskList: React.FC<TaskListProps> = ({
   const handleSaveEdit = async (name: string) => {
     if (editingTaskId) {
       try {
-        await onUpdateTask(editingTaskId, { name });
+        await handleUpdateTask(editingTaskId, { name });
         setEditingTaskId(null);
       } catch (error) {
         console.error('Failed to update task name:', error);
       }
     }
+  };
+
+  // Wrapper function that includes projectId
+  const handleUpdateTask = async (id: string, data: UpdateTaskData) => {
+    return onUpdateTask(id, data, projectId);
+  };
+
+  // Wrapper function for delete that includes projectId  
+  const handleDeleteTask = async (id: string) => {
+    return onDeleteTask(id, projectId);
   };
 
   const getStatusLabel = () => {
@@ -202,7 +218,7 @@ export const TaskList: React.FC<TaskListProps> = ({
         </div>
       ) : (
         <DragDropContext onDragEnd={handleDragEnd}>
-          <Droppable droppableId={`tasks-${status}`} isDropDisabled={status !== 'active'}>
+          <Droppable droppableId={`tasks-${status}`} isDropDisabled={status !== 'active'} isCombineEnabled={false} ignoreContainerClipping={false}>
             {(provided, snapshot) => (
               <div
                 ref={provided.innerRef}
@@ -231,8 +247,9 @@ export const TaskList: React.FC<TaskListProps> = ({
                         >
                           <TaskItem
                             task={task}
-                            onUpdateTask={onUpdateTask}
-                            onDeleteTask={onDeleteTask}
+                            onUpdateTask={handleUpdateTask}
+                            onDeleteTask={handleDeleteTask}
+                            projectId={projectId}
                             isSelected={selectedTaskIds.includes(task.id)}
                             onToggleSelect={onToggleTaskSelection}
                             showCheckbox={showBulkActions}
