@@ -6,6 +6,7 @@ import Link from 'next/link';
 import Header from '@/components/HeaderComponent';
 import { firebaseUserApi } from '@/lib/firebaseApi';
 import { useAuth } from '@/contexts/AuthContext';
+import { UserCardCompact } from '@/components/UserCard';
 
 // Mock data for search results
 const mockUsers = [
@@ -70,36 +71,53 @@ function SearchContent() {
     return () => { isMounted = false; };
   }, [query, type]);
 
-  const renderUserResult = (user: any) => (
-    <Link
-      key={user.id}
-      href={`/profile/${user.username}`}
-      className="block p-4 hover:bg-gray-50 transition-colors border-b border-gray-100"
-    >
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <div className={`w-12 h-12 rounded-full flex items-center justify-center text-base font-semibold ${user.isSelf ? 'bg-green-100 text-green-800 ring-2 ring-green-400' : 'bg-gradient-to-br from-blue-500 to-purple-600 text-white'}`}>
-            {(user.username?.[0] || 'U').toUpperCase()}
+  const handleFollowChange = (userId: string, isFollowing: boolean) => {
+    setResults(prev => 
+      prev.map(user => 
+        user.id === userId 
+          ? { ...user, isFollowing, followersCount: isFollowing ? user.followersCount + 1 : Math.max(0, user.followersCount - 1) }
+          : user
+      )
+    );
+  };
+
+  const renderUserResult = (user: any) => {
+    if (user.isSelf) {
+      return (
+        <Link
+          key={user.id}
+          href={`/profile/${user.username}`}
+          className="block border-b border-gray-100 last:border-0"
+        >
+          <div className="p-4 hover:bg-gray-50 transition-colors">
+            <div className="flex items-center space-x-4">
+              <div className="w-12 h-12 rounded-full flex items-center justify-center text-base font-semibold bg-green-100 text-green-800 ring-2 ring-green-400">
+                {(user.username?.[0] || 'U').toUpperCase()}
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900">{user.name}</h3>
+                <p className="text-sm text-gray-600">@{user.username}</p>
+                {user.bio && <p className="text-sm text-gray-700 mt-1">{user.bio}</p>}
+                <span className="inline-flex items-center px-2 py-0.5 mt-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
+                  This is you
+                </span>
+              </div>
+            </div>
           </div>
-          <div>
-            <h3 className="font-semibold text-gray-900">{user.name}</h3>
-            <p className="text-sm text-gray-600">@{user.username}</p>
-            {user.bio && <p className="text-sm text-gray-700 mt-1">{user.bio}</p>}
-            {user.isSelf && (
-              <span className="inline-flex items-center px-2 py-0.5 mt-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
-                This is you
-              </span>
-            )}
-          </div>
-        </div>
-        {!user.isSelf && (
-          <button className="px-4 py-2 bg-[#007AFF] text-white text-sm font-medium rounded-lg hover:bg-[#0056D6] transition-colors">
-            Follow
-          </button>
-        )}
+        </Link>
+      );
+    }
+    
+    return (
+      <div key={user.id} className="border-b border-gray-100 last:border-0">
+        <UserCardCompact 
+          user={user} 
+          variant="search"
+          onFollowChange={handleFollowChange}
+        />
       </div>
-    </Link>
-  );
+    );
+  };
 
   const renderGroupResult = (group: any) => (
     <Link

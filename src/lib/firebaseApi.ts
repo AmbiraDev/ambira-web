@@ -314,12 +314,14 @@ export const firebaseUserApi = {
         throw new Error('This profile is only visible to followers');
       }
       
-      // Ensure follower/following counts are properly set
+      // Ensure follower/following counts are accurate
+      // For OWN profile, always recalc from follows to avoid stale zeros across ports/domains
+      // For others' profiles, recalc only if missing to reduce reads
       let followersCount = userData.followersCount || 0;
       let followingCount = userData.followingCount || 0;
-      
-      // If counts are 0 or undefined, try to recalculate from follows collection
-      if (followersCount === 0 && followingCount === 0) {
+
+      const shouldRecalculate = isOwnProfile || userData.followersCount === undefined || userData.followingCount === undefined;
+      if (shouldRecalculate) {
         try {
           // Count followers (people who follow this user)
           const followersQuery = query(
@@ -337,8 +339,10 @@ export const firebaseUserApi = {
           const followingSnapshot = await getDocs(followingQuery);
           followingCount = followingSnapshot.size;
           
-          // Update the user document with correct counts if they were missing
-          if (userData.followersCount === undefined || userData.followingCount === undefined) {
+          // Update the user document with correct counts
+          // For own profile, always update to keep counts fresh
+          // For others, update if they were missing
+          if (isOwnProfile || userData.followersCount === undefined || userData.followingCount === undefined) {
             await updateDoc(doc(db, 'users', userDoc.id), {
               followersCount,
               followingCount,
@@ -368,6 +372,171 @@ export const firebaseUserApi = {
       };
     } catch (error: any) {
       throw new Error(error.message || 'Failed to get user profile');
+    }
+  },
+
+  // Get daily activity for a given year (hours and sessions per day)
+  getUserDailyActivity: async (userId: string, year: number): Promise<ActivityData[]> => {
+    try {
+      const startOfYear = new Date(year, 0, 1, 0, 0, 0, 0);
+      const endOfYear = new Date(year, 11, 31, 23, 59, 59, 999);
+
+      const sessionsQuery = query(
+        collection(db, 'sessions'),
+        where('userId', '==', userId),
+        where('startTime', '>=', Timestamp.fromDate(startOfYear)),
+        where('startTime', '<=', Timestamp.fromDate(endOfYear))
+      );
+
+      const snapshot = await getDocs(sessionsQuery);
+
+      const dayToTotals: Record<string, { seconds: number; sessions: number }> = {};
+
+      snapshot.forEach((docSnap) => {
+        const data = docSnap.data();
+        const start: Date = convertTimestamp(data.startTime);
+        const dateStr = start.toISOString().substring(0, 10);
+        const durationSeconds = Number(data.duration) || 0;
+
+        if (!dayToTotals[dateStr]) {
+          dayToTotals[dateStr] = { seconds: 0, sessions: 0 };
+        }
+        dayToTotals[dateStr].seconds += durationSeconds;
+        dayToTotals[dateStr].sessions += 1;
+      });
+
+      // Generate full year range with zeros where no data
+      const results: ActivityData[] = [];
+      for (let d = new Date(startOfYear); d <= endOfYear; d.setDate(d.getDate() + 1)) {
+        const dateStr = d.toISOString().substring(0, 10);
+        const item = dayToTotals[dateStr];
+        results.push({
+          date: dateStr,
+          hours: item ? item.seconds / 3600 : 0,
+          sessions: item ? item.sessions : 0,
+        });
+      }
+
+      return results;
+    } catch (error: any) {
+      throw new Error(error.message || 'Failed to get daily activity');
+    }
+  },
+
+  // Get weekly activity for past N weeks (default 12)
+  getUserWeeklyActivity: async (userId: string, numberOfWeeks: number = 12): Promise<WeeklyActivity[]> => {
+    try {
+      const end = new Date();
+      const start = new Date();
+      start.setDate(end.getDate() - numberOfWeeks * 7);
+
+      const sessionsQuery = query(
+        collection(db, 'sessions'),
+        where('userId', '==', userId),
+        where('startTime', '>=', Timestamp.fromDate(start)),
+        where('startTime', '<=', Timestamp.fromDate(end))
+      );
+
+      const snapshot = await getDocs(sessionsQuery);
+
+      // Buckets keyed by ISO week number within the range
+      const weekToTotals: Record<string, { seconds: number; sessions: number }> = {};
+
+      const getWeekKey = (date: Date): string => {
+        const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+        const dayNum = d.getUTCDay() || 7;
+        d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+        const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+        const weekNo = Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+        return `${d.getUTCFullYear()}-W${weekNo}`;
+      };
+
+      snapshot.forEach((docSnap) => {
+        const data = docSnap.data();
+        const startTime: Date = convertTimestamp(data.startTime);
+        const key = getWeekKey(startTime);
+        const durationSeconds = Number(data.duration) || 0;
+        if (!weekToTotals[key]) weekToTotals[key] = { seconds: 0, sessions: 0 };
+        weekToTotals[key].seconds += durationSeconds;
+        weekToTotals[key].sessions += 1;
+      });
+
+      // Generate continuous sequence of weeks
+      const results: WeeklyActivity[] = [];
+      const iter = new Date(start);
+      for (let i = 0; i < numberOfWeeks; i++) {
+        const key = getWeekKey(iter);
+        const item = weekToTotals[key];
+        results.push({
+          week: key,
+          hours: item ? item.seconds / 3600 : 0,
+          sessions: item ? item.sessions : 0,
+        });
+        iter.setDate(iter.getDate() + 7);
+      }
+
+      return results;
+    } catch (error: any) {
+      throw new Error(error.message || 'Failed to get weekly activity');
+    }
+  },
+
+  // Get project breakdown (hours per project) for a given year
+  getUserProjectBreakdown: async (userId: string, year?: number): Promise<ProjectBreakdown[]> => {
+    try {
+      let sessionsQueryBase = query(
+        collection(db, 'sessions'),
+        where('userId', '==', userId)
+      );
+
+      if (year) {
+        const startOfYear = new Date(year, 0, 1, 0, 0, 0, 0);
+        const endOfYear = new Date(year, 11, 31, 23, 59, 59, 999);
+        sessionsQueryBase = query(
+          collection(db, 'sessions'),
+          where('userId', '==', userId),
+          where('startTime', '>=', Timestamp.fromDate(startOfYear)),
+          where('startTime', '<=', Timestamp.fromDate(endOfYear))
+        );
+      }
+
+      const snapshot = await getDocs(sessionsQueryBase);
+
+      // Aggregate seconds per projectId
+      const projectToSeconds: Record<string, number> = {};
+      snapshot.forEach((docSnap) => {
+        const data = docSnap.data();
+        const projectId = data.projectId || 'unknown';
+        const durationSeconds = Number(data.duration) || 0;
+        projectToSeconds[projectId] = (projectToSeconds[projectId] || 0) + durationSeconds;
+      });
+
+      const totalSeconds = Object.values(projectToSeconds).reduce((a, b) => a + b, 0) || 1;
+
+      const results: ProjectBreakdown[] = [];
+      // For each project, fetch project details for name/color
+      for (const [projectId, seconds] of Object.entries(projectToSeconds)) {
+        let name = 'Unknown Project';
+        let color = '#64748B';
+        try {
+          const projectDoc = await getDoc(doc(db, 'projects', userId, 'userProjects', projectId));
+          const proj = projectDoc.data();
+          if (proj) {
+            name = proj.name || name;
+            color = proj.color || color;
+          }
+        } catch {}
+
+        const hours = seconds / 3600;
+        const percentage = (seconds / totalSeconds) * 100;
+        results.push({ projectId, projectName: name, hours, percentage, color });
+      }
+
+      // Sort by hours desc
+      results.sort((a, b) => b.hours - a.hours);
+      return results;
+    } catch (error: any) {
+      throw new Error(error.message || 'Failed to get project breakdown');
     }
   },
 
@@ -543,7 +712,7 @@ export const firebaseUserApi = {
         createdAt: serverTimestamp()
       });
       
-      // Update follower count
+      // Update follower count - use update to modify existing fields
       const userRef = doc(db, 'users', userId);
       const followerRef = doc(db, 'users', auth.currentUser.uid);
       
@@ -576,7 +745,7 @@ export const firebaseUserApi = {
       const followId = `${auth.currentUser.uid}_${userId}`;
       batch.delete(doc(db, 'follows', followId));
       
-      // Update follower count
+      // Update follower count - use update to modify existing fields
       const userRef = doc(db, 'users', userId);
       const followerRef = doc(db, 'users', auth.currentUser.uid);
       

@@ -172,12 +172,13 @@
 ## Phase 3: Social Features
 
 ### Following System
-- [ ] Create follows table and relationships
-- [ ] Build follow/unfollow API endpoints
-- [ ] Update follower counts in real-time
-- [ ] Create following queries
-- [ ] Add follow button component
-- [ ] Implement optimistic UI updates
+- [X] Create follows table and relationships
+- [X] Build follow/unfollow API endpoints
+- [X] Update follower counts in real-time
+- [X] Create following queries
+- [X] Add follow button component
+- [X] Fix permissions to work consistently across profile and search pages
+- [X] Implement optimistic UI updates
 - [ ] Build mutual follow detection
 - [ ] Add follow notifications
 
@@ -186,7 +187,7 @@
 - [X] Build profile header with stats
 - [ ] Add profile picture display
 - [ ] Show bio and location
-- [ ] Display follower/following counts
+- [X] Display follower/following counts
 - [ ] Create Overview tab with heatmap
 - [ ] Build calendar heatmap component
 - [ ] Add activity graph

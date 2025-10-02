@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { UserSearchResult, SuggestedUser } from '@/types';
-import { userApi } from '@/lib/api';
+import { firebaseUserApi } from '@/lib/firebaseApi';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -29,18 +29,22 @@ export const UserCard: React.FC<UserCardProps> = ({
   const isOwnProfile = currentUser?.id === user.id;
   const canFollow = !isOwnProfile && currentUser && variant !== 'follower';
 
-  const handleFollow = async () => {
+  const handleFollow = async (e?: React.MouseEvent) => {
+    // Prevent navigation when clicking follow button
+    e?.preventDefault();
+    e?.stopPropagation();
+    
     if (!canFollow) return;
 
     try {
       setIsLoading(true);
       
       if (isFollowing) {
-        await userApi.unfollowUser(user.id);
+        await firebaseUserApi.unfollowUser(user.id);
         setIsFollowing(false);
         toast.success(`Unfollowed ${user.name}`);
       } else {
-        await userApi.followUser(user.id);
+        await firebaseUserApi.followUser(user.id);
         setIsFollowing(true);
         toast.success(`Following ${user.name}`);
       }
@@ -186,18 +190,22 @@ export const UserCardCompact: React.FC<UserCardProps> = ({
   const isOwnProfile = currentUser?.id === user.id;
   const canFollow = !isOwnProfile && currentUser && variant !== 'follower';
 
-  const handleFollow = async () => {
+  const handleFollow = async (e?: React.MouseEvent) => {
+    // Prevent navigation when clicking follow button
+    e?.preventDefault();
+    e?.stopPropagation();
+    
     if (!canFollow) return;
 
     try {
       setIsLoading(true);
       
       if (isFollowing) {
-        await userApi.unfollowUser(user.id);
+        await firebaseUserApi.unfollowUser(user.id);
         setIsFollowing(false);
         toast.success(`Unfollowed ${user.name}`);
       } else {
-        await userApi.followUser(user.id);
+        await firebaseUserApi.followUser(user.id);
         setIsFollowing(true);
         toast.success(`Following ${user.name}`);
       }

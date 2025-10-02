@@ -22,7 +22,11 @@ A social productivity tracking application built with Next.js, TypeScript, and T
 - **User Profiles** with Strava-inspired profile pages
   - Clean white profile header with large avatar and stats (followers, following, total hours)
   - Tabbed interface: Overview, Achievements, Following, Posts
-  - Activity statistics with calendar heatmap and charts
+  - Activity Analytics with modern data visualizations:
+    - Daily Activity: Interactive bar chart with period selector (30d/90d/year) and summary stats
+    - Weekly Trends: Bar chart with actual date ranges instead of week numbers
+    - Project Breakdown: Horizontal bar charts and detailed table view
+    - Clean white theme with hover tooltips and smooth transitions
   - Always visible header/navigation bar for consistent UX
 - **Settings System** with Strava-style sidebar navigation
   - Dedicated settings page with left sidebar tabs
@@ -153,6 +157,7 @@ The social foundation is now complete! Key areas for further development include
 ## Development Notes
 
 - Firestore does not allow fields with `undefined` values. Creation and update logic for projects now strips undefined keys before writes to prevent `Unsupported field value: undefined` errors.
+- **Follow/Unfollow System**: Uses batched `update()` operations instead of `set()` with merge for better compatibility with Firestore security rules and increment operations. Security rules allow authenticated users to update follower/following counts without modifying other profile fields.
 
 ## Contributing
 
