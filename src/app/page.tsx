@@ -7,6 +7,7 @@ import LeftSidebar from '@/components/LeftSidebar';
 import RightSidebar from '@/components/RightSidebar';
 import FeedPost from '@/components/FeedPost';
 import { FABMenu } from '@/components/FABMenu';
+import { Users } from 'lucide-react';
 
 function HomeContent() {
   const { user } = useAuth();
@@ -23,8 +24,8 @@ function HomeContent() {
           {/* Main Feed */}
           <main className="flex-1 min-w-0 max-w-[600px]">
             {/* Feed Filter */}
-            <div className="bg-white border border-gray-200 rounded-lg p-4 mb-4">
-              <select className="w-full text-sm text-gray-700 border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:border-transparent">
+            <div className="mb-4">
+              <select className="w-full text-sm text-gray-700 bg-white border border-gray-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF]">
                 <option>Following</option>
                 <option>All Activity</option>
                 <option>My Activities</option>
@@ -34,18 +35,14 @@ function HomeContent() {
             {/* Feed Posts */}
             <div className="bg-white border border-gray-200 rounded-lg p-8 text-center">
               <div className="text-gray-500 mb-4">
-                <svg className="w-12 h-12 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
-                </svg>
+                <Users className="w-16 h-16 mx-auto mb-4 text-gray-300" strokeWidth={1.5} />
               </div>
               <h3 className="text-lg font-semibold text-gray-900 mb-2">No activity yet</h3>
               <p className="text-gray-600 mb-6">
                 Follow some users to see their productivity activities in your feed.
               </p>
               <button className="inline-flex items-center px-4 py-2 bg-[#007AFF] text-white text-sm font-medium rounded-lg hover:bg-[#0056D6] focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:ring-offset-2 transition-colors">
-                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
-                </svg>
+                <Users className="w-5 h-5 mr-2" strokeWidth={2} />
                 Discover Users
               </button>
             </div>

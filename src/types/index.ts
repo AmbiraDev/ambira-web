@@ -86,6 +86,8 @@ export interface TaskContextType {
   getProjectTasks: (projectId: string) => Promise<Task[]>;
   getTaskStats: (projectId: string) => Promise<TaskStats>;
   loadProjectTasks: (projectId: string) => Promise<void>;
+  loadProjectTasksAndAdd: (projectId: string) => Promise<void>;
+  getAllTasks: () => Promise<void>;
 }
 
 export interface Session {

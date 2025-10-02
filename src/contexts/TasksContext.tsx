@@ -51,6 +51,22 @@ export const TasksProvider: React.FC<TasksProviderProps> = ({ children }) => {
       // Optimistically update local state
       setTasks(prev => [...prev, newTask]);
       
+      // If task has a projectId, reload project tasks to ensure consistency
+      if (data.projectId) {
+        // Reload tasks for this project to get the latest data
+        setTimeout(() => {
+          getProjectTasks(data.projectId).then(projectTasks => {
+            setTasks(prev => {
+              // Remove old tasks for this project and add new ones
+              const otherTasks = prev.filter(task => task.projectId !== data.projectId);
+              return [...otherTasks, ...projectTasks];
+            });
+          }).catch(error => {
+            console.error('Failed to reload project tasks:', error);
+          });
+        }, 100);
+      }
+      
       return newTask;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to create task';
@@ -59,7 +75,7 @@ export const TasksProvider: React.FC<TasksProviderProps> = ({ children }) => {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [getProjectTasks]);
 
   // Update a task
   const updateTask = useCallback(async (id: string, data: UpdateTaskData, projectId: string): Promise<Task> => {
@@ -151,6 +167,35 @@ export const TasksProvider: React.FC<TasksProviderProps> = ({ children }) => {
     }
   }, [getProjectTasks]);
 
+  // Load tasks for a project and add to existing tasks (for GlobalTasks)
+  const loadProjectTasksAndAdd = useCallback(async (projectId: string) => {
+    try {
+      const projectTasks = await getProjectTasks(projectId);
+      setTasks(prev => {
+        // Remove existing tasks for this project and add new ones
+        const otherTasks = prev.filter(task => task.projectId !== projectId);
+        return [...otherTasks, ...projectTasks];
+      });
+    } catch (error) {
+      console.error('Failed to load project tasks:', error);
+    }
+  }, [getProjectTasks]);
+
+  // Load all tasks (project tasks + unassigned tasks)
+  const getAllTasks = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const allTasks = await firebaseTaskApi.getAllTasks();
+      setTasks(allTasks);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to load all tasks';
+      setError(errorMessage);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
   // Clear tasks when user changes
   useEffect(() => {
     if (!user) {
@@ -170,6 +215,8 @@ export const TasksProvider: React.FC<TasksProviderProps> = ({ children }) => {
     getProjectTasks,
     getTaskStats,
     loadProjectTasks,
+    loadProjectTasksAndAdd,
+    getAllTasks,
   };
 
   return (

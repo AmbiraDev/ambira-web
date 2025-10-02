@@ -783,16 +783,44 @@ export const firebaseTaskApi = {
     }
   },
 
-  // Create a new task
-  createTask: async (data: CreateTaskData): Promise<Task> => {
+  // Get all tasks (project tasks + unassigned tasks)
+  getAllTasks: async (): Promise<Task[]> => {
     try {
       if (!auth.currentUser) {
         throw new Error('User not authenticated');
       }
       
-      // Debug: Check if projectId is provided
-      if (!data.projectId) {
-        throw new Error('Project ID is required to create a task');
+      // Get unassigned tasks
+      const unassignedQuery = query(
+        collection(db, 'users', auth.currentUser.uid, 'tasks'),
+        orderBy('createdAt', 'desc')
+      );
+      
+      const unassignedSnapshot = await getDocs(unassignedQuery);
+      const unassignedTasks = unassignedSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        projectId: null, // Mark as unassigned
+        createdAt: convertTimestamp(doc.data().createdAt),
+        updatedAt: convertTimestamp(doc.data().updatedAt),
+        completedAt: doc.data().completedAt ? convertTimestamp(doc.data().completedAt) : undefined,
+      })) as Task[];
+      
+      // TODO: Also load project tasks
+      // For now, just return unassigned tasks
+      // In the future, we should also load tasks from all projects
+      
+      return unassignedTasks;
+    } catch (error: any) {
+      throw new Error(error.message || 'Failed to get all tasks');
+    }
+  },
+
+  // Create a new task
+  createTask: async (data: CreateTaskData): Promise<Task> => {
+    try {
+      if (!auth.currentUser) {
+        throw new Error('User not authenticated');
       }
       
       const taskData = {
@@ -803,10 +831,21 @@ export const firebaseTaskApi = {
         userId: auth.currentUser.uid,
       };
       
-      const docRef = await addDoc(
-        collection(db, 'projects', auth.currentUser.uid, 'userProjects', data.projectId, 'tasks'),
-        taskData
-      );
+      let docRef;
+      
+      if (data.projectId) {
+        // Create task in project subcollection
+        docRef = await addDoc(
+          collection(db, 'projects', auth.currentUser.uid, 'userProjects', data.projectId, 'tasks'),
+          taskData
+        );
+      } else {
+        // Create unassigned task in user's tasks collection
+        docRef = await addDoc(
+          collection(db, 'users', auth.currentUser.uid, 'tasks'),
+          taskData
+        );
+      }
       
       return {
         id: docRef.id,

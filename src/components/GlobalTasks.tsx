@@ -20,24 +20,41 @@ export const GlobalTasks: React.FC<GlobalTasksProps> = ({
   onToggleTaskSelection,
   showSelection = false,
 }) => {
-  const { tasks, createTask, updateTask, deleteTask, bulkUpdateTasks, loadProjectTasks } = useTasks();
+  const { tasks, createTask, updateTask, deleteTask, bulkUpdateTasks, loadProjectTasksAndAdd, getAllTasks } = useTasks();
   const { projects } = useProjects();
   const [filterProject, setFilterProject] = useState<string>('all');
   const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'completed' | 'archived'>('all');
   const [selectedTasks, setSelectedTasks] = useState<string[]>([]);
   const [isCreating, setIsCreating] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  // Load all project tasks
+  // Load all tasks (project tasks + unassigned tasks)
   useEffect(() => {
     const loadAllTasks = async () => {
-      for (const project of projects) {
-        await loadProjectTasks(project.id);
+      try {
+        setIsLoading(true);
+        setError(null);
+        
+        // Load unassigned tasks first
+        await getAllTasks();
+        
+        // Load tasks for each project and add them to the existing tasks
+        for (const project of projects) {
+          await loadProjectTasksAndAdd(project.id);
+        }
+      } catch (error) {
+        console.error('Failed to load all tasks:', error);
+        setError('Failed to load tasks');
+      } finally {
+        setIsLoading(false);
       }
     };
+    
     if (projects.length > 0) {
       loadAllTasks();
     }
-  }, [projects, loadProjectTasks]);
+  }, [projects, getAllTasks, loadProjectTasksAndAdd]);
 
   const filteredTasks = tasks.filter(task => {
     const projectMatch = filterProject === 'all' || 
@@ -207,51 +224,71 @@ export const GlobalTasks: React.FC<GlobalTasksProps> = ({
             <p className="text-sm mt-1">Try adjusting your filters or add a new task</p>
           </div>
         ) : (
-          filteredTasks.map((task) => (
-            <div key={task.id} className="bg-white border border-gray-200 rounded-lg p-4">
-              <div className="flex items-start gap-3">
-                {/* Project indicator */}
-                <div className="flex items-center gap-2">
-                  <div className={`w-3 h-3 rounded-full ${getProjectColor(task.projectId)}`}></div>
-                  <span className="text-xs text-gray-600">{getProjectName(task.projectId)}</span>
+          (() => {
+            // Group tasks by project
+            const groupedTasks = filteredTasks.reduce((groups, task) => {
+              const projectId = task.projectId || 'unassigned';
+              if (!groups[projectId]) {
+                groups[projectId] = [];
+              }
+              groups[projectId].push(task);
+              return groups;
+            }, {} as Record<string, typeof filteredTasks>);
+
+            return Object.entries(groupedTasks).map(([projectId, tasks]) => (
+              <div key={projectId} className="bg-white border border-gray-200 rounded-lg p-4">
+                {/* Project header */}
+                <div className="flex items-center gap-2 mb-3 pb-2 border-b border-gray-100">
+                  <div className={`w-3 h-3 rounded-full ${getProjectColor(projectId === 'unassigned' ? null : projectId)}`}></div>
+                  <span className="text-sm font-medium text-gray-700">
+                    {projectId === 'unassigned' ? 'Unassigned Tasks' : getProjectName(projectId)}
+                  </span>
+                  <span className="text-xs text-gray-500">({tasks.length})</span>
                 </div>
 
-                {/* Task content */}
-                <div className="flex-1">
-                  <TaskItem
-                    task={task}
-                    onUpdateTask={updateTask}
-                    onDeleteTask={deleteTask}
-                    isSelected={currentSelectedTasks.includes(task.id)}
-                    onToggleSelect={handleTaskToggle}
-                    showCheckbox={true}
-                  />
-                </div>
+                {/* Tasks in this project */}
+                <div className="space-y-2">
+                  {tasks.map((task) => (
+                    <div key={task.id} className="flex items-start gap-3">
+                      {/* Task content */}
+                      <div className="flex-1">
+                        <TaskItem
+                          task={task}
+                          onUpdateTask={updateTask}
+                          onDeleteTask={deleteTask}
+                          isSelected={currentSelectedTasks.includes(task.id)}
+                          onToggleSelect={handleTaskToggle}
+                          showCheckbox={true}
+                        />
+                      </div>
 
-                {/* Project assignment */}
-                {!task.projectId && (
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-gray-500">Assign to:</span>
-                    <select
-                      onChange={(e) => {
-                        if (e.target.value) {
-                          updateTask(task.id, { projectId: e.target.value });
-                        }
-                      }}
-                      className="text-xs border border-gray-300 rounded px-2 py-1"
-                    >
-                      <option value="">Select project...</option>
-                      {projects.map(project => (
-                        <option key={project.id} value={project.id}>
-                          {project.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                )}
+                      {/* Project assignment for unassigned tasks */}
+                      {!task.projectId && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-gray-500">Assign to:</span>
+                          <select
+                            onChange={(e) => {
+                              if (e.target.value) {
+                                updateTask(task.id, { projectId: e.target.value });
+                              }
+                            }}
+                            className="text-xs border border-gray-300 rounded px-2 py-1"
+                          >
+                            <option value="">Select project...</option>
+                            {projects.map(project => (
+                              <option key={project.id} value={project.id}>
+                                {project.name}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
-          ))
+            ));
+          })()
         )}
       </div>
     </div>

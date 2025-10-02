@@ -273,11 +273,11 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ project, stats, isLoadingStat
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-white border border-gray-200 rounded-lg p-4">
           <div className="text-sm text-gray-600 mb-1">Total Hours</div>
-          <div className="text-2xl font-bold text-gray-900">{stats?.totalHours.toFixed(1) || '0.0'}</div>
+          <div className="text-2xl font-bold text-gray-900">{(stats?.totalHours || 0).toFixed(1)}</div>
         </div>
         <div className="bg-white border border-gray-200 rounded-lg p-4">
           <div className="text-sm text-gray-600 mb-1">Weekly Hours</div>
-          <div className="text-2xl font-bold text-gray-900">{stats?.weeklyHours.toFixed(1) || '0.0'}</div>
+          <div className="text-2xl font-bold text-gray-900">{(stats?.weeklyHours || 0).toFixed(1)}</div>
         </div>
         <div className="bg-white border border-gray-200 rounded-lg p-4">
           <div className="text-sm text-gray-600 mb-1">Sessions</div>
@@ -298,7 +298,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ project, stats, isLoadingStat
             <div className="space-y-4">
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">This week</span>
-                <span className="font-medium">{stats?.weeklyHours.toFixed(1) || '0.0'}h / {project.weeklyTarget}h</span>
+                <span className="font-medium">{(stats?.weeklyHours || 0).toFixed(1)}h / {project.weeklyTarget}h</span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-3">
                 <div 
@@ -307,7 +307,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ project, stats, isLoadingStat
                 ></div>
               </div>
               <div className="text-sm text-gray-600">
-                {stats?.weeklyProgressPercentage.toFixed(1) || '0.0'}% complete
+                {(stats?.weeklyProgressPercentage || 0).toFixed(1)}% complete
               </div>
             </div>
           </div>
@@ -320,7 +320,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ project, stats, isLoadingStat
             <div className="space-y-4">
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Overall</span>
-                <span className="font-medium">{stats?.totalHours.toFixed(1) || '0.0'}h / {project.totalTarget}h</span>
+                <span className="font-medium">{(stats?.totalHours || 0).toFixed(1)}h / {project.totalTarget}h</span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-3">
                 <div 
@@ -329,7 +329,7 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ project, stats, isLoadingStat
                 ></div>
               </div>
               <div className="text-sm text-gray-600">
-                {stats?.totalProgressPercentage.toFixed(1) || '0.0'}% complete
+                {(stats?.totalProgressPercentage || 0).toFixed(1)}% complete
               </div>
             </div>
           </div>

@@ -21,7 +21,9 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
   // Load tasks for all projects
   useEffect(() => {
     const loadAllTasks = async () => {
+      console.log('Loading tasks for projects:', projects.length);
       for (const project of projects) {
+        console.log('Loading tasks for project:', project.name);
         await loadProjectTasks(project.id);
       }
     };
@@ -29,6 +31,14 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
       loadAllTasks();
     }
   }, [projects, loadProjectTasks]);
+
+  // Debug logging
+  useEffect(() => {
+    console.log('Tasks loaded:', tasks.length);
+    console.log('Filtered tasks:', filteredTasks.length);
+    console.log('Active tasks:', activeTasks.length);
+    console.log('Filter project:', filterProject);
+  }, [tasks, filteredTasks, activeTasks, filterProject]);
 
   // Filter tasks based on selected project
   const filteredTasks = tasks.filter(task => {
@@ -253,9 +263,9 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
         )}
 
         {/* Available tasks */}
-        {activeTasks.length > 0 && (
+        {activeTasks.length > 0 ? (
           <div className="space-y-2">
-            <h4 className="text-sm font-medium text-gray-700">Available Tasks:</h4>
+            <h4 className="text-sm font-medium text-gray-700">Available Tasks ({activeTasks.length}):</h4>
             <div className="max-h-48 overflow-y-auto space-y-1">
               {activeTasks
                 .filter(task => !selectedTaskIds.includes(task.id))
@@ -272,6 +282,17 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                   </button>
                 ))}
             </div>
+          </div>
+        ) : (
+          <div className="text-center py-4 text-gray-500">
+            <div className="text-2xl mb-2">📝</div>
+            <p className="text-sm">No tasks available</p>
+            <p className="text-xs mt-1">
+              {filterProject === 'all' 
+                ? 'Create some tasks in your projects first' 
+                : `No tasks found for selected project. Try selecting "All Projects" or create a new task above.`
+              }
+            </p>
           </div>
         )}
       </div>

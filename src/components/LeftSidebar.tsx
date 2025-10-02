@@ -144,36 +144,50 @@ function LeftSidebar() {
               </div>
               
               {/* Weekly Calendar */}
-              <div className="flex justify-between items-end mb-2">
+              <div className="flex justify-between mb-2">
                 <div className="flex-1 text-center">
                   <div className="text-xs text-gray-500 mb-1">M</div>
-                  <div className="text-sm font-semibold text-gray-400">29</div>
-                </div>
-                <div className="flex-1 text-center">
-                  <div className="text-xs text-gray-500 mb-1">T</div>
-                  <div className="text-sm font-semibold text-gray-400">30</div>
-                </div>
-                <div className="flex-1 text-center">
-                  <div className="text-xs text-gray-500 mb-1">W</div>
-                  <div className="w-8 h-8 mx-auto bg-gray-900 rounded-full flex items-center justify-center">
-                    <span className="text-sm font-semibold text-white">1</span>
+                  <div className="h-8 flex items-center justify-center">
+                    <span className="text-sm font-semibold text-gray-400">29</span>
                   </div>
                 </div>
                 <div className="flex-1 text-center">
                   <div className="text-xs text-gray-500 mb-1">T</div>
-                  <div className="text-sm font-semibold text-gray-400">2</div>
+                  <div className="h-8 flex items-center justify-center">
+                    <span className="text-sm font-semibold text-gray-400">30</span>
+                  </div>
+                </div>
+                <div className="flex-1 text-center">
+                  <div className="text-xs text-gray-500 mb-1">W</div>
+                  <div className="h-8 flex items-center justify-center">
+                    <div className="w-8 h-8 bg-gray-900 rounded-full flex items-center justify-center">
+                      <span className="text-sm font-semibold text-white">1</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex-1 text-center">
+                  <div className="text-xs text-gray-500 mb-1">T</div>
+                  <div className="h-8 flex items-center justify-center">
+                    <span className="text-sm font-semibold text-gray-400">2</span>
+                  </div>
                 </div>
                 <div className="flex-1 text-center">
                   <div className="text-xs text-gray-500 mb-1">F</div>
-                  <div className="text-sm font-semibold text-gray-400">3</div>
+                  <div className="h-8 flex items-center justify-center">
+                    <span className="text-sm font-semibold text-gray-400">3</span>
+                  </div>
                 </div>
                 <div className="flex-1 text-center">
                   <div className="text-xs text-gray-500 mb-1">S</div>
-                  <div className="text-sm font-semibold text-gray-400">4</div>
+                  <div className="h-8 flex items-center justify-center">
+                    <span className="text-sm font-semibold text-gray-400">4</span>
+                  </div>
                 </div>
                 <div className="flex-1 text-center">
                   <div className="text-xs text-gray-500 mb-1">S</div>
-                  <div className="text-sm font-semibold text-gray-400">5</div>
+                  <div className="h-8 flex items-center justify-center">
+                    <span className="text-sm font-semibold text-gray-400">5</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -231,17 +245,7 @@ function LeftSidebar() {
           </div>
           <div className="text-xs text-gray-600 mb-2">LAST WEEK</div>
           <div className="text-lg font-semibold text-gray-900 mb-2">Recovery Week</div>
-          <p className="text-xs text-gray-600 mb-4">Based on your heart rate data, your training last week was less intense than usual. Way to recover intelligently.</p>
-          
-          {/* Graph placeholder */}
-          <div className="h-32 bg-gradient-to-b from-purple-100 to-purple-200 rounded relative">
-            <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-purple-300 to-transparent rounded"></div>
-            {/* Graph dots */}
-            <div className="absolute bottom-8 left-8 w-3 h-3 bg-purple-400 rounded-full"></div>
-            <div className="absolute bottom-12 left-1/3 w-3 h-3 bg-purple-400 rounded-full"></div>
-            <div className="absolute bottom-6 left-2/3 w-3 h-3 bg-purple-400 rounded-full"></div>
-            <div className="absolute bottom-16 right-8 w-4 h-4 bg-purple-600 rounded-full"></div>
-          </div>
+          <p className="text-xs text-gray-600">Based on your heart rate data, your training last week was less intense than usual. Way to recover intelligently.</p>
         </div>
       </div>
     </aside>
