@@ -8,15 +8,16 @@ service cloud.firestore {
 
       // Allow any authenticated user to update follower/following counts
       // This is safe because only increment/decrement operations are used in the code
-      // Using 'update' to allow field updates, including increment operations
       allow update: if request.auth != null && 
         request.resource.data.keys().hasAny(['followersCount', 'followingCount', 'updatedAt']) &&
         !request.resource.data.diff(resource.data).affectedKeys().hasAny(['email', 'username', 'name', 'bio', 'location', 'profilePicture', 'totalHours', 'profileVisibility', 'activityVisibility', 'projectVisibility', 'createdAt']);
 
-      // Authenticated users can read others based on visibility
+      // Allow authenticated users to read user profiles based on visibility settings
       allow read: if request.auth != null &&
         (resource.data.profileVisibility == 'everyone' ||
          !('profileVisibility' in resource.data));
+      
+      // Allow followers to read profiles with 'followers' visibility
       allow read: if request.auth != null &&
         resource.data.profileVisibility == 'followers' &&
         exists(/databases/$(database)/documents/follows/$(request.auth.uid + '_' + userId));
@@ -123,10 +124,15 @@ service cloud.firestore {
     
     // Follows
     match /follows/{followId} {
-      // Create: validate followerId matches authenticated user
-      allow create: if request.auth != null && request.resource.data.followerId == request.auth.uid;
+      // Create: validate followerId matches authenticated user and both users exist
+      allow create: if request.auth != null && 
+        request.resource.data.followerId == request.auth.uid &&
+        request.resource.data.followingId != request.auth.uid &&
+        exists(/databases/$(database)/documents/users/$(request.resource.data.followingId));
+      
       // Read: allow authenticated users to read follows for stats calculation
       allow read: if request.auth != null;
+      
       // Delete: only the follower can delete their own follow
       allow delete: if request.auth != null && resource.data.followerId == request.auth.uid;
     }
