@@ -16,7 +16,7 @@ export default function Header() {
   };
 
   return (
-    <header className="sticky top-0 left-0 right-0 z-50 bg-white border-b border-gray-200">
+    <header className="sticky top-0 left-0 right-0 z-50 bg-white">
       <div className="max-w-[1400px] mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -29,46 +29,58 @@ export default function Header() {
             </Link>
 
             {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center space-x-8">
+            <nav className="hidden md:flex items-center space-x-8 h-16">
               <Link 
                 href="/" 
-                className={`text-base font-medium transition-colors ${
+                className={`text-base font-medium transition-colors flex items-center h-full relative ${
                   isActive('/') 
                     ? 'text-gray-900' 
                     : 'text-gray-600 hover:text-[#007AFF]'
                 }`}
               >
                 Dashboard
+                {isActive('/') && (
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#007AFF]"></div>
+                )}
               </Link>
               <Link 
                 href="/projects" 
-                className={`text-base font-medium transition-colors ${
+                className={`text-base font-medium transition-colors flex items-center h-full relative ${
                   isActive('/projects') 
                     ? 'text-gray-900' 
                     : 'text-gray-600 hover:text-[#007AFF]'
                 }`}
               >
                 Projects
+                {isActive('/projects') && (
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#007AFF]"></div>
+                )}
               </Link>
               <Link 
                 href="/groups" 
-                className={`text-base font-medium transition-colors ${
+                className={`text-base font-medium transition-colors flex items-center h-full relative ${
                   isActive('/groups') 
                     ? 'text-gray-900' 
                     : 'text-gray-600 hover:text-[#007AFF]'
                 }`}
               >
                 Groups
+                {isActive('/groups') && (
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#007AFF]"></div>
+                )}
               </Link>
               <Link 
                 href="/challenges" 
-                className={`text-base font-medium transition-colors ${
+                className={`text-base font-medium transition-colors flex items-center h-full relative ${
                   isActive('/challenges') 
                     ? 'text-gray-900' 
                     : 'text-gray-600 hover:text-[#007AFF]'
                 }`}
               >
                 Challenges
+                {isActive('/challenges') && (
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#007AFF]"></div>
+                )}
               </Link>
             </nav>
           </div>
@@ -131,20 +143,6 @@ export default function Header() {
           </div>
         </div>
 
-        {/* Active tab indicator - light blue line at bottom of header */}
-        <div className="relative">
-          <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-200"></div>
-          <div className="absolute bottom-0 left-0 h-0.5 bg-[#007AFF] transition-all duration-300" 
-               style={{
-                 width: '90px',
-                 left: isActive('/') ? '120px' : 
-                       isActive('/projects') ? '200px' : 
-                       isActive('/groups') ? '280px' : 
-                       isActive('/challenges') ? '360px' : '120px',
-                 opacity: isActive('/') || isActive('/projects') || isActive('/groups') || isActive('/challenges') ? 1 : 0
-               }}>
-          </div>
-        </div>
 
         {/* Mobile Navigation */}
         {isMobileMenuOpen && (

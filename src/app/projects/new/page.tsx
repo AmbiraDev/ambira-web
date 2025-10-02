@@ -1,20 +1,14 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Header from '@/components/HeaderComponent';
 import { CreateProjectData } from '@/types';
 import { useProjects } from '@/contexts/ProjectsContext';
+import { ProtectedRoute } from '@/components/ProtectedRoute';
 
-interface CreateProjectModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onSuccess?: (projectId: string) => void;
-}
-
-export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
-  isOpen,
-  onClose,
-  onSuccess,
-}) => {
+function CreateProjectContent() {
+  const router = useRouter();
   const { createProject } = useProjects();
   const [formData, setFormData] = useState<CreateProjectData>({
     name: '',
@@ -88,19 +82,8 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
         totalTarget: formData.totalTarget || undefined,
       });
 
-      // Reset form
-      setFormData({
-        name: '',
-        description: '',
-        icon: '💻',
-        color: 'orange',
-        weeklyTarget: undefined,
-        totalTarget: undefined,
-      });
-      setErrors({});
-
-      onSuccess?.(project.id);
-      onClose();
+      // Navigate to projects page
+      router.push('/projects');
     } catch (error) {
       console.error('Failed to create project:', error);
       setErrors({ name: 'Failed to create project. Please try again.' });
@@ -117,42 +100,28 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
     }
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div 
-      className="fixed inset-0 bg-gray-500 bg-opacity-30 flex items-center justify-center z-40 p-4"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) {
-          onClose();
-        }
-      }}
-    >
-      <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-xl">
-        <div className="p-8">
+    <div className="min-h-screen bg-gray-50">
+      <Header />
+      
+      <div className="max-w-4xl mx-auto px-4 py-8">
+        <div className="bg-white rounded-lg shadow-md p-8">
           {/* Header */}
-          <div className="flex justify-between items-center mb-8">
-            <h2 className="text-2xl font-bold text-gray-900">Create New Project</h2>
-            <button
-              onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 transition-colors"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-gray-900">Create New Project</h1>
+            <p className="text-gray-600 mt-2">Set up a new project to track your productivity</p>
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-8">
             {/* Project Preview */}
-            <div className="flex flex-col items-center pb-6 border-b border-gray-200">
-              <div className={`w-24 h-24 ${availableColors.find(c => c.name === formData.color)?.class || 'bg-orange-500'} rounded-xl flex items-center justify-center text-white text-4xl mb-3 shadow-md`}>
+            <div className="flex flex-col items-center pb-8 border-b border-gray-200">
+              <div className={`w-24 h-24 ${availableColors.find(c => c.name === formData.color)?.class || 'bg-orange-500'} rounded-xl flex items-center justify-center text-white text-4xl mb-4 shadow-lg`}>
                 {formData.icon}
               </div>
-              <h3 className="text-xl font-bold text-gray-900">
+              <h2 className="text-xl font-bold text-gray-900">
                 {formData.name || 'Project Name'}
-              </h3>
+              </h2>
               <p className="text-sm text-gray-500 mt-1">
                 {formData.description || 'Project description'}
               </p>
@@ -311,7 +280,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
             <div className="flex gap-4 pt-6 border-t border-gray-200">
               <button
                 type="button"
-                onClick={onClose}
+                onClick={() => router.push('/projects')}
                 className="flex-1 px-6 py-3 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium"
                 disabled={isSubmitting}
               >
@@ -330,4 +299,13 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
       </div>
     </div>
   );
-};
+}
+
+export default function CreateProjectPage() {
+  return (
+    <ProtectedRoute>
+      <CreateProjectContent />
+    </ProtectedRoute>
+  );
+}
+

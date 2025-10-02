@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Project } from '@/types';
 import { ProjectCard } from './ProjectCard';
 import { useProjects } from '@/contexts/ProjectsContext';
@@ -14,6 +15,7 @@ export const ProjectList: React.FC<ProjectListProps> = ({
   onCreateProject,
   onEditProject,
 }) => {
+  const router = useRouter();
   const { projects, isLoading, error, deleteProject, archiveProject } = useProjects();
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [filter, setFilter] = useState<'all' | 'active' | 'completed' | 'archived'>('all');
@@ -135,8 +137,8 @@ export const ProjectList: React.FC<ProjectListProps> = ({
         </div>
         <div className="flex gap-2">
           <button
-            onClick={onCreateProject}
-            className="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors flex items-center gap-2"
+            onClick={() => router.push('/projects/new')}
+            className="bg-[#007AFF] text-white px-4 py-2 rounded-lg hover:bg-[#0056D6] transition-colors flex items-center gap-2 font-medium"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
@@ -146,7 +148,7 @@ export const ProjectList: React.FC<ProjectListProps> = ({
           <div className="flex border border-gray-200 rounded-lg">
             <button
               onClick={() => setViewMode('grid')}
-              className={`p-2 ${viewMode === 'grid' ? 'bg-orange-500 text-white' : 'text-gray-600 hover:bg-gray-50'}`}
+              className={`p-2 ${viewMode === 'grid' ? 'bg-[#007AFF] text-white' : 'text-gray-600 hover:bg-gray-50'}`}
             >
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
@@ -154,7 +156,7 @@ export const ProjectList: React.FC<ProjectListProps> = ({
             </button>
             <button
               onClick={() => setViewMode('list')}
-              className={`p-2 ${viewMode === 'list' ? 'bg-orange-500 text-white' : 'text-gray-600 hover:bg-gray-50'}`}
+              className={`p-2 ${viewMode === 'list' ? 'bg-[#007AFF] text-white' : 'text-gray-600 hover:bg-gray-50'}`}
             >
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
