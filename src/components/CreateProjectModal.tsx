@@ -120,12 +120,19 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-gray-500 bg-opacity-30 flex items-center justify-center z-40 p-4">
-      <div className="bg-white rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto shadow-xl">
-        <div className="p-6">
+    <div 
+      className="fixed inset-0 bg-gray-500 bg-opacity-30 flex items-center justify-center z-40 p-4"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
+    >
+      <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-xl">
+        <div className="p-8">
           {/* Header */}
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-semibold text-gray-900">Create New Project</h2>
+          <div className="flex justify-between items-center mb-8">
+            <h2 className="text-2xl font-bold text-gray-900">Create New Project</h2>
             <button
               onClick={onClose}
               className="text-gray-400 hover:text-gray-600 transition-colors"
@@ -137,14 +144,14 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-8">
             {/* Project Preview */}
-            <div className="bg-gray-50 rounded-lg p-4 mb-6">
+            <div className="bg-gray-50 rounded-lg p-6 mb-8">
               <div className="text-center">
-                <div className={`w-16 h-16 ${availableColors.find(c => c.name === formData.color)?.class || 'bg-orange-500'} rounded-lg flex items-center justify-center text-white text-2xl mx-auto mb-3`}>
+                <div className={`w-20 h-20 ${availableColors.find(c => c.name === formData.color)?.class || 'bg-orange-500'} rounded-lg flex items-center justify-center text-white text-3xl mx-auto mb-4`}>
                   {formData.icon}
                 </div>
-                <h3 className="font-semibold text-gray-900">
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
                   {formData.name || 'Project Name'}
                 </h3>
                 <p className="text-sm text-gray-600">
