@@ -182,7 +182,12 @@ export const SaveSession: React.FC<SaveSessionProps> = ({
     }
 
     try {
+      // Save the session
       await onSave(formData);
+      
+      // Note: Post creation is now handled by the onSave callback
+      // The parent component (SessionTimer/ManualEntry) will handle creating the post
+      // using firebaseApi.session.createSessionWithPost if visibility !== 'private'
     } catch (error) {
       console.error('Failed to save session:', error);
       setErrors({ submit: 'Failed to save session. Please try again.' });

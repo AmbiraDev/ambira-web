@@ -70,7 +70,8 @@ export const SearchUsers: React.FC<SearchUsersProps> = ({
   useEffect(() => {
     setCurrentPage(1);
     debouncedSearch(query, 1);
-  }, [query, debouncedSearch]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [query]); // Only re-run when query changes, not when debouncedSearch changes
 
   const handleLoadMore = () => {
     if (hasMore && !isLoading) {

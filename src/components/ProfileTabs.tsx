@@ -143,7 +143,10 @@ export const OverviewContent: React.FC<OverviewContentProps> = ({ stats }) => {
     );
   }
 
-  const formatHours = (hours: number): string => {
+  const formatHours = (hours: number | undefined): string => {
+    if (hours === undefined || hours === null || isNaN(hours)) {
+      return '0h';
+    }
     if (hours < 1) {
       const minutes = Math.round(hours * 60);
       return `${minutes}m`;

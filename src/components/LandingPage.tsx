@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { SignupCredentials } from '@/types';
+import { firebaseUserApi } from '@/lib/firebaseApi';
 import Header from './HeaderComponent';
 
 export const LandingPage: React.FC = () => {
@@ -590,80 +591,71 @@ export const LandingPage: React.FC = () => {
       </main>
 
       {/* Footer */}
-      <footer className="bg-gray-50 border-t border-gray-200 py-12">
+      <footer className="bg-white border-t border-gray-200 py-12">
         <div className="max-w-6xl mx-auto px-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            {/* Left Side - Logo and Apps */}
+            {/* Brand */}
             <div className="md:col-span-1">
               <div className="flex items-center space-x-2 mb-4">
-                <div className="w-8 h-8 bg-orange-500 rounded-lg flex items-center justify-center">
+                <div className="w-8 h-8 bg-[#007AFF] rounded-lg flex items-center justify-center">
                   <span className="text-white font-bold text-lg">A</span>
                 </div>
                 <span className="text-xl font-bold text-gray-900">Ambira</span>
               </div>
-              
-              {/* App Store Buttons */}
-              <div className="space-y-2 mb-4">
-                <div className="flex items-center justify-center w-32 h-10 bg-black text-white rounded text-xs font-medium">
-                  Download on App Store
-                </div>
-                <div className="flex items-center justify-center w-32 h-10 bg-black text-white rounded text-xs font-medium">
-                  GET IT ON Google Play
-                </div>
-              </div>
-
-              {/* Social Media Icons */}
-              <div className="flex space-x-3">
-                {['twitter', 'youtube', 'instagram', 'linkedin', 'facebook'].map((social) => (
-                  <div key={social} className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
-                    <span className="text-xs text-gray-600">{social[0].toUpperCase()}</span>
-                  </div>
-                ))}
-              </div>
+              <p className="text-sm text-gray-600 max-w-xs">
+                Track focus sessions, hit goals, and share progress with friends.
+              </p>
             </div>
 
-            {/* Right Side - Link Columns */}
+            {/* Link Columns */}
             <div className="md:col-span-3 grid grid-cols-2 md:grid-cols-4 gap-8">
               <div>
-                <h3 className="font-semibold text-gray-900 mb-3">Features</h3>
+                <h3 className="font-semibold text-gray-900 mb-3">Product</h3>
                 <ul className="space-y-2 text-sm">
-                  <li><Link href="/features" className="text-gray-600 hover:text-orange-500">What's New</Link></li>
-                  <li><Link href="/stories" className="text-gray-600 hover:text-orange-500">Stories</Link></li>
-                  <li><Link href="/routes" className="text-gray-600 hover:text-orange-500">Routes</Link></li>
-                  <li><Link href="/about" className="text-gray-600 hover:text-orange-500">About</Link></li>
+                  <li><Link href="/features" className="text-gray-600 hover:text-[#007AFF]">Features</Link></li>
+                  <li><Link href="/projects" className="text-gray-600 hover:text-[#007AFF]">Projects</Link></li>
+                  <li><Link href="/groups" className="text-gray-600 hover:text-[#007AFF]">Groups</Link></li>
+                  <li><Link href="/challenges" className="text-gray-600 hover:text-[#007AFF]">Challenges</Link></li>
                 </ul>
               </div>
 
               <div>
-                <h3 className="font-semibold text-gray-900 mb-3">Subscription</h3>
+                <h3 className="font-semibold text-gray-900 mb-3">Resources</h3>
                 <ul className="space-y-2 text-sm">
-                  <li><Link href="/family-plan" className="text-gray-600 hover:text-orange-500">Family Plan</Link></li>
-                  <li><Link href="/student-discount" className="text-gray-600 hover:text-orange-500">Student Discount</Link></li>
-                  <li><Link href="/teacher" className="text-gray-600 hover:text-orange-500">Teacher</Link></li>
-                  <li><Link href="/military-discount" className="text-gray-600 hover:text-orange-500">Military & Medical</Link></li>
-                  <li><Link href="/send-gift" className="text-gray-600 hover:text-orange-500">Send a Gift</Link></li>
+                  <li><Link href="/about" className="text-gray-600 hover:text-[#007AFF]">About</Link></li>
+                  <li><Link href="/feed" className="text-gray-600 hover:text-[#007AFF]">Community</Link></li>
+                  <li><Link href="/sessions" className="text-gray-600 hover:text-[#007AFF]">Sessions</Link></li>
+                  <li><Link href="/tasks" className="text-gray-600 hover:text-[#007AFF]">Tasks</Link></li>
                 </ul>
               </div>
 
               <div>
                 <h3 className="font-semibold text-gray-900 mb-3">Support</h3>
                 <ul className="space-y-2 text-sm">
-                  <li><Link href="/business" className="text-gray-600 hover:text-orange-500">Business</Link></li>
-                  <li><Link href="/partner-center" className="text-gray-600 hover:text-orange-500">Partner Center</Link></li>
-                  <li><Link href="/careers" className="text-gray-600 hover:text-orange-500">Careers</Link></li>
-                  <li><Link href="/press" className="text-gray-600 hover:text-orange-500">Press</Link></li>
+                  <li><Link href="/help" className="text-gray-600 hover:text-[#007AFF]">Help Center</Link></li>
+                  <li><Link href="/contact" className="text-gray-600 hover:text-[#007AFF]">Contact</Link></li>
+                  <li><Link href="/status" className="text-gray-600 hover:text-[#007AFF]">Status</Link></li>
                 </ul>
               </div>
 
               <div>
-                <h3 className="font-semibold text-gray-900 mb-3">Privacy</h3>
+                <h3 className="font-semibold text-gray-900 mb-3">Legal</h3>
                 <ul className="space-y-2 text-sm">
-                  <li><Link href="/cookie-policy" className="text-gray-600 hover:text-orange-500">Cookie Policy</Link></li>
-                  <li><Link href="/privacy-settings" className="text-gray-600 hover:text-orange-500">Privacy Settings</Link></li>
-                  <li><Link href="/terms" className="text-gray-600 hover:text-orange-500">Terms</Link></li>
-                  <li><Link href="/login" className="text-gray-600 hover:text-orange-500">Log In</Link></li>
+                  <li><Link href="/privacy" className="text-gray-600 hover:text-[#007AFF]">Privacy</Link></li>
+                  <li><Link href="/terms" className="text-gray-600 hover:text-[#007AFF]">Terms</Link></li>
+                  <li><Link href="/cookies" className="text-gray-600 hover:text-[#007AFF]">Cookie Policy</Link></li>
                 </ul>
               </div>
+            </div>
+          </div>
+
+          {/* Bottom row */}
+          <div className="mt-10 pt-6 border-t border-gray-200 flex flex-col md:flex-row items-center justify-between text-sm text-gray-500">
+            <span>© {new Date().getFullYear()} Ambira, Inc.</span>
+            <div className="space-x-4 mt-2 md:mt-0">
+              <Link href="/privacy" className="hover:text-[#007AFF]">Privacy</Link>
+              <Link href="/terms" className="hover:text-[#007AFF]">Terms</Link>
+              <Link href="/contact" className="hover:text-[#007AFF]">Contact</Link>
             </div>
           </div>
         </div>

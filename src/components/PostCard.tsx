@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { PostWithDetails, User } from '@/types';
 import PostStats from './PostStats';
 import PostInteractions from './PostInteractions';
@@ -20,6 +20,8 @@ export const PostCard: React.FC<PostCardProps> = ({
   onShare,
   className = ''
 }) => {
+  const [showMenu, setShowMenu] = useState(false);
+  
   const formatTimeAgo = (date: Date): string => {
     const now = new Date();
     const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
@@ -44,43 +46,57 @@ export const PostCard: React.FC<PostCardProps> = ({
   const getUserColor = (userId: string): string => {
     // Generate consistent color based on user ID
     const colors = [
-      'bg-red-500', 'bg-blue-500', 'bg-green-500', 'bg-yellow-500',
-      'bg-purple-500', 'bg-pink-500', 'bg-indigo-500', 'bg-teal-500',
-      'bg-orange-500', 'bg-cyan-500', 'bg-lime-500', 'bg-rose-500'
+      'bg-gradient-to-br from-orange-400 to-orange-600',
+      'bg-gradient-to-br from-blue-400 to-blue-600',
+      'bg-gradient-to-br from-green-400 to-green-600',
+      'bg-gradient-to-br from-purple-400 to-purple-600',
+      'bg-gradient-to-br from-pink-400 to-pink-600',
+      'bg-gradient-to-br from-indigo-400 to-indigo-600',
+      'bg-gradient-to-br from-teal-400 to-teal-600',
+      'bg-gradient-to-br from-cyan-400 to-cyan-600'
     ];
     const hash = userId.split('').reduce((a, b) => a + b.charCodeAt(0), 0);
     return colors[hash % colors.length];
   };
 
   return (
-    <article className={`bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow ${className}`}>
+    <article className={`bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden ${className}`}>
       {/* Post Header */}
-      <div className="p-4 border-b border-gray-200">
+      <div className="p-4">
         <div className="flex items-start justify-between">
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-3 flex-1 min-w-0">
             {/* User Avatar */}
-            <div className={`w-10 h-10 ${getUserColor(post.user.id)} rounded-full flex items-center justify-center flex-shrink-0`}>
-              <span className="text-sm font-medium text-white">
-                {getUserInitials(post.user)}
-              </span>
-            </div>
+            {post.user.profilePicture ? (
+              <img 
+                src={post.user.profilePicture} 
+                alt={post.user.name}
+                className="w-12 h-12 rounded-full object-cover border-2 border-gray-100"
+              />
+            ) : (
+              <div className={`w-12 h-12 ${getUserColor(post.user.id)} rounded-full flex items-center justify-center shadow-sm`}>
+                <span className="text-base font-semibold text-white">
+                  {getUserInitials(post.user)}
+                </span>
+              </div>
+            )}
             
             {/* User Info */}
             <div className="flex-1 min-w-0">
-              <div className="flex items-center space-x-2">
-                <h3 className="font-semibold text-gray-900 truncate">
+              <div className="flex items-center gap-2">
+                <h3 className="font-bold text-gray-900 hover:text-orange-600 cursor-pointer transition-colors truncate">
                   {post.user.name}
                 </h3>
-                <span className="text-gray-500 text-sm">
+              </div>
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <span className="hover:text-gray-900 cursor-pointer transition-colors">
                   @{post.user.username}
                 </span>
-              </div>
-              <div className="flex items-center space-x-2 text-xs text-gray-600">
+                <span>•</span>
                 <span>{formatTimeAgo(post.createdAt)}</span>
                 {post.user.location && (
                   <>
                     <span>•</span>
-                    <span>{post.user.location}</span>
+                    <span className="truncate">{post.user.location}</span>
                   </>
                 )}
               </div>
@@ -88,32 +104,69 @@ export const PostCard: React.FC<PostCardProps> = ({
           </div>
 
           {/* Options Menu */}
-          <button className="text-gray-400 hover:text-gray-600 transition-colors">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
-            </svg>
-          </button>
+          <div className="relative">
+            <button 
+              onClick={() => setShowMenu(!showMenu)}
+              className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full p-1 transition-colors"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+              </svg>
+            </button>
+            
+            {showMenu && (
+              <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
+                <button className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50">
+                  Edit post
+                </button>
+                <button className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50">
+                  Delete post
+                </button>
+                <button className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-gray-50">
+                  Report post
+                </button>
+              </div>
+            )}
+          </div>
         </div>
-      </div>
 
-      {/* Post Content */}
-      <div className="p-4">
-        {/* Post Text */}
+        {/* Post Description */}
         {post.content && (
-          <div className="mb-4">
+          <div className="mt-4">
             <p className="text-gray-900 leading-relaxed whitespace-pre-wrap">
               {post.content}
             </p>
           </div>
         )}
+      </div>
 
-        {/* Session Stats */}
+      {/* Session Stats */}
+      <div className="px-4 pb-4">
         <PostStats 
           session={post.session} 
           project={post.project}
-          className="mb-0"
         />
       </div>
+
+      {/* Support Summary */}
+      {post.supportCount > 0 && (
+        <div className="px-4 pb-3">
+          <div className="flex items-center gap-2 text-sm text-gray-600">
+            <div className="flex -space-x-2">
+              {/* Show first 3 supporter avatars */}
+              {[...Array(Math.min(3, post.supportCount))].map((_, i) => (
+                <div 
+                  key={i}
+                  className="w-6 h-6 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 border-2 border-white"
+                />
+              ))}
+            </div>
+            <span className="font-medium">
+              {post.supportCount} {post.supportCount === 1 ? 'person' : 'people'} gave support
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* Post Interactions */}
       <PostInteractions

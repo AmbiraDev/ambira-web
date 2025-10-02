@@ -20,6 +20,8 @@ export const Feed: React.FC<FeedProps> = ({
   const [hasMore, setHasMore] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [nextCursor, setNextCursor] = useState<string | undefined>();
+  const [hasNewPosts, setHasNewPosts] = useState(false);
+  const [newPostsCount, setNewPostsCount] = useState(0);
 
   const loadPosts = useCallback(async (cursor?: string, append = false) => {
     try {
@@ -65,8 +67,35 @@ export const Feed: React.FC<FeedProps> = ({
   const refreshPosts = useCallback(() => {
     setPosts([]);
     setNextCursor(undefined);
+    setHasNewPosts(false);
+    setNewPostsCount(0);
     loadPosts();
   }, [loadPosts]);
+
+  // Check for new posts periodically
+  useEffect(() => {
+    if (posts.length === 0) return;
+
+    const checkForNewPosts = async () => {
+      try {
+        const response = await firebaseApi.post.getFeedPosts(5, undefined, filters);
+        const newPostIds = response.posts.map(p => p.id);
+        const currentPostIds = posts.slice(0, 5).map(p => p.id);
+        
+        const newCount = newPostIds.filter(id => !currentPostIds.includes(id)).length;
+        if (newCount > 0) {
+          setHasNewPosts(true);
+          setNewPostsCount(newCount);
+        }
+      } catch (err) {
+        // Silently fail
+      }
+    };
+
+    // Check every 30 seconds
+    const interval = setInterval(checkForNewPosts, 30000);
+    return () => clearInterval(interval);
+  }, [posts, filters]);
 
   // Handle support
   const handleSupport = useCallback(async (postId: string) => {
@@ -231,18 +260,25 @@ export const Feed: React.FC<FeedProps> = ({
 
   return (
     <div className={className}>
-      {/* Pull to refresh indicator */}
-      <div className="mb-4">
-        <button
-          onClick={refreshPosts}
-          className="text-sm text-blue-600 hover:text-blue-700 transition-colors"
-        >
-          ↻ Refresh
-        </button>
-      </div>
+      {/* New posts indicator */}
+      {hasNewPosts && (
+        <div className="mb-4 sticky top-0 z-10">
+          <button
+            onClick={refreshPosts}
+            className="w-full py-3 px-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200 flex items-center justify-center gap-2 font-medium"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+            </svg>
+            <span>
+              {newPostsCount} new {newPostsCount === 1 ? 'post' : 'posts'} - Click to refresh
+            </span>
+          </button>
+        </div>
+      )}
 
       {/* Posts */}
-      <div className="space-y-4">
+      <div className="space-y-6">
         {posts.map((post) => (
           <Post
             key={post.id}

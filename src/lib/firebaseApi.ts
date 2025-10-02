@@ -91,6 +91,12 @@ const convertTimestamp = (timestamp: any): Date => {
 // Helper function to convert Date to Firestore timestamp
 const convertToTimestamp = (date: Date) => Timestamp.fromDate(date);
 
+// Remove keys with undefined values. Firestore does not accept undefined in documents
+const removeUndefinedFields = <T extends Record<string, any>>(input: T): T => {
+  const entries = Object.entries(input).filter(([, value]) => value !== undefined);
+  return Object.fromEntries(entries) as T;
+};
+
 // Auth API methods
 export const firebaseAuthApi = {
   // Login
@@ -745,12 +751,12 @@ export const firebaseProjectApi = {
         throw new Error('User not authenticated');
       }
       
-      const projectData = {
+      const projectData = removeUndefinedFields({
         ...data,
         status: 'active',
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
-      };
+      });
       
       const docRef = await addDoc(collection(db, 'projects', auth.currentUser.uid, 'userProjects'), projectData);
       
@@ -779,10 +785,10 @@ export const firebaseProjectApi = {
         throw new Error('User not authenticated');
       }
       
-      const updateData = {
+      const updateData = removeUndefinedFields({
         ...data,
         updatedAt: serverTimestamp()
-      };
+      });
       
       await updateDoc(doc(db, 'projects', auth.currentUser.uid, 'userProjects', id), updateData);
       

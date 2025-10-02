@@ -81,14 +81,32 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
     }
   }, [user]);
 
+  // Also react to raw Firebase auth state changes (covers cross-origin reloads)
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((firebaseUser) => {
+      if (firebaseUser) {
+        loadActiveTimer();
+      }
+    });
+    return () => unsubscribe();
+  }, []);
+
   // Auto-save timer state every 30 seconds
   useEffect(() => {
     if (!timerState.isRunning || !timerState.activeTimerId) return;
 
     const interval = setInterval(async () => {
       try {
-        // TODO: Implement Firebase auto-save
-        // For now, just update the local state
+        if (timerState.currentProject) {
+          // Persist the current running state
+          await firebaseSessionApi.saveActiveSession({
+            startTime: timerState.startTime || new Date(),
+            projectId: timerState.currentProject.id,
+            selectedTaskIds: timerState.selectedTasks.map(t => t.id),
+            pausedDuration: 0,
+            isPaused: false,
+          });
+        }
         setTimerState(prev => ({ ...prev, lastAutoSave: new Date() }));
       } catch (error) {
         console.error('Auto-save failed:', error);
@@ -97,6 +115,18 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
 
     return () => clearInterval(interval);
   }, [timerState.isRunning, timerState.activeTimerId, timerState.pausedDuration, timerState.selectedTasks]);
+
+  // Refresh active timer when window regains focus (handles switching origins/ports)
+  useEffect(() => {
+    const handleFocus = () => {
+      // If we don't have a running timer locally, try to pull from server
+      if (!timerState.isRunning && !timerState.activeTimerId) {
+        loadActiveTimer();
+      }
+    };
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, [timerState.isRunning, timerState.activeTimerId]);
 
   // Calculate elapsed time in seconds
   const getElapsedTime = useCallback((): number => {

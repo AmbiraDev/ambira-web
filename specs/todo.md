@@ -199,41 +199,41 @@
 - [ ] Create SEO meta tags
 
 ### Social Feed
-- [ ] Create feed algorithm
-- [ ] Build feed API with pagination
-- [ ] Implement time decay factor
-- [ ] Add following filter
-- [ ] Weight by engagement
+- [X] Create feed algorithm
+- [X] Build feed API with pagination
+- [X] Implement time decay factor
+- [X] Add following filter
+- [X] Weight by engagement
 - [X] Create three-column layout
 - [X] Build PostCard component
-- [ ] Add profile info to posts
+- [X] Add profile info to posts
 - [X] Display session stats
-- [ ] Show completed tasks (expandable)
-- [ ] Implement infinite scroll
-- [ ] Add pull-to-refresh
-- [ ] Create "New posts" indicator
-- [ ] Build empty feed state
+- [X] Show completed tasks (expandable)
+- [X] Implement infinite scroll
+- [X] Add pull-to-refresh
+- [X] Create "New posts" indicator
+- [X] Build empty feed state
 
 ### Post Creation
-- [ ] Link sessions to posts automatically
-- [ ] Create post customization options
-- [ ] Add description editing
+- [X] Link sessions to posts automatically
+- [X] Create post customization options
+- [X] Add description editing
 - [ ] Implement @mention support
-- [ ] Add tag functionality
-- [ ] Create visibility settings
-- [ ] Build "Don't publish" toggle
-- [ ] Implement immediate feed appearance
+- [X] Add tag functionality
+- [X] Create visibility settings
+- [X] Build "Don't publish" toggle
+- [X] Implement immediate feed appearance
 - [ ] Add post to groups (when applicable)
 
 ### Support System
-- [ ] Create support table
-- [ ] Build support API endpoints
-- [ ] Add support button to posts
-- [ ] Implement single support per user
-- [ ] Show supporter avatars
+- [X] Create support table
+- [X] Build support API endpoints
+- [X] Add support button to posts
+- [X] Implement single support per user
+- [X] Show supporter avatars
 - [ ] Create supporter list modal
 - [ ] Add support notifications
-- [ ] Update counts immediately
+- [X] Update counts immediately
 
 ### Comments
 - [ ] Create comments table with nesting

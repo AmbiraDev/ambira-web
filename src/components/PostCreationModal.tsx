@@ -2,265 +2,207 @@
 
 import React, { useState } from 'react';
 import { Session, Project } from '@/types';
-import { firebaseApi } from '@/lib/firebaseApi';
 
 interface PostCreationModalProps {
   session: Session;
   project: Project;
+  onSubmit: (description: string, visibility: 'everyone' | 'followers' | 'private') => Promise<void>;
+  onSkip: () => void;
+  onCancel: () => void;
   isOpen: boolean;
-  onClose: () => void;
-  onSuccess: (postId?: string) => void;
 }
 
 export const PostCreationModal: React.FC<PostCreationModalProps> = ({
   session,
   project,
-  isOpen,
-  onClose,
-  onSuccess
+  onSubmit,
+  onSkip,
+  onCancel,
+  isOpen
 }) => {
-  const [content, setContent] = useState('');
+  const [description, setDescription] = useState('');
   const [visibility, setVisibility] = useState<'everyone' | 'followers' | 'private'>('everyone');
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  if (!isOpen) return null;
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      await onSubmit(description, visibility);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const formatDuration = (seconds: number): string => {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
-    
-    if (hours > 0) {
-      return `${hours}h ${minutes}m`;
-    }
+    if (hours > 0) return `${hours}h ${minutes}m`;
     return `${minutes}m`;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!content.trim()) {
-      setError('Please add a description for your post');
-      return;
-    }
-
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      // Update session visibility and create post
-      await firebaseApi.session.createSessionWithPost(
-        {
-          projectId: session.projectId,
-          title: session.title,
-          description: session.description,
-          duration: session.duration,
-          startTime: session.startTime,
-          taskIds: session.tasks.map(task => task.id),
-          tags: session.tags,
-          howFelt: session.howFelt,
-          privateNotes: session.privateNotes
-        },
-        content,
-        visibility
-      );
-
-      onSuccess();
-      onClose();
-    } catch (err: any) {
-      console.error('Failed to create post:', err);
-      setError(err.message || 'Failed to create post');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleClose = () => {
-    if (!isLoading) {
-      setContent('');
-      setError(null);
-      onClose();
-    }
-  };
-
-  if (!isOpen) return null;
+  const completedTasks = session.tasks?.filter(task => task.status === 'completed').length || 0;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
-      <div className="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-        {/* Background overlay */}
-        <div 
-          className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
-          onClick={handleClose}
-        />
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
+        {/* Header */}
+        <div className="p-6 border-b border-gray-200">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-bold text-gray-900">Share Your Session</h2>
+            <button
+              onClick={onCancel}
+              className="text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          <p className="text-gray-600 mt-1">
+            Tell your followers about this productive session
+          </p>
+        </div>
 
-        {/* Modal panel */}
-        <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
-          <form onSubmit={handleSubmit}>
-            {/* Header */}
-            <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-medium text-gray-900">
-                  Share Your Session
-                </h3>
-                <button
-                  type="button"
-                  onClick={handleClose}
-                  disabled={isLoading}
-                  className="text-gray-400 hover:text-gray-600 disabled:opacity-50"
-                >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
+        <form onSubmit={handleSubmit}>
+          {/* Session Summary */}
+          <div className="p-6 bg-gradient-to-br from-gray-50 to-gray-100">
+            <div className="flex items-center gap-4">
+              <div 
+                className="w-16 h-16 rounded-xl flex items-center justify-center text-white text-2xl font-semibold shadow-lg"
+                style={{ backgroundColor: project.color }}
+              >
+                {project.icon}
               </div>
-
-              {/* Session Summary */}
-              <div className="bg-gray-50 rounded-lg p-4 mb-4">
-                <div className="flex items-center space-x-3 mb-3">
-                  <div 
-                    className="w-10 h-10 rounded-full flex items-center justify-center text-white text-lg"
-                    style={{ backgroundColor: project.color }}
-                  >
-                    {project.icon}
+              <div className="flex-1">
+                <h3 className="font-bold text-lg text-gray-900">{session.title}</h3>
+                <p className="text-gray-600">{project.name}</p>
+                <div className="flex items-center gap-4 mt-2">
+                  <div className="flex items-center gap-2">
+                    <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span className="font-semibold text-gray-900">{formatDuration(session.duration)}</span>
                   </div>
-                  <div>
-                    <h4 className="font-semibold text-gray-900">{session.title}</h4>
-                    <p className="text-sm text-gray-600">{project.name}</p>
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-3 gap-4 text-center text-sm">
-                  <div>
-                    <div className="font-semibold text-gray-900">
-                      {formatDuration(session.duration)}
+                  {completedTasks > 0 && (
+                    <div className="flex items-center gap-2">
+                      <svg className="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                      <span className="font-semibold text-gray-900">{completedTasks} tasks</span>
                     </div>
-                    <div className="text-gray-600">Duration</div>
-                  </div>
-                  <div>
-                    <div className="font-semibold text-gray-900">
-                      {session.tasks.filter(t => t.status === 'completed').length}/{session.tasks.length}
-                    </div>
-                    <div className="text-gray-600">Tasks</div>
-                  </div>
-                  <div>
-                    <div className="font-semibold text-gray-900">
-                      {session.tags.length}
-                    </div>
-                    <div className="text-gray-600">Tags</div>
-                  </div>
+                  )}
                 </div>
               </div>
+            </div>
+          </div>
 
-              {/* Content Input */}
-              <div className="mb-4">
-                <label htmlFor="content" className="block text-sm font-medium text-gray-700 mb-2">
-                  What did you accomplish? *
-                </label>
-                <textarea
-                  id="content"
-                  value={content}
-                  onChange={(e) => setContent(e.target.value)}
-                  placeholder="Share what you worked on, what you learned, or any insights from this session..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 resize-none"
-                  rows={4}
-                  maxLength={500}
-                  disabled={isLoading}
-                />
-                <div className="flex justify-between items-center mt-1">
-                  <span className="text-xs text-gray-500">
-                    {content.length}/500 characters
-                  </span>
-                </div>
-              </div>
-
-              {/* Visibility Settings */}
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Who can see this post?
-                </label>
-                <div className="space-y-2">
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      name="visibility"
-                      value="everyone"
-                      checked={visibility === 'everyone'}
-                      onChange={(e) => setVisibility(e.target.value as any)}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                      disabled={isLoading}
-                    />
-                    <span className="ml-2 text-sm text-gray-700">
-                      Everyone - Public post visible to all users
-                    </span>
-                  </label>
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      name="visibility"
-                      value="followers"
-                      checked={visibility === 'followers'}
-                      onChange={(e) => setVisibility(e.target.value as any)}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                      disabled={isLoading}
-                    />
-                    <span className="ml-2 text-sm text-gray-700">
-                      Followers - Only people who follow you
-                    </span>
-                  </label>
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      name="visibility"
-                      value="private"
-                      checked={visibility === 'private'}
-                      onChange={(e) => setVisibility(e.target.value as any)}
-                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
-                      disabled={isLoading}
-                    />
-                    <span className="ml-2 text-sm text-gray-700">
-                      Private - Save session without posting
-                    </span>
-                  </label>
-                </div>
-              </div>
-
-              {/* Error Message */}
-              {error && (
-                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
-                  <p className="text-sm text-red-600">{error}</p>
-                </div>
+          {/* Description Input */}
+          <div className="p-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              What did you accomplish? (Optional)
+            </label>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-none"
+              rows={4}
+              placeholder="Share your progress, learnings, or reflections with your followers..."
+              disabled={isSubmitting}
+            />
+            <div className="flex items-center justify-between mt-2">
+              <span className="text-sm text-gray-500">
+                {description.length} / 500 characters
+              </span>
+              {description.length > 500 && (
+                <span className="text-sm text-red-500">
+                  Too long! Please keep it under 500 characters.
+                </span>
               )}
             </div>
+          </div>
 
-            {/* Footer */}
-            <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+          {/* Privacy Settings */}
+          <div className="px-6 pb-6">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Who can see this?
+            </label>
+            <div className="grid grid-cols-3 gap-3">
               <button
-                type="submit"
-                disabled={isLoading || !content.trim()}
-                className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                type="button"
+                onClick={() => setVisibility('everyone')}
+                disabled={isSubmitting}
+                className={`p-3 rounded-lg border-2 transition-all ${
+                  visibility === 'everyone'
+                    ? 'border-orange-500 bg-orange-50 text-orange-900'
+                    : 'border-gray-200 hover:border-gray-300 text-gray-700'
+                }`}
               >
-                {isLoading ? (
-                  <>
-                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    {visibility === 'private' ? 'Saving...' : 'Posting...'}
-                  </>
-                ) : (
-                  visibility === 'private' ? 'Save Session' : 'Share Post'
-                )}
+                <div className="text-center">
+                  <svg className="w-6 h-6 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <div className="font-medium text-sm">Everyone</div>
+                </div>
               </button>
               <button
                 type="button"
-                onClick={handleClose}
-                disabled={isLoading}
-                className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50"
+                onClick={() => setVisibility('followers')}
+                disabled={isSubmitting}
+                className={`p-3 rounded-lg border-2 transition-all ${
+                  visibility === 'followers'
+                    ? 'border-orange-500 bg-orange-50 text-orange-900'
+                    : 'border-gray-200 hover:border-gray-300 text-gray-700'
+                }`}
               >
-                Cancel
+                <div className="text-center">
+                  <svg className="w-6 h-6 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                  </svg>
+                  <div className="font-medium text-sm">Followers</div>
+                </div>
+              </button>
+              <button
+                type="button"
+                onClick={() => setVisibility('private')}
+                disabled={isSubmitting}
+                className={`p-3 rounded-lg border-2 transition-all ${
+                  visibility === 'private'
+                    ? 'border-orange-500 bg-orange-50 text-orange-900'
+                    : 'border-gray-200 hover:border-gray-300 text-gray-700'
+                }`}
+              >
+                <div className="text-center">
+                  <svg className="w-6 h-6 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                  <div className="font-medium text-sm">Only You</div>
+                </div>
               </button>
             </div>
-          </form>
-        </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="px-6 pb-6 flex gap-3">
+            <button
+              type="button"
+              onClick={onSkip}
+              disabled={isSubmitting}
+              className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg font-medium hover:bg-gray-50 transition-colors disabled:opacity-50"
+            >
+              Skip for Now
+            </button>
+            <button
+              type="submit"
+              disabled={isSubmitting || description.length > 500}
+              className="flex-1 px-6 py-3 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg font-medium hover:shadow-lg transform hover:scale-[1.02] transition-all disabled:opacity-50 disabled:transform-none"
+            >
+              {isSubmitting ? 'Posting...' : 'Share Session'}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );

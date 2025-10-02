@@ -51,15 +51,16 @@ describe('PostStats Component', () => {
   it('renders task completion stats correctly', () => {
     render(<PostStats session={mockSession} project={mockProject} />);
     
-    expect(screen.getByText('2/3')).toBeInTheDocument();
+    // In the new UI, tasks are shown as "2" with "/ 3" in a separate span
+    expect(screen.getByText('2')).toBeInTheDocument();
     expect(screen.getByText('Tasks')).toBeInTheDocument();
   });
 
-  it('renders project icon correctly', () => {
+  it('renders project icon and name correctly', () => {
     render(<PostStats session={mockSession} project={mockProject} />);
     
     expect(screen.getByText('💻')).toBeInTheDocument();
-    expect(screen.getByText('Project')).toBeInTheDocument();
+    expect(screen.getByText('Web Development')).toBeInTheDocument();
   });
 
   it('renders session title', () => {
@@ -68,10 +69,11 @@ describe('PostStats Component', () => {
     expect(screen.getByText('Morning Coding Session')).toBeInTheDocument();
   });
 
-  it('renders session description', () => {
+  it('does not render session description in stats component', () => {
     render(<PostStats session={mockSession} project={mockProject} />);
     
-    expect(screen.getByText('Worked on React components')).toBeInTheDocument();
+    // Session description is now shown in the PostCard, not in PostStats
+    expect(screen.queryByText('Worked on React components')).not.toBeInTheDocument();
   });
 
   it('renders tags correctly', () => {
@@ -82,22 +84,18 @@ describe('PostStats Component', () => {
     expect(screen.getByText('#frontend')).toBeInTheDocument();
   });
 
-  it('renders how felt rating correctly', () => {
+  it('does not render how felt rating in new design', () => {
     render(<PostStats session={mockSession} project={mockProject} />);
     
-    expect(screen.getByText('How it felt:')).toBeInTheDocument();
-    
-    // Should show 4 stars filled
-    const stars = screen.getAllByText('★');
-    expect(stars).toHaveLength(5); // 5 stars total
+    // How felt is now private and not shown in PostStats
+    expect(screen.queryByText('How it felt:')).not.toBeInTheDocument();
   });
 
-  it('handles missing description gracefully', () => {
+  it('renders session title correctly', () => {
     const sessionWithoutDescription = { ...mockSession, description: undefined };
     render(<PostStats session={sessionWithoutDescription} project={mockProject} />);
     
     expect(screen.getByText('Morning Coding Session')).toBeInTheDocument();
-    expect(screen.queryByText('Worked on React components')).not.toBeInTheDocument();
   });
 
   it('handles missing tags gracefully', () => {
@@ -108,12 +106,12 @@ describe('PostStats Component', () => {
     expect(screen.queryByText('#coding')).not.toBeInTheDocument();
   });
 
-  it('handles missing howFelt gracefully', () => {
+  it('renders correctly without howFelt', () => {
     const sessionWithoutHowFelt = { ...mockSession, howFelt: undefined };
     render(<PostStats session={sessionWithoutHowFelt} project={mockProject} />);
     
     expect(screen.getByText('Morning Coding Session')).toBeInTheDocument();
-    expect(screen.queryByText('How it felt:')).not.toBeInTheDocument();
+    // howFelt is not shown in the new design
   });
 
   it('formats duration correctly for different time periods', () => {

@@ -50,6 +50,7 @@ A social productivity tracking application built with Next.js, TypeScript, and T
   - Profile links throughout the app
   - Users discovery page with search and suggestions
   - Active session indicator shows live elapsed time in header when not on `/timer`; on `/timer` it displays "Active" to avoid duplicate timers
+  - Footer restyled to match blue/gray theme; removed app store badges and placeholder social icons
 
 ### 🎨 Design System
 - **Electric Blue Primary Color** (#007AFF) for logos, buttons, and accents
@@ -148,6 +149,10 @@ The social foundation is now complete! Key areas for further development include
 4. **Analytics & Insights** - Advanced progress tracking and recommendations
 5. **Mobile App** - Native iOS/Android applications
 6. **Achievement System** - Badges and milestones for user engagement
+
+## Development Notes
+
+- Firestore does not allow fields with `undefined` values. Creation and update logic for projects now strips undefined keys before writes to prevent `Unsupported field value: undefined` errors.
 
 ## Contributing
 
