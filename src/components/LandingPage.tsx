@@ -2,13 +2,14 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import Header from './HeaderComponent';
 
 export const LandingPage: React.FC = () => {
   const { login } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -20,7 +21,10 @@ export const LandingPage: React.FC = () => {
         email: 'demo@ambira.com',
         password: 'demo'
       });
-      router.push('/');
+      
+      // Check for redirect parameter
+      const redirectTo = searchParams.get('redirect');
+      router.push(redirectTo || '/');
     } catch (err) {
       setError('Failed to login with demo account');
       console.error('Demo login error:', err);
@@ -30,7 +34,8 @@ export const LandingPage: React.FC = () => {
   };
 
   const handleSignupWithEmail = () => {
-    router.push('/signup');
+    // For now, just show a message since we're using the landing page for signup
+    alert('Sign up functionality coming soon! Use the demo account to explore the app.');
   };
 
   return (

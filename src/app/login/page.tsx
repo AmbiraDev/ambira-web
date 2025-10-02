@@ -2,12 +2,13 @@
 
 import { LoginForm } from '@/components/LoginForm';
 import { useAuth } from '@/contexts/AuthContext';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 
 export default function LoginPage() {
   const { login } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
 
   const handleDemoLogin = async () => {
@@ -17,7 +18,10 @@ export default function LoginPage() {
         email: 'demo@ambira.com',
         password: 'demo'
       });
-      router.push('/');
+      
+      // Check for redirect parameter
+      const redirectTo = searchParams.get('redirect');
+      router.push(redirectTo || '/');
     } catch (err) {
       console.error('Demo login error:', err);
     } finally {

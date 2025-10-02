@@ -23,8 +23,8 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
 
       if (!isAuthenticated) {
         // Store the intended destination for post-login redirect
-        const redirectTo = pathname !== '/login' ? pathname : '/';
-        router.push(`/login?redirect=${encodeURIComponent(redirectTo)}`);
+        const redirectTo = pathname !== '/' ? pathname : '/';
+        router.push(`/?redirect=${encodeURIComponent(redirectTo)}`);
       } else {
         setIsChecking(false);
       }

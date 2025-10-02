@@ -36,14 +36,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const initializeAuth = async () => {
       try {
         const token = authApi.getToken();
+        console.log('Auth initialization - token found:', !!token);
         if (token) {
           // Verify token and get user data
           const isValid = await mockAuthApi.verifyToken(token);
+          console.log('Token validation result:', isValid);
           if (isValid) {
             const userData = await mockAuthApi.getCurrentUser(token);
+            console.log('User data loaded:', userData);
             setUser(userData);
           } else {
             // Token is invalid, clear it
+            console.log('Token invalid, clearing...');
             authApi.clearToken();
           }
         }
@@ -65,9 +69,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       
       // Use mock API for now
       const response = await mockAuthApi.login(credentials);
+      console.log('Login response:', response);
       
       // Store token and user data
       authApi.setToken(response.token);
+      console.log('Token stored, setting user:', response.user);
       setUser(response.user);
       
       // Redirect to home page
