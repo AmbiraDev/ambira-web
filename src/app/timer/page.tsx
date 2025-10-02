@@ -10,7 +10,7 @@ export default function TimerPage() {
     <ProtectedRoute>
       <div className="min-h-screen bg-gray-50">
         <Header />
-        <div className="max-w-4xl mx-auto p-6">
+        <div className="px-8 py-6">
           <SessionTimerEnhanced projectId="" />
         </div>
       </div>

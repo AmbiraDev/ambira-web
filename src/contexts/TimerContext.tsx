@@ -4,7 +4,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode, useCa
 import { TimerContextType, TimerState, ActiveTimer, Project, Task, Session, CreateSessionData } from '@/types';
 import { timerApi, taskApi, projectApi, authApi } from '@/lib/api';
 import { mockTimerApi, mockTaskApi, mockProjectApi } from '@/lib/mockApi';
-import { firebaseProjectApi } from '@/lib/firebaseApi';
+import { firebaseProjectApi, firebaseTaskApi, firebaseSessionApi } from '@/lib/firebaseApi';
 import { auth } from '@/lib/firebase';
 import { useAuth } from './AuthContext';
 
@@ -120,13 +120,43 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
   const loadActiveTimer = async (): Promise<void> => {
     try {
       if (!user) return;
+
+      const activeSession = await firebaseSessionApi.getActiveSession();
+      if (!activeSession) return;
+
+      // Get project and task details
+      const projects = await firebaseProjectApi.getProjects();
+      const project = projects.find(p => p.id === activeSession.projectId);
       
-      // Check if there's an active timer in Firebase
-      const { firebaseSessionApi } = await import('@/lib/firebaseApi');
-      
-      // For now, we'll implement a simple check
-      // In a full implementation, we'd query for active timers
-      console.log('Active timer loading - Firebase implementation needed');
+      if (!project) {
+        console.error('Project not found for active session');
+        return;
+      }
+
+      // Get task details
+      const selectedTasks = [];
+      try {
+        const projectTasks = await firebaseTaskApi.getProjectTasks(activeSession.projectId);
+        selectedTasks.push(...projectTasks.filter(task => 
+          activeSession.selectedTaskIds.includes(task.id)
+        ));
+      } catch (error) {
+        console.error('Failed to load tasks for active session:', error);
+      }
+
+      // Set timer state
+      setTimerState({
+        isRunning: true,
+        startTime: activeSession.startTime,
+        pausedDuration: activeSession.pausedDuration,
+        currentProject: project,
+        selectedTasks,
+        activeTimerId: `active_${Date.now()}`,
+        isConnected: true,
+        lastAutoSave: null,
+      });
+
+      console.log('Active timer loaded successfully');
     } catch (error) {
       console.error('Failed to load active timer:', error);
     }
@@ -142,7 +172,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
       const now = new Date();
       
       // Get project details
-      const project = await firebaseProjectApi.getProject(projectId);
+      const projects = await firebaseProjectApi.getProjects();
+      const project = projects.find(p => p.id === projectId);
       if (!project) {
         throw new Error('Project not found');
       }
@@ -158,18 +189,14 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
         console.warn('Failed to load project tasks:', error);
       }
 
-      // Create active timer record in Firebase
-      const activeTimerData = {
-        userId: user.uid,
-        projectId,
+      // Save active session to Firebase
+      await firebaseSessionApi.saveActiveSession({
         startTime: now,
-        selectedTasks: taskIds,
-        isPaused: false,
-        pausedDuration: 0,
-        createdAt: now,
-      };
+        projectId,
+        selectedTaskIds: taskIds,
+        pausedDuration: 0
+      });
 
-      // Store in Firebase (we'll use a simple approach for now)
       const timerId = `timer_${Date.now()}_${user.uid}`;
       
       setTimerState({
@@ -197,6 +224,16 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
     try {
       const currentElapsed = getElapsedTime();
       
+      // Save paused state to Firebase
+      if (timerState.currentProject) {
+        await firebaseSessionApi.saveActiveSession({
+          startTime: timerState.startTime!,
+          projectId: timerState.currentProject.id,
+          selectedTaskIds: timerState.selectedTasks.map(t => t.id),
+          pausedDuration: currentElapsed
+        });
+      }
+      
       setTimerState(prev => ({
         ...prev,
         isRunning: false,
@@ -218,6 +255,16 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
       // Calculate the new start time to account for paused duration
       const now = new Date();
       const adjustedStartTime = new Date(now.getTime() - (timerState.pausedDuration * 1000));
+      
+      // Save resumed state to Firebase
+      if (timerState.currentProject) {
+        await firebaseSessionApi.saveActiveSession({
+          startTime: adjustedStartTime,
+          projectId: timerState.currentProject.id,
+          selectedTaskIds: timerState.selectedTasks.map(t => t.id),
+          pausedDuration: 0
+        });
+      }
       
       setTimerState(prev => ({
         ...prev,
@@ -259,8 +306,10 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
       };
 
       // Save session to Firebase
-      const { firebaseSessionApi } = await import('@/lib/firebaseApi');
       const session = await firebaseSessionApi.createSession(sessionData);
+
+      // Clear active session
+      await firebaseSessionApi.clearActiveSession();
 
       console.log('Session saved to Firebase successfully');
 
@@ -288,9 +337,9 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
     if (!timerState.activeTimerId) return;
 
     try {
-      const token = await getAuthToken();
-      // TODO: Implement Firebase timer cancel
-      console.log('Timer cancelled locally');
+      // Clear active session from Firebase
+      await firebaseSessionApi.clearActiveSession();
+      console.log('Timer cancelled and cleared from Firebase');
     } catch (error) {
       console.error('Failed to cancel timer:', error);
     }

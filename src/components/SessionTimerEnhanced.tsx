@@ -35,12 +35,30 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
   const [howFelt, setHowFelt] = useState<number>(3);
   const [privateNotes, setPrivateNotes] = useState('');
   const [selectedProjectId, setSelectedProjectId] = useState<string>('');
+  const [displayTime, setDisplayTime] = useState(0);
 
   // Count completed tasks in this session
   useEffect(() => {
     const completedInSession = selectedTasks.filter(task => task.status === 'completed').length;
     setCompletedTasksCount(completedInSession);
   }, [selectedTasks]);
+
+  // Update display time every second when timer is running
+  useEffect(() => {
+    if (!timerState.isRunning) {
+      setDisplayTime(timerState.pausedDuration);
+      return;
+    }
+
+    const interval = setInterval(() => {
+      setDisplayTime(getElapsedTime());
+    }, 1000);
+
+    // Set initial time
+    setDisplayTime(getElapsedTime());
+
+    return () => clearInterval(interval);
+  }, [timerState.isRunning, timerState.startTime, timerState.pausedDuration, getElapsedTime]);
 
   // Auto-generate session title based on time of day
   useEffect(() => {
@@ -142,131 +160,128 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Session Header */}
-      <div className="bg-white border border-gray-200 rounded-lg p-6">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h2 className="text-2xl font-bold text-gray-900">Focus Session</h2>
-            <p className="text-gray-600">Track your work and stay productive</p>
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 min-h-[calc(100vh-120px)]">
+      {/* Left Column - Timer & Controls */}
+      <div className="flex flex-col items-center justify-center space-y-12 sticky top-6">
+        {/* Large Timer Display */}
+        <div className="text-center">
+          <div className="text-9xl font-mono font-bold text-[#007AFF] mb-8">
+            {getFormattedTime(displayTime)}
           </div>
-          <div className="text-right">
-            <div className="text-3xl font-mono font-bold text-green-600">
-              {getFormattedTime(getElapsedTime())}
-            </div>
-            <div className="text-sm text-gray-600">
-              {completedTasksCount} of {selectedTasks.length} tasks completed
-            </div>
-          </div>
-        </div>
 
-        {/* Project Selection */}
-        {!timerState.isRunning && !timerState.startTime && (
-          <div className="bg-white border border-gray-200 rounded-lg p-4 mb-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Select Project</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {projects.map((project) => (
+          {/* Timer Controls - Pill Buttons with Text */}
+          <div className="flex items-center justify-center gap-4">
+            {!timerState.isRunning && !timerState.startTime && (
+              <button
+                onClick={handleStartTimer}
+                disabled={!selectedProjectId}
+                className={`px-12 py-5 rounded-full flex items-center gap-3 transition-all text-xl font-semibold ${
+                  selectedProjectId
+                    ? 'bg-[#FC4C02] hover:bg-[#E04502] text-white shadow-lg hover:shadow-xl'
+                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                }`}
+              >
+                <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M8 5v14l11-7z" />
+                </svg>
+                <span>Start</span>
+              </button>
+            )}
+            
+            {timerState.isRunning && (
+              <button
+                onClick={handlePauseTimer}
+                className="px-12 py-5 rounded-full bg-[#FC4C02] hover:bg-[#E04502] text-white flex items-center gap-3 transition-all shadow-lg hover:shadow-xl text-xl font-semibold"
+              >
+                <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
+                </svg>
+                <span>Pause</span>
+              </button>
+            )}
+            
+            {!timerState.isRunning && timerState.startTime && (
+              <>
                 <button
-                  key={project.id}
-                  onClick={() => setSelectedProjectId(project.id)}
-                  className={`p-4 rounded-lg border-2 transition-all ${
-                    selectedProjectId === project.id
-                      ? 'border-blue-500 bg-blue-50'
-                      : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                  }`}
+                  onClick={handleResumeTimer}
+                  className="px-12 py-5 rounded-full bg-[#FC4C02] hover:bg-[#E04502] text-white flex items-center gap-3 transition-all shadow-lg hover:shadow-xl text-xl font-semibold"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 ${getProjectColor(project.id)} rounded-lg flex items-center justify-center text-white text-xl`}>
-                      {project.icon}
-                    </div>
-                    <div className="text-left">
-                      <div className="font-medium text-gray-900">{project.name}</div>
-                      <div className="text-sm text-gray-600">{project.description}</div>
-                    </div>
-                  </div>
+                  <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M8 5v14l11-7z" />
+                  </svg>
+                  <span>Resume</span>
                 </button>
-              ))}
-            </div>
-            {projects.length === 0 && (
-              <div className="text-center py-8 text-gray-500">
-                <div className="text-4xl mb-2">📁</div>
-                <p>No projects found</p>
-                <p className="text-sm">Create a project first to start a timer</p>
-              </div>
+                <button
+                  onClick={() => setShowFinishModal(true)}
+                  className="px-12 py-5 rounded-full bg-gray-900 hover:bg-gray-800 text-white flex items-center gap-3 transition-all shadow-lg hover:shadow-xl text-xl font-semibold"
+                >
+                  <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M3 3h2v2H3V3zm4 0h2v2H7V3zm4 0h2v2h-2V3zm4 0h2v2h-2V3zm4 0h2v2h-2V3zM3 7h2v2H3V7zm16 0h2v2h-2V7zM3 11h2v2H3v-2zm4 0h2v2H7v-2zm8 0h2v2h-2v-2zm4 0h2v2h-2v-2zM3 15h2v2H3v-2zm16 0h2v2h-2v-2zM3 19h2v2H3v-2zm4 0h2v2H7v-2zm4 0h2v2h-2v-2zm4 0h2v2h-2v-2zm4 0h2v2h-2v-2z" />
+                  </svg>
+                  <span>Finish</span>
+                </button>
+              </>
             )}
           </div>
-        )}
-
-        {/* Timer Controls */}
-        <div className="flex items-center justify-center gap-4 mt-6">
-          {!timerState.isRunning && !timerState.startTime && (
-            <button
-              onClick={handleStartTimer}
-              disabled={!selectedProjectId}
-              className={`px-8 py-3 rounded-lg transition-colors font-medium text-lg ${
-                selectedProjectId
-                  ? 'bg-green-500 text-white hover:bg-green-600'
-                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-              }`}
-            >
-              {selectedProjectId ? 'Start Timer' : 'Select a Project First'}
-            </button>
-          )}
-          
-          {timerState.isRunning && (
-            <button
-              onClick={handlePauseTimer}
-              className="px-6 py-3 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors font-medium"
-            >
-              Pause
-            </button>
-          )}
-          
-          {!timerState.isRunning && timerState.startTime && (
-            <button
-              onClick={handleResumeTimer}
-              className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-medium"
-            >
-              Resume
-            </button>
-          )}
-          
-          {timerState.startTime && (
-            <button
-              onClick={() => setShowFinishModal(true)}
-              className="px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-medium"
-            >
-              Finish
-            </button>
-          )}
         </div>
 
-        {/* Current Project */}
-        {(timerState.currentProject || selectedProjectId) && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <div className="flex items-center gap-3">
-              <div className={`w-8 h-8 ${getProjectColor(timerState.currentProject?.id || selectedProjectId)} rounded-lg flex items-center justify-center text-white text-lg`}>
-                {(timerState.currentProject || projects.find(p => p.id === selectedProjectId))?.icon}
-              </div>
-              <div>
-                <div className="font-semibold text-gray-900">
-                  {(timerState.currentProject || projects.find(p => p.id === selectedProjectId))?.name}
-                </div>
-                <div className="text-sm text-gray-600">
-                  {(timerState.currentProject || projects.find(p => p.id === selectedProjectId))?.description}
-                </div>
-              </div>
+        {/* Project & Tag Dropdowns */}
+        <div className="w-full max-w-xl grid grid-cols-2 gap-4">
+          {/* Project Dropdown */}
+          <div className="relative">
+            <select
+              value={selectedProjectId}
+              onChange={(e) => setSelectedProjectId(e.target.value)}
+              disabled={timerState.isRunning || timerState.startTime !== null}
+              className="w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] bg-white appearance-none cursor-pointer disabled:bg-gray-100 disabled:cursor-not-allowed text-base"
+            >
+              <option value="">Select Project</option>
+              {projects.map((project) => (
+                <option key={project.id} value={project.id}>
+                  {project.icon} {project.name}
+                </option>
+              ))}
+            </select>
+            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+              <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
             </div>
           </div>
-        )}
+
+          {/* Tag Dropdown */}
+          <div className="relative">
+            <select
+              value={sessionTags[0] || ''}
+              onChange={(e) => setSessionTags(e.target.value ? [e.target.value] : [])}
+              className="w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] bg-white appearance-none cursor-pointer text-base"
+            >
+              <option value="">Select Tag</option>
+              <option value="Study">Study</option>
+              <option value="Work">Work</option>
+              <option value="Side Project">Side Project</option>
+              <option value="Reading">Reading</option>
+              <option value="Learning">Learning</option>
+            </select>
+            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+              <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Task Management Section - Using GlobalTasks Component */}
-      <GlobalTasks
-        selectedTaskIds={selectedTaskIds}
-        onToggleTaskSelection={handleTaskToggle}
-        showSelection={true}
-      />
+      {/* Right Column - Tasks */}
+      <div className="flex items-start justify-center">
+        <div className="w-full max-w-2xl">
+          <GlobalTasks
+            selectedTaskIds={selectedTaskIds}
+            onToggleTaskSelection={handleTaskToggle}
+            showSelection={true}
+          />
+        </div>
+      </div>
 
       {/* Session Completion Modal */}
       {showFinishModal && (

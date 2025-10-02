@@ -9,26 +9,8 @@ import { useAuth } from '@/contexts/AuthContext';
 export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathname = usePathname();
-  const { timerState, getElapsedTime, getFormattedTime } = useTimer();
+  const { timerState } = useTimer();
   const { user } = useAuth();
-  const [displayTime, setDisplayTime] = useState(0);
-
-  // Update display time every second when timer is running
-  useEffect(() => {
-    if (!timerState.isRunning) {
-      setDisplayTime(timerState.pausedDuration);
-      return;
-    }
-
-    const interval = setInterval(() => {
-      setDisplayTime(getElapsedTime());
-    }, 1000);
-
-    // Set initial time
-    setDisplayTime(getElapsedTime());
-
-    return () => clearInterval(interval);
-  }, [timerState.isRunning, timerState.startTime, timerState.pausedDuration, getElapsedTime]);
 
   const isActive = (path: string) => {
     if (path === '/') {
@@ -129,21 +111,18 @@ export default function Header() {
               </svg>
             </button>
 
-            {/* Timer Display / Start Session Button */}
+            {/* Session Status / Start Session Button */}
             {timerState.currentProject && (timerState.isRunning || timerState.pausedDuration > 0) ? (
-              <Link 
-                href="/timer"
-                className="hidden md:flex items-center space-x-2 px-4 py-1.5 bg-green-600 text-white text-sm font-medium rounded hover:bg-green-700 transition-colors font-mono"
-              >
-                <div className={`w-2 h-2 rounded-full ${timerState.isRunning ? 'bg-green-300 animate-pulse' : 'bg-yellow-300'}`} />
-                <span>{getFormattedTime(displayTime)}</span>
-              </Link>
+              <div className="hidden md:flex items-center space-x-2 px-4 py-1.5 bg-green-600 text-white text-sm font-medium rounded">
+                <div className="w-2 h-2 rounded-full bg-green-300" />
+                <span>Active</span>
+              </div>
             ) : (
               <Link 
                 href="/timer"
                 className="hidden md:block px-4 py-1.5 bg-[#007AFF] text-white text-sm font-medium rounded hover:bg-[#0056D6] transition-colors"
               >
-                Start Session
+                Record Now
               </Link>
             )}
 

@@ -1110,6 +1110,83 @@ export const firebaseSessionApi = {
     }
   },
 
+  // Save active timer session
+  saveActiveSession: async (timerData: {
+    startTime: Date;
+    projectId: string;
+    selectedTaskIds: string[];
+    pausedDuration?: number;
+  }): Promise<void> => {
+    try {
+      if (!auth.currentUser) {
+        throw new Error('User not authenticated');
+      }
+
+      const userId = auth.currentUser.uid;
+      const activeSessionRef = doc(db, 'users', userId, 'activeSession', 'current');
+      
+      await setDoc(activeSessionRef, {
+        startTime: timerData.startTime,
+        projectId: timerData.projectId,
+        selectedTaskIds: timerData.selectedTaskIds,
+        pausedDuration: timerData.pausedDuration || 0,
+        lastUpdated: serverTimestamp(),
+        createdAt: serverTimestamp()
+      });
+    } catch (error) {
+      console.error('Failed to save active session:', error);
+      throw error;
+    }
+  },
+
+  // Get active timer session
+  getActiveSession: async (): Promise<{
+    startTime: Date;
+    projectId: string;
+    selectedTaskIds: string[];
+    pausedDuration: number;
+  } | null> => {
+    try {
+      if (!auth.currentUser) {
+        return null;
+      }
+
+      const userId = auth.currentUser.uid;
+      const activeSessionRef = doc(db, 'users', userId, 'activeSession', 'current');
+      const activeSessionDoc = await getDoc(activeSessionRef);
+      
+      if (!activeSessionDoc.exists()) {
+        return null;
+      }
+
+      const data = activeSessionDoc.data();
+      return {
+        startTime: data.startTime.toDate(),
+        projectId: data.projectId,
+        selectedTaskIds: data.selectedTaskIds,
+        pausedDuration: data.pausedDuration || 0
+      };
+    } catch (error) {
+      console.error('Failed to get active session:', error);
+      return null;
+    }
+  },
+
+  // Clear active session
+  clearActiveSession: async (): Promise<void> => {
+    try {
+      if (!auth.currentUser) {
+        return;
+      }
+
+      const userId = auth.currentUser.uid;
+      const activeSessionRef = doc(db, 'users', userId, 'activeSession', 'current');
+      await deleteDoc(activeSessionRef);
+    } catch (error) {
+      console.error('Failed to clear active session:', error);
+    }
+  },
+
   // Get user's sessions
   getSessions: async (
     page: number = 1,
