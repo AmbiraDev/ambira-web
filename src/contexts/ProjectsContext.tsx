@@ -8,7 +8,7 @@ import {
   UpdateProjectData, 
   ProjectContextType 
 } from '@/types';
-import { projectApi } from '@/lib/api';
+import { projectApi, authApi } from '@/lib/api';
 import { mockProjectApi } from '@/lib/mockApi';
 import { useAuth } from './AuthContext';
 
@@ -63,8 +63,13 @@ export const ProjectsProvider: React.FC<ProjectsProviderProps> = ({ children }) 
       setIsLoading(true);
       setError(null);
       
-      // Use mock API for now
-      const token = localStorage.getItem('auth_token') || 'mock_token_1_123456789';
+      // Use mock API for now - get token from authApi
+      const token = authApi.getToken();
+      if (!token) {
+        setError('No authentication token found');
+        return;
+      }
+      
       const fetchedProjects = await mockProjectApi.getProjects(token);
       setProjects(fetchedProjects);
     } catch (err) {
@@ -81,7 +86,11 @@ export const ProjectsProvider: React.FC<ProjectsProviderProps> = ({ children }) 
       setError(null);
       
       // Use mock API for now
-      const token = localStorage.getItem('auth_token') || 'mock_token_1_123456789';
+      const token = authApi.getToken();
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+      
       const newProject = await mockProjectApi.createProject(data, token);
       
       // Add to local state
@@ -102,7 +111,11 @@ export const ProjectsProvider: React.FC<ProjectsProviderProps> = ({ children }) 
       setError(null);
       
       // Use mock API for now
-      const token = localStorage.getItem('auth_token') || 'mock_token_1_123456789';
+      const token = authApi.getToken();
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+      
       const updatedProject = await mockProjectApi.updateProject(id, data, token);
       
       // Update local state
@@ -125,7 +138,11 @@ export const ProjectsProvider: React.FC<ProjectsProviderProps> = ({ children }) 
       setError(null);
       
       // Use mock API for now
-      const token = localStorage.getItem('auth_token') || 'mock_token_1_123456789';
+      const token = authApi.getToken();
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+      
       await mockProjectApi.deleteProject(id, token);
       
       // Remove from local state
@@ -154,7 +171,11 @@ export const ProjectsProvider: React.FC<ProjectsProviderProps> = ({ children }) 
       setError(null);
       
       // Use mock API for now
-      const token = localStorage.getItem('auth_token') || 'mock_token_1_123456789';
+      const token = authApi.getToken();
+      if (!token) {
+        throw new Error('No authentication token found');
+      }
+      
       return await mockProjectApi.getProjectStats(id, token);
     } catch (err) {
       console.error('Error fetching project stats:', err);
