@@ -12,6 +12,11 @@ service cloud.firestore {
       allow read: if request.auth != null && 
         resource.data.profileVisibility == 'followers' && 
         exists(/databases/$(database)/documents/follows/$(request.auth.uid + '_' + userId));
+      
+      // Active session subcollection - user can read/write their own active timer
+      match /activeSession/{docId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
     }
     
     // Follow relationships
@@ -82,8 +87,10 @@ service cloud.firestore {
     
     // Sessions
     match /sessions/{sessionId} {
-      allow read, write: if request.auth != null && 
-        resource.data.userId == request.auth.uid;
+      // Create: validate userId on the incoming document
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      // Read/Update/Delete: validate against stored document
+      allow read, update, delete: if request.auth != null && resource.data.userId == request.auth.uid;
     }
     
     // Groups

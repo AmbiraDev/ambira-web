@@ -101,11 +101,14 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
   // Calculate elapsed time in seconds
   const getElapsedTime = useCallback((): number => {
     if (!timerState.startTime) return 0;
-    
+    // When paused, the pausedDuration represents total elapsed so far
+    if (!timerState.isRunning) {
+      return timerState.pausedDuration || 0;
+    }
     const now = new Date();
     const elapsed = Math.floor((now.getTime() - timerState.startTime.getTime()) / 1000);
-    return Math.max(0, elapsed - timerState.pausedDuration);
-  }, [timerState.startTime, timerState.pausedDuration]);
+    return Math.max(0, elapsed);
+  }, [timerState.startTime, timerState.pausedDuration, timerState.isRunning]);
 
   // Format time as HH:MM:SS
   const getFormattedTime = useCallback((seconds: number): string => {
@@ -146,7 +149,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
 
       // Set timer state
       setTimerState({
-        isRunning: true,
+        isRunning: !activeSession.isPaused,
         startTime: activeSession.startTime,
         pausedDuration: activeSession.pausedDuration,
         currentProject: project,
@@ -194,7 +197,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
         startTime: now,
         projectId,
         selectedTaskIds: taskIds,
-        pausedDuration: 0
+        pausedDuration: 0,
+        isPaused: false
       });
 
       const timerId = `timer_${Date.now()}_${user.uid}`;
@@ -230,7 +234,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
           startTime: timerState.startTime!,
           projectId: timerState.currentProject.id,
           selectedTaskIds: timerState.selectedTasks.map(t => t.id),
-          pausedDuration: currentElapsed
+          pausedDuration: currentElapsed,
+          isPaused: true
         });
       }
       
@@ -262,7 +267,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
           startTime: adjustedStartTime,
           projectId: timerState.currentProject.id,
           selectedTaskIds: timerState.selectedTasks.map(t => t.id),
-          pausedDuration: 0
+          pausedDuration: 0,
+          isPaused: false
         });
       }
       
@@ -270,6 +276,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
         ...prev,
         isRunning: true,
         startTime: adjustedStartTime,
+        pausedDuration: 0,
       }));
 
       console.log('Timer resumed successfully');
@@ -285,7 +292,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
     description?: string,
     tags?: string[],
     howFelt?: number,
-    privateNotes?: string
+    privateNotes?: string,
+    options?: { visibility?: 'everyone' | 'followers' | 'private'; showStartTime?: boolean; hideTaskNames?: boolean; publishToFeeds?: boolean }
   ): Promise<Session> => {
     if (!timerState.activeTimerId || !timerState.currentProject) {
       throw new Error('No active timer to finish');
@@ -301,6 +309,10 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
         startTime: timerState.startTime!,
         taskIds: timerState.selectedTasks.map(task => task.id),
         tags,
+        visibility: options?.visibility,
+        showStartTime: options?.showStartTime,
+        hideTaskNames: options?.hideTaskNames,
+        publishToFeeds: options?.publishToFeeds,
         howFelt,
         privateNotes,
       };

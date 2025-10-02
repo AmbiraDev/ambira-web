@@ -1044,14 +1044,18 @@ export const firebaseSessionApi = {
 
       const sessionData = {
         ...data,
+        userId: auth.currentUser.uid,
         tasks: selectedTasks,
-        visibility: 'private', // Default to private
+        visibility: data.visibility || 'private',
+        showStartTime: data.showStartTime || false,
+        hideTaskNames: data.hideTaskNames || false,
+        publishToFeeds: data.publishToFeeds ?? true,
         isArchived: false,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
       };
 
-      const docRef = await addDoc(collection(db, 'sessions'), sessionData);
+      const docRef = await addDoc(collection(db, 'sessions'), sessionData as any);
 
       const newSession: Session = {
         id: docRef.id,
@@ -1063,7 +1067,10 @@ export const firebaseSessionApi = {
         startTime: data.startTime,
         tasks: selectedTasks,
         tags: data.tags || [],
-        visibility: 'private',
+        visibility: sessionData.visibility,
+        showStartTime: sessionData.showStartTime,
+        hideTaskNames: sessionData.hideTaskNames,
+        publishToFeeds: sessionData.publishToFeeds,
         howFelt: data.howFelt,
         privateNotes: data.privateNotes,
         isArchived: false,
@@ -1116,6 +1123,7 @@ export const firebaseSessionApi = {
     projectId: string;
     selectedTaskIds: string[];
     pausedDuration?: number;
+    isPaused?: boolean;
   }): Promise<void> => {
     try {
       if (!auth.currentUser) {
@@ -1123,6 +1131,15 @@ export const firebaseSessionApi = {
       }
 
       const userId = auth.currentUser.uid;
+      
+      // Ensure user document exists first (Firestore requires parent docs for subcollections)
+      const userRef = doc(db, 'users', userId);
+      await setDoc(userRef, {
+        uid: userId,
+        updatedAt: serverTimestamp()
+      }, { merge: true });
+      
+      // Now save the active session
       const activeSessionRef = doc(db, 'users', userId, 'activeSession', 'current');
       
       await setDoc(activeSessionRef, {
@@ -1130,11 +1147,14 @@ export const firebaseSessionApi = {
         projectId: timerData.projectId,
         selectedTaskIds: timerData.selectedTaskIds,
         pausedDuration: timerData.pausedDuration || 0,
+        isPaused: !!timerData.isPaused,
         lastUpdated: serverTimestamp(),
         createdAt: serverTimestamp()
       });
-    } catch (error) {
-      console.error('Failed to save active session:', error);
+      
+      console.log('Active session saved successfully');
+    } catch (error: any) {
+      console.error('Failed to save active session:', error?.message || error);
       throw error;
     }
   },
@@ -1145,6 +1165,7 @@ export const firebaseSessionApi = {
     projectId: string;
     selectedTaskIds: string[];
     pausedDuration: number;
+    isPaused: boolean;
   } | null> => {
     try {
       if (!auth.currentUser) {
@@ -1160,13 +1181,25 @@ export const firebaseSessionApi = {
       }
 
       const data = activeSessionDoc.data();
+      
+      // Validate data exists and has required fields
+      if (!data || !data.startTime || !data.projectId) {
+        console.warn('Active session data is incomplete');
+        return null;
+      }
+      
       return {
         startTime: data.startTime.toDate(),
         projectId: data.projectId,
-        selectedTaskIds: data.selectedTaskIds,
-        pausedDuration: data.pausedDuration || 0
+        selectedTaskIds: data.selectedTaskIds || [],
+        pausedDuration: data.pausedDuration || 0,
+        isPaused: !!data.isPaused
       };
-    } catch (error) {
+    } catch (error: any) {
+      // If it's a permission error or document doesn't exist, silently return null
+      if (error?.code === 'permission-denied' || error?.code === 'not-found') {
+        return null;
+      }
       console.error('Failed to get active session:', error);
       return null;
     }

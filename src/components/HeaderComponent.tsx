@@ -113,10 +113,13 @@ export default function Header() {
 
             {/* Session Status / Start Session Button */}
             {timerState.currentProject && (timerState.isRunning || timerState.pausedDuration > 0) ? (
-              <div className="hidden md:flex items-center space-x-2 px-4 py-1.5 bg-green-600 text-white text-sm font-medium rounded">
+              <Link 
+                href="/timer"
+                className="hidden md:flex items-center space-x-2 px-4 py-1.5 bg-green-600 text-white text-sm font-medium rounded hover:bg-green-700 transition-colors"
+              >
                 <div className="w-2 h-2 rounded-full bg-green-300" />
                 <span>Active</span>
-              </div>
+              </Link>
             ) : (
               <Link 
                 href="/timer"

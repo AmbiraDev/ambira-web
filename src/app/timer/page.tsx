@@ -4,6 +4,7 @@ import React from 'react';
 import { SessionTimerEnhanced } from '@/components/SessionTimerEnhanced';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import Header from '@/components/HeaderComponent';
+import { SaveSession } from '@/components/SaveSession';
 
 export default function TimerPage() {
   return (

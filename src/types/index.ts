@@ -101,6 +101,9 @@ export interface Session {
   tasks: Task[];
   tags: string[];
   visibility: 'everyone' | 'followers' | 'private';
+  showStartTime?: boolean;
+  hideTaskNames?: boolean;
+  publishToFeeds?: boolean;
   howFelt?: number; // 1-5 rating
   privateNotes?: string;
   isArchived: boolean;
@@ -416,6 +419,10 @@ export interface CreateSessionData {
   startTime: Date;
   taskIds: string[];
   tags?: string[];
+  visibility?: 'everyone' | 'followers' | 'private';
+  showStartTime?: boolean;
+  hideTaskNames?: boolean;
+  publishToFeeds?: boolean;
   howFelt?: number;
   privateNotes?: string;
 }
@@ -430,6 +437,9 @@ export interface SessionFormData {
   taskIds?: string[];
   tags: string[];
   visibility: 'everyone' | 'followers' | 'private';
+  showStartTime?: boolean;
+  hideTaskNames?: boolean;
+  publishToFeeds?: boolean;
   howFelt?: number;
   privateNotes?: string;
 }

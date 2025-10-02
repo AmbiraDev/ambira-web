@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { Flag } from 'lucide-react';
 import { useTimer } from '@/contexts/TimerContext';
 import { useTasks } from '@/contexts/TasksContext';
 import { useProjects } from '@/contexts/ProjectsContext';
@@ -32,6 +33,10 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
   const [sessionTitle, setSessionTitle] = useState('');
   const [sessionDescription, setSessionDescription] = useState('');
   const [sessionTags, setSessionTags] = useState<string[]>([]);
+  const [visibility, setVisibility] = useState<'everyone' | 'followers' | 'private'>('private');
+  const [showStartTime, setShowStartTime] = useState(false);
+  const [hideTaskNames, setHideTaskNames] = useState(false);
+  const [publishToFeeds, setPublishToFeeds] = useState(true);
   const [howFelt, setHowFelt] = useState<number>(3);
   const [privateNotes, setPrivateNotes] = useState('');
   const [selectedProjectId, setSelectedProjectId] = useState<string>('');
@@ -116,15 +121,22 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
 
   const handleFinishTimer = async () => {
     try {
-      await finishTimer(
+      const session = await finishTimer(
         sessionTitle,
         sessionDescription,
         sessionTags,
         howFelt,
-        privateNotes
+        privateNotes,
+        {
+          visibility,
+          showStartTime,
+          hideTaskNames,
+          publishToFeeds
+        }
       );
       setShowFinishModal(false);
-      alert('Session saved successfully!');
+      // Navigate to sessions page after saving
+      window.location.href = '/sessions';
     } catch (error) {
       console.error('Failed to finish timer:', error);
       alert('Failed to save session. Please try again.');
@@ -159,6 +171,152 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
     return colorClasses[project?.color as keyof typeof colorClasses] || 'bg-gray-500';
   };
 
+  // When completing a session, show ONLY the completion UI
+  if (showFinishModal) {
+    return (
+      <div className="min-h-[calc(100vh-120px)]">
+        <div className="max-w-3xl mx-auto">
+          <div className="bg-white rounded-lg p-6 w-full shadow">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-bold text-gray-900">Complete Session</h3>
+              <button onClick={() => setShowFinishModal(false)} className="text-gray-500 hover:text-gray-700">Close</button>
+            </div>
+            {/* Reuse existing completion UI from below */}
+            <div className="space-y-6">
+              {/* Session Title */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Session Title *
+                </label>
+                <input
+                  type="text"
+                  value={sessionTitle}
+                  onChange={(e) => setSessionTitle(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  placeholder="Enter session title"
+                />
+              </div>
+
+              {/* Description */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Description
+                </label>
+                <textarea
+                  value={sessionDescription}
+                  onChange={(e) => setSessionDescription(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  rows={3}
+                  placeholder="How did the session go? What did you accomplish?"
+                />
+              </div>
+
+              {/* Tags */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Tags
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {['Study', 'Work', 'Side Project', 'Reading', 'Learning'].map(tag => (
+                    <button
+                      key={tag}
+                      onClick={() => {
+                        if (sessionTags.includes(tag)) {
+                          setSessionTags(sessionTags.filter(t => t !== tag));
+                        } else {
+                          setSessionTags([...sessionTags, tag]);
+                        }
+                      }}
+                      className={`px-3 py-1 rounded-full text-sm ${
+                        sessionTags.includes(tag)
+                          ? 'bg-blue-500 text-white'
+                          : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                      }`}
+                    >
+                      {tag}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Private Notes */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Private Notes
+                </label>
+                <textarea
+                  value={privateNotes}
+                  onChange={(e) => setPrivateNotes(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  rows={2}
+                  placeholder="Personal reflections (never shown publicly)"
+                />
+              </div>
+
+              {/* Privacy and Publishing Options */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Visibility</label>
+                  <select
+                    value={visibility}
+                    onChange={(e) => setVisibility(e.target.value as any)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="everyone">Everyone</option>
+                    <option value="followers">Followers</option>
+                    <option value="private">Only You</option>
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">Options</label>
+                  <label className="flex items-center gap-2 text-sm text-gray-700">
+                    <input type="checkbox" checked={showStartTime} onChange={(e) => setShowStartTime(e.target.checked)} />
+                    Show start time
+                  </label>
+                  <label className="flex items-center gap-2 text-sm text-gray-700">
+                    <input type="checkbox" checked={hideTaskNames} onChange={(e) => setHideTaskNames(e.target.checked)} />
+                    Don't show task names
+                  </label>
+                  <label className="flex items-center gap-2 text-sm text-gray-700">
+                    <input type="checkbox" checked={publishToFeeds} onChange={(e) => setPublishToFeeds(e.target.checked)} />
+                    Publish to home/group feeds
+                  </label>
+                </div>
+              </div>
+
+              {/* Session Summary */}
+              <div className="bg-gray-50 rounded-lg p-4">
+                <h4 className="font-medium text-gray-900 mb-2">Session Summary</h4>
+                <div className="text-sm text-gray-600 space-y-1">
+                  <div>Duration: {getFormattedTime(getElapsedTime())}</div>
+                  <div>Tasks completed: {completedTasksCount} of {selectedTasks.length}</div>
+                  <div>Project: {timerState.currentProject?.name}</div>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-4 pt-4">
+                <button
+                  onClick={handleCancelTimer}
+                  className="flex-1 px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors"
+                >
+                  Cancel Session
+                </button>
+                <button
+                  onClick={handleFinishTimer}
+                  disabled={!sessionTitle.trim()}
+                  className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  Save Session
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 min-h-[calc(100vh-120px)]">
       {/* Left Column - Timer & Controls */}
@@ -191,7 +349,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
             {timerState.isRunning && (
               <button
                 onClick={handlePauseTimer}
-                className="px-12 py-5 rounded-full bg-[#FC4C02] hover:bg-[#E04502] text-white flex items-center gap-3 transition-all shadow-lg hover:shadow-xl text-xl font-semibold"
+                className="px-12 py-5 rounded-full bg-red-600 hover:bg-red-700 text-white flex items-center gap-3 transition-all shadow-lg hover:shadow-xl text-xl font-semibold"
               >
                 <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
@@ -204,7 +362,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
               <>
                 <button
                   onClick={handleResumeTimer}
-                  className="px-12 py-5 rounded-full bg-[#FC4C02] hover:bg-[#E04502] text-white flex items-center gap-3 transition-all shadow-lg hover:shadow-xl text-xl font-semibold"
+                  className="px-12 py-5 rounded-full bg-green-600 hover:bg-green-700 text-white flex items-center gap-3 transition-all shadow-lg hover:shadow-xl text-xl font-semibold"
                 >
                   <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M8 5v14l11-7z" />
@@ -215,9 +373,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                   onClick={() => setShowFinishModal(true)}
                   className="px-12 py-5 rounded-full bg-gray-900 hover:bg-gray-800 text-white flex items-center gap-3 transition-all shadow-lg hover:shadow-xl text-xl font-semibold"
                 >
-                  <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M3 3h2v2H3V3zm4 0h2v2H7V3zm4 0h2v2h-2V3zm4 0h2v2h-2V3zm4 0h2v2h-2V3zM3 7h2v2H3V7zm16 0h2v2h-2V7zM3 11h2v2H3v-2zm4 0h2v2H7v-2zm8 0h2v2h-2v-2zm4 0h2v2h-2v-2zM3 15h2v2H3v-2zm16 0h2v2h-2v-2zM3 19h2v2H3v-2zm4 0h2v2H7v-2zm4 0h2v2h-2v-2zm4 0h2v2h-2v-2zm4 0h2v2h-2v-2z" />
-                  </svg>
+                  <Flag className="w-8 h-8 text-white" />
                   <span>Finish</span>
                 </button>
               </>
@@ -283,20 +439,13 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
         </div>
       </div>
 
-      {/* Session Completion Modal */}
+      {/* Session Completion Page-like container (not modal) */}
       {showFinishModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div className="col-span-1 lg:col-span-2">
+          <div className="bg-white rounded-lg p-6 max-w-3xl w-full mx-auto shadow">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-xl font-bold text-gray-900">Complete Session</h3>
-              <button
-                onClick={() => setShowFinishModal(false)}
-                className="text-gray-400 hover:text-gray-600"
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
+              <button onClick={() => setShowFinishModal(false)} className="text-gray-500 hover:text-gray-700">Close</button>
             </div>
 
             <div className="space-y-6">

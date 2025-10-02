@@ -1,10 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { SessionFormProps, SessionFormData, Project, Task } from '@/types';
+import { SessionFormData, Project, Task } from '@/types';
 import { firebaseApi } from '@/lib/firebaseApi';
 import { useAuth } from '@/contexts/AuthContext';
-import PostCreationModal from './PostCreationModal';
 
 interface SaveSessionProps {
   onSave: (data: SessionFormData) => Promise<void>;
@@ -37,7 +36,6 @@ export const SaveSession: React.FC<SaveSessionProps> = ({
     taskIds: [],
     tags: [],
     visibility: 'private',
-    howFelt: 3,
     privateNotes: '',
     ...initialData
   });
@@ -47,8 +45,6 @@ export const SaveSession: React.FC<SaveSessionProps> = ({
   const [selectedTasks, setSelectedTasks] = useState<Task[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showPostModal, setShowPostModal] = useState(false);
-  const [createdSession, setCreatedSession] = useState<any>(null);
-  const [createdProject, setCreatedProject] = useState<Project | null>(null);
 
   // TODO: Implement Firebase API calls
   // Helper function to get auth token
@@ -186,47 +182,15 @@ export const SaveSession: React.FC<SaveSessionProps> = ({
     }
 
     try {
-      // Create session in Firebase
-      const sessionData = {
-        projectId: formData.projectId,
-        title: formData.title,
-        description: formData.description,
-        duration: formData.duration,
-        startTime: formData.startTime,
-        taskIds: formData.taskIds || [],
-        tags: formData.tags,
-        howFelt: formData.howFelt,
-        privateNotes: formData.privateNotes
-      };
-
-      const session = await firebaseApi.session.createSession(sessionData);
-      const project = projects.find(p => p.id === formData.projectId);
-      
-      setCreatedSession(session);
-      setCreatedProject(project || null);
-
-      // If visibility is not private, show post creation modal
-      if (formData.visibility !== 'private') {
-        setShowPostModal(true);
-      } else {
-        // Just save session and close
-        await onSave(formData);
-      }
+      await onSave(formData);
     } catch (error) {
       console.error('Failed to save session:', error);
       setErrors({ submit: 'Failed to save session. Please try again.' });
     }
   };
 
-  const handlePostSuccess = async (postId?: string) => {
-    await onSave(formData);
-    setShowPostModal(false);
-  };
-
-  const handlePostCancel = () => {
-    setShowPostModal(false);
-    await onSave(formData);
-  };
+  const handlePostSuccess = async () => {};
+  const handlePostCancel = async () => {};
 
   const formatDuration = (seconds: number): string => {
     const hours = Math.floor(seconds / 3600);
@@ -243,9 +207,8 @@ export const SaveSession: React.FC<SaveSessionProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-        <div className="p-6">
+    <div className="w-full max-w-3xl mx-auto">
+      <div className="bg-white rounded-lg shadow p-6">
           <h2 className="text-2xl font-bold mb-6">Save Session</h2>
           
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -382,29 +345,7 @@ export const SaveSession: React.FC<SaveSessionProps> = ({
               </select>
             </div>
 
-            {/* How did it feel? */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                How did it feel? (Private)
-              </label>
-              <div className="flex space-x-2">
-                {[1, 2, 3, 4, 5].map((rating) => (
-                  <button
-                    key={rating}
-                    type="button"
-                    onClick={() => handleInputChange('howFelt', rating)}
-                    className={`w-10 h-10 rounded-full border-2 transition-colors ${
-                      formData.howFelt === rating
-                        ? 'border-blue-500 bg-blue-500 text-white'
-                        : 'border-gray-300 text-gray-600 hover:border-gray-400'
-                    }`}
-                    disabled={isLoading}
-                  >
-                    {rating}
-                  </button>
-                ))}
-              </div>
-            </div>
+            {/* Removed howFelt per requirements */}
 
             {/* Private Notes */}
             <div>
@@ -445,19 +386,6 @@ export const SaveSession: React.FC<SaveSessionProps> = ({
               </button>
             </div>
           </form>
-        </div>
-      </div>
-
-      {/* Post Creation Modal */}
-      {createdSession && createdProject && (
-        <PostCreationModal
-          session={createdSession}
-          project={createdProject}
-          isOpen={showPostModal}
-          onClose={handlePostCancel}
-          onSuccess={handlePostSuccess}
-        />
-      )}
     </div>
   );
 };

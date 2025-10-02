@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Session, Project, SessionFilters, SessionSort, SessionListResponse } from '@/types';
+import { Session, Project, SessionFilters, SessionSort } from '@/types';
+import { firebaseProjectApi, firebaseSessionApi } from '@/lib/firebaseApi';
 
 export const SessionHistory: React.FC = () => {
   const [sessions, setSessions] = useState<Session[]>([]);
@@ -14,31 +15,21 @@ export const SessionHistory: React.FC = () => {
   const [hasMore, setHasMore] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
-  // TODO: Implement Firebase session API
-  // Helper function to get auth token
-  const getAuthToken = (): string => {
-    // For now, return empty string since we're not using Firebase sessions yet
-    return '';
-  };
-
   // Load initial data
   useEffect(() => {
     const loadInitialData = async () => {
       try {
         setIsLoading(true);
-        const token = getAuthToken();
-        
-        // TODO: Load projects and sessions from Firebase
-        // Load projects and sessions in parallel
-        const [projectsData, sessionsData] = await Promise.all([
-          Promise.resolve([]), // mockProjectApiLocal.getProjects(token),
-          Promise.resolve({ sessions: [], totalCount: 0, totalPages: 0 }) // mockSessionApiLocal.getSessions(1, 20, filters, sort, token)
+        // Load projects and user's sessions from Firebase
+        const [projectsData, sessionsResp] = await Promise.all([
+          firebaseProjectApi.getProjects(),
+          firebaseSessionApi.getSessions(1, 20, {})
         ]);
 
         setProjects(projectsData);
-        setSessions(sessionsData.sessions);
-        setTotalCount(sessionsData.totalCount);
-        setHasMore(sessionsData.hasMore);
+        setSessions(sessionsResp.sessions);
+        setTotalCount(sessionsResp.totalCount);
+        setHasMore(sessionsResp.hasMore);
       } catch (error) {
         console.error('Failed to load session history:', error);
       } finally {
@@ -54,19 +45,15 @@ export const SessionHistory: React.FC = () => {
     const loadSessions = async () => {
       try {
         setIsLoading(true);
-        const token = getAuthToken();
-        // TODO: Load sessions from Firebase
-        const sessionsData = { sessions: [], totalCount: 0, totalPages: 0 }; // await mockSessionApiLocal.getSessions(
-        //   currentPage, 
-        //   20, 
-        //   { ...filters, search: searchQuery }, 
-        //   sort, 
-        //   token
-        // );
+        const sessionsResp = await firebaseSessionApi.getSessions(
+          currentPage,
+          20,
+          { ...filters, search: searchQuery }
+        );
 
-        setSessions(sessionsData.sessions);
-        setTotalCount(sessionsData.totalCount);
-        setHasMore(sessionsData.hasMore);
+        setSessions(sessionsResp.sessions);
+        setTotalCount(sessionsResp.totalCount);
+        setHasMore(sessionsResp.hasMore);
       } catch (error) {
         console.error('Failed to load sessions:', error);
       } finally {
@@ -98,22 +85,18 @@ export const SessionHistory: React.FC = () => {
     }
 
     try {
-      const token = getAuthToken();
-      // TODO: Delete session from Firebase
-      console.log('Delete session:', sessionId); // await mockSessionApiLocal.deleteSession(sessionId, token);
+      console.log('Delete session:', sessionId);
       
       // TODO: Reload sessions from Firebase
       // Reload sessions
-      const sessionsData = { sessions: [], totalCount: 0, totalPages: 0 }; // await mockSessionApiLocal.getSessions(
-      //   currentPage, 
-      //   20, 
-      //   { ...filters, search: searchQuery }, 
-      //   sort, 
-      //   token
-      // );
-      setSessions(sessionsData.sessions);
-      setTotalCount(sessionsData.totalCount);
-      setHasMore(sessionsData.hasMore);
+      const sessionsResp = await firebaseSessionApi.getSessions(
+        currentPage,
+        20,
+        { ...filters, search: searchQuery }
+      );
+      setSessions(sessionsResp.sessions);
+      setTotalCount(sessionsResp.totalCount);
+      setHasMore(sessionsResp.hasMore);
     } catch (error) {
       console.error('Failed to delete session:', error);
       alert('Failed to delete session. Please try again.');
@@ -122,22 +105,18 @@ export const SessionHistory: React.FC = () => {
 
   const handleSessionArchive = async (sessionId: string) => {
     try {
-      const token = getAuthToken();
-      // TODO: Archive session in Firebase
-      console.log('Archive session:', sessionId); // await mockSessionApiLocal.archiveSession(sessionId, token);
+      console.log('Archive session:', sessionId);
       
       // TODO: Reload sessions from Firebase
       // Reload sessions
-      const sessionsData = { sessions: [], totalCount: 0, totalPages: 0 }; // await mockSessionApiLocal.getSessions(
-      //   currentPage, 
-      //   20, 
-      //   { ...filters, search: searchQuery }, 
-      //   sort, 
-      //   token
-      // );
-      setSessions(sessionsData.sessions);
-      setTotalCount(sessionsData.totalCount);
-      setHasMore(sessionsData.hasMore);
+      const sessionsResp = await firebaseSessionApi.getSessions(
+        currentPage,
+        20,
+        { ...filters, search: searchQuery }
+      );
+      setSessions(sessionsResp.sessions);
+      setTotalCount(sessionsResp.totalCount);
+      setHasMore(sessionsResp.hasMore);
     } catch (error) {
       console.error('Failed to archive session:', error);
       alert('Failed to archive session. Please try again.');
