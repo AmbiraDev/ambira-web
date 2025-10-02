@@ -86,6 +86,18 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
     const unsubscribe = auth.onAuthStateChanged((firebaseUser) => {
       if (firebaseUser) {
         loadActiveTimer();
+      } else {
+        // On logout, stop timers and avoid any persistence
+        setTimerState({
+          isRunning: false,
+          startTime: null,
+          pausedDuration: 0,
+          currentProject: null,
+          selectedTasks: [],
+          activeTimerId: null,
+          isConnected: true,
+          lastAutoSave: null,
+        });
       }
     });
     return () => unsubscribe();
@@ -97,7 +109,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
 
     const interval = setInterval(async () => {
       try {
-        if (timerState.currentProject) {
+        // Only persist if authenticated; guard against logout races
+        if (auth.currentUser && timerState.currentProject) {
           // Persist the current running state
           await firebaseSessionApi.saveActiveSession({
             startTime: timerState.startTime || new Date(),

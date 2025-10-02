@@ -80,7 +80,7 @@ export const UserCard: React.FC<UserCardProps> = ({
     <div className="bg-card-background rounded-lg border border-border p-4 hover:shadow-md transition-shadow">
       <div className="flex items-start gap-3">
         {/* Avatar */}
-        <Link href={`/profile/${user.username}`} className="flex-shrink-0">
+        <Link href={`/profile/${user.username}`} className="flex-shrink-0" onClick={(e) => e.stopPropagation()}>
           {user.profilePicture ? (
             <Image
               src={user.profilePicture}
@@ -100,7 +100,7 @@ export const UserCard: React.FC<UserCardProps> = ({
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between">
             <div className="min-w-0 flex-1">
-              <Link href={`/profile/${user.username}`}>
+              <Link href={`/profile/${user.username}`} onClick={(e) => e.stopPropagation()}>
                 <h3 className="font-semibold text-foreground hover:text-primary transition-colors truncate">
                   {user.name}
                 </h3>

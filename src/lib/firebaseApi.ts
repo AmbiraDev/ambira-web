@@ -292,12 +292,26 @@ export const firebaseUserApi = {
       
       const userDoc = querySnapshot.docs[0];
       const userData = userDoc.data();
+      const isOwnProfile = auth.currentUser?.uid === userDoc.id;
+      
+      // Check privacy settings
+      const profileVisibility = userData.profileVisibility || 'everyone';
+      
+      // If profile is private and not the owner, deny access
+      if (!isOwnProfile && profileVisibility === 'private') {
+        throw new Error('This profile is private');
+      }
       
       // Check if current user is following this user
       let isFollowing = false;
-      if (auth.currentUser) {
+      if (auth.currentUser && !isOwnProfile) {
         const followDoc = await getDoc(doc(db, 'follows', `${auth.currentUser.uid}_${userDoc.id}`));
         isFollowing = followDoc.exists();
+      }
+      
+      // If profile is followers-only, check if current user is a follower
+      if (!isOwnProfile && profileVisibility === 'followers' && !isFollowing) {
+        throw new Error('This profile is only visible to followers');
       }
       
       return {
@@ -311,7 +325,7 @@ export const firebaseUserApi = {
         followingCount: userData.followingCount || 0,
         totalHours: userData.totalHours || 0,
         isFollowing,
-        isPrivate: userData.profileVisibility === 'private',
+        isPrivate: profileVisibility === 'private',
         createdAt: convertTimestamp(userData.createdAt),
         updatedAt: convertTimestamp(userData.updatedAt)
       };
@@ -452,7 +466,12 @@ export const firebaseUserApi = {
         averageSessionDuration,
         mostProductiveHour,
         favoriteProject: undefined,
-      } as unknown as UserStats;
+        totalSessions: sessionsSnapshot.size,
+        completedTasks: 0, // TODO: Implement task completion tracking
+        activeProjects: 0, // TODO: Implement active project tracking
+        averageSessionLength: averageSessionDuration,
+        mostProductiveDay: 'Monday', // TODO: Calculate from actual data
+      };
     } catch (error: any) {
       console.error('Failed to get user stats:', error);
       // Return default stats instead of throwing error

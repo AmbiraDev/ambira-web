@@ -114,6 +114,13 @@ export const SearchUsers: React.FC<SearchUsersProps> = ({
           placeholder={placeholder}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              setHasSearched(true);
+              debouncedSearch(query, 1);
+            }
+          }}
           className="pl-10 pr-10"
         />
         {query && (

@@ -1,8 +1,10 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { firebasePostApi } from '@/lib/firebaseApi';
+import { PostWithDetails } from '@/types';
 import { 
   BarChart3, 
   Trophy, 
@@ -277,12 +279,116 @@ export const FollowingContent: React.FC = () => (
   </div>
 );
 
-export const PostsContent: React.FC = () => (
-  <div className="text-center py-12">
-    <FileText className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-    <h3 className="text-lg font-semibold text-foreground mb-2">Posts</h3>
-    <p className="text-muted-foreground">
-      User posts and activity will be shown here.
-    </p>
-  </div>
-);
+interface PostsContentProps {
+  userId: string;
+  isOwnProfile?: boolean;
+}
+
+export const PostsContent: React.FC<PostsContentProps> = ({ userId, isOwnProfile = false }) => {
+  const [posts, setPosts] = useState<PostWithDetails[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadPosts = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const userPosts = await firebasePostApi.getUserPosts(userId, 20);
+        setPosts(userPosts);
+      } catch (err: any) {
+        console.error('Failed to load user posts:', err);
+        setError(err.message || 'Failed to load posts');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (userId) {
+      loadPosts();
+    }
+  }, [userId]);
+
+  if (isLoading) {
+    return (
+      <div className="text-center py-12">
+        <div className="animate-pulse">
+          <div className="h-4 bg-muted rounded w-3/4 mx-auto mb-4"></div>
+          <div className="h-4 bg-muted rounded w-1/2 mx-auto"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <FileText className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+        <h3 className="text-lg font-semibold text-foreground mb-2">Error loading posts</h3>
+        <p className="text-muted-foreground">{error}</p>
+      </div>
+    );
+  }
+
+  if (posts.length === 0) {
+    return (
+      <div className="text-center py-12">
+        <FileText className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+        <h3 className="text-lg font-semibold text-foreground mb-2">
+          {isOwnProfile ? 'No posts yet' : 'No posts'}
+        </h3>
+        <p className="text-muted-foreground">
+          {isOwnProfile 
+            ? 'Complete some sessions to see your posts here.' 
+            : 'This user hasn\'t shared any posts yet.'
+          }
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {posts.map((post) => (
+        <div key={post.id} className="bg-card-background p-4 rounded-lg border border-border">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold">
+              {post.user.name.charAt(0).toUpperCase()}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-2">
+                <h4 className="font-semibold text-foreground">{post.user.name}</h4>
+                <span className="text-sm text-muted-foreground">@{post.user.username}</span>
+                <span className="text-sm text-muted-foreground">•</span>
+                <span className="text-sm text-muted-foreground">
+                  {new Date(post.createdAt).toLocaleDateString()}
+                </span>
+              </div>
+              <p className="text-foreground mb-3">{post.content}</p>
+              {post.session && (
+                <div className="bg-muted/50 p-3 rounded-lg">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Clock className="w-4 h-4 text-muted-foreground" />
+                    <span className="text-sm font-medium text-foreground">
+                      {post.session.title}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                    <span>Duration: {Math.floor(post.session.duration / 3600)}h {Math.floor((post.session.duration % 3600) / 60)}m</span>
+                    {post.session.tasks && post.session.tasks.length > 0 && (
+                      <span>Tasks: {post.session.tasks.length}</span>
+                    )}
+                  </div>
+                </div>
+              )}
+              <div className="flex items-center gap-4 mt-3 text-sm text-muted-foreground">
+                <span>{post.supportCount} supports</span>
+                <span>{post.commentCount} comments</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};

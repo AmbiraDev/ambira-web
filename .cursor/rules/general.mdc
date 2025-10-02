@@ -11,4 +11,4 @@ alwaysApply: true
 - Use functional programming patterns; modularize new logic.
 - Explain your reasoning for every proposed change.
 - After completing a task, at the end of your response provide a git commit message for the changes you made with proper formatting.
-- Whenever changing Firebase rules, make sure to update the rules in the firestore.rules file then use the firebase deploy command to deploy the changes / the firebase CLI tool
+- Whenever changing Firebase rules, make sure to update the rules in the firestore.rules file using the firebase CLI tool and `npx firebase-tools deploy --only firestore:rules --non-interactive`

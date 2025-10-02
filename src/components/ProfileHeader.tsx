@@ -28,7 +28,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [followersCount, setFollowersCount] = useState(profile.followersCount);
 
-  const isOwnProfile = user?.id === profile.id;
+  const isOwnProfile = user?.username === profile.username;
   const canFollow = !isOwnProfile && user;
 
   const handleFollow = async () => {
@@ -125,6 +125,16 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
 
               {/* Action Buttons */}
               <div className="flex gap-2">
+                {isOwnProfile && showEditButton && onEditClick && (
+                  <Button
+                    onClick={onEditClick}
+                    variant="outline"
+                    className="flex items-center gap-2"
+                  >
+                    <Edit3 className="w-4 h-4" />
+                    Edit Profile
+                  </Button>
+                )}
                 {canFollow && (
                   <Button
                     onClick={handleFollow}

@@ -43,6 +43,10 @@ export default function ProfilePage() {
       console.error('Profile load error:', error);
       if (error.message?.includes('not found')) {
         setError('User not found');
+      } else if (error.message?.includes('private')) {
+        setError('This profile is private');
+      } else if (error.message?.includes('followers')) {
+        setError('This profile is only visible to followers');
       } else {
         setError('Failed to load profile');
         toast.error('Failed to load profile');
@@ -122,13 +126,16 @@ export default function ProfilePage() {
             <div className="text-center py-16">
           <UserX className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-foreground mb-2">
-            {error === 'User not found' ? 'User Not Found' : 'Error Loading Profile'}
+            {error === 'User not found' && 'User Not Found'}
+            {error === 'This profile is private' && 'Private Profile'}
+            {error === 'This profile is only visible to followers' && 'Followers Only'}
+            {!['User not found', 'This profile is private', 'This profile is only visible to followers'].includes(error) && 'Error Loading Profile'}
           </h1>
           <p className="text-muted-foreground mb-6">
-            {error === 'User not found' 
-              ? `The user "${username}" doesn't exist or their profile is private.`
-              : 'Something went wrong while loading this profile.'
-            }
+            {error === 'User not found' && `The user "${username}" doesn't exist.`}
+            {error === 'This profile is private' && `@${username}'s profile is private. Only they can view their profile.`}
+            {error === 'This profile is only visible to followers' && `@${username}'s profile is only visible to people they follow back.`}
+            {!['User not found', 'This profile is private', 'This profile is only visible to followers'].includes(error) && 'Something went wrong while loading this profile.'}
           </p>
           <Button asChild>
             <Link href="/">
@@ -161,7 +168,8 @@ export default function ProfilePage() {
           <ProfileHeader
             profile={profile}
             onProfileUpdate={handleProfileUpdate}
-            showEditButton={false}
+            showEditButton={isOwnProfile}
+            onEditClick={() => window.location.href = '/settings'}
           />
 
           {/* Profile Tabs */}
@@ -186,7 +194,7 @@ export default function ProfilePage() {
               
               {activeTab === 'achievements' && <AchievementsContent />}
               {activeTab === 'following' && <FollowingContent />}
-              {activeTab === 'posts' && <PostsContent />}
+              {activeTab === 'posts' && <PostsContent userId={profile.id} isOwnProfile={isOwnProfile} />}
             </TabContent>
           </div>
         </div>

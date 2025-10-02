@@ -103,7 +103,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     } finally {
       // Clear local state regardless of API call result
       setUser(null);
-      router.push('/login');
+      // Send user to landing page which includes sign in/up
+      router.push('/');
     }
   };
 

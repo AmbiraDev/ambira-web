@@ -1,18 +1,32 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Users can read/write their own profile
+    function canAdjustFollowersOnly() {
+      return request.resource.data.diff(resource.data).changedKeys().hasOnly(['followersCount', 'updatedAt'])
+        && (
+          request.resource.data.followersCount == resource.data.followersCount + 1 ||
+          request.resource.data.followersCount == resource.data.followersCount - 1
+        );
+    }
+    // Users collection and activeSession subcollection
     match /users/{userId} {
+      // Owner can read/write own profile
       allow read, write: if request.auth != null && request.auth.uid == userId;
-      // Allow public read access for profile visibility (with fallback)
-      allow read: if request.auth != null && 
-        (resource.data.profileVisibility == 'everyone' || 
+
+      // Allow authenticated users to atomically adjust another user's followersCount by ±1
+      allow update: if request.auth != null && canAdjustFollowersOnly();
+
+      // Authenticated users can read others based on visibility
+      allow read: if request.auth != null &&
+        (resource.data.profileVisibility == 'everyone' ||
          !('profileVisibility' in resource.data));
-      // Allow followers to read if profile is set to followers
-      allow read: if request.auth != null && 
-        resource.data.profileVisibility == 'followers' && 
+      allow read: if request.auth != null &&
+        resource.data.profileVisibility == 'followers' &&
         exists(/databases/$(database)/documents/follows/$(request.auth.uid + '_' + userId));
-      
+
+      // Allow listing users for discovery when authenticated
+      allow list: if request.auth != null;
+
       // Active session subcollection - user can read/write their own active timer
       match /activeSession/{docId} {
         allow read, write: if request.auth != null && request.auth.uid == userId;
@@ -91,6 +105,29 @@ service cloud.firestore {
       allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
       // Read/Update/Delete: validate against stored document
       allow read, update, delete: if request.auth != null && resource.data.userId == request.auth.uid;
+      // Allow reading sessions for stats calculation (authenticated users can read any session)
+      allow read: if request.auth != null;
+    }
+    
+    // Posts
+    match /posts/{postId} {
+      // Create: validate userId on the incoming document
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      // Read: allow authenticated users to read posts
+      allow read: if request.auth != null;
+      // Update/Delete: only post owner can modify
+      allow update, delete: if request.auth != null && resource.data.userId == request.auth.uid;
+    }
+    
+    // Post supports
+    match /postSupports/{supportId} {
+      allow read, write: if request.auth != null && 
+        (request.auth.uid == supportId.split('_')[0] || request.auth.uid == supportId.split('_')[1]);
+    }
+    
+    // Unassigned tasks (user's personal tasks)
+    match /users/{userId}/tasks/{taskId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
     }
     
     // Groups
@@ -100,9 +137,6 @@ service cloud.firestore {
         request.auth.uid in resource.data.memberIds;
     }
     
-    // Allow authenticated users to query users collection for discovery
-    match /users/{userId} {
-      allow list: if request.auth != null;
-    }
+    // (users match consolidated above)
   }
 }
