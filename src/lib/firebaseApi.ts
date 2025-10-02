@@ -314,6 +314,43 @@ export const firebaseUserApi = {
         throw new Error('This profile is only visible to followers');
       }
       
+      // Ensure follower/following counts are properly set
+      let followersCount = userData.followersCount || 0;
+      let followingCount = userData.followingCount || 0;
+      
+      // If counts are 0 or undefined, try to recalculate from follows collection
+      if (followersCount === 0 && followingCount === 0) {
+        try {
+          // Count followers (people who follow this user)
+          const followersQuery = query(
+            collection(db, 'follows'),
+            where('followingId', '==', userDoc.id)
+          );
+          const followersSnapshot = await getDocs(followersQuery);
+          followersCount = followersSnapshot.size;
+          
+          // Count following (people this user follows)
+          const followingQuery = query(
+            collection(db, 'follows'),
+            where('followerId', '==', userDoc.id)
+          );
+          const followingSnapshot = await getDocs(followingQuery);
+          followingCount = followingSnapshot.size;
+          
+          // Update the user document with correct counts if they were missing
+          if (userData.followersCount === undefined || userData.followingCount === undefined) {
+            await updateDoc(doc(db, 'users', userDoc.id), {
+              followersCount,
+              followingCount,
+              updatedAt: serverTimestamp()
+            });
+          }
+        } catch (error) {
+          console.warn('Failed to recalculate follower counts:', error);
+          // Keep the default values if recalculation fails
+        }
+      }
+      
       return {
         id: userDoc.id,
         username: userData.username,
@@ -321,8 +358,8 @@ export const firebaseUserApi = {
         bio: userData.bio,
         location: userData.location,
         profilePicture: userData.profilePicture,
-        followersCount: userData.followersCount || 0,
-        followingCount: userData.followingCount || 0,
+        followersCount,
+        followingCount,
         totalHours: userData.totalHours || 0,
         isFollowing,
         isPrivate: profileVisibility === 'private',
@@ -556,6 +593,38 @@ export const firebaseUserApi = {
       await batch.commit();
     } catch (error: any) {
       throw new Error(error.message || 'Failed to unfollow user');
+    }
+  },
+
+  // Sync follower counts for a user (recalculate from follows collection)
+  syncFollowerCounts: async (userId: string): Promise<{ followersCount: number; followingCount: number }> => {
+    try {
+      // Count followers (people who follow this user)
+      const followersQuery = query(
+        collection(db, 'follows'),
+        where('followingId', '==', userId)
+      );
+      const followersSnapshot = await getDocs(followersQuery);
+      const followersCount = followersSnapshot.size;
+      
+      // Count following (people this user follows)
+      const followingQuery = query(
+        collection(db, 'follows'),
+        where('followerId', '==', userId)
+      );
+      const followingSnapshot = await getDocs(followingQuery);
+      const followingCount = followingSnapshot.size;
+      
+      // Update the user document with correct counts
+      await updateDoc(doc(db, 'users', userId), {
+        followersCount,
+        followingCount,
+        updatedAt: serverTimestamp()
+      });
+      
+      return { followersCount, followingCount };
+    } catch (error: any) {
+      throw new Error(error.message || 'Failed to sync follower counts');
     }
   },
 

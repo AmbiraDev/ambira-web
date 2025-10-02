@@ -130,6 +130,16 @@ service cloud.firestore {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
     
+    // Follows
+    match /follows/{followId} {
+      // Create: validate followerId matches authenticated user
+      allow create: if request.auth != null && request.resource.data.followerId == request.auth.uid;
+      // Read: allow authenticated users to read follows for stats calculation
+      allow read: if request.auth != null;
+      // Delete: only the follower can delete their own follow
+      allow delete: if request.auth != null && resource.data.followerId == request.auth.uid;
+    }
+    
     // Groups
     match /groups/{groupId} {
       allow read: if resource.data.privacySetting == 'public';
