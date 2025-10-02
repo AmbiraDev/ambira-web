@@ -7,7 +7,11 @@ import {
   Project,
   ProjectStats,
   CreateProjectData,
-  UpdateProjectData
+  UpdateProjectData,
+  ActiveTimer,
+  Session,
+  CreateSessionData,
+  Task
 } from '@/types';
 
 // Create axios instance
@@ -158,6 +162,66 @@ export const projectApi = {
   // Restore project
   restoreProject: async (id: string): Promise<Project> => {
     const response: AxiosResponse<Project> = await api.patch(`/projects/${id}/restore`);
+    return response.data;
+  },
+};
+
+// Timer API methods
+export const timerApi = {
+  // Start a new timer session
+  startSession: async (projectId: string, taskIds: string[] = []): Promise<ActiveTimer> => {
+    const response: AxiosResponse<ActiveTimer> = await api.post('/sessions/start', {
+      projectId,
+      taskIds,
+    });
+    return response.data;
+  },
+
+  // Update active timer (for pause/resume)
+  updateActiveTimer: async (timerId: string, pausedDuration: number, taskIds: string[] = []): Promise<ActiveTimer> => {
+    const response: AxiosResponse<ActiveTimer> = await api.put(`/sessions/active/${timerId}`, {
+      pausedDuration,
+      taskIds,
+    });
+    return response.data;
+  },
+
+  // Get active timer
+  getActiveTimer: async (): Promise<ActiveTimer | null> => {
+    try {
+      const response: AxiosResponse<ActiveTimer> = await api.get('/sessions/active');
+      return response.data;
+    } catch (error: any) {
+      if (error.response?.status === 404) {
+        return null; // No active timer
+      }
+      throw error;
+    }
+  },
+
+  // Finish timer and create session
+  finishSession: async (timerId: string, sessionData: CreateSessionData): Promise<Session> => {
+    const response: AxiosResponse<Session> = await api.post(`/sessions/finish/${timerId}`, sessionData);
+    return response.data;
+  },
+
+  // Cancel active timer
+  cancelActiveTimer: async (timerId: string): Promise<void> => {
+    await api.delete(`/sessions/active/${timerId}`);
+  },
+};
+
+// Task API methods
+export const taskApi = {
+  // Get tasks for a project
+  getProjectTasks: async (projectId: string): Promise<Task[]> => {
+    const response: AxiosResponse<Task[]> = await api.get(`/projects/${projectId}/tasks`);
+    return response.data;
+  },
+
+  // Update task status
+  updateTaskStatus: async (taskId: string, status: 'active' | 'completed' | 'archived'): Promise<Task> => {
+    const response: AxiosResponse<Task> = await api.patch(`/tasks/${taskId}`, { status });
     return response.data;
   },
 };

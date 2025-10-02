@@ -6,7 +6,11 @@ import {
   Project,
   ProjectStats,
   CreateProjectData,
-  UpdateProjectData
+  UpdateProjectData,
+  ActiveTimer,
+  Session,
+  CreateSessionData,
+  Task
 } from '@/types';
 
 // Mock users database (in memory)
@@ -66,6 +70,60 @@ const mockProjects: Project[] = [
     updatedAt: new Date('2024-01-18'),
   },
 ];
+
+// Mock tasks database (in memory)
+const mockTasks: Task[] = [
+  {
+    id: '1',
+    projectId: '1',
+    name: 'Implement user authentication',
+    status: 'completed',
+    createdAt: new Date('2024-01-01'),
+    completedAt: new Date('2024-01-05'),
+  },
+  {
+    id: '2',
+    projectId: '1',
+    name: 'Build project dashboard',
+    status: 'active',
+    createdAt: new Date('2024-01-02'),
+  },
+  {
+    id: '3',
+    projectId: '1',
+    name: 'Add timer functionality',
+    status: 'active',
+    createdAt: new Date('2024-01-10'),
+  },
+  {
+    id: '4',
+    projectId: '2',
+    name: 'Learn React hooks',
+    status: 'completed',
+    createdAt: new Date('2024-01-10'),
+    completedAt: new Date('2024-01-12'),
+  },
+  {
+    id: '5',
+    projectId: '2',
+    name: 'Build React components',
+    status: 'active',
+    createdAt: new Date('2024-01-15'),
+  },
+  {
+    id: '6',
+    projectId: '3',
+    name: 'Create workout plan',
+    status: 'active',
+    createdAt: new Date('2024-01-05'),
+  },
+];
+
+// Mock active timers database (in memory)
+const mockActiveTimers: ActiveTimer[] = [];
+
+// Mock sessions database (in memory)
+const mockSessions: Session[] = [];
 
 // Generate mock token
 const generateToken = (userId: string): string => {
@@ -277,5 +335,170 @@ export const mockProjectApi = {
 
   restoreProject: async (id: string, token: string): Promise<Project> => {
     return mockProjectApi.updateProject(id, { status: 'active' }, token);
+  },
+};
+
+// Mock timer API
+export const mockTimerApi = {
+  startSession: async (projectId: string, taskIds: string[] = [], token: string): Promise<ActiveTimer> => {
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 800));
+
+    const userId = getCurrentUserId(token);
+    
+    // Check if project exists and belongs to user
+    const project = mockProjects.find(p => p.id === projectId && p.userId === userId);
+    if (!project) {
+      throw new Error('Project not found');
+    }
+
+    // Cancel any existing active timer for this user
+    const existingTimerIndex = mockActiveTimers.findIndex(t => t.userId === userId);
+    if (existingTimerIndex !== -1) {
+      mockActiveTimers.splice(existingTimerIndex, 1);
+    }
+
+    // Create new active timer
+    const newTimer: ActiveTimer = {
+      id: `timer_${Date.now()}`,
+      userId,
+      projectId,
+      startTime: new Date(),
+      pausedDuration: 0,
+      selectedTaskIds: taskIds,
+      lastUpdated: new Date(),
+    };
+
+    mockActiveTimers.push(newTimer);
+    return newTimer;
+  },
+
+  updateActiveTimer: async (timerId: string, pausedDuration: number, taskIds: string[] = [], token: string): Promise<ActiveTimer> => {
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 600));
+
+    const userId = getCurrentUserId(token);
+    const timerIndex = mockActiveTimers.findIndex(t => t.id === timerId && t.userId === userId);
+    
+    if (timerIndex === -1) {
+      throw new Error('Active timer not found');
+    }
+
+    mockActiveTimers[timerIndex] = {
+      ...mockActiveTimers[timerIndex],
+      pausedDuration,
+      selectedTaskIds: taskIds,
+      lastUpdated: new Date(),
+    };
+
+    return mockActiveTimers[timerIndex];
+  },
+
+  getActiveTimer: async (token: string): Promise<ActiveTimer | null> => {
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    const userId = getCurrentUserId(token);
+    const activeTimer = mockActiveTimers.find(t => t.userId === userId);
+    
+    return activeTimer || null;
+  },
+
+  finishSession: async (timerId: string, sessionData: CreateSessionData, token: string): Promise<Session> => {
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
+    const userId = getCurrentUserId(token);
+    const timerIndex = mockActiveTimers.findIndex(t => t.id === timerId && t.userId === userId);
+    
+    if (timerIndex === -1) {
+      throw new Error('Active timer not found');
+    }
+
+    // Get selected tasks
+    const selectedTasks = mockTasks.filter(task => sessionData.taskIds.includes(task.id));
+
+    // Create session
+    const newSession: Session = {
+      id: `session_${Date.now()}`,
+      userId,
+      projectId: sessionData.projectId,
+      title: sessionData.title,
+      description: sessionData.description,
+      duration: sessionData.duration,
+      startTime: sessionData.startTime,
+      tasks: selectedTasks,
+      tags: sessionData.tags || [],
+      visibility: 'private',
+      howFelt: sessionData.howFelt,
+      privateNotes: sessionData.privateNotes,
+      isArchived: false,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    mockSessions.push(newSession);
+
+    // Remove active timer
+    mockActiveTimers.splice(timerIndex, 1);
+
+    return newSession;
+  },
+
+  cancelActiveTimer: async (timerId: string, token: string): Promise<void> => {
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 400));
+
+    const userId = getCurrentUserId(token);
+    const timerIndex = mockActiveTimers.findIndex(t => t.id === timerId && t.userId === userId);
+    
+    if (timerIndex !== -1) {
+      mockActiveTimers.splice(timerIndex, 1);
+    }
+  },
+};
+
+// Mock task API
+export const mockTaskApi = {
+  getProjectTasks: async (projectId: string, token: string): Promise<Task[]> => {
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 600));
+
+    const userId = getCurrentUserId(token);
+    
+    // Verify project belongs to user
+    const project = mockProjects.find(p => p.id === projectId && p.userId === userId);
+    if (!project) {
+      throw new Error('Project not found');
+    }
+
+    return mockTasks.filter(task => task.projectId === projectId);
+  },
+
+  updateTaskStatus: async (taskId: string, status: 'active' | 'completed' | 'archived', token: string): Promise<Task> => {
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    const userId = getCurrentUserId(token);
+    const taskIndex = mockTasks.findIndex(t => t.id === taskId);
+    
+    if (taskIndex === -1) {
+      throw new Error('Task not found');
+    }
+
+    // Verify task belongs to user's project
+    const task = mockTasks[taskIndex];
+    const project = mockProjects.find(p => p.id === task.projectId && p.userId === userId);
+    if (!project) {
+      throw new Error('Task not found');
+    }
+
+    mockTasks[taskIndex] = {
+      ...task,
+      status,
+      completedAt: status === 'completed' ? new Date() : undefined,
+    };
+
+    return mockTasks[taskIndex];
   },
 };

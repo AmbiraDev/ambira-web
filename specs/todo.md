@@ -101,32 +101,32 @@
 - [ ] Ensure task persistence across sessions
 
 ### Session Timer
-- [ ] Create TimerContext for state management
-- [ ] Build timer API endpoints (start/pause/resume/finish)
-- [ ] Create timer UI page with large display
-- [ ] Implement start/pause/resume buttons
-- [ ] Add project selection to timer
-- [ ] Load project tasks into timer
-- [ ] Enable task checking during session
-- [ ] Add new task input during session
-- [ ] Implement database persistence (no localStorage)
-- [ ] Calculate elapsed from start timestamp
-- [ ] Handle page refresh recovery
-- [ ] Add auto-save every 30 seconds
-- [ ] Create active timer indicator in nav
-- [ ] Prevent multiple simultaneous timers
-- [ ] Build session notes field
+- [x] Create TimerContext for state management
+- [x] Build timer API endpoints (start/pause/resume/finish)
+- [x] Create timer UI page with large display
+- [x] Implement start/pause/resume buttons
+- [x] Add project selection to timer
+- [x] Load project tasks into timer
+- [x] Enable task checking during session
+- [x] Add new task input during session
+- [x] Implement database persistence (no localStorage)
+- [x] Calculate elapsed from start timestamp
+- [x] Handle page refresh recovery
+- [x] Add auto-save every 30 seconds
+- [x] Create active timer indicator in nav
+- [x] Prevent multiple simultaneous timers
+- [x] Build session notes field
 
 ### Session Completion
-- [ ] Create session completion modal
-- [ ] Build session title input (auto-generated default)
-- [ ] Add duration display (non-editable from timer)
-- [ ] Show completed tasks with checkmarks
-- [ ] Add description field
-- [ ] Create privacy settings dropdown
-- [ ] Add "How did it feel?" rating (1-5 stars)
-- [ ] Implement Save/Discard buttons
-- [ ] Store session in database
+- [x] Create session completion modal
+- [x] Build session title input (auto-generated default)
+- [x] Add duration display (non-editable from timer)
+- [x] Show completed tasks with checkmarks
+- [x] Add description field
+- [x] Create privacy settings dropdown
+- [x] Add "How did it feel?" rating (1-5 stars)
+- [x] Implement Save/Discard buttons
+- [x] Store session in database
 - [ ] Link tasks to session
 - [ ] Update project statistics
 - [ ] Calculate streak updates

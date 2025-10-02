@@ -1,12 +1,32 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
+import { useTimer } from '@/contexts/TimerContext';
 
 export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathname = usePathname();
+  const { timerState, getElapsedTime, getFormattedTime } = useTimer();
+  const [displayTime, setDisplayTime] = useState(0);
+
+  // Update display time every second when timer is running
+  useEffect(() => {
+    if (!timerState.isRunning) {
+      setDisplayTime(timerState.pausedDuration);
+      return;
+    }
+
+    const interval = setInterval(() => {
+      setDisplayTime(getElapsedTime());
+    }, 1000);
+
+    // Set initial time
+    setDisplayTime(getElapsedTime());
+
+    return () => clearInterval(interval);
+  }, [timerState.isRunning, timerState.startTime, timerState.pausedDuration, getElapsedTime]);
 
   const isActive = (path: string) => {
     if (path === '/') {
@@ -17,8 +37,8 @@ export default function Header() {
 
   return (
     <header className="sticky top-0 left-0 right-0 z-50 bg-white">
-      <div className="max-w-[1400px] mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
+        <div className="max-w-[1400px] mx-auto px-4">
+          <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="flex items-center space-x-8">
             <Link href="/" className="flex items-center space-x-3">
@@ -102,10 +122,23 @@ export default function Header() {
               <span className="text-xs">Give a Gift</span>
             </button>
 
-            {/* Start Session Button */}
-            <button className="hidden md:block px-4 py-1.5 bg-[#007AFF] text-white text-sm font-medium rounded hover:bg-[#0056D6] transition-colors">
-              Start Session
-            </button>
+            {/* Timer Display / Start Session Button */}
+            {timerState.currentProject && (timerState.isRunning || timerState.pausedDuration > 0) ? (
+              <Link 
+                href="/timer"
+                className="hidden md:flex items-center space-x-2 px-4 py-1.5 bg-green-600 text-white text-sm font-medium rounded hover:bg-green-700 transition-colors font-mono"
+              >
+                <div className={`w-2 h-2 rounded-full ${timerState.isRunning ? 'bg-green-300 animate-pulse' : 'bg-yellow-300'}`} />
+                <span>{getFormattedTime(displayTime)}</span>
+              </Link>
+            ) : (
+              <Link 
+                href="/timer"
+                className="hidden md:block px-4 py-1.5 bg-[#007AFF] text-white text-sm font-medium rounded hover:bg-[#0056D6] transition-colors"
+              >
+                Start Session
+              </Link>
+            )}
 
             {/* Notifications */}
             <button className="p-2 text-gray-600 hover:text-[#007AFF] transition-colors">

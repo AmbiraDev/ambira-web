@@ -205,3 +205,50 @@ export interface ProjectContextType {
   restoreProject: (id: string) => Promise<Project>;
   getProjectStats: (id: string) => Promise<ProjectStats>;
 }
+
+// Timer-related types
+export interface ActiveTimer {
+  id: string;
+  userId: string;
+  projectId: string;
+  startTime: Date;
+  pausedDuration: number; // seconds
+  selectedTaskIds: string[];
+  lastUpdated: Date;
+}
+
+export interface TimerState {
+  isRunning: boolean;
+  startTime: Date | null;
+  pausedDuration: number;
+  currentProject: Project | null;
+  selectedTasks: Task[];
+  activeTimerId: string | null;
+  isConnected: boolean;
+  lastAutoSave: Date | null;
+}
+
+export interface TimerContextType {
+  timerState: TimerState;
+  startTimer: (projectId: string, taskIds?: string[]) => Promise<void>;
+  pauseTimer: () => Promise<void>;
+  resumeTimer: () => Promise<void>;
+  finishTimer: (title: string, description?: string, tags?: string[], howFelt?: number, privateNotes?: string) => Promise<Session>;
+  resetTimer: () => Promise<void>;
+  updateSelectedTasks: (taskIds: string[]) => Promise<void>;
+  loadActiveTimer: () => Promise<void>;
+  getElapsedTime: () => number;
+  getFormattedTime: (seconds: number) => string;
+}
+
+export interface CreateSessionData {
+  projectId: string;
+  title: string;
+  description?: string;
+  duration: number;
+  startTime: Date;
+  taskIds: string[];
+  tags?: string[];
+  howFelt?: number;
+  privateNotes?: string;
+}
