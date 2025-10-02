@@ -1,5 +1,14 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
-import { AuthResponse, LoginCredentials, SignupCredentials, AuthUser } from '@/types';
+import { 
+  AuthResponse, 
+  LoginCredentials, 
+  SignupCredentials, 
+  AuthUser,
+  Project,
+  ProjectStats,
+  CreateProjectData,
+  UpdateProjectData
+} from '@/types';
 
 // Create axios instance
 const api: AxiosInstance = axios.create({
@@ -88,6 +97,56 @@ export const authApi = {
     } catch {
       return false;
     }
+  },
+};
+
+// Project API methods
+export const projectApi = {
+  // Get all user's projects
+  getProjects: async (): Promise<Project[]> => {
+    const response: AxiosResponse<Project[]> = await api.get('/projects');
+    return response.data;
+  },
+
+  // Get single project by ID
+  getProject: async (id: string): Promise<Project> => {
+    const response: AxiosResponse<Project> = await api.get(`/projects/${id}`);
+    return response.data;
+  },
+
+  // Create new project
+  createProject: async (data: CreateProjectData): Promise<Project> => {
+    const response: AxiosResponse<Project> = await api.post('/projects', data);
+    return response.data;
+  },
+
+  // Update project
+  updateProject: async (id: string, data: UpdateProjectData): Promise<Project> => {
+    const response: AxiosResponse<Project> = await api.put(`/projects/${id}`, data);
+    return response.data;
+  },
+
+  // Delete project
+  deleteProject: async (id: string): Promise<void> => {
+    await api.delete(`/projects/${id}`);
+  },
+
+  // Get project statistics
+  getProjectStats: async (id: string): Promise<ProjectStats> => {
+    const response: AxiosResponse<ProjectStats> = await api.get(`/projects/${id}/stats`);
+    return response.data;
+  },
+
+  // Archive project
+  archiveProject: async (id: string): Promise<Project> => {
+    const response: AxiosResponse<Project> = await api.patch(`/projects/${id}/archive`);
+    return response.data;
+  },
+
+  // Restore project
+  restoreProject: async (id: string): Promise<Project> => {
+    const response: AxiosResponse<Project> = await api.patch(`/projects/${id}/restore`);
+    return response.data;
   },
 };
 

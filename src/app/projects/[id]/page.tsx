@@ -1,26 +1,52 @@
+'use client';
+
+import React from 'react';
+import { ProjectDetailPage } from '@/components/ProjectDetailPage';
+import { useAuth } from '@/contexts/AuthContext';
+import { ProtectedRoute } from '@/components/ProtectedRoute';
+import Header from '@/components/HeaderComponent';
+
 interface ProjectDetailPageProps {
   params: Promise<{
     id: string;
   }>;
 }
 
-export default async function ProjectDetailPage({ params }: ProjectDetailPageProps) {
-  const { id } = await params;
-  
+function ProjectDetailContent({ projectId }: { projectId: string }) {
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground mb-2">Project Details</h1>
-        <p className="text-muted-foreground">
-          Project ID: {id}
-        </p>
-      </div>
+    <div className="min-h-screen bg-gray-50">
+      <Header />
       
-      <div className="bg-card-background p-8 rounded-lg shadow-sm border border-border">
-        <p className="text-center text-muted">
-          Project detail view will be implemented here
-        </p>
+      <div className="max-w-[1400px] mx-auto px-4 py-6">
+        <ProjectDetailPage projectId={projectId} />
       </div>
     </div>
+  );
+}
+
+export default function ProjectDetailPageWrapper({ params }: ProjectDetailPageProps) {
+  const [projectId, setProjectId] = React.useState<string>('');
+
+  React.useEffect(() => {
+    params.then(({ id }) => setProjectId(id));
+  }, [params]);
+
+  return (
+    <ProtectedRoute>
+      {!projectId ? (
+        <div className="min-h-screen bg-gray-50">
+          <Header />
+          <div className="max-w-[1400px] mx-auto px-4 py-6">
+            <div className="animate-pulse">
+              <div className="h-8 bg-gray-200 rounded w-48 mb-4"></div>
+              <div className="h-4 bg-gray-200 rounded w-64 mb-8"></div>
+              <div className="h-64 bg-gray-200 rounded"></div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <ProjectDetailContent projectId={projectId} />
+      )}
+    </ProtectedRoute>
   );
 }

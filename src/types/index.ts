@@ -26,6 +26,17 @@ export interface Project {
   updatedAt: Date;
 }
 
+export interface ProjectStats {
+  totalHours: number;
+  weeklyHours: number;
+  sessionCount: number;
+  currentStreak: number;
+  weeklyProgressPercentage: number;
+  totalProgressPercentage: number;
+  averageSessionDuration: number;
+  lastSessionDate?: Date;
+}
+
 export interface Task {
   id: string;
   projectId: string;
@@ -157,4 +168,40 @@ export interface AuthContextType {
   login: (credentials: LoginCredentials) => Promise<void>;
   signup: (credentials: SignupCredentials) => Promise<void>;
   logout: () => void;
+}
+
+// Project-related types
+export interface CreateProjectData {
+  name: string;
+  description: string;
+  icon: string;
+  color: string;
+  weeklyTarget?: number;
+  totalTarget?: number;
+}
+
+export interface UpdateProjectData {
+  name?: string;
+  description?: string;
+  icon?: string;
+  color?: string;
+  weeklyTarget?: number;
+  totalTarget?: number;
+  status?: 'active' | 'completed' | 'archived';
+}
+
+export interface ProjectWithStats extends Project {
+  stats: ProjectStats;
+}
+
+export interface ProjectContextType {
+  projects: Project[];
+  isLoading: boolean;
+  error: string | null;
+  createProject: (data: CreateProjectData) => Promise<Project>;
+  updateProject: (id: string, data: UpdateProjectData) => Promise<Project>;
+  deleteProject: (id: string) => Promise<void>;
+  archiveProject: (id: string) => Promise<Project>;
+  restoreProject: (id: string) => Promise<Project>;
+  getProjectStats: (id: string) => Promise<ProjectStats>;
 }

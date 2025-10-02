@@ -64,22 +64,22 @@
 ## Phase 2: Core Features
 
 ### Projects System
-- [ ] Create project CRUD API endpoints
-- [ ] Build projects list page with tabs (Active/Completed/Archived)
-- [ ] Create project card component with stats
-- [ ] Build project creation modal
-- [ ] Add icon selector (20 preset icons)
-- [ ] Add color picker (8 brand colors)
-- [ ] Implement weekly/total target inputs
-- [ ] Create project detail page with routing
-- [ ] Build Overview tab with charts
+- [x] Create project CRUD API endpoints
+- [x] Build projects list page with tabs (Active/Completed/Archived)
+- [x] Create project card component with stats
+- [x] Build project creation modal
+- [x] Add icon selector (10 preset icons)
+- [x] Add color picker (8 brand colors)
+- [x] Implement weekly/total target inputs
+- [x] Create project detail page with routing
+- [x] Build Overview tab with charts
 - [ ] Add time period selector (7D/1M/3M/6M/1Y)
 - [ ] Create line chart for cumulative hours
 - [ ] Add projection line to goal
-- [ ] Display current week/month statistics
-- [ ] Implement project editing
-- [ ] Add project deletion with cascade handling
-- [ ] Create project archiving functionality
+- [x] Display current week/month statistics
+- [x] Implement project editing
+- [x] Add project deletion with cascade handling
+- [x] Create project archiving functionality
 
 ### Task Management
 - [ ] Create task CRUD API endpoints

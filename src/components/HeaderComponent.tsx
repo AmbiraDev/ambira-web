@@ -2,9 +2,18 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import { usePathname } from 'next/navigation';
 
 export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const pathname = usePathname();
+
+  const isActive = (path: string) => {
+    if (path === '/') {
+      return pathname === '/';
+    }
+    return pathname.startsWith(path);
+  };
 
   return (
     <header className="sticky top-0 left-0 right-0 z-50 bg-white border-b border-gray-200">
@@ -21,16 +30,44 @@ export default function Header() {
 
             {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center space-x-6">
-              <Link href="/" className="text-sm font-medium text-gray-900 hover:text-[#007AFF] transition-colors border-b-2 border-[#007AFF] pb-3">
+              <Link 
+                href="/" 
+                className={`text-sm font-medium transition-colors pb-3 ${
+                  isActive('/') 
+                    ? 'text-gray-900 border-b-2 border-[#007AFF]' 
+                    : 'text-gray-600 hover:text-[#007AFF]'
+                }`}
+              >
                 Dashboard
               </Link>
-              <Link href="/projects" className="text-sm font-medium text-gray-600 hover:text-[#007AFF] transition-colors pb-3">
+              <Link 
+                href="/projects" 
+                className={`text-sm font-medium transition-colors pb-3 ${
+                  isActive('/projects') 
+                    ? 'text-gray-900 border-b-2 border-[#007AFF]' 
+                    : 'text-gray-600 hover:text-[#007AFF]'
+                }`}
+              >
                 Projects
               </Link>
-              <Link href="/groups" className="text-sm font-medium text-gray-600 hover:text-[#007AFF] transition-colors pb-3">
+              <Link 
+                href="/groups" 
+                className={`text-sm font-medium transition-colors pb-3 ${
+                  isActive('/groups') 
+                    ? 'text-gray-900 border-b-2 border-[#007AFF]' 
+                    : 'text-gray-600 hover:text-[#007AFF]'
+                }`}
+              >
                 Groups
               </Link>
-              <Link href="/challenges" className="text-sm font-medium text-gray-600 hover:text-[#007AFF] transition-colors pb-3">
+              <Link 
+                href="/challenges" 
+                className={`text-sm font-medium transition-colors pb-3 ${
+                  isActive('/challenges') 
+                    ? 'text-gray-900 border-b-2 border-[#007AFF]' 
+                    : 'text-gray-600 hover:text-[#007AFF]'
+                }`}
+              >
                 Challenges
               </Link>
             </nav>
@@ -98,16 +135,44 @@ export default function Header() {
         {isMobileMenuOpen && (
           <div className="md:hidden border-t border-gray-200 bg-white">
             <nav className="py-4 space-y-2">
-              <Link href="/" className="block px-4 py-2 text-gray-900 hover:text-[#007AFF] transition-colors">
+              <Link 
+                href="/" 
+                className={`block px-4 py-2 transition-colors ${
+                  isActive('/') 
+                    ? 'text-[#007AFF] bg-blue-50' 
+                    : 'text-gray-900 hover:text-[#007AFF]'
+                }`}
+              >
                 Dashboard
               </Link>
-              <Link href="/projects" className="block px-4 py-2 text-gray-600 hover:text-[#007AFF] transition-colors">
+              <Link 
+                href="/projects" 
+                className={`block px-4 py-2 transition-colors ${
+                  isActive('/projects') 
+                    ? 'text-[#007AFF] bg-blue-50' 
+                    : 'text-gray-600 hover:text-[#007AFF]'
+                }`}
+              >
                 Projects
               </Link>
-              <Link href="/groups" className="block px-4 py-2 text-gray-600 hover:text-[#007AFF] transition-colors">
+              <Link 
+                href="/groups" 
+                className={`block px-4 py-2 transition-colors ${
+                  isActive('/groups') 
+                    ? 'text-[#007AFF] bg-blue-50' 
+                    : 'text-gray-600 hover:text-[#007AFF]'
+                }`}
+              >
                 Groups
               </Link>
-              <Link href="/challenges" className="block px-4 py-2 text-gray-600 hover:text-[#007AFF] transition-colors">
+              <Link 
+                href="/challenges" 
+                className={`block px-4 py-2 transition-colors ${
+                  isActive('/challenges') 
+                    ? 'text-[#007AFF] bg-blue-50' 
+                    : 'text-gray-600 hover:text-[#007AFF]'
+                }`}
+              >
                 Challenges
               </Link>
             </nav>
