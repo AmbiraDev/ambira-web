@@ -19,11 +19,18 @@ A social productivity tracking application built with Next.js, TypeScript, and T
   - `/settings` and `/settings/privacy` - User settings
 
 ### ✅ Social Features (NEW!)
-- **User Profiles** with comprehensive profile pages
-  - Profile header with avatar, bio, stats (followers, following, total hours)
+- **User Profiles** with Strava-inspired profile pages
+  - Clean white profile header with large avatar and stats (followers, following, total hours)
   - Tabbed interface: Overview, Achievements, Following, Posts
   - Activity statistics with calendar heatmap and charts
-  - Edit profile modal with privacy controls
+  - Always visible header/navigation bar for consistent UX
+- **Settings System** with Strava-style sidebar navigation
+  - Dedicated settings page with left sidebar tabs
+  - My Profile: Edit name, bio, location, profile picture
+  - My Account: View email, username, membership status
+  - Privacy Controls: Profile visibility settings
+  - Email Notifications and Display Preferences sections
+  - Accessible via profile dropdown menu in header
 - **Following System** with real-time follow/unfollow functionality
   - Follow/unfollow buttons with optimistic updates
   - Followers and following lists
@@ -37,7 +44,9 @@ A social productivity tracking application built with Next.js, TypeScript, and T
   - Activity and project visibility settings
   - Blocked users management
 - **Navigation Integration**
-  - Updated header and bottom navigation with user links
+  - Updated header with profile dropdown menu (My Profile, Settings, Log Out)
+  - Profile avatar now uses brand orange color (#FC4C02)
+  - Bottom navigation with user links
   - Profile links throughout the app
   - Users discovery page with search and suggestions
 

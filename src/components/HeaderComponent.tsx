@@ -1,16 +1,18 @@
 'use client';
 
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 import { useTimer } from '@/contexts/TimerContext';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const profileCloseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pathname = usePathname();
   const { timerState } = useTimer();
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
 
   const isActive = (path: string) => {
     if (path === '/') {
@@ -136,20 +138,76 @@ export default function Header() {
               </svg>
             </button>
 
-            {/* Profile with dropdown */}
-            <Link 
-              href={user ? `/profile/${user.username}` : '/profile'}
-              className="flex items-center space-x-1 text-gray-600 hover:text-[#007AFF] transition-colors"
+            {/* Profile with dropdown (opens on hover, with small close delay) */}
+            <div 
+              className="relative"
+              onMouseEnter={() => {
+                if (profileCloseTimerRef.current) {
+                  clearTimeout(profileCloseTimerRef.current);
+                  profileCloseTimerRef.current = null;
+                }
+                setIsProfileMenuOpen(true);
+              }}
+              onMouseLeave={() => {
+                if (profileCloseTimerRef.current) {
+                  clearTimeout(profileCloseTimerRef.current);
+                }
+                profileCloseTimerRef.current = setTimeout(() => setIsProfileMenuOpen(false), 200);
+              }}
             >
-              <div className="w-8 h-8 bg-gray-400 rounded-full flex items-center justify-center">
-                <span className="text-sm font-medium text-white">
-                  {user ? user.name.charAt(0).toUpperCase() : 'U'}
-                </span>
-              </div>
-              <svg className="w-4 h-4 hidden md:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </Link>
+              <button 
+                className="flex items-center space-x-1 text-gray-600 hover:text-[#007AFF] transition-colors"
+              >
+                <div className="w-8 h-8 bg-[#FC4C02] rounded-full flex items-center justify-center">
+                  <span className="text-sm font-medium text-white">
+                    {user ? user.name.charAt(0).toUpperCase() : 'U'}
+                  </span>
+                </div>
+                <svg className="w-4 h-4 hidden md:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+
+              {/* Dropdown Menu */}
+              {isProfileMenuOpen && (
+                <div 
+                  className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-20"
+                  onMouseEnter={() => {
+                    if (profileCloseTimerRef.current) {
+                      clearTimeout(profileCloseTimerRef.current);
+                      profileCloseTimerRef.current = null;
+                    }
+                    setIsProfileMenuOpen(true);
+                  }}
+                  onMouseLeave={() => {
+                    if (profileCloseTimerRef.current) {
+                      clearTimeout(profileCloseTimerRef.current);
+                    }
+                    profileCloseTimerRef.current = setTimeout(() => setIsProfileMenuOpen(false), 200);
+                  }}
+                >
+                    <Link
+                      href={user ? `/profile/${user.username}` : '/profile'}
+                      className="block px-4 py-2 text-gray-900 hover:bg-gray-50 transition-colors"
+                    >
+                      My Profile
+                    </Link>
+                    <Link
+                      href="/settings"
+                      className="block px-4 py-2 text-gray-900 hover:bg-gray-50 transition-colors"
+                    >
+                      Settings
+                    </Link>
+                    <hr className="my-2 border-gray-200" />
+                    <button
+                      onClick={() => logout()}
+                      className="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 transition-colors"
+                    >
+                      Log Out
+                    </button>
+                </div>
+              )}
+            </div>
 
             {/* Plus button */}
             <button className="p-2 text-gray-600 hover:text-[#007AFF] transition-colors">

@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Select, SelectItem } from '@/components/ui/select';
 import { X, Upload, User, MapPin, FileText, Globe, Lock, Users } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -109,8 +109,8 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-background rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+    <div className="max-w-2xl w-full mx-auto p-4">
+      <div className="bg-background rounded-lg shadow-xl w-full">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-border">
           <h2 className="text-xl font-semibold text-foreground">Edit Profile</h2>
@@ -227,45 +227,16 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
           <div className="space-y-4 pt-4 border-t border-border">
             <h3 className="text-lg font-semibold text-foreground">Privacy Settings</h3>
             
-            <div className="space-y-2">
+          <div className="space-y-2">
               <Label className="text-base font-medium">
                 <Globe className="w-4 h-4 inline mr-2" />
                 Profile Visibility
               </Label>
-              <Select value={profileVisibility} onValueChange={(value: any) => setProfileVisibility(value)}>
-                <SelectTrigger className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="everyone">
-                    <div className="flex items-center gap-2">
-                      <Globe className="w-4 h-4" />
-                      <div>
-                        <div className="font-medium">Everyone</div>
-                        <div className="text-sm text-muted-foreground">Anyone can view your profile</div>
-                      </div>
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="followers">
-                    <div className="flex items-center gap-2">
-                      <Users className="w-4 h-4" />
-                      <div>
-                        <div className="font-medium">Followers Only</div>
-                        <div className="text-sm text-muted-foreground">Only people you follow back can view</div>
-                      </div>
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="private">
-                    <div className="flex items-center gap-2">
-                      <Lock className="w-4 h-4" />
-                      <div>
-                        <div className="font-medium">Private</div>
-                        <div className="text-sm text-muted-foreground">Only you can view your profile</div>
-                      </div>
-                    </div>
-                  </SelectItem>
-                </SelectContent>
-              </Select>
+            <Select value={profileVisibility} onChange={(e) => setProfileVisibility(e.target.value as any)}>
+              <SelectItem value="everyone">Everyone</SelectItem>
+              <SelectItem value="followers">Followers only</SelectItem>
+              <SelectItem value="private">Private</SelectItem>
+            </Select>
             </div>
           </div>
 

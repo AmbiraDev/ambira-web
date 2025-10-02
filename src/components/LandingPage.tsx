@@ -300,21 +300,78 @@ export const LandingPage: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Sign Up With Email */}
-                  <button
-                    onClick={handleSignupWithEmail}
-                    className="w-full flex items-center justify-center px-6 py-3 border-2 border-gray-300 text-gray-700 font-medium rounded-lg hover:border-[#007AFF] hover:text-[#007AFF] transition-colors"
-                  >
-                    <span className="mr-2">📧</span>
-                    Sign Up With Email
-                  </button>
+                  {/* Email Auth Actions */}
+                  {!showLogin ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <button
+                        onClick={handleLoginWithEmail}
+                        className="w-full flex items-center justify-center px-6 py-3 border-2 border-gray-300 text-gray-700 font-medium rounded-lg hover:border-[#007AFF] hover:text-[#007AFF] transition-colors"
+                      >
+                        <span className="mr-2">🔐</span>
+                        Log In With Email
+                      </button>
+                      <button
+                        onClick={handleSignupWithEmail}
+                        className="w-full flex items-center justify-center px-6 py-3 border-2 border-gray-300 text-gray-700 font-medium rounded-lg hover:border-[#007AFF] hover:text-[#007AFF] transition-colors"
+                      >
+                        <span className="mr-2">📧</span>
+                        Sign Up With Email
+                      </button>
+                    </div>
+                  ) : (
+                    <form onSubmit={handleLoginSubmit} className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-lg font-semibold text-gray-900">Log in with Email</h3>
+                        <button onClick={() => setShowLogin(false)} className="text-gray-400 hover:text-gray-600" type="button">
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="login_email">Email address</label>
+                        <input
+                          id="login_email"
+                          name="email"
+                          type="email"
+                          autoComplete="email"
+                          value={loginData.email}
+                          onChange={handleLoginChange}
+                          className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:border-transparent ${loginErrors.email ? 'border-red-300' : 'border-gray-300'}`}
+                          placeholder="Enter your email"
+                        />
+                        {loginErrors.email && <p className="mt-1 text-sm text-red-600">{loginErrors.email}</p>}
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1" htmlFor="login_password">Password</label>
+                        <input
+                          id="login_password"
+                          name="password"
+                          type="password"
+                          autoComplete="current-password"
+                          value={loginData.password}
+                          onChange={handleLoginChange}
+                          className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:border-transparent ${loginErrors.password ? 'border-red-300' : 'border-gray-300'}`}
+                          placeholder="Enter your password"
+                        />
+                        {loginErrors.password && <p className="mt-1 text-sm text-red-600">{loginErrors.password}</p>}
+                      </div>
+                      <button
+                        type="submit"
+                        disabled={isLoading}
+                        className="w-full flex justify-center py-3 px-4 rounded-lg text-sm font-medium text-white bg-[#007AFF] hover:bg-[#0056D6] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#007AFF] disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {isLoading ? 'Signing in...' : 'Sign in'}
+                      </button>
+                    </form>
+                  )}
 
                   {/* Login Link */}
-                  <div className="text-center pt-4">
+                  <div className="text-center pt-2">
                     <p className="text-gray-600">
                       Already have an account?{' '}
                       <button
-                        onClick={() => setShowSignup(true)}
+                        onClick={() => setShowLogin(true)}
                         className="text-[#007AFF] hover:text-[#0056D6] font-medium"
                       >
                         Log In

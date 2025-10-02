@@ -47,7 +47,6 @@ export const ProfileTabs: React.FC<ProfileTabsProps> = ({
       id: 'overview',
       label: 'Overview',
       icon: <BarChart3 className="w-4 h-4" />,
-      badge: stats?.totalHours,
     },
     {
       id: 'achievements',

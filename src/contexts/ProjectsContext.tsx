@@ -144,15 +144,50 @@ export const ProjectsProvider: React.FC<ProjectsProviderProps> = ({ children }) 
     try {
       setError(null);
       
-      // TODO: Implement Firebase project stats
-      // For now, return default stats
+      // Compute stats from sessions tied to this project
+      const userId = user?.id;
+      if (!userId) {
+        return { totalHours: 0, weeklyHours: 0, sessionCount: 0, currentStreak: 0, weeklyProgressPercentage: 0, totalProgressPercentage: 0 } as any;
+      }
+
+      // Import on-demand to avoid circular deps
+      const { db } = await import('@/lib/firebase');
+      const { collection, getDocs, query, where } = await import('firebase/firestore');
+
+      const q = query(collection(db, 'sessions'), where('userId', '==', userId), where('projectId', '==', id));
+      const snapshot = await getDocs(q);
+
+      let totalSeconds = 0;
+      let weeklySeconds = 0;
+      let sessionCount = 0;
+      const now = new Date();
+      const weekStart = new Date(now);
+      weekStart.setDate(now.getDate() - now.getDay());
+      weekStart.setHours(0,0,0,0);
+
+      snapshot.forEach((doc) => {
+        const data: any = doc.data();
+        const duration = Number(data.duration) || 0;
+        const start = data.startTime?.toDate ? data.startTime.toDate() : new Date(data.startTime);
+        totalSeconds += duration;
+        sessionCount += 1;
+        if (start >= weekStart) weeklySeconds += duration;
+      });
+
+      const totalHours = totalSeconds / 3600;
+      const weeklyHours = weeklySeconds / 3600;
+
+      // Streak placeholder for now
+      const currentStreak = sessionCount > 0 ? 1 : 0;
+
       return {
-        totalHours: 0,
-        weeklyHours: 0,
-        sessionCount: 0,
-        currentStreak: 0,
-        weeklyProgressPercentage: 0
-      };
+        totalHours,
+        weeklyHours,
+        sessionCount,
+        currentStreak,
+        weeklyProgressPercentage: 0,
+        totalProgressPercentage: 0,
+      } as any;
     } catch (err) {
       console.error('Error fetching project stats:', err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch project stats';

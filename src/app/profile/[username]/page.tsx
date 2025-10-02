@@ -8,9 +8,10 @@ import { useAuth } from '@/contexts/AuthContext';
 import { ProfileHeader } from '@/components/ProfileHeader';
 import { ProfileTabs, TabContent, OverviewContent, AchievementsContent, FollowingContent, PostsContent } from '@/components/ProfileTabs';
 import { ProfileStats } from '@/components/ProfileStats';
-import { EditProfileModal } from '@/components/EditProfileModal';
+import { ProtectedRoute } from '@/components/ProtectedRoute';
+import Header from '@/components/HeaderComponent';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, UserX } from 'lucide-react';
+import { UserX } from 'lucide-react';
 import { toast } from 'sonner';
 import Link from 'next/link';
 
@@ -24,7 +25,6 @@ export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState<ProfileTab>('overview');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [showEditModal, setShowEditModal] = useState(false);
 
   const isOwnProfile = currentUser?.username === username;
 
@@ -62,23 +62,13 @@ export default function ProfilePage() {
     setProfile(updatedProfile);
   };
 
-  const handleEditClick = () => {
-    setShowEditModal(true);
-  };
-
   if (isLoading) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="mb-6">
-          <Button variant="ghost" asChild>
-            <Link href="/">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back
-            </Link>
-          </Button>
-        </div>
-        
-        <div className="space-y-6">
+      <ProtectedRoute>
+        <div className="min-h-screen bg-gray-50">
+          <Header />
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="space-y-6">
           {/* Loading skeleton for profile header */}
           <div className="bg-card-background rounded-lg border border-border p-6 animate-pulse">
             <div className="flex flex-col md:flex-row gap-6">
@@ -115,25 +105,21 @@ export default function ProfilePage() {
               <div className="h-4 bg-muted rounded w-1/2" />
               <div className="h-4 bg-muted rounded w-2/3" />
             </div>
+            </div>
           </div>
         </div>
-      </div>
+        </div>
+      </ProtectedRoute>
     );
   }
 
   if (error || !profile) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="mb-6">
-          <Button variant="ghost" asChild>
-            <Link href="/">
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back
-            </Link>
-          </Button>
-        </div>
-        
-        <div className="text-center py-16">
+      <ProtectedRoute>
+        <div className="min-h-screen bg-gray-50">
+          <Header />
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div className="text-center py-16">
           <UserX className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-foreground mb-2">
             {error === 'User not found' ? 'User Not Found' : 'Error Loading Profile'}
@@ -150,7 +136,9 @@ export default function ProfilePage() {
             </Link>
           </Button>
         </div>
-      </div>
+        </div>
+        </div>
+      </ProtectedRoute>
     );
   }
 
@@ -164,62 +152,46 @@ export default function ProfilePage() {
   };
   
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* Back Button */}
-      <div className="mb-6">
-        <Button variant="ghost" asChild>
-          <Link href="/">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
-          </Link>
-        </Button>
-      </div>
-      
-      <div className="space-y-6">
-        {/* Profile Header */}
-        <ProfileHeader
-          profile={profile}
-          onProfileUpdate={handleProfileUpdate}
-          showEditButton={isOwnProfile}
-          onEditClick={handleEditClick}
-        />
+    <ProtectedRoute>
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="space-y-6">
+          {/* Profile Header */}
+          <ProfileHeader
+            profile={profile}
+            onProfileUpdate={handleProfileUpdate}
+            showEditButton={false}
+          />
 
-        {/* Profile Tabs */}
-        <ProfileTabs
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-          stats={tabStats}
-          showPrivateContent={isOwnProfile}
-        />
+          {/* Profile Tabs */}
+          <ProfileTabs
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+            stats={tabStats}
+            showPrivateContent={isOwnProfile}
+          />
 
-        {/* Tab Content */}
-        <div className="bg-card-background rounded-lg border border-border">
-          <TabContent>
-            {activeTab === 'overview' && (
-              <div className="space-y-6">
-                <OverviewContent stats={stats || undefined} />
-                {stats && (
-                  <ProfileStats userId={profile.id} isOwnProfile={isOwnProfile} />
-                )}
-              </div>
-            )}
-            
-            {activeTab === 'achievements' && <AchievementsContent />}
-            {activeTab === 'following' && <FollowingContent />}
-            {activeTab === 'posts' && <PostsContent />}
-          </TabContent>
+          {/* Tab Content */}
+          <div className="bg-card-background rounded-lg border border-border">
+            <TabContent>
+              {activeTab === 'overview' && (
+                <div className="space-y-6">
+                  <OverviewContent stats={stats || undefined} />
+                  {stats && (
+                    <ProfileStats userId={profile.id} isOwnProfile={isOwnProfile} />
+                  )}
+                </div>
+              )}
+              
+              {activeTab === 'achievements' && <AchievementsContent />}
+              {activeTab === 'following' && <FollowingContent />}
+              {activeTab === 'posts' && <PostsContent />}
+            </TabContent>
+          </div>
+        </div>
         </div>
       </div>
-
-      {/* Edit Profile Modal */}
-      {showEditModal && profile && (
-        <EditProfileModal
-          profile={profile}
-          isOpen={showEditModal}
-          onClose={() => setShowEditModal(false)}
-          onProfileUpdate={handleProfileUpdate}
-        />
-      )}
-    </div>
+    </ProtectedRoute>
   );
 }

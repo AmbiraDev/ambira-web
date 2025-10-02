@@ -360,76 +360,93 @@ export const firebaseUserApi = {
   // Get user statistics
   getUserStats: async (userId: string): Promise<UserStats> => {
     try {
-      // For now, return default stats since we don't have activity data yet
-      // TODO: Implement proper activity tracking and stats calculation
-      
-      // Get activities for the current year (with error handling)
-      let activitiesSnapshot;
-      try {
-        const currentYear = new Date().getFullYear();
-        const activitiesQuery = query(
-          collection(db, 'activities', userId, 'daily'),
-          where('date', '>=', new Date(currentYear, 0, 1)),
-          where('date', '<=', new Date(currentYear, 11, 31))
-        );
-        
-        activitiesSnapshot = await getDocs(activitiesQuery);
-      } catch (error) {
-        // If activities collection doesn't exist or has permission issues, use empty snapshot
-        console.log('No activities data found, using default stats');
-        activitiesSnapshot = { forEach: () => {}, empty: true };
-      }
-      let totalHours = 0;
-      let weeklyHours = 0;
-      let monthlyHours = 0;
-      let currentStreak = 0;
-      let longestStreak = 0;
+      // Compute stats from sessions collection
+      const sessionsQuery = query(
+        collection(db, 'sessions'),
+        where('userId', '==', userId)
+      );
+      const sessionsSnapshot = await getDocs(sessionsQuery);
+
+      let totalSeconds = 0;
+      let weeklySeconds = 0;
+      let monthlySeconds = 0;
       let sessionsThisWeek = 0;
       let sessionsThisMonth = 0;
-      
+      const sessionDurations: number[] = [];
+      const hourBuckets: Record<number, number> = {};
+
       const now = new Date();
-      const weekStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() - now.getDay());
+      const weekStart = new Date(now);
+      weekStart.setDate(now.getDate() - now.getDay()); // Sunday start
+      weekStart.setHours(0, 0, 0, 0);
+
       const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-      
-      activitiesSnapshot.forEach(doc => {
-        const data = doc.data();
-        const hours = data.hours || 0;
-        const sessions = data.sessions || 0;
-        const date = convertTimestamp(data.date);
-        
-        totalHours += hours;
-        
-        if (date >= weekStart) {
-          weeklyHours += hours;
-          sessionsThisWeek += sessions;
+
+      sessionsSnapshot.forEach((docSnap) => {
+        const data = docSnap.data();
+        const duration = Number(data.duration) || 0; // seconds
+        const start = convertTimestamp(data.startTime);
+        totalSeconds += duration;
+        sessionDurations.push(duration);
+
+        // Most productive hour (by count)
+        const h = new Date(start).getHours();
+        hourBuckets[h] = (hourBuckets[h] || 0) + 1;
+
+        if (start >= weekStart) {
+          weeklySeconds += duration;
+          sessionsThisWeek += 1;
         }
-        
-        if (date >= monthStart) {
-          monthlyHours += hours;
-          sessionsThisMonth += sessions;
+        if (start >= monthStart) {
+          monthlySeconds += duration;
+          sessionsThisMonth += 1;
         }
       });
-      
-      // Calculate streaks (simplified)
-      currentStreak = Math.min(30, Math.floor(totalHours / 2)); // Mock calculation
-      longestStreak = Math.max(currentStreak, 45); // Mock calculation
-      
+
+      // Streaks: simple placeholder based on recent days with activity
+      // Count consecutive days from today with at least one session
+      const daysWithActivity = new Set<string>();
+      sessionsSnapshot.forEach((docSnap) => {
+        const start = convertTimestamp(docSnap.data().startTime);
+        daysWithActivity.add(start.toISOString().substring(0, 10));
+      });
+      let currentStreak = 0;
+      let cursor = new Date();
+      cursor.setHours(0, 0, 0, 0);
+      while (daysWithActivity.has(cursor.toISOString().substring(0, 10))) {
+        currentStreak += 1;
+        cursor.setDate(cursor.getDate() - 1);
+      }
+      const longestStreak = Math.max(currentStreak, 0);
+
+      // Average session duration (in minutes)
+      const averageSessionDuration = sessionDurations.length
+        ? Math.round((sessionDurations.reduce((a, b) => a + b, 0) / sessionDurations.length) / 60)
+        : 0;
+
+      // Most productive hour (0-23)
+      let mostProductiveHour = 0;
+      let maxCount = -1;
+      Object.entries(hourBuckets).forEach(([hourStr, count]) => {
+        const hour = Number(hourStr);
+        if (count > maxCount) {
+          maxCount = count as number;
+          mostProductiveHour = hour;
+        }
+      });
+
       return {
-        totalHours,
-        weeklyHours,
-        monthlyHours,
+        totalHours: totalSeconds / 3600,
+        weeklyHours: weeklySeconds / 3600,
+        monthlyHours: monthlySeconds / 3600,
         currentStreak,
         longestStreak,
         sessionsThisWeek,
         sessionsThisMonth,
-        averageSessionDuration: sessionsThisMonth > 0 ? (monthlyHours * 60) / sessionsThisMonth : 0,
-        mostProductiveHour: 14, // Mock data
-        favoriteProject: {
-          id: '1',
-          name: 'Web Development',
-          hours: totalHours * 0.6
-        }
-      };
+        averageSessionDuration,
+        mostProductiveHour,
+        favoriteProject: undefined,
+      } as unknown as UserStats;
     } catch (error: any) {
       console.error('Failed to get user stats:', error);
       // Return default stats instead of throwing error

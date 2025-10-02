@@ -2,11 +2,12 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Project, ProjectStats } from '@/types';
+import { Project, ProjectStats, Session } from '@/types';
 import { useProject, useProjects } from '@/contexts/ProjectsContext';
 import { useTasks } from '@/contexts/TasksContext';
 import { CreateProjectModal } from './CreateProjectModal';
 import { TaskList } from './TaskList';
+import { firebaseSessionApi } from '@/lib/firebaseApi';
 
 interface ProjectDetailPageProps {
   projectId: string;
@@ -429,18 +430,160 @@ interface SessionsTabProps {
 }
 
 const SessionsTab: React.FC<SessionsTabProps> = ({ project }) => {
+  const [sessions, setSessions] = useState<Session[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        setIsLoading(true);
+        const resp = await firebaseSessionApi.getSessions(1, 50, { projectId: project.id });
+        setSessions(resp.sessions);
+      } catch (e) {
+        console.error('Failed to load project sessions', e);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    load();
+  }, [project.id]);
+
+  const formatDuration = (seconds: number): string => {
+    const m = Math.round(seconds / 60);
+    if (m < 60) return `${m}m`;
+    const h = Math.floor(m / 60);
+    const rem = m % 60;
+    return rem ? `${h}h ${rem}m` : `${h}h`;
+  };
+
+  const formatDate = (date: Date): string => {
+    const d = new Date(date);
+    return d.toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric', 
+      year: 'numeric' 
+    });
+  };
+
+  const formatTime = (date: Date): string => {
+    const d = new Date(date);
+    return d.toLocaleTimeString('en-US', { 
+      hour: 'numeric', 
+      minute: '2-digit',
+      hour12: true 
+    });
+  };
+
+  const getVisibilityIcon = (visibility?: string) => {
+    switch (visibility) {
+      case 'everyone': return '🌍';
+      case 'followers': return '👥';
+      case 'private': return '🔒';
+      default: return '🔒';
+    }
+  };
+
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h3 className="text-lg font-semibold text-gray-900">Sessions</h3>
-        <button className="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors">
-          Start Timer
-        </button>
-      </div>
-      <div className="text-center py-8 text-gray-500">
-        <div className="text-4xl mb-2">⏱️</div>
-        <p>Session tracking coming soon</p>
-      </div>
+    <div className="space-y-4">
+      {isLoading ? (
+        <div className="grid grid-cols-1 gap-4">
+          {[1, 2, 3].map(i => (
+            <div key={i} className="bg-white border border-gray-200 rounded-lg p-6 animate-pulse">
+              <div className="h-5 bg-gray-200 rounded w-3/4 mb-3"></div>
+              <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+            </div>
+          ))}
+        </div>
+      ) : sessions.length === 0 ? (
+        <div className="bg-white border border-gray-200 rounded-lg p-12 text-center">
+          <div className="text-6xl mb-4">⏱️</div>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">No sessions yet</h3>
+          <p className="text-gray-600 mb-6">Start tracking your work to see sessions here</p>
+          <button className="bg-orange-500 text-white px-6 py-2.5 rounded-lg hover:bg-orange-600 transition-colors font-medium">
+            Start Timer
+          </button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-4">
+          {sessions.map((s) => (
+            <div 
+              key={s.id} 
+              className="bg-white border border-gray-200 rounded-lg p-6"
+            >
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2 mb-2">
+                    <h4 className="text-lg font-semibold text-gray-900">
+                      {s.title || 'Untitled Session'}
+                    </h4>
+                    <span className="text-sm opacity-60">{getVisibilityIcon(s.visibility)}</span>
+                  </div>
+                  {s.description && (
+                    <p className="text-sm text-gray-600 mb-3 line-clamp-2">{s.description}</p>
+                  )}
+                </div>
+                <div className="ml-4 flex flex-col items-end">
+                  <div className="bg-orange-50 text-orange-700 px-4 py-2 rounded-lg font-bold text-lg">
+                    {formatDuration(s.duration)}
+                  </div>
+                </div>
+              </div>
+              
+              <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                <div className="flex items-center gap-4 text-sm text-gray-600">
+                  <div className="flex items-center gap-1.5">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <span>{formatDate(s.startTime)}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>{formatTime(s.startTime)}</span>
+                  </div>
+                </div>
+                
+                {s.tags && s.tags.length > 0 && (
+                  <div className="flex gap-1.5">
+                    {s.tags.slice(0, 3).map((tag, idx) => (
+                      <span 
+                        key={idx}
+                        className="px-2.5 py-1 bg-gray-100 text-gray-700 text-xs rounded-full font-medium"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                    {s.tags.length > 3 && (
+                      <span className="px-2.5 py-1 bg-gray-100 text-gray-600 text-xs rounded-full font-medium">
+                        +{s.tags.length - 3}
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {s.tasks && s.tasks.length > 0 && (
+                <div className="mt-3 pt-3 border-t border-gray-100">
+                  <div className="flex items-center gap-2 text-sm">
+                    <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                    </svg>
+                    <span className="text-gray-600">
+                      {s.tasks.length} task{s.tasks.length !== 1 ? 's' : ''}
+                    </span>
+                    <span className="text-gray-400">•</span>
+                    <span className="text-gray-500 truncate max-w-md">
+                      {s.tasks.map(t => t.name).join(', ')}
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
