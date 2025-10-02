@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import { ProjectList } from '@/components/ProjectList';
 import { CreateProjectModal } from '@/components/CreateProjectModal';
-import { useAuth } from '@/contexts/AuthContext';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import Header from '@/components/HeaderComponent';
 

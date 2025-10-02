@@ -1,21 +1,21 @@
 import Header from '@/components/HeaderComponent';
 
-export default function GroupsPage() {
+export default function ChallengesPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
       
       <div className="max-w-[1400px] mx-auto px-4 py-6">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Groups</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Challenges</h1>
           <p className="text-gray-600">
-            Join productivity groups and connect with like-minded people
+            Participate in productivity challenges and compete with others
           </p>
         </div>
         
         <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-200">
           <p className="text-center text-gray-500">
-            Groups list will be implemented here
+            Challenges list will be implemented here
           </p>
         </div>
       </div>

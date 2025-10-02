@@ -136,7 +136,7 @@ export default function Header() {
           <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-200"></div>
           <div className="absolute bottom-0 left-0 h-0.5 bg-[#007AFF] transition-all duration-300" 
                style={{
-                 width: '80px',
+                 width: '90px',
                  left: isActive('/') ? '120px' : 
                        isActive('/projects') ? '200px' : 
                        isActive('/groups') ? '280px' : 
