@@ -1,26 +1,225 @@
-interface ProfilePageProps {
-  params: Promise<{
-    username: string;
-  }>;
-}
+'use client';
 
-export default async function ProfilePage({ params }: ProfilePageProps) {
-  const { username } = await params;
+import React, { useState, useEffect, useCallback } from 'react';
+import { useParams } from 'next/navigation';
+import { UserProfile, UserStats, ProfileTab } from '@/types';
+import { firebaseUserApi } from '@/lib/firebaseApi';
+import { useAuth } from '@/contexts/AuthContext';
+import { ProfileHeader } from '@/components/ProfileHeader';
+import { ProfileTabs, TabContent, OverviewContent, AchievementsContent, FollowingContent, PostsContent } from '@/components/ProfileTabs';
+import { ProfileStats } from '@/components/ProfileStats';
+import { EditProfileModal } from '@/components/EditProfileModal';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft, UserX } from 'lucide-react';
+import { toast } from 'sonner';
+import Link from 'next/link';
+
+export default function ProfilePage() {
+  const params = useParams();
+  const username = params.username as string;
+  const { user: currentUser } = useAuth();
+  
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [stats, setStats] = useState<UserStats | null>(null);
+  const [activeTab, setActiveTab] = useState<ProfileTab>('overview');
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [showEditModal, setShowEditModal] = useState(false);
+
+  const isOwnProfile = currentUser?.username === username;
+
+  const loadProfile = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      const profileData = await firebaseUserApi.getUserProfile(username);
+      setProfile(profileData);
+      
+      // Load stats after we have the profile
+      const statsData = await firebaseUserApi.getUserStats(profileData.id);
+      setStats(statsData);
+    } catch (error: any) {
+      console.error('Profile load error:', error);
+      if (error.message?.includes('not found')) {
+        setError('User not found');
+      } else {
+        setError('Failed to load profile');
+        toast.error('Failed to load profile');
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  }, [username]);
+
+  useEffect(() => {
+    if (username) {
+      loadProfile();
+    }
+  }, [username, loadProfile]);
+
+  const handleProfileUpdate = (updatedProfile: UserProfile) => {
+    setProfile(updatedProfile);
+  };
+
+  const handleEditClick = () => {
+    setShowEditModal(true);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-6">
+          <Button variant="ghost" asChild>
+            <Link href="/">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back
+            </Link>
+          </Button>
+        </div>
+        
+        <div className="space-y-6">
+          {/* Loading skeleton for profile header */}
+          <div className="bg-card-background rounded-lg border border-border p-6 animate-pulse">
+            <div className="flex flex-col md:flex-row gap-6">
+              <div className="w-30 h-30 bg-muted rounded-full" />
+              <div className="flex-1 space-y-4">
+                <div className="h-8 bg-muted rounded w-1/3" />
+                <div className="h-4 bg-muted rounded w-1/4" />
+                <div className="h-4 bg-muted rounded w-1/2" />
+                <div className="grid grid-cols-3 gap-4 mt-6">
+                  {[1, 2, 3].map((i) => (
+                    <div key={i} className="text-center">
+                      <div className="h-6 bg-muted rounded w-16 mx-auto mb-2" />
+                      <div className="h-4 bg-muted rounded w-20 mx-auto" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Loading skeleton for tabs */}
+          <div className="border-b border-border animate-pulse">
+            <div className="flex space-x-1">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="h-10 bg-muted rounded w-24" />
+              ))}
+            </div>
+          </div>
+
+          {/* Loading skeleton for content */}
+          <div className="bg-card-background rounded-lg border border-border p-6 animate-pulse">
+            <div className="space-y-4">
+              <div className="h-4 bg-muted rounded w-3/4" />
+              <div className="h-4 bg-muted rounded w-1/2" />
+              <div className="h-4 bg-muted rounded w-2/3" />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error || !profile) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-6">
+          <Button variant="ghost" asChild>
+            <Link href="/">
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back
+            </Link>
+          </Button>
+        </div>
+        
+        <div className="text-center py-16">
+          <UserX className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+          <h1 className="text-2xl font-bold text-foreground mb-2">
+            {error === 'User not found' ? 'User Not Found' : 'Error Loading Profile'}
+          </h1>
+          <p className="text-muted-foreground mb-6">
+            {error === 'User not found' 
+              ? `The user "${username}" doesn't exist or their profile is private.`
+              : 'Something went wrong while loading this profile.'
+            }
+          </p>
+          <Button asChild>
+            <Link href="/">
+              Go Home
+            </Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  const tabStats = {
+    totalHours: stats?.totalHours || 0,
+    currentStreak: stats?.currentStreak || 0,
+    achievements: 0, // TODO: Implement achievements
+    followers: profile.followersCount,
+    following: profile.followingCount,
+    posts: 0, // TODO: Implement posts
+  };
   
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground mb-2">User Profile</h1>
-        <p className="text-muted-foreground">
-          Username: {username}
-        </p>
+      {/* Back Button */}
+      <div className="mb-6">
+        <Button variant="ghost" asChild>
+          <Link href="/">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back
+          </Link>
+        </Button>
       </div>
       
-      <div className="bg-card-background p-8 rounded-lg shadow-sm border border-border">
-        <p className="text-center text-muted">
-          User profile view will be implemented here
-        </p>
+      <div className="space-y-6">
+        {/* Profile Header */}
+        <ProfileHeader
+          profile={profile}
+          onProfileUpdate={handleProfileUpdate}
+          showEditButton={isOwnProfile}
+          onEditClick={handleEditClick}
+        />
+
+        {/* Profile Tabs */}
+        <ProfileTabs
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          stats={tabStats}
+          showPrivateContent={isOwnProfile}
+        />
+
+        {/* Tab Content */}
+        <div className="bg-card-background rounded-lg border border-border">
+          <TabContent>
+            {activeTab === 'overview' && (
+              <div className="space-y-6">
+                <OverviewContent stats={stats || undefined} />
+                {stats && (
+                  <ProfileStats userId={profile.id} isOwnProfile={isOwnProfile} />
+                )}
+              </div>
+            )}
+            
+            {activeTab === 'achievements' && <AchievementsContent />}
+            {activeTab === 'following' && <FollowingContent />}
+            {activeTab === 'posts' && <PostsContent />}
+          </TabContent>
+        </div>
       </div>
+
+      {/* Edit Profile Modal */}
+      {showEditModal && profile && (
+        <EditProfileModal
+          profile={profile}
+          isOpen={showEditModal}
+          onClose={() => setShowEditModal(false)}
+          onProfileUpdate={handleProfileUpdate}
+        />
+      )}
     </div>
   );
 }

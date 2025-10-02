@@ -14,8 +14,32 @@ A social productivity tracking application built with Next.js, TypeScript, and T
   - `/login` and `/signup` - Authentication
   - `/projects` and `/projects/[id]` - Project management
   - `/profile/[username]` - User profiles
+  - `/users` - User discovery and search
   - `/groups` and `/groups/[id]` - Groups
-  - `/settings` - User settings
+  - `/settings` and `/settings/privacy` - User settings
+
+### ✅ Social Features (NEW!)
+- **User Profiles** with comprehensive profile pages
+  - Profile header with avatar, bio, stats (followers, following, total hours)
+  - Tabbed interface: Overview, Achievements, Following, Posts
+  - Activity statistics with calendar heatmap and charts
+  - Edit profile modal with privacy controls
+- **Following System** with real-time follow/unfollow functionality
+  - Follow/unfollow buttons with optimistic updates
+  - Followers and following lists
+  - Privacy-aware profile visibility
+- **User Discovery** 
+  - Search users by name or username with real-time results
+  - Suggested users with algorithm-based recommendations
+  - User cards with follow buttons and profile previews
+- **Privacy Settings**
+  - Profile visibility controls (Everyone/Followers/Private)
+  - Activity and project visibility settings
+  - Blocked users management
+- **Navigation Integration**
+  - Updated header and bottom navigation with user links
+  - Profile links throughout the app
+  - Users discovery page with search and suggestions
 
 ### 🎨 Design System
 - **Electric Blue Primary Color** (#007AFF) for logos, buttons, and accents
@@ -106,14 +130,14 @@ Ambira is inspired by Strava's social fitness tracking model but applied to prod
 
 ## Next Steps
 
-This foundation provides the structure for building out the full Ambira application. Key areas for development include:
+The social foundation is now complete! Key areas for further development include:
 
-1. **Authentication System** - User registration and login
-2. **Project Management** - Create and track productivity projects
-3. **Timer System** - Session tracking with database persistence
-4. **Social Features** - Following, feed, and interactions
-5. **Groups & Challenges** - Community features and competitions
-6. **Analytics** - Progress tracking and insights
+1. **Backend API Integration** - Connect to real backend services
+2. **Real-time Features** - Live updates for following and activity
+3. **Groups & Challenges** - Community features and competitions
+4. **Analytics & Insights** - Advanced progress tracking and recommendations
+5. **Mobile App** - Native iOS/Android applications
+6. **Achievement System** - Badges and milestones for user engagement
 
 ## Contributing
 

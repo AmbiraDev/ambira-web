@@ -173,6 +173,89 @@ export interface Follow {
   createdAt: Date;
 }
 
+export interface UserProfile {
+  id: string;
+  username: string;
+  name: string;
+  bio?: string;
+  location?: string;
+  profilePicture?: string;
+  followersCount: number;
+  followingCount: number;
+  totalHours: number;
+  isFollowing?: boolean;
+  isPrivate?: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface UserStats {
+  totalHours: number;
+  weeklyHours: number;
+  monthlyHours: number;
+  currentStreak: number;
+  longestStreak: number;
+  sessionsThisWeek: number;
+  sessionsThisMonth: number;
+  averageSessionDuration: number;
+  mostProductiveHour: number;
+  favoriteProject?: {
+    id: string;
+    name: string;
+    hours: number;
+  };
+}
+
+export interface ActivityData {
+  date: string;
+  hours: number;
+  sessions: number;
+}
+
+export interface WeeklyActivity {
+  week: string;
+  hours: number;
+  sessions: number;
+}
+
+export interface ProjectBreakdown {
+  projectId: string;
+  projectName: string;
+  hours: number;
+  percentage: number;
+  color: string;
+}
+
+export interface PrivacySettings {
+  profileVisibility: 'everyone' | 'followers' | 'private';
+  activityVisibility: 'everyone' | 'followers' | 'private';
+  projectVisibility: 'everyone' | 'followers' | 'private';
+  blockedUsers: string[];
+}
+
+export interface UserSearchResult {
+  id: string;
+  username: string;
+  name: string;
+  bio?: string;
+  profilePicture?: string;
+  followersCount: number;
+  isFollowing?: boolean;
+}
+
+export interface SuggestedUser {
+  id: string;
+  username: string;
+  name: string;
+  bio?: string;
+  profilePicture?: string;
+  followersCount: number;
+  reason: string; // Why this user was suggested
+  isFollowing?: boolean;
+}
+
+export type ProfileTab = 'overview' | 'achievements' | 'following' | 'posts';
+
 // Authentication types
 export interface AuthUser {
   id: string;

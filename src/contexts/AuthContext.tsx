@@ -3,8 +3,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { AuthContextType, AuthUser, LoginCredentials, SignupCredentials } from '@/types';
-import { authApi } from '@/lib/api';
-import { mockAuthApi } from '@/lib/mockApi';
+import { firebaseAuthApi } from '@/lib/firebaseApi';
 
 // Create context
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -33,33 +32,26 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // Initialize auth state on mount
   useEffect(() => {
-    const initializeAuth = async () => {
+    const unsubscribe = firebaseAuthApi.onAuthStateChanged(async (firebaseUser) => {
       try {
-        const token = authApi.getToken();
-        console.log('Auth initialization - token found:', !!token);
-        if (token) {
-          // Verify token and get user data
-          const isValid = await mockAuthApi.verifyToken(token);
-          console.log('Token validation result:', isValid);
-          if (isValid) {
-            const userData = await mockAuthApi.getCurrentUser(token);
-            console.log('User data loaded:', userData);
-            setUser(userData);
-          } else {
-            // Token is invalid, clear it
-            console.log('Token invalid, clearing...');
-            authApi.clearToken();
-          }
+        if (firebaseUser) {
+          console.log('Firebase user authenticated:', firebaseUser.uid);
+          const userData = await firebaseAuthApi.getCurrentUser();
+          console.log('User data loaded:', userData);
+          setUser(userData);
+        } else {
+          console.log('No Firebase user authenticated');
+          setUser(null);
         }
       } catch (error) {
-        console.error('Auth initialization error:', error);
-        authApi.clearToken();
+        console.error('Auth state change error:', error);
+        setUser(null);
       } finally {
         setIsLoading(false);
       }
-    };
+    });
 
-    initializeAuth();
+    return () => unsubscribe();
   }, []);
 
   // Login function
@@ -67,13 +59,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       setIsLoading(true);
       
-      // Use mock API for now
-      const response = await mockAuthApi.login(credentials);
+      const response = await firebaseAuthApi.login(credentials);
       console.log('Login response:', response);
       
-      // Store token and user data
-      authApi.setToken(response.token);
-      console.log('Token stored, setting user:', response.user);
       setUser(response.user);
       
       // Redirect to home page
@@ -91,11 +79,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       setIsLoading(true);
       
-      // Use mock API for now
-      const response = await mockAuthApi.signup(credentials);
+      const response = await firebaseAuthApi.signup(credentials);
       
-      // Store token and user data
-      authApi.setToken(response.token);
       setUser(response.user);
       
       // Redirect to home page
@@ -112,12 +97,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const logout = async (): Promise<void> => {
     try {
       // Call logout API
-      await mockAuthApi.logout();
+      await firebaseAuthApi.logout();
     } catch (error) {
       console.error('Logout error:', error);
     } finally {
       // Clear local state regardless of API call result
-      authApi.clearToken();
       setUser(null);
       router.push('/login');
     }

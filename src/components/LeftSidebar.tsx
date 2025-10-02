@@ -1,83 +1,153 @@
 'use client';
 
+import { useAuth } from '@/contexts/AuthContext';
+import { useState, useEffect } from 'react';
+import { firebaseUserApi } from '@/lib/firebaseApi';
+import { UserProfile, UserStats } from '@/types';
+
 function LeftSidebar() {
+  const { user } = useAuth();
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [stats, setStats] = useState<UserStats | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const loadUserData = async () => {
+      if (user?.username) {
+        try {
+          setIsLoading(true);
+          const [profileData, statsData] = await Promise.all([
+            firebaseUserApi.getUserProfile(user.username),
+            firebaseUserApi.getUserStats(user.id)
+          ]);
+          setProfile(profileData);
+          setStats(statsData);
+        } catch (error) {
+          console.error('Failed to load user data:', error);
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    loadUserData();
+  }, [user]);
   return (
     <aside className="hidden lg:block w-[280px] flex-shrink-0">
       <div className="sticky top-[60px] space-y-6">
         {/* Profile Card */}
         <div className="bg-white rounded-lg border border-gray-200 p-6 text-center">
-          <div className="w-24 h-24 bg-gray-400 rounded-full mx-auto mb-4 flex items-center justify-center">
-            <span className="text-3xl font-medium text-white">D</span>
-          </div>
-          <h2 className="text-xl font-bold text-gray-900 mb-4">Daniel Jones</h2>
-          
-          <div className="flex justify-center space-x-8 mb-6">
-            <div className="text-center">
-              <div className="text-sm text-gray-600">Following</div>
-              <div className="text-2xl font-bold text-gray-900">2</div>
-            </div>
-            <div className="text-center">
-              <div className="text-sm text-gray-600">Followers</div>
-              <div className="text-2xl font-bold text-gray-900">0</div>
-            </div>
-            <div className="text-center">
-              <div className="text-sm text-gray-600">Activities</div>
-              <div className="text-2xl font-bold text-gray-900">1</div>
-            </div>
-          </div>
-
-          {/* Latest Activity */}
-          <div className="border-t border-gray-200 pt-4 mb-4">
-            <div className="text-sm text-gray-600 mb-1">Latest Activity</div>
-            <div className="text-sm font-semibold text-gray-900">Study Session • Oct 1, 2025</div>
-          </div>
-
-          {/* Your Streak */}
-          <div className="border-t border-gray-200 pt-4">
-            <div className="flex items-center justify-between mb-2">
-              <div className="text-sm text-gray-600">Your streak</div>
-              <div className="flex items-center">
-                <svg className="w-4 h-4 text-gray-900 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clipRule="evenodd" />
-                </svg>
-                <span className="text-sm font-semibold">Weeks</span>
-              </div>
-            </div>
-            
-            {/* Weekly Calendar */}
-            <div className="flex justify-between items-end mb-2">
-              <div className="flex-1 text-center">
-                <div className="text-xs text-gray-500 mb-1">M</div>
-                <div className="text-sm font-semibold text-gray-400">29</div>
-              </div>
-              <div className="flex-1 text-center">
-                <div className="text-xs text-gray-500 mb-1">T</div>
-                <div className="text-sm font-semibold text-gray-400">30</div>
-              </div>
-              <div className="flex-1 text-center">
-                <div className="text-xs text-gray-500 mb-1">W</div>
-                <div className="w-8 h-8 mx-auto bg-gray-900 rounded-full flex items-center justify-center">
-                  <span className="text-sm font-semibold text-white">1</span>
+          {isLoading ? (
+            <div className="animate-pulse">
+              <div className="w-24 h-24 bg-gray-300 rounded-full mx-auto mb-4"></div>
+              <div className="h-6 bg-gray-300 rounded mx-auto mb-4 w-32"></div>
+              <div className="flex justify-center space-x-8 mb-6">
+                <div className="text-center">
+                  <div className="h-4 bg-gray-300 rounded mb-1 w-16"></div>
+                  <div className="h-8 bg-gray-300 rounded w-8"></div>
+                </div>
+                <div className="text-center">
+                  <div className="h-4 bg-gray-300 rounded mb-1 w-16"></div>
+                  <div className="h-8 bg-gray-300 rounded w-8"></div>
+                </div>
+                <div className="text-center">
+                  <div className="h-4 bg-gray-300 rounded mb-1 w-16"></div>
+                  <div className="h-8 bg-gray-300 rounded w-8"></div>
                 </div>
               </div>
-              <div className="flex-1 text-center">
-                <div className="text-xs text-gray-500 mb-1">T</div>
-                <div className="text-sm font-semibold text-gray-400">2</div>
+            </div>
+          ) : (
+            <>
+              <div className="w-24 h-24 bg-gray-400 rounded-full mx-auto mb-4 flex items-center justify-center">
+                <span className="text-3xl font-medium text-white">
+                  {profile?.name?.charAt(0)?.toUpperCase() || user?.name?.charAt(0)?.toUpperCase() || 'U'}
+                </span>
               </div>
-              <div className="flex-1 text-center">
-                <div className="text-xs text-gray-500 mb-1">F</div>
-                <div className="text-sm font-semibold text-gray-400">3</div>
+              <h2 className="text-xl font-bold text-gray-900 mb-4">
+                {profile?.name || user?.name || 'User'}
+              </h2>
+              
+              <div className="flex justify-center space-x-8 mb-6">
+                <div className="text-center">
+                  <div className="text-sm text-gray-600">Following</div>
+                  <div className="text-2xl font-bold text-gray-900">
+                    {profile?.followingCount || 0}
+                  </div>
+                </div>
+                <div className="text-center">
+                  <div className="text-sm text-gray-600">Followers</div>
+                  <div className="text-2xl font-bold text-gray-900">
+                    {profile?.followersCount || 0}
+                  </div>
+                </div>
+                <div className="text-center">
+                  <div className="text-sm text-gray-600">Hours</div>
+                  <div className="text-2xl font-bold text-gray-900">
+                    {Math.round(stats?.totalHours || 0)}
+                  </div>
+                </div>
               </div>
-              <div className="flex-1 text-center">
-                <div className="text-xs text-gray-500 mb-1">S</div>
-                <div className="text-sm font-semibold text-gray-400">4</div>
-              </div>
-              <div className="flex-1 text-center">
-                <div className="text-xs text-gray-500 mb-1">S</div>
-                <div className="text-sm font-semibold text-gray-400">5</div>
+            </>
+          )}
+
+          {/* Latest Activity */}
+          {!isLoading && (
+            <div className="border-t border-gray-200 pt-4 mb-4">
+              <div className="text-sm text-gray-600 mb-1">Latest Activity</div>
+              <div className="text-sm font-semibold text-gray-900">
+                {stats?.sessionsThisWeek ? `${stats.sessionsThisWeek} sessions this week` : 'No recent activity'}
               </div>
             </div>
-          </div>
+          )}
+
+          {/* Your Streak */}
+          {!isLoading && (
+            <div className="border-t border-gray-200 pt-4">
+              <div className="flex items-center justify-between mb-2">
+                <div className="text-sm text-gray-600">Your streak</div>
+                <div className="flex items-center">
+                  <svg className="w-4 h-4 text-gray-900 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M12.395 2.553a1 1 0 00-1.45-.385c-.345.23-.614.558-.822.88-.214.33-.403.713-.57 1.116-.334.804-.614 1.768-.84 2.734a31.365 31.365 0 00-.613 3.58 2.64 2.64 0 01-.945-1.067c-.328-.68-.398-1.534-.398-2.654A1 1 0 005.05 6.05 6.981 6.981 0 003 11a7 7 0 1011.95-4.95c-.592-.591-.98-.985-1.348-1.467-.363-.476-.724-1.063-1.207-2.03zM12.12 15.12A3 3 0 017 13s.879.5 2.5.5c0-1 .5-4 1.25-4.5.5 1 .786 1.293 1.371 1.879A2.99 2.99 0 0113 13a2.99 2.99 0 01-.879 2.121z" clipRule="evenodd" />
+                  </svg>
+                  <span className="text-sm font-semibold">{stats?.currentStreak || 0} days</span>
+                </div>
+              </div>
+              
+              {/* Weekly Calendar */}
+              <div className="flex justify-between items-end mb-2">
+                <div className="flex-1 text-center">
+                  <div className="text-xs text-gray-500 mb-1">M</div>
+                  <div className="text-sm font-semibold text-gray-400">29</div>
+                </div>
+                <div className="flex-1 text-center">
+                  <div className="text-xs text-gray-500 mb-1">T</div>
+                  <div className="text-sm font-semibold text-gray-400">30</div>
+                </div>
+                <div className="flex-1 text-center">
+                  <div className="text-xs text-gray-500 mb-1">W</div>
+                  <div className="w-8 h-8 mx-auto bg-gray-900 rounded-full flex items-center justify-center">
+                    <span className="text-sm font-semibold text-white">1</span>
+                  </div>
+                </div>
+                <div className="flex-1 text-center">
+                  <div className="text-xs text-gray-500 mb-1">T</div>
+                  <div className="text-sm font-semibold text-gray-400">2</div>
+                </div>
+                <div className="flex-1 text-center">
+                  <div className="text-xs text-gray-500 mb-1">F</div>
+                  <div className="text-sm font-semibold text-gray-400">3</div>
+                </div>
+                <div className="flex-1 text-center">
+                  <div className="text-xs text-gray-500 mb-1">S</div>
+                  <div className="text-sm font-semibold text-gray-400">4</div>
+                </div>
+                <div className="flex-1 text-center">
+                  <div className="text-xs text-gray-500 mb-1">S</div>
+                  <div className="text-sm font-semibold text-gray-400">5</div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Training Log */}

@@ -4,11 +4,13 @@ import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { useTimer } from '@/contexts/TimerContext';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const pathname = usePathname();
   const { timerState, getElapsedTime, getFormattedTime } = useTimer();
+  const { user } = useAuth();
   const [displayTime, setDisplayTime] = useState(0);
 
   // Update display time every second when timer is running
@@ -115,6 +117,19 @@ export default function Header() {
                   <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#007AFF]"></div>
                 )}
               </Link>
+              <Link 
+                href="/users" 
+                className={`text-base font-medium transition-colors flex items-center h-full relative ${
+                  isActive('/users') 
+                    ? 'text-gray-900' 
+                    : 'text-gray-600 hover:text-[#007AFF]'
+                }`}
+              >
+                Users
+                {isActive('/users') && (
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#007AFF]"></div>
+                )}
+              </Link>
             </nav>
           </div>
 
@@ -161,14 +176,19 @@ export default function Header() {
             </button>
 
             {/* Profile with dropdown */}
-            <button className="flex items-center space-x-1 text-gray-600 hover:text-[#007AFF] transition-colors">
+            <Link 
+              href={user ? `/profile/${user.username}` : '/profile'}
+              className="flex items-center space-x-1 text-gray-600 hover:text-[#007AFF] transition-colors"
+            >
               <div className="w-8 h-8 bg-gray-400 rounded-full flex items-center justify-center">
-                <span className="text-sm font-medium text-white">D</span>
+                <span className="text-sm font-medium text-white">
+                  {user ? user.name.charAt(0).toUpperCase() : 'U'}
+                </span>
               </div>
               <svg className="w-4 h-4 hidden md:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
-            </button>
+            </Link>
 
             {/* Plus button */}
             <button className="p-2 text-gray-600 hover:text-[#007AFF] transition-colors">
@@ -243,6 +263,16 @@ export default function Header() {
                 }`}
               >
                 Tasks
+              </Link>
+              <Link 
+                href="/users" 
+                className={`block px-4 py-2 transition-colors ${
+                  isActive('/users') 
+                    ? 'text-[#007AFF] bg-blue-50' 
+                    : 'text-gray-600 hover:text-[#007AFF]'
+                }`}
+              >
+                Users
               </Link>
             </nav>
           </div>

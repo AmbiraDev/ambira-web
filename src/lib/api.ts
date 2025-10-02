@@ -19,7 +19,15 @@ import {
   CreateTaskData,
   UpdateTaskData,
   BulkTaskUpdate,
-  TaskStats
+  TaskStats,
+  UserProfile,
+  UserStats,
+  ActivityData,
+  WeeklyActivity,
+  ProjectBreakdown,
+  PrivacySettings,
+  UserSearchResult,
+  SuggestedUser
 } from '@/types';
 
 // Create axios instance
@@ -320,6 +328,130 @@ export const sessionApi = {
   unarchiveSession: async (id: string): Promise<Session> => {
     const response: AxiosResponse<Session> = await api.patch(`/sessions/${id}/unarchive`);
     return response.data;
+  },
+};
+
+// User API methods
+export const userApi = {
+  // Get user profile by username
+  getUserProfile: async (username: string): Promise<UserProfile> => {
+    const response: AxiosResponse<UserProfile> = await api.get(`/users/${username}`);
+    return response.data;
+  },
+
+  // Update user profile
+  updateProfile: async (data: Partial<{
+    name: string;
+    bio: string;
+    location: string;
+    profilePicture: string;
+  }>): Promise<UserProfile> => {
+    const response: AxiosResponse<UserProfile> = await api.put('/users/profile', data);
+    return response.data;
+  },
+
+  // Get user statistics
+  getUserStats: async (userId: string): Promise<UserStats> => {
+    const response: AxiosResponse<UserStats> = await api.get(`/users/${userId}/stats`);
+    return response.data;
+  },
+
+  // Get activity data for calendar heatmap
+  getActivityData: async (userId: string, year: number): Promise<ActivityData[]> => {
+    const response: AxiosResponse<ActivityData[]> = await api.get(`/users/${userId}/activity?year=${year}`);
+    return response.data;
+  },
+
+  // Get weekly activity data
+  getWeeklyActivity: async (userId: string, weeks: number = 12): Promise<WeeklyActivity[]> => {
+    const response: AxiosResponse<WeeklyActivity[]> = await api.get(`/users/${userId}/weekly-activity?weeks=${weeks}`);
+    return response.data;
+  },
+
+  // Get project breakdown
+  getProjectBreakdown: async (userId: string): Promise<ProjectBreakdown[]> => {
+    const response: AxiosResponse<ProjectBreakdown[]> = await api.get(`/users/${userId}/project-breakdown`);
+    return response.data;
+  },
+
+  // Follow user
+  followUser: async (userId: string): Promise<void> => {
+    await api.post(`/users/${userId}/follow`);
+  },
+
+  // Unfollow user
+  unfollowUser: async (userId: string): Promise<void> => {
+    await api.delete(`/users/${userId}/follow`);
+  },
+
+  // Get followers
+  getFollowers: async (userId: string, page: number = 1, limit: number = 20): Promise<{
+    users: UserProfile[];
+    totalCount: number;
+    hasMore: boolean;
+  }> => {
+    const response: AxiosResponse<{
+      users: UserProfile[];
+      totalCount: number;
+      hasMore: boolean;
+    }> = await api.get(`/users/${userId}/followers?page=${page}&limit=${limit}`);
+    return response.data;
+  },
+
+  // Get following
+  getFollowing: async (userId: string, page: number = 1, limit: number = 20): Promise<{
+    users: UserProfile[];
+    totalCount: number;
+    hasMore: boolean;
+  }> => {
+    const response: AxiosResponse<{
+      users: UserProfile[];
+      totalCount: number;
+      hasMore: boolean;
+    }> = await api.get(`/users/${userId}/following?page=${page}&limit=${limit}`);
+    return response.data;
+  },
+
+  // Search users
+  searchUsers: async (query: string, page: number = 1, limit: number = 20): Promise<{
+    users: UserSearchResult[];
+    totalCount: number;
+    hasMore: boolean;
+  }> => {
+    const response: AxiosResponse<{
+      users: UserSearchResult[];
+      totalCount: number;
+      hasMore: boolean;
+    }> = await api.get(`/users/search?q=${encodeURIComponent(query)}&page=${page}&limit=${limit}`);
+    return response.data;
+  },
+
+  // Get suggested users
+  getSuggestedUsers: async (limit: number = 10): Promise<SuggestedUser[]> => {
+    const response: AxiosResponse<SuggestedUser[]> = await api.get(`/users/suggested?limit=${limit}`);
+    return response.data;
+  },
+
+  // Get privacy settings
+  getPrivacySettings: async (): Promise<PrivacySettings> => {
+    const response: AxiosResponse<PrivacySettings> = await api.get('/users/privacy-settings');
+    return response.data;
+  },
+
+  // Update privacy settings
+  updatePrivacySettings: async (settings: Partial<PrivacySettings>): Promise<PrivacySettings> => {
+    const response: AxiosResponse<PrivacySettings> = await api.put('/users/privacy-settings', settings);
+    return response.data;
+  },
+
+  // Block user
+  blockUser: async (userId: string): Promise<void> => {
+    await api.post(`/users/${userId}/block`);
+  },
+
+  // Unblock user
+  unblockUser: async (userId: string): Promise<void> => {
+    await api.delete(`/users/${userId}/block`);
   },
 };
 

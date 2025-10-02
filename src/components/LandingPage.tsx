@@ -4,14 +4,26 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
+import { SignupCredentials } from '@/types';
 import Header from './HeaderComponent';
 
 export const LandingPage: React.FC = () => {
-  const { login } = useAuth();
+  const { login, signup } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showSignup, setShowSignup] = useState(false);
+  const [signupData, setSignupData] = useState<SignupCredentials>({
+    email: '',
+    password: '',
+    name: '',
+    username: '',
+  });
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [signupErrors, setSignupErrors] = useState<Partial<SignupCredentials & { confirmPassword: string }>>({});
+  const [usernameCheckLoading, setUsernameCheckLoading] = useState(false);
+  const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
 
   const handleDemoLogin = async () => {
     try {
@@ -19,7 +31,7 @@ export const LandingPage: React.FC = () => {
       setError(null);
       await login({
         email: 'demo@ambira.com',
-        password: 'demo'
+        password: 'demouser123'
       });
       
       // Check for redirect parameter
@@ -34,12 +46,130 @@ export const LandingPage: React.FC = () => {
   };
 
   const handleSignupWithEmail = () => {
-    // For now, just show a message since we're using the landing page for signup
-    alert('Sign up functionality coming soon! Use the demo account to explore the app.');
+    setShowSignup(true);
+    setError(null);
+  };
+
+  const handleSignupChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    
+    if (name === 'confirmPassword') {
+      setConfirmPassword(value);
+    } else {
+      setSignupData(prev => ({ ...prev, [name]: value }));
+    }
+    
+    // Clear field-specific error when user starts typing
+    if (signupErrors[name as keyof (SignupCredentials & { confirmPassword: string })]) {
+      setSignupErrors(prev => ({ ...prev, [name]: undefined }));
+    }
+    
+    // Clear submit error
+    if (error) {
+      setError('');
+    }
+
+    // Check username availability when username changes
+    if (name === 'username' && value.trim().length >= 3) {
+      checkUsernameAvailability(value.trim());
+    } else if (name === 'username') {
+      setUsernameAvailable(null);
+    }
+  };
+
+  const checkUsernameAvailability = async (username: string) => {
+    try {
+      setUsernameCheckLoading(true);
+      const available = await firebaseUserApi.checkUsernameAvailability(username);
+      setUsernameAvailable(available);
+    } catch (error) {
+      console.error('Username check error:', error);
+      setUsernameAvailable(null);
+    } finally {
+      setUsernameCheckLoading(false);
+    }
+  };
+
+  const validateSignupForm = (): boolean => {
+    const newErrors: Partial<SignupCredentials & { confirmPassword: string }> = {};
+
+    if (!signupData.name.trim()) {
+      newErrors.name = 'Name is required';
+    } else if (signupData.name.trim().length < 2) {
+      newErrors.name = 'Name must be at least 2 characters';
+    }
+
+    if (!signupData.username.trim()) {
+      newErrors.username = 'Username is required';
+    } else if (signupData.username.trim().length < 3) {
+      newErrors.username = 'Username must be at least 3 characters';
+    } else if (!/^[a-zA-Z0-9_]+$/.test(signupData.username.trim())) {
+      newErrors.username = 'Username can only contain letters, numbers, and underscores';
+    } else if (usernameAvailable === false) {
+      newErrors.username = 'Username is already taken';
+    } else if (usernameCheckLoading) {
+      newErrors.username = 'Checking username availability...';
+    }
+
+    if (!signupData.email) {
+      newErrors.email = 'Email is required';
+    } else if (!/\S+@\S+\.\S+/.test(signupData.email)) {
+      newErrors.email = 'Email is invalid';
+    } else if (signupData.email === 'demo@ambira.com') {
+      newErrors.email = 'This email is reserved for demo purposes. Please use the "Sign In as Demo User" button instead.';
+    }
+
+    if (!signupData.password) {
+      newErrors.password = 'Password is required';
+    } else if (signupData.password.length < 6) {
+      newErrors.password = 'Password must be at least 6 characters';
+    }
+
+    if (!confirmPassword) {
+      newErrors.confirmPassword = 'Please confirm your password';
+    } else if (signupData.password !== confirmPassword) {
+      newErrors.confirmPassword = 'Passwords do not match';
+    }
+
+    setSignupErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSignupSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!validateSignupForm()) {
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      setError(null);
+      await signup(signupData);
+      
+      // Check for redirect parameter
+      const redirectTo = searchParams.get('redirect');
+      router.push(redirectTo || '/');
+    } catch (err: any) {
+      console.error('Signup error:', err);
+      
+      // Handle specific Firebase errors with user-friendly messages
+      if (err.message?.includes('auth/email-already-in-use')) {
+        setError('This email address is already registered. Please try logging in instead or use a different email.');
+      } else if (err.message?.includes('auth/weak-password')) {
+        setError('Password is too weak. Please choose a stronger password with at least 6 characters.');
+      } else if (err.message?.includes('auth/invalid-email')) {
+        setError('Please enter a valid email address.');
+      } else {
+        setError('Failed to create account. Please try again.');
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="min-h-screen bg-white">
       <Header />
       
       {/* Hero Section - 100vh minus header height */}
@@ -56,64 +186,260 @@ export const LandingPage: React.FC = () => {
             </p>
           </div>
 
-          {/* Sign-in Card */}
-          <div className="bg-white rounded-xl shadow-lg p-8 mb-6">
-            <h2 className="text-2xl font-semibold text-gray-900 text-center mb-6">
-              Sign in to your account
-            </h2>
+          {/* Auth Card */}
+          <div className="bg-white rounded-xl shadow-lg p-8 mb-6 border border-gray-200">
+            {!showSignup ? (
+              <>
+                <h2 className="text-2xl font-semibold text-gray-900 text-center mb-6">
+                  Sign in to your account
+                </h2>
 
-            {/* Sign-up Options */}
-            <div className="space-y-4">
-              {/* Demo Login Button - Prominent */}
-              <button
-                onClick={handleDemoLogin}
-                disabled={isLoading}
-                className="w-full flex items-center justify-center px-6 py-4 bg-[#007AFF] text-white font-semibold text-lg rounded-lg hover:bg-[#0056D6] transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
-              >
-                {isLoading ? (
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
-                ) : (
-                  <>
-                    <span className="mr-3">🎯</span>
-                    Sign In as Demo User
-                  </>
-                )}
-              </button>
+                {/* Sign-in Options */}
+                <div className="space-y-4">
+                  {/* Demo Login Button - Prominent */}
+                  <button
+                    onClick={handleDemoLogin}
+                    disabled={isLoading}
+                    className="w-full flex items-center justify-center px-6 py-4 bg-[#007AFF] text-white font-semibold text-lg rounded-lg hover:bg-[#0056D6] transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+                  >
+                    {isLoading ? (
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+                    ) : (
+                      <>
+                        <span className="mr-3">🎯</span>
+                        Sign In as Demo User
+                      </>
+                    )}
+                  </button>
 
-              {/* Divider */}
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-300" />
+                  {/* Divider */}
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="w-full border-t border-gray-300" />
+                    </div>
+                    <div className="relative flex justify-center text-sm">
+                      <span className="px-2 bg-white text-gray-500">Or</span>
+                    </div>
+                  </div>
+
+                  {/* Sign Up With Email */}
+                  <button
+                    onClick={handleSignupWithEmail}
+                    className="w-full flex items-center justify-center px-6 py-3 border-2 border-gray-300 text-gray-700 font-medium rounded-lg hover:border-[#007AFF] hover:text-[#007AFF] transition-colors"
+                  >
+                    <span className="mr-2">📧</span>
+                    Sign Up With Email
+                  </button>
+
+                  {/* Login Link */}
+                  <div className="text-center pt-4">
+                    <p className="text-gray-600">
+                      Already have an account?{' '}
+                      <button
+                        onClick={() => setShowSignup(true)}
+                        className="text-[#007AFF] hover:text-[#0056D6] font-medium"
+                      >
+                        Log In
+                      </button>
+                    </p>
+                  </div>
                 </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-white text-gray-500">Or</span>
+              </>
+            ) : (
+              <>
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-2xl font-semibold text-gray-900">
+                    Create your account
+                  </h2>
+                  <button
+                    onClick={() => setShowSignup(false)}
+                    className="text-gray-400 hover:text-gray-600"
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
                 </div>
-              </div>
 
-              {/* Sign Up With Email */}
-              <button
-                onClick={handleSignupWithEmail}
-                className="w-full flex items-center justify-center px-6 py-3 border-2 border-gray-300 text-gray-700 font-medium rounded-lg hover:border-[#007AFF] hover:text-[#007AFF] transition-colors"
-              >
-                <span className="mr-2">📧</span>
-                Sign Up With Email
-              </button>
+                {/* Signup Form */}
+                <form onSubmit={handleSignupSubmit} className="space-y-4">
+                  <div>
+                    <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                      Full Name
+                    </label>
+                    <input
+                      id="name"
+                      name="name"
+                      type="text"
+                      autoComplete="name"
+                      value={signupData.name}
+                      onChange={handleSignupChange}
+                      className={`w-full px-3 py-2 border rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:border-transparent ${
+                        signupErrors.name ? 'border-red-300' : 'border-gray-300'
+                      }`}
+                      placeholder="Enter your full name"
+                    />
+                    {signupErrors.name && (
+                      <p className="mt-1 text-sm text-red-600">{signupErrors.name}</p>
+                    )}
+                  </div>
 
-              {/* Login Link */}
-              <div className="text-center pt-4">
-                <p className="text-gray-600">
-                  Already have an account?{' '}
-                  <Link href="/login" className="text-[#007AFF] hover:text-[#0056D6] font-medium">
-                    Log In
-                  </Link>
-                </p>
-              </div>
-            </div>
+                  <div>
+                    <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1">
+                      Username
+                    </label>
+                    <div className="relative">
+                      <input
+                        id="username"
+                        name="username"
+                        type="text"
+                        autoComplete="username"
+                        value={signupData.username}
+                        onChange={handleSignupChange}
+                        className={`w-full px-3 py-2 pr-10 border rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:border-transparent ${
+                          signupErrors.username ? 'border-red-300' : 
+                          usernameAvailable === true ? 'border-green-300' :
+                          usernameAvailable === false ? 'border-red-300' : 'border-gray-300'
+                        }`}
+                        placeholder="Choose a username"
+                      />
+                      {usernameCheckLoading && (
+                        <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+                        </div>
+                      )}
+                      {!usernameCheckLoading && usernameAvailable === true && signupData.username.trim().length >= 3 && (
+                        <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                          <svg className="h-4 w-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                        </div>
+                      )}
+                      {!usernameCheckLoading && usernameAvailable === false && (
+                        <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                          <svg className="h-4 w-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </div>
+                      )}
+                    </div>
+                    {signupErrors.username && (
+                      <p className="mt-1 text-sm text-red-600">{signupErrors.username}</p>
+                    )}
+                    {!signupErrors.username && usernameAvailable === true && signupData.username.trim().length >= 3 && (
+                      <p className="mt-1 text-sm text-green-600">Username is available!</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                      Email address
+                    </label>
+                    <input
+                      id="email"
+                      name="email"
+                      type="email"
+                      autoComplete="email"
+                      value={signupData.email}
+                      onChange={handleSignupChange}
+                      className={`w-full px-3 py-2 border rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:border-transparent ${
+                        signupErrors.email ? 'border-red-300' : 'border-gray-300'
+                      }`}
+                      placeholder="Enter your email"
+                    />
+                    {signupErrors.email && (
+                      <p className="mt-1 text-sm text-red-600">{signupErrors.email}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                      Password
+                    </label>
+                    <input
+                      id="password"
+                      name="password"
+                      type="password"
+                      autoComplete="new-password"
+                      value={signupData.password}
+                      onChange={handleSignupChange}
+                      className={`w-full px-3 py-2 border rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:border-transparent ${
+                        signupErrors.password ? 'border-red-300' : 'border-gray-300'
+                      }`}
+                      placeholder="Create a password"
+                    />
+                    {signupErrors.password && (
+                      <p className="mt-1 text-sm text-red-600">{signupErrors.password}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1">
+                      Confirm Password
+                    </label>
+                    <input
+                      id="confirmPassword"
+                      name="confirmPassword"
+                      type="password"
+                      autoComplete="new-password"
+                      value={confirmPassword}
+                      onChange={handleSignupChange}
+                      className={`w-full px-3 py-2 border rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:border-transparent ${
+                        signupErrors.confirmPassword ? 'border-red-300' : 'border-gray-300'
+                      }`}
+                      placeholder="Confirm your password"
+                    />
+                    {signupErrors.confirmPassword && (
+                      <p className="mt-1 text-sm text-red-600">{signupErrors.confirmPassword}</p>
+                    )}
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-[#007AFF] hover:bg-[#0056D6] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#007AFF] disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isLoading ? (
+                      <div className="flex items-center">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                        Creating account...
+                      </div>
+                    ) : (
+                      'Create account'
+                    )}
+                  </button>
+
+                  <div className="text-center">
+                    <p className="text-sm text-gray-600">
+                      Already have an account?{' '}
+                      <button
+                        onClick={() => setShowSignup(false)}
+                        className="font-medium text-[#007AFF] hover:text-[#0056D6]"
+                      >
+                        Sign in
+                      </button>
+                    </p>
+                  </div>
+                </form>
+              </>
+            )}
 
             {/* Error Message */}
             {error && (
               <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
-                {error}
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    {error}
+                  </div>
+                  {error.includes('already registered') && (
+                    <button
+                      onClick={() => setShowSignup(false)}
+                      className="ml-3 text-red-700 hover:text-red-800 underline text-xs font-medium"
+                    >
+                      Switch to Login
+                    </button>
+                  )}
+                </div>
               </div>
             )}
           </div>

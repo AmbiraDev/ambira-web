@@ -1,0 +1,53 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Users can read/write their own profile
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      // Allow public read access for profile visibility
+      allow read: if resource.data.profileVisibility == 'everyone';
+    // Allow followers to read if profile is set to followers
+    allow read: if resource.data.profileVisibility == 'followers' && 
+      exists(/databases/$(database)/documents/follows/$(request.auth.uid + '_' + userId));
+    }
+    
+    // Follow relationships
+    match /follows/{followId} {
+      allow read, write: if request.auth != null && 
+        (request.auth.uid == followId.split('_')[0] || request.auth.uid == followId.split('_')[1]);
+    }
+    
+    // User activities
+    match /activities/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    // Allow followers to read activities if visibility allows
+    allow read: if request.auth != null && 
+      get(/databases/$(database)/documents/users/$(userId)).data.activityVisibility == 'followers' &&
+      exists(/databases/$(database)/documents/follows/$(request.auth.uid + '_' + userId));
+    allow read: if get(/databases/$(database)/documents/users/$(userId)).data.activityVisibility == 'everyone';
+    }
+    
+    // User projects
+    match /projects/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    // Allow followers to read projects if visibility allows
+    allow read: if request.auth != null && 
+      get(/databases/$(database)/documents/users/$(userId)).data.projectVisibility == 'followers' &&
+      exists(/databases/$(database)/documents/follows/$(request.auth.uid + '_' + userId));
+    allow read: if get(/databases/$(database)/documents/users/$(userId)).data.projectVisibility == 'everyone';
+    }
+    
+    // Sessions
+    match /sessions/{sessionId} {
+      allow read, write: if request.auth != null && 
+        resource.data.userId == request.auth.uid;
+    }
+    
+    // Groups
+    match /groups/{groupId} {
+      allow read: if resource.data.privacySetting == 'public';
+      allow read, write: if request.auth != null && 
+        request.auth.uid in resource.data.memberIds;
+    }
+  }
+}

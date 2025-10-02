@@ -2,13 +2,18 @@
 
 import React from 'react';
 import { GlobalTasks } from '@/components/GlobalTasks';
+import { ProtectedRoute } from '@/components/ProtectedRoute';
+import Header from '@/components/HeaderComponent';
 
 export default function TasksPage() {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-6xl mx-auto p-6">
-        <GlobalTasks />
+    <ProtectedRoute>
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <div className="max-w-6xl mx-auto p-6">
+          <GlobalTasks />
+        </div>
       </div>
-    </div>
+    </ProtectedRoute>
   );
 }

@@ -61,6 +61,8 @@ export const SignupForm: React.FC = () => {
       newErrors.email = 'Email is required';
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = 'Email is invalid';
+    } else if (formData.email === 'demo@ambira.com') {
+      newErrors.email = 'This email is reserved for demo purposes. Please use the demo login instead.';
     }
 
     if (!formData.password) {
@@ -92,8 +94,19 @@ export const SignupForm: React.FC = () => {
     try {
       await signup(formData);
       router.push('/');
-    } catch (error) {
-      setSubmitError(error instanceof Error ? error.message : 'Signup failed. Please try again.');
+    } catch (error: any) {
+      console.error('Signup error:', error);
+      
+      // Handle specific Firebase errors with user-friendly messages
+      if (error.message?.includes('auth/email-already-in-use')) {
+        setSubmitError('This email address is already registered. Please try logging in instead or use a different email.');
+      } else if (error.message?.includes('auth/weak-password')) {
+        setSubmitError('Password is too weak. Please choose a stronger password with at least 6 characters.');
+      } else if (error.message?.includes('auth/invalid-email')) {
+        setSubmitError('Please enter a valid email address.');
+      } else {
+        setSubmitError(error instanceof Error ? error.message : 'Signup failed. Please try again.');
+      }
     } finally {
       setIsSubmitting(false);
     }

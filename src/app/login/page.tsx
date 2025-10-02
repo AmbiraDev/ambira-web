@@ -16,7 +16,7 @@ export default function LoginPage() {
       setIsLoading(true);
       await login({
         email: 'demo@ambira.com',
-        password: 'demo'
+        password: 'demouser123'
       });
       
       // Check for redirect parameter
