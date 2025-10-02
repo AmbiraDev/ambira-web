@@ -32,6 +32,14 @@ import {
 } from 'firebase/auth';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, auth, storage } from './firebase';
+
+// Helper function for safe error handling
+const getErrorMessage = (error: any, defaultMessage: string): string => {
+  if (error?.message) return error.message;
+  if (error?.toString) return error.toString();
+  return defaultMessage;
+};
+
 import {
   AuthResponse,
   LoginCredentials,
@@ -126,7 +134,7 @@ export const firebaseAuthApi = {
       
       return { user, token };
     } catch (error: any) {
-      throw new Error(error.message || 'Login failed');
+      throw new Error(getErrorMessage(error, 'Login failed'));
     }
   },
 
@@ -177,7 +185,7 @@ export const firebaseAuthApi = {
       
       return { user, token };
     } catch (error: any) {
-      throw new Error(error.message || 'Signup failed');
+      throw new Error(getErrorMessage(error, 'Signup failed'));
     }
   },
 
@@ -854,7 +862,7 @@ export const firebaseTaskApi = {
         updatedAt: new Date(),
       } as Task;
     } catch (error: any) {
-      throw new Error(error.message || 'Failed to create task');
+      throw new Error(getErrorMessage(error, 'Failed to create task'));
     }
   },
 
@@ -884,7 +892,7 @@ export const firebaseTaskApi = {
         completedAt: data.status === 'completed' ? new Date() : undefined,
       } as Task;
     } catch (error: any) {
-      throw new Error(error.message || 'Failed to update task');
+      throw new Error(getErrorMessage(error, 'Failed to update task'));
     }
   },
 
@@ -923,7 +931,8 @@ export const firebaseTaskApi = {
       
       await batch.commit();
     } catch (error: any) {
-      throw new Error(error.message || 'Failed to bulk update tasks');
+      console.error('Bulk update tasks error:', error);
+      throw new Error(getErrorMessage(error, 'Failed to bulk update tasks'));
     }
   },
 
