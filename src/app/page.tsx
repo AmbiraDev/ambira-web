@@ -6,6 +6,7 @@ import Header from '../components/HeaderComponent';
 import LeftSidebar from '@/components/LeftSidebar';
 import RightSidebar from '@/components/RightSidebar';
 import FeedPost from '@/components/FeedPost';
+import { FABMenu } from '@/components/FABMenu';
 
 function HomeContent() {
   const { user, logout } = useAuth();
@@ -101,6 +102,9 @@ function HomeContent() {
           {/* Right Sidebar */}
           <RightSidebar />
         </div>
+        
+        {/* Floating Action Button Menu */}
+        <FABMenu />
       </div>
     </div>
   );

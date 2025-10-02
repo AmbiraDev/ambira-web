@@ -11,6 +11,10 @@ import {
   ActiveTimer,
   Session,
   CreateSessionData,
+  SessionFormData,
+  SessionFilters,
+  SessionSort,
+  SessionListResponse,
   Task
 } from '@/types';
 
@@ -222,6 +226,68 @@ export const taskApi = {
   // Update task status
   updateTaskStatus: async (taskId: string, status: 'active' | 'completed' | 'archived'): Promise<Task> => {
     const response: AxiosResponse<Task> = await api.patch(`/tasks/${taskId}`, { status });
+    return response.data;
+  },
+};
+
+// Session API methods
+export const sessionApi = {
+  // Create a new session (manual entry)
+  createSession: async (sessionData: SessionFormData): Promise<Session> => {
+    const response: AxiosResponse<Session> = await api.post('/sessions', sessionData);
+    return response.data;
+  },
+
+  // Get user's sessions with filtering and pagination
+  getSessions: async (
+    page: number = 1,
+    limit: number = 20,
+    filters: SessionFilters = {},
+    sort: SessionSort = { field: 'startTime', direction: 'desc' }
+  ): Promise<SessionListResponse> => {
+    const params = new URLSearchParams({
+      page: page.toString(),
+      limit: limit.toString(),
+      sortField: sort.field,
+      sortDirection: sort.direction,
+      ...(filters.projectId && { projectId: filters.projectId }),
+      ...(filters.dateFrom && { dateFrom: filters.dateFrom.toISOString() }),
+      ...(filters.dateTo && { dateTo: filters.dateTo.toISOString() }),
+      ...(filters.tags && { tags: filters.tags.join(',') }),
+      ...(filters.visibility && { visibility: filters.visibility }),
+      ...(filters.search && { search: filters.search }),
+    });
+
+    const response: AxiosResponse<SessionListResponse> = await api.get(`/sessions?${params}`);
+    return response.data;
+  },
+
+  // Get single session by ID
+  getSession: async (id: string): Promise<Session> => {
+    const response: AxiosResponse<Session> = await api.get(`/sessions/${id}`);
+    return response.data;
+  },
+
+  // Update session
+  updateSession: async (id: string, sessionData: Partial<SessionFormData>): Promise<Session> => {
+    const response: AxiosResponse<Session> = await api.put(`/sessions/${id}`, sessionData);
+    return response.data;
+  },
+
+  // Delete session
+  deleteSession: async (id: string): Promise<void> => {
+    await api.delete(`/sessions/${id}`);
+  },
+
+  // Archive session
+  archiveSession: async (id: string): Promise<Session> => {
+    const response: AxiosResponse<Session> = await api.patch(`/sessions/${id}/archive`);
+    return response.data;
+  },
+
+  // Unarchive session
+  unarchiveSession: async (id: string): Promise<Session> => {
+    const response: AxiosResponse<Session> = await api.patch(`/sessions/${id}/unarchive`);
     return response.data;
   },
 };

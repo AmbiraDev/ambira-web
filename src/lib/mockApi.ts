@@ -10,6 +10,10 @@ import {
   ActiveTimer,
   Session,
   CreateSessionData,
+  SessionFormData,
+  SessionFilters,
+  SessionSort,
+  SessionListResponse,
   Task
 } from '@/types';
 
@@ -500,5 +504,227 @@ export const mockTaskApi = {
     };
 
     return mockTasks[taskIndex];
+  },
+};
+
+// Mock session API
+export const mockSessionApi = {
+  createSession: async (sessionData: SessionFormData, token: string): Promise<Session> => {
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 800));
+
+    const userId = getCurrentUserId(token);
+    
+    // Verify project belongs to user
+    const project = mockProjects.find(p => p.id === sessionData.projectId && p.userId === userId);
+    if (!project) {
+      throw new Error('Project not found');
+    }
+
+    // Get selected tasks
+    const selectedTasks = sessionData.taskIds ? 
+      mockTasks.filter(task => sessionData.taskIds!.includes(task.id)) : [];
+
+    // Create session
+    const newSession: Session = {
+      id: `session_${Date.now()}`,
+      userId,
+      projectId: sessionData.projectId,
+      title: sessionData.title,
+      description: sessionData.description,
+      duration: sessionData.duration,
+      startTime: sessionData.startTime,
+      tasks: selectedTasks,
+      tags: sessionData.tags || [],
+      visibility: sessionData.visibility,
+      howFelt: sessionData.howFelt,
+      privateNotes: sessionData.privateNotes,
+      isArchived: false,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    mockSessions.push(newSession);
+    return newSession;
+  },
+
+  getSessions: async (
+    page: number = 1,
+    limit: number = 20,
+    filters: SessionFilters = {},
+    sort: SessionSort = { field: 'startTime', direction: 'desc' },
+    token: string
+  ): Promise<SessionListResponse> => {
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 600));
+
+    const userId = getCurrentUserId(token);
+    
+    // Filter sessions by user
+    let filteredSessions = mockSessions.filter(session => session.userId === userId);
+
+    // Apply filters
+    if (filters.projectId) {
+      filteredSessions = filteredSessions.filter(session => session.projectId === filters.projectId);
+    }
+
+    if (filters.dateFrom) {
+      filteredSessions = filteredSessions.filter(session => session.startTime >= filters.dateFrom!);
+    }
+
+    if (filters.dateTo) {
+      filteredSessions = filteredSessions.filter(session => session.startTime <= filters.dateTo!);
+    }
+
+    if (filters.tags && filters.tags.length > 0) {
+      filteredSessions = filteredSessions.filter(session => 
+        filters.tags!.some(tag => session.tags.includes(tag))
+      );
+    }
+
+    if (filters.visibility) {
+      filteredSessions = filteredSessions.filter(session => session.visibility === filters.visibility);
+    }
+
+    if (filters.search) {
+      const searchLower = filters.search.toLowerCase();
+      filteredSessions = filteredSessions.filter(session => 
+        session.title.toLowerCase().includes(searchLower) ||
+        session.description?.toLowerCase().includes(searchLower)
+      );
+    }
+
+    // Apply sorting
+    filteredSessions.sort((a, b) => {
+      let aValue: any, bValue: any;
+      
+      switch (sort.field) {
+        case 'startTime':
+          aValue = new Date(a.startTime).getTime();
+          bValue = new Date(b.startTime).getTime();
+          break;
+        case 'duration':
+          aValue = a.duration;
+          bValue = b.duration;
+          break;
+        case 'title':
+          aValue = a.title.toLowerCase();
+          bValue = b.title.toLowerCase();
+          break;
+        default:
+          aValue = new Date(a.startTime).getTime();
+          bValue = new Date(b.startTime).getTime();
+      }
+
+      if (sort.direction === 'asc') {
+        return aValue > bValue ? 1 : -1;
+      } else {
+        return aValue < bValue ? 1 : -1;
+      }
+    });
+
+    // Apply pagination
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + limit;
+    const paginatedSessions = filteredSessions.slice(startIndex, endIndex);
+
+    return {
+      sessions: paginatedSessions,
+      totalCount: filteredSessions.length,
+      hasMore: endIndex < filteredSessions.length,
+    };
+  },
+
+  getSession: async (id: string, token: string): Promise<Session> => {
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 400));
+
+    const userId = getCurrentUserId(token);
+    const session = mockSessions.find(s => s.id === id && s.userId === userId);
+    
+    if (!session) {
+      throw new Error('Session not found');
+    }
+
+    return session;
+  },
+
+  updateSession: async (id: string, sessionData: Partial<SessionFormData>, token: string): Promise<Session> => {
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 700));
+
+    const userId = getCurrentUserId(token);
+    const sessionIndex = mockSessions.findIndex(s => s.id === id && s.userId === userId);
+    
+    if (sessionIndex === -1) {
+      throw new Error('Session not found');
+    }
+
+    // Get selected tasks if taskIds provided
+    const selectedTasks = sessionData.taskIds ? 
+      mockTasks.filter(task => sessionData.taskIds!.includes(task.id)) : 
+      mockSessions[sessionIndex].tasks;
+
+    // Update session
+    mockSessions[sessionIndex] = {
+      ...mockSessions[sessionIndex],
+      ...sessionData,
+      tasks: selectedTasks,
+      updatedAt: new Date(),
+    };
+
+    return mockSessions[sessionIndex];
+  },
+
+  deleteSession: async (id: string, token: string): Promise<void> => {
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 400));
+
+    const userId = getCurrentUserId(token);
+    const sessionIndex = mockSessions.findIndex(s => s.id === id && s.userId === userId);
+    
+    if (sessionIndex !== -1) {
+      mockSessions.splice(sessionIndex, 1);
+    }
+  },
+
+  archiveSession: async (id: string, token: string): Promise<Session> => {
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 400));
+
+    const userId = getCurrentUserId(token);
+    const sessionIndex = mockSessions.findIndex(s => s.id === id && s.userId === userId);
+    
+    if (sessionIndex === -1) {
+      throw new Error('Session not found');
+    }
+
+    mockSessions[sessionIndex] = {
+      ...mockSessions[sessionIndex],
+      isArchived: true,
+      updatedAt: new Date(),
+    };
+
+    return mockSessions[sessionIndex];
+  },
+
+  unarchiveSession: async (id: string, token: string): Promise<Session> => {
+    // Simulate network delay
+    await new Promise(resolve => setTimeout(resolve, 400));
+
+    const userId = getCurrentUserId(token);
+    const sessionIndex = mockSessions.findIndex(s => s.id === id && s.userId === userId);
+    
+    if (sessionIndex === -1) {
+      throw new Error('Session not found');
+    }
+
+    mockSessions[sessionIndex] = {
+      ...mockSessions[sessionIndex],
+      isArchived: false,
+      updatedAt: new Date(),
+    };
+
+    return mockSessions[sessionIndex];
   },
 };

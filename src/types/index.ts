@@ -252,3 +252,58 @@ export interface CreateSessionData {
   howFelt?: number;
   privateNotes?: string;
 }
+
+// Session management interfaces
+export interface SessionFormData {
+  projectId: string;
+  title: string;
+  description?: string;
+  duration: number;
+  startTime: Date;
+  taskIds?: string[];
+  tags: string[];
+  visibility: 'everyone' | 'followers' | 'private';
+  howFelt?: number;
+  privateNotes?: string;
+}
+
+export interface SessionFilters {
+  projectId?: string;
+  dateFrom?: Date;
+  dateTo?: Date;
+  tags?: string[];
+  visibility?: string;
+  search?: string;
+}
+
+export interface SessionSort {
+  field: 'startTime' | 'duration' | 'title';
+  direction: 'asc' | 'desc';
+}
+
+export interface SessionListResponse {
+  sessions: Session[];
+  totalCount: number;
+  hasMore: boolean;
+}
+
+export interface SessionFormProps {
+  initialData?: Partial<SessionFormData>;
+  onSubmit: (data: SessionFormData) => Promise<void>;
+  onCancel: () => void;
+  isLoading?: boolean;
+  mode: 'timer' | 'manual';
+}
+
+export interface SessionHistoryProps {
+  sessions: Session[];
+  projects: Project[];
+  filters: SessionFilters;
+  sort: SessionSort;
+  onFiltersChange: (filters: SessionFilters) => void;
+  onSortChange: (sort: SessionSort) => void;
+  onSessionEdit: (session: Session) => void;
+  onSessionDelete: (sessionId: string) => void;
+  onSessionArchive: (sessionId: string) => void;
+  isLoading?: boolean;
+}

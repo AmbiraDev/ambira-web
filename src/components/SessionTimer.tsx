@@ -8,6 +8,8 @@ import { mockProjectApi, mockTaskApi } from '@/lib/mockApi';
 import { Project, Task } from '@/types';
 import { TimerDisplay } from './TimerDisplay';
 import { TimerControls } from './TimerControls';
+import { SaveSession } from './SaveSession';
+import { mockSessionApi } from '@/lib/mockApi';
 
 interface SessionTimerProps {
   className?: string;
@@ -233,139 +235,38 @@ export const SessionTimer: React.FC<SessionTimerProps> = ({ className = '' }) =>
 
       {/* Finish Session Modal */}
       {showFinishModal && (
-        <FinishSessionModal
-          onClose={() => setShowFinishModal(false)}
-          onFinish={(data) => {
-            setShowFinishModal(false);
-            // Handle finish logic
+        <SaveSession
+          onSave={async (data) => {
+            try {
+              const token = getAuthToken();
+              await mockSessionApi.createSession(data, token);
+              setShowFinishModal(false);
+              // Timer will be finished by the context
+            } catch (error) {
+              console.error('Failed to save session:', error);
+              throw error;
+            }
           }}
+          onCancel={() => setShowFinishModal(false)}
+          initialData={{
+            projectId: timerState.currentProject?.id || '',
+            title: '',
+            description: '',
+            duration: timerState.pausedDuration || 0,
+            startTime: timerState.startTime || new Date(),
+            taskIds: timerState.selectedTasks.map(task => task.id),
+            tags: [],
+            visibility: 'private',
+            howFelt: 3,
+            privateNotes: '',
+          }}
+          isLoading={false}
         />
       )}
     </div>
   );
 };
 
-// Finish Session Modal Component
-interface FinishSessionModalProps {
-  onClose: () => void;
-  onFinish: (data: any) => void;
-}
-
-const FinishSessionModal: React.FC<FinishSessionModalProps> = ({ onClose, onFinish }) => {
-  const { timerState, finishTimer } = useTimer();
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [tags, setTags] = useState<string[]>([]);
-  const [howFelt, setHowFelt] = useState<number>(3);
-  const [privateNotes, setPrivateNotes] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-
-  const handleFinish = async () => {
-    if (!title.trim()) {
-      alert('Please enter a session title');
-      return;
-    }
-
-    try {
-      setIsLoading(true);
-      const session = await finishTimer(title, description, tags, howFelt, privateNotes);
-      onFinish(session);
-    } catch (error) {
-      console.error('Failed to finish session:', error);
-      alert('Failed to save session. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
-        <h2 className="text-xl font-bold mb-4">Finish Session</h2>
-        
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Session Title *
-            </label>
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="What did you work on?"
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Description
-            </label>
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              rows={3}
-              placeholder="What did you accomplish?"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              How did you feel? (1-5)
-            </label>
-            <div className="flex space-x-2">
-              {[1, 2, 3, 4, 5].map((rating) => (
-                <button
-                  key={rating}
-                  onClick={() => setHowFelt(rating)}
-                  className={`w-8 h-8 rounded-full border-2 ${
-                    howFelt === rating
-                      ? 'border-blue-500 bg-blue-500 text-white'
-                      : 'border-gray-300 text-gray-600'
-                  }`}
-                >
-                  {rating}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Private Notes
-            </label>
-            <textarea
-              value={privateNotes}
-              onChange={(e) => setPrivateNotes(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              rows={2}
-              placeholder="Any private notes about this session..."
-            />
-          </div>
-        </div>
-
-        <div className="flex justify-end space-x-3 mt-6">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
-            disabled={isLoading}
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleFinish}
-            disabled={isLoading}
-            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-300 transition-colors"
-          >
-            {isLoading ? 'Saving...' : 'Finish Session'}
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
 
 // Custom Timer Controls for SessionTimer
 interface CustomTimerControlsProps {

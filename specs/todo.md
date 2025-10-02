@@ -148,17 +148,17 @@
 - [ ] Update all statistics
 
 ### Session Management
-- [ ] Create session history page
-- [ ] Build session list with filters
-- [ ] Add project filter dropdown
-- [ ] Implement date range filter
-- [ ] Add sort options
-- [ ] Create session edit functionality
-- [ ] Allow all field edits
-- [ ] Build delete confirmation modal
-- [ ] Implement archive functionality
-- [ ] Recalculate stats on changes
-- [ ] No "edited" indicator display
+- [x] Create session history page
+- [x] Build session list with filters
+- [x] Add project filter dropdown
+- [x] Implement date range filter
+- [x] Add sort options
+- [x] Create session edit functionality
+- [x] Allow all field edits
+- [x] Build delete confirmation modal
+- [x] Implement archive functionality
+- [x] Recalculate stats on changes
+- [x] No "edited" indicator display
 
 ### Dashboard
 - [ ] Create dashboard layout
