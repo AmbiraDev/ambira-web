@@ -18,10 +18,10 @@ export default function Header() {
   return (
     <header className="sticky top-0 left-0 right-0 z-50 bg-white border-b border-gray-200">
       <div className="max-w-[1400px] mx-auto px-4">
-        <div className="flex items-center justify-between h-14">
+        <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="flex items-center space-x-8">
-            <Link href="/" className="flex items-center space-x-2">
+            <Link href="/" className="flex items-center space-x-3">
               <div className="w-8 h-8 bg-[#007AFF] rounded-lg flex items-center justify-center">
                 <span className="text-white font-bold text-lg">A</span>
               </div>
@@ -29,12 +29,12 @@ export default function Header() {
             </Link>
 
             {/* Desktop Navigation */}
-            <nav className="hidden md:flex items-center space-x-6">
+            <nav className="hidden md:flex items-center space-x-8">
               <Link 
                 href="/" 
-                className={`text-sm font-medium transition-colors pb-3 ${
+                className={`text-base font-medium transition-colors ${
                   isActive('/') 
-                    ? 'text-gray-900 border-b-2 border-[#007AFF]' 
+                    ? 'text-gray-900' 
                     : 'text-gray-600 hover:text-[#007AFF]'
                 }`}
               >
@@ -42,9 +42,9 @@ export default function Header() {
               </Link>
               <Link 
                 href="/projects" 
-                className={`text-sm font-medium transition-colors pb-3 ${
+                className={`text-base font-medium transition-colors ${
                   isActive('/projects') 
-                    ? 'text-gray-900 border-b-2 border-[#007AFF]' 
+                    ? 'text-gray-900' 
                     : 'text-gray-600 hover:text-[#007AFF]'
                 }`}
               >
@@ -52,9 +52,9 @@ export default function Header() {
               </Link>
               <Link 
                 href="/groups" 
-                className={`text-sm font-medium transition-colors pb-3 ${
+                className={`text-base font-medium transition-colors ${
                   isActive('/groups') 
-                    ? 'text-gray-900 border-b-2 border-[#007AFF]' 
+                    ? 'text-gray-900' 
                     : 'text-gray-600 hover:text-[#007AFF]'
                 }`}
               >
@@ -62,9 +62,9 @@ export default function Header() {
               </Link>
               <Link 
                 href="/challenges" 
-                className={`text-sm font-medium transition-colors pb-3 ${
+                className={`text-base font-medium transition-colors ${
                   isActive('/challenges') 
-                    ? 'text-gray-900 border-b-2 border-[#007AFF]' 
+                    ? 'text-gray-900' 
                     : 'text-gray-600 hover:text-[#007AFF]'
                 }`}
               >
@@ -128,6 +128,21 @@ export default function Header() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             </button>
+          </div>
+        </div>
+
+        {/* Active tab indicator - light blue line at bottom of header */}
+        <div className="relative">
+          <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-200"></div>
+          <div className="absolute bottom-0 left-0 h-0.5 bg-[#007AFF] transition-all duration-300" 
+               style={{
+                 width: '80px',
+                 left: isActive('/') ? '120px' : 
+                       isActive('/projects') ? '200px' : 
+                       isActive('/groups') ? '280px' : 
+                       isActive('/challenges') ? '360px' : '120px',
+                 opacity: isActive('/') || isActive('/projects') || isActive('/groups') || isActive('/challenges') ? 1 : 0
+               }}>
           </div>
         </div>
 

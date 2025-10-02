@@ -34,57 +34,42 @@ export const LandingPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
       <Header />
       
       {/* Hero Section - 100vh minus header height */}
-      <main className="h-[calc(100vh-56px)] flex">
-        {/* Left Panel - Image */}
-        <div className="hidden lg:flex lg:w-1/3 relative">
-          <div className="absolute inset-0 bg-gradient-to-br from-blue-600 to-purple-700 flex items-center justify-center">
-            <div className="text-white text-center p-8">
-              <div className="text-6xl mb-4">📊</div>
-              <h2 className="text-2xl font-bold mb-4">Track Your Progress</h2>
-              <p className="text-blue-100">Monitor your productivity journey with detailed analytics and insights</p>
+      <main className="h-[calc(100vh-56px)] flex items-center justify-center px-8">
+        <div className="max-w-md w-full">
+          {/* Logo and Welcome */}
+          <div className="text-center mb-8">
+            <div className="w-16 h-16 bg-[#007AFF] rounded-lg flex items-center justify-center mx-auto mb-4">
+              <span className="text-white font-bold text-2xl">A</span>
             </div>
+            <h1 className="text-4xl font-bold text-gray-900 mb-2">Welcome to Ambira</h1>
+            <p className="text-lg text-gray-600">
+              Your productivity tracking companion
+            </p>
           </div>
-        </div>
 
-        {/* Central Panel - Sign-up/Motivation */}
-        <div className="flex-1 flex items-center justify-center px-8">
-          <div className="max-w-md w-full text-center">
-            {/* Headline */}
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
-              Community-Powered
-              <span className="block text-orange-500">Motivation</span>
-            </h1>
-            
-            {/* Description */}
-            <p className="text-lg text-gray-600 mb-8 leading-relaxed">
-              Track your progress and cheer each other on. Join thousands of productive people on Ambira for free.
-            </p>
-
-            {/* Login Prompt */}
-            <p className="text-gray-600 mb-6">
-              Already a Member?{' '}
-              <Link href="/login" className="text-orange-500 hover:text-orange-600 font-medium">
-                Log In
-              </Link>
-            </p>
+          {/* Sign-in Card */}
+          <div className="bg-white rounded-xl shadow-lg p-8 mb-6">
+            <h2 className="text-2xl font-semibold text-gray-900 text-center mb-6">
+              Sign in to your account
+            </h2>
 
             {/* Sign-up Options */}
-            <div className="space-y-4 mb-6">
+            <div className="space-y-4">
               {/* Demo Login Button - Prominent */}
               <button
                 onClick={handleDemoLogin}
                 disabled={isLoading}
-                className="w-full flex items-center justify-center px-6 py-4 bg-orange-500 text-white font-semibold text-lg rounded-lg hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+                className="w-full flex items-center justify-center px-6 py-4 bg-[#007AFF] text-white font-semibold text-lg rounded-lg hover:bg-[#0056D6] transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
               >
                 {isLoading ? (
                   <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
                 ) : (
                   <>
-                    <span className="mr-3">🚀</span>
+                    <span className="mr-3">🎯</span>
                     Sign In as Demo User
                   </>
                 )}
@@ -103,39 +88,38 @@ export const LandingPage: React.FC = () => {
               {/* Sign Up With Email */}
               <button
                 onClick={handleSignupWithEmail}
-                className="w-full flex items-center justify-center px-6 py-3 border-2 border-gray-300 text-gray-700 font-medium rounded-lg hover:border-orange-500 hover:text-orange-500 transition-colors"
+                className="w-full flex items-center justify-center px-6 py-3 border-2 border-gray-300 text-gray-700 font-medium rounded-lg hover:border-[#007AFF] hover:text-[#007AFF] transition-colors"
               >
                 <span className="mr-2">📧</span>
                 Sign Up With Email
               </button>
+
+              {/* Login Link */}
+              <div className="text-center pt-4">
+                <p className="text-gray-600">
+                  Already have an account?{' '}
+                  <Link href="/login" className="text-[#007AFF] hover:text-[#0056D6] font-medium">
+                    Log In
+                  </Link>
+                </p>
+              </div>
             </div>
 
             {/* Error Message */}
             {error && (
-              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
+              <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
                 {error}
               </div>
             )}
-
-            {/* Legal Text */}
-            <p className="text-xs text-gray-500">
-              By continuing, you are agreeing to our{' '}
-              <Link href="/terms" className="text-blue-600 hover:underline">Terms of Service</Link>
-              {' '}and{' '}
-              <Link href="/privacy" className="text-blue-600 hover:underline">Privacy Policy</Link>
-            </p>
           </div>
-        </div>
 
-        {/* Right Panel - Image with Overlays */}
-        <div className="hidden lg:flex lg:w-1/3 relative">
-          <div className="absolute inset-0 bg-gradient-to-br from-green-600 to-teal-700 flex items-center justify-center">
-            <div className="text-white text-center p-8">
-              <div className="text-6xl mb-4">🚀</div>
-              <h2 className="text-2xl font-bold mb-4">Achieve Your Goals</h2>
-              <p className="text-green-100">Stay motivated with streaks, achievements, and community support</p>
-            </div>
-          </div>
+          {/* Legal Text */}
+          <p className="text-xs text-gray-500 text-center">
+            By continuing, you are agreeing to our{' '}
+            <Link href="/terms" className="text-[#007AFF] hover:underline">Terms of Service</Link>
+            {' '}and{' '}
+            <Link href="/privacy" className="text-[#007AFF] hover:underline">Privacy Policy</Link>
+          </p>
         </div>
       </main>
 

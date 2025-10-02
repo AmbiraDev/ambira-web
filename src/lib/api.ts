@@ -55,15 +55,27 @@ export const authApi = {
   // Set token for authenticated requests
   setToken: (token: string) => {
     authToken = token;
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('auth_token', token);
+    }
   },
 
   // Clear token
   clearToken: () => {
     authToken = null;
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('auth_token');
+    }
   },
 
   // Get current token
-  getToken: () => authToken,
+  getToken: () => {
+    if (authToken) return authToken;
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('auth_token');
+    }
+    return null;
+  },
 
   // Login
   login: async (credentials: LoginCredentials): Promise<AuthResponse> => {
