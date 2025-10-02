@@ -1,36 +1,130 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Ambira - Social Productivity Tracker
+
+A social productivity tracking application built with Next.js, TypeScript, and Tailwind CSS. Ambira gamifies productivity by allowing users to track their work sessions, build streaks, join groups, and compete with friends.
+
+## Features
+
+### ✅ Implemented Foundation
+- **Next.js 15** with App Router and TypeScript
+- **Electric-blue + White Theme** with Tailwind CSS
+- **Responsive Layout** with fixed header and optional sidebars
+- **Mobile Navigation** with bottom navigation bar and FAB
+- **Routing Structure** for all major pages:
+  - `/` - Home/Feed
+  - `/login` and `/signup` - Authentication
+  - `/projects` and `/projects/[id]` - Project management
+  - `/profile/[username]` - User profiles
+  - `/groups` and `/groups/[id]` - Groups
+  - `/settings` - User settings
+
+### 🎨 Design System
+- **Electric Blue Primary Color** (#007AFF) for logos, buttons, and accents
+- **Clean White Surfaces** for posts and backgrounds
+- **Success Green** (#34C759) for positive actions
+- **Responsive Design** that adapts from desktop to mobile
+- **Strava-inspired Layout** with three-column desktop and single-column mobile
+
+### 🏗️ Architecture
+- **Component-based** React architecture
+- **TypeScript** for type safety
+- **ESLint + Prettier** for code consistency
+- **Tailwind CSS** for styling
+- **Modular file structure** with organized components
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+- Node.js 18+ 
+- npm or yarn
 
+### Installation
+
+1. Clone the repository:
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone <repository-url>
+cd ambira-web
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Install dependencies:
+```bash
+npm install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. Start the development server:
+```bash
+npm run dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+4. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-## Learn More
+### Available Scripts
 
-To learn more about Next.js, take a look at the following resources:
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run start` - Start production server
+- `npm run lint` - Run ESLint
+- `npm run lint:fix` - Fix ESLint errors
+- `npm run format` - Format code with Prettier
+- `npm run type-check` - Run TypeScript type checking
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Project Structure
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+src/
+├── app/                    # Next.js App Router pages
+│   ├── login/
+│   ├── signup/
+│   ├── projects/
+│   │   └── [id]/
+│   ├── profile/
+│   │   └── [username]/
+│   ├── groups/
+│   │   └── [id]/
+│   ├── settings/
+│   ├── layout.tsx         # Root layout
+│   ├── page.tsx          # Home page
+│   └── globals.css       # Global styles
+├── components/            # Reusable components
+│   ├── Header.tsx        # Top navigation
+│   ├── Layout.tsx        # Main layout wrapper
+│   ├── Sidebar.tsx       # Left/Right sidebars
+│   └── BottomNavigation.tsx # Mobile navigation
+├── lib/                  # Utility functions
+└── types/                # TypeScript type definitions
+    └── index.ts          # Core data types
+```
 
-## Deploy on Vercel
+## Design Philosophy
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Ambira is inspired by Strava's social fitness tracking model but applied to productivity. The design emphasizes:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Social Accountability** - Connect with friends and see their progress
+- **Gamification** - Streaks, achievements, and challenges
+- **Clean Interface** - Focus on content with minimal distractions
+- **Mobile-First** - Responsive design that works on all devices
+- **Electric Blue Theme** - Energetic and modern color palette
+
+## Next Steps
+
+This foundation provides the structure for building out the full Ambira application. Key areas for development include:
+
+1. **Authentication System** - User registration and login
+2. **Project Management** - Create and track productivity projects
+3. **Timer System** - Session tracking with database persistence
+4. **Social Features** - Following, feed, and interactions
+5. **Groups & Challenges** - Community features and competitions
+6. **Analytics** - Progress tracking and insights
+
+## Contributing
+
+This project follows a structured development approach with clear separation of concerns and TypeScript for type safety. When adding new features:
+
+1. Define types in `src/types/`
+2. Create components in `src/components/`
+3. Add pages in `src/app/`
+4. Follow the established design system
+5. Write tests for new functionality
+
+## License
+
+This project is part of the Ambira productivity tracking platform.
