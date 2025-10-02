@@ -119,3 +119,42 @@ export interface Follow {
   followingId: string;
   createdAt: Date;
 }
+
+// Authentication types
+export interface AuthUser {
+  id: string;
+  email: string;
+  name: string;
+  username: string;
+  bio?: string;
+  location?: string;
+  profilePicture?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface LoginCredentials {
+  email: string;
+  password: string;
+}
+
+export interface SignupCredentials {
+  email: string;
+  password: string;
+  name: string;
+  username: string;
+}
+
+export interface AuthResponse {
+  user: AuthUser;
+  token: string;
+}
+
+export interface AuthContextType {
+  user: AuthUser | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  login: (credentials: LoginCredentials) => Promise<void>;
+  signup: (credentials: SignupCredentials) => Promise<void>;
+  logout: () => void;
+}
