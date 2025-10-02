@@ -23,20 +23,20 @@
 - [ ] Seed database with test data
 
 ### Authentication System
-- [ ] Install and configure NextAuth.js v5
-- [ ] Set up Credentials provider for email/password
+- [x] Install and configure NextAuth.js v5
+- [x] Set up Credentials provider for email/password
 - [ ] Configure Google OAuth provider
 - [ ] Prepare Apple OAuth structure
 - [ ] Create /api/auth/[...nextauth] route
-- [ ] Build /api/auth/signup endpoint with validation
-- [ ] Create login page with form validation
-- [ ] Create signup page with password requirements
-- [ ] Implement password hashing with bcrypt
-- [ ] Add session management with JWT
-- [ ] Create useAuth custom hook
-- [ ] Build protected route wrapper
-- [ ] Add authentication error handling
-- [ ] Test authentication flow end-to-end
+- [x] Build /api/auth/signup endpoint with validation
+- [x] Create login page with form validation
+- [x] Create signup page with password requirements
+- [x] Implement password hashing with bcrypt
+- [x] Add session management with JWT
+- [x] Create useAuth custom hook
+- [x] Build protected route wrapper
+- [x] Add authentication error handling
+- [x] Test authentication flow end-to-end
 
 ### Basic Layout
 - [ ] Create root layout with navigation placeholder

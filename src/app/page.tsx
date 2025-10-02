@@ -1,14 +1,38 @@
+'use client';
+
+import { useAuth } from '@/contexts/AuthContext';
+import { ProtectedRoute } from '@/components/ProtectedRoute';
 import Header from '../components/HeaderComponent';
 import LeftSidebar from '@/components/LeftSidebar';
 import RightSidebar from '@/components/RightSidebar';
 import FeedPost from '@/components/FeedPost';
 
-export default function Home() {
+function HomeContent() {
+  const { user, logout } = useAuth();
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
       
       <div className="max-w-[1400px] mx-auto px-4 py-6">
+        {/* Welcome message with logout button */}
+        <div className="bg-white border border-gray-200 rounded-lg p-4 mb-6">
+          <div className="flex justify-between items-center">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">
+                Welcome back, {user?.name}!
+              </h1>
+              <p className="text-gray-600">Ready to track your productivity?</p>
+            </div>
+            <button
+              onClick={logout}
+              className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+            >
+              Logout
+            </button>
+          </div>
+        </div>
+
         <div className="flex gap-6">
           {/* Left Sidebar */}
           <LeftSidebar />
@@ -79,5 +103,13 @@ export default function Home() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function Home() {
+  return (
+    <ProtectedRoute>
+      <HomeContent />
+    </ProtectedRoute>
   );
 }

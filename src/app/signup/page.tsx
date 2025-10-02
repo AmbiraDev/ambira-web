@@ -1,3 +1,5 @@
+import { SignupForm } from '@/components/SignupForm';
+
 export default function SignupPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
@@ -11,9 +13,7 @@ export default function SignupPage() {
           </p>
         </div>
         <div className="bg-card-background p-8 rounded-lg shadow-sm border border-border">
-          <p className="text-center text-muted">
-            Signup form will be implemented here
-          </p>
+          <SignupForm />
         </div>
       </div>
     </div>
