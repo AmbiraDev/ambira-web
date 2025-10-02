@@ -7,7 +7,7 @@ import { firebaseUserApi } from '@/lib/firebaseApi';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { MapPin, Calendar, Users, Clock, Edit3, UserPlus, Check } from 'lucide-react';
+import { MapPin, Calendar, Users, Clock, Edit3, UserPlus, Check, LogOut } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface ProfileHeaderProps {
@@ -23,7 +23,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
   showEditButton = false,
   onEditClick,
 }) => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const [isFollowing, setIsFollowing] = useState(profile.isFollowing || false);
   const [isLoading, setIsLoading] = useState(false);
   const [followersCount, setFollowersCount] = useState(profile.followersCount);
@@ -151,6 +151,17 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                 >
                   <Edit3 className="w-4 h-4" />
                   Edit Profile
+                </Button>
+              )}
+              
+              {isOwnProfile && (
+                <Button
+                  variant="outline"
+                  onClick={logout}
+                  className="flex items-center gap-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+                >
+                  <LogOut className="w-4 h-4" />
+                  Logout
                 </Button>
               )}
               

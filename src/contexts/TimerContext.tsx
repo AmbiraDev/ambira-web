@@ -4,6 +4,8 @@ import React, { createContext, useContext, useState, useEffect, ReactNode, useCa
 import { TimerContextType, TimerState, ActiveTimer, Project, Task, Session, CreateSessionData } from '@/types';
 import { timerApi, taskApi, projectApi, authApi } from '@/lib/api';
 import { mockTimerApi, mockTaskApi, mockProjectApi } from '@/lib/mockApi';
+import { firebaseProjectApi } from '@/lib/firebaseApi';
+import { auth } from '@/lib/firebase';
 import { useAuth } from './AuthContext';
 
 // Create context
@@ -27,12 +29,23 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
   const { user } = useAuth();
   
   // Helper function to get auth token
-  const getAuthToken = (): string => {
-    const token = authApi.getToken();
-    if (!token) {
-      throw new Error('No authentication token found');
+  const getAuthToken = async (): Promise<string> => {
+    if (!user) {
+      throw new Error('No authenticated user found');
     }
-    return token;
+    
+    // Get Firebase auth token
+    const firebaseUser = auth.currentUser;
+    if (!firebaseUser) {
+      throw new Error('No Firebase user found');
+    }
+    
+    try {
+      const token = await firebaseUser.getIdToken();
+      return token;
+    } catch (error) {
+      throw new Error('Failed to get Firebase auth token');
+    }
   };
 
   const [timerState, setTimerState] = useState<TimerState>({
@@ -74,14 +87,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
 
     const interval = setInterval(async () => {
       try {
-        const token = getAuthToken();
-        const elapsedTime = getElapsedTime();
-        await mockTimerApi.updateActiveTimer(
-          timerState.activeTimerId!,
-          timerState.pausedDuration,
-          timerState.selectedTasks.map(task => task.id),
-          token
-        );
+        // TODO: Implement Firebase auto-save
+        // For now, just update the local state
         setTimerState(prev => ({ ...prev, lastAutoSave: new Date() }));
       } catch (error) {
         console.error('Auto-save failed:', error);
@@ -112,28 +119,9 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
   // Load active timer from server
   const loadActiveTimer = async (): Promise<void> => {
     try {
-      const token = getAuthToken();
-      const activeTimer = await mockTimerApi.getActiveTimer(token);
-      if (activeTimer) {
-        // Load project and tasks
-        const [project, tasks] = await Promise.all([
-          mockProjectApi.getProject(activeTimer.projectId, token),
-          mockTaskApi.getProjectTasks(activeTimer.projectId, token)
-        ]);
-
-        const selectedTasks = tasks.filter(task => activeTimer.selectedTaskIds.includes(task.id));
-
-        setTimerState({
-          isRunning: true, // Active timer is always running (paused duration handled separately)
-          startTime: new Date(activeTimer.startTime),
-          pausedDuration: activeTimer.pausedDuration,
-          currentProject: project,
-          selectedTasks,
-          activeTimerId: activeTimer.id,
-          isConnected: true,
-          lastAutoSave: new Date(),
-        });
-      }
+      // TODO: Implement Firebase active timer loading
+      // For now, we'll skip loading active timers to avoid mock API issues
+      console.log('Active timer loading disabled - Firebase implementation needed');
     } catch (error) {
       console.error('Failed to load active timer:', error);
     }
@@ -142,24 +130,19 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
   // Start timer
   const startTimer = async (projectId: string, taskIds: string[] = []): Promise<void> => {
     try {
-      const token = getAuthToken();
-      const [activeTimer, project, tasks] = await Promise.all([
-        mockTimerApi.startSession(projectId, taskIds, token),
-        mockProjectApi.getProject(projectId, token),
-        mockTaskApi.getProjectTasks(projectId, token)
-      ]);
-
-      const selectedTasks = tasks.filter(task => taskIds.includes(task.id));
-
+      // TODO: Implement Firebase timer start
+      // For now, start timer locally without server sync
+      const now = new Date();
+      
       setTimerState({
         isRunning: true,
-        startTime: new Date(activeTimer.startTime),
+        startTime: now,
         pausedDuration: 0,
-        currentProject: project,
-        selectedTasks,
-        activeTimerId: activeTimer.id,
-        isConnected: true,
-        lastAutoSave: new Date(),
+        currentProject: null, // Will be set by the component
+        selectedTasks: [], // Will be set by the component
+        activeTimerId: `local_${Date.now()}`, // Generate local ID
+        isConnected: false, // Not connected to server
+        lastAutoSave: now,
       });
     } catch (error) {
       console.error('Failed to start timer:', error);
@@ -172,19 +155,13 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
     if (!timerState.activeTimerId || !timerState.isRunning) return;
 
     try {
-      const token = getAuthToken();
-      const currentElapsed = getElapsedTime();
-      await mockTimerApi.updateActiveTimer(
-        timerState.activeTimerId,
-        currentElapsed,
-        timerState.selectedTasks.map(task => task.id),
-        token
-      );
+      // TODO: Implement Firebase timer pause
+      console.log('Timer paused locally');
 
       setTimerState(prev => ({
         ...prev,
         isRunning: false,
-        pausedDuration: currentElapsed,
+        pausedDuration: getElapsedTime(),
       }));
     } catch (error) {
       console.error('Failed to pause timer:', error);
@@ -197,13 +174,9 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
     if (!timerState.activeTimerId || timerState.isRunning) return;
 
     try {
-      const token = getAuthToken();
-      await mockTimerApi.updateActiveTimer(
-        timerState.activeTimerId,
-        timerState.pausedDuration,
-        timerState.selectedTasks.map(task => task.id),
-        token
-      );
+      const token = await getAuthToken();
+      // TODO: Implement Firebase timer pause
+      console.log('Timer paused locally');
 
       setTimerState(prev => ({
         ...prev,
@@ -229,7 +202,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
     }
 
     try {
-      const token = getAuthToken();
+      const token = await getAuthToken();
       const finalDuration = getElapsedTime();
       const sessionData: CreateSessionData = {
         projectId: timerState.currentProject.id,
@@ -243,7 +216,9 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
         privateNotes,
       };
 
-      const session = await mockTimerApi.finishSession(timerState.activeTimerId, sessionData, token);
+      // TODO: Implement Firebase session finish
+      console.log('Session finished locally');
+      const session = { id: `local_${Date.now()}`, ...sessionData }; // Create local session object
 
       // Reset timer state
       setTimerState({
@@ -269,8 +244,9 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
     if (!timerState.activeTimerId) return;
 
     try {
-      const token = getAuthToken();
-      await mockTimerApi.cancelActiveTimer(timerState.activeTimerId, token);
+      const token = await getAuthToken();
+      // TODO: Implement Firebase timer cancel
+      console.log('Timer cancelled locally');
     } catch (error) {
       console.error('Failed to cancel timer:', error);
     }
@@ -292,18 +268,14 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
     if (!timerState.activeTimerId || !timerState.currentProject) return;
 
     try {
-      const token = getAuthToken();
-      const tasks = await mockTaskApi.getProjectTasks(timerState.currentProject.id, token);
-      const selectedTasks = tasks.filter(task => taskIds.includes(task.id));
-
-      await mockTimerApi.updateActiveTimer(
-        timerState.activeTimerId,
-        timerState.pausedDuration,
-        taskIds,
-        token
-      );
-
-      setTimerState(prev => ({ ...prev, selectedTasks }));
+      // TODO: Implement Firebase task loading and timer update
+      console.log('Tasks loaded and timer updated locally');
+      
+      // For now, just update the local state
+      setTimerState(prev => ({ 
+        ...prev, 
+        selectedTasks: taskIds.map(id => ({ id, name: `Task ${id}`, status: 'active' } as any)) // Mock task objects
+      }));
     } catch (error) {
       console.error('Failed to update selected tasks:', error);
       throw error;

@@ -2,8 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { SessionFormData, Project, Task } from '@/types';
-import { mockProjectApi, mockTaskApi, authApi } from '@/lib/api';
-import { mockProjectApi as mockProjectApiLocal, mockTaskApi as mockTaskApiLocal } from '@/lib/mockApi';
 
 interface ManualEntryProps {
   onSave: (data: SessionFormData) => Promise<void>;
@@ -50,13 +48,11 @@ export const ManualEntry: React.FC<ManualEntryProps> = ({
   const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
   const [startTime, setStartTime] = useState('12:00');
 
+  // TODO: Implement Firebase API calls
   // Helper function to get auth token
   const getAuthToken = (): string => {
-    const token = authApi.getToken();
-    if (!token) {
-      throw new Error('No authentication token found');
-    }
-    return token;
+    // For now, return empty string since we're not using Firebase sessions yet
+    return '';
   };
 
   // Load projects on mount
@@ -64,7 +60,8 @@ export const ManualEntry: React.FC<ManualEntryProps> = ({
     const loadProjects = async () => {
       try {
         const token = getAuthToken();
-        const projectList = await mockProjectApiLocal.getProjects(token);
+        // TODO: Load projects from Firebase
+        const projectList = []; // await mockProjectApiLocal.getProjects(token);
         setProjects(projectList);
       } catch (error) {
         console.error('Failed to load projects:', error);
@@ -85,7 +82,8 @@ export const ManualEntry: React.FC<ManualEntryProps> = ({
 
       try {
         const token = getAuthToken();
-        const taskList = await mockTaskApiLocal.getProjectTasks(formData.projectId, token);
+        // TODO: Load tasks from Firebase
+        const taskList = []; // await mockTaskApiLocal.getProjectTasks(formData.projectId, token);
         setTasks(taskList.filter(task => task.status === 'active'));
         setSelectedTasks([]);
         setFormData(prev => ({ ...prev, taskIds: [] }));

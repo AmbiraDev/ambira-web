@@ -8,8 +8,7 @@ import {
   UpdateProjectData, 
   ProjectContextType 
 } from '@/types';
-import { projectApi, authApi } from '@/lib/api';
-import { mockProjectApi } from '@/lib/mockApi';
+import { firebaseProjectApi } from '@/lib/firebaseApi';
 import { useAuth } from './AuthContext';
 
 // Create context
@@ -63,14 +62,7 @@ export const ProjectsProvider: React.FC<ProjectsProviderProps> = ({ children }) 
       setIsLoading(true);
       setError(null);
       
-      // Use mock API for now - get token from authApi
-      const token = authApi.getToken();
-      if (!token) {
-        setError('No authentication token found');
-        return;
-      }
-      
-      const fetchedProjects = await mockProjectApi.getProjects(token);
+      const fetchedProjects = await firebaseProjectApi.getProjects();
       setProjects(fetchedProjects);
     } catch (err) {
       console.error('Error fetching projects:', err);
@@ -85,13 +77,7 @@ export const ProjectsProvider: React.FC<ProjectsProviderProps> = ({ children }) 
     try {
       setError(null);
       
-      // Use mock API for now
-      const token = authApi.getToken();
-      if (!token) {
-        throw new Error('No authentication token found');
-      }
-      
-      const newProject = await mockProjectApi.createProject(data, token);
+      const newProject = await firebaseProjectApi.createProject(data);
       
       // Add to local state
       setProjects(prev => [...prev, newProject]);
@@ -110,13 +96,7 @@ export const ProjectsProvider: React.FC<ProjectsProviderProps> = ({ children }) 
     try {
       setError(null);
       
-      // Use mock API for now
-      const token = authApi.getToken();
-      if (!token) {
-        throw new Error('No authentication token found');
-      }
-      
-      const updatedProject = await mockProjectApi.updateProject(id, data, token);
+      const updatedProject = await firebaseProjectApi.updateProject(id, data);
       
       // Update local state
       setProjects(prev => 
@@ -137,13 +117,7 @@ export const ProjectsProvider: React.FC<ProjectsProviderProps> = ({ children }) 
     try {
       setError(null);
       
-      // Use mock API for now
-      const token = authApi.getToken();
-      if (!token) {
-        throw new Error('No authentication token found');
-      }
-      
-      await mockProjectApi.deleteProject(id, token);
+      await firebaseProjectApi.deleteProject(id);
       
       // Remove from local state
       setProjects(prev => prev.filter(p => p.id !== id));
@@ -170,13 +144,15 @@ export const ProjectsProvider: React.FC<ProjectsProviderProps> = ({ children }) 
     try {
       setError(null);
       
-      // Use mock API for now
-      const token = authApi.getToken();
-      if (!token) {
-        throw new Error('No authentication token found');
-      }
-      
-      return await mockProjectApi.getProjectStats(id, token);
+      // TODO: Implement Firebase project stats
+      // For now, return default stats
+      return {
+        totalHours: 0,
+        weeklyHours: 0,
+        sessionCount: 0,
+        currentStreak: 0,
+        weeklyProgressPercentage: 0
+      };
     } catch (err) {
       console.error('Error fetching project stats:', err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to fetch project stats';

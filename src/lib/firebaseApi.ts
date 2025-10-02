@@ -344,15 +344,25 @@ export const firebaseUserApi = {
   // Get user statistics
   getUserStats: async (userId: string): Promise<UserStats> => {
     try {
-      // Get activities for the current year
-      const currentYear = new Date().getFullYear();
-      const activitiesQuery = query(
-        collection(db, 'activities', userId, 'daily'),
-        where('date', '>=', new Date(currentYear, 0, 1)),
-        where('date', '<=', new Date(currentYear, 11, 31))
-      );
+      // For now, return default stats since we don't have activity data yet
+      // TODO: Implement proper activity tracking and stats calculation
       
-      const activitiesSnapshot = await getDocs(activitiesQuery);
+      // Get activities for the current year (with error handling)
+      let activitiesSnapshot;
+      try {
+        const currentYear = new Date().getFullYear();
+        const activitiesQuery = query(
+          collection(db, 'activities', userId, 'daily'),
+          where('date', '>=', new Date(currentYear, 0, 1)),
+          where('date', '<=', new Date(currentYear, 11, 31))
+        );
+        
+        activitiesSnapshot = await getDocs(activitiesQuery);
+      } catch (error) {
+        // If activities collection doesn't exist or has permission issues, use empty snapshot
+        console.log('No activities data found, using default stats');
+        activitiesSnapshot = { forEach: () => {}, empty: true };
+      }
       let totalHours = 0;
       let weeklyHours = 0;
       let monthlyHours = 0;
@@ -405,7 +415,19 @@ export const firebaseUserApi = {
         }
       };
     } catch (error: any) {
-      throw new Error(error.message || 'Failed to get user stats');
+      console.error('Failed to get user stats:', error);
+      // Return default stats instead of throwing error
+      return {
+        totalHours: 0,
+        sessionsThisWeek: 0,
+        currentStreak: 0,
+        longestStreak: 0,
+        averageSessionLength: 0,
+        mostProductiveDay: 'Monday',
+        totalSessions: 0,
+        completedTasks: 0,
+        activeProjects: 0
+      };
     }
   },
 
@@ -734,11 +756,167 @@ export const firebaseProjectApi = {
   }
 };
 
+// Firebase Task API
+export const firebaseTaskApi = {
+  // Get tasks for a project
+  getProjectTasks: async (projectId: string): Promise<Task[]> => {
+    try {
+      if (!auth.currentUser) {
+        throw new Error('User not authenticated');
+      }
+      
+      const tasksQuery = query(
+        collection(db, 'projects', auth.currentUser.uid, 'userProjects', projectId, 'tasks'),
+        orderBy('createdAt', 'desc')
+      );
+      
+      const tasksSnapshot = await getDocs(tasksQuery);
+      return tasksSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        createdAt: convertTimestamp(doc.data().createdAt),
+        updatedAt: convertTimestamp(doc.data().updatedAt),
+        completedAt: doc.data().completedAt ? convertTimestamp(doc.data().completedAt) : undefined,
+      })) as Task[];
+    } catch (error: any) {
+      throw new Error(error.message || 'Failed to get project tasks');
+    }
+  },
+
+  // Create a new task
+  createTask: async (data: CreateTaskData): Promise<Task> => {
+    try {
+      if (!auth.currentUser) {
+        throw new Error('User not authenticated');
+      }
+      
+      // Debug: Check if projectId is provided
+      if (!data.projectId) {
+        throw new Error('Project ID is required to create a task');
+      }
+      
+      const taskData = {
+        ...data,
+        status: 'pending',
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+        userId: auth.currentUser.uid,
+      };
+      
+      const docRef = await addDoc(
+        collection(db, 'projects', auth.currentUser.uid, 'userProjects', data.projectId, 'tasks'),
+        taskData
+      );
+      
+      return {
+        id: docRef.id,
+        ...taskData,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      } as Task;
+    } catch (error: any) {
+      throw new Error(error.message || 'Failed to create task');
+    }
+  },
+
+  // Update a task
+  updateTask: async (id: string, data: UpdateTaskData, projectId: string): Promise<Task> => {
+    try {
+      if (!auth.currentUser) {
+        throw new Error('User not authenticated');
+      }
+      
+      const updateData = {
+        ...data,
+        updatedAt: serverTimestamp(),
+        completedAt: data.status === 'completed' ? serverTimestamp() : null,
+      };
+      
+      await updateDoc(
+        doc(db, 'projects', auth.currentUser.uid, 'userProjects', projectId, 'tasks', id),
+        updateData
+      );
+      
+      // Return updated task (would need to fetch from DB for complete data)
+      return {
+        id,
+        ...data,
+        updatedAt: new Date(),
+        completedAt: data.status === 'completed' ? new Date() : undefined,
+      } as Task;
+    } catch (error: any) {
+      throw new Error(error.message || 'Failed to update task');
+    }
+  },
+
+  // Delete a task
+  deleteTask: async (id: string, projectId: string): Promise<void> => {
+    try {
+      if (!auth.currentUser) {
+        throw new Error('User not authenticated');
+      }
+      
+      await deleteDoc(
+        doc(db, 'projects', auth.currentUser.uid, 'userProjects', projectId, 'tasks', id)
+      );
+    } catch (error: any) {
+      throw new Error(error.message || 'Failed to delete task');
+    }
+  },
+
+  // Bulk update tasks
+  bulkUpdateTasks: async (update: BulkTaskUpdate, projectId: string): Promise<void> => {
+    try {
+      if (!auth.currentUser) {
+        throw new Error('User not authenticated');
+      }
+      
+      const batch = writeBatch(db);
+      
+      update.taskIds.forEach(taskId => {
+        const taskRef = doc(db, 'projects', auth.currentUser.uid, 'userProjects', projectId, 'tasks', taskId);
+        batch.update(taskRef, {
+          status: update.status,
+          updatedAt: serverTimestamp(),
+          completedAt: update.status === 'completed' ? serverTimestamp() : null,
+        });
+      });
+      
+      await batch.commit();
+    } catch (error: any) {
+      throw new Error(error.message || 'Failed to bulk update tasks');
+    }
+  },
+
+  // Get task statistics
+  getTaskStats: async (projectId: string): Promise<TaskStats> => {
+    try {
+      if (!auth.currentUser) {
+        throw new Error('User not authenticated');
+      }
+      
+      // TODO: Implement proper task stats calculation
+      // For now, return default stats
+      return {
+        totalTasks: 0,
+        completedTasks: 0,
+        pendingTasks: 0,
+        overdueTasks: 0,
+        completionRate: 0,
+        averageCompletionTime: 0,
+      };
+    } catch (error: any) {
+      throw new Error(error.message || 'Failed to get task stats');
+    }
+  },
+};
+
 // Export combined API
 export const firebaseApi = {
   auth: firebaseAuthApi,
   user: firebaseUserApi,
-  project: firebaseProjectApi
+  project: firebaseProjectApi,
+  task: firebaseTaskApi
 };
 
 // Note: increment is imported from firebase/firestore above

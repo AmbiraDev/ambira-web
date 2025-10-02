@@ -2,8 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { Session, Project, SessionFilters, SessionSort, SessionListResponse } from '@/types';
-import { mockSessionApi, mockProjectApi, authApi } from '@/lib/api';
-import { mockSessionApi as mockSessionApiLocal, mockProjectApi as mockProjectApiLocal } from '@/lib/mockApi';
 
 export const SessionHistory: React.FC = () => {
   const [sessions, setSessions] = useState<Session[]>([]);
@@ -16,13 +14,11 @@ export const SessionHistory: React.FC = () => {
   const [hasMore, setHasMore] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
+  // TODO: Implement Firebase session API
   // Helper function to get auth token
   const getAuthToken = (): string => {
-    const token = authApi.getToken();
-    if (!token) {
-      throw new Error('No authentication token found');
-    }
-    return token;
+    // For now, return empty string since we're not using Firebase sessions yet
+    return '';
   };
 
   // Load initial data
@@ -32,10 +28,11 @@ export const SessionHistory: React.FC = () => {
         setIsLoading(true);
         const token = getAuthToken();
         
+        // TODO: Load projects and sessions from Firebase
         // Load projects and sessions in parallel
         const [projectsData, sessionsData] = await Promise.all([
-          mockProjectApiLocal.getProjects(token),
-          mockSessionApiLocal.getSessions(1, 20, filters, sort, token)
+          Promise.resolve([]), // mockProjectApiLocal.getProjects(token),
+          Promise.resolve({ sessions: [], totalCount: 0, totalPages: 0 }) // mockSessionApiLocal.getSessions(1, 20, filters, sort, token)
         ]);
 
         setProjects(projectsData);
@@ -58,13 +55,14 @@ export const SessionHistory: React.FC = () => {
       try {
         setIsLoading(true);
         const token = getAuthToken();
-        const sessionsData = await mockSessionApiLocal.getSessions(
-          currentPage, 
-          20, 
-          { ...filters, search: searchQuery }, 
-          sort, 
-          token
-        );
+        // TODO: Load sessions from Firebase
+        const sessionsData = { sessions: [], totalCount: 0, totalPages: 0 }; // await mockSessionApiLocal.getSessions(
+        //   currentPage, 
+        //   20, 
+        //   { ...filters, search: searchQuery }, 
+        //   sort, 
+        //   token
+        // );
 
         setSessions(sessionsData.sessions);
         setTotalCount(sessionsData.totalCount);
@@ -101,16 +99,18 @@ export const SessionHistory: React.FC = () => {
 
     try {
       const token = getAuthToken();
-      await mockSessionApiLocal.deleteSession(sessionId, token);
+      // TODO: Delete session from Firebase
+      console.log('Delete session:', sessionId); // await mockSessionApiLocal.deleteSession(sessionId, token);
       
+      // TODO: Reload sessions from Firebase
       // Reload sessions
-      const sessionsData = await mockSessionApiLocal.getSessions(
-        currentPage, 
-        20, 
-        { ...filters, search: searchQuery }, 
-        sort, 
-        token
-      );
+      const sessionsData = { sessions: [], totalCount: 0, totalPages: 0 }; // await mockSessionApiLocal.getSessions(
+      //   currentPage, 
+      //   20, 
+      //   { ...filters, search: searchQuery }, 
+      //   sort, 
+      //   token
+      // );
       setSessions(sessionsData.sessions);
       setTotalCount(sessionsData.totalCount);
       setHasMore(sessionsData.hasMore);
@@ -123,16 +123,18 @@ export const SessionHistory: React.FC = () => {
   const handleSessionArchive = async (sessionId: string) => {
     try {
       const token = getAuthToken();
-      await mockSessionApiLocal.archiveSession(sessionId, token);
+      // TODO: Archive session in Firebase
+      console.log('Archive session:', sessionId); // await mockSessionApiLocal.archiveSession(sessionId, token);
       
+      // TODO: Reload sessions from Firebase
       // Reload sessions
-      const sessionsData = await mockSessionApiLocal.getSessions(
-        currentPage, 
-        20, 
-        { ...filters, search: searchQuery }, 
-        sort, 
-        token
-      );
+      const sessionsData = { sessions: [], totalCount: 0, totalPages: 0 }; // await mockSessionApiLocal.getSessions(
+      //   currentPage, 
+      //   20, 
+      //   { ...filters, search: searchQuery }, 
+      //   sort, 
+      //   token
+      // );
       setSessions(sessionsData.sessions);
       setTotalCount(sessionsData.totalCount);
       setHasMore(sessionsData.hasMore);

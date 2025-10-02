@@ -39,55 +39,20 @@ function RightSidebar() {
         {/* Suggested Friends */}
         <div className="bg-white rounded-lg border border-gray-200 p-6">
           <h3 className="text-lg font-bold text-gray-900 mb-4">Suggested Friends</h3>
-          <div className="space-y-4">
-            {/* Friend 1 */}
-            <div className="flex items-start space-x-3">
-              <div className="w-10 h-10 bg-orange-400 rounded-full flex-shrink-0 flex items-center justify-center">
-                <span className="text-sm font-medium text-white">JH</span>
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="font-semibold text-sm text-gray-900">Jamie-Ray Hartshorne</div>
-                <div className="text-xs text-gray-600">Fan favorite on Ambira</div>
-              </div>
-              <button className="px-3 py-1 text-xs font-medium text-[#FC4C02] border border-[#FC4C02] rounded hover:bg-[#FC4C02] hover:text-white transition-colors">
-                Follow
-              </button>
+          <div className="text-center py-8">
+            <div className="text-gray-500 mb-4">
+              <svg className="w-12 h-12 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+              </svg>
             </div>
-
-            {/* Friend 2 */}
-            <div className="flex items-start space-x-3">
-              <div className="w-10 h-10 bg-purple-400 rounded-full flex-shrink-0 flex items-center justify-center">
-                <span className="text-sm font-medium text-white">AV</span>
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="font-semibold text-sm text-gray-900">Alex Volstad</div>
-                <div className="text-xs text-gray-600">Calgary, Canada</div>
-                <div className="text-xs text-gray-600">Fan favorite on Ambira</div>
-              </div>
-              <button className="px-3 py-1 text-xs font-medium text-[#FC4C02] border border-[#FC4C02] rounded hover:bg-[#FC4C02] hover:text-white transition-colors">
-                Follow
-              </button>
-            </div>
-
-            {/* Friend 3 */}
-            <div className="flex items-start space-x-3">
-              <div className="w-10 h-10 bg-red-400 rounded-full flex-shrink-0 flex items-center justify-center">
-                <span className="text-sm font-medium text-white">RL</span>
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="font-semibold text-sm text-gray-900">Ralf Looze</div>
-                <div className="text-xs text-gray-600">Fribourg 🇨🇭, Switzerland</div>
-                <div className="text-xs text-gray-600">Fan favorite on Ambira</div>
-              </div>
-              <button className="px-3 py-1 text-xs font-medium text-[#FC4C02] border border-[#FC4C02] rounded hover:bg-[#FC4C02] hover:text-white transition-colors">
-                Follow
-              </button>
-            </div>
+            <h4 className="text-sm font-semibold text-gray-900 mb-2">No suggestions yet</h4>
+            <p className="text-xs text-gray-600 mb-4">
+              We'll suggest users to follow based on your activity and interests.
+            </p>
+            <button className="text-sm font-medium text-[#007AFF] hover:text-[#0056D6] transition-colors">
+              Browse All Users
+            </button>
           </div>
-
-          <button className="mt-4 w-full text-sm font-medium text-[#007AFF] hover:text-[#0056D6] transition-colors text-center">
-            Find and Invite Your Friends
-          </button>
         </div>
 
         {/* Footer Links */}

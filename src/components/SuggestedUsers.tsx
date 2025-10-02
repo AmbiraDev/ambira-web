@@ -37,7 +37,12 @@ export const SuggestedUsers: React.FC<SuggestedUsersProps> = ({
         setSuggestions(suggestions);
     } catch (error) {
       console.error('Failed to load suggestions:', error);
-      toast.error('Failed to load user suggestions');
+      // Don't show error toast for empty database - just set empty array
+      if (error instanceof Error && error.message.includes('permissions')) {
+        setSuggestions([]);
+      } else {
+        toast.error('Failed to load user suggestions');
+      }
     } finally {
       setIsLoading(false);
       setIsRefreshing(false);

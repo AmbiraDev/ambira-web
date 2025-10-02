@@ -14,6 +14,11 @@ export const LandingPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showSignup, setShowSignup] = useState(false);
+  const [showLogin, setShowLogin] = useState(false);
+  const [loginData, setLoginData] = useState({
+    email: '',
+    password: '',
+  });
   const [signupData, setSignupData] = useState<SignupCredentials>({
     email: '',
     password: '',
@@ -22,6 +27,7 @@ export const LandingPage: React.FC = () => {
   });
   const [confirmPassword, setConfirmPassword] = useState('');
   const [signupErrors, setSignupErrors] = useState<Partial<SignupCredentials & { confirmPassword: string }>>({});
+  const [loginErrors, setLoginErrors] = useState<{email?: string; password?: string}>({});
   const [usernameCheckLoading, setUsernameCheckLoading] = useState(false);
   const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
 
@@ -45,9 +51,81 @@ export const LandingPage: React.FC = () => {
     }
   };
 
+  const handleLoginWithEmail = () => {
+    setShowLogin(true);
+    setError(null);
+  };
+
   const handleSignupWithEmail = () => {
     setShowSignup(true);
     setError(null);
+  };
+
+  const handleLoginChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setLoginData(prev => ({ ...prev, [name]: value }));
+    
+    // Clear field-specific error when user starts typing
+    if (loginErrors[name as keyof typeof loginErrors]) {
+      setLoginErrors(prev => ({ ...prev, [name]: undefined }));
+    }
+    
+    // Clear submit error
+    if (error) {
+      setError('');
+    }
+  };
+
+  const validateLoginForm = (): boolean => {
+    const newErrors: {email?: string; password?: string} = {};
+
+    if (!loginData.email) {
+      newErrors.email = 'Email is required';
+    } else if (!/\S+@\S+\.\S+/.test(loginData.email)) {
+      newErrors.email = 'Email is invalid';
+    }
+
+    if (!loginData.password) {
+      newErrors.password = 'Password is required';
+    }
+
+    setLoginErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleLoginSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!validateLoginForm()) {
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      setError(null);
+      await login(loginData);
+      
+      // Check for redirect parameter
+      const redirectTo = searchParams.get('redirect');
+      router.push(redirectTo || '/');
+    } catch (err: any) {
+      console.error('Login error:', err);
+      
+      // Handle specific Firebase errors with user-friendly messages
+      if (err.message?.includes('auth/user-not-found')) {
+        setError('No account found with this email address. Please sign up or check your email.');
+      } else if (err.message?.includes('auth/wrong-password')) {
+        setError('Incorrect password. Please try again.');
+      } else if (err.message?.includes('auth/invalid-email')) {
+        setError('Please enter a valid email address.');
+      } else if (err.message?.includes('auth/too-many-requests')) {
+        setError('Too many failed attempts. Please try again later.');
+      } else {
+        setError('Failed to sign in. Please check your credentials and try again.');
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleSignupChange = (e: React.ChangeEvent<HTMLInputElement>) => {

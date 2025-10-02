@@ -2,8 +2,7 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { TaskContextType, Task, CreateTaskData, UpdateTaskData, BulkTaskUpdate, TaskStats } from '@/types';
-import { taskApi, authApi } from '@/lib/api';
-import { mockTaskApi } from '@/lib/mockApi';
+import { firebaseTaskApi } from '@/lib/firebaseApi';
 import { useAuth } from './AuthContext';
 
 // Create context
@@ -25,15 +24,6 @@ interface TasksProviderProps {
 
 export const TasksProvider: React.FC<TasksProviderProps> = ({ children }) => {
   const { user } = useAuth();
-  
-  // Helper function to get auth token
-  const getAuthToken = (): string => {
-    const token = authApi.getToken();
-    if (!token) {
-      throw new Error('No authentication token found');
-    }
-    return token;
-  };
 
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -42,8 +32,7 @@ export const TasksProvider: React.FC<TasksProviderProps> = ({ children }) => {
   // Load tasks for a project
   const getProjectTasks = useCallback(async (projectId: string): Promise<Task[]> => {
     try {
-      const token = getAuthToken();
-      const projectTasks = await mockTaskApi.getProjectTasks(projectId, token);
+      const projectTasks = await firebaseTaskApi.getProjectTasks(projectId);
       return projectTasks;
     } catch (error) {
       console.error('Failed to load project tasks:', error);
@@ -57,8 +46,7 @@ export const TasksProvider: React.FC<TasksProviderProps> = ({ children }) => {
       setIsLoading(true);
       setError(null);
       
-      const token = getAuthToken();
-      const newTask = await mockTaskApi.createTask(data, token);
+      const newTask = await firebaseTaskApi.createTask(data);
       
       // Optimistically update local state
       setTasks(prev => [...prev, newTask]);
@@ -74,13 +62,12 @@ export const TasksProvider: React.FC<TasksProviderProps> = ({ children }) => {
   }, []);
 
   // Update a task
-  const updateTask = useCallback(async (id: string, data: UpdateTaskData): Promise<Task> => {
+  const updateTask = useCallback(async (id: string, data: UpdateTaskData, projectId: string): Promise<Task> => {
     try {
       setIsLoading(true);
       setError(null);
       
-      const token = getAuthToken();
-      const updatedTask = await mockTaskApi.updateTask(id, data, token);
+      const updatedTask = await firebaseTaskApi.updateTask(id, data, projectId);
       
       // Optimistically update local state
       setTasks(prev => prev.map(task => 
@@ -98,13 +85,12 @@ export const TasksProvider: React.FC<TasksProviderProps> = ({ children }) => {
   }, []);
 
   // Delete a task
-  const deleteTask = useCallback(async (id: string): Promise<void> => {
+  const deleteTask = useCallback(async (id: string, projectId: string): Promise<void> => {
     try {
       setIsLoading(true);
       setError(null);
       
-      const token = getAuthToken();
-      await mockTaskApi.deleteTask(id, token);
+      await firebaseTaskApi.deleteTask(id, projectId);
       
       // Optimistically update local state
       setTasks(prev => prev.filter(task => task.id !== id));
@@ -118,13 +104,12 @@ export const TasksProvider: React.FC<TasksProviderProps> = ({ children }) => {
   }, []);
 
   // Bulk update tasks
-  const bulkUpdateTasks = useCallback(async (update: BulkTaskUpdate): Promise<void> => {
+  const bulkUpdateTasks = useCallback(async (update: BulkTaskUpdate, projectId: string): Promise<void> => {
     try {
       setIsLoading(true);
       setError(null);
       
-      const token = getAuthToken();
-      await mockTaskApi.bulkUpdateTasks(update, token);
+      await firebaseTaskApi.bulkUpdateTasks(update, projectId);
       
       // Optimistically update local state
       setTasks(prev => prev.map(task => 
@@ -144,8 +129,7 @@ export const TasksProvider: React.FC<TasksProviderProps> = ({ children }) => {
   // Get task statistics
   const getTaskStats = useCallback(async (projectId: string): Promise<TaskStats> => {
     try {
-      const token = getAuthToken();
-      return await mockTaskApi.getTaskStats(projectId, token);
+      return await firebaseTaskApi.getTaskStats(projectId);
     } catch (error) {
       console.error('Failed to load task stats:', error);
       throw error;

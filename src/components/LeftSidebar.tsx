@@ -24,6 +24,36 @@ function LeftSidebar() {
           setStats(statsData);
         } catch (error) {
           console.error('Failed to load user data:', error);
+          // Set default values if user data doesn't exist yet
+          setProfile({
+            id: user.id,
+            username: user.username,
+            name: user.name,
+            bio: '',
+            location: '',
+            profilePicture: null,
+            followersCount: 0,
+            followingCount: 0,
+            totalHours: 0,
+            isFollowing: false,
+            isPrivate: false,
+            profileVisibility: 'everyone',
+            activityVisibility: 'everyone',
+            projectVisibility: 'everyone',
+            createdAt: new Date(),
+            updatedAt: new Date()
+          });
+          setStats({
+            totalHours: 0,
+            sessionsThisWeek: 0,
+            currentStreak: 0,
+            longestStreak: 0,
+            averageSessionLength: 0,
+            mostProductiveDay: 'Monday',
+            totalSessions: 0,
+            completedTasks: 0,
+            activeProjects: 0
+          });
         } finally {
           setIsLoading(false);
         }

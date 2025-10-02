@@ -3,22 +3,12 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { ManualEntry } from './ManualEntry';
-import { mockSessionApi, authApi } from '@/lib/api';
-import { mockSessionApi as mockSessionApiLocal } from '@/lib/mockApi';
 
 export const FABMenu: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [showManualEntry, setShowManualEntry] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Helper function to get auth token
-  const getAuthToken = (): string => {
-    const token = authApi.getToken();
-    if (!token) {
-      throw new Error('No authentication token found');
-    }
-    return token;
-  };
 
   const handleManualEntry = () => {
     setShowManualEntry(true);
@@ -28,8 +18,8 @@ export const FABMenu: React.FC = () => {
   const handleSaveSession = async (data: any) => {
     try {
       setIsLoading(true);
-      const token = getAuthToken();
-      await mockSessionApiLocal.createSession(data, token);
+      // TODO: Implement Firebase session API
+      console.log('Session data:', data);
       setShowManualEntry(false);
       // You could add a toast notification here
       console.log('Session saved successfully!');

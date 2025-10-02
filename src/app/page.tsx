@@ -9,31 +9,13 @@ import FeedPost from '@/components/FeedPost';
 import { FABMenu } from '@/components/FABMenu';
 
 function HomeContent() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
       
       <div className="max-w-[1400px] mx-auto px-4 py-6">
-        {/* Welcome message with logout button */}
-        <div className="bg-white border border-gray-200 rounded-lg p-4 mb-6">
-          <div className="flex justify-between items-center">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">
-                Welcome back, {user?.name}!
-              </h1>
-              <p className="text-gray-600">Ready to track your productivity?</p>
-            </div>
-            <button
-              onClick={logout}
-              className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
-            >
-              Logout
-            </button>
-          </div>
-        </div>
-
         <div className="flex gap-6">
           {/* Left Sidebar */}
           <LeftSidebar />
@@ -50,53 +32,23 @@ function HomeContent() {
             </div>
 
             {/* Feed Posts */}
-            <FeedPost
-              author="Sarah Chen"
-              authorInitials="SC"
-              authorColor="bg-purple-400"
-              timestamp="Today at 11:45 AM"
-              title="Morning Study Session"
-              description="Crushed my algorithm practice today!"
-              time="2h 30m"
-              metric1="Tasks Completed"
-              metric1Value="8 tasks"
-              metric2="Focus Score"
-              metric2Value="9/10"
-              kudosCount={12}
-              commentCount={3}
-            />
-
-            <FeedPost
-              author="Alex Rodriguez"
-              authorInitials="AR"
-              authorColor="bg-green-400"
-              timestamp="Yesterday at 3:20 PM"
-              title="Project Planning Deep Work"
-              description="Finally mapped out the entire feature roadmap"
-              time="1h 45m"
-              metric1="Pages Written"
-              metric1Value="12 pages"
-              metric2="Ideas Generated"
-              metric2Value="23 ideas"
-              kudosCount={8}
-              commentCount={1}
-            />
-
-            <FeedPost
-              author="Emma Thompson"
-              authorInitials="ET"
-              authorColor="bg-blue-400"
-              timestamp="Yesterday at 9:15 PM"
-              title="Evening Code Review"
-              description="Refactored the authentication module - much cleaner now! 🚀"
-              time="1h 20m"
-              metric1="Files Reviewed"
-              metric1Value="15 files"
-              metric2="Bugs Fixed"
-              metric2Value="3 bugs"
-              kudosCount={18}
-              commentCount={5}
-            />
+            <div className="bg-white border border-gray-200 rounded-lg p-8 text-center">
+              <div className="text-gray-500 mb-4">
+                <svg className="w-12 h-12 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">No activity yet</h3>
+              <p className="text-gray-600 mb-6">
+                Follow some users to see their productivity activities in your feed.
+              </p>
+              <button className="inline-flex items-center px-4 py-2 bg-[#007AFF] text-white text-sm font-medium rounded-lg hover:bg-[#0056D6] focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:ring-offset-2 transition-colors">
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
+                </svg>
+                Discover Users
+              </button>
+            </div>
           </main>
           
           {/* Right Sidebar */}

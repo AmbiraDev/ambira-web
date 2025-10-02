@@ -118,7 +118,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
               <div>
                 <div className="flex justify-between text-xs text-gray-600 mb-1">
                   <span>This week</span>
-                  <span>{currentStats.weeklyHours.toFixed(1)}h / {project.weeklyTarget}h</span>
+                  <span>{(currentStats.weeklyHours || 0).toFixed(1)}h / {project.weeklyTarget}h</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
                   <div 
@@ -134,7 +134,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
               <div>
                 <div className="flex justify-between text-xs text-gray-600 mb-1">
                   <span>Total</span>
-                  <span>{currentStats.totalHours.toFixed(1)}h / {project.totalTarget}h</span>
+                  <span>{(currentStats.totalHours || 0).toFixed(1)}h / {project.totalTarget}h</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
                   <div 
@@ -155,8 +155,8 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
         {currentStats && (
           <div className="mt-4 pt-4 border-t border-gray-100">
             <div className="flex justify-between text-xs text-gray-600">
-              <span>{currentStats.sessionCount} sessions</span>
-              <span>{currentStats.currentStreak} day streak</span>
+              <span>{currentStats.sessionCount || 0} sessions</span>
+              <span>{currentStats.currentStreak || 0} day streak</span>
             </div>
           </div>
         )}

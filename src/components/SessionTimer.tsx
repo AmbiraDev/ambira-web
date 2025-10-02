@@ -3,13 +3,10 @@
 import React, { useState, useEffect } from 'react';
 import { useTimer } from '@/contexts/TimerContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { projectApi, taskApi, authApi } from '@/lib/api';
-import { mockProjectApi, mockTaskApi } from '@/lib/mockApi';
 import { Project, Task } from '@/types';
 import { TimerDisplay } from './TimerDisplay';
 import { TimerControls } from './TimerControls';
 import { SaveSession } from './SaveSession';
-import { mockSessionApi } from '@/lib/mockApi';
 
 interface SessionTimerProps {
   className?: string;
@@ -19,13 +16,11 @@ export const SessionTimer: React.FC<SessionTimerProps> = ({ className = '' }) =>
   const { timerState, startTimer, updateSelectedTasks } = useTimer();
   const { user } = useAuth();
 
+  // TODO: Implement Firebase API calls
   // Helper function to get auth token
   const getAuthToken = (): string => {
-    const token = authApi.getToken();
-    if (!token) {
-      throw new Error('No authentication token found');
-    }
-    return token;
+    // For now, return empty string since we're not using Firebase sessions yet
+    return '';
   };
   const [projects, setProjects] = useState<Project[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -39,7 +34,8 @@ export const SessionTimer: React.FC<SessionTimerProps> = ({ className = '' }) =>
     const loadProjects = async () => {
       try {
         const token = getAuthToken();
-        const projectList = await mockProjectApi.getProjects(token);
+        // TODO: Load projects from Firebase
+        const projectList = []; // await mockProjectApi.getProjects(token);
         setProjects(projectList);
         
         // If timer already has a project selected, use it
@@ -66,7 +62,8 @@ export const SessionTimer: React.FC<SessionTimerProps> = ({ className = '' }) =>
 
       try {
         const token = getAuthToken();
-        const taskList = await mockTaskApi.getProjectTasks(selectedProjectId, token);
+        // TODO: Load tasks from Firebase
+        const taskList = []; // await mockTaskApi.getProjectTasks(selectedProjectId, token);
         setTasks(taskList.filter(task => task.status === 'active'));
         
         // If timer already has tasks selected, use them
@@ -239,7 +236,8 @@ export const SessionTimer: React.FC<SessionTimerProps> = ({ className = '' }) =>
           onSave={async (data) => {
             try {
               const token = getAuthToken();
-              await mockSessionApi.createSession(data, token);
+              // TODO: Create session in Firebase
+              console.log('Create session:', data); // await mockSessionApi.createSession(data, token);
               setShowFinishModal(false);
               // Timer will be finished by the context
             } catch (error) {

@@ -2,8 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { SessionFormProps, SessionFormData, Project, Task } from '@/types';
-import { mockProjectApi, mockTaskApi, authApi } from '@/lib/api';
-import { mockProjectApi as mockProjectApiLocal, mockTaskApi as mockTaskApiLocal } from '@/lib/mockApi';
 
 interface SaveSessionProps {
   onSave: (data: SessionFormData) => Promise<void>;
@@ -45,13 +43,11 @@ export const SaveSession: React.FC<SaveSessionProps> = ({
   const [selectedTasks, setSelectedTasks] = useState<Task[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // TODO: Implement Firebase API calls
   // Helper function to get auth token
   const getAuthToken = (): string => {
-    const token = authApi.getToken();
-    if (!token) {
-      throw new Error('No authentication token found');
-    }
-    return token;
+    // For now, return empty string since we're not using Firebase sessions yet
+    return '';
   };
 
   // Load projects on mount
@@ -59,7 +55,8 @@ export const SaveSession: React.FC<SaveSessionProps> = ({
     const loadProjects = async () => {
       try {
         const token = getAuthToken();
-        const projectList = await mockProjectApiLocal.getProjects(token);
+        // TODO: Load projects from Firebase
+        const projectList = []; // await mockProjectApiLocal.getProjects(token);
         setProjects(projectList);
         
         // Set initial project if provided
@@ -85,7 +82,8 @@ export const SaveSession: React.FC<SaveSessionProps> = ({
 
       try {
         const token = getAuthToken();
-        const taskList = await mockTaskApiLocal.getProjectTasks(formData.projectId, token);
+        // TODO: Load tasks from Firebase
+        const taskList = []; // await mockTaskApiLocal.getProjectTasks(formData.projectId, token);
         setTasks(taskList.filter(task => task.status === 'active'));
         
         // Set selected tasks from initial data

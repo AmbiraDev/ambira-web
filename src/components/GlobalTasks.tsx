@@ -154,7 +154,8 @@ export const GlobalTasks: React.FC<GlobalTasksProps> = ({
               projectId={filterProject === 'all' || filterProject === 'unassigned' ? '' : filterProject}
               onCreateTask={handleCreateTask}
               isLoading={isCreating}
-              placeholder="Enter task name..."
+              placeholder={filterProject === 'all' || filterProject === 'unassigned' ? "Select a project first..." : "Enter task name..."}
+              disabled={filterProject === 'all' || filterProject === 'unassigned'}
             />
           </div>
           {filterProject !== 'all' && filterProject !== 'unassigned' && (

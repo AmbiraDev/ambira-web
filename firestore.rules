@@ -4,11 +4,14 @@ service cloud.firestore {
     // Users can read/write their own profile
     match /users/{userId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
-      // Allow public read access for profile visibility
-      allow read: if resource.data.profileVisibility == 'everyone';
-    // Allow followers to read if profile is set to followers
-    allow read: if resource.data.profileVisibility == 'followers' && 
-      exists(/databases/$(database)/documents/follows/$(request.auth.uid + '_' + userId));
+      // Allow public read access for profile visibility (with fallback)
+      allow read: if request.auth != null && 
+        (resource.data.profileVisibility == 'everyone' || 
+         !('profileVisibility' in resource.data));
+      // Allow followers to read if profile is set to followers
+      allow read: if request.auth != null && 
+        resource.data.profileVisibility == 'followers' && 
+        exists(/databases/$(database)/documents/follows/$(request.auth.uid + '_' + userId));
     }
     
     // Follow relationships
@@ -20,21 +23,61 @@ service cloud.firestore {
     // User activities
     match /activities/{userId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
-    // Allow followers to read activities if visibility allows
-    allow read: if request.auth != null && 
-      get(/databases/$(database)/documents/users/$(userId)).data.activityVisibility == 'followers' &&
-      exists(/databases/$(database)/documents/follows/$(request.auth.uid + '_' + userId));
-    allow read: if get(/databases/$(database)/documents/users/$(userId)).data.activityVisibility == 'everyone';
+      // Allow followers to read activities if visibility allows (with fallback)
+      allow read: if request.auth != null && 
+        exists(/databases/$(database)/documents/users/$(userId)) &&
+        (get(/databases/$(database)/documents/users/$(userId)).data.activityVisibility == 'followers' ||
+         !('activityVisibility' in get(/databases/$(database)/documents/users/$(userId)).data)) &&
+        exists(/databases/$(database)/documents/follows/$(request.auth.uid + '_' + userId));
+      allow read: if request.auth != null && 
+        exists(/databases/$(database)/documents/users/$(userId)) &&
+        (get(/databases/$(database)/documents/users/$(userId)).data.activityVisibility == 'everyone' ||
+         !('activityVisibility' in get(/databases/$(database)/documents/users/$(userId)).data));
     }
     
-    // User projects
-    match /projects/{userId} {
+    // User activities subcollections (daily, weekly, etc.)
+    match /activities/{userId}/{subcollection} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
-    // Allow followers to read projects if visibility allows
-    allow read: if request.auth != null && 
-      get(/databases/$(database)/documents/users/$(userId)).data.projectVisibility == 'followers' &&
-      exists(/databases/$(database)/documents/follows/$(request.auth.uid + '_' + userId));
-    allow read: if get(/databases/$(database)/documents/users/$(userId)).data.projectVisibility == 'everyone';
+      // Allow followers to read activities if visibility allows (with fallback)
+      allow read: if request.auth != null && 
+        exists(/databases/$(database)/documents/users/$(userId)) &&
+        (get(/databases/$(database)/documents/users/$(userId)).data.activityVisibility == 'followers' ||
+         !('activityVisibility' in get(/databases/$(database)/documents/users/$(userId)).data)) &&
+        exists(/databases/$(database)/documents/follows/$(request.auth.uid + '_' + userId));
+      allow read: if request.auth != null && 
+        exists(/databases/$(database)/documents/users/$(userId)) &&
+        (get(/databases/$(database)/documents/users/$(userId)).data.activityVisibility == 'everyone' ||
+         !('activityVisibility' in get(/databases/$(database)/documents/users/$(userId)).data));
+    }
+    
+    // User projects - using subcollection structure
+    match /projects/{userId}/userProjects/{projectId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      // Allow followers to read projects if visibility allows (with fallback)
+      allow read: if request.auth != null && 
+        exists(/databases/$(database)/documents/users/$(userId)) &&
+        (get(/databases/$(database)/documents/users/$(userId)).data.projectVisibility == 'followers' ||
+         !('projectVisibility' in get(/databases/$(database)/documents/users/$(userId)).data)) &&
+        exists(/databases/$(database)/documents/follows/$(request.auth.uid + '_' + userId));
+      allow read: if request.auth != null && 
+        exists(/databases/$(database)/documents/users/$(userId)) &&
+        (get(/databases/$(database)/documents/users/$(userId)).data.projectVisibility == 'everyone' ||
+         !('projectVisibility' in get(/databases/$(database)/documents/users/$(userId)).data));
+    }
+    
+    // User project tasks - subcollection of projects
+    match /projects/{userId}/userProjects/{projectId}/tasks/{taskId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      // Allow followers to read tasks if project visibility allows (with fallback)
+      allow read: if request.auth != null && 
+        exists(/databases/$(database)/documents/users/$(userId)) &&
+        (get(/databases/$(database)/documents/users/$(userId)).data.projectVisibility == 'followers' ||
+         !('projectVisibility' in get(/databases/$(database)/documents/users/$(userId)).data)) &&
+        exists(/databases/$(database)/documents/follows/$(request.auth.uid + '_' + userId));
+      allow read: if request.auth != null && 
+        exists(/databases/$(database)/documents/users/$(userId)) &&
+        (get(/databases/$(database)/documents/users/$(userId)).data.projectVisibility == 'everyone' ||
+         !('projectVisibility' in get(/databases/$(database)/documents/users/$(userId)).data));
     }
     
     // Sessions
@@ -48,6 +91,11 @@ service cloud.firestore {
       allow read: if resource.data.privacySetting == 'public';
       allow read, write: if request.auth != null && 
         request.auth.uid in resource.data.memberIds;
+    }
+    
+    // Allow authenticated users to query users collection for discovery
+    match /users/{userId} {
+      allow list: if request.auth != null;
     }
   }
 }
