@@ -363,7 +363,18 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
       // Save session to Firebase and create post if visibility allows
       let session: Session;
       let post: any;
-      
+
+      console.log('📝 Creating session with data:', {
+        title,
+        description,
+        duration: `${Math.floor(finalDuration / 3600)}h ${Math.floor((finalDuration % 3600) / 60)}m`,
+        visibility: options?.visibility || 'private',
+        projectName: timerState.currentProject.name,
+        tasksCompleted: timerState.selectedTasks.length,
+        tags,
+        sessionData
+      });
+
       if (options?.visibility && options.visibility !== 'private') {
         // Create session with post for non-private sessions
         const result = await firebaseSessionApi.createSessionWithPost(
@@ -373,17 +384,35 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
         );
         session = result.session;
         post = result.post;
-        console.log('Session and post created:', { session, post });
+        console.log('✅ Session and post created successfully!', {
+          sessionId: session.id,
+          sessionTitle: session.title,
+          duration: `${Math.floor(session.duration / 3600)}h ${Math.floor((session.duration % 3600) / 60)}m`,
+          visibility: session.visibility,
+          supportCount: session.supportCount,
+          commentCount: session.commentCount,
+          postId: post?.id,
+          fullSession: session,
+          fullPost: post
+        });
       } else {
         // Create private session only
         session = await firebaseSessionApi.createSession(sessionData);
-        console.log('Private session created:', session);
+        console.log('✅ Private session created successfully!', {
+          sessionId: session.id,
+          sessionTitle: session.title,
+          duration: `${Math.floor(session.duration / 3600)}h ${Math.floor((session.duration % 3600) / 60)}m`,
+          visibility: session.visibility,
+          supportCount: session.supportCount,
+          commentCount: session.commentCount,
+          fullSession: session
+        });
       }
 
       // Clear active session
       await firebaseSessionApi.clearActiveSession();
 
-      console.log('Session saved to Firebase successfully');
+      console.log('🧹 Session saved to Firebase and active session cleared successfully');
 
       // Reset timer state
       setTimerState({

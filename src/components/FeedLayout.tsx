@@ -3,9 +3,11 @@
 import React, { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { firebaseApi } from '@/lib/firebaseApi';
-import { UserStats, SuggestedUser } from '@/types';
+import { UserStats, SuggestedUser, FeedFilters } from '@/types';
 import Feed from './Feed';
 import SuggestedUsers from './SuggestedUsers';
+
+type FeedType = 'recent' | 'following' | 'trending';
 
 interface FeedLayoutProps {
   className?: string;
@@ -16,6 +18,13 @@ export const FeedLayout: React.FC<FeedLayoutProps> = ({ className = '' }) => {
   const [userStats, setUserStats] = useState<UserStats | null>(null);
   const [suggestedUsers, setSuggestedUsers] = useState<SuggestedUser[]>([]);
   const [isLoadingStats, setIsLoadingStats] = useState(true);
+  const [feedType, setFeedType] = useState<FeedType>('recent');
+  const [filters, setFilters] = useState<FeedFilters>({ type: 'recent' });
+
+  const handleFeedTypeChange = (type: FeedType) => {
+    setFeedType(type);
+    setFilters({ type });
+  };
 
   // Load user stats and suggestions
   React.useEffect(() => {
@@ -162,7 +171,43 @@ export const FeedLayout: React.FC<FeedLayoutProps> = ({ className = '' }) => {
 
         {/* Center - Feed */}
         <div className="lg:col-span-6 order-1 lg:order-2">
-          <Feed />
+          {/* Feed Type Tabs */}
+          <div className="bg-white rounded-lg border border-gray-200 mb-4">
+            <div className="flex gap-0 border-b border-gray-200">
+              <button
+                onClick={() => setFeedType('recent')}
+                className={`flex-1 px-6 py-4 font-medium transition-all ${
+                  feedType === 'recent'
+                    ? 'text-orange-600 border-b-2 border-orange-600 bg-orange-50'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                }`}
+              >
+                Recent
+              </button>
+              <button
+                onClick={() => setFeedType('following')}
+                className={`flex-1 px-6 py-4 font-medium transition-all ${
+                  feedType === 'following'
+                    ? 'text-orange-600 border-b-2 border-orange-600 bg-orange-50'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                }`}
+              >
+                Following
+              </button>
+              <button
+                onClick={() => setFeedType('trending')}
+                className={`flex-1 px-6 py-4 font-medium transition-all ${
+                  feedType === 'trending'
+                    ? 'text-orange-600 border-b-2 border-orange-600 bg-orange-50'
+                    : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                }`}
+              >
+                🔥 Trending
+              </button>
+            </div>
+          </div>
+
+          <Feed filters={filters} key={feedType} />
         </div>
 
         {/* Right Sidebar - Suggestions */}

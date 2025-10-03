@@ -103,55 +103,34 @@ export interface Session {
   visibility: 'everyone' | 'followers' | 'private';
   showStartTime?: boolean;
   hideTaskNames?: boolean;
-  publishToFeeds?: boolean;
   howFelt?: number; // 1-5 rating
   privateNotes?: string;
   isArchived: boolean;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-export interface Post {
-  id: string;
-  sessionId: string;
-  userId: string;
-  content: string;
+  // Social engagement fields (sessions are posts)
   supportCount: number;
   commentCount: number;
-  isSupported?: boolean; // Whether current user has supported this post
+  isSupported?: boolean; // Whether current user has supported this session
   createdAt: Date;
   updatedAt: Date;
-  // Populated fields
-  user?: User;
-  session?: Session;
-  project?: Project;
 }
 
-export interface PostWithDetails extends Post {
+// Sessions with populated related data for display
+export interface SessionWithDetails extends Session {
   user: User;
-  session: Session;
   project: Project;
 }
 
-export interface CreatePostData {
-  sessionId: string;
-  content: string;
-  visibility: 'everyone' | 'followers' | 'private';
-}
-
-export interface UpdatePostData {
-  content?: string;
-}
-
-export interface PostSupport {
+// Session support (like/kudos)
+export interface SessionSupport {
   id: string;
-  postId: string;
+  sessionId: string;
   userId: string;
   createdAt: Date;
 }
 
+// Feed response for sessions
 export interface FeedResponse {
-  posts: PostWithDetails[];
+  sessions: SessionWithDetails[];
   hasMore: boolean;
   nextCursor?: string;
 }
@@ -167,13 +146,92 @@ export interface Group {
   name: string;
   description: string;
   imageUrl?: string;
+  bannerUrl?: string;
   location?: string;
   category: 'work' | 'study' | 'side-project' | 'learning' | 'other';
   type: 'just-for-fun' | 'professional' | 'competitive' | 'other';
   privacySetting: 'public' | 'approval-required';
   memberCount: number;
   adminUserIds: string[];
+  memberIds: string[];
+  createdByUserId: string;
   createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface GroupMembership {
+  id: string;
+  groupId: string;
+  userId: string;
+  role: 'admin' | 'member';
+  joinedAt: Date;
+  status: 'active' | 'pending' | 'left' | 'removed';
+}
+
+export interface GroupPost extends Post {
+  groupId: string;
+  groupVisibility: 'group-only' | 'public';
+}
+
+export interface CreateGroupData {
+  name: string;
+  description: string;
+  category: 'work' | 'study' | 'side-project' | 'learning' | 'other';
+  type: 'just-for-fun' | 'professional' | 'competitive' | 'other';
+  privacySetting: 'public' | 'approval-required';
+  location?: string;
+  imageUrl?: string;
+  bannerUrl?: string;
+}
+
+export interface UpdateGroupData {
+  name?: string;
+  description?: string;
+  category?: 'work' | 'study' | 'side-project' | 'learning' | 'other';
+  type?: 'just-for-fun' | 'professional' | 'competitive' | 'other';
+  privacySetting?: 'public' | 'approval-required';
+  location?: string;
+  imageUrl?: string;
+  bannerUrl?: string;
+}
+
+export interface GroupFilters {
+  category?: 'work' | 'study' | 'side-project' | 'learning' | 'other';
+  type?: 'just-for-fun' | 'professional' | 'competitive' | 'other';
+  privacySetting?: 'public' | 'approval-required';
+  location?: string;
+  search?: string;
+}
+
+export interface GroupStats {
+  totalMembers: number;
+  totalPosts: number;
+  totalHours: number;
+  weeklyHours: number;
+  monthlyHours: number;
+  activeMembers: number;
+  topProjects: Array<{
+    projectId: string;
+    projectName: string;
+    hours: number;
+    memberCount: number;
+  }>;
+}
+
+export interface GroupLeaderboardEntry {
+  userId: string;
+  user: User;
+  totalHours: number;
+  weeklyHours: number;
+  monthlyHours: number;
+  sessionCount: number;
+  rank: number;
+}
+
+export interface GroupLeaderboard {
+  period: 'weekly' | 'monthly' | 'yearly' | 'all-time';
+  entries: GroupLeaderboardEntry[];
+  lastUpdated: Date;
 }
 
 export interface Challenge {
@@ -202,7 +260,7 @@ export interface Achievement {
 
 export interface Comment {
   id: string;
-  postId: string;
+  sessionId: string; // Comments are attached to sessions
   userId: string;
   parentId?: string; // For nested replies
   content: string;
@@ -222,7 +280,7 @@ export interface CommentWithDetails extends Comment {
 }
 
 export interface CreateCommentData {
-  postId: string;
+  sessionId: string;
   content: string;
   parentId?: string;
 }
@@ -255,7 +313,7 @@ export interface Notification {
   createdAt: Date;
   // Additional metadata based on type
   actorId?: string; // User who triggered the notification
-  postId?: string;
+  sessionId?: string; // Session related to the notification
   commentId?: string;
   groupId?: string;
   challengeId?: string;
@@ -497,7 +555,6 @@ export interface CreateSessionData {
   visibility?: 'everyone' | 'followers' | 'private';
   showStartTime?: boolean;
   hideTaskNames?: boolean;
-  publishToFeeds?: boolean;
   howFelt?: number;
   privateNotes?: string;
 }
@@ -514,7 +571,6 @@ export interface SessionFormData {
   visibility: 'everyone' | 'followers' | 'private';
   showStartTime?: boolean;
   hideTaskNames?: boolean;
-  publishToFeeds?: boolean;
   howFelt?: number;
   privateNotes?: string;
 }

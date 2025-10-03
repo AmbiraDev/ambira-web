@@ -158,6 +158,32 @@ The social foundation is now complete! Key areas for further development include
 
 - Firestore does not allow fields with `undefined` values. Creation and update logic for projects now strips undefined keys before writes to prevent `Unsupported field value: undefined` errors.
 - **Follow/Unfollow System**: Uses batched `update()` operations instead of `set()` with merge for better compatibility with Firestore security rules and increment operations. Security rules allow authenticated users to update follower/following counts without modifying other profile fields.
+- **Sessions-Only Architecture (Strava-like)**:
+  - **Sessions ARE the primary content type** - Following Strava's model where activities are the main content, sessions function as posts directly. There is NO separate Post type or posts collection.
+  - The feed displays sessions with `visibility: 'everyone' | 'followers'`, similar to how Strava shows activities.
+  - Each session includes social engagement fields: `supportCount`, `commentCount`, and `isSupported`.
+  - `getFeedSessions()` fetches sessions from the `sessions` collection and populates them with user and project data to create `SessionWithDetails`.
+  - Profile tabs show user sessions as their activity history.
+  - Support/comments are tied directly to session IDs.
+  - All components use `SessionWithDetails` instead of `PostWithDetails`.
+  - Comments use `sessionId` instead of `postId`.
+  - All fields include proper fallbacks for missing data to prevent rendering errors.
+
+### Required Firestore Indexes
+
+The following composite indexes are required for the feed to work correctly:
+
+1. **Sessions - Following Feed**
+   - Collection: `sessions`
+   - Fields: `visibility` (Ascending), `createdAt` (Descending)
+   - Used for: Recent and Following feed types
+
+2. **Sessions - Trending Feed**
+   - Collection: `sessions`
+   - Fields: `visibility` (Ascending), `createdAt` (Descending)
+   - Used for: Trending posts in the last 7 days
+
+Create these indexes in Firebase Console or they will be auto-suggested when you first load the feed.
 
 ## Contributing
 

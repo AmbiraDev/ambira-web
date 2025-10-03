@@ -8,12 +8,12 @@ import CommentInput from './CommentInput';
 import CommentItem from './CommentItem';
 
 interface CommentListProps {
-  postId: string;
+  sessionId: string;
   initialCommentCount?: number;
 }
 
 export const CommentList: React.FC<CommentListProps> = ({
-  postId,
+  sessionId,
   initialCommentCount = 0
 }) => {
   const { user } = useAuth();
@@ -27,13 +27,13 @@ export const CommentList: React.FC<CommentListProps> = ({
   // Load initial comments
   useEffect(() => {
     loadComments();
-  }, [postId]);
+  }, [sessionId]);
 
   const loadComments = async () => {
     try {
       setIsLoading(true);
       setError(null);
-      const response = await firebaseCommentApi.getPostComments(postId, 10);
+      const response = await firebaseCommentApi.getSessionComments(sessionId, 10);
       setComments(response.comments);
       setHasMore(response.hasMore);
     } catch (err: any) {
@@ -51,7 +51,7 @@ export const CommentList: React.FC<CommentListProps> = ({
       setIsLoadingMore(true);
       // In a real implementation, you'd pass the last document for pagination
       // For now, this is a placeholder
-      const response = await firebaseCommentApi.getPostComments(postId, 10);
+      const response = await firebaseCommentApi.getSessionComments(sessionId, 10);
       setComments([...comments, ...response.comments]);
       setHasMore(response.hasMore);
     } catch (err: any) {
@@ -64,10 +64,10 @@ export const CommentList: React.FC<CommentListProps> = ({
   const handleCreateComment = async (content: string) => {
     try {
       const newComment = await firebaseCommentApi.createComment({
-        postId,
+        sessionId,
         content
       });
-      
+
       // Add to the beginning of the list with optimistic update
       setComments([newComment, ...comments]);
       setShowInput(false);
@@ -80,7 +80,7 @@ export const CommentList: React.FC<CommentListProps> = ({
   const handleReply = async (parentId: string, content: string) => {
     try {
       const newReply = await firebaseCommentApi.createComment({
-        postId,
+        sessionId,
         content,
         parentId
       });
@@ -273,7 +273,7 @@ export const CommentList: React.FC<CommentListProps> = ({
       {showInput && (
         <div className="pb-4 border-b border-gray-200">
           <CommentInput
-            postId={postId}
+            sessionId={sessionId}
             placeholder="Write a comment..."
             autoFocus
             onSubmit={handleCreateComment}

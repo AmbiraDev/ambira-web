@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import { UserProfile, UserStats, ProfileTab } from '@/types';
-import { firebaseUserApi } from '@/lib/firebaseApi';
+import { firebaseUserApi, firebaseSessionApi } from '@/lib/firebaseApi';
 import { useAuth } from '@/contexts/AuthContext';
 import { ProfileHeader } from '@/components/ProfileHeader';
 import { ProfileTabs, TabContent, OverviewContent, AchievementsContent, FollowingContent, PostsContent } from '@/components/ProfileTabs';
@@ -22,6 +22,7 @@ export default function ProfilePage() {
   
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [stats, setStats] = useState<UserStats | null>(null);
+  const [postsCount, setPostsCount] = useState<number>(0);
   const [activeTab, setActiveTab] = useState<ProfileTab>('overview');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -39,6 +40,11 @@ export default function ProfilePage() {
       // Load stats after we have the profile
       const statsData = await firebaseUserApi.getUserStats(profileData.id);
       setStats(statsData);
+
+      // Load posts count (sessions count since sessions = posts)
+      const sessionsCount = await firebaseSessionApi.getUserSessionsCount(profileData.id, isOwnProfile);
+      setPostsCount(sessionsCount);
+      console.log(`Posts count for ${username}: ${sessionsCount}`);
     } catch (error: any) {
       console.error('Profile load error:', error);
       if (error.message?.includes('not found')) {
@@ -54,7 +60,7 @@ export default function ProfilePage() {
     } finally {
       setIsLoading(false);
     }
-  }, [username]);
+  }, [username, isOwnProfile]);
 
   useEffect(() => {
     if (username) {
@@ -155,7 +161,7 @@ export default function ProfilePage() {
     achievements: 0, // TODO: Implement achievements
     followers: profile.followersCount,
     following: profile.followingCount,
-    posts: 0, // TODO: Implement posts
+    posts: postsCount,
   };
   
   return (

@@ -5,7 +5,7 @@ import { User } from '@/types';
 import { firebaseUserApi } from '@/lib/firebaseApi';
 
 interface CommentInputProps {
-  postId: string;
+  sessionId: string;
   parentId?: string;
   placeholder?: string;
   onSubmit: (content: string) => Promise<void>;
@@ -20,7 +20,7 @@ interface MentionSuggestion {
 }
 
 export const CommentInput: React.FC<CommentInputProps> = ({
-  postId,
+  sessionId,
   parentId,
   placeholder = 'Write a comment...',
   onSubmit,

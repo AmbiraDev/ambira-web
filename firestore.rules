@@ -99,34 +99,36 @@ service cloud.firestore {
       allow read, update, delete: if request.auth != null && resource.data.userId == request.auth.uid;
       // Allow reading sessions for stats calculation (authenticated users can read any session)
       allow read: if request.auth != null;
+      // Allow authenticated users to update supportCount and commentCount (for likes/comments)
+      allow update: if request.auth != null &&
+        request.resource.data.keys().hasAny(['supportCount', 'commentCount', 'updatedAt']) &&
+        !request.resource.data.diff(resource.data).affectedKeys().hasAny(['userId', 'projectId', 'title', 'description', 'duration', 'startTime', 'tasks', 'tags', 'visibility', 'createdAt']);
     }
     
-    // Posts
-    match /posts/{postId} {
-      // Create: validate userId on the incoming document
-      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
-      // Read: allow authenticated users to read posts
-      allow read: if request.auth != null;
-      // Update/Delete: only post owner can modify
-      allow update, delete: if request.auth != null && resource.data.userId == request.auth.uid;
-    }
-    
-    // Post supports
-    match /postSupports/{supportId} {
-      allow read, write: if request.auth != null && 
+    // Session supports (likes/kudos)
+    match /sessionSupports/{supportId} {
+      allow read, write: if request.auth != null &&
         (request.auth.uid == supportId.split('_')[0] || request.auth.uid == supportId.split('_')[1]);
     }
     
     // Comments
     match /comments/{commentId} {
+      function isAuthenticated() {
+        return request.auth != null;
+      }
+
       // Create: validate userId on the incoming document
-      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
-      // Read: allow authenticated users to read comments
-      allow read: if request.auth != null;
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+
+      // Read/list: allow any authenticated user to fetch comments (per-document rules apply)
+      allow get: if isAuthenticated();
+      allow list: if isAuthenticated();
+
       // Update: only comment owner can modify their own comment
-      allow update: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow update: if isAuthenticated() && resource.data.userId == request.auth.uid;
+
       // Delete: only comment owner can delete their own comment
-      allow delete: if request.auth != null && resource.data.userId == request.auth.uid;
+      allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
     }
     
     // Comment likes
@@ -165,9 +167,91 @@ service cloud.firestore {
     
     // Groups
     match /groups/{groupId} {
-      allow read: if resource.data.privacySetting == 'public';
-      allow read, write: if request.auth != null && 
-        request.auth.uid in resource.data.memberIds;
+      function isAuthenticated() {
+        return request.auth != null;
+      }
+
+      function isDiscoverablePrivacy(setting) {
+        return setting == 'public' || setting == 'approval-required';
+      }
+
+      function isDiscoverableGroup() {
+        return ('privacySetting' in resource.data &&
+          isDiscoverablePrivacy(resource.data.privacySetting)) ||
+          !('privacySetting' in resource.data);
+      }
+
+      function isGroupMember() {
+        return isAuthenticated() &&
+          ('memberIds' in resource.data) &&
+          resource.data.memberIds.hasAny([request.auth.uid]);
+      }
+
+      function isGroupAdmin() {
+        return isAuthenticated() &&
+          ('adminUserIds' in resource.data) &&
+          resource.data.adminUserIds.hasAny([request.auth.uid]);
+      }
+
+      function isGroupCreator() {
+        return isAuthenticated() &&
+          resource.data.createdByUserId == request.auth.uid;
+      }
+
+      // Allow reading individual groups for public or approval-required access, or members
+      allow get: if isDiscoverableGroup() || isGroupMember();
+
+      // Allow listing groups for authenticated discovery experiences
+      allow list: if isAuthenticated();
+
+      // Allow group creators and admins to update group
+      allow update: if isGroupCreator() || isGroupAdmin();
+
+      // Allow authenticated users to update memberIds and memberCount when joining/leaving
+      allow update: if isAuthenticated() &&
+        request.resource.data.keys().hasAny(['memberIds', 'memberCount', 'updatedAt']) &&
+        !request.resource.data.diff(resource.data).affectedKeys().hasAny(['name', 'description', 'category', 'type', 'privacySetting', 'location', 'coverImage', 'createdByUserId', 'adminUserIds', 'createdAt']);
+
+      // Only group creators can delete groups
+      allow delete: if isGroupCreator();
+
+      // Allow authenticated users to create groups
+      allow create: if isAuthenticated() &&
+        request.resource.data.createdByUserId == request.auth.uid &&
+        request.resource.data.adminUserIds[0] == request.auth.uid &&
+        request.resource.data.memberIds[0] == request.auth.uid;
+    }
+    
+    // Group Memberships
+    match /groupMemberships/{membershipId} {
+      // Allow users to read their own memberships
+      allow read: if request.auth != null && 
+        request.auth.uid == resource.data.userId;
+      
+      // Allow group members to read other memberships for the same group
+      allow read: if request.auth != null && 
+        exists(/databases/$(database)/documents/groups/$(resource.data.groupId)) &&
+        request.auth.uid in get(/databases/$(database)/documents/groups/$(resource.data.groupId)).data.memberIds;
+      
+      // Allow users to create their own memberships (join groups)
+      allow create: if request.auth != null && 
+        request.resource.data.userId == request.auth.uid;
+      
+      // Allow group admins to update memberships (approve/remove members)
+      allow update: if request.auth != null && 
+        exists(/databases/$(database)/documents/groups/$(resource.data.groupId)) &&
+        request.auth.uid in get(/databases/$(database)/documents/groups/$(resource.data.groupId)).data.adminUserIds;
+      
+      // Allow users to update their own membership status (leave group)
+      allow update: if request.auth != null && 
+        request.auth.uid == resource.data.userId &&
+        request.resource.data.keys().hasAll(['status']) &&
+        request.resource.data.keys().hasOnly(['status', 'updatedAt']);
+      
+      // Allow group admins to delete memberships (remove members)
+      allow delete: if request.auth != null && 
+        exists(/databases/$(database)/documents/groups/$(resource.data.groupId)) &&
+        request.auth.uid in get(/databases/$(database)/documents/groups/$(resource.data.groupId)).data.adminUserIds;
     }
     
     // (users match consolidated above)

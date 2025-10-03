@@ -1,14 +1,15 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { firebasePostApi } from '@/lib/firebaseApi';
-import { PostWithDetails } from '@/types';
-import { 
-  BarChart3, 
-  Trophy, 
-  Users, 
+import { firebaseSessionApi, firebaseApi } from '@/lib/firebaseApi';
+import { Session, User, Project, SessionWithDetails } from '@/types';
+import SessionCard from './SessionCard';
+import {
+  BarChart3,
+  Trophy,
+  Users,
   FileText,
   Calendar,
   TrendingUp,
@@ -285,29 +286,83 @@ interface PostsContentProps {
 }
 
 export const PostsContent: React.FC<PostsContentProps> = ({ userId, isOwnProfile = false }) => {
-  const [posts, setPosts] = useState<PostWithDetails[]>([]);
+  const [sessions, setSessions] = useState<SessionWithDetails[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const loadPosts = async () => {
+    const loadSessions = async () => {
       try {
         setIsLoading(true);
         setError(null);
-        const userPosts = await firebasePostApi.getUserPosts(userId, 20, isOwnProfile);
-        setPosts(userPosts);
+        // Fetch sessions - sessions ARE posts (Strava-like)
+        const userSessions = await firebaseSessionApi.getUserSessions(userId, 20, isOwnProfile);
+        setSessions(userSessions);
+        console.log('Loaded sessions for posts tab:', userSessions);
       } catch (err: any) {
-        console.error('Failed to load user posts:', err);
-        setError(err.message || 'Failed to load posts');
+        console.error('Failed to load user sessions:', err);
+        setError(err.message || 'Failed to load sessions');
       } finally {
         setIsLoading(false);
       }
     };
 
     if (userId) {
-      loadPosts();
+      loadSessions();
     }
-  }, [userId]);
+  }, [userId, isOwnProfile]);
+
+  // Handle support
+  const handleSupport = useCallback(async (sessionId: string) => {
+    try {
+      await firebaseApi.post.supportSession(sessionId);
+
+      // Optimistic update
+      setSessions(prev => prev.map(session =>
+        session.id === sessionId
+          ? { ...session, isSupported: true, supportCount: session.supportCount + 1 }
+          : session
+      ));
+    } catch (err: any) {
+      console.error('Failed to support session:', err);
+    }
+  }, []);
+
+  // Handle remove support
+  const handleRemoveSupport = useCallback(async (sessionId: string) => {
+    try {
+      await firebaseApi.post.removeSupportFromSession(sessionId);
+
+      // Optimistic update
+      setSessions(prev => prev.map(session =>
+        session.id === sessionId
+          ? { ...session, isSupported: false, supportCount: Math.max(0, session.supportCount - 1) }
+          : session
+      ));
+    } catch (err: any) {
+      console.error('Failed to remove support:', err);
+    }
+  }, []);
+
+  // Handle share
+  const handleShare = useCallback(async (sessionId: string) => {
+    try {
+      const sessionUrl = `${window.location.origin}/sessions/${sessionId}`;
+
+      if (navigator.share) {
+        await navigator.share({
+          title: 'Check out this session on Ambira',
+          text: 'Look at this productive session!',
+          url: sessionUrl
+        });
+      } else {
+        await navigator.clipboard.writeText(sessionUrl);
+        console.log('Link copied to clipboard');
+      }
+    } catch (err: any) {
+      console.error('Failed to share session:', err);
+    }
+  }, []);
 
   if (isLoading) {
     return (
@@ -330,17 +385,17 @@ export const PostsContent: React.FC<PostsContentProps> = ({ userId, isOwnProfile
     );
   }
 
-  if (posts.length === 0) {
+  if (sessions.length === 0) {
     return (
       <div className="text-center py-12">
         <FileText className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
         <h3 className="text-lg font-semibold text-foreground mb-2">
-          {isOwnProfile ? 'No posts yet' : 'No posts'}
+          {isOwnProfile ? 'No sessions yet' : 'No sessions'}
         </h3>
         <p className="text-muted-foreground">
-          {isOwnProfile 
-            ? 'Complete some sessions to see your posts here.' 
-            : 'This user hasn\'t shared any posts yet.'
+          {isOwnProfile
+            ? 'Complete some sessions to see them here.'
+            : 'This user hasn\'t shared any sessions yet.'
           }
         </p>
       </div>
@@ -348,46 +403,16 @@ export const PostsContent: React.FC<PostsContentProps> = ({ userId, isOwnProfile
   }
 
   return (
-    <div className="space-y-4">
-      {posts.map((post) => (
-        <div key={post.id} className="bg-card-background p-4 rounded-lg border border-border">
-          <div className="flex items-start gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold">
-              {post.user.name.charAt(0).toUpperCase()}
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-2">
-                <h4 className="font-semibold text-foreground">{post.user.name}</h4>
-                <span className="text-sm text-muted-foreground">@{post.user.username}</span>
-                <span className="text-sm text-muted-foreground">•</span>
-                <span className="text-sm text-muted-foreground">
-                  {new Date(post.createdAt).toLocaleDateString()}
-                </span>
-              </div>
-              <p className="text-foreground mb-3">{post.content}</p>
-              {post.session && (
-                <div className="bg-muted/50 p-3 rounded-lg">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Clock className="w-4 h-4 text-muted-foreground" />
-                    <span className="text-sm font-medium text-foreground">
-                      {post.session.title}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                    <span>Duration: {Math.floor(post.session.duration / 3600)}h {Math.floor((post.session.duration % 3600) / 60)}m</span>
-                    {post.session.tasks && post.session.tasks.length > 0 && (
-                      <span>Tasks: {post.session.tasks.length}</span>
-                    )}
-                  </div>
-                </div>
-              )}
-              <div className="flex items-center gap-4 mt-3 text-sm text-muted-foreground">
-                <span>{post.supportCount} supports</span>
-                <span>{post.commentCount} comments</span>
-              </div>
-            </div>
-          </div>
-        </div>
+    <div className="space-y-6">
+      {sessions.map((session) => (
+        <SessionCard
+          key={session.id}
+          session={session}
+          onSupport={handleSupport}
+          onRemoveSupport={handleRemoveSupport}
+          onShare={handleShare}
+          showComments={true}
+        />
       ))}
     </div>
   );
