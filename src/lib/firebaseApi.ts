@@ -4215,6 +4215,122 @@ export const firebaseChallengeApi = {
     } catch (error: any) {
       throw new Error(error.message || 'Failed to delete challenge');
     }
+  },
+
+  // Search challenges with filters and limit
+  searchChallenges: async (filters: ChallengeFilters = {}, limitCount: number = 50): Promise<Challenge[]> => {
+    try {
+      // Use getChallenges but apply limit
+      let challengesQuery = query(
+        collection(db, 'challenges'),
+        orderBy('createdAt', 'desc'),
+        limit(limitCount)
+      );
+
+      // Apply simple filters
+      if (filters.groupId) {
+        challengesQuery = query(
+          collection(db, 'challenges'),
+          where('groupId', '==', filters.groupId),
+          orderBy('createdAt', 'desc'),
+          limit(limitCount)
+        );
+      } else if (filters.type) {
+        challengesQuery = query(
+          collection(db, 'challenges'),
+          where('type', '==', filters.type),
+          orderBy('createdAt', 'desc'),
+          limit(limitCount)
+        );
+      }
+
+      const snapshot = await getDocs(challengesQuery);
+      const challenges: Challenge[] = [];
+      const now = new Date();
+
+      for (const challengeDoc of snapshot.docs) {
+        const data = challengeDoc.data();
+        
+        // Apply client-side filtering for complex conditions
+        const startDate = convertTimestamp(data.startDate);
+        const endDate = convertTimestamp(data.endDate);
+        const isActive = data.isActive !== false;
+
+        // Filter by status (client-side)
+        if (filters.status === 'active') {
+          if (!(now >= startDate && now <= endDate && isActive)) {
+            continue;
+          }
+        } else if (filters.status === 'upcoming') {
+          if (!(now < startDate && isActive)) {
+            continue;
+          }
+        } else if (filters.status === 'completed') {
+          if (!(now > endDate || !isActive)) {
+            continue;
+          }
+        }
+
+        challenges.push({
+          id: challengeDoc.id,
+          groupId: data.groupId,
+          name: data.name,
+          description: data.description,
+          type: data.type,
+          goalValue: data.goalValue,
+          startDate,
+          endDate,
+          participantCount: data.participantCount || 0,
+          createdByUserId: data.createdByUserId,
+          createdAt: convertTimestamp(data.createdAt),
+          updatedAt: convertTimestamp(data.updatedAt),
+          rules: data.rules,
+          projectIds: data.projectIds,
+          isActive,
+          rewards: data.rewards,
+          category: data.category
+        });
+      }
+
+      return challenges;
+    } catch (error: any) {
+      console.error('Error in searchChallenges:', error);
+      throw new Error(error.message || 'Failed to search challenges');
+    }
+  },
+
+  // Get challenges that a user is participating in
+  getUserChallenges: async (userId: string): Promise<Challenge[]> => {
+    try {
+      // Get all challenge participations for this user
+      const participantsQuery = query(
+        collection(db, 'challengeParticipants'),
+        where('userId', '==', userId)
+      );
+
+      const participantsSnapshot = await getDocs(participantsQuery);
+      const challenges: Challenge[] = [];
+
+      // Fetch each challenge
+      for (const participantDoc of participantsSnapshot.docs) {
+        const participantData = participantDoc.data();
+        const challengeId = participantData.challengeId;
+
+        try {
+          const challenge = await firebaseChallengeApi.getChallenge(challengeId);
+          challenges.push(challenge);
+        } catch (error) {
+          console.warn(`Failed to load challenge ${challengeId}:`, error);
+        }
+      }
+
+      // Sort by most recent first
+      challenges.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+
+      return challenges;
+    } catch (error: any) {
+      throw new Error(error.message || 'Failed to get user challenges');
+    }
   }
 };
 

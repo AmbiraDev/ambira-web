@@ -23,8 +23,8 @@ export default function BottomNavigation() {
   const isOnTimerPage = pathname.startsWith('/timer');
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 md:hidden mobile-safe-area">
-      <div className="flex items-center justify-around h-16 px-2" style={{paddingBottom: 'env(safe-area-inset-bottom)'}}>
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 md:hidden">
+      <div className="flex items-center justify-around h-20 px-2 pb-6 pt-2" style={{paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom))'}}>
         {/* Feed */}
         <Link
           href="/"

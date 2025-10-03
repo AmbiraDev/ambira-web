@@ -339,9 +339,9 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
         </button>
 
         {/* Timer at top center */}
-        <div className="flex-1 flex flex-col items-center justify-start px-6 pt-16 pb-32">
-          <div className="text-center mb-20 mt-12">
-            <div className="text-8xl font-bold tracking-tight text-gray-900">
+        <div className="flex-1 flex flex-col items-center justify-start px-4 pt-12 pb-32">
+          <div className="text-center mb-16 mt-8">
+            <div className="text-6xl font-bold tracking-tight text-gray-900">
               {getFormattedTime(displayTime)}
             </div>
           </div>

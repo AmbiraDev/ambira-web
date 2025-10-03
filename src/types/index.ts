@@ -264,6 +264,7 @@ export interface Challenge {
   projectIds?: string[]; // Which projects count toward this challenge
   isActive: boolean;
   rewards?: string[];
+  category?: string; // Category for grouping challenges (e.g., 'fitness', 'study', 'work')
 }
 
 export interface ChallengeParticipant {

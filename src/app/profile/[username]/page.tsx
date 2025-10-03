@@ -10,6 +10,7 @@ import { ProfileTabs, TabContent, OverviewContent, AchievementsContent, Follower
 import { ProfileStats } from '@/components/ProfileStats';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import Header from '@/components/HeaderComponent';
+import MobileHeader from '@/components/MobileHeader';
 import BottomNavigation from '@/components/BottomNavigation';
 import { Button } from '@/components/ui/button';
 import { UserX } from 'lucide-react';
@@ -168,7 +169,10 @@ export default function ProfilePage() {
   return (
     <ProtectedRoute>
       <div className="min-h-screen bg-gray-50">
-        <Header />
+        <div className="hidden md:block">
+          <Header />
+        </div>
+        <MobileHeader title="Profile" />
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="space-y-6">
           {/* Profile Header */}

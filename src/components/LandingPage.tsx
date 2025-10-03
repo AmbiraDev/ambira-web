@@ -7,6 +7,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { SignupCredentials } from '@/types';
 import { firebaseUserApi } from '@/lib/firebaseApi';
 import Header from './HeaderComponent';
+import PWAInstallPrompt from './PWAInstallPrompt';
 
 export const LandingPage: React.FC = () => {
   const { login, signup } = useAuth();
@@ -227,13 +228,272 @@ export const LandingPage: React.FC = () => {
     }
   };
 
+  const [carouselIndex, setCarouselIndex] = useState(0);
+
+  const benefits = [
+    {
+      title: "Track your active life in one place",
+      description: "Record all your productivity sessions and track your progress over time",
+      image: "📊"
+    },
+    {
+      title: "Stay motivated with friends",
+      description: "Share your achievements and compete in challenges with your community",
+      image: "🏆"
+    },
+    {
+      title: "Build lasting habits",
+      description: "Track streaks and celebrate milestones as you reach your goals",
+      image: "🔥"
+    },
+    {
+      title: "Join groups & challenges",
+      description: "Connect with like-minded people and push each other to succeed",
+      image: "👥"
+    }
+  ];
+
   return (
     <div className="min-h-screen bg-white">
-      <Header />
-      
-      {/* Hero Section - 100vh minus header height */}
-      <main className="h-[calc(100vh-56px)] flex items-center justify-center px-8">
-        <div className="max-w-md w-full">
+      {/* Hide header on mobile */}
+      <div className="hidden md:block">
+        <Header />
+      </div>
+
+      {/* Hero Section - Full screen on mobile, with header space on desktop */}
+      <main className="h-screen md:h-[calc(100vh-56px)] flex flex-col md:items-center md:justify-center px-4 md:px-8">
+        {/* Mobile Carousel View - Only show when not in login/signup mode */}
+        {!showLogin && !showSignup && (
+          <div className="md:hidden flex-1 flex flex-col justify-between py-12 pb-8">
+            {/* Logo */}
+            <div className="text-center">
+              <div className="w-20 h-20 bg-[#007AFF] rounded-2xl flex items-center justify-center mx-auto mb-6">
+                <span className="text-white font-bold text-3xl">A</span>
+              </div>
+            </div>
+
+          {/* Swipeable Carousel */}
+          <div className="flex-1 flex flex-col justify-center">
+            <div
+              className="overflow-hidden touch-pan-x"
+              onTouchStart={(e) => {
+                const touch = e.touches[0];
+                e.currentTarget.setAttribute('data-start-x', touch.clientX.toString());
+              }}
+              onTouchEnd={(e) => {
+                const startX = parseInt(e.currentTarget.getAttribute('data-start-x') || '0');
+                const endX = e.changedTouches[0].clientX;
+                const diff = startX - endX;
+
+                if (Math.abs(diff) > 50) {
+                  if (diff > 0 && carouselIndex < benefits.length - 1) {
+                    setCarouselIndex(carouselIndex + 1);
+                  } else if (diff < 0 && carouselIndex > 0) {
+                    setCarouselIndex(carouselIndex - 1);
+                  }
+                }
+              }}
+            >
+              <div className="text-center px-4">
+                <div className="text-6xl mb-6">{benefits[carouselIndex].image}</div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-3">{benefits[carouselIndex].title}</h2>
+                <p className="text-lg text-gray-600">{benefits[carouselIndex].description}</p>
+              </div>
+            </div>
+
+            {/* Dots Indicator - Actual circles */}
+            <div className="flex justify-center gap-2.5 mt-8">
+              {benefits.map((_, index) => (
+                <div
+                  key={index}
+                  className={`w-3 h-3 rounded-full transition-all flex-shrink-0 ${
+                    index === carouselIndex ? 'bg-[#007AFF]' : 'bg-gray-300'
+                  }`}
+                />
+              ))}
+            </div>
+          </div>
+
+          {/* CTA Buttons */}
+          <div className="space-y-3">
+            <button
+              onClick={handleSignupWithEmail}
+              className="w-full py-4 bg-[#007AFF] text-white font-semibold text-lg rounded-xl hover:bg-[#0056D6] transition-colors"
+            >
+              Join for free
+            </button>
+            <button
+              onClick={() => setShowLogin(true)}
+              className="w-full py-4 text-[#007AFF] font-semibold text-lg"
+            >
+              Log in
+            </button>
+          </div>
+          </div>
+        )}
+
+        {/* Mobile Auth Forms */}
+        {(showLogin || showSignup) && (
+          <div className="md:hidden flex-1 flex flex-col py-6 px-2 overflow-y-auto">
+            {/* Close Button and Title */}
+            <div className="mb-4 relative">
+              <button
+                onClick={() => {
+                  setShowLogin(false);
+                  setShowSignup(false);
+                }}
+                className="absolute right-0 top-0 text-gray-600 p-2"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+              <h1 className="text-2xl font-bold text-gray-900 pt-2">
+                {showLogin ? 'Log in to Ambira' : 'Create an Account'}
+              </h1>
+            </div>
+
+            {/* Forms content from desktop view will be duplicated here */}
+            <div className="flex-1">
+              {showLogin ? (
+                <form onSubmit={handleLoginSubmit} className="space-y-3">
+                  {/* OAuth Buttons */}
+                  <button
+                    onClick={() => {/* TODO: Implement Google OAuth */}}
+                    type="button"
+                    className="w-full flex items-center justify-center py-3 border border-gray-300 rounded-xl font-medium text-sm"
+                  >
+                    <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
+                      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                      <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                    </svg>
+                    Continue with Google
+                  </button>
+
+                  <button
+                    onClick={() => {/* TODO: Implement Apple OAuth */}}
+                    type="button"
+                    className="w-full flex items-center justify-center py-3 border border-gray-300 rounded-xl font-medium text-sm"
+                  >
+                    <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+                    </svg>
+                    Continue with Apple
+                  </button>
+
+                  <div className="flex items-center gap-3 my-3">
+                    <div className="flex-1 border-t border-gray-300"></div>
+                    <span className="text-gray-500 text-xs">or</span>
+                    <div className="flex-1 border-t border-gray-300"></div>
+                  </div>
+
+                  <div>
+                    <label htmlFor="mobile-login-email" className="block text-xs font-medium text-gray-700 mb-1">
+                      Email
+                    </label>
+                    <input
+                      id="mobile-login-email"
+                      name="email"
+                      type="email"
+                      value={loginData.email}
+                      onChange={handleLoginChange}
+                      className="w-full px-3 py-2.5 border border-gray-300 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-[#007AFF]"
+                      placeholder="Email"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="mobile-login-password" className="block text-xs font-medium text-gray-700 mb-1">
+                      Password
+                    </label>
+                    <input
+                      id="mobile-login-password"
+                      name="password"
+                      type="password"
+                      value={loginData.password}
+                      onChange={handleLoginChange}
+                      className="w-full px-3 py-2.5 border border-gray-300 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-[#007AFF]"
+                      placeholder="Password"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full py-3.5 bg-[#007AFF] text-white font-semibold rounded-xl hover:bg-[#0056D6] transition-colors"
+                  >
+                    {isLoading ? 'Logging in...' : 'Log In'}
+                  </button>
+                </form>
+              ) : (
+                <form onSubmit={handleSignupSubmit} className="space-y-4">
+                  {/* Google Button */}
+                  <button
+                    onClick={() => {/* TODO: Implement Google OAuth */}}
+                    type="button"
+                    className="w-full flex items-center justify-center py-3 border-2 border-gray-300 rounded-xl font-medium"
+                  >
+                    <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
+                      <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                      <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                      <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                      <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                    </svg>
+                    Continue with Google
+                  </button>
+
+                  {/* Apple Button */}
+                  <button
+                    onClick={() => {/* TODO: Implement Apple OAuth */}}
+                    type="button"
+                    className="w-full flex items-center justify-center py-3 border-2 border-gray-300 rounded-xl font-medium"
+                  >
+                    <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+                    </svg>
+                    Continue with Apple
+                  </button>
+
+                  <div className="flex items-center gap-3 my-4">
+                    <div className="flex-1 border-t border-gray-300"></div>
+                    <span className="text-gray-500 text-sm">or</span>
+                    <div className="flex-1 border-t border-gray-300"></div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <input
+                      name="email"
+                      type="email"
+                      value={signupData.email}
+                      onChange={handleSignupChange}
+                      className="w-full px-4 py-3 border border-gray-300 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-[#007AFF]"
+                      placeholder="Email"
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={isLoading}
+                    className="w-full py-4 bg-[#007AFF] text-white font-semibold text-lg rounded-xl hover:bg-[#0056D6] transition-colors"
+                  >
+                    {isLoading ? 'Creating account...' : 'Sign Up'}
+                  </button>
+                </form>
+              )}
+            </div>
+
+            {/* Legal Text */}
+            <p className="text-sm text-gray-600 text-center mt-6">
+              By continuing, you are agreeing to our{' '}
+              <Link href="/terms" className="text-[#007AFF]">Terms of Service</Link>
+              {' '}and{' '}
+              <Link href="/privacy" className="text-[#007AFF]">Privacy Policy</Link>.
+            </p>
+          </div>
+        )}
+
+        {/* Desktop View */}
+        <div className="hidden md:block max-w-md w-full">
           {/* Logo and Welcome - Hide when login form is active */}
           {!showLogin && !showSignup && (
             <>
@@ -588,7 +848,8 @@ export const LandingPage: React.FC = () => {
       </main>
 
       {/* Footer */}
-      <footer className="bg-white border-t border-gray-200 py-12">
+      {/* Hide footer on mobile when in login/signup mode */}
+      <footer className={`bg-white border-t border-gray-200 py-12 ${(showLogin || showSignup) ? 'hidden md:block' : ''}`}>
         <div className="max-w-6xl mx-auto px-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             {/* Brand */}
@@ -657,6 +918,9 @@ export const LandingPage: React.FC = () => {
           </div>
         </div>
       </footer>
+
+      {/* PWA Install Prompt */}
+      <PWAInstallPrompt />
     </div>
   );
 };

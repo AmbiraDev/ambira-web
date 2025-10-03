@@ -275,79 +275,83 @@ export default function Header() {
               </Link>
             )}
 
-            {/* Notifications */}
-            <button className="p-2 text-gray-600 hover:text-[#007AFF] transition-colors">
-              <Bell className="w-5 h-5" />
-            </button>
-
-            {/* Profile with dropdown (opens on hover, with small close delay) */}
-            <div 
-              className="relative"
-              onMouseEnter={() => {
-                if (profileCloseTimerRef.current) {
-                  clearTimeout(profileCloseTimerRef.current);
-                  profileCloseTimerRef.current = null;
-                }
-                setIsProfileMenuOpen(true);
-              }}
-              onMouseLeave={() => {
-                if (profileCloseTimerRef.current) {
-                  clearTimeout(profileCloseTimerRef.current);
-                }
-                profileCloseTimerRef.current = setTimeout(() => setIsProfileMenuOpen(false), 200);
-              }}
-            >
-              <button 
-                className="flex items-center space-x-1 text-gray-600 hover:text-[#007AFF] transition-colors"
-              >
-                <div className="w-8 h-8 bg-[#FC4C02] rounded-full flex items-center justify-center">
-                  <span className="text-sm font-medium text-white">
-                    {user ? user.name.charAt(0).toUpperCase() : 'U'}
-                  </span>
-                </div>
-                <ChevronDown className="w-4 h-4 hidden md:block" />
+            {/* Notifications - Only show when authenticated */}
+            {user && (
+              <button className="p-2 text-gray-600 hover:text-[#007AFF] transition-colors">
+                <Bell className="w-5 h-5" />
               </button>
+            )}
 
-              {/* Dropdown Menu */}
-              {isProfileMenuOpen && (
-                <div 
-                  className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-20"
-                  onMouseEnter={() => {
-                    if (profileCloseTimerRef.current) {
-                      clearTimeout(profileCloseTimerRef.current);
-                      profileCloseTimerRef.current = null;
-                    }
-                    setIsProfileMenuOpen(true);
-                  }}
-                  onMouseLeave={() => {
-                    if (profileCloseTimerRef.current) {
-                      clearTimeout(profileCloseTimerRef.current);
-                    }
-                    profileCloseTimerRef.current = setTimeout(() => setIsProfileMenuOpen(false), 200);
-                  }}
+            {/* Profile with dropdown (opens on hover, with small close delay) - Only show when authenticated */}
+            {user && (
+              <div 
+                className="relative"
+                onMouseEnter={() => {
+                  if (profileCloseTimerRef.current) {
+                    clearTimeout(profileCloseTimerRef.current);
+                    profileCloseTimerRef.current = null;
+                  }
+                  setIsProfileMenuOpen(true);
+                }}
+                onMouseLeave={() => {
+                  if (profileCloseTimerRef.current) {
+                    clearTimeout(profileCloseTimerRef.current);
+                  }
+                  profileCloseTimerRef.current = setTimeout(() => setIsProfileMenuOpen(false), 200);
+                }}
+              >
+                <button 
+                  className="flex items-center space-x-1 text-gray-600 hover:text-[#007AFF] transition-colors"
                 >
-                    <Link
-                      href={user ? `/profile/${user.username}` : '/profile'}
-                      className="block px-4 py-2 text-gray-900 hover:bg-gray-50 transition-colors"
-                    >
-                      My Profile
-                    </Link>
-                    <Link
-                      href="/settings"
-                      className="block px-4 py-2 text-gray-900 hover:bg-gray-50 transition-colors"
-                    >
-                      Settings
-                    </Link>
-                    <hr className="my-2 border-gray-200" />
-                    <button
-                      onClick={() => logout()}
-                      className="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 transition-colors"
-                    >
-                      Log Out
-                    </button>
-                </div>
-              )}
-            </div>
+                  <div className="w-8 h-8 bg-[#FC4C02] rounded-full flex items-center justify-center">
+                    <span className="text-sm font-medium text-white">
+                      {user.name.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                  <ChevronDown className="w-4 h-4 hidden md:block" />
+                </button>
+
+                {/* Dropdown Menu */}
+                {isProfileMenuOpen && (
+                  <div 
+                    className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-20"
+                    onMouseEnter={() => {
+                      if (profileCloseTimerRef.current) {
+                        clearTimeout(profileCloseTimerRef.current);
+                        profileCloseTimerRef.current = null;
+                      }
+                      setIsProfileMenuOpen(true);
+                    }}
+                    onMouseLeave={() => {
+                      if (profileCloseTimerRef.current) {
+                        clearTimeout(profileCloseTimerRef.current);
+                      }
+                      profileCloseTimerRef.current = setTimeout(() => setIsProfileMenuOpen(false), 200);
+                    }}
+                  >
+                      <Link
+                        href={`/profile/${user.username}`}
+                        className="block px-4 py-2 text-gray-900 hover:bg-gray-50 transition-colors"
+                      >
+                        My Profile
+                      </Link>
+                      <Link
+                        href="/settings"
+                        className="block px-4 py-2 text-gray-900 hover:bg-gray-50 transition-colors"
+                      >
+                        Settings
+                      </Link>
+                      <hr className="my-2 border-gray-200" />
+                      <button
+                        onClick={() => logout()}
+                        className="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 transition-colors"
+                      >
+                        Log Out
+                      </button>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Plus button */}
             <button className="p-2 text-gray-600 hover:text-[#007AFF] transition-colors">

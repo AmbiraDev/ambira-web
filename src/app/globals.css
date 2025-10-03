@@ -32,7 +32,7 @@
 }
 
 body {
-  background: var(--background);
+  background: #ffffff;
   color: var(--foreground);
   font-family: var(--font-family-sans);
   line-height: 1.6;
@@ -109,4 +109,20 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, button, input, textarea, select {
   .mobile-safe-area {
     padding-bottom: env(safe-area-inset-bottom);
   }
+}
+
+/* PWA Install Prompt Animation */
+@keyframes slide-up {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out;
 }

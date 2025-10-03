@@ -94,7 +94,7 @@ export const LoginForm: React.FC = () => {
           autoComplete="email"
           value={formData.email}
           onChange={handleChange}
-          className={`w-full px-3 py-2 border rounded-md shadow-sm placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent ${
+          className={`w-full px-3 py-2 border rounded-md shadow-sm placeholder-muted-foreground text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent ${
             errors.email ? 'border-destructive' : 'border-border'
           }`}
           placeholder="Enter your email"
@@ -115,7 +115,7 @@ export const LoginForm: React.FC = () => {
           autoComplete="current-password"
           value={formData.password}
           onChange={handleChange}
-          className={`w-full px-3 py-2 border rounded-md shadow-sm placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent ${
+          className={`w-full px-3 py-2 border rounded-md shadow-sm placeholder-muted-foreground text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent ${
             errors.password ? 'border-destructive' : 'border-border'
           }`}
           placeholder="Enter your password"

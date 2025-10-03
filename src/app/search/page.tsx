@@ -190,11 +190,11 @@ function SearchContent() {
           <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
           </svg>
-          <h1 className="text-xl font-semibold text-gray-900">Search</h1>
+          <h1 className="text-xl font-semibold text-gray-900">Discover</h1>
         </div>
       </div>
-      
-      <div className="max-w-4xl mx-auto px-4 py-4 md:py-8 md:pt-24">
+
+      <div className="max-w-4xl mx-auto px-4 pt-6 pb-4 md:py-8 md:pt-24">
         {/* Search Info - only show if there's a query */}
         {initialQuery && (
           <div className="mb-6 hidden md:block">

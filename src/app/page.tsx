@@ -3,6 +3,7 @@
 import { useAuth } from '@/contexts/AuthContext';
 import { LandingPage } from '@/components/LandingPage';
 import Header from '../components/HeaderComponent';
+import MobileHeader from '@/components/MobileHeader';
 import LeftSidebar from '@/components/LeftSidebar';
 import RightSidebar from '@/components/RightSidebar';
 import BottomNavigation from '@/components/BottomNavigation';
@@ -18,13 +19,9 @@ function HomeContent() {
       <div className="hidden md:block">
         <Header />
       </div>
-      
+
       {/* Mobile header */}
-      <div className="md:hidden bg-white border-b border-gray-200 px-4 py-3 sticky top-0 z-40">
-        <div className="flex items-center justify-center">
-          <h1 className="text-xl font-semibold text-gray-900">Feed</h1>
-        </div>
-      </div>
+      <MobileHeader title="Feed" />
       
       <div className="max-w-[1400px] mx-auto md:px-4 md:py-6">
         <div className="md:flex gap-6">

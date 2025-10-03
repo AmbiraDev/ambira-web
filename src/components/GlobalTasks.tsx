@@ -156,8 +156,49 @@ export const GlobalTasks: React.FC<GlobalTasksProps> = ({
 
       {/* Filters */}
       <div className="flex flex-col md:flex-row md:flex-wrap gap-4">
-        {/* Status tabs - Full width on mobile, with project dropdown on right */}
-        <div className="flex items-center justify-between gap-3 md:gap-4 w-full md:w-auto">
+        {/* Mobile: Two dropdowns side by side */}
+        <div className="flex md:hidden gap-3 w-full">
+          {/* Status dropdown - Mobile only */}
+          <select
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value as any)}
+            className="flex-1 px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-base appearance-none bg-white"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
+              backgroundPosition: 'right 0.75rem center',
+              backgroundRepeat: 'no-repeat',
+              backgroundSize: '1.5em 1.5em'
+            }}
+          >
+            <option value="active">Active ({getTaskCount('active')})</option>
+            <option value="completed">Completed ({getTaskCount('completed')})</option>
+            <option value="archived">Archived ({getTaskCount('archived')})</option>
+          </select>
+
+          {/* Project filter dropdown - Mobile */}
+          <select
+            value={filterProject}
+            onChange={(e) => setFilterProject(e.target.value)}
+            className="flex-1 px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-base appearance-none bg-white"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
+              backgroundPosition: 'right 0.75rem center',
+              backgroundRepeat: 'no-repeat',
+              backgroundSize: '1.5em 1.5em'
+            }}
+          >
+            <option value="all">All Projects</option>
+            {projects.map(project => (
+              <option key={project.id} value={project.id}>
+                {project.name}
+              </option>
+            ))}
+            <option value="unassigned">Unassigned</option>
+          </select>
+        </div>
+
+        {/* Desktop: Status tabs and project dropdown */}
+        <div className="hidden md:flex items-center justify-between gap-3 md:gap-4 w-full md:w-auto">
           <div className="flex bg-gray-100 rounded-lg p-1 flex-1 md:flex-initial">
             {[
               { id: 'active', label: 'Active', count: getTaskCount('active') },
@@ -167,24 +208,22 @@ export const GlobalTasks: React.FC<GlobalTasksProps> = ({
               <button
                 key={tab.id}
                 onClick={() => setFilterStatus(tab.id as any)}
-                className={`px-4 md:px-4 py-2 text-base md:text-sm font-medium rounded-md transition-colors ${
+                className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
                   filterStatus === tab.id
                     ? 'bg-white text-gray-900 shadow-sm'
                     : 'text-gray-600 hover:text-gray-900'
                 }`}
               >
-                {/* Show count only on desktop */}
-                <span className="md:hidden">{tab.label}</span>
-                <span className="hidden md:inline">{tab.label} ({tab.count})</span>
+                {tab.label} ({tab.count})
               </button>
             ))}
           </div>
 
-          {/* Project filter dropdown - On right on mobile */}
+          {/* Project filter dropdown - Desktop */}
           <select
             value={filterProject}
             onChange={(e) => setFilterProject(e.target.value)}
-            className="min-w-[120px] px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-base md:text-sm flex-shrink-0 appearance-none bg-white"
+            className="min-w-[120px] px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm flex-shrink-0 appearance-none bg-white"
             style={{
               backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
               backgroundPosition: 'right 0.75rem center',
@@ -192,7 +231,7 @@ export const GlobalTasks: React.FC<GlobalTasksProps> = ({
               backgroundSize: '1.5em 1.5em'
             }}
           >
-            <option value="all">All</option>
+            <option value="all">All Projects</option>
             {projects.map(project => (
               <option key={project.id} value={project.id}>
                 {project.name}
