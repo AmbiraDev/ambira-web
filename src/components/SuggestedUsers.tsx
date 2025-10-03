@@ -15,7 +15,7 @@ interface SuggestedUsersProps {
   variant?: 'default' | 'compact';
 }
 
-export const SuggestedUsers: React.FC<SuggestedUsersProps> = ({
+const SuggestedUsers: React.FC<SuggestedUsersProps> = ({
   limit = 10,
   showHeader = true,
   onUserSelect,
@@ -284,3 +284,5 @@ export const SuggestedUsersWidget: React.FC<SuggestedUsersProps> = (props) => {
     />
   );
 };
+
+export default SuggestedUsers;

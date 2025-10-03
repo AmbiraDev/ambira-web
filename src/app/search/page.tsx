@@ -31,16 +31,17 @@ const mockChallenges = [
 
 function SearchContent() {
   const searchParams = useSearchParams();
-  const query = searchParams.get('q') || '';
+  const initialQuery = searchParams.get('q') || '';
   const type = (searchParams.get('type') || 'people') as 'people' | 'groups' | 'challenges';
   
+  const [query, setQuery] = useState(initialQuery);
   const [isLoading, setIsLoading] = useState(false);
   const [results, setResults] = useState<any[]>([]);
   const { user } = useAuth();
 
   useEffect(() => {
     // Only search if there's a query
-    if (!query.trim()) {
+    if (!initialQuery.trim()) {
       setResults([]);
       setIsLoading(false);
       return;
@@ -52,7 +53,7 @@ function SearchContent() {
     const run = async () => {
       try {
         if (type === 'people') {
-          const { users } = await firebaseUserApi.searchUsers(query, 1, 20);
+          const { users } = await firebaseUserApi.searchUsers(initialQuery, 1, 20);
           if (!isMounted) return;
           const enhanced = users.map(u => ({ ...u, isSelf: user && u.id === user.id }));
           enhanced.sort((a, b) => (b.isSelf ? 1 : 0) - (a.isSelf ? 1 : 0));
@@ -69,7 +70,7 @@ function SearchContent() {
     run();
 
     return () => { isMounted = false; };
-  }, [query, type]);
+  }, [initialQuery, type]);
 
   const handleFollowChange = (userId: string, isFollowing: boolean) => {
     setResults(prev => 
@@ -177,24 +178,96 @@ function SearchContent() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header />
+      {/* Header - only show on desktop */}
+      <div className="hidden md:block">
+        <Header />
+      </div>
       
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        {/* Search Info */}
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">
-            Search Results for "{query}"
-          </h1>
-          <p className="text-gray-600 mt-1">
-            Searching in {type.charAt(0).toUpperCase() + type.slice(1)}
-          </p>
+      {/* Mobile search header */}
+      <div className="md:hidden bg-white border-b border-gray-200 px-4 py-3 sticky top-0 z-40">
+        <div className="flex items-center space-x-3">
+          <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <h1 className="text-xl font-semibold text-gray-900">Search</h1>
+        </div>
+      </div>
+      
+      <div className="max-w-4xl mx-auto px-4 py-4 md:py-8 md:pt-24">
+        {/* Search Info - only show if there's a query */}
+        {initialQuery && (
+          <div className="mb-6 hidden md:block">
+            <h1 className="text-2xl font-bold text-gray-900">
+              Search Results for "{initialQuery}"
+            </h1>
+            <p className="text-gray-600 mt-1">
+              Searching in {type.charAt(0).toUpperCase() + type.slice(1)}
+            </p>
+          </div>
+        )}
+
+        {/* Mobile Search Form */}
+        <div className="md:hidden mb-6">
+          <form onSubmit={(e) => { e.preventDefault(); if (query.trim()) window.location.href = `/search?q=${encodeURIComponent(query.trim())}&type=${type}`; }}>
+            <div className="space-y-4">
+              {/* Filter Tabs */}
+              <div className="flex bg-gray-100 rounded-lg p-1">
+                <button
+                  type="button"
+                  onClick={() => window.location.href = `/search?q=${encodeURIComponent(initialQuery)}&type=people`}
+                  className={`flex-1 py-2 px-3 text-sm font-medium rounded-md transition-colors ${
+                    type === 'people' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600'
+                  }`}
+                >
+                  People
+                </button>
+                <button
+                  type="button"
+                  onClick={() => window.location.href = `/search?q=${encodeURIComponent(initialQuery)}&type=groups`}
+                  className={`flex-1 py-2 px-3 text-sm font-medium rounded-md transition-colors ${
+                    type === 'groups' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600'
+                  }`}
+                >
+                  Groups
+                </button>
+                <button
+                  type="button"
+                  onClick={() => window.location.href = `/search?q=${encodeURIComponent(initialQuery)}&type=challenges`}
+                  className={`flex-1 py-2 px-3 text-sm font-medium rounded-md transition-colors ${
+                    type === 'challenges' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600'
+                  }`}
+                >
+                  Challenges
+                </button>
+              </div>
+              
+              {/* Search Input */}
+              <div className="relative">
+                <input
+                  type="text"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder={`Search ${type}...`}
+                  className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FC4C02] focus:border-transparent text-base"
+                />
+                <button
+                  type="submit"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-gray-400 hover:text-[#FC4C02] transition-colors"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </form>
         </div>
 
         {/* Results */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-          {!query.trim() ? (
-            <div className="p-12 text-center">
-              <svg className="w-20 h-20 mx-auto text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          {!initialQuery.trim() ? (
+            <div className="p-8 md:p-12 text-center">
+              <svg className="w-16 h-16 md:w-20 md:h-20 mx-auto text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
               <h3 className="mt-4 text-lg font-medium text-gray-900">Start searching</h3>
@@ -214,7 +287,7 @@ function SearchContent() {
               </svg>
               <h3 className="mt-4 text-lg font-medium text-gray-900">No results found</h3>
               <p className="text-gray-600 mt-2">
-                No {type} found matching "{query}"
+                No {type} found matching "{initialQuery}"
               </p>
               <p className="text-gray-500 text-sm mt-1">
                 Try a different search term or filter

@@ -10,6 +10,18 @@ export interface User {
   profilePicture?: string;
   createdAt: Date;
   updatedAt: Date;
+  // New friendship counts
+  inboundFriendshipCount?: number;
+  outboundFriendshipCount?: number;
+  mutualFriendshipCount?: number;
+}
+
+// Represents a user document inside a social graph subcollection
+export interface SocialGraphUser {
+  id: string;
+  type: 'inbound' | 'outbound' | 'mutual';
+  user: User;
+  createdAt: Date;
 }
 
 export interface Project {

@@ -391,6 +391,7 @@ export const SaveSession: React.FC<SaveSessionProps> = ({
               </button>
             </div>
           </form>
+      </div>
     </div>
   );
 };

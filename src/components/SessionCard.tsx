@@ -11,6 +11,7 @@ interface SessionCardProps {
   onSupport: (sessionId: string) => Promise<void>;
   onRemoveSupport: (sessionId: string) => Promise<void>;
   onShare: (sessionId: string) => Promise<void>;
+  onDelete?: (sessionId: string) => Promise<void>;
   className?: string;
   showComments?: boolean;
 }
@@ -20,6 +21,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({
   onSupport,
   onRemoveSupport,
   onShare,
+  onDelete,
   className = '',
   showComments = false
 }) => {
@@ -123,9 +125,14 @@ export const SessionCard: React.FC<SessionCardProps> = ({
                 <button className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50">
                   Edit session
                 </button>
-                <button className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50">
-                  Delete session
-                </button>
+                {onDelete && (
+                  <button 
+                    onClick={() => onDelete(session.id)}
+                    className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-gray-50"
+                  >
+                    Delete session
+                  </button>
+                )}
                 <button className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-gray-50">
                   Report session
                 </button>

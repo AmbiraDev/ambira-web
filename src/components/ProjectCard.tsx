@@ -61,8 +61,8 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
   const colorClass = colorClasses[project.color as keyof typeof colorClasses] || 'bg-gray-500';
 
   // Calculate progress percentage
-  const weeklyProgress = currentStats?.weeklyProgressPercentage || 0;
-  const totalProgress = currentStats?.totalProgressPercentage || 0;
+  const weeklyProgress = project.weeklyTarget ? ((currentStats?.weeklyHours || 0) / project.weeklyTarget) * 100 : 0;
+  const totalProgress = project.totalTarget ? ((currentStats?.totalHours || 0) / project.totalTarget) * 100 : 0;
 
   const handleMenuToggle = (e: React.MouseEvent) => {
     e.preventDefault();

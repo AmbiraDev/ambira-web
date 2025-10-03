@@ -9,7 +9,7 @@ service cloud.firestore {
       // Allow any authenticated user to update follower/following counts
       // This is safe because only increment/decrement operations are used in the code
       allow update: if request.auth != null && 
-        request.resource.data.keys().hasAny(['followersCount', 'followingCount', 'updatedAt']) &&
+        request.resource.data.keys().hasAny(['followersCount', 'followingCount', 'inboundFriendshipCount', 'outboundFriendshipCount', 'mutualFriendshipCount', 'updatedAt']) &&
         !request.resource.data.diff(resource.data).affectedKeys().hasAny(['email', 'username', 'name', 'bio', 'location', 'profilePicture', 'totalHours', 'profileVisibility', 'activityVisibility', 'projectVisibility', 'createdAt']);
 
       // Allow authenticated users to read user profiles based on visibility settings
@@ -387,6 +387,15 @@ service cloud.firestore {
       
       // Allow listing achievements for leaderboards
       allow list: if request.auth != null;
+    }
+
+    // Social Graph for friendships
+    match /social_graph/{userId}/{direction}/{friendId} {
+      // Users can manage their own outbound friendships (following)
+      allow read, write, delete: if request.auth != null && request.auth.uid == userId;
+      
+      // Allow users to read inbound friendships (followers)
+      allow read: if request.auth != null;
     }
 
     // (users match consolidated above)

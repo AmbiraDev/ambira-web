@@ -145,8 +145,8 @@ export const GlobalTasks: React.FC<GlobalTasksProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+      {/* Header - Hidden on mobile */}
+      <div className="hidden md:flex items-center justify-between">
         <h2 className="text-2xl font-bold text-gray-900">All Tasks</h2>
         <div className="text-sm text-gray-600">
           {filteredTasks.length} tasks
@@ -155,15 +155,44 @@ export const GlobalTasks: React.FC<GlobalTasksProps> = ({
       </div>
 
       {/* Filters */}
-      <div className="flex flex-wrap gap-4">
-        <div className="flex items-center gap-2">
-          <label className="text-sm font-medium text-gray-700">Project:</label>
+      <div className="flex flex-col md:flex-row md:flex-wrap gap-4">
+        {/* Status tabs - Full width on mobile, with project dropdown on right */}
+        <div className="flex items-center justify-between gap-3 md:gap-4 w-full md:w-auto">
+          <div className="flex bg-gray-100 rounded-lg p-1 flex-1 md:flex-initial">
+            {[
+              { id: 'active', label: 'Active', count: getTaskCount('active') },
+              { id: 'completed', label: 'Completed', count: getTaskCount('completed') },
+              { id: 'archived', label: 'Archived', count: getTaskCount('archived') }
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setFilterStatus(tab.id as any)}
+                className={`px-4 md:px-4 py-2 text-base md:text-sm font-medium rounded-md transition-colors ${
+                  filterStatus === tab.id
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                {/* Show count only on desktop */}
+                <span className="md:hidden">{tab.label}</span>
+                <span className="hidden md:inline">{tab.label} ({tab.count})</span>
+              </button>
+            ))}
+          </div>
+
+          {/* Project filter dropdown - On right on mobile */}
           <select
             value={filterProject}
             onChange={(e) => setFilterProject(e.target.value)}
-            className="px-3 py-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+            className="min-w-[120px] px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-base md:text-sm flex-shrink-0 appearance-none bg-white"
+            style={{
+              backgroundImage: `url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e")`,
+              backgroundPosition: 'right 0.75rem center',
+              backgroundRepeat: 'no-repeat',
+              backgroundSize: '1.5em 1.5em'
+            }}
           >
-            <option value="all">All Projects</option>
+            <option value="all">All</option>
             {projects.map(project => (
               <option key={project.id} value={project.id}>
                 {project.name}
@@ -171,27 +200,6 @@ export const GlobalTasks: React.FC<GlobalTasksProps> = ({
             ))}
             <option value="unassigned">Unassigned</option>
           </select>
-        </div>
-
-        {/* Status tabs */}
-        <div className="flex bg-gray-100 rounded-lg p-1">
-          {[
-            { id: 'active', label: 'Active', count: getTaskCount('active') },
-            { id: 'completed', label: 'Completed', count: getTaskCount('completed') },
-            { id: 'archived', label: 'Archived', count: getTaskCount('archived') }
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setFilterStatus(tab.id as any)}
-              className={`px-4 py-2 text-sm font-medium rounded-md transition-colors ${
-                filterStatus === tab.id
-                  ? 'bg-white text-gray-900 shadow-sm'
-                  : 'text-gray-600 hover:text-gray-900'
-              }`}
-            >
-              {tab.label} ({tab.count})
-            </button>
-          ))}
         </div>
       </div>
 

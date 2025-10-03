@@ -19,7 +19,8 @@ import {
   DocumentSnapshot,
   QuerySnapshot,
   DocumentData,
-  increment
+  increment,
+  runTransaction
 } from 'firebase/firestore';
 import {
   signInWithEmailAndPassword,
@@ -116,6 +117,71 @@ const convertTimestamp = (timestamp: any): Date => {
 
 // Helper function to convert Date to Firestore timestamp
 const convertToTimestamp = (date: Date) => Timestamp.fromDate(date);
+
+// Helper function to manage social graph and friendship counts transactionally
+const updateSocialGraph = async (currentUserId: string, targetUserId: string, action: 'follow' | 'unfollow') => {
+  const currentUserRef = doc(db, 'users', currentUserId);
+  const targetUserRef = doc(db, 'users', targetUserId);
+
+  const currentUserSocialGraphRef = doc(db, `social_graph/${currentUserId}/outbound`, targetUserId);
+  const targetUserSocialGraphRef = doc(db, `social_graph/${targetUserId}/inbound`, currentUserId);
+
+  try {
+    await runTransaction(db, async (transaction) => {
+      const currentUserDoc = await transaction.get(currentUserRef);
+      const targetUserDoc = await transaction.get(targetUserRef);
+
+      if (!currentUserDoc.exists() || !targetUserDoc.exists()) {
+        throw new Error('One or both users not found.');
+      }
+
+      const currentUserData = currentUserDoc.data();
+      const targetUserData = targetUserDoc.data();
+
+      const isFollowing = (await transaction.get(currentUserSocialGraphRef)).exists();
+
+      if (action === 'follow' && isFollowing) return;
+      if (action === 'unfollow' && !isFollowing) return;
+
+      const now = new Date();
+      const currentUserUpdate: any = { updatedAt: now };
+      const targetUserUpdate: any = { updatedAt: now };
+
+      if (action === 'follow') {
+        transaction.set(currentUserSocialGraphRef, { id: targetUserId, type: 'outbound', user: targetUserData, createdAt: now });
+        transaction.set(targetUserSocialGraphRef, { id: currentUserId, type: 'inbound', user: currentUserData, createdAt: now });
+
+        currentUserUpdate.outboundFriendshipCount = increment(1);
+        targetUserUpdate.inboundFriendshipCount = increment(1);
+
+        // Check for mutual friendship
+        const isTargetFollowingCurrentUser = (await transaction.get(doc(db, `social_graph/${targetUserId}/outbound`, currentUserId))).exists();
+        if (isTargetFollowingCurrentUser) {
+          currentUserUpdate.mutualFriendshipCount = increment(1);
+          targetUserUpdate.mutualFriendshipCount = increment(1);
+        }
+      } else { // unfollow
+        transaction.delete(currentUserSocialGraphRef);
+        transaction.delete(targetUserSocialGraphRef);
+
+        currentUserUpdate.outboundFriendshipCount = increment(-1);
+        targetUserUpdate.inboundFriendshipCount = increment(-1);
+
+        // Check for mutual friendship
+        const wasMutual = (await transaction.get(doc(db, `social_graph/${targetUserId}/outbound`, currentUserId))).exists();
+        if (wasMutual) {
+          currentUserUpdate.mutualFriendshipCount = increment(-1);
+          targetUserUpdate.mutualFriendshipCount = increment(-1);
+        }
+      }
+
+      transaction.update(currentUserRef, currentUserUpdate);
+      transaction.update(targetUserRef, targetUserUpdate);
+    });
+  } catch (error: any) {
+    throw new Error(error.message || `Failed to ${action} user.`);
+  }
+};
 
 const PRIVATE_USER_FALLBACK_NAME = 'Private User';
 const PRIVATE_USER_USERNAME_PREFIX = 'private';
@@ -331,6 +397,9 @@ export const firebaseAuthApi = {
         followersCount: 0,
         followingCount: 0,
         totalHours: 0,
+        inboundFriendshipCount: 0,
+        outboundFriendshipCount: 0,
+        mutualFriendshipCount: 0,
         profileVisibility: 'everyone',
         activityVisibility: 'everyone',
         projectVisibility: 'everyone',
@@ -887,72 +956,18 @@ export const firebaseUserApi = {
 
   // Follow user
   followUser: async (userId: string): Promise<void> => {
-    try {
-      if (!auth.currentUser) {
-        throw new Error('User not authenticated');
-      }
-      
-      const batch = writeBatch(db);
-      
-      // Add follow relationship
-      const followId = `${auth.currentUser.uid}_${userId}`;
-      batch.set(doc(db, 'follows', followId), {
-        followerId: auth.currentUser.uid,
-        followingId: userId,
-        createdAt: serverTimestamp()
-      });
-      
-      // Update follower count - use update to modify existing fields
-      const userRef = doc(db, 'users', userId);
-      const followerRef = doc(db, 'users', auth.currentUser.uid);
-      
-      batch.update(userRef, {
-        followersCount: increment(1),
-        updatedAt: serverTimestamp()
-      });
-      
-      batch.update(followerRef, {
-        followingCount: increment(1),
-        updatedAt: serverTimestamp()
-      });
-      
-      await batch.commit();
-    } catch (error: any) {
-      throw new Error(error.message || 'Failed to follow user');
+    if (!auth.currentUser) {
+      throw new Error('User not authenticated');
     }
+    await updateSocialGraph(auth.currentUser.uid, userId, 'follow');
   },
 
   // Unfollow user
   unfollowUser: async (userId: string): Promise<void> => {
-    try {
-      if (!auth.currentUser) {
-        throw new Error('User not authenticated');
-      }
-      
-      const batch = writeBatch(db);
-      
-      // Remove follow relationship
-      const followId = `${auth.currentUser.uid}_${userId}`;
-      batch.delete(doc(db, 'follows', followId));
-      
-      // Update follower count - use update to modify existing fields
-      const userRef = doc(db, 'users', userId);
-      const followerRef = doc(db, 'users', auth.currentUser.uid);
-      
-      batch.update(userRef, {
-        followersCount: increment(-1),
-        updatedAt: serverTimestamp()
-      });
-      
-      batch.update(followerRef, {
-        followingCount: increment(-1),
-        updatedAt: serverTimestamp()
-      });
-      
-      await batch.commit();
-    } catch (error: any) {
-      throw new Error(error.message || 'Failed to unfollow user');
+    if (!auth.currentUser) {
+      throw new Error('User not authenticated');
     }
+    await updateSocialGraph(auth.currentUser.uid, userId, 'unfollow');
   },
 
   // Sync follower counts for a user (recalculate from follows collection)
@@ -1971,6 +1986,26 @@ export const firebaseSessionApi = {
       };
     } catch (error: any) {
       throw new Error(getErrorMessage(error, 'Failed to get sessions'));
+    }
+  },
+
+  // Delete a session
+  deleteSession: async (sessionId: string): Promise<void> => {
+    try {
+      if (!auth.currentUser) {
+        throw new Error('User not authenticated');
+      }
+
+      const sessionRef = doc(db, 'sessions', sessionId);
+      const sessionDoc = await getDoc(sessionRef);
+
+      if (!sessionDoc.exists() || sessionDoc.data().userId !== auth.currentUser.uid) {
+        throw new Error('Session not found or permission denied');
+      }
+
+      await deleteDoc(sessionRef);
+    } catch (error: any) {
+      throw new Error(getErrorMessage(error, 'Failed to delete session'));
     }
   }
 };

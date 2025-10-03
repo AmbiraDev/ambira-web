@@ -317,125 +317,348 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
     );
   }
 
+  const selectedProject = projects.find(p => p.id === selectedProjectId);
+  const selectedTag = sessionTags[0];
+  const [showProjectPicker, setShowProjectPicker] = useState(false);
+  const [showTagPicker, setShowTagPicker] = useState(false);
+
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 min-h-[calc(100vh-120px)]">
-      {/* Left Column - Timer & Controls */}
-      <div className="flex flex-col items-center justify-center space-y-12 sticky top-6">
-        {/* Large Timer Display */}
-        <div className="text-center">
-          <div className="text-9xl font-mono font-bold text-[#007AFF] mb-8">
-            {getFormattedTime(displayTime)}
+    <div className="min-h-screen bg-white flex flex-col">
+      {/* Mobile: Full-screen centered layout */}
+      <div className="md:hidden flex flex-col min-h-screen relative">
+        {/* Floating Back Button */}
+        <button
+          onClick={() => window.history.back()}
+          className="absolute top-4 left-4 z-10 p-2 text-gray-600 hover:text-gray-900 active:scale-95 transition-all"
+        >
+          <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+
+        {/* Timer at top center */}
+        <div className="flex-1 flex flex-col items-center justify-start px-6 pt-16 pb-32">
+          <div className="text-center mb-20 mt-12">
+            <div className="text-8xl font-bold tracking-tight text-gray-900">
+              {getFormattedTime(displayTime)}
+            </div>
           </div>
 
-          {/* Timer Controls - Pill Buttons with Text */}
-          <div className="flex items-center justify-center gap-4">
+          {/* Simplified Task List - Centered */}
+          <div className="w-full max-w-md">
+            <GlobalTasks
+              selectedTaskIds={selectedTaskIds}
+              onToggleTaskSelection={handleTaskToggle}
+              showSelection={true}
+            />
+          </div>
+        </div>
+
+        {/* Fixed Bottom Controls - Strava Style */}
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-6 py-6 safe-area-bottom">
+          <div className="flex items-center justify-center gap-6">
+            {/* Project Button */}
+            <button
+              onClick={() => setShowProjectPicker(true)}
+              disabled={timerState.isRunning || timerState.startTime !== null}
+              className={`relative w-16 h-16 rounded-full flex items-center justify-center transition-all border-2 ${
+                selectedProjectId && selectedProject
+                  ? `border-[${selectedProject.color}]`
+                  : 'border-gray-300 bg-gray-100'
+              } ${(timerState.isRunning || timerState.startTime !== null) ? 'opacity-50 cursor-not-allowed' : 'active:scale-95'}`}
+              style={selectedProjectId && selectedProject ? {
+                backgroundColor: `${selectedProject.color}20`,
+                borderColor: selectedProject.color
+              } : {}}
+            >
+              <span className="text-2xl">{selectedProject?.icon || '📁'}</span>
+            </button>
+
+            {/* Center: Main Action Button */}
             {!timerState.isRunning && !timerState.startTime && (
               <button
                 onClick={handleStartTimer}
                 disabled={!selectedProjectId}
-                className={`px-12 py-5 rounded-full flex items-center gap-3 transition-all text-xl font-semibold ${
+                className={`w-24 h-24 rounded-full flex items-center justify-center transition-all shadow-xl ${
                   selectedProjectId
-                    ? 'bg-[#FC4C02] hover:bg-[#E04502] text-white shadow-lg hover:shadow-xl'
-                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    ? 'bg-[#FC4C02] hover:bg-[#E04502] active:scale-95'
+                    : 'bg-gray-300 cursor-not-allowed'
                 }`}
               >
-                <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                <svg className="w-10 h-10 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M8 5v14l11-7z" />
                 </svg>
-                <span>Start</span>
               </button>
             )}
-            
+
             {timerState.isRunning && (
               <button
                 onClick={handlePauseTimer}
-                className="px-12 py-5 rounded-full bg-red-600 hover:bg-red-700 text-white flex items-center gap-3 transition-all shadow-lg hover:shadow-xl text-xl font-semibold"
+                className="w-24 h-24 rounded-full bg-gray-900 hover:bg-gray-800 active:scale-95 flex items-center justify-center transition-all shadow-xl"
               >
-                <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                <svg className="w-9 h-9 text-white" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
                 </svg>
-                <span>Pause</span>
               </button>
             )}
-            
+
             {!timerState.isRunning && timerState.startTime && (
-              <>
+              <div className="flex gap-3">
                 <button
                   onClick={handleResumeTimer}
-                  className="px-12 py-5 rounded-full bg-green-600 hover:bg-green-700 text-white flex items-center gap-3 transition-all shadow-lg hover:shadow-xl text-xl font-semibold"
+                  className="w-20 h-20 rounded-full bg-green-600 hover:bg-green-700 active:scale-95 flex items-center justify-center transition-all shadow-xl"
                 >
-                  <svg className="w-8 h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-8 h-8 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M8 5v14l11-7z" />
                   </svg>
-                  <span>Resume</span>
                 </button>
                 <button
                   onClick={() => setShowFinishModal(true)}
-                  className="px-12 py-5 rounded-full bg-gray-900 hover:bg-gray-800 text-white flex items-center gap-3 transition-all shadow-lg hover:shadow-xl text-xl font-semibold"
+                  className="w-20 h-20 rounded-full bg-[#FC4C02] hover:bg-[#E04502] active:scale-95 flex items-center justify-center transition-all shadow-xl"
                 >
-                  <Flag className="w-8 h-8 text-white" />
-                  <span>Finish</span>
+                  <Flag className="w-7 h-7 text-white" />
                 </button>
-              </>
+              </div>
             )}
+
+            {/* Tag Button */}
+            <button
+              onClick={() => setShowTagPicker(true)}
+              className={`relative w-16 h-16 rounded-full flex items-center justify-center transition-all border-2 ${
+                selectedTag
+                  ? 'bg-purple-100 border-purple-500'
+                  : 'bg-gray-100 border-gray-300'
+              } active:scale-95`}
+            >
+              <span className="text-2xl">🏷️</span>
+            </button>
           </div>
         </div>
 
-        {/* Project & Tag Dropdowns */}
-        <div className="w-full max-w-xl grid grid-cols-2 gap-4">
-          {/* Project Dropdown */}
-          <div className="relative">
-            <select
-              value={selectedProjectId}
-              onChange={(e) => setSelectedProjectId(e.target.value)}
-              disabled={timerState.isRunning || timerState.startTime !== null}
-              className="w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] bg-white appearance-none cursor-pointer disabled:bg-gray-100 disabled:cursor-not-allowed text-base"
-            >
-              <option value="">Select Project</option>
-              {projects.map((project) => (
-                <option key={project.id} value={project.id}>
-                  {project.icon} {project.name}
-                </option>
-              ))}
-            </select>
-            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-              <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
+        {/* Project Picker Modal - Slide up with timer visible */}
+        {showProjectPicker && (
+          <div
+            className="fixed inset-0 z-50 flex items-end"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setShowProjectPicker(false);
+            }}
+          >
+            <div className="bg-white w-full rounded-t-3xl p-6 max-h-[60vh] overflow-y-auto shadow-2xl animate-slide-up">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-gray-900">Select Project</h2>
+                <button
+                  onClick={() => setShowProjectPicker(false)}
+                  className="p-2 text-gray-500 hover:text-gray-900"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              <div className="space-y-3">
+                {projects.map((project) => (
+                  <button
+                    key={project.id}
+                    onClick={() => {
+                      setSelectedProjectId(project.id);
+                      setShowProjectPicker(false);
+                    }}
+                    className={`w-full flex items-center gap-4 p-4 rounded-xl transition-all ${
+                      selectedProjectId === project.id
+                        ? 'bg-blue-100 border-2 border-blue-500'
+                        : 'bg-gray-50 border-2 border-transparent hover:bg-gray-100'
+                    }`}
+                  >
+                    <span className="text-3xl">{project.icon}</span>
+                    <div className="flex-1 text-left">
+                      <div className="font-semibold text-gray-900">{project.name}</div>
+                      {project.description && (
+                        <div className="text-sm text-gray-500">{project.description}</div>
+                      )}
+                    </div>
+                    {selectedProjectId === project.id && (
+                      <svg className="w-6 h-6 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                    )}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
+        )}
 
-          {/* Tag Dropdown */}
-          <div className="relative">
-            <select
-              value={sessionTags[0] || ''}
-              onChange={(e) => setSessionTags(e.target.value ? [e.target.value] : [])}
-              className="w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] bg-white appearance-none cursor-pointer text-base"
-            >
-              <option value="">Select Tag</option>
-              <option value="Study">Study</option>
-              <option value="Work">Work</option>
-              <option value="Side Project">Side Project</option>
-              <option value="Reading">Reading</option>
-              <option value="Learning">Learning</option>
-            </select>
-            <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-              <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
+        {/* Tag Picker Modal - Slide up with timer visible */}
+        {showTagPicker && (
+          <div
+            className="fixed inset-0 z-50 flex items-end"
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setShowTagPicker(false);
+            }}
+          >
+            <div className="bg-white w-full rounded-t-3xl p-6 max-h-[60vh] overflow-y-auto shadow-2xl animate-slide-up">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-gray-900">Select Tag</h2>
+                <button
+                  onClick={() => setShowTagPicker(false)}
+                  className="p-2 text-gray-500 hover:text-gray-900"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              <div className="space-y-3">
+                {['Study', 'Work', 'Side Project', 'Reading', 'Learning'].map((tag) => (
+                  <button
+                    key={tag}
+                    onClick={() => {
+                      setSessionTags([tag]);
+                      setShowTagPicker(false);
+                    }}
+                    className={`w-full flex items-center gap-4 p-4 rounded-xl transition-all ${
+                      selectedTag === tag
+                        ? 'bg-purple-100 border-2 border-purple-500'
+                        : 'bg-gray-50 border-2 border-transparent hover:bg-gray-100'
+                    }`}
+                  >
+                    <span className="text-2xl">🏷️</span>
+                    <div className="flex-1 text-left">
+                      <div className="font-semibold text-gray-900">{tag}</div>
+                    </div>
+                    {selectedTag === tag && (
+                      <svg className="w-6 h-6 text-purple-500" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                    )}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
 
-      {/* Right Column - Tasks */}
-      <div className="flex items-start justify-center">
-        <div className="w-full max-w-2xl">
-          <GlobalTasks
-            selectedTaskIds={selectedTaskIds}
-            onToggleTaskSelection={handleTaskToggle}
-            showSelection={true}
-          />
+      {/* Desktop: Two-column layout */}
+      <div className="hidden md:grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-12 pb-4">
+        {/* Left Column - Timer & Controls */}
+        <div className="flex flex-col items-center justify-start lg:justify-center space-y-6 lg:space-y-12 lg:sticky lg:top-6">
+          {/* Large Timer Display */}
+          <div className="text-center w-full">
+            <div className="text-6xl md:text-7xl lg:text-9xl font-mono font-bold text-gray-900 mb-4 lg:mb-8">
+              {getFormattedTime(displayTime)}
+            </div>
+
+            {/* Timer Controls - Pill Buttons with Text */}
+            <div className="flex items-center justify-center gap-2 md:gap-4 flex-wrap">
+              {!timerState.isRunning && !timerState.startTime && (
+                <button
+                  onClick={handleStartTimer}
+                  disabled={!selectedProjectId}
+                  className={`px-8 md:px-12 py-3 md:py-5 rounded-full flex items-center gap-2 md:gap-3 transition-all text-base md:text-xl font-semibold ${
+                    selectedProjectId
+                      ? 'bg-[#007AFF] hover:bg-[#0056D6] text-white shadow-lg hover:shadow-xl'
+                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  }`}
+                >
+                  <svg className="w-6 h-6 md:w-8 md:h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M8 5v14l11-7z" />
+                  </svg>
+                  <span>Start</span>
+                </button>
+              )}
+
+              {timerState.isRunning && (
+                <button
+                  onClick={handlePauseTimer}
+                  className="px-8 md:px-12 py-3 md:py-5 rounded-full bg-red-600 hover:bg-red-700 text-white flex items-center gap-2 md:gap-3 transition-all shadow-lg hover:shadow-xl text-base md:text-xl font-semibold"
+                >
+                  <svg className="w-6 h-6 md:w-8 md:h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
+                  </svg>
+                  <span>Pause</span>
+                </button>
+              )}
+
+              {!timerState.isRunning && timerState.startTime && (
+                <>
+                  <button
+                    onClick={handleResumeTimer}
+                    className="px-6 md:px-10 py-3 md:py-4 rounded-full bg-green-600 hover:bg-green-700 text-white flex items-center gap-2 transition-all shadow-lg hover:shadow-xl text-base md:text-lg font-semibold"
+                  >
+                    <svg className="w-5 h-5 md:w-6 md:h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M8 5v14l11-7z" />
+                    </svg>
+                    <span>Resume</span>
+                  </button>
+                  <button
+                    onClick={() => setShowFinishModal(true)}
+                    className="px-6 md:px-10 py-3 md:py-4 rounded-full bg-gray-900 hover:bg-gray-800 text-white flex items-center gap-2 transition-all shadow-lg hover:shadow-xl text-base md:text-lg font-semibold"
+                  >
+                    <Flag className="w-5 h-5 md:w-6 md:h-6 text-white" />
+                    <span>Finish</span>
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* Project & Tag Dropdowns */}
+          <div className="w-full max-w-xl grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+            {/* Project Dropdown */}
+            <div className="relative">
+              <select
+                value={selectedProjectId}
+                onChange={(e) => setSelectedProjectId(e.target.value)}
+                disabled={timerState.isRunning || timerState.startTime !== null}
+                className="w-full px-3 md:px-4 py-2 md:py-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] bg-white appearance-none cursor-pointer disabled:bg-gray-100 disabled:cursor-not-allowed text-sm md:text-base"
+              >
+                <option value="">Select Project</option>
+                {projects.map((project) => (
+                  <option key={project.id} value={project.id}>
+                    {project.icon} {project.name}
+                  </option>
+                ))}
+              </select>
+              <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                <svg className="w-4 h-4 md:w-5 md:h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </div>
+
+            {/* Tag Dropdown */}
+            <div className="relative">
+              <select
+                value={sessionTags[0] || ''}
+                onChange={(e) => setSessionTags(e.target.value ? [e.target.value] : [])}
+                className="w-full px-3 md:px-4 py-2 md:py-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] bg-white appearance-none cursor-pointer text-sm md:text-base"
+              >
+                <option value="">Select Tag</option>
+                <option value="Study">Study</option>
+                <option value="Work">Work</option>
+                <option value="Side Project">Side Project</option>
+                <option value="Reading">Reading</option>
+                <option value="Learning">Learning</option>
+              </select>
+              <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                <svg className="w-4 h-4 md:w-5 md:h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Column - Tasks */}
+        <div className="flex items-start justify-center w-full">
+          <div className="w-full max-w-2xl">
+            <GlobalTasks
+              selectedTaskIds={selectedTaskIds}
+              onToggleTaskSelection={handleTaskToggle}
+              showSelection={true}
+            />
+          </div>
         </div>
       </div>
 

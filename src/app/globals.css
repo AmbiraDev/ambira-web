@@ -72,3 +72,31 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, button, input, textarea, select {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--electric-blue-dark);
 }
+
+/* Mobile-specific styles */
+@media (max-width: 768px) {
+  /* Remove default mobile tap highlights */
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  /* Ensure mobile buttons are touch-friendly */
+  button, a, input, select, textarea {
+    min-height: 44px;
+  }
+  
+  /* Mobile typography improvements */
+  body {
+    font-size: 16px; /* Prevent zoom on iOS */
+  }
+  
+  /* Better mobile spacing */
+  .mobile-padding {
+    padding: 1rem;
+  }
+  
+  /* Safe area insets for iPhone X+ */
+  .mobile-safe-area {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}

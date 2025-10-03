@@ -455,9 +455,9 @@
 - [ ] Add CSRF protection
 - [ ] Prevent SQL injection
 - [ ] Set up error logging (Sentry)
-- [ ] Configure production env vars
+- [X] Configure production env vars
 - [ ] Create health check endpoints
-- [ ] Set up deployment pipeline
+- [X] Set up deployment pipeline
 - [ ] Configure backups
 - [ ] Add monitoring
 - [ ] Create admin dashboard (basic)

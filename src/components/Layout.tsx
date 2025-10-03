@@ -12,20 +12,29 @@ interface LayoutProps {
 function Layout({ children, showSidebars = true }: LayoutProps) {
   return (
     <div className="min-h-screen bg-background">
-      <Header />
+      {/* Header - hidden on mobile */}
+      <div className="hidden md:block">
+        <Header />
+      </div>
       
-      <main className="pt-16">
-        <div className="container mx-auto px-4 py-8">
+      <main className="md:pt-16">
+        <div className="container mx-auto md:px-4 md:py-8">
           {showSidebars ? (
-            <div className="flex gap-8">
-              <LeftSidebar />
-              <div className="flex-1 max-w-2xl mx-auto">
+            <div className="md:flex gap-8">
+              {/* Left sidebar - hidden on mobile */}
+              <div className="hidden md:block">
+                <LeftSidebar />
+              </div>
+              <div className="flex-1 max-w-2xl md:mx-auto px-4 py-4 md:px-0">
                 {children}
               </div>
-              <RightSidebar />
+              {/* Right sidebar - hidden on mobile */}
+              <div className="hidden md:block">
+                <RightSidebar />
+              </div>
             </div>
           ) : (
-            <div className="max-w-4xl mx-auto">
+            <div className="max-w-4xl mx-auto px-4 py-4 md:px-0">
               {children}
             </div>
           )}
@@ -33,7 +42,7 @@ function Layout({ children, showSidebars = true }: LayoutProps) {
       </main>
 
       {/* Bottom padding for mobile navigation */}
-      <div className="h-16 md:hidden" />
+      <div className="h-20 md:hidden" />
       
       <BottomNavigation />
     </div>

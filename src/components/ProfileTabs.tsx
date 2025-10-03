@@ -364,6 +364,19 @@ export const PostsContent: React.FC<PostsContentProps> = ({ userId, isOwnProfile
     }
   }, []);
 
+  // Handle delete
+  const handleDelete = useCallback(async (sessionId: string) => {
+    if (!window.confirm('Are you sure you want to delete this session? This action cannot be undone.')) {
+      return;
+    }
+    try {
+      await firebaseSessionApi.deleteSession(sessionId);
+      setSessions(prev => prev.filter(session => session.id !== sessionId));
+    } catch (err: any) {
+      console.error('Failed to delete session:', err);
+    }
+  }, []);
+
   if (isLoading) {
     return (
       <div className="text-center py-12">
@@ -411,6 +424,7 @@ export const PostsContent: React.FC<PostsContentProps> = ({ userId, isOwnProfile
           onSupport={handleSupport}
           onRemoveSupport={handleRemoveSupport}
           onShare={handleShare}
+          onDelete={isOwnProfile ? handleDelete : undefined}
           showComments={true}
         />
       ))}
