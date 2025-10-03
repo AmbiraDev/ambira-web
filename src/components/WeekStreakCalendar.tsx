@@ -1,33 +1,69 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { firebaseApi } from '@/lib/firebaseApi';
-import { StreakData } from '@/types';
 
 interface WeekStreakCalendarProps {
   userId: string;
 }
 
+// Normalize a Date to a local YYYY-MM-DD string (avoids UTC off-by-one)
+const toLocalYMD = (d: Date) => {
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 export const WeekStreakCalendar: React.FC<WeekStreakCalendarProps> = ({ userId }) => {
-  const [streakData, setStreakData] = useState<StreakData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [activeDates, setActiveDates] = useState<Set<string>>(new Set());
+
+  // Compute this week's start (Sun 00:00) and end (Sat 23:59:59.999) in local time
+  const { weekStart, weekEnd } = useMemo(() => {
+    const today = new Date();
+    const start = new Date(today);
+    start.setHours(0, 0, 0, 0);
+    start.setDate(today.getDate() - today.getDay()); // Sunday
+
+    const end = new Date(start);
+    end.setDate(start.getDate() + 6); // Saturday
+    end.setHours(23, 59, 59, 999);
+
+    return { weekStart: start, weekEnd: end };
+  }, []);
 
   useEffect(() => {
-    const loadStreak = async () => {
+    const loadWeeklySessions = async () => {
       try {
-        const data = await firebaseApi.streak.getStreakData(userId);
-        console.log('📊 Streak Data Loaded:', data);
-        console.log('📅 Streak History:', data?.streakHistory);
-        setStreakData(data);
+        // Fetch a generous amount and filter client-side by week range
+        const res = await firebaseApi.session.getSessions(1, 100, {} as any);
+        console.log('🧾 Sessions fetched (latest 100):', res.sessions?.length);
+
+        const withinWeek = res.sessions.filter((s) => {
+          const dt = new Date(s.startTime);
+          return dt >= weekStart && dt <= weekEnd;
+        });
+
+        console.log('📆 Sessions within week:', withinWeek.map((s) => ({ id: s.id, start: toLocalYMD(new Date(s.startTime)) })));
+
+        const dateSet = new Set<string>();
+        withinWeek.forEach((s) => {
+          const localKey = toLocalYMD(new Date(s.startTime));
+          dateSet.add(localKey);
+        });
+
+        console.log('✅ Active date keys:', Array.from(dateSet));
+        setActiveDates(dateSet);
       } catch (error) {
-        console.error('❌ Failed to load streak data:', error);
+        console.error('❌ Failed to load sessions for week:', error);
       } finally {
         setIsLoading(false);
       }
     };
 
-    loadStreak();
-  }, [userId]);
+    loadWeeklySessions();
+  }, [userId, weekStart, weekEnd]);
 
   if (isLoading) {
     return (
@@ -42,46 +78,49 @@ export const WeekStreakCalendar: React.FC<WeekStreakCalendarProps> = ({ userId }
     );
   }
 
-  // Get the current week (Sunday to Saturday)
+  // Build the visual model for the current week using the activeDates Set
   const getWeekDays = () => {
     const today = new Date();
-    const currentDay = today.getDay(); // 0 = Sunday, 6 = Saturday
-    
-    // Calculate the start of the week (Sunday)
-    const weekStart = new Date(today);
-    weekStart.setDate(today.getDate() - currentDay);
-    
-    const days = [];
+    const days = [] as Array<{
+      dayOfWeek: string;
+      dayNumber: number;
+      hasActivity: boolean;
+      isToday: boolean;
+      localKey: string;
+      isPast: boolean;
+    }>;
+
     console.log('🗓️ Generating week days...');
-    console.log('📍 Today:', today.toISOString().split('T')[0]);
-    console.log('📍 Week Start:', weekStart.toISOString().split('T')[0]);
-    
+    console.log('📍 Today (local):', toLocalYMD(today));
+    console.log('📍 Week Start (local):', toLocalYMD(weekStart), '→ Week End (local):', toLocalYMD(weekEnd));
+
     for (let i = 0; i < 7; i++) {
       const date = new Date(weekStart);
       date.setDate(weekStart.getDate() + i);
-      
-      const dateStr = date.toISOString().split('T')[0];
-      const streakDay = streakData?.streakHistory.find(d => d.date === dateStr);
-      const isToday = dateStr === today.toISOString().split('T')[0];
-      
+      date.setHours(12, 0, 0, 0); // noon to avoid DST edge-cases in formatting
+
+      const localKey = toLocalYMD(date);
+      const isToday = toLocalYMD(today) === localKey;
+      const hasActivity = activeDates.has(localKey);
+
       const dayInfo = {
         dayOfWeek: ['S', 'M', 'T', 'W', 'T', 'F', 'S'][i],
         dayNumber: date.getDate(),
-        hasActivity: streakDay?.hasActivity || false,
+        hasActivity,
         isToday,
+        localKey,
         isPast: date < today && !isToday
       };
-      
+
       console.log(`📅 ${dayInfo.dayOfWeek} ${dayInfo.dayNumber}:`, {
-        dateStr,
-        hasActivity: dayInfo.hasActivity,
-        isToday: dayInfo.isToday,
-        streakDay
+        localKey,
+        hasActivity,
+        isToday
       });
-      
+
       days.push(dayInfo);
     }
-    
+
     return days;
   };
 

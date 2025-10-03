@@ -351,6 +351,44 @@ service cloud.firestore {
       allow list: if request.auth != null;
     }
 
+    // Posts (feed posts)
+    match /posts/{postId} {
+      // Create: validate userId on the incoming document
+      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
+      
+      // Read: allow any authenticated user to read posts
+      allow read: if request.auth != null;
+      
+      // Update: only post owner can update their own post
+      allow update: if request.auth != null && resource.data.userId == request.auth.uid;
+      
+      // Delete: only post owner can delete their own post
+      allow delete: if request.auth != null && resource.data.userId == request.auth.uid;
+      
+      // Allow authenticated users to update supportCount and commentCount (for likes/comments)
+      allow update: if request.auth != null &&
+        request.resource.data.keys().hasAny(['supportCount', 'commentCount', 'updatedAt']) &&
+        !request.resource.data.diff(resource.data).affectedKeys().hasAny(['userId', 'sessionId', 'content', 'createdAt']);
+    }
+    
+    // Post supports (likes)
+    match /postSupports/{supportId} {
+      allow read, write: if request.auth != null &&
+        (request.auth.uid == supportId.split('_')[0] || request.auth.uid == supportId.split('_')[1]);
+    }
+    
+    // Achievements
+    match /achievements/{userId} {
+      // Users can read/write their own achievements
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      
+      // Allow authenticated users to read public achievements for social features
+      allow read: if request.auth != null;
+      
+      // Allow listing achievements for leaderboards
+      allow list: if request.auth != null;
+    }
+
     // (users match consolidated above)
   }
 }
