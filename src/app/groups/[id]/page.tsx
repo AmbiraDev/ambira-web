@@ -7,6 +7,7 @@ import Header from '@/components/HeaderComponent';
 import GroupHeader from '@/components/GroupHeader';
 import GroupTabs, { GroupTab } from '@/components/GroupTabs';
 import GroupSettings from '@/components/GroupSettings';
+import GroupChallenges from '@/components/GroupChallenges';
 import { Group, User, GroupStats, CreateGroupData } from '@/types';
 import { firebaseApi } from '@/lib/firebaseApi';
 
@@ -250,8 +251,7 @@ export default function GroupDetailPage() {
 
               {activeTab === 'challenges' && (
                 <div className="bg-white rounded-lg border border-gray-200 p-6">
-                  <h3 className="text-lg font-medium text-gray-900 mb-4">Group Challenges</h3>
-                  <p className="text-gray-500">Group challenges will be displayed here.</p>
+                  <GroupChallenges group={group} isAdmin={isAdmin} />
                 </div>
               )}
 

@@ -309,28 +309,28 @@
 - [ ] Create mobile-responsive table
 
 ### Challenges
-- [ ] Create challenge data model
-- [ ] Build challenge types structure
-- [ ] Implement Most Activity type
-- [ ] Add Fastest Effort type
-- [ ] Create Longest Session type
-- [ ] Build Group Goal type
-- [ ] Create challenge creation (admins)
-- [ ] Add date range picker
-- [ ] Build goal/target inputs
-- [ ] Create project selection
+- [X] Create challenge data model
+- [X] Build challenge types structure
+- [X] Implement Most Activity type
+- [X] Add Fastest Effort type
+- [X] Create Longest Session type
+- [X] Build Group Goal type
+- [X] Create challenge creation (admins)
+- [X] Add date range picker
+- [X] Build goal/target inputs
+- [X] Create project selection
 
 ### Challenge Features
-- [ ] Build challenge detail page
-- [ ] Add hero section with countdown
-- [ ] Create join/leave functionality
-- [ ] Build leaderboard with filters
-- [ ] Calculate progress from sessions
-- [ ] Show participant count
-- [ ] Add progress bars
-- [ ] Create completion detection
+- [X] Build challenge detail page
+- [X] Add hero section with countdown
+- [X] Create join/leave functionality
+- [X] Build leaderboard with filters
+- [X] Calculate progress from sessions
+- [X] Show participant count
+- [X] Add progress bars
+- [X] Create completion detection
 - [ ] Add challenge notifications
-- [ ] Display in active challenges sidebar
+- [X] Display in active challenges sidebar
 
 ## Phase 5: Gamification & Polish
 

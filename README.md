@@ -18,7 +18,7 @@ A social productivity tracking application built with Next.js, TypeScript, and T
   - `/groups` and `/groups/[id]` - Groups
   - `/settings` and `/settings/privacy` - User settings
 
-### ✅ Social Features (NEW!)
+### ✅ Social Features
 - **User Profiles** with Strava-inspired profile pages
   - Clean white profile header with large avatar and stats (followers, following, total hours)
   - Tabbed interface: Overview, Achievements, Following, Posts
@@ -47,6 +47,38 @@ A social productivity tracking application built with Next.js, TypeScript, and T
   - Profile visibility controls (Everyone/Followers/Private)
   - Activity and project visibility settings
   - Blocked users management
+
+### ✅ Challenges System (NEW!)
+- **Challenge Types** with different competition formats:
+  - **Most Activity**: Compete to log the most productive hours
+  - **Fastest Effort**: Achieve the best tasks-per-hour ratio
+  - **Longest Session**: Record the longest single work session
+  - **Group Goal**: Work together to reach a collective target
+- **Challenge Management** for group admins:
+  - Create challenges with custom goals, date ranges, and rules
+  - Select which projects count toward the challenge
+  - Add rewards and achievement descriptions
+  - Edit and delete challenges with proper permissions
+- **Real-time Progress Tracking**:
+  - Automatic progress updates when sessions are logged
+  - Live leaderboards with rankings and completion status
+  - Progress bars and percentage indicators
+  - Time remaining countdown with daily updates
+- **Challenge Discovery**:
+  - Browse all challenges with filters (Active, Upcoming, Completed)
+  - Search by challenge type and group
+  - Active challenges displayed in right sidebar
+  - Challenge cards with participation status and progress
+- **Leaderboard System**:
+  - Ranked participant lists with user profiles
+  - Top 3 podium display with special styling
+  - Full leaderboard table with completion badges
+  - Filter by participation status and following
+- **Group Integration**:
+  - Challenges tab in group pages
+  - Admin-only challenge creation for groups
+  - Group challenge statistics and overview
+  - Member participation tracking
 - **Navigation Integration**
   - Updated header with profile dropdown menu (My Profile, Settings, Log Out)
   - Profile avatar now uses brand orange color (#FC4C02)

@@ -246,6 +246,90 @@ export interface Challenge {
   participantCount: number;
   createdByUserId: string;
   createdAt: Date;
+  updatedAt: Date;
+  // Additional fields for challenge management
+  rules?: string;
+  projectIds?: string[]; // Which projects count toward this challenge
+  isActive: boolean;
+  rewards?: string[];
+}
+
+export interface ChallengeParticipant {
+  id: string;
+  challengeId: string;
+  userId: string;
+  joinedAt: Date;
+  progress: number; // Current progress value (hours, tasks, etc.)
+  rank?: number;
+  isCompleted: boolean;
+  completedAt?: Date;
+}
+
+export interface ChallengeProgress {
+  challengeId: string;
+  userId: string;
+  currentValue: number;
+  targetValue?: number;
+  percentage: number;
+  rank: number;
+  isCompleted: boolean;
+  lastUpdated: Date;
+}
+
+export interface ChallengeLeaderboard {
+  challengeId: string;
+  entries: ChallengeLeaderboardEntry[];
+  lastUpdated: Date;
+}
+
+export interface ChallengeLeaderboardEntry {
+  userId: string;
+  user: User;
+  progress: number;
+  rank: number;
+  isCompleted: boolean;
+  completedAt?: Date;
+}
+
+export interface CreateChallengeData {
+  groupId?: string;
+  name: string;
+  description: string;
+  type: 'most-activity' | 'fastest-effort' | 'longest-session' | 'group-goal';
+  goalValue?: number;
+  startDate: Date;
+  endDate: Date;
+  rules?: string;
+  projectIds?: string[];
+  rewards?: string[];
+}
+
+export interface UpdateChallengeData {
+  name?: string;
+  description?: string;
+  goalValue?: number;
+  startDate?: Date;
+  endDate?: Date;
+  rules?: string;
+  projectIds?: string[];
+  rewards?: string[];
+  isActive?: boolean;
+}
+
+export interface ChallengeFilters {
+  type?: 'most-activity' | 'fastest-effort' | 'longest-session' | 'group-goal';
+  status?: 'active' | 'upcoming' | 'completed';
+  groupId?: string;
+  isParticipating?: boolean;
+}
+
+export interface ChallengeStats {
+  totalParticipants: number;
+  completedParticipants: number;
+  averageProgress: number;
+  topPerformers: ChallengeLeaderboardEntry[];
+  timeRemaining: number; // seconds
+  daysRemaining: number;
 }
 
 export interface Achievement {

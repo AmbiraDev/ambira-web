@@ -254,6 +254,90 @@ service cloud.firestore {
         request.auth.uid in get(/databases/$(database)/documents/groups/$(resource.data.groupId)).data.adminUserIds;
     }
     
+    // Challenges
+    match /challenges/{challengeId} {
+      function isAuthenticated() {
+        return request.auth != null;
+      }
+
+      function isChallengeCreator() {
+        return isAuthenticated() && resource.data.createdByUserId == request.auth.uid;
+      }
+
+      function isGroupAdmin() {
+        return isAuthenticated() && 
+          ('groupId' in resource.data) &&
+          exists(/databases/$(database)/documents/groups/$(resource.data.groupId)) &&
+          request.auth.uid in get(/databases/$(database)/documents/groups/$(resource.data.groupId)).data.adminUserIds;
+      }
+
+      // Allow authenticated users to read challenges
+      allow read: if isAuthenticated();
+
+      // Allow authenticated users to list challenges for discovery
+      allow list: if isAuthenticated();
+
+      // Allow group admins to create challenges for their groups
+      allow create: if isAuthenticated() &&
+        request.resource.data.createdByUserId == request.auth.uid &&
+        (
+          // Global challenge (no groupId)
+          !('groupId' in request.resource.data) ||
+          // Group challenge - user must be admin of the group
+          (exists(/databases/$(database)/documents/groups/$(request.resource.data.groupId)) &&
+           request.auth.uid in get(/databases/$(database)/documents/groups/$(request.resource.data.groupId)).data.adminUserIds)
+        );
+
+      // Allow challenge creators and group admins to update challenges
+      allow update: if isChallengeCreator() || isGroupAdmin();
+
+      // Allow challenge creators and group admins to delete challenges
+      allow delete: if isChallengeCreator() || isGroupAdmin();
+
+      // Allow authenticated users to update participant count when joining/leaving
+      allow update: if isAuthenticated() &&
+        request.resource.data.keys().hasAny(['participantCount', 'updatedAt']) &&
+        !request.resource.data.diff(resource.data).affectedKeys().hasAny(['name', 'description', 'type', 'goalValue', 'startDate', 'endDate', 'createdByUserId', 'groupId', 'rules', 'projectIds', 'rewards', 'isActive', 'createdAt']);
+    }
+
+    // Challenge Participants
+    match /challengeParticipants/{participantId} {
+      function isAuthenticated() {
+        return request.auth != null;
+      }
+
+      function isParticipantOwner() {
+        return isAuthenticated() && resource.data.userId == request.auth.uid;
+      }
+
+      function isCreatingOwnParticipation() {
+        return isAuthenticated() && request.resource.data.userId == request.auth.uid;
+      }
+
+      // Allow users to read their own participation
+      allow read: if isParticipantOwner();
+
+      // Allow authenticated users to read all participants for leaderboards
+      allow read: if isAuthenticated();
+
+      // Allow authenticated users to list participants for leaderboards
+      allow list: if isAuthenticated();
+
+      // Allow users to create their own participation (join challenge)
+      allow create: if isCreatingOwnParticipation();
+
+      // Allow users to update their own participation progress
+      allow update: if isParticipantOwner();
+
+      // Allow system to update progress (for automatic progress tracking)
+      allow update: if isAuthenticated() &&
+        request.resource.data.keys().hasAny(['progress', 'isCompleted', 'completedAt', 'updatedAt']) &&
+        !request.resource.data.diff(resource.data).affectedKeys().hasAny(['challengeId', 'userId', 'joinedAt']);
+
+      // Allow users to delete their own participation (leave challenge)
+      allow delete: if isParticipantOwner();
+    }
+
     // (users match consolidated above)
   }
 }

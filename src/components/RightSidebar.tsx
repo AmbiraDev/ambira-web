@@ -1,23 +1,153 @@
 'use client';
 
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { useAuth } from '@/contexts/AuthContext';
+import { firebaseChallengeApi } from '@/lib/firebaseApi';
+import { Challenge, ChallengeProgress as ChallengeProgressType } from '@/types';
+import ChallengeProgress from './ChallengeProgress';
+import { Trophy, Target } from 'lucide-react';
+
 function RightSidebar() {
+  const { user } = useAuth();
+  const [activeChallenges, setActiveChallenges] = useState<Challenge[]>([]);
+  const [userProgress, setUserProgress] = useState<Record<string, ChallengeProgressType>>({});
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (user) {
+      loadActiveChallenges();
+    }
+  }, [user]);
+
+  const loadActiveChallenges = async () => {
+    try {
+      setIsLoading(true);
+      
+      // Check if user is authenticated
+      if (!user) {
+        console.log('User not authenticated, skipping challenges load');
+        return;
+      }
+      
+      // First try to load all active challenges, then filter by participation
+      // This avoids complex queries that might fail
+      let challenges = await firebaseChallengeApi.getChallenges({
+        status: 'active'
+      });
+      
+      // If that fails, try without any filters
+      if (challenges.length === 0) {
+        try {
+          const allChallenges = await firebaseChallengeApi.getChallenges({});
+          // Filter client-side for active challenges
+          const now = new Date();
+          challenges = allChallenges.filter(challenge => {
+            const startDate = new Date(challenge.startDate);
+            const endDate = new Date(challenge.endDate);
+            return now >= startDate && now <= endDate && challenge.isActive;
+          });
+        } catch (fallbackError) {
+          console.warn('Fallback challenges query also failed:', fallbackError);
+          challenges = [];
+        }
+      }
+      
+      // Filter for challenges the user is participating in
+      const participatingChallenges = [];
+      for (const challenge of challenges) {
+        try {
+          const progress = await firebaseChallengeApi.getChallengeProgress(challenge.id);
+          if (progress) {
+            participatingChallenges.push(challenge);
+          }
+        } catch (progressError) {
+          // Skip challenges we can't check participation for
+          continue;
+        }
+      }
+      
+      challenges = participatingChallenges;
+      
+      setActiveChallenges(challenges.slice(0, 3)); // Show top 3
+
+      // Load progress for each challenge
+      const progressMap: Record<string, ChallengeProgressType> = {};
+      for (const challenge of challenges.slice(0, 3)) {
+        try {
+          const progress = await firebaseChallengeApi.getChallengeProgress(challenge.id);
+          if (progress) {
+            progressMap[challenge.id] = progress;
+          }
+        } catch (progressError) {
+          console.warn(`Failed to load progress for challenge ${challenge.id}:`, progressError);
+        }
+      }
+      setUserProgress(progressMap);
+    } catch (error) {
+      console.error('Failed to load active challenges:', error);
+      // Don't show error to user, just log it
+      setActiveChallenges([]);
+      setUserProgress({});
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <aside className="hidden lg:block w-[280px] flex-shrink-0">
       <div className="sticky top-[60px] space-y-6">
-        {/* Challenges */}
+        {/* Active Challenges */}
         <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <div className="flex items-center space-x-2 mb-3">
-            <svg className="w-5 h-5 text-gray-900" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-            </svg>
-            <h3 className="text-lg font-bold text-gray-900">Challenges</h3>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center space-x-2">
+              <Trophy className="w-5 h-5 text-gray-900" />
+              <h3 className="text-lg font-bold text-gray-900">Active Challenges</h3>
+            </div>
+            <Link 
+              href="/challenges"
+              className="text-sm font-medium text-[#007AFF] hover:text-[#0056D6] transition-colors"
+            >
+              View All
+            </Link>
           </div>
-          <p className="text-sm text-gray-600 mb-4">
-            Join productivity Challenges to stay motivated, earn achievements and see how you stack up against others.
-          </p>
-          <button className="text-sm font-medium text-[#007AFF] hover:text-[#0056D6] transition-colors">
-            View All Challenges
-          </button>
+          
+          {isLoading ? (
+            <div className="space-y-3">
+              {[...Array(2)].map((_, i) => (
+                <div key={i} className="animate-pulse">
+                  <div className="h-4 bg-gray-200 rounded mb-2"></div>
+                  <div className="h-2 bg-gray-200 rounded mb-2"></div>
+                  <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                </div>
+              ))}
+            </div>
+          ) : activeChallenges.length > 0 ? (
+            <div className="space-y-4">
+              {activeChallenges.map((challenge) => (
+                <ChallengeProgress
+                  key={challenge.id}
+                  challenge={challenge}
+                  progress={userProgress[challenge.id]}
+                  compact={true}
+                  showActions={false}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-4">
+              <Target className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+              <p className="text-sm text-gray-600 mb-3">
+                No active challenges yet
+              </p>
+              <Link 
+                href="/challenges"
+                className="text-sm font-medium text-[#007AFF] hover:text-[#0056D6] transition-colors"
+              >
+                Browse Challenges
+              </Link>
+            </div>
+          )}
         </div>
 
         {/* Clubs */}
