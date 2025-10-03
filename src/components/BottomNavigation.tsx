@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTimer } from '@/contexts/TimerContext';
-import { Home, Compass, Play, Users, User } from 'lucide-react';
+import { Home, Compass, PlayCircle, Users, User } from 'lucide-react';
 
 export default function BottomNavigation() {
   const pathname = usePathname();
@@ -25,7 +25,7 @@ export default function BottomNavigation() {
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 md:hidden mobile-safe-area">
       <div className="flex items-center justify-around h-16 px-2" style={{paddingBottom: 'env(safe-area-inset-bottom)'}}>
-        {/* Home */}
+        {/* Feed */}
         <Link
           href="/"
           className={`flex flex-col items-center justify-center space-y-0.5 px-3 py-1 transition-colors ${
@@ -33,7 +33,7 @@ export default function BottomNavigation() {
           }`}
         >
           <Home className="w-6 h-6" strokeWidth={isActive('/') ? 2.5 : 2} />
-          <span className="text-[10px] font-medium">Home</span>
+          <span className="text-[10px] font-medium">Feed</span>
         </Link>
 
         {/* Discover */}
@@ -47,27 +47,20 @@ export default function BottomNavigation() {
           <span className="text-[10px] font-medium">Discover</span>
         </Link>
 
-        {/* Record Button (FAB style in center) */}
+        {/* Record Button */}
         <Link
           href="/timer"
-          className="flex flex-col items-center justify-center -mt-2"
+          className={`flex flex-col items-center justify-center space-y-0.5 px-3 py-1 transition-colors ${
+            isActive('/timer') ? 'text-[#007AFF]' : 'text-gray-500'
+          }`}
         >
-          <div className={`flex items-center justify-center w-14 h-14 rounded-full shadow-lg transition-all ${
-            hasActiveSession && !isOnTimerPage ? 'bg-[#007AFF]' : 'bg-gray-900'
-          }`}>
-            {hasActiveSession && !isOnTimerPage ? (
-              <div className="flex flex-col items-center">
-                <div className="w-2 h-2 rounded-full bg-white mb-0.5 animate-pulse" />
-              </div>
-            ) : (
-              <Play className="w-6 h-6 text-white" fill="white" />
+          <div className="relative">
+            <PlayCircle className="w-6 h-6" strokeWidth={isActive('/timer') ? 2.5 : 2} fill={isActive('/timer') ? 'currentColor' : 'none'} />
+            {hasActiveSession && !isOnTimerPage && (
+              <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-[#007AFF] rounded-full animate-pulse" />
             )}
           </div>
-          <span className={`text-[10px] font-medium mt-0.5 ${
-            hasActiveSession && !isOnTimerPage ? 'text-[#007AFF]' : 'text-gray-600'
-          }`}>
-            {hasActiveSession && !isOnTimerPage ? 'Active' : 'Record'}
-          </span>
+          <span className="text-[10px] font-medium">Record</span>
         </Link>
 
         {/* Groups */}
@@ -81,7 +74,7 @@ export default function BottomNavigation() {
           <span className="text-[10px] font-medium">Groups</span>
         </Link>
 
-        {/* Profile */}
+        {/* You */}
         <Link
           href={user ? `/profile/${user.username}` : '/profile'}
           className={`flex flex-col items-center justify-center space-y-0.5 px-3 py-1 transition-colors ${
@@ -89,7 +82,7 @@ export default function BottomNavigation() {
           }`}
         >
           <User className="w-6 h-6" strokeWidth={pathname.startsWith('/profile') ? 2.5 : 2} />
-          <span className="text-[10px] font-medium">Profile</span>
+          <span className="text-[10px] font-medium">You</span>
         </Link>
       </div>
     </nav>

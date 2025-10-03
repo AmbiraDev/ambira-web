@@ -96,12 +96,12 @@ export const ProfileTabs: React.FC<ProfileTabsProps> = ({
               ${tab.disabled ? 'opacity-50 cursor-not-allowed' : ''}
             `}
           >
-            <span className="hidden md:inline">{tab.icon}</span>
-            <span className="whitespace-nowrap text-sm md:text-base">{tab.label}</span>
+            {tab.icon}
+            <span className="hidden md:inline whitespace-nowrap text-sm md:text-base">{tab.label}</span>
             {tab.badge !== undefined && (
               <Badge
                 variant={activeTab === tab.id ? "secondary" : "outline"}
-                className="ml-0.5 md:ml-1 text-xs px-1.5 py-0"
+                className="ml-0.5 md:ml-1 text-xs px-1.5 py-0 md:inline hidden"
               >
                 {tab.badge}
               </Badge>

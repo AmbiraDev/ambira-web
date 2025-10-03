@@ -4,6 +4,7 @@ import { useSearchParams } from 'next/navigation';
 import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import Header from '@/components/HeaderComponent';
+import BottomNavigation from '@/components/BottomNavigation';
 import { firebaseUserApi } from '@/lib/firebaseApi';
 import { useAuth } from '@/contexts/AuthContext';
 import { UserCardCompact } from '@/components/UserCard';
@@ -309,6 +310,11 @@ function SearchContent() {
           )}
         </div>
       </div>
+
+      {/* Bottom padding for mobile navigation */}
+      <div className="h-20 md:hidden" />
+
+      <BottomNavigation />
     </div>
   );
 }

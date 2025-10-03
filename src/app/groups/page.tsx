@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import Header from '@/components/HeaderComponent';
+import BottomNavigation from '@/components/BottomNavigation';
 import BrowseGroups from '@/components/BrowseGroups';
 import { Group, CreateGroupData } from '@/types';
 import { firebaseApi } from '@/lib/firebaseApi';
@@ -111,7 +112,7 @@ export default function GroupsPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-      
+
       <div className="max-w-7xl mx-auto px-4 py-6">
         <BrowseGroups
           groups={groups}
@@ -122,6 +123,11 @@ export default function GroupsPage() {
           isLoading={isLoading}
         />
       </div>
+
+      {/* Bottom padding for mobile navigation */}
+      <div className="h-20 md:hidden" />
+
+      <BottomNavigation />
     </div>
   );
 }

@@ -10,6 +10,7 @@ import { ProfileTabs, TabContent, OverviewContent, AchievementsContent, Follower
 import { ProfileStats } from '@/components/ProfileStats';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import Header from '@/components/HeaderComponent';
+import BottomNavigation from '@/components/BottomNavigation';
 import { Button } from '@/components/ui/button';
 import { UserX } from 'lucide-react';
 import { toast } from 'sonner';
@@ -207,6 +208,11 @@ export default function ProfilePage() {
           </div>
         </div>
         </div>
+
+        {/* Bottom padding for mobile navigation */}
+        <div className="h-20 md:hidden" />
+
+        <BottomNavigation />
       </div>
     </ProtectedRoute>
   );
