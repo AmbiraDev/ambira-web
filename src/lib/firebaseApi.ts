@@ -3496,18 +3496,6 @@ const firebaseGroupApi = {
   }
 };
 
-// Export combined API
-export const firebaseApi = {
-  auth: firebaseAuthApi,
-  user: firebaseUserApi,
-  project: firebaseProjectApi,
-  task: firebaseTaskApi,
-  session: firebaseSessionApi,
-  post: firebasePostApi,
-  comment: firebaseCommentApi,
-  group: firebaseGroupApi
-};
-
 // Note: increment is imported from firebase/firestore above
 
 // Challenge API methods
@@ -4110,4 +4098,533 @@ export const firebaseChallengeApi = {
       throw new Error(error.message || 'Failed to delete challenge');
     }
   }
+};
+
+// Import additional types for streak and achievement
+import type {
+  StreakData,
+  StreakDay,
+  StreakStats,
+  Achievement,
+  AchievementType,
+  UserAchievementData,
+  AchievementProgress
+} from '@/types';
+
+// Streak API methods
+export const firebaseStreakApi = {
+  // Get user's streak data
+  getStreakData: async (userId: string): Promise<StreakData> => {
+    try {
+      const streakDoc = await getDoc(doc(db, 'streaks', userId));
+      
+      if (!streakDoc.exists()) {
+        // Initialize streak data if it doesn't exist
+        const initialStreak: StreakData = {
+          userId,
+          currentStreak: 0,
+          longestStreak: 0,
+          lastActivityDate: new Date(0),
+          totalStreakDays: 0,
+          streakHistory: [],
+          isPublic: true
+        };
+        await setDoc(doc(db, 'streaks', userId), {
+          ...initialStreak,
+          lastActivityDate: Timestamp.fromDate(initialStreak.lastActivityDate)
+        });
+        return initialStreak;
+      }
+
+      const data = streakDoc.data();
+      return {
+        userId: data.userId,
+        currentStreak: data.currentStreak || 0,
+        longestStreak: data.longestStreak || 0,
+        lastActivityDate: convertTimestamp(data.lastActivityDate),
+        totalStreakDays: data.totalStreakDays || 0,
+        streakHistory: data.streakHistory || [],
+        isPublic: data.isPublic !== false
+      };
+    } catch (error: any) {
+      throw new Error(getErrorMessage(error, 'Failed to get streak data'));
+    }
+  },
+
+  // Get streak stats with calculated fields
+  getStreakStats: async (userId: string): Promise<StreakStats> => {
+    try {
+      const streakData = await firebaseStreakApi.getStreakData(userId);
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const lastActivity = new Date(
+        streakData.lastActivityDate.getFullYear(),
+        streakData.lastActivityDate.getMonth(),
+        streakData.lastActivityDate.getDate()
+      );
+      
+      const daysSinceActivity = Math.floor((today.getTime() - lastActivity.getTime()) / (1000 * 60 * 60 * 24));
+      const streakAtRisk = daysSinceActivity >= 1;
+      
+      // Calculate next milestone
+      const milestones = [7, 30, 100, 365, 500, 1000];
+      const nextMilestone = milestones.find(m => m > streakData.currentStreak) || milestones[milestones.length - 1];
+
+      return {
+        currentStreak: streakData.currentStreak,
+        longestStreak: streakData.longestStreak,
+        totalStreakDays: streakData.totalStreakDays,
+        lastActivityDate: streakData.lastActivityDate.getTime() === 0 ? null : streakData.lastActivityDate,
+        streakAtRisk,
+        nextMilestone
+      };
+    } catch (error: any) {
+      throw new Error(getErrorMessage(error, 'Failed to get streak stats'));
+    }
+  },
+
+  // Update streak after session completion
+  updateStreak: async (userId: string, sessionDate: Date): Promise<StreakData> => {
+    try {
+      const streakData = await firebaseStreakApi.getStreakData(userId);
+      
+      const sessionDay = new Date(sessionDate.getFullYear(), sessionDate.getMonth(), sessionDate.getDate());
+      const lastActivityDay = new Date(
+        streakData.lastActivityDate.getFullYear(),
+        streakData.lastActivityDate.getMonth(),
+        streakData.lastActivityDate.getDate()
+      );
+      
+      const daysDiff = Math.floor((sessionDay.getTime() - lastActivityDay.getTime()) / (1000 * 60 * 60 * 24));
+      
+      let newCurrentStreak = streakData.currentStreak;
+      let newLongestStreak = streakData.longestStreak;
+      let newTotalStreakDays = streakData.totalStreakDays;
+      
+      if (daysDiff === 0) {
+        // Same day, no change to streak
+      } else if (daysDiff === 1) {
+        // Consecutive day, increment streak
+        newCurrentStreak += 1;
+        newTotalStreakDays += 1;
+        if (newCurrentStreak > newLongestStreak) {
+          newLongestStreak = newCurrentStreak;
+        }
+      } else if (daysDiff > 1) {
+        // Streak broken, reset to 1
+        newCurrentStreak = 1;
+        newTotalStreakDays += 1;
+      }
+      
+      // Update streak history (keep last 365 days)
+      const dateStr = sessionDay.toISOString().split('T')[0];
+      const existingDayIndex = streakData.streakHistory.findIndex(d => d.date === dateStr);
+      
+      let newHistory = [...streakData.streakHistory];
+      if (existingDayIndex >= 0) {
+        newHistory[existingDayIndex].sessionCount += 1;
+      } else {
+        newHistory.push({
+          date: dateStr,
+          hasActivity: true,
+          sessionCount: 1,
+          totalMinutes: 0
+        });
+      }
+      
+      // Keep only last 365 days
+      newHistory = newHistory.slice(-365);
+      
+      const updatedStreak: StreakData = {
+        ...streakData,
+        currentStreak: newCurrentStreak,
+        longestStreak: newLongestStreak,
+        lastActivityDate: sessionDate,
+        totalStreakDays: newTotalStreakDays,
+        streakHistory: newHistory
+      };
+      
+      await setDoc(doc(db, 'streaks', userId), {
+        ...updatedStreak,
+        lastActivityDate: Timestamp.fromDate(sessionDate)
+      });
+      
+      return updatedStreak;
+    } catch (error: any) {
+      throw new Error(getErrorMessage(error, 'Failed to update streak'));
+    }
+  },
+
+  // Toggle streak visibility
+  toggleStreakVisibility: async (userId: string): Promise<boolean> => {
+    try {
+      if (!auth.currentUser || auth.currentUser.uid !== userId) {
+        throw new Error('Unauthorized');
+      }
+      
+      const streakData = await firebaseStreakApi.getStreakData(userId);
+      const newVisibility = !streakData.isPublic;
+      
+      await updateDoc(doc(db, 'streaks', userId), {
+        isPublic: newVisibility
+      });
+      
+      return newVisibility;
+    } catch (error: any) {
+      throw new Error(getErrorMessage(error, 'Failed to toggle streak visibility'));
+    }
+  },
+
+  // Admin only: Restore streak
+  restoreStreak: async (userId: string, streakValue: number): Promise<void> => {
+    try {
+      if (!auth.currentUser) {
+        throw new Error('Unauthorized');
+      }
+      
+      // TODO: Add admin check
+      
+      await updateDoc(doc(db, 'streaks', userId), {
+        currentStreak: streakValue,
+        lastActivityDate: Timestamp.fromDate(new Date())
+      });
+    } catch (error: any) {
+      throw new Error(getErrorMessage(error, 'Failed to restore streak'));
+    }
+  }
+};
+
+// Achievement definitions
+const ACHIEVEMENT_DEFINITIONS: Record<AchievementType, { name: string; description: string; icon: string; targetValue?: number }> = {
+  'streak-7': { name: '7 Day Streak', description: 'Complete sessions for 7 days in a row', icon: '🔥', targetValue: 7 },
+  'streak-30': { name: '30 Day Streak', description: 'Complete sessions for 30 days in a row', icon: '🔥', targetValue: 30 },
+  'streak-100': { name: '100 Day Streak', description: 'Complete sessions for 100 days in a row', icon: '🔥', targetValue: 100 },
+  'streak-365': { name: 'Year Streak', description: 'Complete sessions for 365 days in a row', icon: '🔥', targetValue: 365 },
+  'hours-10': { name: 'First 10 Hours', description: 'Log 10 hours of work', icon: '⏱️', targetValue: 10 },
+  'hours-50': { name: '50 Hours', description: 'Log 50 hours of work', icon: '⏱️', targetValue: 50 },
+  'hours-100': { name: '100 Hours', description: 'Log 100 hours of work', icon: '⏱️', targetValue: 100 },
+  'hours-500': { name: '500 Hours', description: 'Log 500 hours of work', icon: '⏱️', targetValue: 500 },
+  'hours-1000': { name: '1000 Hours', description: 'Log 1000 hours of work', icon: '⏱️', targetValue: 1000 },
+  'tasks-50': { name: '50 Tasks', description: 'Complete 50 tasks', icon: '✅', targetValue: 50 },
+  'tasks-100': { name: '100 Tasks', description: 'Complete 100 tasks', icon: '✅', targetValue: 100 },
+  'tasks-500': { name: '500 Tasks', description: 'Complete 500 tasks', icon: '✅', targetValue: 500 },
+  'tasks-1000': { name: '1000 Tasks', description: 'Complete 1000 tasks', icon: '✅', targetValue: 1000 },
+  'challenge-complete': { name: 'Challenge Complete', description: 'Complete a challenge', icon: '🏆' },
+  'challenge-winner': { name: 'Challenge Winner', description: 'Win a challenge', icon: '👑' },
+  'personal-record-session': { name: 'Personal Record', description: 'Complete your longest session', icon: '🎯' },
+  'personal-record-day': { name: 'Best Day Ever', description: 'Complete your most productive day', icon: '🌟' },
+  'early-bird': { name: 'Early Bird', description: 'Complete a session before 6 AM', icon: '🌅' },
+  'night-owl': { name: 'Night Owl', description: 'Complete a session after 10 PM', icon: '🦉' },
+  'weekend-warrior': { name: 'Weekend Warrior', description: 'Complete 10 weekend sessions', icon: '💪' },
+  'consistency-king': { name: 'Consistency King', description: 'Complete sessions for 30 consecutive days', icon: '👑' }
+};
+
+// Achievement API methods
+export const firebaseAchievementApi = {
+  // Get user's achievements
+  getUserAchievements: async (userId: string): Promise<Achievement[]> => {
+    try {
+      const achievementsQuery = query(
+        collection(db, 'achievements'),
+        where('userId', '==', userId),
+        orderBy('earnedAt', 'desc')
+      );
+      
+      const snapshot = await getDocs(achievementsQuery);
+      return snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+        earnedAt: convertTimestamp(doc.data().earnedAt)
+      } as Achievement));
+    } catch (error: any) {
+      throw new Error(getErrorMessage(error, 'Failed to get achievements'));
+    }
+  },
+
+  // Get achievement progress for all achievement types
+  getAchievementProgress: async (userId: string): Promise<AchievementProgress[]> => {
+    try {
+      const [achievements, userData] = await Promise.all([
+        firebaseAchievementApi.getUserAchievements(userId),
+        firebaseAchievementApi.getUserAchievementData(userId)
+      ]);
+      
+      const unlockedTypes = new Set(achievements.map(a => a.type));
+      const progress: AchievementProgress[] = [];
+      
+      // Streak achievements
+      const streakAchievements: AchievementType[] = ['streak-7', 'streak-30', 'streak-100', 'streak-365'];
+      streakAchievements.forEach(type => {
+        const def = ACHIEVEMENT_DEFINITIONS[type];
+        const isUnlocked = unlockedTypes.has(type);
+        const achievement = achievements.find(a => a.type === type);
+        
+        progress.push({
+          type,
+          name: def.name,
+          description: def.description,
+          icon: def.icon,
+          currentValue: userData.currentStreak,
+          targetValue: def.targetValue || 0,
+          percentage: Math.min(100, (userData.currentStreak / (def.targetValue || 1)) * 100),
+          isUnlocked,
+          unlockedAt: achievement?.earnedAt
+        });
+      });
+      
+      // Hour achievements
+      const hourAchievements: AchievementType[] = ['hours-10', 'hours-50', 'hours-100', 'hours-500', 'hours-1000'];
+      hourAchievements.forEach(type => {
+        const def = ACHIEVEMENT_DEFINITIONS[type];
+        const isUnlocked = unlockedTypes.has(type);
+        const achievement = achievements.find(a => a.type === type);
+        
+        progress.push({
+          type,
+          name: def.name,
+          description: def.description,
+          icon: def.icon,
+          currentValue: userData.totalHours,
+          targetValue: def.targetValue || 0,
+          percentage: Math.min(100, (userData.totalHours / (def.targetValue || 1)) * 100),
+          isUnlocked,
+          unlockedAt: achievement?.earnedAt
+        });
+      });
+      
+      // Task achievements
+      const taskAchievements: AchievementType[] = ['tasks-50', 'tasks-100', 'tasks-500', 'tasks-1000'];
+      taskAchievements.forEach(type => {
+        const def = ACHIEVEMENT_DEFINITIONS[type];
+        const isUnlocked = unlockedTypes.has(type);
+        const achievement = achievements.find(a => a.type === type);
+        
+        progress.push({
+          type,
+          name: def.name,
+          description: def.description,
+          icon: def.icon,
+          currentValue: userData.totalTasks,
+          targetValue: def.targetValue || 0,
+          percentage: Math.min(100, (userData.totalTasks / (def.targetValue || 1)) * 100),
+          isUnlocked,
+          unlockedAt: achievement?.earnedAt
+        });
+      });
+      
+      return progress;
+    } catch (error: any) {
+      throw new Error(getErrorMessage(error, 'Failed to get achievement progress'));
+    }
+  },
+
+  // Get user data for achievement checking
+  getUserAchievementData: async (userId: string): Promise<UserAchievementData> => {
+    try {
+      const [streakData, userStats] = await Promise.all([
+        firebaseStreakApi.getStreakData(userId),
+        firebaseUserApi.getUserStats(userId)
+      ]);
+      
+      // Get task count
+      const tasksQuery = query(
+        collection(db, 'tasks'),
+        where('userId', '==', userId),
+        where('status', '==', 'completed')
+      );
+      const tasksSnapshot = await getDocs(tasksQuery);
+      
+      // Get session stats
+      const sessionsQuery = query(
+        collection(db, 'sessions'),
+        where('userId', '==', userId),
+        orderBy('duration', 'desc'),
+        limit(1)
+      );
+      const sessionsSnapshot = await getDocs(sessionsQuery);
+      const longestSession = sessionsSnapshot.docs[0]?.data()?.duration || 0;
+      
+      return {
+        userId,
+        totalHours: userStats.totalHours,
+        totalTasks: tasksSnapshot.size,
+        currentStreak: streakData.currentStreak,
+        longestStreak: streakData.longestStreak,
+        totalSessions: userStats.sessionsThisMonth, // Approximate
+        longestSession: Math.floor(longestSession / 60),
+        mostHoursInDay: 0, // TODO: Calculate from daily stats
+        challengesCompleted: 0, // TODO: Get from challenges
+        challengesWon: 0 // TODO: Get from challenges
+      };
+    } catch (error: any) {
+      throw new Error(getErrorMessage(error, 'Failed to get user achievement data'));
+    }
+  },
+
+  // Check and award new achievements after session
+  checkAchievements: async (userId: string, sessionId?: string): Promise<Achievement[]> => {
+    try {
+      const [existingAchievements, userData] = await Promise.all([
+        firebaseAchievementApi.getUserAchievements(userId),
+        firebaseAchievementApi.getUserAchievementData(userId)
+      ]);
+      
+      const unlockedTypes = new Set(existingAchievements.map(a => a.type));
+      const newAchievements: Achievement[] = [];
+      
+      // Check streak achievements
+      if (userData.currentStreak >= 7 && !unlockedTypes.has('streak-7')) {
+        newAchievements.push(await firebaseAchievementApi.awardAchievement(userId, 'streak-7', sessionId));
+      }
+      if (userData.currentStreak >= 30 && !unlockedTypes.has('streak-30')) {
+        newAchievements.push(await firebaseAchievementApi.awardAchievement(userId, 'streak-30', sessionId));
+      }
+      if (userData.currentStreak >= 100 && !unlockedTypes.has('streak-100')) {
+        newAchievements.push(await firebaseAchievementApi.awardAchievement(userId, 'streak-100', sessionId));
+      }
+      if (userData.currentStreak >= 365 && !unlockedTypes.has('streak-365')) {
+        newAchievements.push(await firebaseAchievementApi.awardAchievement(userId, 'streak-365', sessionId));
+      }
+      
+      // Check hour achievements
+      if (userData.totalHours >= 10 && !unlockedTypes.has('hours-10')) {
+        newAchievements.push(await firebaseAchievementApi.awardAchievement(userId, 'hours-10', sessionId));
+      }
+      if (userData.totalHours >= 50 && !unlockedTypes.has('hours-50')) {
+        newAchievements.push(await firebaseAchievementApi.awardAchievement(userId, 'hours-50', sessionId));
+      }
+      if (userData.totalHours >= 100 && !unlockedTypes.has('hours-100')) {
+        newAchievements.push(await firebaseAchievementApi.awardAchievement(userId, 'hours-100', sessionId));
+      }
+      if (userData.totalHours >= 500 && !unlockedTypes.has('hours-500')) {
+        newAchievements.push(await firebaseAchievementApi.awardAchievement(userId, 'hours-500', sessionId));
+      }
+      if (userData.totalHours >= 1000 && !unlockedTypes.has('hours-1000')) {
+        newAchievements.push(await firebaseAchievementApi.awardAchievement(userId, 'hours-1000', sessionId));
+      }
+      
+      // Check task achievements
+      if (userData.totalTasks >= 50 && !unlockedTypes.has('tasks-50')) {
+        newAchievements.push(await firebaseAchievementApi.awardAchievement(userId, 'tasks-50', sessionId));
+      }
+      if (userData.totalTasks >= 100 && !unlockedTypes.has('tasks-100')) {
+        newAchievements.push(await firebaseAchievementApi.awardAchievement(userId, 'tasks-100', sessionId));
+      }
+      if (userData.totalTasks >= 500 && !unlockedTypes.has('tasks-500')) {
+        newAchievements.push(await firebaseAchievementApi.awardAchievement(userId, 'tasks-500', sessionId));
+      }
+      if (userData.totalTasks >= 1000 && !unlockedTypes.has('tasks-1000')) {
+        newAchievements.push(await firebaseAchievementApi.awardAchievement(userId, 'tasks-1000', sessionId));
+      }
+      
+      // Check time-based achievements if recent session provided
+      if (userData.recentSession) {
+        const sessionHour = userData.recentSession.startTime.getHours();
+        
+        if (sessionHour < 6 && !unlockedTypes.has('early-bird')) {
+          newAchievements.push(await firebaseAchievementApi.awardAchievement(userId, 'early-bird', sessionId));
+        }
+        
+        if (sessionHour >= 22 && !unlockedTypes.has('night-owl')) {
+          newAchievements.push(await firebaseAchievementApi.awardAchievement(userId, 'night-owl', sessionId));
+        }
+      }
+      
+      return newAchievements;
+    } catch (error: any) {
+      throw new Error(getErrorMessage(error, 'Failed to check achievements'));
+    }
+  },
+
+  // Award an achievement
+  awardAchievement: async (userId: string, type: AchievementType, sessionId?: string): Promise<Achievement> => {
+    try {
+      const def = ACHIEVEMENT_DEFINITIONS[type];
+      const achievementData = {
+        userId,
+        type,
+        name: def.name,
+        description: def.description,
+        icon: def.icon,
+        earnedAt: serverTimestamp(),
+        sessionId: sessionId || null,
+        isShared: false
+      };
+      
+      const docRef = await addDoc(collection(db, 'achievements'), achievementData);
+      
+      // Create notification
+      await addDoc(collection(db, 'notifications'), {
+        userId,
+        type: 'achievement',
+        title: 'Achievement Unlocked!',
+        message: `You earned the "${def.name}" achievement!`,
+        linkUrl: `/profile/${userId}?tab=achievements`,
+        isRead: false,
+        createdAt: serverTimestamp()
+      });
+      
+      return {
+        id: docRef.id,
+        ...achievementData,
+        earnedAt: new Date()
+      } as Achievement;
+    } catch (error: any) {
+      throw new Error(getErrorMessage(error, 'Failed to award achievement'));
+    }
+  },
+
+  // Share achievement to feed
+  shareAchievement: async (achievementId: string): Promise<void> => {
+    try {
+      if (!auth.currentUser) {
+        throw new Error('User not authenticated');
+      }
+      
+      const achievementDoc = await getDoc(doc(db, 'achievements', achievementId));
+      if (!achievementDoc.exists()) {
+        throw new Error('Achievement not found');
+      }
+      
+      const achievement = achievementDoc.data() as Achievement;
+      if (achievement.userId !== auth.currentUser.uid) {
+        throw new Error('Unauthorized');
+      }
+      
+      // Create a post about the achievement
+      await addDoc(collection(db, 'posts'), {
+        userId: auth.currentUser.uid,
+        type: 'achievement',
+        content: `Just unlocked the "${achievement.name}" achievement! ${achievement.icon}`,
+        achievementId,
+        visibility: 'everyone',
+        supportCount: 0,
+        commentCount: 0,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      });
+      
+      // Mark achievement as shared
+      await updateDoc(doc(db, 'achievements', achievementId), {
+        isShared: true
+      });
+    } catch (error: any) {
+      throw new Error(getErrorMessage(error, 'Failed to share achievement'));
+    }
+  }
+};
+
+// Export combined API (moved to end to include all APIs)
+export const firebaseApi = {
+  auth: firebaseAuthApi,
+  user: firebaseUserApi,
+  project: firebaseProjectApi,
+  task: firebaseTaskApi,
+  session: firebaseSessionApi,
+  post: firebasePostApi,
+  comment: firebaseCommentApi,
+  group: firebaseGroupApi,
+  streak: firebaseStreakApi,
+  achievement: firebaseAchievementApi,
+  challenge: firebaseChallengeApi
 };

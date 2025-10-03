@@ -332,14 +332,103 @@ export interface ChallengeStats {
   daysRemaining: number;
 }
 
+// Streak tracking
+export interface StreakData {
+  userId: string;
+  currentStreak: number;
+  longestStreak: number;
+  lastActivityDate: Date;
+  totalStreakDays: number;
+  streakHistory: StreakDay[];
+  isPublic: boolean;
+}
+
+export interface StreakDay {
+  date: string; // YYYY-MM-DD format
+  hasActivity: boolean;
+  sessionCount: number;
+  totalMinutes: number;
+}
+
+export interface StreakStats {
+  currentStreak: number;
+  longestStreak: number;
+  totalStreakDays: number;
+  lastActivityDate: Date | null;
+  streakAtRisk: boolean; // True if no activity today
+  nextMilestone: number; // Next streak milestone (7, 30, 100, etc.)
+}
+
+// Achievement system
 export interface Achievement {
   id: string;
   userId: string;
-  type: string;
+  type: AchievementType;
   name: string;
   description: string;
+  icon: string;
   earnedAt: Date;
   sessionId?: string;
+  metadata?: Record<string, any>; // Additional data like milestone value
+  isShared?: boolean; // Whether user shared to feed
+}
+
+export type AchievementType = 
+  | 'streak-7' 
+  | 'streak-30' 
+  | 'streak-100' 
+  | 'streak-365'
+  | 'hours-10' 
+  | 'hours-50' 
+  | 'hours-100' 
+  | 'hours-500'
+  | 'hours-1000'
+  | 'tasks-50' 
+  | 'tasks-100' 
+  | 'tasks-500'
+  | 'tasks-1000'
+  | 'challenge-complete'
+  | 'challenge-winner'
+  | 'personal-record-session'
+  | 'personal-record-day'
+  | 'early-bird' // Session before 6 AM
+  | 'night-owl' // Session after 10 PM
+  | 'weekend-warrior'
+  | 'consistency-king'; // 30 days in a row
+
+export interface AchievementDefinition {
+  type: AchievementType;
+  name: string;
+  description: string;
+  icon: string;
+  checkCondition: (userData: UserAchievementData) => boolean;
+  getValue?: (userData: UserAchievementData) => number;
+}
+
+export interface UserAchievementData {
+  userId: string;
+  totalHours: number;
+  totalTasks: number;
+  currentStreak: number;
+  longestStreak: number;
+  totalSessions: number;
+  longestSession: number; // in minutes
+  mostHoursInDay: number;
+  challengesCompleted: number;
+  challengesWon: number;
+  recentSession?: Session;
+}
+
+export interface AchievementProgress {
+  type: AchievementType;
+  name: string;
+  description: string;
+  icon: string;
+  currentValue: number;
+  targetValue: number;
+  percentage: number;
+  isUnlocked: boolean;
+  unlockedAt?: Date;
 }
 
 export interface Comment {
@@ -698,4 +787,80 @@ export interface SessionHistoryProps {
   onSessionDelete: (sessionId: string) => void;
   onSessionArchive: (sessionId: string) => void;
   isLoading?: boolean;
+}
+
+// Analytics types
+export interface AnalyticsPeriod {
+  label: string;
+  value: '7d' | '1m' | '3m' | '6m' | '1y' | 'all';
+  days: number;
+}
+
+export interface TrendData {
+  current: number;
+  previous: number;
+  change: number;
+  changePercent: number;
+  isPositive: boolean;
+}
+
+export interface PersonalAnalytics {
+  period: AnalyticsPeriod;
+  totalHours: TrendData;
+  totalSessions: TrendData;
+  totalTasks: TrendData;
+  averageSessionDuration: number;
+  currentStreak: number;
+  longestStreak: number;
+  mostProductiveDay: string; // 'Monday', 'Tuesday', etc.
+  mostProductiveHour: number; // 0-23
+  activityByDay: Array<{ day: string; hours: number; sessions: number }>;
+  activityByHour: Array<{ hour: number; sessions: number }>;
+  projectBreakdown: ProjectBreakdown[];
+}
+
+export interface ProjectAnalytics {
+  projectId: string;
+  projectName: string;
+  period: AnalyticsPeriod;
+  totalHours: number;
+  weeklyAverage: number;
+  sessionCount: number;
+  taskCompletionRate: number;
+  cumulativeHours: Array<{ date: string; hours: number }>;
+  sessionFrequency: Array<{ date: string; count: number }>;
+  goalProgress?: {
+    current: number;
+    target: number;
+    percentage: number;
+    estimatedCompletion?: Date;
+  };
+}
+
+export interface ComparativeAnalytics {
+  projects: Array<{
+    projectId: string;
+    projectName: string;
+    hours: number;
+    sessions: number;
+    tasks: number;
+  }>;
+  weekOverWeek: Array<{
+    week: string;
+    hours: number;
+    change: number;
+  }>;
+  personalRecords: {
+    longestSession: { duration: number; date: Date; projectName: string };
+    mostProductiveDay: { hours: number; date: Date; sessions: number };
+    bestWeek: { hours: number; weekStart: Date; sessions: number };
+  };
+}
+
+export interface ExportOptions {
+  type: 'sessions' | 'projects' | 'tasks' | 'all';
+  dateFrom: Date;
+  dateTo: Date;
+  format: 'csv' | 'json';
+  includePrivate: boolean;
 }
