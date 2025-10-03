@@ -128,8 +128,12 @@ const updateSocialGraph = async (currentUserId: string, targetUserId: string, ac
 
   try {
     await runTransaction(db, async (transaction) => {
+      // ALL READS MUST HAPPEN FIRST before any writes
       const currentUserDoc = await transaction.get(currentUserRef);
       const targetUserDoc = await transaction.get(targetUserRef);
+      const isFollowing = (await transaction.get(currentUserSocialGraphRef)).exists();
+      const mutualCheckRef = doc(db, `social_graph/${targetUserId}/outbound`, currentUserId);
+      const isMutualOrWasMutual = (await transaction.get(mutualCheckRef)).exists();
 
       if (!currentUserDoc.exists() || !targetUserDoc.exists()) {
         throw new Error('One or both users not found.');
@@ -138,8 +142,6 @@ const updateSocialGraph = async (currentUserId: string, targetUserId: string, ac
       const currentUserData = currentUserDoc.data();
       const targetUserData = targetUserDoc.data();
 
-      const isFollowing = (await transaction.get(currentUserSocialGraphRef)).exists();
-
       if (action === 'follow' && isFollowing) return;
       if (action === 'unfollow' && !isFollowing) return;
 
@@ -147,6 +149,7 @@ const updateSocialGraph = async (currentUserId: string, targetUserId: string, ac
       const currentUserUpdate: any = { updatedAt: now };
       const targetUserUpdate: any = { updatedAt: now };
 
+      // NOW DO ALL WRITES
       if (action === 'follow') {
         transaction.set(currentUserSocialGraphRef, { id: targetUserId, type: 'outbound', user: targetUserData, createdAt: now });
         transaction.set(targetUserSocialGraphRef, { id: currentUserId, type: 'inbound', user: currentUserData, createdAt: now });
@@ -154,9 +157,8 @@ const updateSocialGraph = async (currentUserId: string, targetUserId: string, ac
         currentUserUpdate.outboundFriendshipCount = increment(1);
         targetUserUpdate.inboundFriendshipCount = increment(1);
 
-        // Check for mutual friendship
-        const isTargetFollowingCurrentUser = (await transaction.get(doc(db, `social_graph/${targetUserId}/outbound`, currentUserId))).exists();
-        if (isTargetFollowingCurrentUser) {
+        // Check for mutual friendship (using pre-read value)
+        if (isMutualOrWasMutual) {
           currentUserUpdate.mutualFriendshipCount = increment(1);
           targetUserUpdate.mutualFriendshipCount = increment(1);
         }
@@ -167,9 +169,8 @@ const updateSocialGraph = async (currentUserId: string, targetUserId: string, ac
         currentUserUpdate.outboundFriendshipCount = increment(-1);
         targetUserUpdate.inboundFriendshipCount = increment(-1);
 
-        // Check for mutual friendship
-        const wasMutual = (await transaction.get(doc(db, `social_graph/${targetUserId}/outbound`, currentUserId))).exists();
-        if (wasMutual) {
+        // Check for mutual friendship (using pre-read value)
+        if (isMutualOrWasMutual) {
           currentUserUpdate.mutualFriendshipCount = increment(-1);
           targetUserUpdate.mutualFriendshipCount = increment(-1);
         }
@@ -968,6 +969,88 @@ export const firebaseUserApi = {
       throw new Error('User not authenticated');
     }
     await updateSocialGraph(auth.currentUser.uid, userId, 'unfollow');
+  },
+
+  // Get followers for a user
+  getFollowers: async (userId: string): Promise<User[]> => {
+    try {
+      // Get all inbound connections (people who follow this user)
+      const inboundRef = collection(db, `social_graph/${userId}/inbound`);
+      const inboundSnapshot = await getDocs(inboundRef);
+
+      if (inboundSnapshot.empty) {
+        return [];
+      }
+
+      // Get user details for all followers
+      const followerIds = inboundSnapshot.docs.map(doc => doc.id);
+      const followers: User[] = [];
+
+      for (const followerId of followerIds) {
+        const userDoc = await getDoc(doc(db, 'users', followerId));
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          followers.push({
+            id: userDoc.id,
+            username: userData.username,
+            email: userData.email,
+            name: userData.name,
+            bio: userData.bio || '',
+            profilePicture: userData.profilePicture,
+            followersCount: userData.followersCount || 0,
+            followingCount: userData.followingCount || 0,
+            createdAt: userData.createdAt?.toDate() || new Date(),
+            updatedAt: userData.updatedAt?.toDate() || new Date(),
+          });
+        }
+      }
+
+      return followers;
+    } catch (error: any) {
+      console.error('Error fetching followers:', error);
+      throw new Error(error.message || 'Failed to fetch followers');
+    }
+  },
+
+  // Get following for a user
+  getFollowing: async (userId: string): Promise<User[]> => {
+    try {
+      // Get all outbound connections (people this user follows)
+      const outboundRef = collection(db, `social_graph/${userId}/outbound`);
+      const outboundSnapshot = await getDocs(outboundRef);
+
+      if (outboundSnapshot.empty) {
+        return [];
+      }
+
+      // Get user details for all following
+      const followingIds = outboundSnapshot.docs.map(doc => doc.id);
+      const following: User[] = [];
+
+      for (const followingId of followingIds) {
+        const userDoc = await getDoc(doc(db, 'users', followingId));
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          following.push({
+            id: userDoc.id,
+            username: userData.username,
+            email: userData.email,
+            name: userData.name,
+            bio: userData.bio || '',
+            profilePicture: userData.profilePicture,
+            followersCount: userData.followersCount || 0,
+            followingCount: userData.followingCount || 0,
+            createdAt: userData.createdAt?.toDate() || new Date(),
+            updatedAt: userData.updatedAt?.toDate() || new Date(),
+          });
+        }
+      }
+
+      return following;
+    } catch (error: any) {
+      console.error('Error fetching following:', error);
+      throw new Error(error.message || 'Failed to fetch following');
+    }
   },
 
   // Sync follower counts for a user (recalculate from follows collection)

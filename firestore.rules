@@ -392,10 +392,16 @@ service cloud.firestore {
     // Social Graph for friendships
     match /social_graph/{userId}/{direction}/{friendId} {
       // Users can manage their own outbound friendships (following)
-      allow read, write, delete: if request.auth != null && request.auth.uid == userId;
-      
+      allow read, create, update, delete: if request.auth != null && request.auth.uid == userId;
+
+      // Allow authenticated users to create inbound friendship records (when someone follows you)
+      allow create: if request.auth != null && direction == 'inbound';
+
       // Allow users to read inbound friendships (followers)
       allow read: if request.auth != null;
+
+      // Allow authenticated users to delete inbound friendship records (when someone unfollows you)
+      allow delete: if request.auth != null && direction == 'inbound';
     }
 
     // (users match consolidated above)

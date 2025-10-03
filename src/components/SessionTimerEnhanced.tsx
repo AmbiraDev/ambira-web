@@ -41,6 +41,9 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
   const [privateNotes, setPrivateNotes] = useState('');
   const [selectedProjectId, setSelectedProjectId] = useState<string>('');
   const [displayTime, setDisplayTime] = useState(0);
+  const [showProjectPicker, setShowProjectPicker] = useState(false);
+  const [showTagPicker, setShowTagPicker] = useState(false);
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false);
 
   // Count completed tasks in this session
   useEffect(() => {
@@ -144,13 +147,14 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
   };
 
   const handleCancelTimer = async () => {
-    if (confirm('Are you sure you want to cancel this session? All progress will be lost.')) {
-      try {
-        await resetTimer();
-        setShowFinishModal(false);
-      } catch (error) {
-        console.error('Failed to cancel timer:', error);
-      }
+    try {
+      await resetTimer();
+      setShowFinishModal(false);
+      setShowCancelConfirm(false);
+      // Route to feed page
+      window.location.href = '/';
+    } catch (error) {
+      console.error('Failed to cancel timer:', error);
     }
   };
 
@@ -297,7 +301,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
               {/* Actions */}
               <div className="flex gap-4 pt-4">
                 <button
-                  onClick={handleCancelTimer}
+                  onClick={() => setShowCancelConfirm(true)}
                   className="flex-1 px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors"
                 >
                   Cancel Session
@@ -319,8 +323,6 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
 
   const selectedProject = projects.find(p => p.id === selectedProjectId);
   const selectedTag = sessionTags[0];
-  const [showProjectPicker, setShowProjectPicker] = useState(false);
-  const [showTagPicker, setShowTagPicker] = useState(false);
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
@@ -777,7 +779,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
               {/* Actions */}
               <div className="flex gap-4 pt-4">
                 <button
-                  onClick={handleCancelTimer}
+                  onClick={() => setShowCancelConfirm(true)}
                   className="flex-1 px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors"
                 >
                   Cancel Session
@@ -790,6 +792,32 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                   Save Session
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Cancel Confirmation Modal */}
+      {showCancelConfirm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-[60] flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl">
+            <h3 className="text-xl font-bold text-gray-900 mb-3">Cancel Session?</h3>
+            <p className="text-gray-600 mb-6">
+              Are you sure you want to cancel this session? All progress will be lost.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowCancelConfirm(false)}
+                className="flex-1 px-4 py-3 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition-colors font-medium"
+              >
+                Keep Session
+              </button>
+              <button
+                onClick={handleCancelTimer}
+                className="flex-1 px-4 py-3 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors font-medium"
+              >
+                Cancel Session
+              </button>
             </div>
           </div>
         </div>

@@ -6,7 +6,7 @@ import { UserProfile, UserStats, ProfileTab } from '@/types';
 import { firebaseUserApi, firebaseSessionApi } from '@/lib/firebaseApi';
 import { useAuth } from '@/contexts/AuthContext';
 import { ProfileHeader } from '@/components/ProfileHeader';
-import { ProfileTabs, TabContent, OverviewContent, AchievementsContent, FollowingContent, PostsContent } from '@/components/ProfileTabs';
+import { ProfileTabs, TabContent, OverviewContent, AchievementsContent, FollowersContent, FollowingContent, PostsContent } from '@/components/ProfileTabs';
 import { ProfileStats } from '@/components/ProfileStats';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import Header from '@/components/HeaderComponent';
@@ -159,8 +159,8 @@ export default function ProfilePage() {
     totalHours: stats?.totalHours || 0,
     currentStreak: stats?.currentStreak || 0,
     achievements: 0, // TODO: Implement achievements
-    followers: profile.followersCount,
-    following: profile.followingCount,
+    followers: profile.followersCount || 0,
+    following: profile.followingCount || 0,
     posts: postsCount,
   };
   
@@ -184,6 +184,7 @@ export default function ProfilePage() {
             onTabChange={setActiveTab}
             stats={tabStats}
             showPrivateContent={isOwnProfile}
+            userId={profile.id}
           />
 
           {/* Tab Content */}
@@ -199,7 +200,8 @@ export default function ProfilePage() {
               )}
               
               {activeTab === 'achievements' && <AchievementsContent />}
-              {activeTab === 'following' && <FollowingContent />}
+              {activeTab === 'followers' && <FollowersContent userId={profile.id} />}
+              {activeTab === 'following' && <FollowingContent userId={profile.id} />}
               {activeTab === 'posts' && <PostsContent userId={profile.id} isOwnProfile={isOwnProfile} />}
             </TabContent>
           </div>

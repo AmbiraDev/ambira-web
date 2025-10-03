@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { firebaseSessionApi, firebaseApi } from '@/lib/firebaseApi';
+import { firebaseSessionApi, firebaseApi, firebaseUserApi } from '@/lib/firebaseApi';
 import { Session, User, Project, SessionWithDetails } from '@/types';
 import SessionCard from './SessionCard';
 import {
@@ -17,7 +17,7 @@ import {
   Clock
 } from 'lucide-react';
 
-export type ProfileTab = 'overview' | 'achievements' | 'following' | 'posts';
+export type ProfileTab = 'overview' | 'achievements' | 'followers' | 'following' | 'posts';
 
 interface ProfileTabsProps {
   activeTab: ProfileTab;
@@ -31,6 +31,7 @@ interface ProfileTabsProps {
     posts: number;
   };
   showPrivateContent?: boolean;
+  userId?: string;
 }
 
 export const ProfileTabs: React.FC<ProfileTabsProps> = ({
@@ -38,6 +39,7 @@ export const ProfileTabs: React.FC<ProfileTabsProps> = ({
   onTabChange,
   stats,
   showPrivateContent = false,
+  userId,
 }) => {
   const tabs: Array<{
     id: ProfileTab;
@@ -55,7 +57,12 @@ export const ProfileTabs: React.FC<ProfileTabsProps> = ({
       id: 'achievements',
       label: 'Achievements',
       icon: <Trophy className="w-4 h-4" />,
-      badge: stats?.achievements,
+    },
+    {
+      id: 'followers',
+      label: 'Followers',
+      icon: <Users className="w-4 h-4" />,
+      badge: stats?.followers,
     },
     {
       id: 'following',
@@ -68,13 +75,12 @@ export const ProfileTabs: React.FC<ProfileTabsProps> = ({
       label: 'Posts',
       icon: <FileText className="w-4 h-4" />,
       badge: stats?.posts,
-      disabled: !showPrivateContent,
     },
   ];
 
   return (
     <div className="border-b border-border">
-      <div className="flex space-x-1 overflow-x-auto">
+      <div className="flex space-x-0 overflow-x-auto scrollbar-hide">
         {tabs.map((tab) => (
           <Button
             key={tab.id}
@@ -82,20 +88,20 @@ export const ProfileTabs: React.FC<ProfileTabsProps> = ({
             onClick={() => !tab.disabled && onTabChange(tab.id)}
             disabled={tab.disabled}
             className={`
-              flex items-center gap-2 px-4 py-2 rounded-none border-b-2 transition-all
-              ${activeTab === tab.id 
-                ? 'border-primary text-primary bg-primary/5' 
+              flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-2 rounded-none border-b-2 transition-all flex-shrink-0
+              ${activeTab === tab.id
+                ? 'border-primary text-primary bg-primary/5'
                 : 'border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground/50'
               }
               ${tab.disabled ? 'opacity-50 cursor-not-allowed' : ''}
             `}
           >
-            {tab.icon}
-            <span className="whitespace-nowrap">{tab.label}</span>
-            {tab.badge !== undefined && tab.badge > 0 && (
-              <Badge 
-                variant={activeTab === tab.id ? "secondary" : "outline"} 
-                className="ml-1 text-xs"
+            <span className="hidden md:inline">{tab.icon}</span>
+            <span className="whitespace-nowrap text-sm md:text-base">{tab.label}</span>
+            {tab.badge !== undefined && (
+              <Badge
+                variant={activeTab === tab.id ? "secondary" : "outline"}
+                className="ml-0.5 md:ml-1 text-xs px-1.5 py-0"
               >
                 {tab.badge}
               </Badge>
@@ -270,14 +276,119 @@ export const AchievementsContent: React.FC = () => (
   </div>
 );
 
-export const FollowingContent: React.FC = () => (
-  <div className="text-center py-12">
-    <Users className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-    <h3 className="text-lg font-semibold text-foreground mb-2">Following</h3>
-    <p className="text-muted-foreground">
-      Follow list will be displayed here.
-    </p>
-  </div>
+interface FollowListContentProps {
+  userId: string;
+  type: 'followers' | 'following';
+}
+
+export const FollowListContent: React.FC<FollowListContentProps> = ({ userId, type }) => {
+  const [users, setUsers] = useState<User[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadUsers = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        if (type === 'followers') {
+          const followers = await firebaseUserApi.getFollowers(userId);
+          setUsers(followers);
+        } else {
+          const following = await firebaseUserApi.getFollowing(userId);
+          setUsers(following);
+        }
+      } catch (err: any) {
+        console.error(`Failed to load ${type}:`, err);
+        setError(err.message || `Failed to load ${type}`);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (userId) {
+      loadUsers();
+    }
+  }, [userId, type]);
+
+  if (isLoading) {
+    return (
+      <div className="text-center py-12">
+        <div className="animate-pulse">
+          <div className="h-4 bg-muted rounded w-3/4 mx-auto mb-4"></div>
+          <div className="h-4 bg-muted rounded w-1/2 mx-auto"></div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <Users className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+        <h3 className="text-lg font-semibold text-foreground mb-2">Error</h3>
+        <p className="text-muted-foreground">{error}</p>
+      </div>
+    );
+  }
+
+  if (users.length === 0) {
+    return (
+      <div className="text-center py-12">
+        <Users className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+        <h3 className="text-lg font-semibold text-foreground mb-2">
+          No {type === 'followers' ? 'Followers' : 'Following'}
+        </h3>
+        <p className="text-muted-foreground">
+          {type === 'followers'
+            ? 'No one is following this user yet.'
+            : 'Not following anyone yet.'}
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-0 divide-y divide-border">
+      {users.map((user) => (
+        <a
+          key={user.id}
+          href={`/profile/${user.username}`}
+          className="flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors"
+        >
+          <div className="w-12 h-12 bg-[#007AFF]/10 rounded-full flex items-center justify-center text-[#007AFF] font-semibold text-lg flex-shrink-0">
+            {user.name.charAt(0).toUpperCase()}
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="font-semibold text-foreground">{user.name}</div>
+            <div className="text-sm text-muted-foreground">@{user.username}</div>
+            {user.bio && (
+              <p className="mt-1 text-sm text-muted-foreground line-clamp-1">{user.bio}</p>
+            )}
+          </div>
+          <div className="flex items-center gap-4 text-sm text-muted-foreground flex-shrink-0">
+            <div className="text-center">
+              <div className="font-semibold text-foreground">{user.followersCount}</div>
+              <div className="text-xs">followers</div>
+            </div>
+            <div className="text-center">
+              <div className="font-semibold text-foreground">{user.followingCount}</div>
+              <div className="text-xs">following</div>
+            </div>
+          </div>
+        </a>
+      ))}
+    </div>
+  );
+};
+
+export const FollowingContent: React.FC<{ userId: string }> = ({ userId }) => (
+  <FollowListContent userId={userId} type="following" />
+);
+
+export const FollowersContent: React.FC<{ userId: string }> = ({ userId }) => (
+  <FollowListContent userId={userId} type="followers" />
 );
 
 interface PostsContentProps {
