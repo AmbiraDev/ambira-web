@@ -8,12 +8,13 @@ import { useTasks } from '@/contexts/TasksContext';
 import { CreateProjectModal } from './CreateProjectModal';
 import { TaskList } from './TaskList';
 import { firebaseSessionApi } from '@/lib/firebaseApi';
+import { ProjectAnalytics } from './ProjectAnalytics';
 
 interface ProjectDetailPageProps {
   projectId: string;
 }
 
-type TabType = 'overview' | 'tasks' | 'sessions';
+type TabType = 'overview' | 'tasks' | 'sessions' | 'analytics';
 
 export const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({ projectId }) => {
   const router = useRouter();
@@ -149,6 +150,7 @@ export const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({ projectId 
     { id: 'overview', label: 'Overview', icon: '📊' },
     { id: 'tasks', label: 'Tasks', icon: '✅' },
     { id: 'sessions', label: 'Sessions', icon: '⏱️' },
+    { id: 'analytics', label: 'Analytics', icon: '📈' },
   ] as const;
 
   return (
@@ -223,6 +225,9 @@ export const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({ projectId 
         )}
         {activeTab === 'sessions' && (
           <SessionsTab project={project} />
+        )}
+        {activeTab === 'analytics' && (
+          <ProjectAnalytics projectId={project.id} projectName={project.name} />
         )}
       </div>
 

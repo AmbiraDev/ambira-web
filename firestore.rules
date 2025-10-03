@@ -338,6 +338,19 @@ service cloud.firestore {
       allow delete: if isParticipantOwner();
     }
 
+    // Streaks
+    match /streaks/{userId} {
+      // Users can read/write their own streak data
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      
+      // Allow authenticated users to read public streaks for social features
+      allow read: if request.auth != null && 
+        (resource.data.isPublic == true || !('isPublic' in resource.data));
+      
+      // Allow listing streaks for leaderboards (only public ones)
+      allow list: if request.auth != null;
+    }
+
     // (users match consolidated above)
   }
 }

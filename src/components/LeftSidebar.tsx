@@ -2,8 +2,9 @@
 
 import { useAuth } from '@/contexts/AuthContext';
 import { useState, useEffect } from 'react';
-import { firebaseUserApi } from '@/lib/firebaseApi';
+import { firebaseApi } from '@/lib/firebaseApi';
 import { UserProfile, UserStats } from '@/types';
+import { WeekStreakCalendar } from './WeekStreakCalendar';
 
 function LeftSidebar() {
   const { user } = useAuth();
@@ -17,8 +18,8 @@ function LeftSidebar() {
         try {
           setIsLoading(true);
           const [profileData, statsData] = await Promise.all([
-            firebaseUserApi.getUserProfile(user.username),
-            firebaseUserApi.getUserStats(user.id)
+            firebaseApi.user.getUserProfile(user.username),
+            firebaseApi.user.getUserStats(user.id)
           ]);
           setProfile(profileData);
           setStats(statsData);
@@ -31,28 +32,25 @@ function LeftSidebar() {
             name: user.name,
             bio: '',
             location: '',
-            profilePicture: null,
+            profilePicture: undefined,
             followersCount: 0,
             followingCount: 0,
             totalHours: 0,
             isFollowing: false,
             isPrivate: false,
-            profileVisibility: 'everyone',
-            activityVisibility: 'everyone',
-            projectVisibility: 'everyone',
             createdAt: new Date(),
             updatedAt: new Date()
           });
           setStats({
             totalHours: 0,
+            weeklyHours: 0,
+            monthlyHours: 0,
             sessionsThisWeek: 0,
+            sessionsThisMonth: 0,
             currentStreak: 0,
             longestStreak: 0,
-            averageSessionLength: 0,
-            mostProductiveDay: 'Monday',
-            totalSessions: 0,
-            completedTasks: 0,
-            activeProjects: 0
+            averageSessionDuration: 0,
+            mostProductiveHour: 14
           });
         } finally {
           setIsLoading(false);
@@ -131,7 +129,7 @@ function LeftSidebar() {
           )}
 
           {/* Your Streak */}
-          {!isLoading && (
+          {!isLoading && user && (
             <div className="border-t border-gray-200 pt-4">
               <div className="flex items-center justify-between mb-2">
                 <div className="text-sm text-gray-600">Your streak</div>
@@ -143,53 +141,8 @@ function LeftSidebar() {
                 </div>
               </div>
               
-              {/* Weekly Calendar */}
-              <div className="flex justify-between mb-2">
-                <div className="flex-1 text-center">
-                  <div className="text-xs text-gray-500 mb-1">M</div>
-                  <div className="h-8 flex items-center justify-center">
-                    <span className="text-sm font-semibold text-gray-400">29</span>
-                  </div>
-                </div>
-                <div className="flex-1 text-center">
-                  <div className="text-xs text-gray-500 mb-1">T</div>
-                  <div className="h-8 flex items-center justify-center">
-                    <span className="text-sm font-semibold text-gray-400">30</span>
-                  </div>
-                </div>
-                <div className="flex-1 text-center">
-                  <div className="text-xs text-gray-500 mb-1">W</div>
-                  <div className="h-8 flex items-center justify-center">
-                    <div className="w-8 h-8 bg-gray-900 rounded-full flex items-center justify-center">
-                      <span className="text-sm font-semibold text-white">1</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex-1 text-center">
-                  <div className="text-xs text-gray-500 mb-1">T</div>
-                  <div className="h-8 flex items-center justify-center">
-                    <span className="text-sm font-semibold text-gray-400">2</span>
-                  </div>
-                </div>
-                <div className="flex-1 text-center">
-                  <div className="text-xs text-gray-500 mb-1">F</div>
-                  <div className="h-8 flex items-center justify-center">
-                    <span className="text-sm font-semibold text-gray-400">3</span>
-                  </div>
-                </div>
-                <div className="flex-1 text-center">
-                  <div className="text-xs text-gray-500 mb-1">S</div>
-                  <div className="h-8 flex items-center justify-center">
-                    <span className="text-sm font-semibold text-gray-400">4</span>
-                  </div>
-                </div>
-                <div className="flex-1 text-center">
-                  <div className="text-xs text-gray-500 mb-1">S</div>
-                  <div className="h-8 flex items-center justify-center">
-                    <span className="text-sm font-semibold text-gray-400">5</span>
-                  </div>
-                </div>
-              </div>
+              {/* Weekly Calendar with real data */}
+              <WeekStreakCalendar userId={user.id} />
             </div>
           )}
         </div>

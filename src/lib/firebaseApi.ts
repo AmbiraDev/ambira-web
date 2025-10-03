@@ -4614,6 +4614,323 @@ export const firebaseAchievementApi = {
   }
 };
 
+// Firebase Notification API
+export const firebaseNotificationApi = {
+  // Create a notification
+  createNotification: async (notification: Omit<Notification, 'id' | 'createdAt'>): Promise<Notification> => {
+    try {
+      const notificationData = {
+        ...notification,
+        createdAt: serverTimestamp()
+      };
+
+      const docRef = await addDoc(collection(db, 'notifications'), notificationData);
+      
+      return {
+        id: docRef.id,
+        ...notification,
+        createdAt: new Date()
+      };
+    } catch (error: any) {
+      throw new Error(error.message || 'Failed to create notification');
+    }
+  },
+
+  // Get notifications for a user
+  getUserNotifications: async (userId: string, limit: number = 50): Promise<Notification[]> => {
+    try {
+      const notificationsQuery = query(
+        collection(db, 'notifications'),
+        where('userId', '==', userId),
+        orderBy('createdAt', 'desc'),
+        limit(limit)
+      );
+
+      const snapshot = await getDocs(notificationsQuery);
+      const notifications: Notification[] = [];
+
+      snapshot.forEach((doc) => {
+        const data = doc.data();
+        notifications.push({
+          id: doc.id,
+          userId: data.userId,
+          type: data.type,
+          title: data.title,
+          message: data.message,
+          data: data.data,
+          isRead: data.isRead || false,
+          createdAt: convertTimestamp(data.createdAt)
+        });
+      });
+
+      return notifications;
+    } catch (error: any) {
+      throw new Error(error.message || 'Failed to get notifications');
+    }
+  },
+
+  // Mark notification as read
+  markAsRead: async (notificationId: string): Promise<void> => {
+    try {
+      await updateDoc(doc(db, 'notifications', notificationId), {
+        isRead: true,
+        updatedAt: serverTimestamp()
+      });
+    } catch (error: any) {
+      throw new Error(error.message || 'Failed to mark notification as read');
+    }
+  },
+
+  // Mark all notifications as read for a user
+  markAllAsRead: async (userId: string): Promise<void> => {
+    try {
+      const notificationsQuery = query(
+        collection(db, 'notifications'),
+        where('userId', '==', userId),
+        where('isRead', '==', false)
+      );
+
+      const snapshot = await getDocs(notificationsQuery);
+      const batch = writeBatch(db);
+
+      snapshot.forEach((doc) => {
+        batch.update(doc.ref, {
+          isRead: true,
+          updatedAt: serverTimestamp()
+        });
+      });
+
+      await batch.commit();
+    } catch (error: any) {
+      throw new Error(error.message || 'Failed to mark all notifications as read');
+    }
+  },
+
+  // Delete a notification
+  deleteNotification: async (notificationId: string): Promise<void> => {
+    try {
+      await deleteDoc(doc(db, 'notifications', notificationId));
+    } catch (error: any) {
+      throw new Error(error.message || 'Failed to delete notification');
+    }
+  },
+
+  // Get unread notification count
+  getUnreadCount: async (userId: string): Promise<number> => {
+    try {
+      const notificationsQuery = query(
+        collection(db, 'notifications'),
+        where('userId', '==', userId),
+        where('isRead', '==', false)
+      );
+
+      const snapshot = await getDocs(notificationsQuery);
+      return snapshot.size;
+    } catch (error: any) {
+      throw new Error(error.message || 'Failed to get unread count');
+    }
+  }
+};
+
+// Challenge Notification Helper Functions
+export const challengeNotifications = {
+  // Notify when a user completes a challenge
+  notifyCompletion: async (challengeId: string, userId: string, challengeName: string, challengeType: string): Promise<void> => {
+    try {
+      const notification: Omit<Notification, 'id' | 'createdAt'> = {
+        userId,
+        type: 'challenge_completed',
+        title: '🏆 Challenge Completed!',
+        message: `Congratulations! You've completed the "${challengeName}" challenge.`,
+        data: {
+          challengeId,
+          challengeName,
+          challengeType
+        } as ChallengeNotificationData,
+        isRead: false
+      };
+
+      await firebaseNotificationApi.createNotification(notification);
+    } catch (error) {
+      console.error('Failed to send completion notification:', error);
+    }
+  },
+
+  // Notify other participants when someone joins a challenge
+  notifyParticipantJoined: async (challengeId: string, newParticipantId: string, newParticipantName: string, challengeName: string): Promise<void> => {
+    try {
+      // Get all other participants
+      const participantsQuery = query(
+        collection(db, 'challengeParticipants'),
+        where('challengeId', '==', challengeId)
+      );
+
+      const participantsSnapshot = await getDocs(participantsQuery);
+      const batch = writeBatch(db);
+
+      participantsSnapshot.forEach((participantDoc) => {
+        const participantData = participantDoc.data();
+        
+        // Don't notify the person who just joined
+        if (participantData.userId !== newParticipantId) {
+          const notificationRef = doc(collection(db, 'notifications'));
+          batch.set(notificationRef, {
+            userId: participantData.userId,
+            type: 'challenge_joined',
+            title: '👋 New Challenger!',
+            message: `${newParticipantName} joined the "${challengeName}" challenge.`,
+            data: {
+              challengeId,
+              challengeName,
+              participantId: newParticipantId,
+              participantName: newParticipantName
+            } as ChallengeNotificationData,
+            isRead: false,
+            createdAt: serverTimestamp()
+          });
+        }
+      });
+
+      await batch.commit();
+    } catch (error) {
+      console.error('Failed to send participant joined notifications:', error);
+    }
+  },
+
+  // Notify all participants when challenge is ending soon
+  notifyEndingSoon: async (challengeId: string, challengeName: string, daysRemaining: number): Promise<void> => {
+    try {
+      // Get all participants
+      const participantsQuery = query(
+        collection(db, 'challengeParticipants'),
+        where('challengeId', '==', challengeId)
+      );
+
+      const participantsSnapshot = await getDocs(participantsQuery);
+      const batch = writeBatch(db);
+
+      participantsSnapshot.forEach((participantDoc) => {
+        const participantData = participantDoc.data();
+        
+        const notificationRef = doc(collection(db, 'notifications'));
+        batch.set(notificationRef, {
+          userId: participantData.userId,
+          type: 'challenge_ending',
+          title: '⏰ Challenge Ending Soon!',
+          message: `The "${challengeName}" challenge ends in ${daysRemaining} day${daysRemaining !== 1 ? 's' : ''}. Make your final push!`,
+          data: {
+            challengeId,
+            challengeName,
+            daysRemaining
+          } as ChallengeNotificationData,
+          isRead: false,
+          createdAt: serverTimestamp()
+        });
+      });
+
+      await batch.commit();
+    } catch (error) {
+      console.error('Failed to send ending soon notifications:', error);
+    }
+  },
+
+  // Notify when a new challenge is created in a group
+  notifyNewChallenge: async (challengeId: string, challengeName: string, challengeType: string, groupId: string, creatorName: string): Promise<void> => {
+    try {
+      // Get all group members
+      const groupDoc = await getDoc(doc(db, 'groups', groupId));
+      if (!groupDoc.exists()) return;
+
+      const groupData = groupDoc.data();
+      const memberIds = groupData.memberUserIds || [];
+      const batch = writeBatch(db);
+
+      memberIds.forEach((memberId: string) => {
+        // Don't notify the creator
+        if (memberId !== groupData.createdByUserId) {
+          const notificationRef = doc(collection(db, 'notifications'));
+          batch.set(notificationRef, {
+            userId: memberId,
+            type: 'challenge_created',
+            title: '🎯 New Challenge Available!',
+            message: `${creatorName} created a new "${challengeName}" challenge in your group.`,
+            data: {
+              challengeId,
+              challengeName,
+              challengeType,
+              groupId,
+              groupName: groupData.name
+            } as ChallengeNotificationData,
+            isRead: false,
+            createdAt: serverTimestamp()
+          });
+        }
+      });
+
+      await batch.commit();
+    } catch (error) {
+      console.error('Failed to send new challenge notifications:', error);
+    }
+  },
+
+  // Notify when rank changes significantly (moved up 3+ positions)
+  notifyRankChange: async (challengeId: string, userId: string, challengeName: string, newRank: number, previousRank: number): Promise<void> => {
+    try {
+      // Only notify for significant improvements (moved up 3+ positions)
+      if (previousRank - newRank >= 3) {
+        const notification: Omit<Notification, 'id' | 'createdAt'> = {
+          userId,
+          type: 'challenge_rank_changed',
+          title: '📈 Rank Improved!',
+          message: `You moved up to #${newRank} in the "${challengeName}" challenge!`,
+          data: {
+            challengeId,
+            challengeName,
+            rank: newRank,
+            previousRank
+          } as ChallengeNotificationData,
+          isRead: false
+        };
+
+        await firebaseNotificationApi.createNotification(notification);
+      }
+    } catch (error) {
+      console.error('Failed to send rank change notification:', error);
+    }
+  },
+
+  // Notify when reaching milestones (25%, 50%, 75%, 90% of goal)
+  notifyMilestone: async (challengeId: string, userId: string, challengeName: string, progress: number, goalValue: number): Promise<void> => {
+    try {
+      const percentage = (progress / goalValue) * 100;
+      const milestones = [25, 50, 75, 90];
+      
+      for (const milestone of milestones) {
+        if (percentage >= milestone && percentage < milestone + 5) { // 5% buffer to avoid duplicate notifications
+          const notification: Omit<Notification, 'id' | 'createdAt'> = {
+            userId,
+            type: 'challenge_milestone',
+            title: `🎯 ${milestone}% Complete!`,
+            message: `You're ${milestone}% of the way through the "${challengeName}" challenge. Keep going!`,
+            data: {
+              challengeId,
+              challengeName,
+              progress,
+              goalValue
+            } as ChallengeNotificationData,
+            isRead: false
+          };
+
+          await firebaseNotificationApi.createNotification(notification);
+          break; // Only send one milestone notification at a time
+        }
+      }
+    } catch (error) {
+      console.error('Failed to send milestone notification:', error);
+    }
+  }
+};
+
 // Export combined API (moved to end to include all APIs)
 export const firebaseApi = {
   auth: firebaseAuthApi,
@@ -4626,5 +4943,6 @@ export const firebaseApi = {
   group: firebaseGroupApi,
   streak: firebaseStreakApi,
   achievement: firebaseAchievementApi,
-  challenge: firebaseChallengeApi
+  challenge: firebaseChallengeApi,
+  notification: firebaseNotificationApi
 };

@@ -329,7 +329,7 @@
 - [X] Show participant count
 - [X] Add progress bars
 - [X] Create completion detection
-- [ ] Add challenge notifications
+- [X] Add challenge notifications
 - [X] Display in active challenges sidebar
 
 ## Phase 5: Gamification & Polish
@@ -388,15 +388,24 @@
 - [ ] Build theme selector
 
 ### Notifications
-- [ ] Create notification queue table
-- [ ] Build notification triggers
+- [X] Create notification system for challenges
+- [X] Build notification API endpoints
+- [X] Create notification types and data structures
+- [X] Implement challenge completion notifications
+- [X] Add participant joined notifications
+- [X] Create challenge ending soon notifications
+- [X] Build new challenge created notifications
+- [X] Add milestone achievement notifications
+- [X] Create rank change notifications
+- [X] Build notification bell component
+- [X] Create notifications page
+- [X] Add notification management (mark read/delete)
+- [X] Integrate with challenge system
+- [X] Deploy Firestore rules and indexes
 - [ ] Create email templates
 - [ ] Implement batch processing
 - [ ] Add rate limiting
 - [ ] Build preference API
-- [ ] Create notification center structure
-- [ ] Add unread indicators
-- [ ] Implement mark as read
 - [ ] Test email delivery
 
 ### Analytics

@@ -1,10 +1,12 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Clock, Target, CheckSquare, TrendingUp, Calendar } from 'lucide-react';
+import { Clock, Target, TrendingUp, BarChart3 } from 'lucide-react';
 import { ActivityChart } from './ActivityChart';
 import { ProgressRing } from './ProgressRing';
-import { AnalyticsPeriod } from '@/types';
+import { AnalyticsPeriod, ProjectStats } from '@/types';
+import { firebaseProjectApi, firebaseSessionApi } from '@/lib/firebaseApi';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface ProjectAnalyticsProps {
   projectId: string;
@@ -20,57 +22,166 @@ const PERIODS: AnalyticsPeriod[] = [
   { label: 'All', value: 'all', days: 9999 }
 ];
 
+interface ProjectAnalyticsData {
+  totalHours: number;
+  weeklyAverage: number;
+  sessionCount: number;
+  averageSessionDuration: number;
+  goalProgress: {
+    current: number;
+    target: number | null;
+    percentage: number;
+    estimatedCompletion: Date | null;
+  };
+  cumulativeHours: Array<{ label: string; value: number }>;
+  sessionFrequency: Array<{ label: string; value: number }>;
+}
+
 export const ProjectAnalytics: React.FC<ProjectAnalyticsProps> = ({
   projectId,
   projectName
 }) => {
+  const { user } = useAuth();
   const [selectedPeriod, setSelectedPeriod] = useState<AnalyticsPeriod>(PERIODS[1]);
   const [isLoading, setIsLoading] = useState(true);
+  const [analyticsData, setAnalyticsData] = useState<ProjectAnalyticsData | null>(null);
 
-  // Mock data - in real implementation, fetch from API
-  const mockData = {
-    totalHours: 125,
-    weeklyAverage: 8.5,
-    sessionCount: 42,
-    taskCompletionRate: 78,
-    goalProgress: {
-      current: 125,
-      target: 200,
-      percentage: 62.5,
-      estimatedCompletion: new Date('2025-11-15')
-    },
-    cumulativeHours: Array.from({ length: 30 }, (_, i) => {
-      const date = new Date();
-      date.setDate(date.getDate() - (30 - i));
-      return {
-        label: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-        value: Math.floor(Math.random() * 3) + (i * 4)
+  const loadAnalyticsData = async () => {
+    if (!user) return;
+    
+    try {
+      setIsLoading(true);
+      
+      // Get project stats
+      const projectStats = await firebaseProjectApi.getProjectStats(projectId);
+      
+      // Get sessions for this project within the selected period
+      const endDate = new Date();
+      const startDate = new Date();
+      startDate.setDate(endDate.getDate() - selectedPeriod.days);
+      
+      const sessions = await firebaseSessionApi.getSessionsByProject(projectId, {
+        dateFrom: startDate,
+        dateTo: endDate
+      });
+
+      // Calculate cumulative hours data
+      const dailyHours: Record<string, number> = {};
+      let cumulativeTotal = 0;
+      
+      sessions.forEach(session => {
+        const sessionDate = new Date(session.startTime);
+        const dateKey = sessionDate.toISOString().split('T')[0];
+        dailyHours[dateKey] = (dailyHours[dateKey] || 0) + (session.duration / 3600);
+      });
+
+      // Generate cumulative hours chart data
+      const cumulativeHours = [];
+      for (let i = selectedPeriod.days - 1; i >= 0; i--) {
+        const date = new Date();
+        date.setDate(date.getDate() - i);
+        const dateKey = date.toISOString().split('T')[0];
+        const dailyHour = dailyHours[dateKey] || 0;
+        cumulativeTotal += dailyHour;
+        
+        cumulativeHours.push({
+          label: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+          value: Math.round(cumulativeTotal * 10) / 10
+        });
+      }
+
+      // Generate session frequency data (weekly)
+      const weeklyData: Record<string, number> = {};
+      sessions.forEach(session => {
+        const sessionDate = new Date(session.startTime);
+        const weekStart = new Date(sessionDate);
+        weekStart.setDate(sessionDate.getDate() - sessionDate.getDay());
+        const weekKey = weekStart.toISOString().split('T')[0];
+        weeklyData[weekKey] = (weeklyData[weekKey] || 0) + 1;
+      });
+
+      const sessionFrequency = Object.entries(weeklyData)
+        .sort(([a], [b]) => a.localeCompare(b))
+        .slice(-12) // Last 12 weeks
+        .map(([weekKey, count], index) => ({
+          label: `Week ${index + 1}`,
+          value: count
+        }));
+
+      // Calculate goal progress
+      const totalHours = projectStats.totalHours;
+      const goalProgress = {
+        current: totalHours,
+        target: projectStats.totalTarget || null,
+        percentage: projectStats.totalTarget ? (totalHours / projectStats.totalTarget) * 100 : 0,
+        estimatedCompletion: projectStats.totalTarget && projectStats.weeklyHours > 0 
+          ? new Date(Date.now() + ((projectStats.totalTarget - totalHours) / projectStats.weeklyHours) * 7 * 24 * 60 * 60 * 1000)
+          : null
       };
-    }),
-    sessionFrequency: Array.from({ length: 12 }, (_, i) => {
-      const date = new Date();
-      date.setDate(date.getDate() - (12 - i) * 7);
-      return {
-        label: `Week ${i + 1}`,
-        value: Math.floor(Math.random() * 8) + 2
-      };
-    })
+
+      setAnalyticsData({
+        totalHours: Math.round(totalHours * 10) / 10,
+        weeklyAverage: Math.round(projectStats.weeklyHours * 10) / 10,
+        sessionCount: sessions.length,
+        averageSessionDuration: sessions.length > 0 
+          ? Math.round((sessions.reduce((sum, s) => sum + s.duration, 0) / sessions.length / 60) * 10) / 10
+          : 0,
+        goalProgress,
+        cumulativeHours,
+        sessionFrequency: sessionFrequency.length > 0 ? sessionFrequency : [
+          { label: 'This Week', value: sessions.length }
+        ]
+      });
+      
+    } catch (error) {
+      console.error('Failed to load analytics data:', error);
+      // Fallback to basic data
+      setAnalyticsData({
+        totalHours: 0,
+        weeklyAverage: 0,
+        sessionCount: 0,
+        averageSessionDuration: 0,
+        goalProgress: { current: 0, target: null, percentage: 0, estimatedCompletion: null },
+        cumulativeHours: [{ label: 'Today', value: 0 }],
+        sessionFrequency: [{ label: 'This Week', value: 0 }]
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {
-    setIsLoading(false);
-  }, [projectId, selectedPeriod]);
+    loadAnalyticsData();
+  }, [projectId, selectedPeriod, user]);
 
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div className="h-64 bg-gray-100 rounded-lg animate-pulse"></div>
+        <div className="h-8 bg-gray-200 rounded animate-pulse mb-4"></div>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {[...Array(4)].map((_, i) => (
+            <div key={i} className="h-24 bg-gray-200 rounded animate-pulse"></div>
+          ))}
+        </div>
+        <div className="h-64 bg-gray-200 rounded animate-pulse"></div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="h-64 bg-gray-200 rounded animate-pulse"></div>
+          <div className="h-64 bg-gray-200 rounded animate-pulse"></div>
+        </div>
       </div>
     );
   }
 
-  const daysUntilGoal = mockData.goalProgress.estimatedCompletion
-    ? Math.ceil((mockData.goalProgress.estimatedCompletion.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+  if (!analyticsData) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-gray-500">No analytics data available</p>
+      </div>
+    );
+  }
+
+  const daysUntilGoal = analyticsData.goalProgress.estimatedCompletion
+    ? Math.ceil((analyticsData.goalProgress.estimatedCompletion.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
     : null;
 
   return (
@@ -82,14 +193,14 @@ export const ProjectAnalytics: React.FC<ProjectAnalyticsProps> = ({
           <p className="text-gray-600">Detailed project insights and progress</p>
         </div>
         
-        <div className="flex gap-2">
+        <div className="flex gap-1">
           {PERIODS.map((period) => (
             <button
               key={period.value}
               onClick={() => setSelectedPeriod(period)}
-              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+              className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
                 selectedPeriod.value === period.value
-                  ? 'bg-blue-600 text-white'
+                  ? 'bg-gray-900 text-white'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
@@ -103,48 +214,52 @@ export const ProjectAnalytics: React.FC<ProjectAnalyticsProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="bg-white rounded-lg border border-gray-200 p-4">
           <div className="flex items-center gap-2 mb-2">
-            <Clock className="w-5 h-5 text-blue-600" />
+            <Clock className="w-5 h-5 text-gray-600" />
             <span className="text-sm font-medium text-gray-600">Total Hours</span>
           </div>
-          <p className="text-3xl font-bold text-gray-900">{mockData.totalHours}</p>
+          <p className="text-3xl font-bold text-gray-900">{analyticsData.totalHours}</p>
           <p className="text-xs text-gray-500 mt-1">
-            {mockData.weeklyAverage}h per week avg
+            {analyticsData.weeklyAverage}h per week avg
           </p>
         </div>
 
         <div className="bg-white rounded-lg border border-gray-200 p-4">
           <div className="flex items-center gap-2 mb-2">
-            <Target className="w-5 h-5 text-green-600" />
+            <BarChart3 className="w-5 h-5 text-gray-600" />
             <span className="text-sm font-medium text-gray-600">Sessions</span>
           </div>
-          <p className="text-3xl font-bold text-gray-900">{mockData.sessionCount}</p>
+          <p className="text-3xl font-bold text-gray-900">{analyticsData.sessionCount}</p>
           <p className="text-xs text-gray-500 mt-1">
-            {(mockData.totalHours / mockData.sessionCount).toFixed(1)}h avg duration
+            {analyticsData.averageSessionDuration}min avg duration
           </p>
         </div>
 
         <div className="bg-white rounded-lg border border-gray-200 p-4">
           <div className="flex items-center gap-2 mb-2">
-            <CheckSquare className="w-5 h-5 text-purple-600" />
-            <span className="text-sm font-medium text-gray-600">Task Rate</span>
+            <Target className="w-5 h-5 text-gray-600" />
+            <span className="text-sm font-medium text-gray-600">Goal Progress</span>
           </div>
-          <p className="text-3xl font-bold text-gray-900">{mockData.taskCompletionRate}%</p>
-          <p className="text-xs text-gray-500 mt-1">Completion rate</p>
+          <p className="text-3xl font-bold text-gray-900">
+            {analyticsData.goalProgress.target ? `${Math.round(analyticsData.goalProgress.percentage)}%` : 'No Goal'}
+          </p>
+          <p className="text-xs text-gray-500 mt-1">
+            {analyticsData.goalProgress.target ? `${analyticsData.goalProgress.current}h / ${analyticsData.goalProgress.target}h` : 'Set a target goal'}
+          </p>
         </div>
 
         <div className="bg-white rounded-lg border border-gray-200 p-4">
           <div className="flex items-center gap-2 mb-2">
-            <TrendingUp className="w-5 h-5 text-orange-600" />
+            <TrendingUp className="w-5 h-5 text-gray-600" />
             <span className="text-sm font-medium text-gray-600">Weekly Avg</span>
           </div>
-          <p className="text-3xl font-bold text-gray-900">{mockData.weeklyAverage}</p>
+          <p className="text-3xl font-bold text-gray-900">{analyticsData.weeklyAverage}</p>
           <p className="text-xs text-gray-500 mt-1">hours per week</p>
         </div>
       </div>
 
       {/* Goal progress */}
-      {mockData.goalProgress && (
-        <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg border border-blue-200 p-6">
+      {analyticsData.goalProgress.target && (
+        <div className="bg-white rounded-lg border border-gray-200 p-6">
           <div className="flex items-start justify-between">
             <div className="flex-1">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Goal Progress</h3>
@@ -153,26 +268,26 @@ export const ProjectAnalytics: React.FC<ProjectAnalyticsProps> = ({
                 <div>
                   <p className="text-sm text-gray-600 mb-1">Current Progress</p>
                   <p className="text-2xl font-bold text-gray-900">
-                    {mockData.goalProgress.current}h / {mockData.goalProgress.target}h
+                    {analyticsData.goalProgress.current}h / {analyticsData.goalProgress.target}h
                   </p>
                 </div>
                 
-                {daysUntilGoal && (
+                {daysUntilGoal && daysUntilGoal > 0 && (
                   <div>
                     <p className="text-sm text-gray-600 mb-1">Estimated Completion</p>
-                    <p className="text-2xl font-bold text-blue-600">
+                    <p className="text-2xl font-bold text-gray-900">
                       {daysUntilGoal} days
                     </p>
                     <p className="text-xs text-gray-500 mt-1">
-                      {mockData.goalProgress.estimatedCompletion.toLocaleDateString()}
+                      {analyticsData.goalProgress.estimatedCompletion?.toLocaleDateString()}
                     </p>
                   </div>
                 )}
                 
                 <div>
                   <p className="text-sm text-gray-600 mb-1">Hours Remaining</p>
-                  <p className="text-2xl font-bold text-purple-600">
-                    {mockData.goalProgress.target - mockData.goalProgress.current}h
+                  <p className="text-2xl font-bold text-gray-900">
+                    {Math.max(0, analyticsData.goalProgress.target - analyticsData.goalProgress.current)}h
                   </p>
                 </div>
               </div>
@@ -180,9 +295,9 @@ export const ProjectAnalytics: React.FC<ProjectAnalyticsProps> = ({
             
             <div className="ml-6">
               <ProgressRing
-                progress={mockData.goalProgress.percentage}
+                progress={Math.min(analyticsData.goalProgress.percentage, 100)}
                 size={120}
-                color="#3b82f6"
+                color="#374151"
               />
             </div>
           </div>
@@ -195,24 +310,23 @@ export const ProjectAnalytics: React.FC<ProjectAnalyticsProps> = ({
         <div className="bg-white rounded-lg border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-gray-900">Cumulative Hours</h3>
-            {mockData.goalProgress && (
+            {analyticsData.goalProgress.target && (
               <div className="text-sm text-gray-500">
-                Goal: {mockData.goalProgress.target}h
+                Goal: {analyticsData.goalProgress.target}h
               </div>
             )}
           </div>
           <ActivityChart
-            data={mockData.cumulativeHours}
+            data={analyticsData.cumulativeHours}
             type="line"
-            height={200}
-            color="#3b82f6"
+            height={240}
+            color="#374151"
             valueFormatter={(v) => `${v}h`}
           />
-          {mockData.goalProgress && (
-            <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+          {analyticsData.goalProgress.target && daysUntilGoal && daysUntilGoal > 0 && (
+            <div className="mt-4 p-3 bg-gray-50 rounded-lg">
               <p className="text-sm text-gray-700">
-                <span className="font-semibold">On track!</span> At your current pace, you'll reach 
-                your goal in {daysUntilGoal} days.
+                At your current pace, you'll reach your goal in <span className="font-semibold">{daysUntilGoal} days</span>.
               </p>
             </div>
           )}
@@ -222,42 +336,20 @@ export const ProjectAnalytics: React.FC<ProjectAnalyticsProps> = ({
         <div className="bg-white rounded-lg border border-gray-200 p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Session Frequency</h3>
           <ActivityChart
-            data={mockData.sessionFrequency}
+            data={analyticsData.sessionFrequency}
             type="bar"
-            height={200}
-            color="#10b981"
+            height={240}
+            color="#6B7280"
             valueFormatter={(v) => `${v} sessions`}
           />
-          <div className="mt-4 p-3 bg-green-50 rounded-lg">
+          <div className="mt-4 p-3 bg-gray-50 rounded-lg">
             <p className="text-sm text-gray-700">
               Average of <span className="font-semibold">
-                {(mockData.sessionFrequency.reduce((sum, d) => sum + d.value, 0) / mockData.sessionFrequency.length).toFixed(1)} sessions
+                {analyticsData.sessionFrequency.length > 0 
+                  ? (analyticsData.sessionFrequency.reduce((sum, d) => sum + d.value, 0) / analyticsData.sessionFrequency.length).toFixed(1)
+                  : '0'
+                } sessions
               </span> per week
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Task completion insights */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Task Completion</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="text-center p-4 bg-gray-50 rounded-lg">
-            <p className="text-sm text-gray-600 mb-2">Completion Rate</p>
-            <p className="text-4xl font-bold text-green-600">{mockData.taskCompletionRate}%</p>
-          </div>
-          
-          <div className="text-center p-4 bg-gray-50 rounded-lg">
-            <p className="text-sm text-gray-600 mb-2">Tasks per Session</p>
-            <p className="text-4xl font-bold text-blue-600">
-              {(mockData.taskCompletionRate / mockData.sessionCount * 10).toFixed(1)}
-            </p>
-          </div>
-          
-          <div className="text-center p-4 bg-gray-50 rounded-lg">
-            <p className="text-sm text-gray-600 mb-2">Productivity Score</p>
-            <p className="text-4xl font-bold text-purple-600">
-              {Math.round((mockData.taskCompletionRate + mockData.weeklyAverage * 5) / 2)}
             </p>
           </div>
         </div>
