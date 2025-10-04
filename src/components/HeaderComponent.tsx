@@ -211,11 +211,11 @@ export default function Header() {
                     <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#007AFF]"></div>
                   )}
                 </Link>
-                <Link 
-                  href="/groups" 
+                <Link
+                  href="/groups"
                   className={`text-base font-medium transition-colors flex items-center h-full relative ${
-                    isActive('/groups') 
-                      ? 'text-gray-900' 
+                    isActive('/groups')
+                      ? 'text-gray-900'
                       : 'text-gray-600 hover:text-[#007AFF]'
                   }`}
                 >
@@ -224,29 +224,16 @@ export default function Header() {
                     <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#007AFF]"></div>
                   )}
                 </Link>
-                <Link 
-                  href="/challenges" 
+                <Link
+                  href="/you?tab=progress"
                   className={`text-base font-medium transition-colors flex items-center h-full relative ${
-                    isActive('/challenges') 
-                      ? 'text-gray-900' 
+                    isActive('/you')
+                      ? 'text-gray-900'
                       : 'text-gray-600 hover:text-[#007AFF]'
                   }`}
                 >
-                  Challenges
-                  {isActive('/challenges') && (
-                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#007AFF]"></div>
-                  )}
-                </Link>
-                <Link 
-                  href="/tasks" 
-                  className={`text-base font-medium transition-colors flex items-center h-full relative ${
-                    isActive('/tasks') 
-                      ? 'text-gray-900' 
-                      : 'text-gray-600 hover:text-[#007AFF]'
-                  }`}
-                >
-                  Tasks
-                  {isActive('/tasks') && (
+                  Analytics
+                  {isActive('/you') && (
                     <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#007AFF]"></div>
                   )}
                 </Link>
@@ -330,7 +317,7 @@ export default function Header() {
                     }}
                   >
                       <Link
-                        href={`/profile/${user.username}`}
+                        href="/you?tab=profile"
                         className="block px-4 py-2 text-gray-900 hover:bg-gray-50 transition-colors"
                       >
                         My Profile
@@ -392,35 +379,25 @@ export default function Header() {
               >
                 Projects
               </Link>
-              <Link 
-                href="/groups" 
+              <Link
+                href="/groups"
                 className={`block px-4 py-2 transition-colors ${
-                  isActive('/groups') 
-                    ? 'text-[#007AFF] bg-blue-50' 
+                  isActive('/groups')
+                    ? 'text-[#007AFF] bg-blue-50'
                     : 'text-gray-600 hover:text-[#007AFF]'
                 }`}
               >
                 Groups
               </Link>
-              <Link 
-                href="/challenges" 
+              <Link
+                href="/you?tab=progress"
                 className={`block px-4 py-2 transition-colors ${
-                  isActive('/challenges') 
-                    ? 'text-[#007AFF] bg-blue-50' 
+                  isActive('/you')
+                    ? 'text-[#007AFF] bg-blue-50'
                     : 'text-gray-600 hover:text-[#007AFF]'
                 }`}
               >
-                Challenges
-              </Link>
-              <Link 
-                href="/tasks" 
-                className={`block px-4 py-2 transition-colors ${
-                  isActive('/tasks') 
-                    ? 'text-[#007AFF] bg-blue-50' 
-                    : 'text-gray-600 hover:text-[#007AFF]'
-                }`}
-              >
-                Tasks
+                Analytics
               </Link>
             </nav>
           </div>

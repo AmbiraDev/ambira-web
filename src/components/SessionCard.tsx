@@ -65,11 +65,21 @@ export const SessionCard: React.FC<SessionCardProps> = ({
     return colors[hash % colors.length];
   };
 
+  const formatTime = (seconds: number): string => {
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+
+    if (hours > 0) {
+      return `${hours}h ${minutes}m`;
+    }
+    return `${minutes}m`;
+  };
+
   return (
-    <article className={`bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden ${className}`}>
+    <article className={`bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden ${className}`}>
       {/* Session Header */}
-      <div className="p-4">
-        <div className="flex items-start justify-between">
+      <div className="p-6">
+        <div className="flex items-start justify-between mb-4">
           <div className="flex items-center space-x-3 flex-1 min-w-0">
             {/* User Avatar */}
             {session.user.profilePicture ? (
@@ -95,16 +105,8 @@ export const SessionCard: React.FC<SessionCardProps> = ({
               </div>
               <div className="flex items-center gap-2 text-sm text-gray-600">
                 <span className="hover:text-gray-900 cursor-pointer transition-colors">
-                  @{session.user.username}
+                  {formatTimeAgo(session.createdAt)}
                 </span>
-                <span>•</span>
-                <span>{formatTimeAgo(session.createdAt)}</span>
-                {session.user.location && (
-                  <>
-                    <span>•</span>
-                    <span className="truncate">{session.user.location}</span>
-                  </>
-                )}
               </div>
             </div>
           </div>
@@ -126,7 +128,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({
                   Edit session
                 </button>
                 {onDelete && (
-                  <button 
+                  <button
                     onClick={() => onDelete(session.id)}
                     className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-gray-50"
                   >
@@ -141,39 +143,56 @@ export const SessionCard: React.FC<SessionCardProps> = ({
           </div>
         </div>
 
+        {/* Session Title */}
+        <h3 className="text-xl font-bold text-gray-900 mb-3">
+          {session.title || 'Focus Session'}
+        </h3>
+
         {/* Session Description */}
         {session.description && (
-          <div className="mt-4">
-            <p className="text-gray-900 leading-relaxed whitespace-pre-wrap">
-              {session.description}
-            </p>
-          </div>
+          <p className="text-gray-700 mb-4 line-clamp-3">
+            {session.description}
+          </p>
         )}
-      </div>
 
-      {/* Session Stats */}
-      <div className="px-4 pb-4">
-        <SessionStats
-          session={session}
-          project={session.project}
-        />
+        {/* Session Stats - Clean 3-column layout */}
+        <div className="grid grid-cols-3 gap-4 bg-gray-50 rounded-lg p-3">
+          <div>
+            <div className="text-xs text-gray-500 mb-1">Time</div>
+            <div className="font-bold text-gray-900">
+              {formatTime(session.duration)}
+            </div>
+          </div>
+          <div>
+            <div className="text-xs text-gray-500 mb-1">Project</div>
+            <div className="font-bold text-gray-900 truncate">
+              {session.project?.name || 'N/A'}
+            </div>
+          </div>
+          <div>
+            <div className="text-xs text-gray-500 mb-1">Category</div>
+            <div className="font-bold text-gray-900 truncate">
+              {session.category || 'General'}
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Support Summary */}
       {session.supportCount > 0 && (
-        <div className="px-4 pb-3">
+        <div className="px-6 pb-3">
           <div className="flex items-center gap-2 text-sm text-gray-600">
-            <div className="flex -space-x-2">
-              {/* Show first 3 supporter avatars */}
-              {[...Array(Math.min(3, session.supportCount))].map((_, i) => (
-                <div
-                  key={i}
-                  className="w-6 h-6 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 border-2 border-white"
-                />
-              ))}
-            </div>
+            <svg className="w-5 h-5 text-orange-500" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+            </svg>
             <span className="font-medium">
-              {session.supportCount} {session.supportCount === 1 ? 'person' : 'people'} gave support
+              {session.supportCount}
+            </span>
+            <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            </svg>
+            <span className="font-medium">
+              {session.commentCount}
             </span>
           </div>
         </div>

@@ -7,12 +7,13 @@ import MobileHeader from '@/components/MobileHeader';
 import BottomNavigation from '@/components/BottomNavigation';
 import Header from '@/components/HeaderComponent';
 import { firebaseSessionApi, firebaseUserApi } from '@/lib/firebaseApi';
-import { Session, UserStats } from '@/types';
-import { Heart, MessageCircle, Share2, Calendar, Clock, Target, ChevronDown, MoreVertical } from 'lucide-react';
+import { Session, UserStats, User as UserType, UserProfile } from '@/types';
+import { Heart, MessageCircle, Share2, Calendar, Clock, Target, ChevronDown, MoreVertical, Edit, User as UserIcon, Users } from 'lucide-react';
 import Link from 'next/link';
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
+import { useSearchParams, useRouter } from 'next/navigation';
 
-type YouTab = 'progress' | 'sessions';
+type YouTab = 'progress' | 'sessions' | 'profile';
 type TimePeriod = 'day' | 'week' | 'month' | 'year';
 
 interface ChartDataPoint {
@@ -31,7 +32,13 @@ interface CategoryStats {
 
 export default function YouPage() {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState<YouTab>('progress');
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const tabParam = searchParams?.get('tab') as YouTab | null;
+
+  const [activeTab, setActiveTab] = useState<YouTab>(
+    tabParam === 'sessions' ? 'sessions' : tabParam === 'profile' ? 'profile' : 'progress'
+  );
   const [timePeriod, setTimePeriod] = useState<TimePeriod>('week');
   const [showTimePeriodDropdown, setShowTimePeriodDropdown] = useState(false);
   const [sessions, setSessions] = useState<Session[]>([]);
@@ -39,6 +46,16 @@ export default function YouPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
   const [categoryStats, setCategoryStats] = useState<CategoryStats[]>([]);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [followers, setFollowers] = useState<UserType[]>([]);
+  const [following, setFollowing] = useState<UserType[]>([]);
+
+  // Update tab when URL changes
+  useEffect(() => {
+    if (tabParam === 'sessions' || tabParam === 'progress' || tabParam === 'profile') {
+      setActiveTab(tabParam);
+    }
+  }, [tabParam]);
 
   useEffect(() => {
     if (user) {
@@ -64,12 +81,14 @@ export default function YouPage() {
       // Load sessions and stats separately to handle errors better
       let sessionsData: Session[] = [];
       let statsData: UserStats | null = null;
+      let profileData: UserProfile | null = null;
+      let followersData: UserType[] = [];
+      let followingData: UserType[] = [];
 
       try {
         sessionsData = await firebaseSessionApi.getUserSessions(user.id, 50, true);
       } catch (sessionError) {
         console.error('Error loading sessions:', sessionError);
-        // Set empty array on error
         sessionsData = [];
       }
 
@@ -77,11 +96,31 @@ export default function YouPage() {
         statsData = await firebaseUserApi.getUserStats(user.id);
       } catch (statsError) {
         console.error('Error loading stats:', statsError);
-        // Stats will remain null
+      }
+
+      try {
+        profileData = await firebaseUserApi.getUserProfile(user.username);
+      } catch (profileError) {
+        console.error('Error loading profile:', profileError);
+      }
+
+      try {
+        followersData = await firebaseUserApi.getFollowers(user.id);
+      } catch (followersError) {
+        console.error('Error loading followers:', followersError);
+      }
+
+      try {
+        followingData = await firebaseUserApi.getFollowing(user.id);
+      } catch (followingError) {
+        console.error('Error loading following:', followingError);
       }
 
       setSessions(sessionsData);
       setStats(statsData);
+      setUserProfile(profileData);
+      setFollowers(followersData);
+      setFollowing(followingData);
     } catch (error) {
       console.error('Error loading data:', error);
     } finally {
@@ -172,38 +211,9 @@ export default function YouPage() {
   };
 
   const processCategoryStats = () => {
-    const categoryMap = new Map<string, { hours: number; sessions: number }>();
-    const totalHours = sessions.reduce((sum, s) => sum + s.duration / 3600, 0);
-
-    sessions.forEach(session => {
-      const category = session.category || 'Other';
-      const existing = categoryMap.get(category) || { hours: 0, sessions: 0 };
-      categoryMap.set(category, {
-        hours: existing.hours + session.duration / 3600,
-        sessions: existing.sessions + 1
-      });
-    });
-
-    const categoryIcons: Record<string, { icon: string; color: string }> = {
-      'Study': { icon: '📚', color: 'bg-blue-100' },
-      'Work': { icon: '💼', color: 'bg-green-100' },
-      'Creative': { icon: '🎨', color: 'bg-purple-100' },
-      'Fitness': { icon: '💪', color: 'bg-orange-100' },
-      'Other': { icon: '📌', color: 'bg-gray-100' }
-    };
-
-    const stats: CategoryStats[] = Array.from(categoryMap.entries())
-      .map(([category, data]) => ({
-        category,
-        hours: Number(data.hours.toFixed(1)),
-        sessions: data.sessions,
-        percentage: totalHours > 0 ? Math.round((data.hours / totalHours) * 100) : 0,
-        icon: categoryIcons[category]?.icon || '📌',
-        color: categoryIcons[category]?.color || 'bg-gray-100'
-      }))
-      .sort((a, b) => b.hours - a.hours);
-
-    setCategoryStats(stats);
+    // Since sessions don't have categories in the current schema,
+    // we'll skip this for now or group by tags/projects instead
+    setCategoryStats([]);
   };
 
   const formatTime = (seconds: number) => {
@@ -215,8 +225,7 @@ export default function YouPage() {
     return `${minutes}m`;
   };
 
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
+  const formatDate = (date: Date) => {
     const today = new Date();
     const yesterday = new Date(today);
     yesterday.setDate(yesterday.getDate() - 1);
@@ -234,39 +243,71 @@ export default function YouPage() {
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-white">
-        <MobileHeader title="You" />
+      <div className="min-h-screen bg-white md:bg-gray-50">
+        {/* Desktop Header */}
+        <div className="hidden md:block">
+          <Header />
+        </div>
+
+        {/* Mobile Header */}
+        <div className="md:hidden">
+          <MobileHeader title="You" />
+        </div>
 
         {/* Tabs */}
-        <div className="sticky top-12 bg-white border-b border-gray-200 z-30 md:hidden">
-          <div className="flex">
-            <button
-              onClick={() => setActiveTab('progress')}
-              className={`flex-1 py-3 text-sm font-medium border-b-2 transition-colors ${
-                activeTab === 'progress'
-                  ? 'border-[#007AFF] text-[#007AFF]'
-                  : 'border-transparent text-gray-500'
-              }`}
-            >
-              Progress
-            </button>
-            <button
-              onClick={() => setActiveTab('sessions')}
-              className={`flex-1 py-3 text-sm font-medium border-b-2 transition-colors ${
-                activeTab === 'sessions'
-                  ? 'border-[#007AFF] text-[#007AFF]'
-                  : 'border-transparent text-gray-500'
-              }`}
-            >
-              Sessions
-            </button>
+        <div className="sticky top-12 md:top-0 bg-white md:bg-gray-50 border-b border-gray-200 z-30">
+          <div className="bg-gray-50 border-b md:border-b-0 border-gray-200">
+            <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
+              <div className="flex md:gap-8">
+                <button
+                  onClick={() => {
+                    setActiveTab('progress');
+                    router.push('/you?tab=progress');
+                  }}
+                  className={`flex-1 md:flex-initial py-3 md:py-4 px-1 text-sm md:text-base font-medium border-b-2 transition-colors ${
+                    activeTab === 'progress'
+                      ? 'border-[#007AFF] text-[#007AFF] md:text-gray-900'
+                      : 'border-transparent text-gray-500 md:text-gray-600 hover:text-gray-700 md:hover:text-gray-900'
+                  }`}
+                >
+                  Progress
+                </button>
+                <button
+                  onClick={() => {
+                    setActiveTab('sessions');
+                    router.push('/you?tab=sessions');
+                  }}
+                  className={`flex-1 md:flex-initial py-3 md:py-4 px-1 text-sm md:text-base font-medium border-b-2 transition-colors ${
+                    activeTab === 'sessions'
+                      ? 'border-[#007AFF] text-[#007AFF] md:text-gray-900'
+                      : 'border-transparent text-gray-500 md:text-gray-600 hover:text-gray-700 md:hover:text-gray-900'
+                  }`}
+                >
+                  Sessions
+                </button>
+                <button
+                  onClick={() => {
+                    setActiveTab('profile');
+                    router.push('/you?tab=profile');
+                  }}
+                  className={`flex-1 md:flex-initial py-3 md:py-4 px-1 text-sm md:text-base font-medium border-b-2 transition-colors ${
+                    activeTab === 'profile'
+                      ? 'border-[#007AFF] text-[#007AFF] md:text-gray-900'
+                      : 'border-transparent text-gray-500 md:text-gray-600 hover:text-gray-700 md:hover:text-gray-900'
+                  }`}
+                >
+                  Profile
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 
         {/* Content */}
-        <div className="pb-24">
-          {activeTab === 'progress' && (
-            <div className="p-4">
+        <div className="pb-24 md:pb-8">
+          <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-6">
+            {activeTab === 'progress' && (
+              <div className="max-w-4xl mx-auto">
               {/* Stats Cards */}
               <div className="grid grid-cols-2 gap-4 mb-6">
                 <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4">
@@ -439,21 +480,21 @@ export default function YouPage() {
                   </div>
                 )}
               </div>
-            </div>
-          )}
+              </div>
+            )}
 
-          {activeTab === 'sessions' && (
-            <div className="divide-y divide-gray-100">
+            {activeTab === 'sessions' && (
+              <div className="max-w-4xl mx-auto space-y-6">
               {isLoading ? (
                 <div className="p-8 text-center text-gray-500">Loading sessions...</div>
               ) : sessions.length === 0 ? (
                 <div className="p-8 text-center text-gray-500">No sessions yet</div>
               ) : (
                 sessions.map((session) => (
-                  <div key={session.id} className="bg-white p-4">
+                  <div key={session.id} className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
                     {/* Session Header */}
                     <div className="flex items-start gap-3 mb-3">
-                      <Link href="/profile-mobile">
+                      <Link href="/you?tab=profile">
                         <div className="w-10 h-10 bg-[#FC4C02] rounded-full flex items-center justify-center flex-shrink-0">
                           <span className="text-white font-semibold text-sm">
                             {user.name.charAt(0).toUpperCase()}
@@ -465,7 +506,7 @@ export default function YouPage() {
                           <span className="font-semibold text-gray-900">{user.name}</span>
                         </div>
                         <div className="text-sm text-gray-500">
-                          {formatDate(session.createdAt)}
+                          {formatDate(new Date(session.createdAt))}
                         </div>
                       </div>
                       <button className="text-gray-400 hover:text-gray-600 transition-colors">
@@ -494,50 +535,31 @@ export default function YouPage() {
                         </div>
                       </div>
                       <div>
-                        <div className="text-xs text-gray-500 mb-1">Project</div>
+                        <div className="text-xs text-gray-500 mb-1">Tasks</div>
                         <div className="font-bold text-gray-900 truncate">
-                          {session.projectTitle || 'N/A'}
+                          {session.tasks?.length || 0}
                         </div>
                       </div>
                       <div>
-                        <div className="text-xs text-gray-500 mb-1">Category</div>
+                        <div className="text-xs text-gray-500 mb-1">Tags</div>
                         <div className="font-bold text-gray-900 truncate">
-                          {session.category || 'General'}
+                          {session.tags?.length || 0}
                         </div>
                       </div>
                     </div>
 
-                    {/* Session Images */}
-                    {session.images && session.images.length > 0 && (
-                      <div className={`grid gap-2 mb-4 ${
-                        session.images.length === 1 ? 'grid-cols-1' :
-                        session.images.length === 2 ? 'grid-cols-2' :
-                        'grid-cols-3'
-                      }`}>
-                        {session.images.slice(0, 3).map((image, idx) => (
-                          <div key={idx} className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden">
-                            <img
-                              src={image}
-                              alt={`Session image ${idx + 1}`}
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
                     {/* Action Buttons */}
-                    <div className="flex items-center gap-6 pt-3 border-t border-gray-100">
+                    <div className="flex items-center gap-6 pt-4 mt-4 border-t border-gray-200">
                       <button className="flex items-center gap-2 text-gray-600 hover:text-[#007AFF] transition-colors">
                         <Heart className="w-5 h-5" />
                         <span className="text-sm font-medium">
-                          {session.likes || 0}
+                          {session.supportCount || 0}
                         </span>
                       </button>
                       <button className="flex items-center gap-2 text-gray-600 hover:text-[#007AFF] transition-colors">
                         <MessageCircle className="w-5 h-5" />
                         <span className="text-sm font-medium">
-                          {session.comments || 0}
+                          {session.commentCount || 0}
                         </span>
                       </button>
                       <button className="flex items-center gap-2 text-gray-600 hover:text-[#007AFF] transition-colors ml-auto">
@@ -547,11 +569,171 @@ export default function YouPage() {
                   </div>
                 ))
               )}
-            </div>
-          )}
+              </div>
+            )}
+
+            {activeTab === 'profile' && (
+              <div className="max-w-4xl mx-auto">
+                {/* Profile Header */}
+                <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
+                  {/* Profile Picture */}
+                  <div className="w-24 h-24 bg-[#FC4C02] rounded-full flex items-center justify-center mb-4">
+                    <span className="text-white font-bold text-4xl">
+                      {user.name.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+
+                  {/* Name and Location */}
+                  <h1 className="text-2xl font-bold text-gray-900 mb-1">{user.name}</h1>
+                  <p className="text-gray-600 mb-4">
+                    {userProfile?.location || user.location || 'Location not set'}
+                  </p>
+
+                  {/* Stats */}
+                  <div className="flex gap-8 mb-4">
+                    <div>
+                      <div className="text-sm text-gray-600">Following</div>
+                      <div className="text-xl font-bold">
+                        {userProfile?.followingCount || 0}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-sm text-gray-600">Followers</div>
+                      <div className="text-xl font-bold">
+                        {userProfile?.followersCount || 0}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex gap-2">
+                    <Link
+                      href="/settings"
+                      className="flex-1 flex items-center justify-center gap-2 py-3 border-2 border-[#FC4C02] text-[#FC4C02] rounded-xl font-medium"
+                    >
+                      <Edit className="w-5 h-5" />
+                      Edit Profile
+                    </Link>
+                  </div>
+                </div>
+
+                {/* This Week Section */}
+                <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="w-6 h-6 text-[#FC4C02]">📊</div>
+                    <h2 className="text-lg font-bold">This week</h2>
+                  </div>
+
+                  <div className="flex gap-6 mb-4">
+                    <div>
+                      <div className="text-sm text-gray-600">Time</div>
+                      <div className="text-xl font-bold">
+                        {stats?.weeklyHours?.toFixed(1) || 0}h
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-sm text-gray-600">Sessions</div>
+                      <div className="text-xl font-bold">
+                        {stats?.sessionsThisWeek || 0}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-sm text-gray-600">Streak</div>
+                      <div className="text-xl font-bold">
+                        {stats?.currentStreak || 0} days
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Followers Section */}
+                <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-bold">Followers ({followers.length})</h3>
+                  </div>
+                  {followers.length > 0 ? (
+                    <div className="space-y-3">
+                      {followers.slice(0, 5).map((follower) => (
+                        <Link
+                          key={follower.id}
+                          href={`/profile/${follower.username}`}
+                          className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors"
+                        >
+                          <div className="w-10 h-10 bg-[#FC4C02] rounded-full flex items-center justify-center">
+                            <span className="text-white font-semibold text-sm">
+                              {follower.name.charAt(0).toUpperCase()}
+                            </span>
+                          </div>
+                          <div className="flex-1">
+                            <div className="font-medium">{follower.name}</div>
+                            <div className="text-sm text-gray-500">@{follower.username}</div>
+                          </div>
+                        </Link>
+                      ))}
+                      {followers.length > 5 && (
+                        <div className="text-center pt-2">
+                          <button className="text-[#007AFF] text-sm font-medium">
+                            View all {followers.length} followers
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-gray-400">
+                      <Users className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                      <p>No followers yet</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Following Section */}
+                <div className="bg-white rounded-xl border border-gray-200 p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-lg font-bold">Following ({following.length})</h3>
+                  </div>
+                  {following.length > 0 ? (
+                    <div className="space-y-3">
+                      {following.slice(0, 5).map((followedUser) => (
+                        <Link
+                          key={followedUser.id}
+                          href={`/profile/${followedUser.username}`}
+                          className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors"
+                        >
+                          <div className="w-10 h-10 bg-[#FC4C02] rounded-full flex items-center justify-center">
+                            <span className="text-white font-semibold text-sm">
+                              {followedUser.name.charAt(0).toUpperCase()}
+                            </span>
+                          </div>
+                          <div className="flex-1">
+                            <div className="font-medium">{followedUser.name}</div>
+                            <div className="text-sm text-gray-500">@{followedUser.username}</div>
+                          </div>
+                        </Link>
+                      ))}
+                      {following.length > 5 && (
+                        <div className="text-center pt-2">
+                          <button className="text-[#007AFF] text-sm font-medium">
+                            View all {following.length} following
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-gray-400">
+                      <UserIcon className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                      <p>Not following anyone yet</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
-        <BottomNavigation />
+        {/* Mobile Bottom Navigation */}
+        <div className="md:hidden">
+          <BottomNavigation />
+        </div>
       </div>
     </ProtectedRoute>
   );

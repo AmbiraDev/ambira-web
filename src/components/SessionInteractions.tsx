@@ -59,7 +59,7 @@ export const SessionInteractions: React.FC<SessionInteractionsProps> = ({
   };
 
   return (
-    <div className={`flex items-center justify-between py-3 px-4 border-t border-gray-200 bg-gray-50/50 ${className}`}>
+    <div className={`flex items-center justify-between py-4 px-6 border-t border-gray-200 ${className}`}>
       {/* Left side - Support and Comments */}
       <div className="flex items-center gap-1">
         {/* Support Button */}

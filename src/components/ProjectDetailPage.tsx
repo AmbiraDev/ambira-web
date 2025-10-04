@@ -8,20 +8,20 @@ import { useTasks } from '@/contexts/TasksContext';
 import { CreateProjectModal } from './CreateProjectModal';
 import { TaskList } from './TaskList';
 import { firebaseSessionApi } from '@/lib/firebaseApi';
-import { ProjectAnalytics } from './ProjectAnalytics';
+import { ProjectProgressView } from './ProjectProgressView';
 
 interface ProjectDetailPageProps {
   projectId: string;
 }
 
-type TabType = 'overview' | 'tasks' | 'sessions';
+type TabType = 'progress' | 'tasks' | 'sessions' | 'profile';
 
 export const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({ projectId }) => {
   const router = useRouter();
   const { project, isLoading } = useProject(projectId);
   const { getProjectStats, updateProject, deleteProject, archiveProject } = useProjects();
   const { tasks, createTask, updateTask, deleteTask, bulkUpdateTasks, loadProjectTasks } = useTasks();
-  const [activeTab, setActiveTab] = useState<TabType>('overview');
+  const [activeTab, setActiveTab] = useState<TabType>('progress');
   const [stats, setStats] = useState<ProjectStats | null>(null);
   const [isLoadingStats, setIsLoadingStats] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -147,9 +147,10 @@ export const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({ projectId 
   const colorClass = colorClasses[project.color as keyof typeof colorClasses] || 'bg-gray-500';
 
   const tabs = [
-    { id: 'overview', label: 'Overview', icon: '📊' },
+    { id: 'progress', label: 'Progress', icon: '📊' },
     { id: 'tasks', label: 'Tasks', icon: '✅' },
     { id: 'sessions', label: 'Sessions', icon: '⏱️' },
+    { id: 'profile', label: 'Profile', icon: '👤' },
   ] as const;
 
   return (
@@ -207,12 +208,12 @@ export const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({ projectId 
 
       {/* Tab Content */}
       <div className="min-h-[400px]">
-        {activeTab === 'overview' && (
-          <OverviewTab project={project} stats={stats} isLoadingStats={isLoadingStats} />
+        {activeTab === 'progress' && (
+          <ProjectProgressView projectId={project.id} />
         )}
         {activeTab === 'tasks' && (
-          <TasksTab 
-            project={project} 
+          <TasksTab
+            project={project}
             tasks={tasks}
             onCreateTask={createTask}
             onUpdateTask={updateTask}
@@ -224,6 +225,9 @@ export const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({ projectId 
         )}
         {activeTab === 'sessions' && (
           <SessionsTab project={project} />
+        )}
+        {activeTab === 'profile' && (
+          <ProfileTab project={project} stats={stats} />
         )}
       </div>
 
@@ -238,115 +242,6 @@ export const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({ projectId 
           }}
         />
       )}
-    </div>
-  );
-};
-
-// Overview Tab Component
-interface OverviewTabProps {
-  project: Project;
-  stats: ProjectStats | null;
-  isLoadingStats: boolean;
-}
-
-const OverviewTab: React.FC<OverviewTabProps> = ({ project, stats, isLoadingStats }) => {
-  if (isLoadingStats) {
-    return (
-      <div className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map(i => (
-            <div key={i} className="animate-pulse">
-              <div className="bg-white border border-gray-200 rounded-lg p-4">
-                <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                <div className="h-8 bg-gray-200 rounded w-1/2"></div>
-              </div>
-            </div>
-          ))}
-        </div>
-        <div className="animate-pulse">
-          <div className="h-64 bg-gray-200 rounded-lg"></div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-6">
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white border border-gray-200 rounded-lg p-4">
-          <div className="text-sm text-gray-600 mb-1">Total Hours</div>
-          <div className="text-2xl font-bold text-gray-900">{(stats?.totalHours || 0).toFixed(1)}</div>
-        </div>
-        <div className="bg-white border border-gray-200 rounded-lg p-4">
-          <div className="text-sm text-gray-600 mb-1">Weekly Hours</div>
-          <div className="text-2xl font-bold text-gray-900">{(stats?.weeklyHours || 0).toFixed(1)}</div>
-        </div>
-        <div className="bg-white border border-gray-200 rounded-lg p-4">
-          <div className="text-sm text-gray-600 mb-1">Sessions</div>
-          <div className="text-2xl font-bold text-gray-900">{stats?.sessionCount || 0}</div>
-        </div>
-        <div className="bg-white border border-gray-200 rounded-lg p-4">
-          <div className="text-sm text-gray-600 mb-1">Current Streak</div>
-          <div className="text-2xl font-bold text-gray-900">{stats?.currentStreak || 0} days</div>
-        </div>
-      </div>
-
-      {/* Progress Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Weekly Progress */}
-        {project.weeklyTarget && (
-          <div className="bg-white border border-gray-200 rounded-lg p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Weekly Progress</h3>
-            <div className="space-y-4">
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600">This week</span>
-                <span className="font-medium">{(stats?.weeklyHours || 0).toFixed(1)}h / {project.weeklyTarget}h</span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-3">
-                <div 
-                  className="bg-orange-500 h-3 rounded-full transition-all duration-300"
-                  style={{ width: `${Math.min(100, stats?.weeklyProgressPercentage || 0)}%` }}
-                ></div>
-              </div>
-              <div className="text-sm text-gray-600">
-                {(stats?.weeklyProgressPercentage || 0).toFixed(1)}% complete
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Total Progress */}
-        {project.totalTarget && (
-          <div className="bg-white border border-gray-200 rounded-lg p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Total Progress</h3>
-            <div className="space-y-4">
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Overall</span>
-                <span className="font-medium">{(stats?.totalHours || 0).toFixed(1)}h / {project.totalTarget}h</span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-3">
-                <div 
-                  className="bg-orange-500 h-3 rounded-full transition-all duration-300"
-                  style={{ width: `${Math.min(100, stats?.totalProgressPercentage || 0)}%` }}
-                ></div>
-              </div>
-              <div className="text-sm text-gray-600">
-                {(stats?.totalProgressPercentage || 0).toFixed(1)}% complete
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Recent Activity */}
-      <div className="bg-white border border-gray-200 rounded-lg p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Activity</h3>
-        <div className="text-center py-8 text-gray-500">
-          <div className="text-4xl mb-2">📊</div>
-          <p>Activity chart coming soon</p>
-        </div>
-      </div>
     </div>
   );
 };
@@ -583,6 +478,121 @@ const SessionsTab: React.FC<SessionsTabProps> = ({ project }) => {
               )}
             </div>
           ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Profile Tab Component
+interface ProfileTabProps {
+  project: Project;
+  stats: ProjectStats | null;
+}
+
+const ProfileTab: React.FC<ProfileTabProps> = ({ project, stats }) => {
+  const colorClasses = {
+    orange: 'bg-orange-500',
+    blue: 'bg-blue-500',
+    green: 'bg-green-500',
+    purple: 'bg-purple-500',
+    red: 'bg-red-500',
+    yellow: 'bg-yellow-500',
+    pink: 'bg-pink-500',
+    indigo: 'bg-indigo-500',
+  };
+
+  const colorClass = colorClasses[project.color as keyof typeof colorClasses] || 'bg-gray-500';
+
+  return (
+    <div className="max-w-4xl mx-auto">
+      {/* Project Info Card */}
+      <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
+        {/* Project Icon */}
+        <div className={`w-24 h-24 ${colorClass} rounded-2xl flex items-center justify-center mb-4`}>
+          <span className="text-white text-4xl">
+            {project.icon}
+          </span>
+        </div>
+
+        {/* Name and Description */}
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">{project.name}</h1>
+        {project.description && (
+          <p className="text-gray-600 mb-4">{project.description}</p>
+        )}
+
+        {/* Project Stats */}
+        <div className="flex gap-8 mb-4">
+          <div>
+            <div className="text-sm text-gray-600">Total Hours</div>
+            <div className="text-xl font-bold">
+              {(stats?.totalHours || 0).toFixed(1)}h
+            </div>
+          </div>
+          <div>
+            <div className="text-sm text-gray-600">Sessions</div>
+            <div className="text-xl font-bold">
+              {stats?.sessionCount || 0}
+            </div>
+          </div>
+          <div>
+            <div className="text-sm text-gray-600">Status</div>
+            <div className="text-xl font-bold capitalize">
+              {project.status}
+            </div>
+          </div>
+        </div>
+
+        {/* Dates */}
+        <div className="text-sm text-gray-600 space-y-1">
+          <div>Created: {new Date(project.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</div>
+          {project.updatedAt && (
+            <div>Last updated: {new Date(project.updatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</div>
+          )}
+        </div>
+      </div>
+
+      {/* Goals Section (if targets are set) */}
+      {(project.weeklyTarget || project.totalTarget) && (
+        <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
+          <h2 className="text-lg font-bold mb-4">Goals</h2>
+          <div className="space-y-4">
+            {project.weeklyTarget && (
+              <div>
+                <div className="flex justify-between text-sm mb-2">
+                  <span className="text-gray-600">Weekly Target</span>
+                  <span className="font-medium">{(stats?.weeklyHours || 0).toFixed(1)}h / {project.weeklyTarget}h</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div
+                    className={`${colorClass} h-2 rounded-full transition-all duration-300`}
+                    style={{ width: `${Math.min(100, stats?.weeklyProgressPercentage || 0)}%` }}
+                  ></div>
+                </div>
+                <div className="text-xs text-gray-500 mt-1">
+                  {(stats?.weeklyProgressPercentage || 0).toFixed(1)}% complete
+                </div>
+              </div>
+            )}
+
+            {project.totalTarget && (
+              <div>
+                <div className="flex justify-between text-sm mb-2">
+                  <span className="text-gray-600">Total Target</span>
+                  <span className="font-medium">{(stats?.totalHours || 0).toFixed(1)}h / {project.totalTarget}h</span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div
+                    className={`${colorClass} h-2 rounded-full transition-all duration-300`}
+                    style={{ width: `${Math.min(100, stats?.totalProgressPercentage || 0)}%` }}
+                  ></div>
+                </div>
+                <div className="text-xs text-gray-500 mt-1">
+                  {(stats?.totalProgressPercentage || 0).toFixed(1)}% complete
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>

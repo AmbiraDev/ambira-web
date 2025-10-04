@@ -98,35 +98,37 @@ export default function GroupsPage() {
       </div>
       <MobileHeader title="Groups" />
 
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
         {/* Tabs */}
-        <div className="bg-white border-b border-gray-200 sticky top-14 md:top-0 z-30">
-          <div className="flex">
-            <button
-              onClick={() => setActiveTab('active')}
-              className={`flex-1 py-4 px-4 text-sm font-semibold transition-colors border-b-2 ${
-                activeTab === 'active'
-                  ? 'text-[#007AFF] border-[#007AFF]'
-                  : 'text-gray-500 border-transparent'
-              }`}
-            >
-              Active
-            </button>
-            <button
-              onClick={() => setActiveTab('challenges')}
-              className={`flex-1 py-4 px-4 text-sm font-semibold transition-colors border-b-2 ${
-                activeTab === 'challenges'
-                  ? 'text-[#007AFF] border-[#007AFF]'
-                  : 'text-gray-500 border-transparent'
-              }`}
-            >
-              Challenges
-            </button>
+        <div className="sticky top-14 md:top-0 bg-white md:bg-gray-50 border-b border-gray-200 z-30">
+          <div className="bg-gray-50 border-b md:border-b-0 border-gray-200">
+            <div className="max-w-4xl mx-auto flex gap-8 px-4 md:px-6 lg:px-8">
+              <button
+                onClick={() => setActiveTab('active')}
+                className={`py-4 px-1 text-base font-medium transition-colors border-b-2 ${
+                  activeTab === 'active'
+                    ? 'text-gray-900 border-[#007AFF]'
+                    : 'text-gray-600 border-transparent hover:text-gray-900'
+                }`}
+              >
+                Active
+              </button>
+              <button
+                onClick={() => setActiveTab('challenges')}
+                className={`py-4 px-1 text-base font-medium transition-colors border-b-2 ${
+                  activeTab === 'challenges'
+                    ? 'text-gray-900 border-[#007AFF]'
+                    : 'text-gray-600 border-transparent hover:text-gray-900'
+                }`}
+              >
+                Challenges
+              </button>
+            </div>
           </div>
         </div>
 
         {/* Content */}
-        <div className="px-4 py-6">
+        <div className="max-w-4xl mx-auto py-6">
           {activeTab === 'active' ? (
             // Active Groups Tab
             <div>

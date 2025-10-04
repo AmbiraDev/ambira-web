@@ -6,10 +6,12 @@ import { StatsCard } from './StatsCard';
 import { ActivityChart } from './ActivityChart';
 import { HeatmapCalendar } from './HeatmapCalendar';
 import { StreakDisplay } from './StreakDisplay';
-import { AnalyticsPeriod } from '@/types';
+import { AnalyticsPeriod, Session } from '@/types';
+import { firebaseSessionApi } from '@/lib/firebaseApi';
 
 interface PersonalAnalyticsDashboardProps {
   userId: string;
+  projectId?: string;
 }
 
 const PERIODS: AnalyticsPeriod[] = [
@@ -22,48 +24,217 @@ const PERIODS: AnalyticsPeriod[] = [
 ];
 
 export const PersonalAnalyticsDashboard: React.FC<PersonalAnalyticsDashboardProps> = ({
-  userId
+  userId,
+  projectId
 }) => {
   const [selectedPeriod, setSelectedPeriod] = useState<AnalyticsPeriod>(PERIODS[1]); // Default to 1 month
   const [isLoading, setIsLoading] = useState(true);
-
-  // Mock data - in real implementation, fetch from API
-  const mockData = {
-    totalHours: { current: 42, previous: 35, change: 7, changePercent: 20, isPositive: true },
-    totalSessions: { current: 28, previous: 24, change: 4, changePercent: 16.7, isPositive: true },
-    totalTasks: { current: 156, previous: 142, change: 14, changePercent: 9.9, isPositive: true },
-    averageSessionDuration: 90, // minutes
-    currentStreak: 7,
-    longestStreak: 14,
-    mostProductiveDay: 'Tuesday',
-    mostProductiveHour: 14,
-    activityByDay: [
-      { day: 'Mon', hours: 6, sessions: 4 },
-      { day: 'Tue', hours: 8, sessions: 5 },
-      { day: 'Wed', hours: 5, sessions: 3 },
-      { day: 'Thu', hours: 7, sessions: 4 },
-      { day: 'Fri', hours: 6, sessions: 4 },
-      { day: 'Sat', hours: 4, sessions: 2 },
-      { day: 'Sun', hours: 6, sessions: 6 }
-    ],
-    activityByHour: Array.from({ length: 24 }, (_, i) => ({
-      hour: i,
-      sessions: i >= 9 && i <= 17 ? Math.floor(Math.random() * 5) + 1 : 0
-    })),
-    heatmapData: Array.from({ length: 90 }, (_, i) => {
-      const date = new Date();
-      date.setDate(date.getDate() - (90 - i));
-      return {
-        date: date.toISOString().split('T')[0],
-        value: Math.random() > 0.3 ? Math.floor(Math.random() * 8) + 1 : 0
-      };
-    })
-  };
+  const [sessions, setSessions] = useState<Session[]>([]);
 
   useEffect(() => {
-    // Simulate loading
-    setIsLoading(false);
-  }, [selectedPeriod, userId]);
+    loadSessions();
+  }, [selectedPeriod, userId, projectId]);
+
+  const loadSessions = async () => {
+    try {
+      setIsLoading(true);
+      const filters: any = {};
+      if (projectId) {
+        filters.projectId = projectId;
+      }
+
+      const response = await firebaseSessionApi.getSessions(1, 500, filters);
+
+      // Filter by selected period
+      const cutoffDate = new Date();
+      if (selectedPeriod.value !== 'all') {
+        cutoffDate.setDate(cutoffDate.getDate() - selectedPeriod.days);
+      } else {
+        cutoffDate.setFullYear(2000); // Get all sessions
+      }
+
+      const filteredSessions = response.sessions.filter(session =>
+        new Date(session.startTime) >= cutoffDate && session.userId === userId
+      );
+
+      setSessions(filteredSessions);
+    } catch (error) {
+      console.error('Failed to load sessions:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const calculateAnalytics = () => {
+    // Calculate total hours
+    const totalSeconds = sessions.reduce((sum, s) => sum + (s.duration || 0), 0);
+    const totalHours = totalSeconds / 3600;
+
+    // Calculate sessions
+    const totalSessions = sessions.length;
+
+    // Calculate tasks
+    const totalTasks = sessions.reduce((sum, s) => sum + (s.tasks?.length || 0), 0);
+
+    // Calculate average session duration in minutes
+    const averageSessionDuration = totalSessions > 0 ? totalSeconds / totalSessions / 60 : 0;
+
+    // Calculate streak
+    const sortedSessions = [...sessions].sort((a, b) =>
+      new Date(b.startTime).getTime() - new Date(a.startTime).getTime()
+    );
+
+    let currentStreak = 0;
+    let longestStreak = 0;
+    let tempStreak = 0;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const sessionsByDate = new Map<string, boolean>();
+    sortedSessions.forEach(s => {
+      const date = new Date(s.startTime);
+      date.setHours(0, 0, 0, 0);
+      const dateStr = date.toISOString().split('T')[0];
+      sessionsByDate.set(dateStr, true);
+    });
+
+    // Calculate current streak
+    let checkDate = new Date(today);
+    while (true) {
+      const dateStr = checkDate.toISOString().split('T')[0];
+      if (sessionsByDate.has(dateStr)) {
+        currentStreak++;
+        checkDate.setDate(checkDate.getDate() - 1);
+      } else {
+        break;
+      }
+    }
+
+    // Calculate longest streak
+    const allDates = Array.from(sessionsByDate.keys()).sort().reverse();
+    tempStreak = 0;
+    let lastDate: Date | null = null;
+
+    allDates.forEach(dateStr => {
+      const date = new Date(dateStr);
+      if (!lastDate) {
+        tempStreak = 1;
+      } else {
+        const diffDays = Math.round((lastDate.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
+        if (diffDays === 1) {
+          tempStreak++;
+        } else {
+          longestStreak = Math.max(longestStreak, tempStreak);
+          tempStreak = 1;
+        }
+      }
+      lastDate = date;
+    });
+    longestStreak = Math.max(longestStreak, tempStreak);
+
+    // Calculate activity by day of week
+    const activityByDay = [
+      { day: 'Sun', hours: 0, sessions: 0 },
+      { day: 'Mon', hours: 0, sessions: 0 },
+      { day: 'Tue', hours: 0, sessions: 0 },
+      { day: 'Wed', hours: 0, sessions: 0 },
+      { day: 'Thu', hours: 0, sessions: 0 },
+      { day: 'Fri', hours: 0, sessions: 0 },
+      { day: 'Sat', hours: 0, sessions: 0 }
+    ];
+
+    sessions.forEach(s => {
+      const dayOfWeek = new Date(s.startTime).getDay();
+      activityByDay[dayOfWeek].hours += (s.duration || 0) / 3600;
+      activityByDay[dayOfWeek].sessions += 1;
+    });
+
+    // Calculate activity by hour
+    const activityByHour = Array.from({ length: 24 }, (_, i) => ({
+      hour: i,
+      sessions: 0
+    }));
+
+    sessions.forEach(s => {
+      const hour = new Date(s.startTime).getHours();
+      activityByHour[hour].sessions += 1;
+    });
+
+    // Most productive day
+    const maxDayActivity = Math.max(...activityByDay.map(d => d.hours));
+    const mostProductiveDay = activityByDay.find(d => d.hours === maxDayActivity)?.day || 'N/A';
+
+    // Most productive hour
+    const maxHourActivity = Math.max(...activityByHour.map(h => h.sessions));
+    const mostProductiveHour = activityByHour.find(h => h.sessions === maxHourActivity)?.hour || 0;
+
+    // Generate heatmap data
+    const heatmapData: Array<{ date: string; value: number }> = [];
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - 90);
+
+    for (let i = 0; i < 90; i++) {
+      const date = new Date(startDate);
+      date.setDate(date.getDate() + i);
+      const dateStr = date.toISOString().split('T')[0];
+
+      const daySessions = sessions.filter(s => {
+        const sessionDate = new Date(s.startTime).toISOString().split('T')[0];
+        return sessionDate === dateStr;
+      });
+
+      const dayHours = daySessions.reduce((sum, s) => sum + (s.duration || 0), 0) / 3600;
+      heatmapData.push({ date: dateStr, value: dayHours });
+    }
+
+    // Calculate comparison with previous period (mock for now)
+    const previousHours = totalHours * 0.8;
+    const previousSessions = Math.floor(totalSessions * 0.85);
+    const previousTasks = Math.floor(totalTasks * 0.9);
+
+    const hoursChange = totalHours - previousHours;
+    const hoursChangePercent = previousHours > 0 ? (hoursChange / previousHours) * 100 : 0;
+
+    const sessionsChange = totalSessions - previousSessions;
+    const sessionsChangePercent = previousSessions > 0 ? (sessionsChange / previousSessions) * 100 : 0;
+
+    const tasksChange = totalTasks - previousTasks;
+    const tasksChangePercent = previousTasks > 0 ? (tasksChange / previousTasks) * 100 : 0;
+
+    return {
+      totalHours: {
+        current: totalHours,
+        previous: previousHours,
+        change: hoursChange,
+        changePercent: hoursChangePercent,
+        isPositive: hoursChange >= 0
+      },
+      totalSessions: {
+        current: totalSessions,
+        previous: previousSessions,
+        change: sessionsChange,
+        changePercent: sessionsChangePercent,
+        isPositive: sessionsChange >= 0
+      },
+      totalTasks: {
+        current: totalTasks,
+        previous: previousTasks,
+        change: tasksChange,
+        changePercent: tasksChangePercent,
+        isPositive: tasksChange >= 0
+      },
+      averageSessionDuration,
+      currentStreak,
+      longestStreak,
+      mostProductiveDay,
+      mostProductiveHour,
+      activityByDay,
+      activityByHour,
+      heatmapData
+    };
+  };
+
+  const mockData = calculateAnalytics();
 
   if (isLoading) {
     return (
@@ -82,8 +253,8 @@ export const PersonalAnalyticsDashboard: React.FC<PersonalAnalyticsDashboardProp
       {/* Header with period selector */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Personal Analytics</h2>
-          <p className="text-gray-600">Track your productivity and progress</p>
+          <h2 className="text-2xl font-bold text-gray-900">{projectId ? 'Project Analytics' : 'Personal Analytics'}</h2>
+          <p className="text-gray-600">{projectId ? 'Track your project progress and activity' : 'Track your productivity and progress'}</p>
         </div>
         
         <div className="flex gap-2">
