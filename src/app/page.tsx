@@ -8,10 +8,18 @@ import LeftSidebar from '@/components/LeftSidebar';
 import RightSidebar from '@/components/RightSidebar';
 import BottomNavigation from '@/components/BottomNavigation';
 import { FABMenu } from '@/components/FABMenu';
-import { Users } from 'lucide-react';
+import Feed from '@/components/Feed';
+import { useState } from 'react';
+import { FeedFilters } from '@/types';
 
 function HomeContent() {
   const { user } = useAuth();
+  const [feedFilter, setFeedFilter] = useState<'following' | 'all' | 'mine'>('following');
+
+  const filters: FeedFilters = {
+    followingOnly: feedFilter === 'following',
+    userId: feedFilter === 'mine' ? user?.id : undefined
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -22,47 +30,41 @@ function HomeContent() {
 
       {/* Mobile header */}
       <MobileHeader title="Feed" />
-      
+
       <div className="max-w-[1400px] mx-auto md:px-4 md:py-6">
         <div className="md:flex gap-6">
           {/* Left Sidebar - hidden on mobile */}
           <div className="hidden md:block">
             <LeftSidebar />
           </div>
-          
+
           {/* Main Feed */}
           <main className="flex-1 min-w-0 max-w-[600px] md:mx-auto">
             {/* Feed Filter */}
             <div className="mb-4 px-4 md:px-0 pt-4 md:pt-0">
-              <select className="w-full md:w-48 text-sm text-gray-700 bg-white border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF]">
-                <option>Following</option>
-                <option>All Activity</option>
-                <option>My Activities</option>
+              <select
+                value={feedFilter}
+                onChange={(e) => setFeedFilter(e.target.value as 'following' | 'all' | 'mine')}
+                className="w-full md:w-48 text-sm text-gray-700 bg-white border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF]"
+              >
+                <option value="following">Following</option>
+                <option value="all">All Activity</option>
+                <option value="mine">My Activities</option>
               </select>
             </div>
 
             {/* Feed Posts */}
-            <div className="bg-white border-gray-200 md:border md:rounded-lg p-6 md:p-8 text-center mx-4 md:mx-0 rounded-lg border">
-              <div className="text-gray-500 mb-4">
-                <Users className="w-12 h-12 md:w-16 md:h-16 mx-auto mb-4 text-gray-300" strokeWidth={1.5} />
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">No activity yet</h3>
-              <p className="text-gray-600 mb-6 text-sm md:text-base">
-                Follow some users to see their productivity activities in your feed.
-              </p>
-              <button className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors">
-                <Users className="w-5 h-5 mr-2" strokeWidth={2} />
-                Discover Users
-              </button>
+            <div className="px-4 md:px-0">
+              <Feed filters={filters} />
             </div>
           </main>
-          
+
           {/* Right Sidebar - hidden on mobile */}
           <div className="hidden md:block">
             <RightSidebar />
           </div>
         </div>
-        
+
         {/* Floating Action Button Menu - only show on desktop */}
         <div className="hidden md:block">
           <FABMenu />

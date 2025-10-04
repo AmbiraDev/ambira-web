@@ -16,6 +16,7 @@ export default function BottomNavigation() {
     if (path === '/search') return pathname.startsWith('/search');
     if (path === '/projects') return pathname.startsWith('/projects');
     if (path === '/groups') return pathname.startsWith('/groups');
+    if (path === '/you') return pathname.startsWith('/you');
     return pathname === path;
   };
 
@@ -76,12 +77,12 @@ export default function BottomNavigation() {
 
         {/* You */}
         <Link
-          href={user ? `/profile/${user.username}` : '/profile'}
+          href="/you"
           className={`flex flex-col items-center justify-center space-y-0.5 px-3 py-1 transition-colors ${
-            pathname.startsWith('/profile') ? 'text-[#007AFF]' : 'text-gray-500'
+            isActive('/you') ? 'text-[#007AFF]' : 'text-gray-500'
           }`}
         >
-          <User className="w-6 h-6" strokeWidth={pathname.startsWith('/profile') ? 2.5 : 2} />
+          <User className="w-6 h-6" strokeWidth={isActive('/you') ? 2.5 : 2} />
           <span className="text-[10px] font-medium">You</span>
         </Link>
       </div>
