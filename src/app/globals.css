@@ -126,3 +126,105 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, button, input, textarea, select {
 .animate-slide-up {
   animation: slide-up 0.3s ease-out;
 }
+
+/* Custom Range Slider Styles */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  border-radius: 2px;
+  outline: none;
+  margin: 0;
+  padding: 0;
+  background-clip: content-box !important;
+}
+
+/* Webkit (Chrome, Safari, Edge) */
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: white;
+  cursor: pointer;
+  border: 3px solid #007AFF;
+  box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
+  margin-top: -8px;
+  transition: all 0.2s ease;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  box-shadow: 0 4px 12px rgba(0, 122, 255, 0.4);
+  transform: scale(1.1);
+}
+
+input[type="range"]::-webkit-slider-thumb:active {
+  transform: scale(1.15);
+  box-shadow: 0 4px 16px rgba(0, 122, 255, 0.5);
+}
+
+/* Firefox */
+input[type="range"]::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: white;
+  cursor: pointer;
+  border: 3px solid #007AFF;
+  box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
+  transition: all 0.2s ease;
+}
+
+input[type="range"]::-moz-range-thumb:hover {
+  box-shadow: 0 4px 12px rgba(0, 122, 255, 0.4);
+  transform: scale(1.1);
+}
+
+input[type="range"]::-moz-range-thumb:active {
+  transform: scale(1.15);
+  box-shadow: 0 4px 16px rgba(0, 122, 255, 0.5);
+}
+
+/* Remove default track styling */
+input[type="range"]::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 2px;
+}
+
+input[type="range"]::-moz-range-track {
+  height: 4px;
+  border-radius: 2px;
+  background: transparent;
+}
+
+/* Mobile-specific range slider improvements */
+@media (max-width: 768px) {
+  input[type="range"] {
+    height: 4px !important;
+    border-radius: 2px !important;
+  }
+  
+  input[type="range"]::-webkit-slider-thumb {
+    width: 20px !important;
+    height: 20px !important;
+    margin-top: -8px !important;
+    border-width: 3px !important;
+  }
+  
+  input[type="range"]::-moz-range-thumb {
+    width: 20px !important;
+    height: 20px !important;
+    border-width: 3px !important;
+  }
+  
+  input[type="range"]::-webkit-slider-runnable-track {
+    height: 4px !important;
+    border-radius: 2px !important;
+  }
+  
+  input[type="range"]::-moz-range-track {
+    height: 4px !important;
+    border-radius: 2px !important;
+  }
+}

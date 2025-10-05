@@ -1,0 +1,66 @@
+rules_version = '2';
+
+// Firebase Storage Security Rules
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Helper function to check if user owns the resource
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // Helper function to validate image file
+    function isValidImage() {
+      return request.resource.size < 5 * 1024 * 1024 // 5MB max
+        && request.resource.contentType.matches('image/.*');
+    }
+    
+    // Profile pictures
+    match /profile-pictures/{userId}/{fileName} {
+      // Allow read access to all authenticated users
+      allow read: if isAuthenticated();
+      
+      // Allow write (upload/update/delete) only to the owner
+      allow write: if isOwner(userId) && isValidImage();
+      
+      // Allow delete only to the owner
+      allow delete: if isOwner(userId);
+    }
+    
+    // Legacy profile pictures path (for backward compatibility)
+    match /users/{userId}/profile/{fileName} {
+      allow read: if isAuthenticated();
+      allow write: if isOwner(userId) && isValidImage();
+      allow delete: if isOwner(userId);
+    }
+    
+    // Group images
+    match /group-images/{groupId}/{fileName} {
+      // Allow read access to all authenticated users
+      allow read: if isAuthenticated();
+      
+      // Allow write only to group admins (checked via Firestore)
+      // Note: For full validation, you'd need to check Firestore group membership
+      allow write: if isAuthenticated() && isValidImage();
+      
+      allow delete: if isAuthenticated();
+    }
+    
+    // Session attachments (if needed in future)
+    match /session-attachments/{userId}/{sessionId}/{fileName} {
+      allow read: if isAuthenticated();
+      allow write: if isOwner(userId) && request.resource.size < 10 * 1024 * 1024; // 10MB max
+      allow delete: if isOwner(userId);
+    }
+    
+    // Deny all other paths by default
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -33,7 +33,7 @@ import {
   GoogleAuthProvider,
   signInWithPopup
 } from 'firebase/auth';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { db, auth, storage } from './firebase';
 
 // Helper function for safe error handling
@@ -867,6 +867,81 @@ export const firebaseUserApi = {
       return results;
     } catch (error: any) {
       throw new Error(error.message || 'Failed to get project breakdown');
+    }
+  },
+
+  // Upload profile picture to Firebase Storage
+  uploadProfilePicture: async (file: File): Promise<string> => {
+    try {
+      if (!auth.currentUser) {
+        throw new Error('User not authenticated');
+      }
+
+      // Validate file type
+      const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+      if (!validTypes.includes(file.type)) {
+        throw new Error('Invalid file type. Please upload a JPEG, PNG, GIF, or WebP image.');
+      }
+
+      // Validate file size (5MB max)
+      const maxSize = 5 * 1024 * 1024;
+      if (file.size > maxSize) {
+        throw new Error('File size too large. Maximum size is 5MB.');
+      }
+
+      // Create a unique filename with timestamp
+      const timestamp = Date.now();
+      const fileExtension = file.name.split('.').pop() || 'jpg';
+      const fileName = `profile_${timestamp}.${fileExtension}`;
+      
+      // Create storage reference
+      const storageRef = ref(storage, `profile-pictures/${auth.currentUser.uid}/${fileName}`);
+      
+      // Upload file
+      const snapshot = await uploadBytes(storageRef, file, {
+        contentType: file.type,
+        customMetadata: {
+          uploadedBy: auth.currentUser.uid,
+          uploadedAt: new Date().toISOString()
+        }
+      });
+      
+      // Get download URL
+      const downloadURL = await getDownloadURL(snapshot.ref);
+      
+      return downloadURL;
+    } catch (error: any) {
+      throw new Error(error.message || 'Failed to upload profile picture');
+    }
+  },
+
+  // Delete old profile picture from Firebase Storage
+  deleteProfilePicture: async (profilePictureUrl: string): Promise<void> => {
+    try {
+      if (!auth.currentUser) {
+        throw new Error('User not authenticated');
+      }
+
+      // Only delete if it's a Firebase Storage URL
+      if (!profilePictureUrl.includes('firebasestorage.googleapis.com')) {
+        return; // Skip deletion for external URLs (e.g., Google profile photos)
+      }
+
+      // Extract the storage path from the URL
+      const storageRef = ref(storage, profilePictureUrl);
+      
+      // Delete the file (will fail silently if file doesn't exist)
+      try {
+        await deleteObject(storageRef);
+      } catch (error: any) {
+        // Ignore errors if file doesn't exist
+        if (error.code !== 'storage/object-not-found') {
+          console.warn('Failed to delete old profile picture:', error);
+        }
+      }
+    } catch (error: any) {
+      console.warn('Error in deleteProfilePicture:', error);
+      // Don't throw error - this is a cleanup operation
     }
   },
 

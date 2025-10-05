@@ -78,7 +78,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({
   };
 
   return (
-    <article className={`bg-white border-b border-gray-100 ${className}`}>
+    <article className={`bg-white rounded-lg md:border md:border-gray-200 md:shadow-sm mb-4 md:mb-6 ${className}`}>
       {/* Session Header */}
       <div className="flex items-center justify-between px-4 pt-4 pb-3">
         <Link href={`/profile/${session.user.username}`} className="flex items-center gap-3">
@@ -208,8 +208,6 @@ export const SessionCard: React.FC<SessionCardProps> = ({
         </div>
       )}
 
-      {/* Separator Line */}
-      <div className="border-b-4 border-gray-200"></div>
     </article>
   );
 };

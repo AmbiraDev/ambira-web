@@ -93,12 +93,10 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
           <div className="flex-shrink-0">
             <div className="relative">
               {profile.profilePicture ? (
-                <Image
+                <img
                   src={profile.profilePicture}
                   alt={`${profile.name}'s profile picture`}
-                  width={140}
-                  height={140}
-                  className="rounded-full object-cover border-4 border-gray-100"
+                  className="w-[140px] h-[140px] rounded-full object-cover border-4 border-gray-100"
                 />
               ) : (
                 <div className="w-[140px] h-[140px] bg-gradient-to-br from-[#FC4C02] to-[#FF8800] rounded-full flex items-center justify-center text-white text-5xl font-bold">

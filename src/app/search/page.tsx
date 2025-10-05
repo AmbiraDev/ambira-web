@@ -10,6 +10,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { UserCardCompact } from '@/components/UserCard';
 import { collection, query as firestoreQuery, orderBy, limit, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { Users, MapPin, Calendar, Check } from 'lucide-react';
 
 // Mock data for search results
 const mockUsers = [
@@ -46,6 +47,10 @@ function SearchContent() {
   const [showAllPeople, setShowAllPeople] = useState(false);
   const [showAllGroups, setShowAllGroups] = useState(false);
   const [showAllChallenges, setShowAllChallenges] = useState(false);
+  const [joinedGroups, setJoinedGroups] = useState<Set<string>>(new Set());
+  const [joinedChallenges, setJoinedChallenges] = useState<Set<string>>(new Set());
+  const [joiningGroup, setJoiningGroup] = useState<string | null>(null);
+  const [joiningChallenge, setJoiningChallenge] = useState<string | null>(null);
   const { user } = useAuth();
 
   // Load suggested content on mount
@@ -98,7 +103,7 @@ function SearchContent() {
 
         // Load challenges - get active challenges sorted by participant count
         try {
-          const challenges = await firebaseApi.challenge.getChallenges({ isActive: true });
+          const challenges = await firebaseApi.challenge.getChallenges({ status: 'active' });
           const sortedChallenges = challenges
             .sort((a, b) => (b.participantCount || 0) - (a.participantCount || 0))
             .slice(0, 20)
@@ -175,6 +180,64 @@ function SearchContent() {
     );
   };
 
+  const handleJoinGroup = async (groupId: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (!user) return;
+    
+    const isJoined = joinedGroups.has(groupId);
+    
+    try {
+      setJoiningGroup(groupId);
+      
+      if (isJoined) {
+        await firebaseApi.group.leaveGroup(groupId, user.id);
+        setJoinedGroups(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(groupId);
+          return newSet;
+        });
+      } else {
+        await firebaseApi.group.joinGroup(groupId, user.id);
+        setJoinedGroups(prev => new Set(prev).add(groupId));
+      }
+    } catch (error) {
+      console.error('Failed to join/leave group:', error);
+    } finally {
+      setJoiningGroup(null);
+    }
+  };
+
+  const handleJoinChallenge = async (challengeId: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (!user) return;
+    
+    const isJoined = joinedChallenges.has(challengeId);
+    
+    try {
+      setJoiningChallenge(challengeId);
+      
+      if (isJoined) {
+        await firebaseApi.challenge.leaveChallenge(challengeId);
+        setJoinedChallenges(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(challengeId);
+          return newSet;
+        });
+      } else {
+        await firebaseApi.challenge.joinChallenge(challengeId);
+        setJoinedChallenges(prev => new Set(prev).add(challengeId));
+      }
+    } catch (error) {
+      console.error('Failed to join/leave challenge:', error);
+    } finally {
+      setJoiningChallenge(null);
+    }
+  };
+
   const renderUserResult = (user: any) => {
     if (user.isSelf) {
       return (
@@ -213,61 +276,127 @@ function SearchContent() {
     );
   };
 
-  const renderGroupResult = (group: any) => (
-    <Link
-      key={group.id}
-      href={`/groups/${group.id}`}
-      className="block p-4 hover:bg-gray-50 transition-colors border-b border-gray-100"
-    >
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-teal-600 rounded-lg flex items-center justify-center text-2xl">
+  const renderGroupResult = (group: any) => {
+    const isJoined = joinedGroups.has(group.id);
+    const isLoading = joiningGroup === group.id;
+    
+    return (
+      <Link
+        key={group.id}
+        href={`/groups/${group.id}`}
+        className="block p-4 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-0"
+      >
+        <div className="flex items-start gap-3">
+          {/* Group Icon */}
+          <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center text-2xl flex-shrink-0">
             {group.image}
           </div>
-          <div>
-            <h3 className="font-semibold text-gray-900">{group.name}</h3>
-            <p className="text-sm text-gray-700 mt-1">{group.description}</p>
-            <div className="flex items-center space-x-4 mt-2 text-xs text-gray-500">
-              <span>📍 {group.location}</span>
-              <span>👥 {group.members.toLocaleString()} members</span>
-              <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded">{group.category}</span>
+          
+          {/* Group Info */}
+          <div className="flex-1 min-w-0">
+            <h3 className="font-semibold text-gray-900 text-base truncate">{group.name}</h3>
+            <p className="text-sm text-gray-600 mt-0.5 line-clamp-2">{group.description}</p>
+            
+            {/* Meta Info */}
+            <div className="flex items-center gap-3 mt-2 text-xs text-gray-500">
+              <span className="flex items-center gap-1">
+                <Users className="w-3.5 h-3.5" />
+                {group.members.toLocaleString()}
+              </span>
+              {group.location && (
+                <span className="flex items-center gap-1">
+                  <MapPin className="w-3.5 h-3.5" />
+                  {group.location}
+                </span>
+              )}
             </div>
           </div>
+          
+          {/* Join Button */}
+          <button 
+            onClick={(e) => handleJoinGroup(group.id, e)}
+            disabled={isLoading}
+            className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors flex-shrink-0 flex items-center gap-1.5 ${
+              isJoined
+                ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                : 'bg-[#007AFF] text-white hover:bg-[#0056D6]'
+            } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+          >
+            {isLoading ? (
+              <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+            ) : isJoined ? (
+              <>
+                <Check className="w-4 h-4" />
+                <span className="hidden sm:inline">Joined</span>
+              </>
+            ) : (
+              <span>Join</span>
+            )}
+          </button>
         </div>
-        <button className="px-4 py-2 bg-[#007AFF] text-white text-sm font-medium rounded-lg hover:bg-[#0056D6] transition-colors">
-          Join
-        </button>
-      </div>
-    </Link>
-  );
+      </Link>
+    );
+  };
 
-  const renderChallengeResult = (challenge: any) => (
-    <Link
-      key={challenge.id}
-      href={`/challenges/${challenge.id}`}
-      className="block p-4 hover:bg-gray-50 transition-colors border-b border-gray-100"
-    >
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
-          <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-lg flex items-center justify-center text-2xl">
+  const renderChallengeResult = (challenge: any) => {
+    const isJoined = joinedChallenges.has(challenge.id);
+    const isLoading = joiningChallenge === challenge.id;
+    
+    return (
+      <Link
+        key={challenge.id}
+        href={`/challenges/${challenge.id}`}
+        className="block p-4 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-0"
+      >
+        <div className="flex items-start gap-3">
+          {/* Challenge Icon */}
+          <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center text-2xl flex-shrink-0">
             {challenge.image}
           </div>
-          <div>
-            <h3 className="font-semibold text-gray-900">{challenge.name}</h3>
-            <p className="text-sm text-gray-700 mt-1">{challenge.description}</p>
-            <div className="flex items-center space-x-4 mt-2 text-xs text-gray-500">
-              <span>🏢 {challenge.group}</span>
-              <span>👥 {challenge.participants} participants</span>
-              <span>📅 Ends {new Date(challenge.endDate).toLocaleDateString()}</span>
+          
+          {/* Challenge Info */}
+          <div className="flex-1 min-w-0">
+            <h3 className="font-semibold text-gray-900 text-base truncate">{challenge.name}</h3>
+            <p className="text-sm text-gray-600 mt-0.5 line-clamp-2">{challenge.description}</p>
+            
+            {/* Meta Info */}
+            <div className="flex items-center gap-3 mt-2 text-xs text-gray-500">
+              <span className="flex items-center gap-1">
+                <Users className="w-3.5 h-3.5" />
+                {challenge.participants}
+              </span>
+              <span className="flex items-center gap-1">
+                <Calendar className="w-3.5 h-3.5" />
+                {new Date(challenge.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+              </span>
             </div>
           </div>
+          
+          {/* Join Button */}
+          <button 
+            onClick={(e) => handleJoinChallenge(challenge.id, e)}
+            disabled={isLoading}
+            className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors flex-shrink-0 flex items-center gap-1.5 ${
+              isJoined
+                ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                : 'bg-[#007AFF] text-white hover:bg-[#0056D6]'
+            } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+          >
+            {isLoading ? (
+              <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+            ) : isJoined ? (
+              <>
+                <Check className="w-4 h-4" />
+                <span className="hidden sm:inline">Joined</span>
+              </>
+            ) : (
+              <span>Join</span>
+            )}
+          </button>
         </div>
-        <button className="px-4 py-2 bg-[#007AFF] text-white text-sm font-medium rounded-lg hover:bg-[#0056D6] transition-colors">
-          Join Challenge
-        </button>
-      </div>
-    </Link>
-  );
+      </Link>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">

@@ -5,6 +5,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { ProjectsProvider } from "@/contexts/ProjectsContext";
 import { TimerProvider } from "@/contexts/TimerContext";
 import { TasksProvider } from "@/contexts/TasksContext";
+import { QueryProvider } from "@/providers/QueryProvider";
 import PWAInstaller from "@/components/PWAInstaller";
 
 const dmSans = DM_Sans({
@@ -60,15 +61,17 @@ export default function RootLayout({
         className={`${dmSans.variable} antialiased`}
       >
         <PWAInstaller />
-        <AuthProvider>
-          <ProjectsProvider>
-            <TasksProvider>
-              <TimerProvider>
-                {children}
-              </TimerProvider>
-            </TasksProvider>
-          </ProjectsProvider>
-        </AuthProvider>
+        <QueryProvider>
+          <AuthProvider>
+            <ProjectsProvider>
+              <TasksProvider>
+                <TimerProvider>
+                  {children}
+                </TimerProvider>
+              </TasksProvider>
+            </ProjectsProvider>
+          </AuthProvider>
+        </QueryProvider>
       </body>
     </html>
   );

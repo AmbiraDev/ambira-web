@@ -57,19 +57,26 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
 
     try {
       setIsLoading(true);
+      toast.loading('Uploading profile picture...', { id: 'upload-profile-pic' });
       
-      // In a real app, you would upload to a cloud service like AWS S3, Cloudinary, etc.
-      // For now, we'll simulate with a data URL
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const result = e.target?.result as string;
-        setFormData(prev => ({ ...prev, profilePicture: result }));
-        toast.success('Profile picture updated');
-      };
-      reader.readAsDataURL(file);
+      // Upload to Firebase Storage
+      const downloadURL = await firebaseUserApi.uploadProfilePicture(file);
+      
+      // Delete old profile picture if it exists and is a Firebase Storage URL
+      if (profile.profilePicture && profile.profilePicture.includes('firebasestorage.googleapis.com')) {
+        try {
+          await firebaseUserApi.deleteProfilePicture(profile.profilePicture);
+        } catch (error) {
+          console.warn('Failed to delete old profile picture:', error);
+          // Continue anyway - this is not critical
+        }
+      }
+      
+      setFormData(prev => ({ ...prev, profilePicture: downloadURL }));
+      toast.success('Profile picture uploaded successfully', { id: 'upload-profile-pic' });
     } catch (error) {
       console.error('File upload error:', error);
-      toast.error('Failed to upload image');
+      toast.error('Failed to upload image', { id: 'upload-profile-pic' });
     } finally {
       setIsLoading(false);
     }

@@ -3,6 +3,8 @@
 import React, { useState } from 'react';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import Header from '@/components/HeaderComponent';
+import MobileHeader from '@/components/MobileHeader';
+import BottomNavigation from '@/components/BottomNavigation';
 import NotificationSettings from '@/components/NotificationSettings';
 import { 
   User, 
@@ -10,7 +12,8 @@ import {
   Bell, 
   Globe,
   Mail,
-  Upload
+  Upload,
+  ChevronRight
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import Image from 'next/image';
@@ -32,6 +35,8 @@ export default function SettingsPage() {
   });
   const [isSaving, setIsSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  const [profilePictureUrl, setProfilePictureUrl] = useState(user?.profilePicture || '');
 
   const tabs = [
     { id: 'profile' as SettingsTab, label: 'My Profile', icon: User },
@@ -40,6 +45,45 @@ export default function SettingsPage() {
     { id: 'notifications' as SettingsTab, label: 'Email Notifications', icon: Bell },
     { id: 'display' as SettingsTab, label: 'Display Preferences', icon: Globe },
   ];
+
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (!validTypes.includes(file.type)) {
+      toast.error('Invalid file type. Please upload a JPEG, PNG, GIF, or WebP image.');
+      return;
+    }
+
+    // Validate file size (5MB max)
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      toast.error('File size too large. Maximum size is 5MB.');
+      return;
+    }
+
+    try {
+      setIsUploadingPhoto(true);
+      
+      // Upload to Firebase Storage
+      const downloadURL = await firebaseUserApi.uploadProfilePicture(file);
+      
+      // Update profile with new picture URL
+      await firebaseUserApi.updateProfile({
+        profilePicture: downloadURL,
+      });
+      
+      setProfilePictureUrl(downloadURL);
+      toast.success('Profile picture updated!');
+    } catch (err: any) {
+      console.error('Upload error:', err);
+      toast.error(err?.message || 'Failed to upload photo');
+    } finally {
+      setIsUploadingPhoto(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,13 +106,21 @@ export default function SettingsPage() {
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-gray-50">
-        <Header />
+      <div className="min-h-screen bg-gray-50 pb-20 md:pb-0">
+        {/* Desktop Header */}
+        <div className="hidden md:block">
+          <Header />
+        </div>
         
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="flex gap-8">
-            {/* Sidebar */}
-            <div className="w-64 flex-shrink-0">
+        {/* Mobile Header */}
+        <div className="md:hidden">
+          <MobileHeader title="Settings" />
+        </div>
+        
+        <div className="max-w-7xl mx-auto px-0 md:px-4 sm:px-6 lg:px-8 py-0 md:py-8">
+          <div className="flex flex-col md:flex-row gap-0 md:gap-8">
+            {/* Sidebar - Desktop Only */}
+            <div className="hidden md:block w-64 flex-shrink-0">
               <div className="bg-white rounded-lg shadow-sm overflow-hidden">
                 {tabs.map((tab) => {
                   const Icon = tab.icon;
@@ -78,7 +130,7 @@ export default function SettingsPage() {
                       onClick={() => setActiveTab(tab.id)}
                       className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors ${
                         activeTab === tab.id
-                          ? 'bg-[#FC4C02] text-white'
+                          ? 'bg-[#007AFF] text-white'
                           : 'text-gray-700 hover:bg-gray-50'
                       }`}
                     >
@@ -90,9 +142,34 @@ export default function SettingsPage() {
               </div>
             </div>
 
+            {/* Mobile Tabs */}
+            <div className="md:hidden bg-white border-b border-gray-200">
+              <div className="overflow-x-auto scrollbar-hide">
+                <div className="flex">
+                  {tabs.map((tab) => {
+                    const Icon = tab.icon;
+                    return (
+                      <button
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id)}
+                        className={`flex-shrink-0 flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
+                          activeTab === tab.id
+                            ? 'border-[#007AFF] text-[#007AFF]'
+                            : 'border-transparent text-gray-600'
+                        }`}
+                      >
+                        <Icon className="w-4 h-4" />
+                        <span className="whitespace-nowrap">{tab.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
             {/* Main Content */}
             <div className="flex-1">
-              <div className="bg-white rounded-lg shadow-sm p-8">
+              <div className="bg-white md:rounded-lg md:shadow-sm p-4 md:p-8">
                 {activeTab === 'profile' && (
                   <div>
                     <h2 className="text-2xl font-bold text-gray-900 mb-6">My Profile</h2>
@@ -103,30 +180,48 @@ export default function SettingsPage() {
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Profile Picture
                         </label>
-                        <div className="flex items-center gap-4">
-                          {user?.profilePicture ? (
+                        <div className="flex flex-col md:flex-row md:items-center gap-4">
+                          {profilePictureUrl || user?.profilePicture ? (
                             <Image
-                              src={user.profilePicture}
+                              src={profilePictureUrl || user.profilePicture || ''}
                               alt="Profile"
                               width={80}
                               height={80}
                               className="rounded-full object-cover"
                             />
                           ) : (
-                            <div className="w-20 h-20 bg-gradient-to-br from-[#FC4C02] to-[#FF8800] rounded-full flex items-center justify-center text-white text-3xl font-bold">
+                            <div className="w-20 h-20 bg-gradient-to-br from-[#007AFF] to-[#0051D5] rounded-full flex items-center justify-center text-white text-3xl font-bold shadow-lg">
                               {user?.name.charAt(0).toUpperCase() || 'N'}
                             </div>
                           )}
-                          <button
-                            type="button"
-                            className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
-                          >
-                            <Upload className="w-4 h-4" />
-                            Upload Photo
-                          </button>
-                          <p className="text-sm text-gray-500">
-                            JPG, PNG, GIF or WebP. Max 5MB.
-                          </p>
+                          <div className="flex-1">
+                            <input
+                              type="file"
+                              id="profile-photo-upload"
+                              accept="image/jpeg,image/png,image/gif,image/webp"
+                              onChange={handlePhotoUpload}
+                              className="hidden"
+                            />
+                            <label
+                              htmlFor="profile-photo-upload"
+                              className={`flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors w-full md:w-auto justify-center md:justify-start cursor-pointer ${isUploadingPhoto ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            >
+                              {isUploadingPhoto ? (
+                                <>
+                                  <div className="w-4 h-4 border-2 border-gray-300 border-t-[#007AFF] rounded-full animate-spin"></div>
+                                  Uploading...
+                                </>
+                              ) : (
+                                <>
+                                  <Upload className="w-4 h-4" />
+                                  Upload Photo
+                                </>
+                              )}
+                            </label>
+                            <p className="text-sm text-gray-500 mt-2">
+                              JPG, PNG, GIF or WebP. Max 5MB.
+                            </p>
+                          </div>
                         </div>
                       </div>
 
@@ -179,19 +274,19 @@ export default function SettingsPage() {
                       </div>
 
                       {/* Submit Buttons */}
-                      <div className="flex gap-3 pt-4">
+                      <div className="flex flex-col md:flex-row gap-3 pt-4">
                         <a
                           href={user ? `/profile/${user.username}` : '/'}
-                          className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                          className="px-6 py-3 md:py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors text-center"
                         >
                           Cancel
                         </a>
                         <button
                           type="submit"
                           disabled={isSaving}
-                          className={`px-6 py-2 rounded-lg transition-colors text-white ${isSaving ? 'bg-gray-400 cursor-not-allowed' : saved ? 'bg-green-600 hover:bg-green-600' : 'bg-gray-900 hover:bg-gray-800'}`}
+                          className={`px-6 py-3 md:py-2 rounded-lg transition-colors text-white ${isSaving ? 'bg-gray-400 cursor-not-allowed' : saved ? 'bg-green-600 hover:bg-green-600' : 'bg-[#007AFF] hover:bg-[#0051D5]'}`}
                         >
-                          {isSaving ? 'Saving…' : saved ? 'Saved' : 'Save Changes'}
+                          {isSaving ? 'Saving…' : saved ? '✓ Saved' : 'Save Changes'}
                         </button>
                       </div>
                     </form>
@@ -264,6 +359,11 @@ export default function SettingsPage() {
               </div>
             </div>
           </div>
+        </div>
+        
+        {/* Mobile Bottom Navigation */}
+        <div className="md:hidden">
+          <BottomNavigation />
         </div>
       </div>
     </ProtectedRoute>

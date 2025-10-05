@@ -336,14 +336,14 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
     tags?: string[],
     howFelt?: number,
     privateNotes?: string,
-    options?: { visibility?: 'everyone' | 'followers' | 'private'; showStartTime?: boolean; hideTaskNames?: boolean; publishToFeeds?: boolean }
+    options?: { visibility?: 'everyone' | 'followers' | 'private'; showStartTime?: boolean; hideTaskNames?: boolean; publishToFeeds?: boolean; customDuration?: number }
   ): Promise<Session> => {
     if (!timerState.activeTimerId || !timerState.currentProject) {
       throw new Error('No active timer to finish');
     }
 
     try {
-      const finalDuration = getElapsedTime();
+      const finalDuration = options?.customDuration ?? getElapsedTime();
       const sessionData: CreateSessionData = {
         projectId: timerState.currentProject.id,
         title,

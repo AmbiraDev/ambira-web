@@ -428,7 +428,7 @@ export default function ProfilePage() {
         <div className="sticky top-12 md:top-0 bg-white md:bg-gray-50 z-30">
           <div className="bg-gray-50 border-b md:border-b-0 border-gray-200">
             <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
-              <div className="flex md:gap-8">
+              <div className="flex md:gap-8 md:pl-[220px]">
                 <button
                   onClick={() => {
                     setActiveTab('progress');

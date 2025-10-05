@@ -1,16 +1,17 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Flag } from 'lucide-react';
 import { useTimer } from '@/contexts/TimerContext';
-import { useTasks } from '@/contexts/TasksContext';
 import { useProjects } from '@/contexts/ProjectsContext';
+import { useTasks } from '@/contexts/TasksContext';
+import { Play, Pause, Square, X, ChevronDown, Check, Flag } from 'lucide-react';
+import Slider from 'rc-slider';
+import 'rc-slider/assets/index.css';
 import { GlobalTasks } from './GlobalTasks';
 
 interface SessionTimerEnhancedProps {
   projectId: string;
 }
-
 interface TagConfig {
   name: string;
   color: string;
@@ -58,6 +59,20 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
   const [showProjectPicker, setShowProjectPicker] = useState(false);
   const [showTagPicker, setShowTagPicker] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+  const [adjustedDuration, setAdjustedDuration] = useState(0);
+
+  // Load last used project and tag from local storage on mount
+  useEffect(() => {
+    const savedProjectId = localStorage.getItem('lastSessionProject');
+    const savedTag = localStorage.getItem('lastSessionTag');
+    
+    if (savedProjectId) {
+      setSelectedProjectId(savedProjectId);
+    }
+    if (savedTag) {
+      setSessionTags([savedTag]);
+    }
+  }, []);
 
   // Initialize selectedProjectId from timerState if there's an active session
   useEffect(() => {
@@ -66,11 +81,35 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
     }
   }, [timerState.currentProject]);
 
+  // Save project to local storage whenever it changes
+  useEffect(() => {
+    if (selectedProjectId) {
+      localStorage.setItem('lastSessionProject', selectedProjectId);
+    }
+  }, [selectedProjectId]);
+
+  // Save tag to local storage whenever it changes
+  useEffect(() => {
+    if (sessionTags.length > 0 && sessionTags[0]) {
+      localStorage.setItem('lastSessionTag', sessionTags[0]);
+    }
+  }, [sessionTags]);
+
   // Count completed tasks in this session
   useEffect(() => {
     const completedInSession = selectedTasks.filter(task => task.status === 'completed').length;
     setCompletedTasksCount(completedInSession);
   }, [selectedTasks]);
+
+  // Initialize adjusted duration when finish modal opens
+  useEffect(() => {
+    if (showFinishModal) {
+      const elapsed = getElapsedTime();
+      // Round to nearest 15 minutes, but allow max value
+      const rounded = Math.floor(elapsed / 900) * 900;
+      setAdjustedDuration(elapsed);
+    }
+  }, [showFinishModal, getElapsedTime]);
 
   // Update display time every second when timer is running
   useEffect(() => {
@@ -155,12 +194,13 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
           visibility,
           showStartTime,
           hideTaskNames,
-          publishToFeeds
+          publishToFeeds,
+          customDuration: adjustedDuration
         }
       );
       setShowFinishModal(false);
-      // Navigate to sessions page after saving
-      window.location.href = '/sessions';
+      // Navigate to analytics page after saving
+      window.location.href = '/you?tab=sessions';
     } catch (error) {
       console.error('Failed to finish timer:', error);
       alert('Failed to save session. Please try again.');
@@ -172,6 +212,12 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
       await resetTimer();
       setShowFinishModal(false);
       setShowCancelConfirm(false);
+      // Reset all state
+      setSessionTitle('');
+      setSessionDescription('');
+      setSessionTags([]);
+      setPrivateNotes('');
+      setHowFelt(3);
       // Route to feed page
       window.location.href = '/';
     } catch (error) {
@@ -236,34 +282,51 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                 />
               </div>
 
-              {/* Tags */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Tags
-                </label>
-                <div className="flex flex-wrap gap-2">
-                  {TAG_CONFIGS.map(tagConfig => (
-                    <button
-                      key={tagConfig.name}
-                      onClick={() => {
-                        if (sessionTags.includes(tagConfig.name)) {
-                          setSessionTags(sessionTags.filter(t => t !== tagConfig.name));
-                        } else {
-                          setSessionTags([...sessionTags, tagConfig.name]);
-                        }
-                      }}
-                      className="px-3 py-1 rounded-full text-sm font-medium"
-                      style={sessionTags.includes(tagConfig.name) ? {
-                        backgroundColor: tagConfig.color,
-                        color: 'white'
-                      } : {
-                        backgroundColor: '#E5E7EB',
-                        color: '#374151'
-                      }}
+              {/* Project and Tags - Side by Side */}
+              <div className="grid grid-cols-2 gap-3">
+                {/* Project Selection */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Project
+                  </label>
+                  <select
+                    value={selectedProjectId}
+                    onChange={(e) => setSelectedProjectId(e.target.value)}
+                    className="w-full pl-3 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] bg-white text-sm appearance-none"
+                    style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 12 12\'%3E%3Cpath fill=\'%23666\' d=\'M6 9L1 4h10z\'/%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.75rem center' }}
+                  >
+                    <option value="">Unassigned</option>
+                    {projects.map((project) => (
+                      <option key={project.id} value={project.id}>
+                        {project.icon} {project.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Tags Selection */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Tag
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                      <span className="text-base">🏷️</span>
+                    </div>
+                    <select
+                      value={sessionTags[0] || ''}
+                      onChange={(e) => setSessionTags(e.target.value ? [e.target.value] : [])}
+                      className="w-full pl-9 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] bg-white text-sm appearance-none"
+                      style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 12 12\'%3E%3Cpath fill=\'%23666\' d=\'M6 9L1 4h10z\'/%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.75rem center' }}
                     >
-                      {tagConfig.name}
-                    </button>
-                  ))}
+                      <option value="">Select Tag</option>
+                      {TAG_CONFIGS.map((tagConfig) => (
+                        <option key={tagConfig.name} value={tagConfig.name}>
+                          {tagConfig.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
               </div>
 
@@ -288,7 +351,8 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                   <select
                     value={visibility}
                     onChange={(e) => setVisibility(e.target.value as any)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    className="w-full pl-3 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white"
+                    style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 12 12\'%3E%3Cpath fill=\'%23666\' d=\'M6 9L1 4h10z\'/%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.75rem center' }}
                   >
                     <option value="everyone">Everyone</option>
                     <option value="followers">Followers</option>
@@ -312,13 +376,56 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                 </div>
               </div>
 
+              {/* Duration Adjuster */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-3">
+                  Adjust Duration
+                </label>
+                <div className="space-y-3">
+                  <div className="py-2 px-1">
+                    <Slider
+                      min={0}
+                      max={getElapsedTime()}
+                      step={900}
+                      value={adjustedDuration}
+                      onChange={(value) => {
+                        const val = typeof value === 'number' ? value : value[0];
+                        const max = getElapsedTime();
+                        // Allow snapping to max even if not divisible by 900
+                        if (val >= max - 450) {
+                          setAdjustedDuration(max);
+                        } else {
+                          setAdjustedDuration(val);
+                        }
+                      }}
+                      trackStyle={{ backgroundColor: '#007AFF', height: 6 }}
+                      railStyle={{ backgroundColor: '#E5E7EB', height: 6 }}
+                      handleStyle={{
+                        backgroundColor: 'white',
+                        border: '3px solid #007AFF',
+                        width: 20,
+                        height: 20,
+                        marginTop: -7,
+                        boxShadow: '0 2px 8px rgba(0, 122, 255, 0.3)',
+                        opacity: 1,
+                      }}
+                    />
+                  </div>
+                  <div className="flex justify-between text-sm text-gray-600 px-1">
+                    <span>0m</span>
+                    <span className="font-semibold text-base text-gray-900">{getFormattedTime(adjustedDuration)}</span>
+                    <span>{getFormattedTime(getElapsedTime())}</span>
+                  </div>
+                </div>
+              </div>
+
               {/* Session Summary */}
               <div className="bg-gray-50 rounded-lg p-4">
                 <h4 className="font-medium text-gray-900 mb-2">Session Summary</h4>
                 <div className="text-sm text-gray-600 space-y-1">
-                  <div>Duration: {getFormattedTime(getElapsedTime())}</div>
+                  <div>Duration: {getFormattedTime(adjustedDuration)}</div>
                   <div>Tasks completed: {completedTasksCount} of {selectedTasks.length}</div>
-                  <div>Project: {timerState.currentProject?.name}</div>
+                  <div>Project: {projects.find(p => p.id === selectedProjectId)?.name || timerState.currentProject?.name || 'Unassigned'}</div>
                 </div>
               </div>
 
@@ -341,6 +448,32 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
             </div>
           </div>
         </div>
+
+        {/* Cancel Confirmation Modal */}
+        {showCancelConfirm && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 z-[60] flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl">
+              <h3 className="text-xl font-bold text-gray-900 mb-3">Cancel Session?</h3>
+              <p className="text-gray-600 mb-6">
+                Are you sure you want to cancel this session? All progress will be lost.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowCancelConfirm(false)}
+                  className="flex-1 px-4 py-3 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition-colors font-medium"
+                >
+                  Keep Session
+                </button>
+                <button
+                  onClick={handleCancelTimer}
+                  className="flex-1 px-4 py-3 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors font-medium"
+                >
+                  Cancel Session
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
@@ -618,7 +751,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
       {/* Desktop: Two-column layout */}
       <div className="hidden md:grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-12 pb-4 px-4 max-w-7xl mx-auto">
         {/* Left Column - Timer & Controls */}
-        <div className="flex flex-col items-center justify-start lg:justify-center space-y-6 lg:space-y-12 lg:sticky lg:top-6 lg:h-screen">
+        <div className="flex flex-col items-center justify-start space-y-6 lg:space-y-8 lg:sticky lg:top-24 pt-8">
           {/* Large Timer Display */}
           <div className="text-center w-full">
             <div className="text-6xl md:text-7xl lg:text-9xl font-mono font-bold text-gray-900 mb-4 lg:mb-8">
@@ -704,10 +837,13 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
 
             {/* Tag Dropdown */}
             <div className="relative">
+              <div className="absolute inset-y-0 left-0 flex items-center pl-3 md:pl-4 pointer-events-none z-10">
+                <span className="text-lg">🏷️</span>
+              </div>
               <select
                 value={sessionTags[0] || ''}
                 onChange={(e) => setSessionTags(e.target.value ? [e.target.value] : [])}
-                className="w-full px-3 md:px-4 py-2 md:py-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] bg-white appearance-none cursor-pointer text-sm md:text-base"
+                className="w-full pl-10 md:pl-12 pr-10 py-2 md:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] bg-white appearance-none cursor-pointer text-sm md:text-base"
               >
                 <option value="">Select Tag</option>
                 {TAG_CONFIGS.map((tagConfig) => (
@@ -727,7 +863,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
 
         {/* Right Column - Tasks */}
         <div className="flex items-start justify-center w-full">
-          <div className="w-full max-w-2xl max-h-screen overflow-y-auto pb-8">
+          <div className="w-full max-w-2xl max-h-[60vh] overflow-y-auto pb-8">
             <GlobalTasks
               selectedTaskIds={selectedTaskIds}
               onToggleTaskSelection={handleTaskToggle}
@@ -775,34 +911,51 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                 />
               </div>
 
-              {/* Tags */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Tags
-                </label>
-                <div className="flex flex-wrap gap-2">
-                  {TAG_CONFIGS.map(tagConfig => (
-                    <button
-                      key={tagConfig.name}
-                      onClick={() => {
-                        if (sessionTags.includes(tagConfig.name)) {
-                          setSessionTags(sessionTags.filter(t => t !== tagConfig.name));
-                        } else {
-                          setSessionTags([...sessionTags, tagConfig.name]);
-                        }
-                      }}
-                      className="px-3 py-1 rounded-full text-sm font-medium"
-                      style={sessionTags.includes(tagConfig.name) ? {
-                        backgroundColor: tagConfig.color,
-                        color: 'white'
-                      } : {
-                        backgroundColor: '#E5E7EB',
-                        color: '#374151'
-                      }}
+              {/* Project and Tags - Side by Side */}
+              <div className="grid grid-cols-2 gap-4">
+                {/* Project Selection */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Project
+                  </label>
+                  <select
+                    value={selectedProjectId}
+                    onChange={(e) => setSelectedProjectId(e.target.value)}
+                    className="w-full pl-3 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] bg-white appearance-none"
+                    style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 12 12\'%3E%3Cpath fill=\'%23666\' d=\'M6 9L1 4h10z\'/%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.75rem center' }}
+                  >
+                    <option value="">Unassigned</option>
+                    {projects.map((project) => (
+                      <option key={project.id} value={project.id}>
+                        {project.icon} {project.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Tags Selection */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Tag
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                      <span className="text-base">🏷️</span>
+                    </div>
+                    <select
+                      value={sessionTags[0] || ''}
+                      onChange={(e) => setSessionTags(e.target.value ? [e.target.value] : [])}
+                      className="w-full pl-9 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] bg-white appearance-none"
+                      style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 12 12\'%3E%3Cpath fill=\'%23666\' d=\'M6 9L1 4h10z\'/%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.75rem center' }}
                     >
-                      {tagConfig.name}
-                    </button>
-                  ))}
+                      <option value="">Select Tag</option>
+                      {TAG_CONFIGS.map((tagConfig) => (
+                        <option key={tagConfig.name} value={tagConfig.name}>
+                          {tagConfig.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
               </div>
 
@@ -842,13 +995,56 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                 />
               </div>
 
+              {/* Duration Adjuster */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Adjust Duration
+                </label>
+                <div className="space-y-2">
+                  <div className="py-2 px-1">
+                    <Slider
+                      min={0}
+                      max={getElapsedTime()}
+                      step={900}
+                      value={adjustedDuration}
+                      onChange={(value) => {
+                        const val = typeof value === 'number' ? value : value[0];
+                        const max = getElapsedTime();
+                        // Allow snapping to max even if not divisible by 900
+                        if (val >= max - 450) {
+                          setAdjustedDuration(max);
+                        } else {
+                          setAdjustedDuration(val);
+                        }
+                      }}
+                      trackStyle={{ backgroundColor: '#007AFF', height: 6 }}
+                      railStyle={{ backgroundColor: '#E5E7EB', height: 6 }}
+                      handleStyle={{
+                        backgroundColor: 'white',
+                        border: '3px solid #007AFF',
+                        width: 20,
+                        height: 20,
+                        marginTop: -7,
+                        boxShadow: '0 2px 8px rgba(0, 122, 255, 0.3)',
+                        opacity: 1,
+                      }}
+                    />
+                  </div>
+                  <div className="flex justify-between text-sm text-gray-600">
+                    <span>0m</span>
+                    <span className="font-semibold text-gray-900">{getFormattedTime(adjustedDuration)}</span>
+                    <span>{getFormattedTime(getElapsedTime())}</span>
+                  </div>
+                </div>
+              </div>
+
               {/* Session Summary */}
               <div className="bg-gray-50 rounded-lg p-4">
                 <h4 className="font-medium text-gray-900 mb-2">Session Summary</h4>
                 <div className="text-sm text-gray-600 space-y-1">
-                  <div>Duration: {getFormattedTime(getElapsedTime())}</div>
+                  <div>Duration: {getFormattedTime(adjustedDuration)}</div>
                   <div>Tasks completed: {completedTasksCount} of {selectedTasks.length}</div>
-                  <div>Project: {timerState.currentProject?.name}</div>
+                  <div>Project: {projects.find(p => p.id === selectedProjectId)?.name || timerState.currentProject?.name || 'Unassigned'}</div>
                 </div>
               </div>
 
@@ -868,32 +1064,6 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                   Save Session
                 </button>
               </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Cancel Confirmation Modal */}
-      {showCancelConfirm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-[60] flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl">
-            <h3 className="text-xl font-bold text-gray-900 mb-3">Cancel Session?</h3>
-            <p className="text-gray-600 mb-6">
-              Are you sure you want to cancel this session? All progress will be lost.
-            </p>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setShowCancelConfirm(false)}
-                className="flex-1 px-4 py-3 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition-colors font-medium"
-              >
-                Keep Session
-              </button>
-              <button
-                onClick={handleCancelTimer}
-                className="flex-1 px-4 py-3 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors font-medium"
-              >
-                Cancel Session
-              </button>
             </div>
           </div>
         </div>

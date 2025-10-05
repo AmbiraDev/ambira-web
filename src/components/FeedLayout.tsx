@@ -60,10 +60,10 @@ export const FeedLayout: React.FC<FeedLayoutProps> = ({ className = '' }) => {
   };
 
   return (
-    <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 ${className}`}>
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <div className={`max-w-7xl mx-auto px-0 md:px-4 sm:px-6 lg:px-8 py-0 md:py-6 ${className}`}>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 md:gap-6">
         {/* Left Sidebar - Personal Stats */}
-        <div className="lg:col-span-3 order-2 lg:order-1">
+        <div className="lg:col-span-3 order-2 lg:order-1 hidden lg:block">
           <div className="sticky top-6 space-y-6">
             {/* Personal Stats Widget */}
             {user && (
@@ -170,9 +170,9 @@ export const FeedLayout: React.FC<FeedLayoutProps> = ({ className = '' }) => {
         </div>
 
         {/* Center - Feed */}
-        <div className="lg:col-span-6 order-1 lg:order-2">
+        <div className="lg:col-span-6 order-1 lg:order-2 w-full">
           {/* Feed Type Tabs */}
-          <div className="bg-white rounded-lg border border-gray-200 mb-4">
+          <div className="bg-white md:rounded-lg md:border border-gray-200 mb-0 md:mb-4">
             <div className="flex gap-0 border-b border-gray-200">
               <button
                 onClick={() => setFeedType('recent')}
@@ -211,7 +211,7 @@ export const FeedLayout: React.FC<FeedLayoutProps> = ({ className = '' }) => {
         </div>
 
         {/* Right Sidebar - Suggestions */}
-        <div className="lg:col-span-3 order-3">
+        <div className="lg:col-span-3 order-3 hidden lg:block">
           <div className="sticky top-6 space-y-6">
             {/* Suggested Users */}
             <SuggestedUsers users={suggestedUsers} />
