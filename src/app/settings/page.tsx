@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import Header from '@/components/HeaderComponent';
 import MobileHeader from '@/components/MobileHeader';
@@ -21,7 +21,7 @@ import { firebaseUserApi } from '@/lib/firebaseApi';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 
-type SettingsTab = 'profile' | 'account' | 'privacy' | 'notifications' | 'display';
+type SettingsTab = 'profile' | 'privacy' | 'notifications' | 'display';
 
 export default function SettingsPage() {
   const { user } = useAuth();
@@ -37,14 +37,43 @@ export default function SettingsPage() {
   const [saved, setSaved] = useState(false);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
   const [profilePictureUrl, setProfilePictureUrl] = useState(user?.profilePicture || '');
+  const [originalFormData, setOriginalFormData] = useState({
+    name: user?.name || '',
+    bio: user?.bio || '',
+    location: user?.location || '',
+    profileVisibility: (user?.profileVisibility || 'everyone') as 'everyone' | 'followers' | 'private',
+  });
 
   const tabs = [
     { id: 'profile' as SettingsTab, label: 'My Profile', icon: User },
-    { id: 'account' as SettingsTab, label: 'My Account', icon: Mail },
     { id: 'privacy' as SettingsTab, label: 'Privacy Controls', icon: Shield },
     { id: 'notifications' as SettingsTab, label: 'Email Notifications', icon: Bell },
     { id: 'display' as SettingsTab, label: 'Display Preferences', icon: Globe },
   ];
+
+  // Check if form has been modified
+  const hasChanges = 
+    formData.name !== originalFormData.name ||
+    formData.bio !== originalFormData.bio ||
+    formData.location !== originalFormData.location ||
+    formData.profileVisibility !== originalFormData.profileVisibility;
+
+  // Update form data when user data loads
+  useEffect(() => {
+    if (user) {
+      const userData = {
+        name: user.name || '',
+        bio: user.bio || '',
+        location: user.location || '',
+        profileVisibility: 'everyone' as 'everyone' | 'followers' | 'private',
+      };
+      setFormData({
+        ...userData,
+      });
+      setOriginalFormData(userData);
+      setProfilePictureUrl(user.profilePicture || '');
+    }
+  }, [user]);
 
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -93,13 +122,36 @@ export default function SettingsPage() {
         name: formData.name,
         bio: formData.bio,
         location: formData.location,
+        profileVisibility: formData.profileVisibility,
       });
-      toast.success('Profile updated');
+      toast.success('Profile updated successfully!');
       setSaved(true);
-      setTimeout(() => setSaved(false), 1500);
+      
+      // Reload the page after a short delay to refresh the user context
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
     } catch (err: any) {
       toast.error(err?.message || 'Failed to update profile');
-    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handlePrivacySubmit = async () => {
+    try {
+      setIsSaving(true);
+      await firebaseUserApi.updateProfile({
+        profileVisibility: formData.profileVisibility,
+      });
+      toast.success('Privacy settings updated successfully!');
+      setSaved(true);
+      
+      // Reload the page after a short delay
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to update privacy settings');
       setIsSaving(false);
     }
   };
@@ -182,15 +234,19 @@ export default function SettingsPage() {
                         </label>
                         <div className="flex flex-col md:flex-row md:items-center gap-4">
                           {profilePictureUrl || user?.profilePicture ? (
-                            <Image
-                              src={profilePictureUrl || user.profilePicture || ''}
-                              alt="Profile"
-                              width={80}
-                              height={80}
-                              className="rounded-full object-cover"
-                            />
+                            <div className="w-20 h-20 rounded-full overflow-hidden flex-shrink-0">
+                              <Image
+                                src={profilePictureUrl || user.profilePicture || ''}
+                                alt="Profile"
+                                width={160}
+                                height={160}
+                                quality={95}
+                                priority
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
                           ) : (
-                            <div className="w-20 h-20 bg-gradient-to-br from-[#007AFF] to-[#0051D5] rounded-full flex items-center justify-center text-white text-3xl font-bold shadow-lg">
+                            <div className="w-20 h-20 bg-gradient-to-br from-[#007AFF] to-[#0051D5] rounded-full flex items-center justify-center text-white text-3xl font-bold shadow-lg flex-shrink-0">
                               {user?.name.charAt(0).toUpperCase() || 'N'}
                             </div>
                           )}
@@ -240,6 +296,25 @@ export default function SettingsPage() {
                         />
                       </div>
 
+                      {/* Username */}
+                      <div>
+                        <label htmlFor="username" className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                          <User className="w-4 h-4" />
+                          Username
+                        </label>
+                        <div className="relative">
+                          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">@</span>
+                          <input
+                            type="text"
+                            id="username"
+                            value={user?.username || ''}
+                            disabled
+                            className="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
+                          />
+                        </div>
+                        <p className="text-xs text-gray-500 mt-1">Username cannot be changed</p>
+                      </div>
+
                       {/* Bio */}
                       <div>
                         <label htmlFor="bio" className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
@@ -273,6 +348,32 @@ export default function SettingsPage() {
                         />
                       </div>
 
+                      {/* Account Information */}
+                      <div className="pt-4 border-t border-gray-200">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Account Information</h3>
+                        
+                        {/* Email */}
+                        <div className="mb-4">
+                          <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                            <Mail className="w-4 h-4" />
+                            Email
+                          </label>
+                          <p className="text-gray-900 px-4 py-2 bg-gray-50 rounded-lg border border-gray-200">
+                            {user?.email || 'No email set'}
+                          </p>
+                        </div>
+
+                        {/* Membership Status */}
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Membership Status
+                          </label>
+                          <p className="text-gray-900 px-4 py-2 bg-gray-50 rounded-lg border border-gray-200">
+                            Free Account
+                          </p>
+                        </div>
+                      </div>
+
                       {/* Submit Buttons */}
                       <div className="flex flex-col md:flex-row gap-3 pt-4">
                         <a
@@ -283,33 +384,19 @@ export default function SettingsPage() {
                         </a>
                         <button
                           type="submit"
-                          disabled={isSaving}
-                          className={`px-6 py-3 md:py-2 rounded-lg transition-colors text-white ${isSaving ? 'bg-gray-400 cursor-not-allowed' : saved ? 'bg-green-600 hover:bg-green-600' : 'bg-[#007AFF] hover:bg-[#0051D5]'}`}
+                          disabled={isSaving || !hasChanges}
+                          className={`px-6 py-3 md:py-2 rounded-lg transition-colors text-white ${
+                            isSaving || !hasChanges
+                              ? 'bg-gray-400 cursor-not-allowed' 
+                              : saved 
+                                ? 'bg-green-600 hover:bg-green-600' 
+                                : 'bg-[#007AFF] hover:bg-[#0051D5]'
+                          }`}
                         >
                           {isSaving ? 'Saving…' : saved ? '✓ Saved' : 'Save Changes'}
                         </button>
                       </div>
                     </form>
-                  </div>
-                )}
-
-                {activeTab === 'account' && (
-                  <div>
-                    <h2 className="text-2xl font-bold text-gray-900 mb-6">My Account</h2>
-                    <div className="space-y-6">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
-                        <p className="text-gray-900">{user?.email || 'user@example.com'}</p>
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Username</label>
-                        <p className="text-gray-900">@{user?.username || 'username'}</p>
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">Membership Status</label>
-                        <p className="text-gray-900">Free Account</p>
-                      </div>
-                    </div>
                   </div>
                 )}
 
@@ -328,18 +415,39 @@ export default function SettingsPage() {
                           onChange={(e) => setFormData({ ...formData, profileVisibility: e.target.value as any })}
                           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] outline-none"
                         >
-                          <option value="everyone">Everyone</option>
-                          <option value="followers">Followers Only</option>
-                          <option value="private">Only You</option>
+                          <option value="everyone">Everyone - Your profile and sessions are visible to all users</option>
+                          <option value="followers">Followers Only - Only your followers can see your profile and sessions</option>
+                          <option value="private">Only You - Your profile and sessions are completely private</option>
                         </select>
+                        <p className="text-xs text-gray-500 mt-2">
+                          {formData.profileVisibility === 'everyone' && 'Your profile, sessions, and stats are visible to everyone.'}
+                          {formData.profileVisibility === 'followers' && 'Only your followers can see your profile and sessions. You won\'t appear in suggestions.'}
+                          {formData.profileVisibility === 'private' && 'Your profile is completely private. Only you can see your sessions and stats.'}
+                        </p>
                       </div>
                       
-                      <div className="pt-4">
+                      {/* Submit Buttons */}
+                      <div className="flex flex-col md:flex-row gap-3 pt-4">
                         <button
                           type="button"
-                          className="px-6 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors"
+                          onClick={() => setFormData({ ...formData, profileVisibility: originalFormData.profileVisibility })}
+                          className="px-6 py-3 md:py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors text-center"
                         >
-                          Save Changes
+                          Cancel
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handlePrivacySubmit}
+                          disabled={isSaving || !hasChanges}
+                          className={`px-6 py-3 md:py-2 rounded-lg transition-colors text-white ${
+                            isSaving || !hasChanges
+                              ? 'bg-gray-400 cursor-not-allowed' 
+                              : saved 
+                                ? 'bg-green-600 hover:bg-green-600' 
+                                : 'bg-[#007AFF] hover:bg-[#0051D5]'
+                          }`}
+                        >
+                          {isSaving ? 'Saving…' : saved ? '✓ Saved' : 'Save Changes'}
                         </button>
                       </div>
                     </div>

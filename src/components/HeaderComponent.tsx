@@ -1,11 +1,12 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useState, useEffect, useRef } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useTimer } from '@/contexts/TimerContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { Search, X, ChevronDown, Bell, Plus, Menu } from 'lucide-react';
+import { Search, X, ChevronDown, Plus, Menu } from 'lucide-react';
 
 export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -198,19 +199,6 @@ export default function Header() {
                     <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#007AFF]"></div>
                   )}
                 </Link>
-                <Link 
-                  href="/projects" 
-                  className={`text-base font-medium transition-colors flex items-center h-full relative ${
-                    isActive('/projects') 
-                      ? 'text-gray-900' 
-                      : 'text-gray-600 hover:text-[#007AFF]'
-                  }`}
-                >
-                  Projects
-                  {isActive('/projects') && (
-                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#007AFF]"></div>
-                  )}
-                </Link>
                 <Link
                   href="/groups"
                   className={`text-base font-medium transition-colors flex items-center h-full relative ${
@@ -262,13 +250,6 @@ export default function Header() {
               </Link>
             )}
 
-            {/* Notifications - Only show when authenticated */}
-            {user && (
-              <button className="p-2 text-gray-600 hover:text-[#007AFF] transition-colors">
-                <Bell className="w-5 h-5" />
-              </button>
-            )}
-
             {/* Profile with dropdown (opens on hover, with small close delay) - Only show when authenticated */}
             {user && (
               <div 
@@ -290,11 +271,24 @@ export default function Header() {
                 <button 
                   className="flex items-center space-x-1 text-gray-600 hover:text-[#007AFF] transition-colors"
                 >
-                  <div className="w-8 h-8 bg-[#FC4C02] rounded-full flex items-center justify-center">
-                    <span className="text-sm font-medium text-white">
-                      {user.name.charAt(0).toUpperCase()}
-                    </span>
-                  </div>
+                  {user.profilePicture ? (
+                    <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
+                      <Image
+                        src={user.profilePicture}
+                        alt={user.name}
+                        width={64}
+                        height={64}
+                        quality={90}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  ) : (
+                    <div className="w-8 h-8 bg-[#FC4C02] rounded-full flex items-center justify-center flex-shrink-0">
+                      <span className="text-sm font-medium text-white">
+                        {user.name.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                  )}
                   <ChevronDown className="w-4 h-4 hidden md:block" />
                 </button>
 
@@ -368,16 +362,6 @@ export default function Header() {
                 }`}
               >
                 Dashboard
-              </Link>
-              <Link 
-                href="/projects" 
-                className={`block px-4 py-2 transition-colors ${
-                  isActive('/projects') 
-                    ? 'text-[#007AFF] bg-blue-50' 
-                    : 'text-gray-600 hover:text-[#007AFF]'
-                }`}
-              >
-                Projects
               </Link>
               <Link
                 href="/groups"

@@ -6,6 +6,7 @@ import { ProtectedRoute } from '@/components/ProtectedRoute';
 import MobileHeader from '@/components/MobileHeader';
 import BottomNavigation from '@/components/BottomNavigation';
 import Header from '@/components/HeaderComponent';
+import { ProjectList } from '@/components/ProjectList';
 import { firebaseSessionApi, firebaseUserApi } from '@/lib/firebaseApi';
 import { Session, UserStats, User as UserType, UserProfile } from '@/types';
 import { Heart, MessageCircle, Share2, Calendar, Clock, Target, ChevronDown, MoreVertical, Edit, User as UserIcon, Users } from 'lucide-react';
@@ -13,7 +14,7 @@ import Link from 'next/link';
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
 import { useSearchParams, useRouter } from 'next/navigation';
 
-type YouTab = 'progress' | 'sessions' | 'profile';
+type YouTab = 'progress' | 'sessions' | 'projects' | 'profile';
 type TimePeriod = 'day' | 'week' | 'month' | 'year';
 
 interface ChartDataPoint {
@@ -37,29 +38,78 @@ export default function YouPage() {
   const tabParam = searchParams?.get('tab') as YouTab | null;
 
   const [activeTab, setActiveTab] = useState<YouTab>(
-    tabParam === 'sessions' ? 'sessions' : tabParam === 'profile' ? 'profile' : 'progress'
+    tabParam === 'sessions' ? 'sessions' : 
+    tabParam === 'projects' ? 'projects' : 
+    tabParam === 'profile' ? 'profile' : 'progress'
   );
   const [timePeriod, setTimePeriod] = useState<TimePeriod>('week');
   const [showTimePeriodDropdown, setShowTimePeriodDropdown] = useState(false);
-  const [sessions, setSessions] = useState<Session[]>([]);
-  const [stats, setStats] = useState<UserStats | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [sessions, setSessions] = useState<Session[]>(() => {
+    if (typeof window !== 'undefined' && user) {
+      const cached = localStorage.getItem(`youPageSessions_${user.id}`);
+      if (cached) {
+        try {
+          return JSON.parse(cached);
+        } catch (e) {
+          return [];
+        }
+      }
+    }
+    return [];
+  });
+  const [stats, setStats] = useState<UserStats | null>(() => {
+    if (typeof window !== 'undefined' && user) {
+      const cached = localStorage.getItem(`youPageStats_${user.id}`);
+      if (cached) {
+        try {
+          return JSON.parse(cached);
+        } catch (e) {
+          return null;
+        }
+      }
+    }
+    return null;
+  });
+  const [isLoading, setIsLoading] = useState(false);
   const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
   const [categoryStats, setCategoryStats] = useState<CategoryStats[]>([]);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [followers, setFollowers] = useState<UserType[]>([]);
   const [following, setFollowing] = useState<UserType[]>([]);
+  const [lastFetchTime, setLastFetchTime] = useState<number>(() => {
+    if (typeof window !== 'undefined') {
+      const cached = localStorage.getItem('youPageLastFetch');
+      return cached ? parseInt(cached) : 0;
+    }
+    return 0;
+  });
+
+  // Cache duration: 5 minutes
+  const CACHE_DURATION = 5 * 60 * 1000;
 
   // Update tab when URL changes
   useEffect(() => {
-    if (tabParam === 'sessions' || tabParam === 'progress' || tabParam === 'profile') {
+    if (tabParam === 'sessions' || tabParam === 'progress' || tabParam === 'projects' || tabParam === 'profile') {
       setActiveTab(tabParam);
     }
   }, [tabParam]);
 
   useEffect(() => {
     if (user) {
-      loadData();
+      const now = Date.now();
+      const shouldRefetch = now - lastFetchTime > CACHE_DURATION;
+      
+      // Only load data if cache is expired or no data exists
+      if (shouldRefetch || !stats) {
+        // Only show loading if we don't have cached data
+        if (!stats) {
+          setIsLoading(true);
+        }
+        loadData();
+      } else {
+        // We have fresh cached data, not loading
+        setIsLoading(false);
+      }
     }
   }, [user]);
 
@@ -121,6 +171,20 @@ export default function YouPage() {
       setUserProfile(profileData);
       setFollowers(followersData);
       setFollowing(followingData);
+      
+      // Update last fetch time and cache data
+      const now = Date.now();
+      setLastFetchTime(now);
+      
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('youPageLastFetch', now.toString());
+        if (statsData) {
+          localStorage.setItem(`youPageStats_${user.id}`, JSON.stringify(statsData));
+        }
+        if (sessionsData.length > 0) {
+          localStorage.setItem(`youPageSessions_${user.id}`, JSON.stringify(sessionsData));
+        }
+      }
     } catch (error) {
       console.error('Error loading data:', error);
     } finally {
@@ -287,6 +351,19 @@ export default function YouPage() {
                 </button>
                 <button
                   onClick={() => {
+                    setActiveTab('projects');
+                    router.push('/you?tab=projects');
+                  }}
+                  className={`flex-1 md:flex-initial py-3 md:py-4 px-1 text-sm md:text-base font-medium border-b-2 transition-colors ${
+                    activeTab === 'projects'
+                      ? 'border-[#007AFF] text-[#007AFF] md:text-gray-900'
+                      : 'border-transparent text-gray-500 md:text-gray-600 hover:text-gray-700 md:hover:text-gray-900'
+                  }`}
+                >
+                  Projects
+                </button>
+                <button
+                  onClick={() => {
                     setActiveTab('profile');
                     router.push('/you?tab=profile');
                   }}
@@ -312,9 +389,7 @@ export default function YouPage() {
               <div className="grid grid-cols-2 gap-4 mb-6">
                 <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4">
                   <div className="flex items-center gap-2 mb-2">
-                    <div className="w-7 h-7 rounded-full bg-[#007AFF] flex items-center justify-center">
-                      <Clock className="w-4 h-4 text-white" />
-                    </div>
+                    <Clock className="w-5 h-5 text-blue-600" />
                     <span className="text-sm text-gray-600">Total Time</span>
                   </div>
                   <div className="text-2xl font-bold text-gray-900">
@@ -324,9 +399,7 @@ export default function YouPage() {
 
                 <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-4">
                   <div className="flex items-center gap-2 mb-2">
-                    <div className="w-7 h-7 rounded-full bg-[#FC4C02] flex items-center justify-center">
-                      <Target className="w-4 h-4 text-white" />
-                    </div>
+                    <Target className="w-5 h-5 text-orange-600" />
                     <span className="text-sm text-gray-600">Streak</span>
                   </div>
                   <div className="text-2xl font-bold text-gray-900">
@@ -336,9 +409,7 @@ export default function YouPage() {
 
                 <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-4">
                   <div className="flex items-center gap-2 mb-2">
-                    <div className="w-7 h-7 rounded-full bg-green-600 flex items-center justify-center">
-                      <Calendar className="w-4 h-4 text-white" />
-                    </div>
+                    <Calendar className="w-5 h-5 text-green-600" />
                     <span className="text-sm text-gray-600">Sessions</span>
                   </div>
                   <div className="text-2xl font-bold text-gray-900">
@@ -348,9 +419,7 @@ export default function YouPage() {
 
                 <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-4">
                   <div className="flex items-center gap-2 mb-2">
-                    <div className="w-7 h-7 rounded-full bg-purple-600 flex items-center justify-center">
-                      <Heart className="w-4 h-4 text-white" />
-                    </div>
+                    <Heart className="w-5 h-5 text-purple-600" />
                     <span className="text-sm text-gray-600">Avg/Day</span>
                   </div>
                   <div className="text-2xl font-bold text-gray-900">
@@ -576,6 +645,12 @@ export default function YouPage() {
               </div>
             )}
 
+            {activeTab === 'projects' && (
+              <div className="max-w-4xl mx-auto">
+                <ProjectList />
+              </div>
+            )}
+
             {activeTab === 'profile' && (
               <div className="max-w-4xl mx-auto">
                 {/* Profile Header */}
@@ -587,11 +662,23 @@ export default function YouPage() {
                     </span>
                   </div>
 
-                  {/* Name and Location */}
+                  {/* Name and Username */}
                   <h1 className="text-2xl font-bold text-gray-900 mb-1">{user.name}</h1>
-                  <p className="text-gray-600 mb-4">
-                    {userProfile?.location || user.location || 'Location not set'}
-                  </p>
+                  <p className="text-gray-500 mb-2">@{user.username}</p>
+                  
+                  {/* Bio */}
+                  {(userProfile?.bio || user.bio) && (
+                    <p className="text-gray-700 mb-3">
+                      {userProfile?.bio || user.bio}
+                    </p>
+                  )}
+                  
+                  {/* Location */}
+                  {(userProfile?.location || user.location) && (
+                    <p className="text-gray-600 mb-4">
+                      📍 {userProfile?.location || user.location}
+                    </p>
+                  )}
 
                   {/* Stats */}
                   <div className="flex gap-8 mb-4">
@@ -613,7 +700,7 @@ export default function YouPage() {
                   <div className="flex gap-2">
                     <Link
                       href="/settings"
-                      className="flex-1 flex items-center justify-center gap-2 py-3 border-2 border-[#FC4C02] text-[#FC4C02] rounded-xl font-medium"
+                      className="flex-1 flex items-center justify-center gap-2 py-3 border-2 border-gray-300 text-gray-700 hover:bg-gray-50 rounded-xl font-medium transition-colors"
                     >
                       <Edit className="w-5 h-5" />
                       Edit Profile

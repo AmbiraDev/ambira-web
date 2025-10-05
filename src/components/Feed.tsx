@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import { SessionWithDetails, FeedFilters } from '@/types';
 import { firebaseApi } from '@/lib/firebaseApi';
 import SessionCard from './SessionCard';
@@ -8,12 +9,15 @@ import SessionCard from './SessionCard';
 interface FeedProps {
   filters?: FeedFilters;
   className?: string;
+  initialLimit?: number;
 }
 
 export const Feed: React.FC<FeedProps> = ({
   filters = {},
-  className = ''
+  className = '',
+  initialLimit = 20
 }) => {
+  const router = useRouter();
   const [sessions, setSessions] = useState<SessionWithDetails[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -32,7 +36,7 @@ export const Feed: React.FC<FeedProps> = ({
         setIsLoadingMore(true);
       }
 
-      const response = await firebaseApi.post.getFeedSessions(20, cursor, filters);
+      const response = await firebaseApi.post.getFeedSessions(initialLimit, cursor, filters);
 
       if (append) {
         setSessions(prev => [...prev, ...response.sessions]);
@@ -286,6 +290,7 @@ export const Feed: React.FC<FeedProps> = ({
             onSupport={handleSupport}
             onRemoveSupport={handleRemoveSupport}
             onShare={handleShare}
+            onEdit={(sessionId) => router.push(`/sessions/${sessionId}/edit`)}
           />
         ))}
       </div>

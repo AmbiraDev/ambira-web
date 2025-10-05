@@ -10,6 +10,7 @@ import BottomNavigation from '@/components/BottomNavigation';
 import { FABMenu } from '@/components/FABMenu';
 import Feed from '@/components/Feed';
 import FeedCarousel from '@/components/FeedCarousel';
+import DayOverview from '@/components/DayOverview';
 import { useState } from 'react';
 import { FeedFilters } from '@/types';
 
@@ -30,6 +31,9 @@ function HomeContent() {
       {/* Mobile header */}
       <MobileHeader title="Feed" />
 
+      {/* Day Overview - Mobile Only */}
+      <DayOverview />
+
       <div className="max-w-[1400px] mx-auto md:px-4 md:py-6">
         <div className="md:flex gap-6">
           {/* Left Sidebar - hidden on mobile */}
@@ -39,8 +43,22 @@ function HomeContent() {
 
           {/* Main Feed */}
           <main className="flex-1 min-w-0 max-w-[600px] md:mx-auto">
-            {/* Feed Posts */}
-            <Feed filters={filters} />
+            {/* Following Feed */}
+            <Feed filters={filters} key="following-feed" />
+            
+            {/* Suggested Posts Section */}
+            <div className="mt-8 pt-8 border-t-4 border-gray-200">
+              <div className="bg-gradient-to-r from-purple-50 to-blue-50 md:rounded-lg border md:border-gray-200 p-4 mb-4">
+                <div className="flex items-center gap-2 mb-1">
+                  <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                  <h2 className="text-lg font-bold text-gray-900">Suggested Posts</h2>
+                </div>
+                <p className="text-sm text-gray-600">Discover productive sessions from the community</p>
+              </div>
+              <Feed filters={{ excludeFollowing: true }} key="suggested-feed" initialLimit={20} />
+            </div>
           </main>
 
           {/* Right Sidebar - hidden on mobile */}

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { SessionWithDetails, User } from '@/types';
 import SessionStats from './SessionStats';
 import SessionInteractions from './SessionInteractions';
@@ -14,6 +15,7 @@ interface SessionCardProps {
   onRemoveSupport: (sessionId: string) => Promise<void>;
   onShare: (sessionId: string) => Promise<void>;
   onDelete?: (sessionId: string) => Promise<void>;
+  onEdit?: (sessionId: string) => void;
   className?: string;
   showComments?: boolean;
 }
@@ -24,6 +26,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({
   onRemoveSupport,
   onShare,
   onDelete,
+  onEdit,
   className = '',
   showComments = false
 }) => {
@@ -84,11 +87,16 @@ export const SessionCard: React.FC<SessionCardProps> = ({
         <Link href={`/profile/${session.user.username}`} className="flex items-center gap-3">
           {/* User Avatar */}
           {session.user.profilePicture ? (
-            <img
-              src={session.user.profilePicture}
-              alt={session.user.name}
-              className="w-10 h-10 rounded-full object-cover ring-2 ring-white"
-            />
+            <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-white">
+              <Image
+                src={session.user.profilePicture}
+                alt={session.user.name}
+                width={80}
+                height={80}
+                quality={90}
+                className="w-full h-full object-cover"
+              />
+            </div>
           ) : (
             <div className="w-10 h-10 bg-[#FC4C02] rounded-full flex items-center justify-center flex-shrink-0 ring-2 ring-white">
               <span className="text-white font-semibold text-sm">
@@ -115,12 +123,23 @@ export const SessionCard: React.FC<SessionCardProps> = ({
 
           {showMenu && (
             <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
-              <button className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50">
-                Edit session
-              </button>
+              {onEdit && (
+                <button
+                  onClick={() => {
+                    onEdit(session.id);
+                    setShowMenu(false);
+                  }}
+                  className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50"
+                >
+                  Edit session
+                </button>
+              )}
               {onDelete && (
                 <button
-                  onClick={() => onDelete(session.id)}
+                  onClick={() => {
+                    onDelete(session.id);
+                    setShowMenu(false);
+                  }}
                   className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-gray-50"
                 >
                   Delete session

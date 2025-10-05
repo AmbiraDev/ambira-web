@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { Group, GroupStats } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -15,7 +16,9 @@ import {
   MoreHorizontal,
   TrendingUp,
   Clock,
-  Target
+  Target,
+  ArrowLeft,
+  ChevronLeft
 } from 'lucide-react';
 
 interface GroupHeaderProps {
@@ -69,6 +72,7 @@ export default function GroupHeader({
   onSettings,
   isLoading = false 
 }: GroupHeaderProps) {
+  const router = useRouter();
   const isAdmin = currentUserId && group.adminUserIds.includes(currentUserId);
   const isCreator = currentUserId && group.createdByUserId === currentUserId;
   const canJoin = currentUserId && !isJoined && !isAdmin;
@@ -88,8 +92,27 @@ export default function GroupHeader({
 
   return (
     <div className="relative">
-      {/* Banner */}
-      <div className="relative h-48 bg-gradient-to-r from-blue-500 to-purple-600">
+      {/* Mobile Back Button Header */}
+      <div className="md:hidden sticky top-0 bg-white border-b border-gray-200 px-4 py-3 z-50 flex items-center gap-3">
+        <button
+          onClick={() => router.back()}
+          className="p-2 -ml-2 hover:bg-gray-100 rounded-full transition-colors"
+        >
+          <ChevronLeft className="w-6 h-6 text-gray-700" />
+        </button>
+        <h1 className="text-lg font-bold text-gray-900 truncate flex-1">{group.name}</h1>
+        {(isAdmin || isCreator) && (
+          <button
+            onClick={onSettings}
+            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+          >
+            <Settings className="w-5 h-5 text-gray-600" />
+          </button>
+        )}
+      </div>
+
+      {/* Banner - Desktop Only */}
+      <div className="relative h-0 md:h-48 bg-gray-200 hidden md:block">
         {group.bannerUrl && (
           <Image
             src={group.bannerUrl}
@@ -132,11 +155,11 @@ export default function GroupHeader({
       </div>
 
       {/* Content */}
-      <div className="relative px-6 pb-6">
+      <div className="relative px-4 md:px-6 pb-6">
         {/* Group Avatar and Basic Info */}
-        <div className="flex items-start gap-4 -mt-12 mb-4">
+        <div className="flex items-start gap-3 md:gap-4 md:-mt-12 mb-4 pt-4 md:pt-0">
           <div className="relative">
-            <div className="w-24 h-24 rounded-full bg-white border-4 border-white shadow-lg overflow-hidden">
+            <div className="w-16 h-16 md:w-24 md:h-24 rounded-full bg-white md:border-4 border-2 border-white shadow-lg overflow-hidden flex-shrink-0">
               {group.imageUrl ? (
                 <Image
                   src={group.imageUrl}
@@ -146,17 +169,29 @@ export default function GroupHeader({
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <div className="w-full h-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-bold text-2xl">
+                <div className="w-full h-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold text-lg md:text-2xl">
                   {group.name.charAt(0).toUpperCase()}
+                </div>
+              )}
+            </div>
+            {/* Privacy Badge - Mobile */}
+            <div className="md:hidden absolute -bottom-1 -right-1">
+              {group.privacySetting === 'public' ? (
+                <div className="bg-white rounded-full p-1 shadow-sm">
+                  <Globe className="w-3 h-3 text-green-600" />
+                </div>
+              ) : (
+                <div className="bg-white rounded-full p-1 shadow-sm">
+                  <Lock className="w-3 h-3 text-orange-600" />
                 </div>
               )}
             </div>
           </div>
           
-          <div className="flex-1 pt-8">
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <h1 className="text-2xl font-bold text-gray-900 mb-2">
+          <div className="flex-1 md:pt-8 min-w-0">
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex-1 min-w-0">
+                <h1 className="text-xl md:text-2xl font-bold text-gray-900 mb-1 md:mb-2 truncate md:whitespace-normal">
                   {group.name}
                 </h1>
                 <p className="text-gray-600 text-lg leading-relaxed">
@@ -176,7 +211,9 @@ export default function GroupHeader({
                   <Button 
                     onClick={handleJoin}
                     disabled={isLoading}
+                    className="bg-[#007AFF] hover:bg-[#0051D5] text-white font-semibold px-6 shadow-md"
                   >
+                    <Users className="w-4 h-4 mr-2" />
                     {group.privacySetting === 'public' ? 'Join Group' : 'Request to Join'}
                   </Button>
                 )}

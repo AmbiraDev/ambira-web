@@ -5,12 +5,13 @@ import { useAuth } from '@/contexts/AuthContext';
 import Header from '@/components/HeaderComponent';
 import MobileHeader from '@/components/MobileHeader';
 import BottomNavigation from '@/components/BottomNavigation';
+import CreateGroupModal from '@/components/CreateGroupModal';
 import { Group, Challenge } from '@/types';
 import { firebaseApi } from '@/lib/firebaseApi';
-import { Users, Trophy, Target, Calendar, Award, Dumbbell, Book, Briefcase, Heart } from 'lucide-react';
+import { Users, Trophy, Target, Calendar, Award, Dumbbell, Book, Briefcase, Heart, Plus } from 'lucide-react';
 import Link from 'next/link';
 
-type TabType = 'active' | 'challenges';
+type TabType = 'active' | 'challenges' | 'create';
 
 const categoryIcons: Record<string, React.ReactNode> = {
   fitness: <Dumbbell className="w-5 h-5" />,
@@ -27,6 +28,7 @@ export default function GroupsPage() {
   const [challenges, setChallenges] = useState<Challenge[]>([]);
   const [userChallenges, setUserChallenges] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -62,10 +64,27 @@ export default function GroupsPage() {
     if (!user) return;
 
     try {
-      await firebaseApi.challenge.joinChallenge(challengeId, user.id);
+      await firebaseApi.challenge.joinChallenge(challengeId);
       setUserChallenges(prev => [...prev, challengeId]);
     } catch (error) {
       console.error('Error joining challenge:', error);
+    }
+  };
+
+  const handleCreateGroup = async (data: any) => {
+    if (!user) return;
+
+    try {
+      await firebaseApi.group.createGroup({
+        ...data,
+        creatorId: user.id,
+      });
+      await loadData();
+      setShowCreateModal(false);
+      setActiveTab('active');
+    } catch (error) {
+      console.error('Error creating group:', error);
+      throw error;
     }
   };
 
@@ -105,9 +124,9 @@ export default function GroupsPage() {
             <div className="max-w-4xl mx-auto flex gap-8 px-4 md:px-6 lg:px-8">
               <button
                 onClick={() => setActiveTab('active')}
-                className={`py-4 px-1 text-base font-medium transition-colors border-b-2 ${
+                className={`flex-1 md:flex-initial py-3 md:py-4 px-1 text-sm md:text-base font-medium transition-colors border-b-2 ${
                   activeTab === 'active'
-                    ? 'text-gray-900 border-[#007AFF]'
+                    ? 'text-[#007AFF] md:text-gray-900 border-[#007AFF]'
                     : 'text-gray-600 border-transparent hover:text-gray-900'
                 }`}
               >
@@ -115,17 +134,41 @@ export default function GroupsPage() {
               </button>
               <button
                 onClick={() => setActiveTab('challenges')}
-                className={`py-4 px-1 text-base font-medium transition-colors border-b-2 ${
+                className={`flex-1 md:flex-initial py-3 md:py-4 px-1 text-sm md:text-base font-medium transition-colors border-b-2 ${
                   activeTab === 'challenges'
-                    ? 'text-gray-900 border-[#007AFF]'
+                    ? 'text-[#007AFF] md:text-gray-900 border-[#007AFF]'
                     : 'text-gray-600 border-transparent hover:text-gray-900'
                 }`}
               >
                 Challenges
               </button>
+              <button
+                onClick={() => {
+                  setActiveTab('create');
+                  setShowCreateModal(true);
+                }}
+                className={`flex-1 md:flex-initial py-3 md:py-4 px-1 text-sm md:text-base font-medium transition-colors border-b-2 flex items-center justify-center gap-1 ${
+                  activeTab === 'create'
+                    ? 'text-[#007AFF] md:text-gray-900 border-[#007AFF]'
+                    : 'text-gray-600 border-transparent hover:text-gray-900'
+                }`}
+              >
+                <Plus className="w-4 h-4 md:hidden" />
+                Create
+              </button>
             </div>
           </div>
         </div>
+
+        {/* Create Group Modal */}
+        <CreateGroupModal
+          isOpen={showCreateModal}
+          onClose={() => {
+            setShowCreateModal(false);
+            setActiveTab('active');
+          }}
+          onSubmit={handleCreateGroup}
+        />
 
         {/* Content */}
         <div className="max-w-4xl mx-auto py-6">
