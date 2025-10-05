@@ -255,7 +255,7 @@ export default function YouPage() {
         </div>
 
         {/* Tabs */}
-        <div className="sticky top-12 md:top-0 bg-white md:bg-gray-50 border-b border-gray-200 z-30">
+        <div className="sticky top-12 md:top-0 bg-white md:bg-gray-50 z-30">
           <div className="bg-gray-50 border-b md:border-b-0 border-gray-200">
             <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
               <div className="flex md:gap-8">
@@ -304,7 +304,7 @@ export default function YouPage() {
         </div>
 
         {/* Content */}
-        <div className="pb-24 md:pb-8">
+        <div className="pb-32 md:pb-8">
           <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-6">
             {activeTab === 'progress' && (
               <div className="max-w-4xl mx-auto">
@@ -484,86 +484,90 @@ export default function YouPage() {
             )}
 
             {activeTab === 'sessions' && (
-              <div className="max-w-4xl mx-auto space-y-6">
+              <div className="max-w-4xl mx-auto space-y-4">
               {isLoading ? (
                 <div className="p-8 text-center text-gray-500">Loading sessions...</div>
               ) : sessions.length === 0 ? (
                 <div className="p-8 text-center text-gray-500">No sessions yet</div>
               ) : (
                 sessions.map((session) => (
-                  <div key={session.id} className="bg-white rounded-lg border border-gray-200 shadow-sm p-6">
+                  <div key={session.id} className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100">
                     {/* Session Header */}
-                    <div className="flex items-start gap-3 mb-3">
-                      <Link href="/you?tab=profile">
-                        <div className="w-10 h-10 bg-[#FC4C02] rounded-full flex items-center justify-center flex-shrink-0">
-                          <span className="text-white font-semibold text-sm">
-                            {user.name.charAt(0).toUpperCase()}
-                          </span>
-                        </div>
-                      </Link>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="font-semibold text-gray-900">{user.name}</span>
-                        </div>
-                        <div className="text-sm text-gray-500">
-                          {formatDate(new Date(session.createdAt))}
+                    <div className="flex items-center justify-between p-4 pb-3">
+                      <div className="flex items-center gap-3">
+                        <Link href="/you?tab=profile">
+                          <div className="w-10 h-10 bg-[#FC4C02] rounded-full flex items-center justify-center flex-shrink-0 ring-2 ring-white">
+                            <span className="text-white font-semibold text-sm">
+                              {user.name.charAt(0).toUpperCase()}
+                            </span>
+                          </div>
+                        </Link>
+                        <div>
+                          <div className="font-semibold text-gray-900 text-base">{user.name}</div>
+                          <div className="text-xs text-gray-500">
+                            {formatDate(new Date(session.createdAt))}
+                          </div>
                         </div>
                       </div>
-                      <button className="text-gray-400 hover:text-gray-600 transition-colors">
+                      <button className="text-gray-400 hover:text-gray-600 transition-colors p-2">
                         <MoreVertical className="w-5 h-5" />
                       </button>
                     </div>
 
-                    {/* Session Title */}
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">
-                      {session.title || 'Focus Session'}
-                    </h3>
+                    {/* Session Title and Description */}
+                    <div className="px-4 pb-3">
+                      <h3 className="text-2xl font-bold text-gray-900 mb-1">
+                        {session.title || 'Focus Session'}
+                      </h3>
+                      {session.description && (
+                        <p className="text-gray-600 text-sm line-clamp-2">
+                          {session.description}
+                        </p>
+                      )}
+                    </div>
 
-                    {/* Session Description */}
-                    {session.description && (
-                      <p className="text-gray-700 mb-3 line-clamp-3">
-                        {session.description}
-                      </p>
-                    )}
-
-                    {/* Session Stats */}
-                    <div className="grid grid-cols-3 gap-4 mb-4 bg-gray-50 rounded-lg p-3">
-                      <div>
-                        <div className="text-xs text-gray-500 mb-1">Time</div>
-                        <div className="font-bold text-gray-900">
-                          {formatTime(session.duration)}
+                    {/* Session Stats - Strava style */}
+                    <div className="px-4 pb-4">
+                      <div className="grid grid-cols-3 gap-4">
+                        <div>
+                          <div className="text-xs text-gray-500 uppercase tracking-wide mb-0.5">Time</div>
+                          <div className="text-xl font-bold text-gray-900">
+                            {formatTime(session.duration)}
+                          </div>
                         </div>
-                      </div>
-                      <div>
-                        <div className="text-xs text-gray-500 mb-1">Tasks</div>
-                        <div className="font-bold text-gray-900 truncate">
-                          {session.tasks?.length || 0}
+                        <div>
+                          <div className="text-xs text-gray-500 uppercase tracking-wide mb-0.5">Tasks</div>
+                          <div className="text-xl font-bold text-gray-900">
+                            {session.tasks?.length || 0}
+                          </div>
                         </div>
-                      </div>
-                      <div>
-                        <div className="text-xs text-gray-500 mb-1">Tags</div>
-                        <div className="font-bold text-gray-900 truncate">
-                          {session.tags?.length || 0}
+                        <div>
+                          <div className="text-xs text-gray-500 uppercase tracking-wide mb-0.5">Tags</div>
+                          <div className="text-xl font-bold text-gray-900">
+                            {session.tags?.length || 0}
+                          </div>
                         </div>
                       </div>
                     </div>
 
                     {/* Action Buttons */}
-                    <div className="flex items-center gap-6 pt-4 mt-4 border-t border-gray-200">
-                      <button className="flex items-center gap-2 text-gray-600 hover:text-[#007AFF] transition-colors">
-                        <Heart className="w-5 h-5" />
+                    <div className="flex items-center border-t border-gray-100 px-2">
+                      <button className="flex-1 flex items-center justify-center gap-2 py-3 text-gray-600 hover:bg-gray-50 transition-colors rounded-lg">
+                        <Heart className="w-6 h-6" />
                         <span className="text-sm font-medium">
                           {session.supportCount || 0}
                         </span>
                       </button>
-                      <button className="flex items-center gap-2 text-gray-600 hover:text-[#007AFF] transition-colors">
-                        <MessageCircle className="w-5 h-5" />
+                      <div className="w-px h-6 bg-gray-200"></div>
+                      <button className="flex-1 flex items-center justify-center gap-2 py-3 text-gray-600 hover:bg-gray-50 transition-colors rounded-lg">
+                        <MessageCircle className="w-6 h-6" />
                         <span className="text-sm font-medium">
                           {session.commentCount || 0}
                         </span>
                       </button>
-                      <button className="flex items-center gap-2 text-gray-600 hover:text-[#007AFF] transition-colors ml-auto">
-                        <Share2 className="w-5 h-5" />
+                      <div className="w-px h-6 bg-gray-200"></div>
+                      <button className="flex-1 flex items-center justify-center gap-2 py-3 text-gray-600 hover:bg-gray-50 transition-colors rounded-lg">
+                        <Share2 className="w-6 h-6" />
                       </button>
                     </div>
                   </div>

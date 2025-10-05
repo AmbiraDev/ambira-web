@@ -3,199 +3,245 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
-import { firebaseChallengeApi } from '@/lib/firebaseApi';
+import { firebaseChallengeApi, firebaseUserApi, firebaseApi } from '@/lib/firebaseApi';
 import { Challenge, ChallengeProgress as ChallengeProgressType } from '@/types';
-import ChallengeProgress from './ChallengeProgress';
-import { Trophy, Target } from 'lucide-react';
+import { Trophy, Users, UserPlus, TrendingUp } from 'lucide-react';
+
+interface SuggestedUser {
+  id: string;
+  name: string;
+  username: string;
+  location?: string;
+  followersCount: number;
+}
+
+interface SuggestedGroup {
+  id: string;
+  name: string;
+  memberCount: number;
+  description: string;
+}
 
 function RightSidebar() {
   const { user } = useAuth();
   const [activeChallenges, setActiveChallenges] = useState<Challenge[]>([]);
-  const [userProgress, setUserProgress] = useState<Record<string, ChallengeProgressType>>({});
+  const [suggestedUsers, setSuggestedUsers] = useState<SuggestedUser[]>([]);
+  const [suggestedGroups, setSuggestedGroups] = useState<SuggestedGroup[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     if (user) {
-      loadActiveChallenges();
+      loadSuggestedContent();
     }
   }, [user]);
 
-  const loadActiveChallenges = async () => {
+  const loadSuggestedContent = async () => {
     try {
       setIsLoading(true);
-      
-      // Check if user is authenticated
-      if (!user) {
-        console.log('User not authenticated, skipping challenges load');
-        return;
-      }
-      
-      // First try to load all active challenges, then filter by participation
-      // This avoids complex queries that might fail
-      let challenges = await firebaseChallengeApi.getChallenges({
-        status: 'active'
-      });
-      
-      // If that fails, try without any filters
-      if (challenges.length === 0) {
-        try {
-          const allChallenges = await firebaseChallengeApi.getChallenges({});
-          // Filter client-side for active challenges
-          const now = new Date();
-          challenges = allChallenges.filter(challenge => {
-            const startDate = new Date(challenge.startDate);
-            const endDate = new Date(challenge.endDate);
-            return now >= startDate && now <= endDate && challenge.isActive;
-          });
-        } catch (fallbackError) {
-          console.warn('Fallback challenges query also failed:', fallbackError);
-          challenges = [];
-        }
-      }
-      
-      // Filter for challenges the user is participating in
-      const participatingChallenges = [];
-      for (const challenge of challenges) {
-        try {
-          const progress = await firebaseChallengeApi.getChallengeProgress(challenge.id);
-          if (progress) {
-            participatingChallenges.push(challenge);
-          }
-        } catch (progressError) {
-          // Skip challenges we can't check participation for
-          continue;
-        }
-      }
-      
-      challenges = participatingChallenges;
-      
-      setActiveChallenges(challenges.slice(0, 3)); // Show top 3
 
-      // Load progress for each challenge
-      const progressMap: Record<string, ChallengeProgressType> = {};
-      for (const challenge of challenges.slice(0, 3)) {
-        try {
-          const progress = await firebaseChallengeApi.getChallengeProgress(challenge.id);
-          if (progress) {
-            progressMap[challenge.id] = progress;
-          }
-        } catch (progressError) {
-          console.warn(`Failed to load progress for challenge ${challenge.id}:`, progressError);
-        }
+      if (!user) return;
+
+      // Load challenges (top 2)
+      try {
+        const challenges = await firebaseChallengeApi.getChallenges({ status: 'active' });
+        setActiveChallenges(challenges.slice(0, 2));
+      } catch (error) {
+        console.error('Failed to load challenges:', error);
       }
-      setUserProgress(progressMap);
+
+      // Load suggested users (top 3)
+      try {
+        const { users } = await firebaseUserApi.searchUsers('', 1, 10);
+        const filtered = users
+          .filter(u => u.id !== user.id)
+          .sort((a, b) => (b.followersCount || 0) - (a.followersCount || 0))
+          .slice(0, 3);
+        setSuggestedUsers(filtered);
+      } catch (error) {
+        console.error('Failed to load suggested users:', error);
+      }
+
+      // Load suggested groups (top 3)
+      try {
+        const groups = await firebaseApi.group.getGroups();
+        setSuggestedGroups(groups.slice(0, 3));
+      } catch (error) {
+        console.error('Failed to load suggested groups:', error);
+      }
     } catch (error) {
-      console.error('Failed to load active challenges:', error);
-      // Don't show error to user, just log it
-      setActiveChallenges([]);
-      setUserProgress({});
+      console.error('Failed to load suggested content:', error);
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <aside className="hidden lg:block w-[280px] flex-shrink-0">
-      <div className="sticky top-[60px] space-y-6">
-        {/* Active Challenges */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center space-x-2">
-              <Trophy className="w-5 h-5 text-gray-900" />
-              <h3 className="text-lg font-bold text-gray-900">Active Challenges</h3>
+    <aside className="hidden lg:block w-[300px] flex-shrink-0">
+      <div className="sticky top-[88px] space-y-4">
+
+        {/* Challenges */}
+        <div className="bg-white rounded-lg border border-gray-100 overflow-hidden">
+          <div className="p-4 border-b border-gray-100">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Trophy className="w-5 h-5 text-[#FC4C02]" />
+                <h3 className="font-semibold text-gray-900">Challenges</h3>
+              </div>
+              <Link href="/challenges" className="text-sm text-[#FC4C02] hover:text-[#E04502] font-medium">
+                View All
+              </Link>
             </div>
-            <Link 
-              href="/challenges"
-              className="text-sm font-medium text-[#007AFF] hover:text-[#0056D6] transition-colors"
-            >
-              View All
-            </Link>
+            <p className="text-xs text-gray-600 mt-1">
+              Join exciting challenges to stay on top of your game, earn new achievements and see how you stack up.
+            </p>
           </div>
-          
+
           {isLoading ? (
-            <div className="space-y-3">
-              {[...Array(2)].map((_, i) => (
+            <div className="p-4 space-y-3">
+              {[1, 2].map(i => (
                 <div key={i} className="animate-pulse">
-                  <div className="h-4 bg-gray-200 rounded mb-2"></div>
-                  <div className="h-2 bg-gray-200 rounded mb-2"></div>
+                  <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
                   <div className="h-3 bg-gray-200 rounded w-1/2"></div>
                 </div>
               ))}
             </div>
-          ) : activeChallenges.length > 0 ? (
-            <div className="space-y-4">
-              {activeChallenges.map((challenge) => (
-                <ChallengeProgress
-                  key={challenge.id}
-                  challenge={challenge}
-                  progress={userProgress[challenge.id]}
-                  compact={true}
-                  showActions={false}
-                />
-              ))}
+          ) : activeChallenges.length === 0 ? (
+            <div className="p-4 text-center text-gray-500 text-sm">
+              No active challenges yet
             </div>
           ) : (
-            <div className="text-center py-4">
-              <Target className="w-8 h-8 text-gray-300 mx-auto mb-2" />
-              <p className="text-sm text-gray-600 mb-3">
-                No active challenges yet
-              </p>
-              <Link 
-                href="/challenges"
-                className="text-sm font-medium text-[#007AFF] hover:text-[#0056D6] transition-colors"
-              >
-                Browse Challenges
-              </Link>
+            <div className="divide-y divide-gray-100">
+              {activeChallenges.map(challenge => (
+                <Link
+                  key={challenge.id}
+                  href={`/challenges/${challenge.id}`}
+                  className="block p-4 hover:bg-gray-50 transition-colors"
+                >
+                  <div className="font-medium text-gray-900 text-sm mb-1">
+                    {challenge.name}
+                  </div>
+                  <div className="text-xs text-gray-600">
+                    {challenge.participantCount || 0} participants
+                  </div>
+                </Link>
+              ))}
             </div>
           )}
         </div>
 
-        {/* Clubs */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <div className="flex items-center space-x-2 mb-3">
-            <svg className="w-5 h-5 text-gray-900" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
-            </svg>
-            <h3 className="text-lg font-bold text-gray-900">Clubs</h3>
+        {/* Clubs/Groups */}
+        <div className="bg-white rounded-lg border border-gray-100 overflow-hidden">
+          <div className="p-4 border-b border-gray-100">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Users className="w-5 h-5 text-[#FC4C02]" />
+                <h3 className="font-semibold text-gray-900">Clubs</h3>
+              </div>
+              <Link href="/groups" className="text-sm text-[#FC4C02] hover:text-[#E04502] font-medium">
+                View All
+              </Link>
+            </div>
+            <p className="text-xs text-gray-600 mt-1">
+              Why do it alone? Get more out of your Ambira experience by joining or creating a Club.
+            </p>
           </div>
-          <p className="text-sm text-gray-600 mb-4">
-            Why do it alone? Get more out of your Ambira experience by joining or creating a Club.
-          </p>
-          <button className="text-sm font-medium text-[#007AFF] hover:text-[#0056D6] transition-colors">
-            View All Clubs
-          </button>
+
+          {isLoading ? (
+            <div className="p-4 space-y-3">
+              {[1, 2, 3].map(i => (
+                <div key={i} className="animate-pulse">
+                  <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                  <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                </div>
+              ))}
+            </div>
+          ) : suggestedGroups.length === 0 ? (
+            <div className="p-4 text-center text-gray-500 text-sm">
+              No clubs yet
+            </div>
+          ) : (
+            <div className="divide-y divide-gray-100">
+              {suggestedGroups.map(group => (
+                <Link
+                  key={group.id}
+                  href={`/groups/${group.id}`}
+                  className="block p-4 hover:bg-gray-50 transition-colors"
+                >
+                  <div className="font-medium text-gray-900 text-sm mb-1">
+                    {group.name}
+                  </div>
+                  <div className="text-xs text-gray-600">
+                    {group.memberCount || 0} members
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Suggested Friends */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <h3 className="text-lg font-bold text-gray-900 mb-4">Suggested Friends</h3>
-          <div className="text-center py-8">
-            <div className="text-gray-500 mb-4">
-              <svg className="w-12 h-12 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
-              </svg>
+        <div className="bg-white rounded-lg border border-gray-100 overflow-hidden">
+          <div className="p-4 border-b border-gray-100">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <UserPlus className="w-5 h-5 text-[#FC4C02]" />
+                <h3 className="font-semibold text-gray-900">Suggested Friends</h3>
+              </div>
+              <Link href="/search?type=people" className="text-sm text-[#FC4C02] hover:text-[#E04502] font-medium">
+                Find Friends
+              </Link>
             </div>
-            <h4 className="text-sm font-semibold text-gray-900 mb-2">No suggestions yet</h4>
-            <p className="text-xs text-gray-600 mb-4">
-              We'll suggest users to follow based on your activity and interests.
+            <p className="text-xs text-gray-600 mt-1">
+              We'll suggest users you may know based on your activity and interests.
             </p>
-            <button className="text-sm font-medium text-[#007AFF] hover:text-[#0056D6] transition-colors">
-              Browse All Users
-            </button>
           </div>
+
+          {isLoading ? (
+            <div className="p-4 space-y-3">
+              {[1, 2, 3].map(i => (
+                <div key={i} className="animate-pulse flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gray-200 rounded-full"></div>
+                  <div className="flex-1">
+                    <div className="h-4 bg-gray-200 rounded w-2/3 mb-2"></div>
+                    <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : suggestedUsers.length === 0 ? (
+            <div className="p-4 text-center text-gray-500 text-sm">
+              No suggestions yet
+            </div>
+          ) : (
+            <div className="divide-y divide-gray-100">
+              {suggestedUsers.map(suggestedUser => (
+                <Link
+                  key={suggestedUser.id}
+                  href={`/profile/${suggestedUser.username}`}
+                  className="flex items-center gap-3 p-4 hover:bg-gray-50 transition-colors"
+                >
+                  <div className="w-10 h-10 bg-[#FC4C02] rounded-full flex items-center justify-center flex-shrink-0">
+                    <span className="text-white font-semibold text-sm">
+                      {suggestedUser.name.charAt(0).toUpperCase()}
+                    </span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium text-gray-900 text-sm truncate">
+                      {suggestedUser.name}
+                    </div>
+                    <div className="text-xs text-gray-600">
+                      {suggestedUser.location || 'Local Legend'} · {suggestedUser.followersCount || 0} followers
+                    </div>
+                  </div>
+                  <button className="px-3 py-1 text-xs font-medium text-[#FC4C02] border border-[#FC4C02] rounded hover:bg-[#FC4C02] hover:text-white transition-colors">
+                    Follow
+                  </button>
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
 
-        {/* Footer Links */}
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
-          <div className="flex flex-wrap gap-x-3 gap-y-2 text-xs text-gray-600">
-            <a href="#" className="hover:text-[#007AFF]">Community Hub</a>
-            <a href="#" className="hover:text-[#007AFF]">Support</a>
-            <a href="#" className="hover:text-[#007AFF]">Subscription</a>
-            <a href="#" className="hover:text-[#007AFF]">Student Discount</a>
-            <a href="#" className="hover:text-[#007AFF]">Teacher, Military & Medical Discount (US Only)</a>
-            <a href="#" className="hover:text-[#007AFF]">Terms</a>
-          </div>
-        </div>
       </div>
     </aside>
   );

@@ -11,6 +11,20 @@ interface SessionTimerEnhancedProps {
   projectId: string;
 }
 
+interface TagConfig {
+  name: string;
+  color: string;
+  bgColor: string;
+}
+
+const TAG_CONFIGS: TagConfig[] = [
+  { name: 'Study', color: '#3B82F6', bgColor: '#DBEAFE' },      // Blue
+  { name: 'Work', color: '#8B5CF6', bgColor: '#EDE9FE' },        // Purple
+  { name: 'Side Project', color: '#F59E0B', bgColor: '#FEF3C7' }, // Amber
+  { name: 'Reading', color: '#10B981', bgColor: '#D1FAE5' },     // Green
+  { name: 'Learning', color: '#EC4899', bgColor: '#FCE7F3' },    // Pink
+];
+
 export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
   const { 
     timerState, 
@@ -44,6 +58,13 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
   const [showProjectPicker, setShowProjectPicker] = useState(false);
   const [showTagPicker, setShowTagPicker] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
+
+  // Initialize selectedProjectId from timerState if there's an active session
+  useEffect(() => {
+    if (timerState.currentProject && !selectedProjectId) {
+      setSelectedProjectId(timerState.currentProject.id);
+    }
+  }, [timerState.currentProject]);
 
   // Count completed tasks in this session
   useEffect(() => {
@@ -221,23 +242,26 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                   Tags
                 </label>
                 <div className="flex flex-wrap gap-2">
-                  {['Study', 'Work', 'Side Project', 'Reading', 'Learning'].map(tag => (
+                  {TAG_CONFIGS.map(tagConfig => (
                     <button
-                      key={tag}
+                      key={tagConfig.name}
                       onClick={() => {
-                        if (sessionTags.includes(tag)) {
-                          setSessionTags(sessionTags.filter(t => t !== tag));
+                        if (sessionTags.includes(tagConfig.name)) {
+                          setSessionTags(sessionTags.filter(t => t !== tagConfig.name));
                         } else {
-                          setSessionTags([...sessionTags, tag]);
+                          setSessionTags([...sessionTags, tagConfig.name]);
                         }
                       }}
-                      className={`px-3 py-1 rounded-full text-sm ${
-                        sessionTags.includes(tag)
-                          ? 'bg-blue-500 text-white'
-                          : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                      }`}
+                      className="px-3 py-1 rounded-full text-sm font-medium"
+                      style={sessionTags.includes(tagConfig.name) ? {
+                        backgroundColor: tagConfig.color,
+                        color: 'white'
+                      } : {
+                        backgroundColor: '#E5E7EB',
+                        color: '#374151'
+                      }}
                     >
-                      {tag}
+                      {tagConfig.name}
                     </button>
                   ))}
                 </div>
@@ -321,13 +345,14 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
     );
   }
 
-  const selectedProject = projects.find(p => p.id === selectedProjectId);
+  const selectedProject = projects.find(p => p.id === selectedProjectId) || timerState.currentProject;
   const selectedTag = sessionTags[0];
+  const selectedTagConfig = TAG_CONFIGS.find(t => t.name === selectedTag);
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
       {/* Mobile: Full-screen centered layout */}
-      <div className="md:hidden flex flex-col min-h-screen relative">
+      <div className="md:hidden flex flex-col h-screen fixed inset-0 overflow-hidden">
         {/* Floating Back Button */}
         <button
           onClick={() => window.history.back()}
@@ -338,16 +363,18 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
           </svg>
         </button>
 
-        {/* Timer at top center */}
-        <div className="flex-1 flex flex-col items-center justify-start px-4 pt-12 pb-32">
-          <div className="text-center mb-16 mt-8">
+        {/* Timer at top - Fixed/Sticky */}
+        <div className="flex-shrink-0 flex flex-col items-center justify-center px-4 pt-12 pb-6 bg-white">
+          <div className="text-center">
             <div className="text-6xl font-bold tracking-tight text-gray-900">
               {getFormattedTime(displayTime)}
             </div>
           </div>
+        </div>
 
-          {/* Simplified Task List - Centered */}
-          <div className="w-full max-w-md">
+        {/* Scrollable Task List Container */}
+        <div className="flex-1 overflow-y-auto px-4 pb-65">
+          <div className="w-full max-w-md mx-auto">
             <GlobalTasks
               selectedTaskIds={selectedTaskIds}
               onToggleTaskSelection={handleTaskToggle}
@@ -360,80 +387,99 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-6 py-6 safe-area-bottom">
           <div className="flex items-center justify-center gap-6">
             {/* Project Button */}
-            <button
-              onClick={() => setShowProjectPicker(true)}
-              disabled={timerState.isRunning || timerState.startTime !== null}
-              className={`relative w-16 h-16 rounded-full flex items-center justify-center transition-all border-2 ${
-                selectedProjectId && selectedProject
-                  ? `border-[${selectedProject.color}]`
-                  : 'border-gray-300 bg-gray-100'
-              } ${(timerState.isRunning || timerState.startTime !== null) ? 'opacity-50 cursor-not-allowed' : 'active:scale-95'}`}
-              style={selectedProjectId && selectedProject ? {
-                backgroundColor: `${selectedProject.color}20`,
-                borderColor: selectedProject.color
-              } : {}}
-            >
-              <span className="text-2xl">{selectedProject?.icon || '📁'}</span>
-            </button>
+            <div className="flex flex-col items-center gap-1">
+              <button
+                onClick={() => setShowProjectPicker(true)}
+                className="relative w-16 h-16 rounded-full flex items-center justify-center transition-all border-2 active:scale-95"
+                style={selectedProjectId && selectedProject ? {
+                  backgroundColor: `${selectedProject.color}20`,
+                  borderColor: selectedProject.color
+                } : {
+                  backgroundColor: '#F3F4F6',
+                  borderColor: '#D1D5DB'
+                }}
+              >
+                <span className="text-2xl">{selectedProject?.icon || '📁'}</span>
+              </button>
+              <span className="text-xs text-gray-600 font-medium">Project</span>
+            </div>
 
             {/* Center: Main Action Button */}
             {!timerState.isRunning && !timerState.startTime && (
-              <button
-                onClick={handleStartTimer}
-                disabled={!selectedProjectId}
-                className={`w-24 h-24 rounded-full flex items-center justify-center transition-all shadow-xl ${
-                  selectedProjectId
-                    ? 'bg-[#FC4C02] hover:bg-[#E04502] active:scale-95'
-                    : 'bg-gray-300 cursor-not-allowed'
-                }`}
-              >
-                <svg className="w-10 h-10 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M8 5v14l11-7z" />
-                </svg>
-              </button>
+              <div className="flex flex-col items-center gap-1">
+                <button
+                  onClick={handleStartTimer}
+                  disabled={!selectedProjectId}
+                  className={`w-24 h-24 rounded-full flex items-center justify-center transition-all shadow-xl ${
+                    selectedProjectId
+                      ? 'bg-[#FC4C02] hover:bg-[#E04502] active:scale-95'
+                      : 'bg-gray-300 cursor-not-allowed'
+                  }`}
+                >
+                  <svg className="w-10 h-10 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M8 5v14l11-7z" />
+                  </svg>
+                </button>
+                <span className="text-xs text-gray-600 font-medium">Record</span>
+              </div>
             )}
 
             {timerState.isRunning && (
-              <button
-                onClick={handlePauseTimer}
-                className="w-24 h-24 rounded-full bg-gray-900 hover:bg-gray-800 active:scale-95 flex items-center justify-center transition-all shadow-xl"
-              >
-                <svg className="w-9 h-9 text-white" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
-                </svg>
-              </button>
+              <div className="flex flex-col items-center gap-1">
+                <button
+                  onClick={handlePauseTimer}
+                  className="w-24 h-24 rounded-full bg-gray-900 hover:bg-gray-800 active:scale-95 flex items-center justify-center transition-all shadow-xl"
+                >
+                  <svg className="w-9 h-9 text-white" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
+                  </svg>
+                </button>
+                <span className="text-xs text-gray-600 font-medium">Pause</span>
+              </div>
             )}
 
             {!timerState.isRunning && timerState.startTime && (
               <div className="flex gap-3">
-                <button
-                  onClick={handleResumeTimer}
-                  className="w-20 h-20 rounded-full bg-green-600 hover:bg-green-700 active:scale-95 flex items-center justify-center transition-all shadow-xl"
-                >
-                  <svg className="w-8 h-8 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M8 5v14l11-7z" />
-                  </svg>
-                </button>
-                <button
-                  onClick={() => setShowFinishModal(true)}
-                  className="w-20 h-20 rounded-full bg-[#FC4C02] hover:bg-[#E04502] active:scale-95 flex items-center justify-center transition-all shadow-xl"
-                >
-                  <Flag className="w-7 h-7 text-white" />
-                </button>
+                <div className="flex flex-col items-center gap-1">
+                  <button
+                    onClick={handleResumeTimer}
+                    className="w-20 h-20 rounded-full bg-green-600 hover:bg-green-700 active:scale-95 flex items-center justify-center transition-all shadow-xl"
+                  >
+                    <svg className="w-8 h-8 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M8 5v14l11-7z" />
+                    </svg>
+                  </button>
+                  <span className="text-xs text-gray-600 font-medium">Resume</span>
+                </div>
+                <div className="flex flex-col items-center gap-1">
+                  <button
+                    onClick={() => setShowFinishModal(true)}
+                    className="w-20 h-20 rounded-full bg-[#FC4C02] hover:bg-[#E04502] active:scale-95 flex items-center justify-center transition-all shadow-xl"
+                  >
+                    <Flag className="w-7 h-7 text-white" />
+                  </button>
+                  <span className="text-xs text-gray-600 font-medium">Finish</span>
+                </div>
               </div>
             )}
 
             {/* Tag Button */}
-            <button
-              onClick={() => setShowTagPicker(true)}
-              className={`relative w-16 h-16 rounded-full flex items-center justify-center transition-all border-2 ${
-                selectedTag
-                  ? 'bg-purple-100 border-purple-500'
-                  : 'bg-gray-100 border-gray-300'
-              } active:scale-95`}
-            >
-              <span className="text-2xl">🏷️</span>
-            </button>
+            <div className="flex flex-col items-center gap-1">
+              <button
+                onClick={() => setShowTagPicker(true)}
+                className="relative w-16 h-16 rounded-full flex items-center justify-center transition-all border-2 active:scale-95"
+                style={selectedTagConfig ? {
+                  backgroundColor: selectedTagConfig.bgColor,
+                  borderColor: selectedTagConfig.color
+                } : {
+                  backgroundColor: '#F3F4F6',
+                  borderColor: '#D1D5DB'
+                }}
+              >
+                <span className="text-2xl">🏷️</span>
+              </button>
+              <span className="text-xs text-gray-600 font-medium">Tag</span>
+            </div>
           </div>
         </div>
 
@@ -458,6 +504,31 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                 </button>
               </div>
               <div className="space-y-3">
+                {/* Unassigned Option */}
+                <button
+                  onClick={() => {
+                    setSelectedProjectId('');
+                    setShowProjectPicker(false);
+                  }}
+                  className={`w-full flex items-center gap-4 p-4 rounded-xl transition-all ${
+                    !selectedProjectId
+                      ? 'bg-blue-100 border-2 border-blue-500'
+                      : 'bg-gray-50 border-2 border-transparent hover:bg-gray-100'
+                  }`}
+                >
+                  <span className="text-3xl">📁</span>
+                  <div className="flex-1 text-left">
+                    <div className="font-semibold text-gray-900">Unassigned</div>
+                    <div className="text-sm text-gray-500">No project selected</div>
+                  </div>
+                  {!selectedProjectId && (
+                    <svg className="w-6 h-6 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                  )}
+                </button>
+
+                {/* Project List */}
                 {projects.map((project) => (
                   <button
                     key={project.id}
@@ -511,25 +582,28 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                 </button>
               </div>
               <div className="space-y-3">
-                {['Study', 'Work', 'Side Project', 'Reading', 'Learning'].map((tag) => (
+                {TAG_CONFIGS.map((tagConfig) => (
                   <button
-                    key={tag}
+                    key={tagConfig.name}
                     onClick={() => {
-                      setSessionTags([tag]);
+                      setSessionTags([tagConfig.name]);
                       setShowTagPicker(false);
                     }}
-                    className={`w-full flex items-center gap-4 p-4 rounded-xl transition-all ${
-                      selectedTag === tag
-                        ? 'bg-purple-100 border-2 border-purple-500'
-                        : 'bg-gray-50 border-2 border-transparent hover:bg-gray-100'
-                    }`}
+                    className="w-full flex items-center gap-4 p-4 rounded-xl transition-all border-2"
+                    style={selectedTag === tagConfig.name ? {
+                      backgroundColor: tagConfig.bgColor,
+                      borderColor: tagConfig.color
+                    } : {
+                      backgroundColor: '#F9FAFB',
+                      borderColor: 'transparent'
+                    }}
                   >
                     <span className="text-2xl">🏷️</span>
                     <div className="flex-1 text-left">
-                      <div className="font-semibold text-gray-900">{tag}</div>
+                      <div className="font-semibold text-gray-900">{tagConfig.name}</div>
                     </div>
-                    {selectedTag === tag && (
-                      <svg className="w-6 h-6 text-purple-500" fill="currentColor" viewBox="0 0 20 20">
+                    {selectedTag === tagConfig.name && (
+                      <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" style={{ color: tagConfig.color }}>
                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                       </svg>
                     )}
@@ -542,9 +616,9 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
       </div>
 
       {/* Desktop: Two-column layout */}
-      <div className="hidden md:grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-12 pb-4">
+      <div className="hidden md:grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-12 pb-4 px-4 max-w-7xl mx-auto">
         {/* Left Column - Timer & Controls */}
-        <div className="flex flex-col items-center justify-start lg:justify-center space-y-6 lg:space-y-12 lg:sticky lg:top-6">
+        <div className="flex flex-col items-center justify-start lg:justify-center space-y-6 lg:space-y-12 lg:sticky lg:top-6 lg:h-screen">
           {/* Large Timer Display */}
           <div className="text-center w-full">
             <div className="text-6xl md:text-7xl lg:text-9xl font-mono font-bold text-gray-900 mb-4 lg:mb-8">
@@ -612,10 +686,9 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
               <select
                 value={selectedProjectId}
                 onChange={(e) => setSelectedProjectId(e.target.value)}
-                disabled={timerState.isRunning || timerState.startTime !== null}
-                className="w-full px-3 md:px-4 py-2 md:py-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] bg-white appearance-none cursor-pointer disabled:bg-gray-100 disabled:cursor-not-allowed text-sm md:text-base"
+                className="w-full px-3 md:px-4 py-2 md:py-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] bg-white appearance-none cursor-pointer text-sm md:text-base"
               >
-                <option value="">Select Project</option>
+                <option value="">Unassigned</option>
                 {projects.map((project) => (
                   <option key={project.id} value={project.id}>
                     {project.icon} {project.name}
@@ -637,11 +710,11 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                 className="w-full px-3 md:px-4 py-2 md:py-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] bg-white appearance-none cursor-pointer text-sm md:text-base"
               >
                 <option value="">Select Tag</option>
-                <option value="Study">Study</option>
-                <option value="Work">Work</option>
-                <option value="Side Project">Side Project</option>
-                <option value="Reading">Reading</option>
-                <option value="Learning">Learning</option>
+                {TAG_CONFIGS.map((tagConfig) => (
+                  <option key={tagConfig.name} value={tagConfig.name}>
+                    {tagConfig.name}
+                  </option>
+                ))}
               </select>
               <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                 <svg className="w-4 h-4 md:w-5 md:h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -654,7 +727,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
 
         {/* Right Column - Tasks */}
         <div className="flex items-start justify-center w-full">
-          <div className="w-full max-w-2xl">
+          <div className="w-full max-w-2xl max-h-screen overflow-y-auto pb-8">
             <GlobalTasks
               selectedTaskIds={selectedTaskIds}
               onToggleTaskSelection={handleTaskToggle}
@@ -708,23 +781,26 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                   Tags
                 </label>
                 <div className="flex flex-wrap gap-2">
-                  {['Study', 'Work', 'Side Project', 'Reading', 'Learning'].map(tag => (
+                  {TAG_CONFIGS.map(tagConfig => (
                     <button
-                      key={tag}
+                      key={tagConfig.name}
                       onClick={() => {
-                        if (sessionTags.includes(tag)) {
-                          setSessionTags(sessionTags.filter(t => t !== tag));
+                        if (sessionTags.includes(tagConfig.name)) {
+                          setSessionTags(sessionTags.filter(t => t !== tagConfig.name));
                         } else {
-                          setSessionTags([...sessionTags, tag]);
+                          setSessionTags([...sessionTags, tagConfig.name]);
                         }
                       }}
-                      className={`px-3 py-1 rounded-full text-sm ${
-                        sessionTags.includes(tag)
-                          ? 'bg-blue-500 text-white'
-                          : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                      }`}
+                      className="px-3 py-1 rounded-full text-sm font-medium"
+                      style={sessionTags.includes(tagConfig.name) ? {
+                        backgroundColor: tagConfig.color,
+                        color: 'white'
+                      } : {
+                        backgroundColor: '#E5E7EB',
+                        color: '#374151'
+                      }}
                     >
-                      {tag}
+                      {tagConfig.name}
                     </button>
                   ))}
                 </div>

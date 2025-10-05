@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Task, UpdateTaskData } from '@/types';
-import { Edit, Archive, Trash2 } from 'lucide-react';
+import { Edit, Archive, Trash2, MoreVertical, Circle, CheckCircle2 } from 'lucide-react';
 
 interface TaskItemProps {
   task: Task;
@@ -16,6 +16,7 @@ interface TaskItemProps {
   onStartEdit?: () => void;
   onCancelEdit?: () => void;
   onSaveEdit?: (name: string) => void;
+  availableProjects?: Array<{ id: string; name: string; icon?: string }>;
 }
 
 export const TaskItem: React.FC<TaskItemProps> = ({
@@ -30,9 +31,30 @@ export const TaskItem: React.FC<TaskItemProps> = ({
   onStartEdit,
   onCancelEdit,
   onSaveEdit,
+  availableProjects = [],
 }) => {
   const [editName, setEditName] = useState(task.name);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
+  const [showAssignMenu, setShowAssignMenu] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setShowMenu(false);
+      }
+    };
+
+    if (showMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showMenu]);
 
   const handleStatusToggle = async () => {
     if (isUpdating) return;
@@ -87,6 +109,21 @@ export const TaskItem: React.FC<TaskItemProps> = ({
     }
   };
 
+  const handleAssignToProject = async (projectId: string) => {
+    if (isUpdating) return;
+
+    try {
+      setIsUpdating(true);
+      await onUpdateTask(task.id, { projectId });
+      setShowAssignMenu(false);
+      setShowMenu(false);
+    } catch (error) {
+      console.error('Failed to assign task to project:', error);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
   const handleEditSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (editName.trim() && editName.trim() !== task.name) {
@@ -99,17 +136,6 @@ export const TaskItem: React.FC<TaskItemProps> = ({
   const handleEditCancel = () => {
     setEditName(task.name);
     onCancelEdit?.();
-  };
-
-  const getStatusIcon = () => {
-    switch (task.status) {
-      case 'completed':
-        return '✓';
-      case 'archived':
-        return '📦';
-      default:
-        return '';
-    }
   };
 
   const getStatusColor = () => {
@@ -154,35 +180,31 @@ export const TaskItem: React.FC<TaskItemProps> = ({
   }
 
   return (
-    <div 
+    <div
       data-task-id={task.id}
       className={`flex items-center gap-3 p-3 bg-white border border-gray-200 rounded-lg transition-colors ${
         isSelected ? 'bg-orange-50 border-orange-200' : 'hover:bg-gray-50'
       }`}
     >
-      {/* Status button - black circle */}
+      {/* Status button - circle */}
       <button
         onClick={handleStatusToggle}
         disabled={isUpdating}
-        className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all duration-300 disabled:opacity-50 ${
-          task.status === 'completed' 
-            ? 'bg-green-500 border-green-500' 
-            : task.status === 'archived'
-            ? 'bg-gray-400 border-gray-400'
-            : 'border-gray-800 hover:border-gray-600'
-        }`}
+        className="flex-shrink-0 transition-all duration-300 disabled:opacity-50"
         title={task.status === 'completed' ? 'Mark as active' : 'Mark as completed'}
       >
-        <span className={`text-xs ${
-          task.status === 'completed' ? 'text-white' : 'text-gray-800'
-        }`}>
-          {getStatusIcon()}
-        </span>
+        {task.status === 'completed' ? (
+          <CheckCircle2 className="w-6 h-6 text-green-500 fill-green-500" />
+        ) : task.status === 'archived' ? (
+          <CheckCircle2 className="w-6 h-6 text-gray-400 fill-gray-400" />
+        ) : (
+          <Circle className="w-6 h-6 text-gray-800 hover:text-gray-600" />
+        )}
       </button>
 
       {/* Task name */}
       <div className="flex-1 min-w-0">
-        <span className={`text-sm ${getStatusColor()} ${
+        <span className={`text-sm md:text-base break-words ${getStatusColor()} ${
           task.status === 'completed' ? 'line-through' : ''
         }`}>
           {task.name}
@@ -194,37 +216,134 @@ export const TaskItem: React.FC<TaskItemProps> = ({
         )}
       </div>
 
-      {/* Actions */}
+      {/* Actions - Desktop: Individual buttons, Mobile: Three-dot menu */}
       <div className="flex items-center gap-1">
-        {task.status === 'active' && (
+        {/* Desktop - Individual buttons */}
+        <div className="hidden md:flex items-center gap-1">
+          {task.status === 'active' && (
+            <button
+              onClick={onStartEdit}
+              className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
+              title="Edit task"
+            >
+              <Edit className="w-4 h-4" />
+            </button>
+          )}
+
+          {task.status !== 'archived' && (
+            <button
+              onClick={handleArchive}
+              disabled={isUpdating}
+              className="p-1 text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50"
+              title="Archive task"
+            >
+              <Archive className="w-4 h-4" />
+            </button>
+          )}
+
           <button
-            onClick={onStartEdit}
-            className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
-            title="Edit task"
-          >
-            <Edit className="w-4 h-4" />
-          </button>
-        )}
-        
-        {task.status !== 'archived' && (
-          <button
-            onClick={handleArchive}
+            onClick={handleDelete}
             disabled={isUpdating}
-            className="p-1 text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50"
-            title="Archive task"
+            className="p-1 text-gray-400 hover:text-red-600 transition-colors disabled:opacity-50"
+            title="Delete task"
           >
-            <Archive className="w-4 h-4" />
+            <Trash2 className="w-4 h-4" />
           </button>
-        )}
-        
-        <button
-          onClick={handleDelete}
-          disabled={isUpdating}
-          className="p-1 text-gray-400 hover:text-red-600 transition-colors disabled:opacity-50"
-          title="Delete task"
-        >
-          <Trash2 className="w-4 h-4" />
-        </button>
+        </div>
+
+        {/* Mobile - Three-dot menu */}
+        <div className="md:hidden relative" ref={menuRef}>
+          <button
+            onClick={() => setShowMenu(!showMenu)}
+            className="p-2 text-gray-400 hover:text-gray-600 transition-colors"
+            title="More options"
+          >
+            <MoreVertical className="w-5 h-5" />
+          </button>
+
+          {showMenu && !showAssignMenu && (
+            <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 min-w-[160px]">
+              {task.status === 'active' && onStartEdit && (
+                <button
+                  onClick={() => {
+                    onStartEdit();
+                    setShowMenu(false);
+                  }}
+                  className="w-full flex items-center gap-2 px-4 py-3 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  <Edit className="w-4 h-4" />
+                  <span>Edit</span>
+                </button>
+              )}
+
+              {!task.projectId && availableProjects.length > 0 && (
+                <button
+                  onClick={() => setShowAssignMenu(true)}
+                  className="w-full flex items-center gap-2 px-4 py-3 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                  </svg>
+                  <span>Assign to Project</span>
+                </button>
+              )}
+
+              {task.status !== 'archived' && (
+                <button
+                  onClick={() => {
+                    handleArchive();
+                    setShowMenu(false);
+                  }}
+                  disabled={isUpdating}
+                  className="w-full flex items-center gap-2 px-4 py-3 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
+                >
+                  <Archive className="w-4 h-4" />
+                  <span>Archive</span>
+                </button>
+              )}
+
+              <button
+                onClick={() => {
+                  handleDelete();
+                  setShowMenu(false);
+                }}
+                disabled={isUpdating}
+                className="w-full flex items-center gap-2 px-4 py-3 text-left text-sm text-red-600 hover:bg-red-50 transition-colors disabled:opacity-50"
+              >
+                <Trash2 className="w-4 h-4" />
+                <span>Delete</span>
+              </button>
+            </div>
+          )}
+
+          {/* Assignment submenu */}
+          {showMenu && showAssignMenu && (
+            <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 min-w-[200px] max-h-[300px] overflow-y-auto">
+              <div className="sticky top-0 bg-white border-b border-gray-200 px-4 py-2 flex items-center justify-between">
+                <span className="text-sm font-medium text-gray-700">Select Project</span>
+                <button
+                  onClick={() => setShowAssignMenu(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+              </div>
+              {availableProjects.map((project) => (
+                <button
+                  key={project.id}
+                  onClick={() => handleAssignToProject(project.id)}
+                  disabled={isUpdating}
+                  className="w-full flex items-center gap-3 px-4 py-3 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-50"
+                >
+                  {project.icon && <span className="text-lg">{project.icon}</span>}
+                  <span>{project.name}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

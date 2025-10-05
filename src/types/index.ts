@@ -656,6 +656,7 @@ export interface AuthContextType {
   isLoading: boolean;
   login: (credentials: LoginCredentials) => Promise<void>;
   signup: (credentials: SignupCredentials) => Promise<void>;
+  signInWithGoogle: () => Promise<void>;
   logout: () => void;
 }
 

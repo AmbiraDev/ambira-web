@@ -93,6 +93,26 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  // Sign in with Google function
+  const signInWithGoogle = async (): Promise<void> => {
+    try {
+      setIsLoading(true);
+
+      const response = await firebaseAuthApi.signInWithGoogle();
+      console.log('Google sign-in response:', response);
+
+      setUser(response.user);
+
+      // Redirect to home page
+      router.push('/');
+    } catch (error) {
+      console.error('Google sign-in error:', error);
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Logout function
   const logout = async (): Promise<void> => {
     try {
@@ -114,6 +134,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     isLoading,
     login,
     signup,
+    signInWithGoogle,
     logout,
   };
 

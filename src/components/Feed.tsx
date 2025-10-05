@@ -278,7 +278,7 @@ export const Feed: React.FC<FeedProps> = ({
       )}
 
       {/* Sessions */}
-      <div className="space-y-6">
+      <div>
         {sessions.map((session) => (
           <SessionCard
             key={session.id}

@@ -323,40 +323,16 @@ export const GlobalTasks: React.FC<GlobalTasksProps> = ({
                 {/* Tasks in this project */}
                 <div className="space-y-2">
                   {tasks.map((task) => (
-                    <div key={task.id} className="flex items-start gap-3">
-                      {/* Task content */}
-                      <div className="flex-1">
-                        <TaskItem
-                          task={task}
-                          onUpdateTask={handleUpdateTask}
-                          onDeleteTask={handleDeleteTask}
-                          isSelected={currentSelectedTasks.includes(task.id)}
-                          onToggleSelect={handleTaskToggle}
-                          showCheckbox={true}
-                        />
-                      </div>
-
-                      {/* Project assignment for unassigned tasks */}
-                      {!task.projectId && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs text-gray-500">Assign to:</span>
-                          <select
-                            onChange={(e) => {
-                              if (e.target.value) {
-                                handleUpdateTask(task.id, { projectId: e.target.value });
-                              }
-                            }}
-                            className="text-xs border border-gray-300 rounded px-2 py-1"
-                          >
-                            <option value="">Select project...</option>
-                            {projects.map(project => (
-                              <option key={project.id} value={project.id}>
-                                {project.name}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                      )}
+                    <div key={task.id}>
+                      <TaskItem
+                        task={task}
+                        onUpdateTask={handleUpdateTask}
+                        onDeleteTask={handleDeleteTask}
+                        isSelected={currentSelectedTasks.includes(task.id)}
+                        onToggleSelect={handleTaskToggle}
+                        showCheckbox={true}
+                        availableProjects={projects.map(p => ({ id: p.id, name: p.name, icon: p.icon }))}
+                      />
                     </div>
                   ))}
                 </div>

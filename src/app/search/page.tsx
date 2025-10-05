@@ -5,9 +5,11 @@ import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import Header from '@/components/HeaderComponent';
 import BottomNavigation from '@/components/BottomNavigation';
-import { firebaseUserApi } from '@/lib/firebaseApi';
+import { firebaseUserApi, firebaseApi } from '@/lib/firebaseApi';
 import { useAuth } from '@/contexts/AuthContext';
 import { UserCardCompact } from '@/components/UserCard';
+import { collection, query as firestoreQuery, orderBy, limit, getDocs } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
 
 // Mock data for search results
 const mockUsers = [
@@ -33,12 +35,95 @@ const mockChallenges = [
 function SearchContent() {
   const searchParams = useSearchParams();
   const initialQuery = searchParams.get('q') || '';
-  const type = (searchParams.get('type') || 'people') as 'people' | 'groups' | 'challenges';
-  
+  const type = (searchParams.get('type') || 'suggested') as 'suggested' | 'people' | 'groups' | 'challenges';
+
   const [query, setQuery] = useState(initialQuery);
   const [isLoading, setIsLoading] = useState(false);
   const [results, setResults] = useState<any[]>([]);
+  const [suggestedUsers, setSuggestedUsers] = useState<any[]>([]);
+  const [suggestedGroups, setSuggestedGroups] = useState<any[]>([]);
+  const [suggestedChallenges, setSuggestedChallenges] = useState<any[]>([]);
+  const [showAllPeople, setShowAllPeople] = useState(false);
+  const [showAllGroups, setShowAllGroups] = useState(false);
+  const [showAllChallenges, setShowAllChallenges] = useState(false);
   const { user } = useAuth();
+
+  // Load suggested content on mount
+  useEffect(() => {
+    if (type !== 'suggested') return;
+    if (!user) return; // Wait for user to be authenticated
+
+    let isMounted = true;
+    setIsLoading(true);
+
+    const run = async () => {
+      try {
+        // Load users - sorted by follower count
+        try {
+          const { users } = await firebaseUserApi.searchUsers('', 1, 50);
+          if (!isMounted) return;
+          const filtered = users
+            .filter(u => u.id !== user?.id)
+            .sort((a, b) => (b.followersCount || 0) - (a.followersCount || 0));
+          setSuggestedUsers(filtered);
+        } catch (error) {
+          console.error('Error loading users:', error);
+          if (isMounted) setSuggestedUsers([]);
+        }
+
+        // Load groups - get all public groups by querying directly
+        try {
+          const allGroupsSnapshot = await getDocs(
+            firestoreQuery(collection(db, 'groups'), orderBy('memberCount', 'desc'), limit(20))
+          );
+          const groups = allGroupsSnapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+              id: doc.id,
+              name: data.name,
+              description: data.description,
+              imageUrl: data.imageUrl,
+              location: data.location,
+              category: data.category,
+              memberCount: data.memberCount,
+              members: data.memberCount,
+              image: data.imageUrl || '📁'
+            };
+          });
+          if (isMounted) setSuggestedGroups(groups);
+        } catch (error) {
+          console.error('Error loading groups:', error);
+          if (isMounted) setSuggestedGroups([]);
+        }
+
+        // Load challenges - get active challenges sorted by participant count
+        try {
+          const challenges = await firebaseApi.challenge.getChallenges({ isActive: true });
+          const sortedChallenges = challenges
+            .sort((a, b) => (b.participantCount || 0) - (a.participantCount || 0))
+            .slice(0, 20)
+            .map(c => ({
+              id: c.id,
+              name: c.name,
+              description: c.description,
+              participants: c.participantCount || 0,
+              endDate: c.endDate.toISOString().split('T')[0],
+              group: c.groupId || 'Global',
+              image: '🎯'
+            }));
+          if (isMounted) setSuggestedChallenges(sortedChallenges);
+        } catch (error) {
+          console.error('Error loading challenges:', error);
+          if (isMounted) setSuggestedChallenges([]);
+        }
+      } finally {
+        if (isMounted) setIsLoading(false);
+      }
+    };
+    run();
+
+    return () => { isMounted = false; };
+  }, [type, user?.id]);
 
   useEffect(() => {
     // Only search if there's a query
@@ -74,9 +159,16 @@ function SearchContent() {
   }, [initialQuery, type]);
 
   const handleFollowChange = (userId: string, isFollowing: boolean) => {
-    setResults(prev => 
-      prev.map(user => 
-        user.id === userId 
+    setResults(prev =>
+      prev.map(user =>
+        user.id === userId
+          ? { ...user, isFollowing, followersCount: isFollowing ? user.followersCount + 1 : Math.max(0, user.followersCount - 1) }
+          : user
+      )
+    );
+    setSuggestedUsers(prev =>
+      prev.map(user =>
+        user.id === userId
           ? { ...user, isFollowing, followersCount: isFollowing ? user.followersCount + 1 : Math.max(0, user.followersCount - 1) }
           : user
       )
@@ -212,7 +304,16 @@ function SearchContent() {
           <form onSubmit={(e) => { e.preventDefault(); if (query.trim()) window.location.href = `/search?q=${encodeURIComponent(query.trim())}&type=${type}`; }}>
             <div className="space-y-4">
               {/* Filter Tabs */}
-              <div className="flex bg-gray-100 rounded-lg p-1">
+              <div className="flex bg-gray-100 rounded-lg p-1 overflow-x-auto">
+                <button
+                  type="button"
+                  onClick={() => window.location.href = `/search?type=suggested`}
+                  className={`flex-1 py-2 px-3 text-sm font-medium rounded-md transition-colors ${
+                    type === 'suggested' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600'
+                  }`}
+                >
+                  Suggested
+                </button>
                 <button
                   type="button"
                   onClick={() => window.location.href = `/search?q=${encodeURIComponent(initialQuery)}&type=people`}
@@ -241,32 +342,120 @@ function SearchContent() {
                   Challenges
                 </button>
               </div>
-              
-              {/* Search Input */}
-              <div className="relative">
-                <input
-                  type="text"
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder={`Search ${type}...`}
-                  className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FC4C02] focus:border-transparent text-base"
-                />
-                <button
-                  type="submit"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-gray-400 hover:text-[#FC4C02] transition-colors"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
-                </button>
-              </div>
+
+              {/* Search Input - hide for suggested tab */}
+              {type !== 'suggested' && (
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={query}
+                    onChange={(e) => setQuery(e.target.value)}
+                    placeholder={`Search ${type}...`}
+                    className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FC4C02] focus:border-transparent text-base"
+                  />
+                  <button
+                    type="submit"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-gray-400 hover:text-[#FC4C02] transition-colors"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                  </button>
+                </div>
+              )}
             </div>
           </form>
         </div>
 
         {/* Results */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-          {!initialQuery.trim() ? (
+          {type === 'suggested' ? (
+            isLoading ? (
+              <div className="p-8 text-center">
+                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#007AFF]"></div>
+                <p className="text-gray-600 mt-4">Loading suggestions...</p>
+              </div>
+            ) : (
+              <div className="divide-y-8 divide-gray-100">
+                {/* Suggested People */}
+                {suggestedUsers.length > 0 && (
+                  <div>
+                    <div className="px-4 py-4 bg-white sticky top-0">
+                      <h3 className="text-lg font-bold text-gray-900">Suggested People</h3>
+                      <p className="text-sm text-gray-500 mt-0.5">People you might know</p>
+                    </div>
+                    <div className="bg-white">
+                      {(showAllPeople ? suggestedUsers : suggestedUsers.slice(0, 5)).map((suggestedUser) => (
+                        <div key={suggestedUser.id} className="border-b border-gray-100 last:border-0">
+                          <UserCardCompact
+                            user={suggestedUser}
+                            variant="search"
+                            onFollowChange={handleFollowChange}
+                          />
+                        </div>
+                      ))}
+                      {suggestedUsers.length > 5 && (
+                        <div className="px-4 py-3 border-t border-gray-100">
+                          <button
+                            onClick={() => setShowAllPeople(!showAllPeople)}
+                            className="w-full text-center text-[#007AFF] font-semibold text-sm py-2 hover:bg-gray-50 rounded-lg transition-colors"
+                          >
+                            {showAllPeople ? 'Show Less' : `Show ${suggestedUsers.length - 5} More`}
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Suggested Groups */}
+                {suggestedGroups.length > 0 && (
+                  <div>
+                    <div className="px-4 py-4 bg-white">
+                      <h3 className="text-lg font-bold text-gray-900">Suggested Groups</h3>
+                      <p className="text-sm text-gray-500 mt-0.5">Groups you might be interested in</p>
+                    </div>
+                    <div className="bg-white">
+                      {(showAllGroups ? suggestedGroups : suggestedGroups.slice(0, 3)).map(renderGroupResult)}
+                      {suggestedGroups.length > 3 && (
+                        <div className="px-4 py-3 border-t border-gray-100">
+                          <button
+                            onClick={() => setShowAllGroups(!showAllGroups)}
+                            className="w-full text-center text-[#007AFF] font-semibold text-sm py-2 hover:bg-gray-50 rounded-lg transition-colors"
+                          >
+                            {showAllGroups ? 'Show Less' : `Show ${suggestedGroups.length - 3} More`}
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Suggested Challenges */}
+                {suggestedChallenges.length > 0 && (
+                  <div>
+                    <div className="px-4 py-4 bg-white">
+                      <h3 className="text-lg font-bold text-gray-900">Suggested Challenges</h3>
+                      <p className="text-sm text-gray-500 mt-0.5">Join these challenges</p>
+                    </div>
+                    <div className="bg-white">
+                      {(showAllChallenges ? suggestedChallenges : suggestedChallenges.slice(0, 3)).map(renderChallengeResult)}
+                      {suggestedChallenges.length > 3 && (
+                        <div className="px-4 py-3 border-t border-gray-100">
+                          <button
+                            onClick={() => setShowAllChallenges(!showAllChallenges)}
+                            className="w-full text-center text-[#007AFF] font-semibold text-sm py-2 hover:bg-gray-50 rounded-lg transition-colors"
+                          >
+                            {showAllChallenges ? 'Show Less' : `Show ${suggestedChallenges.length - 3} More`}
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )
+          ) : !initialQuery.trim() ? (
             <div className="p-8 md:p-12 text-center">
               <svg className="w-16 h-16 md:w-20 md:h-20 mx-auto text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />

@@ -29,7 +29,9 @@ import {
   onAuthStateChanged,
   User as FirebaseUser,
   updateProfile,
-  sendEmailVerification
+  sendEmailVerification,
+  GoogleAuthProvider,
+  signInWithPopup
 } from 'firebase/auth';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, auth, storage } from './firebase';
@@ -155,7 +157,9 @@ const updateSocialGraph = async (currentUserId: string, targetUserId: string, ac
         transaction.set(targetUserSocialGraphRef, { id: currentUserId, type: 'inbound', user: currentUserData, createdAt: now });
 
         currentUserUpdate.outboundFriendshipCount = increment(1);
+        currentUserUpdate.followingCount = increment(1);
         targetUserUpdate.inboundFriendshipCount = increment(1);
+        targetUserUpdate.followersCount = increment(1);
 
         // Check for mutual friendship (using pre-read value)
         if (isMutualOrWasMutual) {
@@ -167,7 +171,9 @@ const updateSocialGraph = async (currentUserId: string, targetUserId: string, ac
         transaction.delete(targetUserSocialGraphRef);
 
         currentUserUpdate.outboundFriendshipCount = increment(-1);
+        currentUserUpdate.followingCount = increment(-1);
         targetUserUpdate.inboundFriendshipCount = increment(-1);
+        targetUserUpdate.followersCount = increment(-1);
 
         // Check for mutual friendship (using pre-read value)
         if (isMutualOrWasMutual) {
@@ -435,6 +441,76 @@ export const firebaseAuthApi = {
     }
   },
 
+  // Sign in with Google
+  signInWithGoogle: async (): Promise<AuthResponse> => {
+    try {
+      const provider = new GoogleAuthProvider();
+      const userCredential = await signInWithPopup(auth, provider);
+      const firebaseUser = userCredential.user;
+
+      // Check if user profile exists
+      const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
+      let userData = userDoc.data();
+
+      // If user profile doesn't exist, create it
+      if (!userData) {
+        // Generate username from email
+        const baseUsername = firebaseUser.email!.split('@')[0];
+        let username = baseUsername;
+        let counter = 1;
+
+        // Check if username exists, if so append number
+        while (true) {
+          const usernameQuery = query(collection(db, 'users'), where('username', '==', username));
+          const usernameSnapshot = await getDocs(usernameQuery);
+          if (usernameSnapshot.empty) break;
+          username = `${baseUsername}${counter}`;
+          counter++;
+        }
+
+        userData = {
+          email: firebaseUser.email!,
+          name: firebaseUser.displayName || 'New User',
+          username: username,
+          bio: '',
+          location: '',
+          profilePicture: firebaseUser.photoURL || null,
+          followersCount: 0,
+          followingCount: 0,
+          totalHours: 0,
+          inboundFriendshipCount: 0,
+          outboundFriendshipCount: 0,
+          mutualFriendshipCount: 0,
+          profileVisibility: 'everyone',
+          activityVisibility: 'everyone',
+          projectVisibility: 'everyone',
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        };
+
+        await setDoc(doc(db, 'users', firebaseUser.uid), userData);
+      }
+
+      const user: AuthUser = {
+        id: firebaseUser.uid,
+        email: firebaseUser.email!,
+        name: userData.name,
+        username: userData.username,
+        bio: userData.bio,
+        location: userData.location,
+        profilePicture: userData.profilePicture,
+        createdAt: convertTimestamp(userData.createdAt),
+        updatedAt: convertTimestamp(userData.updatedAt)
+      };
+
+      const token = await firebaseUser.getIdToken();
+
+      return { user, token };
+    } catch (error: any) {
+      throw new Error(getErrorMessage(error, 'Google sign-in failed'));
+    }
+  },
+
   // Logout
   logout: async (): Promise<void> => {
     try {
@@ -537,8 +613,8 @@ export const firebaseUserApi = {
       // Check if current user is following this user
       let isFollowing = false;
       if (auth.currentUser && !isOwnProfile) {
-        const followDoc = await getDoc(doc(db, 'follows', `${auth.currentUser.uid}_${userDoc.id}`));
-        isFollowing = followDoc.exists();
+        const socialGraphDoc = await getDoc(doc(db, `social_graph/${auth.currentUser.uid}/outbound`, userDoc.id));
+        isFollowing = socialGraphDoc.exists();
       }
       
       // If profile is followers-only, check if current user is a follower
@@ -555,21 +631,15 @@ export const firebaseUserApi = {
       const shouldRecalculate = isOwnProfile || userData.followersCount === undefined || userData.followingCount === undefined;
       if (shouldRecalculate) {
         try {
-          // Count followers (people who follow this user)
-          const followersQuery = query(
-            collection(db, 'follows'),
-            where('followingId', '==', userDoc.id)
-          );
-          const followersSnapshot = await getDocs(followersQuery);
-          followersCount = followersSnapshot.size;
-          
-          // Count following (people this user follows)
-          const followingQuery = query(
-            collection(db, 'follows'),
-            where('followerId', '==', userDoc.id)
-          );
-          const followingSnapshot = await getDocs(followingQuery);
-          followingCount = followingSnapshot.size;
+          // Count followers (people who follow this user) using social_graph
+          const inboundRef = collection(db, `social_graph/${userDoc.id}/inbound`);
+          const inboundSnapshot = await getDocs(inboundRef);
+          followersCount = inboundSnapshot.size;
+
+          // Count following (people this user follows) using social_graph
+          const outboundRef = collection(db, `social_graph/${userDoc.id}/outbound`);
+          const outboundSnapshot = await getDocs(outboundRef);
+          followingCount = outboundSnapshot.size;
           
           // Update the user document with correct counts
           // For own profile, always update to keep counts fresh
@@ -1130,7 +1200,7 @@ export const firebaseUserApi = {
           name: userData.name,
           bio: userData.bio,
           profilePicture: userData.profilePicture,
-          followersCount: userData.followersCount || 0,
+          followersCount: userData.inboundFriendshipCount || userData.followersCount || 0,
           isFollowing: false,
         } as UserSearchResult;
       };
@@ -1141,7 +1211,7 @@ export const firebaseUserApi = {
       });
 
       // Convert to array and apply a basic relevance sort: exact prefix on username > name > others
-      const users = Object.values(byId).sort((a, b) => {
+      let users = Object.values(byId).sort((a, b) => {
         const t = term.toLowerCase();
         const aUser = a.username?.toLowerCase() || '';
         const bUser = b.username?.toLowerCase() || '';
@@ -1152,6 +1222,20 @@ export const firebaseUserApi = {
         const bScore = (bUser.startsWith(t) ? 2 : 0) + (bName.startsWith(t) ? 1 : 0);
         return bScore - aScore;
       }).slice(0, limitCount);
+
+      // Check if current user is following each user
+      if (auth.currentUser) {
+        const followingChecks = await Promise.all(
+          users.map(async (user) => {
+            if (user.id === auth.currentUser!.uid) {
+              return { ...user, isFollowing: false }; // Don't check for own profile
+            }
+            const socialGraphDoc = await getDoc(doc(db, `social_graph/${auth.currentUser!.uid}/outbound`, user.id));
+            return { ...user, isFollowing: socialGraphDoc.exists() };
+          })
+        );
+        users = followingChecks;
+      }
 
       return { users, totalCount: users.length, hasMore: users.length === limitCount };
     } catch (error: any) {

@@ -100,7 +100,7 @@ export default function GroupsPage() {
 
       <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
         {/* Tabs */}
-        <div className="sticky top-14 md:top-0 bg-white md:bg-gray-50 border-b border-gray-200 z-30">
+        <div className="sticky top-14 md:top-0 bg-white md:bg-gray-50  z-30">
           <div className="bg-gray-50 border-b md:border-b-0 border-gray-200">
             <div className="max-w-4xl mx-auto flex gap-8 px-4 md:px-6 lg:px-8">
               <button

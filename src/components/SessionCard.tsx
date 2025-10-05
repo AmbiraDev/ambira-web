@@ -5,6 +5,8 @@ import { SessionWithDetails, User } from '@/types';
 import SessionStats from './SessionStats';
 import SessionInteractions from './SessionInteractions';
 import CommentList from './CommentList';
+import { MoreVertical, Heart, MessageCircle, Share2, Clock, ListTodo, Tag } from 'lucide-react';
+import Link from 'next/link';
 
 interface SessionCardProps {
   session: SessionWithDetails;
@@ -76,139 +78,128 @@ export const SessionCard: React.FC<SessionCardProps> = ({
   };
 
   return (
-    <article className={`bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden ${className}`}>
+    <article className={`bg-white border-b border-gray-100 ${className}`}>
       {/* Session Header */}
-      <div className="p-6">
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex items-center space-x-3 flex-1 min-w-0">
-            {/* User Avatar */}
-            {session.user.profilePicture ? (
-              <img
-                src={session.user.profilePicture}
-                alt={session.user.name}
-                className="w-12 h-12 rounded-full object-cover border-2 border-gray-100"
-              />
-            ) : (
-              <div className={`w-12 h-12 ${getUserColor(session.user.id)} rounded-full flex items-center justify-center shadow-sm`}>
-                <span className="text-base font-semibold text-white">
-                  {getUserInitials(session.user)}
-                </span>
-              </div>
-            )}
-
-            {/* User Info */}
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
-                <h3 className="font-bold text-gray-900 hover:text-orange-600 cursor-pointer transition-colors truncate">
-                  {session.user.name}
-                </h3>
-              </div>
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <span className="hover:text-gray-900 cursor-pointer transition-colors">
-                  {formatTimeAgo(session.createdAt)}
-                </span>
-              </div>
+      <div className="flex items-center justify-between px-4 pt-4 pb-3">
+        <Link href={`/profile/${session.user.username}`} className="flex items-center gap-3">
+          {/* User Avatar */}
+          {session.user.profilePicture ? (
+            <img
+              src={session.user.profilePicture}
+              alt={session.user.name}
+              className="w-10 h-10 rounded-full object-cover ring-2 ring-white"
+            />
+          ) : (
+            <div className="w-10 h-10 bg-[#FC4C02] rounded-full flex items-center justify-center flex-shrink-0 ring-2 ring-white">
+              <span className="text-white font-semibold text-sm">
+                {getUserInitials(session.user)}
+              </span>
             </div>
-          </div>
+          )}
 
-          {/* Options Menu */}
-          <div className="relative">
-            <button
-              onClick={() => setShowMenu(!showMenu)}
-              className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full p-1 transition-colors"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
-              </svg>
-            </button>
-
-            {showMenu && (
-              <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
-                <button className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50">
-                  Edit session
-                </button>
-                {onDelete && (
-                  <button
-                    onClick={() => onDelete(session.id)}
-                    className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-gray-50"
-                  >
-                    Delete session
-                  </button>
-                )}
-                <button className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-gray-50">
-                  Report session
-                </button>
-              </div>
-            )}
+          {/* User Info */}
+          <div>
+            <div className="font-semibold text-gray-900 text-base hover:underline">{session.user.name}</div>
+            <div className="text-xs text-gray-500">{formatTimeAgo(session.createdAt)}</div>
           </div>
+        </Link>
+
+        {/* Options Menu */}
+        <div className="relative">
+          <button
+            onClick={() => setShowMenu(!showMenu)}
+            className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full p-2 transition-colors"
+          >
+            <MoreVertical className="w-5 h-5" />
+          </button>
+
+          {showMenu && (
+            <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
+              <button className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50">
+                Edit session
+              </button>
+              {onDelete && (
+                <button
+                  onClick={() => onDelete(session.id)}
+                  className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-gray-50"
+                >
+                  Delete session
+                </button>
+              )}
+              <button className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-gray-50">
+                Report session
+              </button>
+            </div>
+          )}
         </div>
+      </div>
 
-        {/* Session Title */}
-        <h3 className="text-xl font-bold text-gray-900 mb-3">
+      {/* Title and Description */}
+      <div className="px-4 pb-3">
+        <h3 className="text-2xl font-bold text-gray-900 mb-1">
           {session.title || 'Focus Session'}
         </h3>
-
-        {/* Session Description */}
         {session.description && (
-          <p className="text-gray-700 mb-4 line-clamp-3">
+          <p className="text-gray-600 text-sm line-clamp-2">
             {session.description}
           </p>
         )}
+      </div>
 
-        {/* Session Stats - Clean 3-column layout */}
-        <div className="grid grid-cols-3 gap-4 bg-gray-50 rounded-lg p-3">
+      {/* Stats - Strava style */}
+      <div className="px-4 pb-4">
+        <div className="grid grid-cols-2 gap-6">
           <div>
-            <div className="text-xs text-gray-500 mb-1">Time</div>
-            <div className="font-bold text-gray-900">
-              {formatTime(session.duration)}
-            </div>
+            <div className="text-xs text-gray-500 mb-0.5">Time</div>
+            <div className="text-lg font-semibold text-gray-900">{formatTime(session.duration)}</div>
           </div>
           <div>
-            <div className="text-xs text-gray-500 mb-1">Project</div>
-            <div className="font-bold text-gray-900 truncate">
-              {session.project?.name || 'N/A'}
-            </div>
-          </div>
-          <div>
-            <div className="text-xs text-gray-500 mb-1">Category</div>
-            <div className="font-bold text-gray-900 truncate">
-              {session.category || 'General'}
-            </div>
+            <div className="text-xs text-gray-500 mb-0.5">Project</div>
+            <div className="text-lg font-semibold text-gray-900 truncate">{session.project?.name || 'N/A'}</div>
           </div>
         </div>
       </div>
 
-      {/* Support Summary */}
-      {session.supportCount > 0 && (
-        <div className="px-6 pb-3">
-          <div className="flex items-center gap-2 text-sm text-gray-600">
-            <svg className="w-5 h-5 text-orange-500" fill="currentColor" viewBox="0 0 24 24">
-              <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-            </svg>
-            <span className="font-medium">
-              {session.supportCount}
-            </span>
-            <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-            </svg>
-            <span className="font-medium">
-              {session.commentCount}
-            </span>
-          </div>
-        </div>
-      )}
+      {/* Action Buttons */}
+      <div className="flex items-center border-t border-gray-100">
+        <button
+          onClick={() => session.isSupported ? onRemoveSupport(session.id) : onSupport(session.id)}
+          className="flex-1 flex items-center justify-center gap-2 py-3 text-gray-600 hover:bg-gray-50 transition-colors"
+        >
+          <svg
+            className={`w-6 h-6 ${session.isSupported ? 'fill-red-500 text-red-500' : ''}`}
+            fill={session.isSupported ? 'currentColor' : 'none'}
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+          </svg>
+          <span className="text-sm font-medium">{session.supportCount || 0}</span>
+        </button>
 
-      {/* Session Interactions */}
-      <SessionInteractions
-        sessionId={session.id}
-        supportCount={session.supportCount}
-        commentCount={session.commentCount}
-        isSupported={session.isSupported || false}
-        onSupport={onSupport}
-        onRemoveSupport={onRemoveSupport}
-        onShare={onShare}
-        onCommentClick={() => setShowCommentSection(!showCommentSection)}
-      />
+        <div className="w-px h-6 bg-gray-200"></div>
+
+        <button
+          onClick={() => setShowCommentSection(!showCommentSection)}
+          className="flex-1 flex items-center justify-center gap-2 py-3 text-gray-600 hover:bg-gray-50 transition-colors"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+          </svg>
+          <span className="text-sm font-medium">{session.commentCount || 0}</span>
+        </button>
+
+        <div className="w-px h-6 bg-gray-200"></div>
+
+        <button
+          onClick={() => onShare(session.id)}
+          className="flex-1 flex items-center justify-center gap-2 py-3 text-gray-600 hover:bg-gray-50 transition-colors"
+        >
+          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+          </svg>
+        </button>
+      </div>
 
       {/* Comments Section */}
       {showCommentSection && (
@@ -216,6 +207,9 @@ export const SessionCard: React.FC<SessionCardProps> = ({
           <CommentList sessionId={session.id} initialCommentCount={session.commentCount} />
         </div>
       )}
+
+      {/* Separator Line */}
+      <div className="border-b-4 border-gray-200"></div>
     </article>
   );
 };

@@ -9,16 +9,15 @@ import RightSidebar from '@/components/RightSidebar';
 import BottomNavigation from '@/components/BottomNavigation';
 import { FABMenu } from '@/components/FABMenu';
 import Feed from '@/components/Feed';
+import FeedCarousel from '@/components/FeedCarousel';
 import { useState } from 'react';
 import { FeedFilters } from '@/types';
 
 function HomeContent() {
   const { user } = useAuth();
-  const [feedFilter, setFeedFilter] = useState<'following' | 'all' | 'mine'>('following');
 
   const filters: FeedFilters = {
-    followingOnly: feedFilter === 'following',
-    userId: feedFilter === 'mine' ? user?.id : undefined
+    followingOnly: true
   };
 
   return (
@@ -40,23 +39,8 @@ function HomeContent() {
 
           {/* Main Feed */}
           <main className="flex-1 min-w-0 max-w-[600px] md:mx-auto">
-            {/* Feed Filter */}
-            <div className="mb-4 px-4 md:px-0 pt-4 md:pt-0">
-              <select
-                value={feedFilter}
-                onChange={(e) => setFeedFilter(e.target.value as 'following' | 'all' | 'mine')}
-                className="w-full md:w-48 text-sm text-gray-700 bg-white border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF]"
-              >
-                <option value="following">Following</option>
-                <option value="all">All Activity</option>
-                <option value="mine">My Activities</option>
-              </select>
-            </div>
-
             {/* Feed Posts */}
-            <div className="px-4 md:px-0">
-              <Feed filters={filters} />
-            </div>
+            <Feed filters={filters} />
           </main>
 
           {/* Right Sidebar - hidden on mobile */}
