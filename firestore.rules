@@ -133,8 +133,17 @@ service cloud.firestore {
     
     // Comment likes
     match /commentLikes/{likeId} {
-      allow read, write: if request.auth != null && 
+      // Allow reading individual likes if user is involved
+      allow get: if request.auth != null && 
         (request.auth.uid == likeId.split('_')[0] || request.auth.uid == likeId.split('_')[1]);
+      
+      // Allow listing likes for queries filtered by userId
+      allow list: if request.auth != null && 
+        request.auth.uid == resource.data.userId;
+      
+      // Allow creating/deleting own likes
+      allow create, delete: if request.auth != null && 
+        request.resource.data.userId == request.auth.uid;
     }
     
     // Notifications

@@ -22,12 +22,13 @@ interface MentionSuggestion {
 export const CommentInput: React.FC<CommentInputProps> = ({
   sessionId,
   parentId,
-  placeholder = 'Write a comment...',
+  placeholder = 'Add a comment, @ to mention',
   onSubmit,
   onCancel,
   autoFocus = false,
   initialValue = ''
 }) => {
+  const maxCharacters = 1000;
   const [content, setContent] = useState(initialValue);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showMentions, setShowMentions] = useState(false);
@@ -68,8 +69,14 @@ export const CommentInput: React.FC<CommentInputProps> = ({
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const value = e.target.value;
+
+    // Enforce character limit
+    if (value.length > maxCharacters) {
+      return;
+    }
+
     const cursorPos = e.target.selectionStart;
-    
+
     setContent(value);
 
     // Check for @ mentions
@@ -164,7 +171,7 @@ export const CommentInput: React.FC<CommentInputProps> = ({
 
   return (
     <div className="relative">
-      <div className="flex gap-3">
+      <div className="flex items-start gap-3">
         <textarea
           ref={textareaRef}
           value={content}
@@ -173,9 +180,24 @@ export const CommentInput: React.FC<CommentInputProps> = ({
           placeholder={placeholder}
           autoFocus={autoFocus}
           disabled={isSubmitting}
-          className="flex-1 px-4 py-3 border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px] max-h-[200px]"
+          className="flex-1 px-4 py-3 bg-gray-50 border-0 rounded-lg resize-none focus:outline-none focus:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px] max-h-[200px] scrollbar-hide overflow-y-auto"
           rows={1}
+          style={{
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none'
+          }}
         />
+        <button
+          onClick={handleSubmit}
+          disabled={!content.trim() || isSubmitting}
+          className={`px-3 py-2 text-sm font-semibold rounded-lg transition-colors flex-shrink-0 mt-1 ${
+            content.trim() && !isSubmitting
+              ? 'text-[#007AFF] hover:text-[#0051D5]'
+              : 'text-gray-400 cursor-not-allowed'
+          }`}
+        >
+          Post
+        </button>
       </div>
 
       {/* Mention Suggestions Dropdown */}
@@ -189,7 +211,7 @@ export const CommentInput: React.FC<CommentInputProps> = ({
               key={user.id}
               onClick={() => insertMention(user)}
               className={`w-full px-4 py-2 flex items-center gap-3 hover:bg-gray-50 transition-colors ${
-                index === selectedMentionIndex ? 'bg-orange-50' : ''
+                index === selectedMentionIndex ? 'bg-blue-50' : ''
               }`}
             >
               {user.profilePicture ? (
@@ -217,31 +239,6 @@ export const CommentInput: React.FC<CommentInputProps> = ({
           ))}
         </div>
       )}
-
-      {/* Action Buttons */}
-      <div className="flex items-center justify-between mt-2">
-        <div className="text-xs text-gray-500">
-          {showMentions ? 'Use ↑↓ to navigate, Enter to select' : 'Use @ to mention users • Cmd/Ctrl+Enter to post'}
-        </div>
-        <div className="flex gap-2">
-          {onCancel && (
-            <button
-              onClick={handleCancel}
-              disabled={isSubmitting}
-              className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Cancel
-            </button>
-          )}
-          <button
-            onClick={handleSubmit}
-            disabled={!content.trim() || isSubmitting}
-            className="px-4 py-2 text-sm font-semibold text-white bg-orange-500 hover:bg-orange-600 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-          >
-            {isSubmitting ? 'Posting...' : parentId ? 'Reply' : 'Comment'}
-          </button>
-        </div>
-      </div>
     </div>
   );
 };

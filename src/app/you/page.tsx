@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import MobileHeader from '@/components/MobileHeader';
@@ -9,10 +9,14 @@ import Header from '@/components/HeaderComponent';
 import { ProjectList } from '@/components/ProjectList';
 import { firebaseSessionApi, firebaseUserApi } from '@/lib/firebaseApi';
 import { Session, UserStats, User as UserType, UserProfile } from '@/types';
-import { Heart, MessageCircle, Share2, Calendar, Clock, Target, ChevronDown, MoreVertical, Edit, User as UserIcon, Users } from 'lucide-react';
+import { Heart, MessageCircle, Share2, Calendar, Clock, Target, ChevronDown, MoreVertical, Edit, User as UserIcon, Users, Trash2 } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
 import { useSearchParams, useRouter } from 'next/navigation';
+import { EditSessionModal } from '@/components/EditSessionModal';
+import { useUserSessions, useUserStats, useUserProfile, useUserFollowers, useUserFollowing } from '@/hooks/useCache';
+import { ImageGallery } from '@/components/ImageGallery';
 
 type YouTab = 'progress' | 'sessions' | 'projects' | 'profile';
 type TimePeriod = 'day' | 'week' | 'month' | 'year';
@@ -44,48 +48,28 @@ export default function YouPage() {
   );
   const [timePeriod, setTimePeriod] = useState<TimePeriod>('week');
   const [showTimePeriodDropdown, setShowTimePeriodDropdown] = useState(false);
-  const [sessions, setSessions] = useState<Session[]>(() => {
-    if (typeof window !== 'undefined' && user) {
-      const cached = localStorage.getItem(`youPageSessions_${user.id}`);
-      if (cached) {
-        try {
-          return JSON.parse(cached);
-        } catch (e) {
-          return [];
-        }
-      }
-    }
-    return [];
+  const [editingSession, setEditingSession] = useState<Session | null>(null);
+  const [sessionMenuOpen, setSessionMenuOpen] = useState<string | null>(null);
+  const [deleteConfirmSession, setDeleteConfirmSession] = useState<Session | null>(null);
+
+  // Use React Query hooks for data with automatic caching
+  const { data: sessions = [], isLoading: sessionsLoading } = useUserSessions(user?.id || '', 50, {
+    enabled: !!user?.id,
   });
-  const [stats, setStats] = useState<UserStats | null>(() => {
-    if (typeof window !== 'undefined' && user) {
-      const cached = localStorage.getItem(`youPageStats_${user.id}`);
-      if (cached) {
-        try {
-          return JSON.parse(cached);
-        } catch (e) {
-          return null;
-        }
-      }
-    }
-    return null;
+  const { data: stats = null, isLoading: statsLoading } = useUserStats(user?.id || '', {
+    enabled: !!user?.id,
   });
-  const [isLoading, setIsLoading] = useState(false);
-  const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
-  const [categoryStats, setCategoryStats] = useState<CategoryStats[]>([]);
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
-  const [followers, setFollowers] = useState<UserType[]>([]);
-  const [following, setFollowing] = useState<UserType[]>([]);
-  const [lastFetchTime, setLastFetchTime] = useState<number>(() => {
-    if (typeof window !== 'undefined') {
-      const cached = localStorage.getItem('youPageLastFetch');
-      return cached ? parseInt(cached) : 0;
-    }
-    return 0;
+  const { data: userProfile = null } = useUserProfile(user?.id || '', {
+    enabled: !!user?.id,
+  });
+  const { data: followers = [] } = useUserFollowers(user?.id || '', {
+    enabled: !!user?.id,
+  });
+  const { data: following = [] } = useUserFollowing(user?.id || '', {
+    enabled: !!user?.id,
   });
 
-  // Cache duration: 5 minutes
-  const CACHE_DURATION = 5 * 60 * 1000;
+  const isLoading = sessionsLoading || statsLoading;
 
   // Update tab when URL changes
   useEffect(() => {
@@ -94,105 +78,10 @@ export default function YouPage() {
     }
   }, [tabParam]);
 
-  useEffect(() => {
-    if (user) {
-      const now = Date.now();
-      const shouldRefetch = now - lastFetchTime > CACHE_DURATION;
-      
-      // Only load data if cache is expired or no data exists
-      if (shouldRefetch || !stats) {
-        // Only show loading if we don't have cached data
-        if (!stats) {
-          setIsLoading(true);
-        }
-        loadData();
-      } else {
-        // We have fresh cached data, not loading
-        setIsLoading(false);
-      }
-    }
-  }, [user]);
+  // Calculate chart data using useMemo to prevent infinite loop
+  const chartData = useMemo(() => {
+    if (!sessions) return [];
 
-  useEffect(() => {
-    processChartData();
-    if (sessions.length > 0) {
-      processCategoryStats();
-    } else {
-      setCategoryStats([]);
-    }
-  }, [sessions, timePeriod]);
-
-  const loadData = async () => {
-    if (!user) return;
-
-    try {
-      setIsLoading(true);
-
-      // Load sessions and stats separately to handle errors better
-      let sessionsData: Session[] = [];
-      let statsData: UserStats | null = null;
-      let profileData: UserProfile | null = null;
-      let followersData: UserType[] = [];
-      let followingData: UserType[] = [];
-
-      try {
-        sessionsData = await firebaseSessionApi.getUserSessions(user.id, 50, true);
-      } catch (sessionError) {
-        console.error('Error loading sessions:', sessionError);
-        sessionsData = [];
-      }
-
-      try {
-        statsData = await firebaseUserApi.getUserStats(user.id);
-      } catch (statsError) {
-        console.error('Error loading stats:', statsError);
-      }
-
-      try {
-        profileData = await firebaseUserApi.getUserProfile(user.username);
-      } catch (profileError) {
-        console.error('Error loading profile:', profileError);
-      }
-
-      try {
-        followersData = await firebaseUserApi.getFollowers(user.id);
-      } catch (followersError) {
-        console.error('Error loading followers:', followersError);
-      }
-
-      try {
-        followingData = await firebaseUserApi.getFollowing(user.id);
-      } catch (followingError) {
-        console.error('Error loading following:', followingError);
-      }
-
-      setSessions(sessionsData);
-      setStats(statsData);
-      setUserProfile(profileData);
-      setFollowers(followersData);
-      setFollowing(followingData);
-      
-      // Update last fetch time and cache data
-      const now = Date.now();
-      setLastFetchTime(now);
-      
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('youPageLastFetch', now.toString());
-        if (statsData) {
-          localStorage.setItem(`youPageStats_${user.id}`, JSON.stringify(statsData));
-        }
-        if (sessionsData.length > 0) {
-          localStorage.setItem(`youPageSessions_${user.id}`, JSON.stringify(sessionsData));
-        }
-      }
-    } catch (error) {
-      console.error('Error loading data:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const processChartData = () => {
     const now = new Date();
     let data: ChartDataPoint[] = [];
 
@@ -271,14 +160,13 @@ export default function YouPage() {
       }
     }
 
-    setChartData(data);
-  };
+    return data;
+  }, [sessions, timePeriod]);
 
-  const processCategoryStats = () => {
-    // Since sessions don't have categories in the current schema,
-    // we'll skip this for now or group by tags/projects instead
-    setCategoryStats([]);
-  };
+  // Category stats - empty for now
+  const categoryStats: CategoryStats[] = [];
+
+
 
   const formatTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
@@ -300,6 +188,29 @@ export default function YouPage() {
       return `Yesterday at ${date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`;
     } else {
       return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+    }
+  };
+
+  const handleEditSession = async (sessionId: string, data: any) => {
+    try {
+      await firebaseSessionApi.updateSession(sessionId, data);
+      // React Query will automatically refetch
+      alert('Session updated successfully');
+    } catch (error) {
+      console.error('Failed to update session:', error);
+      throw error;
+    }
+  };
+
+  const handleDeleteSession = async (sessionId: string) => {
+    try {
+      await firebaseSessionApi.deleteSession(sessionId);
+      setDeleteConfirmSession(null);
+      // React Query will automatically refetch
+      alert('Session deleted successfully');
+    } catch (error) {
+      console.error('Failed to delete session:', error);
+      alert('Failed to delete session. Please try again.');
     }
   };
 
@@ -552,7 +463,7 @@ export default function YouPage() {
               </div>
             )}
 
-            {activeTab === 'sessions' && (
+{activeTab === 'sessions' && (
               <div className="max-w-4xl mx-auto space-y-4">
               {isLoading ? (
                 <div className="p-8 text-center text-gray-500">Loading sessions...</div>
@@ -565,11 +476,23 @@ export default function YouPage() {
                     <div className="flex items-center justify-between p-4 pb-3">
                       <div className="flex items-center gap-3">
                         <Link href="/you?tab=profile">
-                          <div className="w-10 h-10 bg-[#FC4C02] rounded-full flex items-center justify-center flex-shrink-0 ring-2 ring-white">
-                            <span className="text-white font-semibold text-sm">
-                              {user.name.charAt(0).toUpperCase()}
-                            </span>
-                          </div>
+                          {userProfile?.profilePicture || user.profilePicture ? (
+                            <div className="w-10 h-10 rounded-full overflow-hidden ring-2 ring-white">
+                              <Image
+                                src={userProfile?.profilePicture || user.profilePicture || ''}
+                                alt={user.name}
+                                width={40}
+                                height={40}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                          ) : (
+                            <div className="w-10 h-10 bg-[#FC4C02] rounded-full flex items-center justify-center flex-shrink-0 ring-2 ring-white">
+                              <span className="text-white font-semibold text-sm">
+                                {user.name.charAt(0).toUpperCase()}
+                              </span>
+                            </div>
+                          )}
                         </Link>
                         <div>
                           <div className="font-semibold text-gray-900 text-base">{user.name}</div>
@@ -578,9 +501,38 @@ export default function YouPage() {
                           </div>
                         </div>
                       </div>
-                      <button className="text-gray-400 hover:text-gray-600 transition-colors p-2">
-                        <MoreVertical className="w-5 h-5" />
-                      </button>
+                      <div className="relative">
+                        <button
+                          onClick={() => setSessionMenuOpen(sessionMenuOpen === session.id ? null : session.id)}
+                          className="text-gray-400 hover:text-gray-600 transition-colors p-2"
+                        >
+                          <MoreVertical className="w-5 h-5" />
+                        </button>
+                        {sessionMenuOpen === session.id && (
+                          <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
+                            <button
+                              onClick={() => {
+                                setEditingSession(session);
+                                setSessionMenuOpen(null);
+                              }}
+                              className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
+                            >
+                              <Edit className="w-4 h-4" />
+                              Edit session
+                            </button>
+                            <button
+                              onClick={() => {
+                                setDeleteConfirmSession(session);
+                                setSessionMenuOpen(null);
+                              }}
+                              className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-gray-50 flex items-center gap-2"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                              Delete session
+                            </button>
+                          </div>
+                        )}
+                      </div>
                     </div>
 
                     {/* Session Title and Description */}
@@ -594,6 +546,13 @@ export default function YouPage() {
                         </p>
                       )}
                     </div>
+
+                    {/* Image Gallery */}
+                    {session.images && session.images.length > 0 && (
+                      <div className="px-4 pb-4">
+                        <ImageGallery images={session.images} />
+                      </div>
+                    )}
 
                     {/* Session Stats - Strava style */}
                     <div className="px-4 pb-4">
@@ -621,19 +580,19 @@ export default function YouPage() {
 
                     {/* Action Buttons */}
                     <div className="flex items-center border-t border-gray-100 px-2">
-                      <button className="flex-1 flex items-center justify-center gap-2 py-3 text-gray-600 hover:bg-gray-50 transition-colors rounded-lg">
+                      <Link href={`/sessions/${session.id}`} className="flex-1 flex items-center justify-center gap-2 py-3 text-gray-600 hover:bg-gray-50 transition-colors rounded-lg">
                         <Heart className="w-6 h-6" />
                         <span className="text-sm font-medium">
                           {session.supportCount || 0}
                         </span>
-                      </button>
+                      </Link>
                       <div className="w-px h-6 bg-gray-200"></div>
-                      <button className="flex-1 flex items-center justify-center gap-2 py-3 text-gray-600 hover:bg-gray-50 transition-colors rounded-lg">
+                      <Link href={`/sessions/${session.id}`} className="flex-1 flex items-center justify-center gap-2 py-3 text-gray-600 hover:bg-gray-50 transition-colors rounded-lg">
                         <MessageCircle className="w-6 h-6" />
                         <span className="text-sm font-medium">
                           {session.commentCount || 0}
                         </span>
-                      </button>
+                      </Link>
                       <div className="w-px h-6 bg-gray-200"></div>
                       <button className="flex-1 flex items-center justify-center gap-2 py-3 text-gray-600 hover:bg-gray-50 transition-colors rounded-lg">
                         <Share2 className="w-6 h-6" />
@@ -656,11 +615,23 @@ export default function YouPage() {
                 {/* Profile Header */}
                 <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
                   {/* Profile Picture */}
-                  <div className="w-24 h-24 bg-[#FC4C02] rounded-full flex items-center justify-center mb-4">
-                    <span className="text-white font-bold text-4xl">
-                      {user.name.charAt(0).toUpperCase()}
-                    </span>
-                  </div>
+                  {userProfile?.profilePicture || user.profilePicture ? (
+                    <div className="w-24 h-24 rounded-full mb-4 overflow-hidden ring-4 ring-white">
+                      <Image
+                        src={userProfile?.profilePicture || user.profilePicture || ''}
+                        alt={user.name}
+                        width={96}
+                        height={96}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  ) : (
+                    <div className="w-24 h-24 bg-[#FC4C02] rounded-full flex items-center justify-center mb-4">
+                      <span className="text-white font-bold text-4xl">
+                        {user.name.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                  )}
 
                   {/* Name and Username */}
                   <h1 className="text-2xl font-bold text-gray-900 mb-1">{user.name}</h1>
@@ -750,11 +721,23 @@ export default function YouPage() {
                           href={`/profile/${follower.username}`}
                           className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors"
                         >
-                          <div className="w-10 h-10 bg-[#FC4C02] rounded-full flex items-center justify-center">
-                            <span className="text-white font-semibold text-sm">
-                              {follower.name.charAt(0).toUpperCase()}
-                            </span>
-                          </div>
+                          {follower.profilePicture ? (
+                            <div className="w-10 h-10 rounded-full overflow-hidden ring-2 ring-white">
+                              <Image
+                                src={follower.profilePicture}
+                                alt={follower.name}
+                                width={40}
+                                height={40}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                          ) : (
+                            <div className="w-10 h-10 bg-[#FC4C02] rounded-full flex items-center justify-center">
+                              <span className="text-white font-semibold text-sm">
+                                {follower.name.charAt(0).toUpperCase()}
+                              </span>
+                            </div>
+                          )}
                           <div className="flex-1">
                             <div className="font-medium">{follower.name}</div>
                             <div className="text-sm text-gray-500">@{follower.username}</div>
@@ -790,11 +773,23 @@ export default function YouPage() {
                           href={`/profile/${followedUser.username}`}
                           className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors"
                         >
-                          <div className="w-10 h-10 bg-[#FC4C02] rounded-full flex items-center justify-center">
-                            <span className="text-white font-semibold text-sm">
-                              {followedUser.name.charAt(0).toUpperCase()}
-                            </span>
-                          </div>
+                          {followedUser.profilePicture ? (
+                            <div className="w-10 h-10 rounded-full overflow-hidden ring-2 ring-white">
+                              <Image
+                                src={followedUser.profilePicture}
+                                alt={followedUser.name}
+                                width={40}
+                                height={40}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                          ) : (
+                            <div className="w-10 h-10 bg-[#FC4C02] rounded-full flex items-center justify-center">
+                              <span className="text-white font-semibold text-sm">
+                                {followedUser.name.charAt(0).toUpperCase()}
+                              </span>
+                            </div>
+                          )}
                           <div className="flex-1">
                             <div className="font-medium">{followedUser.name}</div>
                             <div className="text-sm text-gray-500">@{followedUser.username}</div>
@@ -825,6 +820,41 @@ export default function YouPage() {
         <div className="md:hidden">
           <BottomNavigation />
         </div>
+
+        {/* Edit Session Modal */}
+        {editingSession && (
+          <EditSessionModal
+            session={editingSession}
+            onClose={() => setEditingSession(null)}
+            onSave={handleEditSession}
+          />
+        )}
+
+        {/* Delete Confirmation Modal */}
+        {deleteConfirmSession && (
+          <div className="fixed inset-0 bg-black/50 z-[9999] flex items-center justify-center p-4">
+            <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl">
+              <h3 className="text-xl font-bold text-gray-900 mb-3">Delete Session?</h3>
+              <p className="text-gray-600 mb-6">
+                Are you sure you want to delete this session? This action cannot be undone.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setDeleteConfirmSession(null)}
+                  className="flex-1 px-4 py-3 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition-colors font-medium"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => deleteConfirmSession && handleDeleteSession(deleteConfirmSession.id)}
+                  className="flex-1 px-4 py-3 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors font-medium"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </ProtectedRoute>
   );

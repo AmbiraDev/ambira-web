@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { SessionWithDetails, User } from '@/types';
 import SessionStats from './SessionStats';
 import SessionInteractions from './SessionInteractions';
 import CommentList from './CommentList';
+import { ImageGallery } from './ImageGallery';
 import { MoreVertical, Heart, MessageCircle, Share2, Clock, ListTodo, Tag } from 'lucide-react';
 import Link from 'next/link';
 
@@ -32,6 +33,26 @@ export const SessionCard: React.FC<SessionCardProps> = ({
 }) => {
   const [showMenu, setShowMenu] = useState(false);
   const [showCommentSection, setShowCommentSection] = useState(showComments);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [localCommentCount, setLocalCommentCount] = useState(session.commentCount || 0);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setShowMenu(false);
+      }
+    };
+
+    if (showMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showMenu]);
 
   const formatTimeAgo = (date: Date): string => {
     const now = new Date();
@@ -113,7 +134,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({
         </Link>
 
         {/* Options Menu */}
-        <div className="relative">
+        <div className="relative" ref={menuRef}>
           <button
             onClick={() => setShowMenu(!showMenu)}
             className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full p-2 transition-colors"
@@ -159,11 +180,30 @@ export const SessionCard: React.FC<SessionCardProps> = ({
           {session.title || 'Focus Session'}
         </h3>
         {session.description && (
-          <p className="text-gray-600 text-sm line-clamp-2">
-            {session.description}
-          </p>
+          <div>
+            <p className={`text-gray-600 text-sm whitespace-pre-wrap ${!isExpanded && session.description.length > 280 ? 'line-clamp-4' : ''}`}>
+              {session.description.length > 1000 ? session.description.slice(0, 1000) : session.description}
+            </p>
+            {session.description.length > 280 && (
+              <button
+                onClick={() => setIsExpanded(!isExpanded)}
+                className="text-[#007AFF] text-sm font-medium mt-1 hover:underline"
+              >
+                {isExpanded ? 'Show less' : 'Show more'}
+              </button>
+            )}
+          </div>
         )}
       </div>
+
+      {/* Image Gallery */}
+      {session.images && session.images.length > 0 && (
+        <div className="px-4 pb-4">
+          <ImageGallery images={session.images} />
+        </div>
+      )}
+      {/* Debug: Log if session has images but they're not showing */}
+      {session.images && session.images.length > 0 && console.log('Session has images:', session.id, session.images)}
 
       {/* Stats - Strava style */}
       <div className="px-4 pb-4">
@@ -205,7 +245,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
           </svg>
-          <span className="text-sm font-medium">{session.commentCount || 0}</span>
+          <span className="text-sm font-medium">{localCommentCount}</span>
         </button>
 
         <div className="w-px h-6 bg-gray-200"></div>
@@ -223,7 +263,11 @@ export const SessionCard: React.FC<SessionCardProps> = ({
       {/* Comments Section */}
       {showCommentSection && (
         <div className="border-t border-gray-200">
-          <CommentList sessionId={session.id} initialCommentCount={session.commentCount} />
+          <CommentList
+            sessionId={session.id}
+            initialCommentCount={session.commentCount}
+            onCommentCountChange={setLocalCommentCount}
+          />
         </div>
       )}
 

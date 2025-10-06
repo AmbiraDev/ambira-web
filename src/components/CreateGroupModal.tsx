@@ -3,16 +3,14 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import { CreateGroupData } from '@/types';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { 
-  X, 
-  Upload, 
-  Globe, 
-  Lock, 
+import {
+  X,
+  Upload,
+  Globe,
+  Lock,
   MapPin,
   Image as ImageIcon
 } from 'lucide-react';
@@ -22,6 +20,7 @@ interface CreateGroupModalProps {
   onClose: () => void;
   onSubmit: (data: CreateGroupData) => Promise<void>;
   isLoading?: boolean;
+  isFullPage?: boolean; // New prop to control full-page vs modal rendering
 }
 
 const categoryOptions = [
@@ -44,11 +43,12 @@ const privacyOptions = [
   { value: 'approval-required', label: 'Approval Required', description: 'Admins must approve new members' }
 ];
 
-export default function CreateGroupModal({ 
-  isOpen, 
-  onClose, 
-  onSubmit, 
-  isLoading = false 
+export default function CreateGroupModal({
+  isOpen,
+  onClose,
+  onSubmit,
+  isLoading = false,
+  isFullPage = false
 }: CreateGroupModalProps) {
   const [formData, setFormData] = useState<CreateGroupData>({
     name: '',
@@ -132,21 +132,90 @@ export default function CreateGroupModal({
 
   if (!isOpen) return null;
 
+  // Full-page view (rendered inline within the page)
+  if (isFullPage) {
+    return (
+      <div className="max-w-2xl mx-auto">
+        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          {/* Header */}
+          <div className="bg-white border-b border-gray-200 px-6 py-4">
+            <h2 className="text-xl font-bold text-gray-900">Create New Group</h2>
+          </div>
+
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="p-6 space-y-6">
+            {renderFormContent()}
+
+            {/* Actions */}
+            <div className="flex gap-3 pt-4 border-t border-gray-200">
+              <button
+                type="button"
+                onClick={onClose}
+                disabled={isLoading}
+                className="flex-1 px-4 py-2.5 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50 font-medium"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="flex-1 px-4 py-2.5 bg-[#007AFF] text-white rounded-lg hover:bg-[#0056D6] transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium"
+              >
+                {isLoading ? 'Creating...' : 'Create Group'}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
+  // Modal view (original popup style)
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <div className="fixed inset-0 bg-black/50" onClick={onClose} />
-      
-      <div className="relative bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+    <div className="fixed inset-0 bg-black/50 z-[9999] flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-900">Create New Group</h2>
-          <Button variant="ghost" size="sm" onClick={onClose}>
-            <X className="w-4 h-4" />
-          </Button>
+        <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+          <h2 className="text-xl font-bold text-gray-900">Create New Group</h2>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 transition-colors"
+          >
+            <X className="w-6 h-6" />
+          </button>
         </div>
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
+          {renderFormContent()}
+
+          {/* Actions */}
+          <div className="sticky bottom-0 bg-white border-t border-gray-200 pt-4 flex gap-3">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={isLoading}
+              className="flex-1 px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors disabled:opacity-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="flex-1 px-4 py-2 bg-[#007AFF] text-white rounded-lg hover:bg-[#0056D6] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isLoading ? 'Creating...' : 'Create Group'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+
+  // Extracted form content to avoid duplication
+  function renderFormContent() {
+    return (
+      <>
           {/* Group Name */}
           <div>
             <Label htmlFor="name">Group Name *</Label>
@@ -187,30 +256,34 @@ export default function CreateGroupModal({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="category">Category *</Label>
-              <Select
+              <select
+                id="category"
                 value={formData.category}
-                onValueChange={(value) => handleInputChange('category', value)}
+                onChange={(e) => handleInputChange('category', e.target.value)}
+                className="w-full pl-3 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] bg-white text-sm appearance-none"
               >
                 {categoryOptions.map((option) => (
                   <option key={option.value} value={option.value}>
                     {option.label}
                   </option>
                 ))}
-              </Select>
+              </select>
             </div>
 
             <div>
               <Label htmlFor="type">Type *</Label>
-              <Select
+              <select
+                id="type"
                 value={formData.type}
-                onValueChange={(value) => handleInputChange('type', value)}
+                onChange={(e) => handleInputChange('type', e.target.value)}
+                className="w-full pl-3 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] bg-white text-sm appearance-none"
               >
                 {typeOptions.map((option) => (
                   <option key={option.value} value={option.value}>
                     {option.label}
                   </option>
                 ))}
-              </Select>
+              </select>
             </div>
           </div>
 
@@ -298,18 +371,7 @@ export default function CreateGroupModal({
               )}
             </div>
           </div>
-
-          {/* Actions */}
-          <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
-            <Button type="button" variant="outline" onClick={onClose}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={isLoading}>
-              {isLoading ? 'Creating...' : 'Create Group'}
-            </Button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
+      </>
+    );
+  }
 }

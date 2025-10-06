@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import { User } from '@/types';
 
 interface ProfilePictureProps {
@@ -19,6 +20,15 @@ const sizeClasses = {
   '2xl': 'w-20 h-20 text-2xl',
 };
 
+const sizePixels = {
+  xs: 24,
+  sm: 32,
+  md: 40,
+  lg: 48,
+  xl: 64,
+  '2xl': 80,
+};
+
 export const ProfilePicture: React.FC<ProfilePictureProps> = ({
   user,
   size = 'md',
@@ -27,23 +37,20 @@ export const ProfilePicture: React.FC<ProfilePictureProps> = ({
 }) => {
   const sizeClass = sizeClasses[size];
   const borderClass = showBorder ? 'border-2 border-border' : '';
+  const [imageError, setImageError] = React.useState(false);
 
-  if (user.profilePicture) {
+  if (user.profilePicture && !imageError) {
     return (
-      <img
-        src={user.profilePicture}
-        alt={`${user.name}'s profile picture`}
-        className={`${sizeClass} rounded-full object-cover ${borderClass} ${className}`}
-        onError={(e) => {
-          // Fallback to initials if image fails to load
-          const target = e.target as HTMLImageElement;
-          target.style.display = 'none';
-          const fallback = target.nextElementSibling as HTMLElement;
-          if (fallback) {
-            fallback.style.display = 'flex';
-          }
-        }}
-      />
+      <div className={`${sizeClass} relative ${borderClass} ${className} rounded-full overflow-hidden`}>
+        <Image
+          src={user.profilePicture}
+          alt={`${user.name}'s profile picture`}
+          fill
+          className="object-cover"
+          sizes={`${sizePixels[size]}px`}
+          onError={() => setImageError(true)}
+        />
+      </div>
     );
   }
 

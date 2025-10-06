@@ -84,9 +84,7 @@ function RightSidebar() {
           <div className="p-4 border-b border-gray-100 bg-gradient-to-r from-orange-50 to-white">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center">
-                  <Trophy className="w-4 h-4 text-white" />
-                </div>
+                <Trophy className="w-5 h-5 text-orange-600" />
                 <h3 className="font-bold text-gray-900">Challenges</h3>
               </div>
               <Link href="/challenges" className="text-sm text-[#007AFF] hover:text-[#0056D6] font-semibold">
@@ -136,9 +134,7 @@ function RightSidebar() {
           <div className="p-4 border-b border-gray-100 bg-gradient-to-r from-blue-50 to-white">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-[#007AFF] flex items-center justify-center">
-                  <Users className="w-4 h-4 text-white" />
-                </div>
+                <Users className="w-5 h-5 text-[#007AFF]" />
                 <h3 className="font-bold text-gray-900">Clubs</h3>
               </div>
               <Link href="/groups" className="text-sm text-[#007AFF] hover:text-[#0056D6] font-semibold">
@@ -216,9 +212,7 @@ function RightSidebar() {
           <div className="p-4 border-b border-gray-100 bg-gradient-to-r from-purple-50 to-white">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
-                  <UserPlus className="w-4 h-4 text-white" />
-                </div>
+                <UserPlus className="w-5 h-5 text-purple-600" />
                 <h3 className="font-bold text-gray-900">Suggested Friends</h3>
               </div>
               <Link href="/search?type=people" className="text-sm text-[#007AFF] hover:text-[#0056D6] font-semibold">

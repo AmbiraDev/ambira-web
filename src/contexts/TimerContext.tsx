@@ -336,7 +336,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
     tags?: string[],
     howFelt?: number,
     privateNotes?: string,
-    options?: { visibility?: 'everyone' | 'followers' | 'private'; showStartTime?: boolean; hideTaskNames?: boolean; publishToFeeds?: boolean; customDuration?: number }
+    options?: { visibility?: 'everyone' | 'followers' | 'private'; showStartTime?: boolean; hideTaskNames?: boolean; publishToFeeds?: boolean; customDuration?: number; images?: string[] }
   ): Promise<Session> => {
     if (!timerState.activeTimerId || !timerState.currentProject) {
       throw new Error('No active timer to finish');
@@ -358,6 +358,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
         publishToFeeds: options?.publishToFeeds,
         howFelt,
         privateNotes,
+        images: options?.images,
       };
 
       // Save session to Firebase and create post if visibility allows
@@ -409,12 +410,18 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
         });
       }
 
-      // Clear active session
-      await firebaseSessionApi.clearActiveSession();
+      // Clear active session from Firebase
+      try {
+        await firebaseSessionApi.clearActiveSession();
+        console.log('🧹 Active session cleared from Firebase');
+      } catch (clearError) {
+        console.error('Failed to clear active session from Firebase:', clearError);
+        // Continue anyway - we still want to reset the local state
+      }
 
       console.log('🧹 Session saved to Firebase and active session cleared successfully');
 
-      // Reset timer state
+      // Reset timer state immediately
       setTimerState({
         isRunning: false,
         startTime: null,
@@ -425,6 +432,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
         isConnected: true,
         lastAutoSave: null,
       });
+
+      console.log('✅ Timer state reset complete');
 
       return session;
     } catch (error) {

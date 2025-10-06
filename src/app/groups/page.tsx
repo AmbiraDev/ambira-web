@@ -28,7 +28,6 @@ export default function GroupsPage() {
   const [challenges, setChallenges] = useState<Challenge[]>([]);
   const [userChallenges, setUserChallenges] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [showCreateModal, setShowCreateModal] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -80,7 +79,6 @@ export default function GroupsPage() {
         creatorId: user.id,
       });
       await loadData();
-      setShowCreateModal(false);
       setActiveTab('active');
     } catch (error) {
       console.error('Error creating group:', error);
@@ -143,10 +141,7 @@ export default function GroupsPage() {
                 Challenges
               </button>
               <button
-                onClick={() => {
-                  setActiveTab('create');
-                  setShowCreateModal(true);
-                }}
+                onClick={() => setActiveTab('create')}
                 className={`flex-1 md:flex-initial py-3 md:py-4 px-1 text-sm md:text-base font-medium transition-colors border-b-2 flex items-center justify-center gap-1 ${
                   activeTab === 'create'
                     ? 'text-[#007AFF] md:text-gray-900 border-[#007AFF]'
@@ -160,43 +155,81 @@ export default function GroupsPage() {
           </div>
         </div>
 
-        {/* Create Group Modal */}
-        <CreateGroupModal
-          isOpen={showCreateModal}
-          onClose={() => {
-            setShowCreateModal(false);
-            setActiveTab('active');
-          }}
-          onSubmit={handleCreateGroup}
-        />
-
         {/* Content */}
         <div className="max-w-4xl mx-auto py-6">
-          {activeTab === 'active' ? (
+          {activeTab === 'create' ? (
+            // Create Group Form
+            <CreateGroupModal
+              isOpen={true}
+              isFullPage={true}
+              onClose={() => setActiveTab('active')}
+              onSubmit={handleCreateGroup}
+            />
+          ) : activeTab === 'active' ? (
             // Active Groups Tab
             <div>
               {isLoading ? (
-                <div className="text-center py-12">
+                <div className="text-center py-20">
                   <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#007AFF]"></div>
                 </div>
               ) : groups.length > 0 ? (
-                <div className="space-y-4">
+                <div className="grid gap-3 md:gap-4">
                   {groups.map(group => (
                     <Link
                       key={group.id}
                       href={`/groups/${group.id}`}
-                      className="block bg-white rounded-lg border border-gray-200 p-4 hover:border-[#007AFF] transition-colors"
+                      className="group block bg-white rounded-xl border border-gray-100 hover:border-[#007AFF]/30 hover:shadow-sm transition-all duration-200"
                     >
-                      <div className="flex items-start gap-4">
-                        <div className="w-12 h-12 bg-[#007AFF]/10 rounded-lg flex items-center justify-center flex-shrink-0">
-                          <Users className="w-6 h-6 text-[#007AFF]" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold text-gray-900 mb-1">{group.name}</h3>
-                          <p className="text-sm text-gray-600 mb-2 line-clamp-2">{group.description}</p>
-                          <div className="flex items-center gap-4 text-xs text-gray-500">
-                            <span>{group.memberCount} members</span>
-                            {group.privacy && <span className="capitalize">{group.privacy}</span>}
+                      <div className="p-4 md:p-5">
+                        <div className="flex items-start gap-3 md:gap-4">
+                          {/* Group Icon/Avatar */}
+                          <div className="relative flex-shrink-0">
+                            <div className="w-14 h-14 md:w-16 md:h-16 bg-gradient-to-br from-[#007AFF] to-[#0051D5] rounded-2xl flex items-center justify-center shadow-sm">
+                              <Users className="w-7 h-7 md:w-8 md:h-8 text-white" />
+                            </div>
+                            {/* Member count badge */}
+                            <div className="absolute -bottom-1 -right-1 bg-white rounded-full px-2 py-0.5 shadow-sm border border-gray-100">
+                              <span className="text-xs font-semibold text-gray-700">{group.memberCount}</span>
+                            </div>
+                          </div>
+
+                          {/* Group Info */}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between gap-3 mb-1">
+                              <h3 className="font-semibold text-base md:text-lg text-gray-900 group-hover:text-[#007AFF] transition-colors">
+                                {group.name}
+                              </h3>
+                              {/* Privacy indicator */}
+                              <div className="flex-shrink-0">
+                                <div className={`px-2 py-1 rounded-md text-xs font-medium ${
+                                  group.privacy === 'public'
+                                    ? 'bg-green-50 text-green-700'
+                                    : 'bg-orange-50 text-orange-700'
+                                }`}>
+                                  {group.privacy === 'public' ? 'Public' : 'Private'}
+                                </div>
+                              </div>
+                            </div>
+
+                            {group.description && (
+                              <p className="text-sm text-gray-600 line-clamp-2 mb-3">
+                                {group.description}
+                              </p>
+                            )}
+
+                            {/* Metadata */}
+                            <div className="flex items-center gap-3 text-xs text-gray-500">
+                              <span className="flex items-center gap-1">
+                                <Users className="w-3.5 h-3.5" />
+                                {group.memberCount} {group.memberCount === 1 ? 'member' : 'members'}
+                              </span>
+                              {group.category && (
+                                <span className="flex items-center gap-1">
+                                  <Target className="w-3.5 h-3.5" />
+                                  <span className="capitalize">{group.category}</span>
+                                </span>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -204,13 +237,17 @@ export default function GroupsPage() {
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
-                  <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">No Groups Yet</h3>
-                  <p className="text-gray-600 mb-6">Join a group to start tracking with others</p>
+                <div className="text-center py-16 md:py-20">
+                  <div className="w-16 h-16 md:w-20 md:h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Users className="w-8 h-8 md:w-10 md:h-10 text-gray-400" />
+                  </div>
+                  <h3 className="text-lg md:text-xl font-semibold text-gray-900 mb-2">No groups yet</h3>
+                  <p className="text-sm md:text-base text-gray-600 mb-6 max-w-sm mx-auto">
+                    Join a group to track productivity with friends and compete in challenges
+                  </p>
                   <Link
                     href="/search?type=groups"
-                    className="inline-flex items-center px-4 py-2 bg-[#007AFF] text-white text-sm font-medium rounded-lg hover:bg-[#0051D5] transition-colors"
+                    className="inline-flex items-center px-5 py-2.5 bg-[#007AFF] text-white text-sm font-medium rounded-xl hover:bg-[#0051D5] transition-colors shadow-sm"
                   >
                     Discover Groups
                   </Link>

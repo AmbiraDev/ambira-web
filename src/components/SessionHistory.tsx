@@ -1,10 +1,13 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Session, Project, SessionFilters, SessionSort } from '@/types';
 import { firebaseProjectApi, firebaseSessionApi } from '@/lib/firebaseApi';
+import { MoreVertical } from 'lucide-react';
 
 export const SessionHistory: React.FC = () => {
+  const router = useRouter();
   const [sessions, setSessions] = useState<Session[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [filters, setFilters] = useState<SessionFilters>({});
@@ -14,6 +17,7 @@ export const SessionHistory: React.FC = () => {
   const [totalCount, setTotalCount] = useState(0);
   const [hasMore, setHasMore] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showMenuForSession, setShowMenuForSession] = useState<string | null>(null);
 
   // Load initial data
   useEffect(() => {
@@ -74,9 +78,8 @@ export const SessionHistory: React.FC = () => {
     setCurrentPage(1);
   };
 
-  const handleSessionEdit = (session: Session) => {
-    // TODO: Implement session editing
-    console.log('Edit session:', session);
+  const handleSessionEdit = (sessionId: string) => {
+    router.push(`/sessions/${sessionId}/edit`);
   };
 
   const handleSessionDelete = async (sessionId: string) => {
@@ -85,10 +88,9 @@ export const SessionHistory: React.FC = () => {
     }
 
     try {
-      console.log('Delete session:', sessionId);
-      
-      // TODO: Reload sessions from Firebase
-      // Reload sessions
+      await firebaseSessionApi.deleteSession(sessionId);
+
+      // Reload sessions from Firebase
       const sessionsResp = await firebaseSessionApi.getSessions(
         currentPage,
         20,
@@ -100,26 +102,6 @@ export const SessionHistory: React.FC = () => {
     } catch (error) {
       console.error('Failed to delete session:', error);
       alert('Failed to delete session. Please try again.');
-    }
-  };
-
-  const handleSessionArchive = async (sessionId: string) => {
-    try {
-      console.log('Archive session:', sessionId);
-      
-      // TODO: Reload sessions from Firebase
-      // Reload sessions
-      const sessionsResp = await firebaseSessionApi.getSessions(
-        currentPage,
-        20,
-        { ...filters, search: searchQuery }
-      );
-      setSessions(sessionsResp.sessions);
-      setTotalCount(sessionsResp.totalCount);
-      setHasMore(sessionsResp.hasMore);
-    } catch (error) {
-      console.error('Failed to archive session:', error);
-      alert('Failed to archive session. Please try again.');
     }
   };
 
@@ -331,34 +313,37 @@ export const SessionHistory: React.FC = () => {
                     )}
                   </div>
 
-                  <div className="flex items-center space-x-2">
+                  {/* Options Menu */}
+                  <div className="relative">
                     <button
-                      onClick={() => handleSessionEdit(session)}
-                      className="p-2 text-gray-400 hover:text-blue-600 transition-colors"
-                      title="Edit session"
+                      onClick={() => setShowMenuForSession(showMenuForSession === session.id ? null : session.id)}
+                      className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full p-2 transition-colors"
                     >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                      </svg>
+                      <MoreVertical className="w-5 h-5" />
                     </button>
-                    <button
-                      onClick={() => handleSessionArchive(session.id)}
-                      className="p-2 text-gray-400 hover:text-yellow-600 transition-colors"
-                      title="Archive session"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8l6 6m0 0l6-6m-6 6V3" />
-                      </svg>
-                    </button>
-                    <button
-                      onClick={() => handleSessionDelete(session.id)}
-                      className="p-2 text-gray-400 hover:text-red-600 transition-colors"
-                      title="Delete session"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
-                    </button>
+
+                    {showMenuForSession === session.id && (
+                      <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
+                        <button
+                          onClick={() => {
+                            handleSessionEdit(session.id);
+                            setShowMenuForSession(null);
+                          }}
+                          className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50"
+                        >
+                          Edit session
+                        </button>
+                        <button
+                          onClick={() => {
+                            handleSessionDelete(session.id);
+                            setShowMenuForSession(null);
+                          }}
+                          className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-gray-50"
+                        >
+                          Delete session
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

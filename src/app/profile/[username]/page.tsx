@@ -17,6 +17,7 @@ import { UserX, Heart, MessageCircle, Share2, Calendar, Clock, Target, ChevronDo
 import { toast } from 'sonner';
 import Link from 'next/link';
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
+import { useUserFollowers, useUserFollowing } from '@/hooks/useCache';
 
 type YouTab = 'progress' | 'sessions' | 'profile';
 type TimePeriod = 'day' | 'week' | 'month' | 'year';
@@ -54,12 +55,18 @@ export default function ProfilePage() {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
   const [categoryStats, setCategoryStats] = useState<CategoryStats[]>([]);
-  const [followers, setFollowers] = useState<UserType[]>([]);
-  const [following, setFollowing] = useState<UserType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const isOwnProfile = currentUser?.username === username;
+
+  // Use cached hooks for followers/following
+  const { data: followers = [], isLoading: followersLoading } = useUserFollowers(profile?.id || '', {
+    enabled: !!profile?.id,
+  });
+  const { data: following = [], isLoading: followingLoading } = useUserFollowing(profile?.id || '', {
+    enabled: !!profile?.id,
+  });
 
   // Update tab when URL changes
   useEffect(() => {
@@ -94,23 +101,7 @@ export default function ProfilePage() {
       const sessionsCount = await firebaseSessionApi.getUserSessionsCount(profileData.id, isOwnProfile);
       setPostsCount(sessionsCount);
 
-      // Load followers
-      let followersData: UserType[] = [];
-      try {
-        followersData = await firebaseUserApi.getFollowers(profileData.id);
-      } catch (followersError) {
-        console.error('Error loading followers:', followersError);
-      }
-      setFollowers(followersData);
-
-      // Load following
-      let followingData: UserType[] = [];
-      try {
-        followingData = await firebaseUserApi.getFollowing(profileData.id);
-      } catch (followingError) {
-        console.error('Error loading following:', followingError);
-      }
-      setFollowing(followingData);
+      // Note: Followers and following are now loaded via cached hooks above
 
     } catch (error: any) {
       console.error('Profile load error:', error);

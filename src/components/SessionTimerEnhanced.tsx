@@ -4,10 +4,12 @@ import React, { useState, useEffect } from 'react';
 import { useTimer } from '@/contexts/TimerContext';
 import { useProjects } from '@/contexts/ProjectsContext';
 import { useTasks } from '@/contexts/TasksContext';
-import { Play, Pause, Square, X, ChevronDown, Check, Flag } from 'lucide-react';
+import { Play, Pause, Square, X, ChevronDown, Check, Flag, Image as ImageIcon, XCircle } from 'lucide-react';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 import { GlobalTasks } from './GlobalTasks';
+import { uploadImages, compressImage } from '@/lib/imageUpload';
+import Image from 'next/image';
 
 interface SessionTimerEnhancedProps {
   projectId: string;
@@ -48,7 +50,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
   const [sessionTitle, setSessionTitle] = useState('');
   const [sessionDescription, setSessionDescription] = useState('');
   const [sessionTags, setSessionTags] = useState<string[]>([]);
-  const [visibility, setVisibility] = useState<'everyone' | 'followers' | 'private'>('private');
+  const [visibility, setVisibility] = useState<'everyone' | 'followers' | 'private'>('everyone');
   const [showStartTime, setShowStartTime] = useState(false);
   const [hideTaskNames, setHideTaskNames] = useState(false);
   const [publishToFeeds, setPublishToFeeds] = useState(true);
@@ -60,6 +62,9 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
   const [showTagPicker, setShowTagPicker] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [adjustedDuration, setAdjustedDuration] = useState(0);
+  const [selectedImages, setSelectedImages] = useState<File[]>([]);
+  const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
+  const [isUploadingImages, setIsUploadingImages] = useState(false);
 
   // Load last used project and tag from local storage on mount
   useEffect(() => {
@@ -182,8 +187,94 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
     }
   };
 
+  const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    console.log('📸 Files selected:', files.length);
+
+    if (files.length + selectedImages.length > 3) {
+      alert('Maximum 3 images allowed');
+      return;
+    }
+
+    // Validate file size (max 5MB per image)
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    const validFiles: File[] = [];
+    const previewUrls: string[] = [];
+
+    for (const file of files) {
+      console.log('📸 Processing file:', file.name, file.type, `${(file.size / 1024 / 1024).toFixed(2)}MB`);
+
+      // Check if it's HEIC - we'll handle conversion during upload
+      const isHeic = file.type === 'image/heic' ||
+                     file.type === 'image/heif' ||
+                     file.name.toLowerCase().endsWith('.heic') ||
+                     file.name.toLowerCase().endsWith('.heif');
+
+      // Check file size
+      if (file.size > maxSize) {
+        const sizeMB = (file.size / 1024 / 1024).toFixed(1);
+        alert(`Image "${file.name}" is too large (${sizeMB}MB). Maximum size is 5MB.`);
+        continue;
+      }
+
+      // Allow HEIC files as well as regular images
+      if (!file.type.startsWith('image/') && !isHeic) {
+        alert(`"${file.name}" is not an image file. Please use JPG, PNG, GIF, WebP, or HEIC.`);
+        continue;
+      }
+
+      try {
+        // No compression - just use the original file
+        const processedFile = file;
+
+        // Create preview URL
+        const previewUrl = URL.createObjectURL(processedFile);
+        console.log(`✅ Added image: ${file.name}, preview URL: ${previewUrl}`);
+
+        validFiles.push(processedFile);
+        previewUrls.push(previewUrl);
+      } catch (error) {
+        console.error('❌ Error processing image:', error);
+        alert(`Failed to process "${file.name}". Please try another image.`);
+      }
+    }
+
+    if (validFiles.length > 0) {
+      setSelectedImages(prev => [...prev, ...validFiles]);
+      setImagePreviewUrls(prev => [...prev, ...previewUrls]);
+      console.log('✅ Total images now:', validFiles.length + selectedImages.length);
+    }
+  };
+
+  const handleRemoveImage = (index: number) => {
+    setSelectedImages(prev => prev.filter((_, i) => i !== index));
+    setImagePreviewUrls(prev => {
+      const newUrls = prev.filter((_, i) => i !== index);
+      // Revoke the URL to free memory
+      URL.revokeObjectURL(prev[index]);
+      return newUrls;
+    });
+  };
+
   const handleFinishTimer = async () => {
     try {
+      console.log('💾 Starting session save...');
+
+      // Upload images first if any
+      let imageUrls: string[] = [];
+      if (selectedImages.length > 0) {
+        setIsUploadingImages(true);
+        try {
+          const uploadResults = await uploadImages(selectedImages);
+          imageUrls = uploadResults.map(result => result.url);
+          console.log('📸 Images uploaded:', imageUrls);
+        } catch (error) {
+          console.error('Failed to upload images:', error);
+          alert('Failed to upload images. Session will be saved without images.');
+        } finally {
+          setIsUploadingImages(false);
+        }
+      }
       const session = await finishTimer(
         sessionTitle,
         sessionDescription,
@@ -195,10 +286,24 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
           showStartTime,
           hideTaskNames,
           publishToFeeds,
-          customDuration: adjustedDuration
+          customDuration: adjustedDuration,
+          images: imageUrls
         }
       );
+      console.log('✅ Session saved successfully:', session.id);
+
       setShowFinishModal(false);
+
+      // Reset all session state
+      setSessionTitle('');
+      setSessionDescription('');
+      setSessionTags([]);
+      setPrivateNotes('');
+      setHowFelt(3);
+
+      // Wait a moment to ensure state is cleared, then navigate
+      await new Promise(resolve => setTimeout(resolve, 100));
+
       // Navigate to analytics page after saving
       window.location.href = '/you?tab=sessions';
     } catch (error) {
@@ -245,15 +350,16 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
   // When completing a session, show ONLY the completion UI
   if (showFinishModal) {
     return (
-      <div className="min-h-[calc(100vh-120px)]">
-        <div className="max-w-3xl mx-auto">
-          <div className="bg-white rounded-lg p-6 w-full shadow">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-bold text-gray-900">Complete Session</h3>
-              <button onClick={() => setShowFinishModal(false)} className="text-gray-500 hover:text-gray-700">Close</button>
-            </div>
-            {/* Reuse existing completion UI from below */}
-            <div className="space-y-6">
+      <>
+        <div className="min-h-[calc(100vh-120px)]">
+          <div className="max-w-3xl mx-auto">
+            <div className="bg-white rounded-lg p-6 w-full shadow">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-xl font-bold text-gray-900">Complete Session</h3>
+                <button onClick={() => setShowFinishModal(false)} className="text-gray-500 hover:text-gray-700">Close</button>
+              </div>
+              {/* Reuse existing completion UI from below */}
+              <div className="space-y-6">
               {/* Session Title */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -280,6 +386,60 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                   rows={3}
                   placeholder="How did the session go? What did you accomplish?"
                 />
+              </div>
+
+              {/* Image Upload */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Add Images (Optional, max 3)
+                </label>
+                <div className="space-y-3">
+                  {/* Image Previews */}
+                  {imagePreviewUrls.length > 0 && (
+                    <div className="grid grid-cols-3 gap-2">
+                      {imagePreviewUrls.map((url, index) => (
+                        <div key={index} className="relative aspect-square rounded-lg overflow-hidden bg-gray-100">
+                          <Image
+                            src={url}
+                            alt={`Preview ${index + 1}`}
+                            width={300}
+                            height={300}
+                            quality={90}
+                            className="w-full h-full object-cover"
+                            unoptimized
+                          />
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveImage(index)}
+                            className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                          >
+                            <XCircle className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Upload Button */}
+                  {selectedImages.length < 3 && (
+                    <label className="flex flex-col items-center justify-center gap-2 px-4 py-8 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-[#007AFF] hover:bg-gray-50 transition-colors min-h-[120px]">
+                      <ImageIcon className="w-8 h-8 text-gray-400" />
+                      <span className="text-sm font-medium text-gray-600">
+                        {imagePreviewUrls.length === 0 ? 'Add images' : `Add ${3 - imagePreviewUrls.length} more`}
+                      </span>
+                      <span className="text-xs text-gray-400">
+                        JPG, PNG, HEIC (max 5MB each)
+                      </span>
+                      <input
+                        type="file"
+                        accept="image/*,.heic,.heif"
+                        multiple
+                        onChange={handleImageSelect}
+                        className="hidden"
+                      />
+                    </label>
+                  )}
+                </div>
               </div>
 
               {/* Project and Tags - Side by Side */}
@@ -439,19 +599,20 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                 </button>
                 <button
                   onClick={handleFinishTimer}
-                  disabled={!sessionTitle.trim()}
+                  disabled={!sessionTitle.trim() || isUploadingImages}
                   className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Save Session
+                  {isUploadingImages ? 'Uploading Images...' : 'Save Session'}
                 </button>
+              </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Cancel Confirmation Modal */}
+        {/* Cancel Confirmation Modal - Portal-style overlay */}
         {showCancelConfirm && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 z-[60] flex items-center justify-center p-4">
+          <div className="fixed inset-0 bg-black/50 z-[9999] flex items-center justify-center p-4">
             <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl">
               <h3 className="text-xl font-bold text-gray-900 mb-3">Cancel Session?</h3>
               <p className="text-gray-600 mb-6">
@@ -474,10 +635,11 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
             </div>
           </div>
         )}
-      </div>
+      </>
     );
   }
 
+  // Main timer UI - only show when not completing a session
   const selectedProject = projects.find(p => p.id === selectedProjectId) || timerState.currentProject;
   const selectedTag = sessionTags[0];
   const selectedTagConfig = TAG_CONFIGS.find(t => t.name === selectedTag);
@@ -1058,10 +1220,10 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                 </button>
                 <button
                   onClick={handleFinishTimer}
-                  disabled={!sessionTitle.trim()}
+                  disabled={!sessionTitle.trim() || isUploadingImages}
                   className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Save Session
+                  {isUploadingImages ? 'Uploading Images...' : 'Save Session'}
                 </button>
               </div>
             </div>

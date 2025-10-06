@@ -17,10 +17,6 @@ import { FeedFilters } from '@/types';
 function HomeContent() {
   const { user } = useAuth();
 
-  const filters: FeedFilters = {
-    followingOnly: true
-  };
-
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header - hidden on mobile */}
@@ -44,11 +40,11 @@ function HomeContent() {
           {/* Main Feed */}
           <main className="flex-1 min-w-0 max-w-[600px] md:mx-auto">
             {/* Following Feed */}
-            <Feed filters={filters} key="following-feed" />
-            
+            <Feed filters={{ type: 'following' }} key="following-feed" showEndMessage={false} />
+
             {/* Suggested Posts Section */}
-            <div className="mt-8 pt-8 border-t-4 border-gray-200">
-              <div className="bg-gradient-to-r from-purple-50 to-blue-50 md:rounded-lg border md:border-gray-200 p-4 mb-4">
+            <div className="mt-0">
+              <div className="bg-gradient-to-r from-purple-50 to-blue-50 md:rounded-lg border md:border-gray-200 p-4 mb-4 md:mb-6">
                 <div className="flex items-center gap-2 mb-1">
                   <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
@@ -57,7 +53,7 @@ function HomeContent() {
                 </div>
                 <p className="text-sm text-gray-600">Discover productive sessions from the community</p>
               </div>
-              <Feed filters={{ excludeFollowing: true }} key="suggested-feed" initialLimit={20} />
+              <Feed filters={{ type: 'recent' }} key="suggested-feed" initialLimit={20} showEndMessage={true} />
             </div>
           </main>
 
@@ -88,20 +84,20 @@ export default function Home() {
   // Show loading spinner while checking authentication
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-white">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="flex flex-col items-center space-y-4">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#007AFF]"></div>
           <p className="text-gray-600">Loading...</p>
         </div>
       </div>
     );
   }
 
-  // Show landing page if not authenticated
-  if (!isAuthenticated) {
-    return <LandingPage />;
+  // Show dashboard if authenticated
+  if (isAuthenticated) {
+    return <HomeContent />;
   }
 
-  // Show dashboard if authenticated
-  return <HomeContent />;
+  // Show landing page if not authenticated
+  return <LandingPage />;
 }

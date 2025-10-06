@@ -35,14 +35,7 @@ export function useUserSessions(userId: string, limit: number = 50, options?: Pa
 export function useUserFollowers(userId: string, options?: Partial<UseQueryOptions<UserType[]>>) {
   return useQuery({
     queryKey: CACHE_KEYS.USER_FOLLOWERS(userId),
-    queryFn: async () => {
-      const profile = await firebaseUserApi.getUserProfile(userId);
-      if (!profile) return [];
-      const followers = await Promise.all(
-        (profile.followerIds || []).map(id => firebaseUserApi.getUser(id))
-      );
-      return followers.filter(Boolean) as UserType[];
-    },
+    queryFn: () => firebaseUserApi.getFollowers(userId),
     staleTime: CACHE_TIMES.LONG, // 15 minutes cache
     ...options,
   });
@@ -51,14 +44,7 @@ export function useUserFollowers(userId: string, options?: Partial<UseQueryOptio
 export function useUserFollowing(userId: string, options?: Partial<UseQueryOptions<UserType[]>>) {
   return useQuery({
     queryKey: CACHE_KEYS.USER_FOLLOWING(userId),
-    queryFn: async () => {
-      const profile = await firebaseUserApi.getUserProfile(userId);
-      if (!profile) return [];
-      const following = await Promise.all(
-        (profile.followingIds || []).map(id => firebaseUserApi.getUser(id))
-      );
-      return following.filter(Boolean) as UserType[];
-    },
+    queryFn: () => firebaseUserApi.getFollowing(userId),
     staleTime: CACHE_TIMES.LONG, // 15 minutes cache
     ...options,
   });

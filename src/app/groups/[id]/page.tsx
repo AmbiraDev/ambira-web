@@ -18,6 +18,7 @@ export default function GroupDetailPage() {
   const [group, setGroup] = useState<Group | null>(null);
   const [groupStats, setGroupStats] = useState<GroupStats | null>(null);
   const [admins, setAdmins] = useState<User[]>([]);
+  const [members, setMembers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<GroupTab>('posts');
   const [showSettings, setShowSettings] = useState(false);
@@ -54,6 +55,10 @@ export default function GroupDetailPage() {
         })
       );
       setAdmins(adminUsers.filter(Boolean));
+
+      // Load group members
+      const groupMembers = await firebaseApi.group.getGroupMembers(groupId);
+      setMembers(groupMembers);
 
     } catch (error) {
       console.error('Error loading group data:', error);
@@ -246,8 +251,41 @@ export default function GroupDetailPage() {
 
               {activeTab === 'members' && (
                 <div className="bg-white rounded-lg border border-gray-200 p-6">
-                  <h3 className="text-lg font-medium text-gray-900 mb-4">Group Members</h3>
-                  <p className="text-gray-500">Group members will be displayed here.</p>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-6">Group Members</h3>
+                  {members.length > 0 ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                      {members.map((member) => (
+                        <Link
+                          key={member.id}
+                          href={`/profile/${member.username}`}
+                          className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                        >
+                          {member.profilePicture ? (
+                            <img
+                              src={member.profilePicture}
+                              alt={member.name}
+                              className="w-12 h-12 rounded-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#FC4C02] to-[#FC4C02]/80 flex items-center justify-center">
+                              <span className="text-white font-semibold text-sm">
+                                {member.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                              </span>
+                            </div>
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <div className="font-semibold text-gray-900 truncate">{member.name}</div>
+                            <div className="text-sm text-gray-600 truncate">@{member.username}</div>
+                          </div>
+                          {group.adminUserIds.includes(member.id) && (
+                            <span className="px-2 py-1 text-xs font-medium bg-[#007AFF] text-white rounded">Admin</span>
+                          )}
+                        </Link>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-gray-500 text-center py-8">No members yet.</p>
+                  )}
                 </div>
               )}
 
@@ -281,7 +319,7 @@ export default function GroupDetailPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {/* Created Date */}
                       <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
-                        <div className="text-blue-600 mt-0.5">
+                        <div className="text-[#007AFF] mt-0.5">
                           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                           </svg>

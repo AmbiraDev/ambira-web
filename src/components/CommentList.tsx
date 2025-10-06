@@ -10,11 +10,13 @@ import CommentItem from './CommentItem';
 interface CommentListProps {
   sessionId: string;
   initialCommentCount?: number;
+  onCommentCountChange?: (count: number) => void;
 }
 
 export const CommentList: React.FC<CommentListProps> = ({
   sessionId,
-  initialCommentCount = 0
+  initialCommentCount = 0,
+  onCommentCountChange
 }) => {
   const { user } = useAuth();
   const [comments, setComments] = useState<CommentWithDetails[]>([]);
@@ -69,8 +71,14 @@ export const CommentList: React.FC<CommentListProps> = ({
       });
 
       // Add to the beginning of the list with optimistic update
-      setComments([newComment, ...comments]);
+      const newComments = [newComment, ...comments];
+      setComments(newComments);
       setShowInput(false);
+
+      // Update parent component's count
+      if (onCommentCountChange) {
+        onCommentCountChange(newComments.length);
+      }
     } catch (err: any) {
       console.error('Failed to create comment:', err);
       throw err;
@@ -131,7 +139,7 @@ export const CommentList: React.FC<CommentListProps> = ({
   const handleDelete = async (commentId: string) => {
     try {
       await firebaseCommentApi.deleteComment(commentId);
-      
+
       // Remove the comment from the list
       const removeComment = (items: CommentWithDetails[]): CommentWithDetails[] => {
         return items.filter(comment => {
@@ -142,8 +150,14 @@ export const CommentList: React.FC<CommentListProps> = ({
           return true;
         });
       };
-      
-      setComments(removeComment(comments));
+
+      const newComments = removeComment(comments);
+      setComments(newComments);
+
+      // Update parent component's count
+      if (onCommentCountChange) {
+        onCommentCountChange(newComments.length);
+      }
     } catch (err: any) {
       console.error('Failed to delete comment:', err);
       throw err;
@@ -244,7 +258,7 @@ export const CommentList: React.FC<CommentListProps> = ({
         </div>
         <button
           onClick={loadComments}
-          className="w-full py-2 text-sm font-medium text-orange-600 hover:text-orange-700"
+          className="w-full py-2 text-sm font-medium text-[#007AFF] hover:text-[#0051D5]"
         >
           Try again
         </button>
@@ -253,38 +267,17 @@ export const CommentList: React.FC<CommentListProps> = ({
   }
 
   return (
-    <div className="py-4 space-y-4">
+    <div className="px-4 py-4 space-y-4">
       {/* Comment Count Header */}
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-gray-900">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-base font-semibold text-gray-900">
           {comments.length > 0 ? `${comments.length} ${comments.length === 1 ? 'Comment' : 'Comments'}` : 'Comments'}
         </h3>
-        {!showInput && (
-          <button
-            onClick={() => setShowInput(true)}
-            className="text-sm font-medium text-orange-600 hover:text-orange-700"
-          >
-            Add comment
-          </button>
-        )}
       </div>
-
-      {/* Comment Input */}
-      {showInput && (
-        <div className="pb-4 border-b border-gray-200">
-          <CommentInput
-            sessionId={sessionId}
-            placeholder="Write a comment..."
-            autoFocus
-            onSubmit={handleCreateComment}
-            onCancel={() => setShowInput(false)}
-          />
-        </div>
-      )}
 
       {/* Comments List */}
       {comments.length > 0 ? (
-        <div className="space-y-4">
+        <div className="space-y-4 mb-4">
           {comments.map((comment) => (
             <CommentItem
               key={comment.id}
@@ -311,10 +304,30 @@ export const CommentList: React.FC<CommentListProps> = ({
           )}
         </div>
       ) : (
-        <div className="text-center py-8 text-gray-500 text-sm">
+        <div className="text-center py-8 text-gray-500 text-sm mb-4">
           No comments yet. Be the first to comment!
         </div>
       )}
+
+      {/* Comment Input - Always at bottom */}
+      <div className="border-t border-gray-200 pt-4">
+        {showInput ? (
+          <CommentInput
+            sessionId={sessionId}
+            placeholder="Add a comment, @ to mention"
+            autoFocus
+            onSubmit={handleCreateComment}
+            onCancel={() => setShowInput(false)}
+          />
+        ) : (
+          <button
+            onClick={() => setShowInput(true)}
+            className="w-full text-left px-4 py-3 text-gray-500 border border-gray-300 rounded-lg hover:border-[#007AFF] transition-colors"
+          >
+            Add a comment, @ to mention
+          </button>
+        )}
+      </div>
     </div>
   );
 };

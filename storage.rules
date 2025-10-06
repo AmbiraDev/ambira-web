@@ -57,7 +57,19 @@ service firebase.storage {
       allow write: if isOwner(userId) && request.resource.size < 10 * 1024 * 1024; // 10MB max
       allow delete: if isOwner(userId);
     }
-    
+
+    // Session images - allow public read, authenticated write
+    match /session-images/{userId}/{fileName} {
+      // Allow anyone to read (even unauthenticated) for sharing sessions publicly
+      allow read: if true;
+
+      // Allow write only to the owner
+      allow write: if isOwner(userId) && isValidImage();
+
+      // Allow delete only to the owner
+      allow delete: if isOwner(userId);
+    }
+
     // Deny all other paths by default
     match /{allPaths=**} {
       allow read, write: if false;

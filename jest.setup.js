@@ -1,5 +1,50 @@
 import '@testing-library/jest-dom'
 
+// Mock global Response, Request, Headers for Firebase Auth compatibility
+if (typeof global.Response === 'undefined') {
+  global.Response = class Response {
+    constructor(body, init) {
+      this.body = body
+      this.init = init
+    }
+    json() {
+      return Promise.resolve(typeof this.body === 'string' ? JSON.parse(this.body) : this.body)
+    }
+    text() {
+      return Promise.resolve(typeof this.body === 'string' ? this.body : JSON.stringify(this.body))
+    }
+  }
+}
+
+if (typeof global.Request === 'undefined') {
+  global.Request = class Request {
+    constructor(url, init) {
+      this.url = url
+      this.init = init
+    }
+  }
+}
+
+if (typeof global.Headers === 'undefined') {
+  global.Headers = class Headers {
+    constructor() {
+      this.headers = new Map()
+    }
+    append(name, value) {
+      this.headers.set(name.toLowerCase(), value)
+    }
+    get(name) {
+      return this.headers.get(name.toLowerCase()) || null
+    }
+    has(name) {
+      return this.headers.has(name.toLowerCase())
+    }
+    set(name, value) {
+      this.headers.set(name.toLowerCase(), value)
+    }
+  }
+}
+
 // Mock Next.js router
 jest.mock('next/navigation', () => ({
   useRouter: () => ({

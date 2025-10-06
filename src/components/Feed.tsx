@@ -5,60 +5,68 @@ import { useRouter } from 'next/navigation';
 import { SessionWithDetails, FeedFilters } from '@/types';
 import { firebaseApi } from '@/lib/firebaseApi';
 import SessionCard from './SessionCard';
+import { useFeedSessions } from '@/hooks/useCache';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface FeedProps {
   filters?: FeedFilters;
   className?: string;
   initialLimit?: number;
+  showEndMessage?: boolean;
 }
 
 export const Feed: React.FC<FeedProps> = ({
   filters = {},
   className = '',
-  initialLimit = 20
+  initialLimit = 20,
+  showEndMessage = true
 }) => {
   const router = useRouter();
-  const [sessions, setSessions] = useState<SessionWithDetails[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { user } = useAuth();
   const [nextCursor, setNextCursor] = useState<string | undefined>();
   const [hasNewSessions, setHasNewSessions] = useState(false);
   const [newSessionsCount, setNewSessionsCount] = useState(0);
+  const [allSessions, setAllSessions] = useState<SessionWithDetails[]>([]);
+
+  // Use React Query for initial feed load with caching
+  const { data, isLoading, error, refetch } = useFeedSessions(initialLimit, undefined, filters, {
+    enabled: true,
+  });
+
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+
+  // Update sessions when data changes
+  useEffect(() => {
+    if (data) {
+      setAllSessions(data.sessions);
+      setHasMore(data.hasMore);
+      setNextCursor(data.nextCursor);
+    }
+  }, [data]);
 
   const loadSessions = useCallback(async (cursor?: string, append = false) => {
     try {
-      if (!append) {
-        setIsLoading(true);
-        setError(null);
-      } else {
+      if (append) {
         setIsLoadingMore(true);
       }
 
       const response = await firebaseApi.post.getFeedSessions(initialLimit, cursor, filters);
 
       if (append) {
-        setSessions(prev => [...prev, ...response.sessions]);
+        setAllSessions(prev => [...prev, ...response.sessions]);
       } else {
-        setSessions(response.sessions);
+        setAllSessions(response.sessions);
       }
 
       setHasMore(response.hasMore);
       setNextCursor(response.nextCursor);
     } catch (err: any) {
       console.error('Failed to load sessions:', err);
-      setError(err.message || 'Failed to load sessions');
     } finally {
-      setIsLoading(false);
       setIsLoadingMore(false);
     }
-  }, [filters]);
-
-  // Load initial sessions
-  useEffect(() => {
-    loadSessions();
-  }, [loadSessions]);
+  }, [filters, initialLimit]);
 
   // Load more sessions
   const loadMore = useCallback(() => {
@@ -69,22 +77,22 @@ export const Feed: React.FC<FeedProps> = ({
 
   // Refresh sessions
   const refreshSessions = useCallback(() => {
-    setSessions([]);
+    setAllSessions([]);
     setNextCursor(undefined);
     setHasNewSessions(false);
     setNewSessionsCount(0);
-    loadSessions();
-  }, [loadSessions]);
+    refetch();
+  }, [refetch]);
 
   // Check for new sessions periodically
   useEffect(() => {
-    if (sessions.length === 0) return;
+    if (allSessions.length === 0) return;
 
     const checkForNewSessions = async () => {
       try {
         const response = await firebaseApi.post.getFeedSessions(5, undefined, filters);
         const newSessionIds = response.sessions.map(s => s.id);
-        const currentSessionIds = sessions.slice(0, 5).map(s => s.id);
+        const currentSessionIds = allSessions.slice(0, 5).map(s => s.id);
 
         const newCount = newSessionIds.filter(id => !currentSessionIds.includes(id)).length;
         if (newCount > 0) {
@@ -99,7 +107,7 @@ export const Feed: React.FC<FeedProps> = ({
     // Check every 30 seconds
     const interval = setInterval(checkForNewSessions, 30000);
     return () => clearInterval(interval);
-  }, [sessions, filters]);
+  }, [allSessions, filters]);
 
   // Handle support
   const handleSupport = useCallback(async (sessionId: string) => {
@@ -107,7 +115,7 @@ export const Feed: React.FC<FeedProps> = ({
       await firebaseApi.post.supportSession(sessionId);
 
       // Optimistic update
-      setSessions(prev => prev.map(session =>
+      setAllSessions(prev => prev.map(session =>
         session.id === sessionId
           ? {
               ...session,
@@ -128,7 +136,7 @@ export const Feed: React.FC<FeedProps> = ({
       await firebaseApi.post.removeSupportFromSession(sessionId);
 
       // Optimistic update
-      setSessions(prev => prev.map(session =>
+      setAllSessions(prev => prev.map(session =>
         session.id === sessionId
           ? {
               ...session,
@@ -167,13 +175,30 @@ export const Feed: React.FC<FeedProps> = ({
     }
   }, []);
 
+  // Handle delete
+  const handleDelete = useCallback(async (sessionId: string) => {
+    if (!window.confirm('Are you sure you want to delete this session? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      await firebaseApi.session.deleteSession(sessionId);
+
+      // Remove from local state
+      setAllSessions(prev => prev.filter(session => session.id !== sessionId));
+    } catch (err: any) {
+      console.error('Failed to delete session:', err);
+      alert('Failed to delete session. Please try again.');
+    }
+  }, []);
+
   // Real-time updates for support counts
   useEffect(() => {
-    if (sessions.length === 0) return;
+    if (allSessions.length === 0) return;
 
-    const sessionIds = sessions.map(session => session.id);
+    const sessionIds = allSessions.map(session => session.id);
     const unsubscribe = firebaseApi.post.listenToSessionUpdates(sessionIds, (updates) => {
-      setSessions(prev => prev.map(session => {
+      setAllSessions(prev => prev.map(session => {
         const update = updates[session.id];
         if (update) {
           return {
@@ -187,7 +212,7 @@ export const Feed: React.FC<FeedProps> = ({
     });
 
     return unsubscribe;
-  }, [sessions.map(s => s.id).join(',')]); // Re-run when session IDs change
+  }, [allSessions.map(s => s.id).join(',')]); // Re-run when session IDs change
 
   // Infinite scroll effect
   useEffect(() => {
@@ -234,7 +259,7 @@ export const Feed: React.FC<FeedProps> = ({
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 18.5c-.77.833.192 2.5 1.732 2.5z" />
           </svg>
           <p className="font-medium">Failed to load sessions</p>
-          <p className="text-sm text-gray-600 mt-1">{error}</p>
+          <p className="text-sm text-gray-600 mt-1">{String(error)}</p>
         </div>
         <button
           onClick={refreshSessions}
@@ -246,7 +271,7 @@ export const Feed: React.FC<FeedProps> = ({
     );
   }
 
-  if (sessions.length === 0) {
+  if (allSessions.length === 0) {
     return (
       <div className={`text-center py-8 ${className}`}>
         <div className="text-gray-500 mb-4">
@@ -283,16 +308,20 @@ export const Feed: React.FC<FeedProps> = ({
 
       {/* Sessions */}
       <div className="space-y-0 md:space-y-0">
-        {sessions.map((session) => (
-          <SessionCard
-            key={session.id}
-            session={session}
-            onSupport={handleSupport}
-            onRemoveSupport={handleRemoveSupport}
-            onShare={handleShare}
-            onEdit={(sessionId) => router.push(`/sessions/${sessionId}/edit`)}
-          />
-        ))}
+        {allSessions.map((session) => {
+          const isOwnSession = user && session.userId === user.id;
+          return (
+            <SessionCard
+              key={session.id}
+              session={session}
+              onSupport={handleSupport}
+              onRemoveSupport={handleRemoveSupport}
+              onShare={handleShare}
+              onEdit={isOwnSession ? (sessionId) => router.push(`/sessions/${sessionId}/edit`) : undefined}
+              onDelete={isOwnSession ? handleDelete : undefined}
+            />
+          );
+        })}
       </div>
 
       {/* Load more indicator */}
@@ -306,7 +335,7 @@ export const Feed: React.FC<FeedProps> = ({
       )}
 
       {/* End of feed */}
-      {!hasMore && sessions.length > 0 && (
+      {showEndMessage && !hasMore && allSessions.length > 0 && (
         <div className="text-center py-4 text-gray-500 text-sm">
           You've reached the end of the feed
         </div>

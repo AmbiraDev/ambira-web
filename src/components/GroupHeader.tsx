@@ -91,7 +91,7 @@ export default function GroupHeader({
   };
 
   return (
-    <div className="relative">
+    <div className="bg-white">
       {/* Mobile Back Button Header */}
       <div className="md:hidden sticky top-0 bg-white border-b border-gray-200 px-4 py-3 z-50 flex items-center gap-3">
         <button
@@ -111,55 +111,12 @@ export default function GroupHeader({
         )}
       </div>
 
-      {/* Banner - Desktop Only */}
-      <div className="relative h-0 md:h-48 bg-gray-200 hidden md:block">
-        {group.bannerUrl && (
-          <Image
-            src={group.bannerUrl}
-            alt={`${group.name} banner`}
-            fill
-            className="object-cover"
-          />
-        )}
-        <div className="absolute inset-0 bg-black/20" />
-        
-        {/* Privacy Badge */}
-        <div className="absolute top-4 right-4">
-          {group.privacySetting === 'public' ? (
-            <Badge variant="secondary" className="bg-white/90 text-gray-700">
-              <Globe className="w-3 h-3 mr-1" />
-              Public
-            </Badge>
-          ) : (
-            <Badge variant="secondary" className="bg-white/90 text-gray-700">
-              <Lock className="w-3 h-3 mr-1" />
-              Approval Required
-            </Badge>
-          )}
-        </div>
-
-        {/* Admin Actions */}
-        {(isAdmin || isCreator) && (
-          <div className="absolute top-4 left-4">
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={onSettings}
-              className="bg-white/90 text-gray-700 hover:bg-white"
-            >
-              <Settings className="w-4 h-4 mr-1" />
-              Settings
-            </Button>
-          </div>
-        )}
-      </div>
-
       {/* Content */}
-      <div className="relative px-4 md:px-6 pb-6">
+      <div className="px-4 md:px-6 pt-6 pb-6">
         {/* Group Avatar and Basic Info */}
-        <div className="flex items-start gap-3 md:gap-4 md:-mt-12 mb-4 pt-4 md:pt-0">
-          <div className="relative">
-            <div className="w-16 h-16 md:w-24 md:h-24 rounded-full bg-white md:border-4 border-2 border-white shadow-lg overflow-hidden flex-shrink-0">
+        <div className="flex items-start gap-4 mb-6">
+          <div className="relative flex-shrink-0">
+            <div className="w-20 h-20 md:w-24 md:h-24 rounded-2xl overflow-hidden shadow-lg">
               {group.imageUrl ? (
                 <Image
                   src={group.imageUrl}
@@ -169,129 +126,146 @@ export default function GroupHeader({
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <div className="w-full h-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold text-lg md:text-2xl">
+                <div className="w-full h-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold text-2xl md:text-3xl">
                   {group.name.charAt(0).toUpperCase()}
                 </div>
               )}
             </div>
-            {/* Privacy Badge - Mobile */}
-            <div className="md:hidden absolute -bottom-1 -right-1">
-              {group.privacySetting === 'public' ? (
-                <div className="bg-white rounded-full p-1 shadow-sm">
-                  <Globe className="w-3 h-3 text-green-600" />
+          </div>
+
+          <div className="flex-1 min-w-0">
+            <div className="flex items-start justify-between gap-3 mb-2">
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-900 leading-tight">
+                {group.name}
+              </h1>
+
+              {/* Desktop Settings Button */}
+              {(isAdmin || isCreator) && (
+                <button
+                  onClick={onSettings}
+                  className="hidden md:block p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <Settings className="w-5 h-5 text-gray-600" />
+                </button>
+              )}
+            </div>
+
+            <p className="text-gray-600 text-base md:text-lg mb-3 leading-relaxed">
+              {group.description}
+            </p>
+
+            {/* Group Meta */}
+            <div className="flex flex-wrap items-center gap-4 mb-4 text-sm text-gray-500">
+              <div className="flex items-center gap-1.5">
+                <Users className="w-4 h-4" />
+                <span className="font-medium">{group.memberCount} members</span>
+              </div>
+              {group.location && (
+                <div className="flex items-center gap-1.5">
+                  <MapPin className="w-4 h-4" />
+                  <span>{group.location}</span>
                 </div>
-              ) : (
-                <div className="bg-white rounded-full p-1 shadow-sm">
-                  <Lock className="w-3 h-3 text-orange-600" />
-                </div>
+              )}
+              <div className="flex items-center gap-1.5">
+                {group.privacySetting === 'public' ? (
+                  <>
+                    <Globe className="w-4 h-4 text-green-600" />
+                    <span className="text-green-600 font-medium">Public</span>
+                  </>
+                ) : (
+                  <>
+                    <Lock className="w-4 h-4 text-orange-600" />
+                    <span className="text-orange-600 font-medium">Approval Required</span>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Category and Type Badges */}
+            <div className="flex flex-wrap gap-2 mb-4">
+              <Badge className={`${categoryColors[group.category]} text-xs font-medium px-2.5 py-1`}>
+                {categoryLabels[group.category]}
+              </Badge>
+              <Badge className={`${typeColors[group.type]} text-xs font-medium px-2.5 py-1`}>
+                {typeLabels[group.type]}
+              </Badge>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex items-center gap-2">
+              {isAdmin && (
+                <Button variant="outline" size="sm" disabled className="font-medium">
+                  <Users className="w-4 h-4 mr-1.5" />
+                  Admin
+                </Button>
+              )}
+              {canJoin && (
+                <Button
+                  onClick={handleJoin}
+                  disabled={isLoading}
+                  size="sm"
+                  className="bg-[#007AFF] hover:bg-[#0051D5] text-white font-semibold px-5 shadow-md"
+                >
+                  <Users className="w-4 h-4 mr-1.5" />
+                  {group.privacySetting === 'public' ? 'Join Group' : 'Request to Join'}
+                </Button>
+              )}
+              {canLeave && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleLeave}
+                  disabled={isLoading}
+                  className="font-medium"
+                >
+                  Leave Group
+                </Button>
               )}
             </div>
           </div>
-          
-          <div className="flex-1 md:pt-8 min-w-0">
-            <div className="flex items-start justify-between gap-2">
-              <div className="flex-1 min-w-0">
-                <h1 className="text-xl md:text-2xl font-bold text-gray-900 mb-1 md:mb-2 truncate md:whitespace-normal">
-                  {group.name}
-                </h1>
-                <p className="text-gray-600 text-lg leading-relaxed">
-                  {group.description}
-                </p>
-              </div>
-              
-              {/* Action Buttons */}
-              <div className="flex items-center gap-2 ml-4">
-                {isAdmin && (
-                  <Button variant="outline" disabled>
-                    <Users className="w-4 h-4 mr-1" />
-                    Admin
-                  </Button>
-                )}
-                {canJoin && (
-                  <Button 
-                    onClick={handleJoin}
-                    disabled={isLoading}
-                    className="bg-[#007AFF] hover:bg-[#0051D5] text-white font-semibold px-6 shadow-md"
-                  >
-                    <Users className="w-4 h-4 mr-2" />
-                    {group.privacySetting === 'public' ? 'Join Group' : 'Request to Join'}
-                  </Button>
-                )}
-                {canLeave && (
-                  <Button 
-                    variant="outline"
-                    onClick={handleLeave}
-                    disabled={isLoading}
-                  >
-                    Leave Group
-                  </Button>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Group Meta */}
-        <div className="flex flex-wrap items-center gap-6 mb-4 text-sm text-gray-500">
-          <div className="flex items-center gap-1">
-            <Users className="w-4 h-4" />
-            <span>{group.memberCount} members</span>
-          </div>
-          {group.location && (
-            <div className="flex items-center gap-1">
-              <MapPin className="w-4 h-4" />
-              <span>{group.location}</span>
-            </div>
-          )}
-          <div className="flex items-center gap-1">
-            <Calendar className="w-4 h-4" />
-            <span>Created {new Date(group.createdAt).toLocaleDateString()}</span>
-          </div>
-        </div>
-
-        {/* Category and Type Badges */}
-        <div className="flex flex-wrap gap-2 mb-6">
-          <Badge className={`${categoryColors[group.category]} text-sm px-3 py-1`}>
-            {categoryLabels[group.category]}
-          </Badge>
-          <Badge className={`${typeColors[group.type]} text-sm px-3 py-1`}>
-            {typeLabels[group.type]}
-          </Badge>
         </div>
 
         {/* Stats */}
         {stats && (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+            <div className="bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-xl p-4 border border-blue-200/50">
               <div className="flex items-center gap-2 mb-1">
-                <Users className="w-4 h-4 text-blue-500" />
-                <span className="text-sm font-medium text-gray-600">Active Members</span>
+                <div className="p-1.5 bg-blue-500 rounded-lg">
+                  <Users className="w-3.5 h-3.5 text-white" />
+                </div>
+                <span className="text-xs font-medium text-blue-900">Active Members</span>
               </div>
-              <p className="text-2xl font-bold text-gray-900">{stats.activeMembers}</p>
+              <p className="text-2xl md:text-3xl font-bold text-blue-900">{stats.activeMembers}</p>
             </div>
-            
-            <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
+
+            <div className="bg-gradient-to-br from-green-50 to-green-100/50 rounded-xl p-4 border border-green-200/50">
               <div className="flex items-center gap-2 mb-1">
-                <TrendingUp className="w-4 h-4 text-green-500" />
-                <span className="text-sm font-medium text-gray-600">Weekly Hours</span>
+                <div className="p-1.5 bg-green-500 rounded-lg">
+                  <TrendingUp className="w-3.5 h-3.5 text-white" />
+                </div>
+                <span className="text-xs font-medium text-green-900">Weekly Hours</span>
               </div>
-              <p className="text-2xl font-bold text-gray-900">{stats.weeklyHours.toFixed(1)}</p>
+              <p className="text-2xl md:text-3xl font-bold text-green-900">{stats.weeklyHours.toFixed(1)}</p>
             </div>
-            
-            <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
+
+            <div className="bg-gradient-to-br from-purple-50 to-purple-100/50 rounded-xl p-4 border border-purple-200/50">
               <div className="flex items-center gap-2 mb-1">
-                <Clock className="w-4 h-4 text-purple-500" />
-                <span className="text-sm font-medium text-gray-600">Total Hours</span>
+                <div className="p-1.5 bg-purple-500 rounded-lg">
+                  <Clock className="w-3.5 h-3.5 text-white" />
+                </div>
+                <span className="text-xs font-medium text-purple-900">Total Hours</span>
               </div>
-              <p className="text-2xl font-bold text-gray-900">{stats.totalHours.toFixed(1)}</p>
+              <p className="text-2xl md:text-3xl font-bold text-purple-900">{stats.totalHours.toFixed(1)}</p>
             </div>
-            
-            <div className="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
+
+            <div className="bg-gradient-to-br from-orange-50 to-orange-100/50 rounded-xl p-4 border border-orange-200/50">
               <div className="flex items-center gap-2 mb-1">
-                <Target className="w-4 h-4 text-orange-500" />
-                <span className="text-sm font-medium text-gray-600">Posts</span>
+                <div className="p-1.5 bg-orange-500 rounded-lg">
+                  <Target className="w-3.5 h-3.5 text-white" />
+                </div>
+                <span className="text-xs font-medium text-orange-900">Posts</span>
               </div>
-              <p className="text-2xl font-bold text-gray-900">{stats.totalPosts}</p>
+              <p className="text-2xl md:text-3xl font-bold text-orange-900">{stats.totalPosts}</p>
             </div>
           </div>
         )}

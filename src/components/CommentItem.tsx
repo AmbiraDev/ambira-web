@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { CommentWithDetails } from '@/types';
 import CommentInput from './CommentInput';
 import Link from 'next/link';
+import { Heart, MessageCircle, ChevronDown, MoreVertical, Edit2, Trash2 } from 'lucide-react';
 
 interface CommentItemProps {
   comment: CommentWithDetails;
@@ -83,7 +84,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({
           <Link
             key={index}
             href={`/profile/${username}`}
-            className="text-orange-600 hover:text-orange-700 font-medium"
+            className="text-[#007AFF] hover:text-[#0051D5] font-medium"
           >
             {part}
           </Link>
@@ -168,7 +169,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
             <Link href={`/profile/${comment.user.username}`}>
-              <span className="text-sm font-semibold text-gray-900 hover:text-orange-600 transition-colors">
+              <span className="text-sm font-semibold text-gray-900 hover:text-[#007AFF] transition-colors">
                 {comment.user.name}
               </span>
             </Link>
@@ -184,21 +185,20 @@ export const CommentItem: React.FC<CommentItemProps> = ({
               <div className="relative ml-auto">
                 <button
                   onClick={() => setShowMenu(!showMenu)}
-                  className="text-gray-400 hover:text-gray-600 p-1"
+                  className="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 transition-colors"
                 >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
-                  </svg>
+                  <MoreVertical className="w-4 h-4" />
                 </button>
                 {showMenu && (
-                  <div className="absolute right-0 mt-1 w-32 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
+                  <div className="absolute right-0 mt-1 w-36 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
                     <button
                       onClick={() => {
                         setShowEditInput(true);
                         setShowMenu(false);
                       }}
-                      className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50"
+                      className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
                     >
+                      <Edit2 className="w-4 h-4" />
                       Edit
                     </button>
                     <button
@@ -206,8 +206,9 @@ export const CommentItem: React.FC<CommentItemProps> = ({
                         handleDelete();
                         setShowMenu(false);
                       }}
-                      className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-gray-50"
+                      className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-gray-50 flex items-center gap-2"
                     >
+                      <Trash2 className="w-4 h-4" />
                       Delete
                     </button>
                   </div>
@@ -220,7 +221,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({
           {showEditInput ? (
             <div className="mb-2">
               <CommentInput
-                postId={comment.postId}
+                sessionId={comment.sessionId}
                 initialValue={comment.content}
                 placeholder="Edit your comment..."
                 autoFocus
@@ -241,21 +242,20 @@ export const CommentItem: React.FC<CommentItemProps> = ({
                 onClick={handleLikeToggle}
                 className={`flex items-center gap-1 font-medium transition-colors ${
                   comment.isLiked
-                    ? 'text-orange-600 hover:text-orange-700'
+                    ? 'text-red-500 hover:text-red-600'
                     : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
-                <svg className="w-4 h-4" fill={comment.isLiked ? 'currentColor' : 'none'} stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                </svg>
+                <Heart className={`w-4 h-4 ${comment.isLiked ? 'fill-current' : ''}`} />
                 {comment.likeCount > 0 && <span>{comment.likeCount}</span>}
               </button>
 
               {canReply && (
                 <button
                   onClick={() => setShowReplyInput(!showReplyInput)}
-                  className="font-medium text-gray-500 hover:text-gray-700 transition-colors"
+                  className="font-medium text-gray-500 hover:text-[#007AFF] transition-colors flex items-center gap-1"
                 >
+                  <MessageCircle className="w-4 h-4" />
                   Reply
                 </button>
               )}
@@ -263,16 +263,9 @@ export const CommentItem: React.FC<CommentItemProps> = ({
               {comment.replyCount > 0 && (
                 <button
                   onClick={handleToggleReplies}
-                  className="font-medium text-gray-500 hover:text-gray-700 transition-colors flex items-center gap-1"
+                  className="font-medium text-gray-500 hover:text-[#007AFF] transition-colors flex items-center gap-1"
                 >
-                  <svg
-                    className={`w-3 h-3 transition-transform ${showReplies ? 'rotate-180' : ''}`}
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
+                  <ChevronDown className={`w-3 h-3 transition-transform ${showReplies ? 'rotate-180' : ''}`} />
                   {comment.replyCount} {comment.replyCount === 1 ? 'reply' : 'replies'}
                 </button>
               )}
@@ -283,7 +276,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({
           {showReplyInput && canReply && (
             <div className="mt-3">
               <CommentInput
-                postId={comment.postId}
+                sessionId={comment.sessionId}
                 parentId={comment.id}
                 placeholder={`Reply to ${comment.user.name}...`}
                 autoFocus

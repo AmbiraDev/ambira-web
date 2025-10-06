@@ -280,6 +280,7 @@ const populateSessionsWithDetails = async (sessionDocs: any[]): Promise<SessionW
         hideTaskNames: sessionData.hideTaskNames,
         howFelt: sessionData.howFelt,
         privateNotes: sessionData.privateNotes,
+        images: sessionData.images || [],
         isArchived: sessionData.isArchived || false,
         supportCount: sessionData.supportCount || 0,
         commentCount: sessionData.commentCount || 0,
@@ -1818,6 +1819,7 @@ export const firebaseSessionApi = {
         publishToFeeds: data.publishToFeeds ?? true,
         howFelt: data.howFelt,
         privateNotes: data.privateNotes || '',
+        images: data.images || [],
         isArchived: false,
         // Social engagement fields (sessions ARE posts)
         supportCount: 0,
@@ -1858,6 +1860,7 @@ export const firebaseSessionApi = {
         publishToFeeds: sessionData.publishToFeeds,
         howFelt: data.howFelt,
         privateNotes: data.privateNotes,
+        images: data.images || [],
         isArchived: false,
         // Social engagement fields (sessions ARE posts)
         supportCount: 0,
@@ -2122,6 +2125,7 @@ export const firebaseSessionApi = {
           howFelt: sessionData.howFelt,
           privateNotes: sessionData.privateNotes,
           isArchived: sessionData.isArchived || false,
+          images: sessionData.images || [],
           createdAt: convertTimestamp(sessionData.createdAt) || new Date(),
           updatedAt: convertTimestamp(sessionData.updatedAt) || new Date(),
           user,
@@ -2231,6 +2235,46 @@ export const firebaseSessionApi = {
     }
   },
 
+  // Update a session
+  updateSession: async (sessionId: string, data: Partial<CreateSessionData>): Promise<void> => {
+    try {
+      if (!auth.currentUser) {
+        throw new Error('User not authenticated');
+      }
+
+      const sessionRef = doc(db, 'sessions', sessionId);
+      const sessionDoc = await getDoc(sessionRef);
+
+      if (!sessionDoc.exists() || sessionDoc.data().userId !== auth.currentUser.uid) {
+        throw new Error('Session not found or permission denied');
+      }
+
+      // Prepare update data
+      const updateData: any = {
+        updatedAt: serverTimestamp()
+      };
+
+      if (data.title !== undefined) updateData.title = data.title;
+      if (data.description !== undefined) updateData.description = data.description;
+      if (data.projectId !== undefined) updateData.projectId = data.projectId;
+      if (data.visibility !== undefined) updateData.visibility = data.visibility;
+      if (data.tags !== undefined) updateData.tags = data.tags;
+      if (data.howFelt !== undefined) updateData.howFelt = data.howFelt;
+      if (data.privateNotes !== undefined) updateData.privateNotes = data.privateNotes;
+      if (data.images !== undefined) updateData.images = data.images;
+      if (data.allowComments !== undefined) updateData.allowComments = data.allowComments;
+
+      // Remove undefined values
+      Object.keys(updateData).forEach(key =>
+        updateData[key] === undefined && delete updateData[key]
+      );
+
+      await updateDoc(sessionRef, updateData);
+    } catch (error: any) {
+      throw new Error(getErrorMessage(error, 'Failed to update session'));
+    }
+  },
+
   // Delete a session
   deleteSession: async (sessionId: string): Promise<void> => {
     try {
@@ -2248,6 +2292,52 @@ export const firebaseSessionApi = {
       await deleteDoc(sessionRef);
     } catch (error: any) {
       throw new Error(getErrorMessage(error, 'Failed to delete session'));
+    }
+  },
+
+  // Get a single session by ID
+  getSession: async (sessionId: string): Promise<Session> => {
+    try {
+      if (!auth.currentUser) {
+        throw new Error('User not authenticated');
+      }
+
+      const sessionRef = doc(db, 'sessions', sessionId);
+      const sessionDoc = await getDoc(sessionRef);
+
+      if (!sessionDoc.exists()) {
+        throw new Error('Session not found');
+      }
+
+      const data = sessionDoc.data();
+
+      // Check if user has permission to view
+      if (data.userId !== auth.currentUser.uid) {
+        throw new Error('Permission denied');
+      }
+
+      return {
+        id: sessionDoc.id,
+        userId: data.userId,
+        projectId: data.projectId,
+        title: data.title,
+        description: data.description,
+        duration: data.duration,
+        startTime: convertTimestamp(data.startTime),
+        tasks: data.tasks || [],
+        tags: data.tags || [],
+        visibility: data.visibility || 'private',
+        howFelt: data.howFelt,
+        privateNotes: data.privateNotes,
+        isArchived: data.isArchived || false,
+        images: data.images || [],
+        supportCount: data.supportCount || 0,
+        commentCount: data.commentCount || 0,
+        createdAt: convertTimestamp(data.createdAt),
+        updatedAt: convertTimestamp(data.updatedAt)
+      };
+    } catch (error: any) {
+      throw new Error(getErrorMessage(error, 'Failed to get session'));
     }
   }
 };
@@ -2532,12 +2622,24 @@ export const firebasePostApi = {
         return { sessions, hasMore, nextCursor };
 
       } else {
-        // Recent: default chronological feed of public sessions
+        // Recent: default chronological feed of public sessions (excluding followed users)
+        // Get list of users the current user is following to exclude them
+        const followingQuery = query(
+          collection(db, 'follows'),
+          where('followerId', '==', auth.currentUser.uid)
+        );
+        const followingSnapshot = await getDocs(followingQuery);
+        const followingIds = followingSnapshot.docs.map(doc => doc.data().followingId);
+
+        // Also exclude current user's own posts
+        followingIds.push(auth.currentUser.uid);
+
+        // Fetch more sessions to account for filtering
         sessionsQuery = query(
           collection(db, 'sessions'),
           where('visibility', '==', 'everyone'),
           orderBy('createdAt', 'desc'),
-          limit(limitCount + 1)
+          limit(limitCount * 3)
         );
 
         if (cursor) {
@@ -2548,24 +2650,28 @@ export const firebasePostApi = {
               where('visibility', '==', 'everyone'),
               orderBy('createdAt', 'desc'),
               startAfter(cursorDoc),
-              limit(limitCount + 1)
+              limit(limitCount * 3)
             );
           }
         }
+
+        const querySnapshot = await getDocs(sessionsQuery);
+
+        // Filter out sessions from followed users and current user
+        const filteredDocs = querySnapshot.docs.filter(doc =>
+          !followingIds.includes(doc.data().userId)
+        ).slice(0, limitCount + 1);
+
+        const sessions = await populateSessionsWithDetails(filteredDocs.slice(0, limitCount));
+        const hasMore = filteredDocs.length > limitCount;
+        const nextCursor = hasMore ? filteredDocs[limitCount - 1]?.id : undefined;
+
+        return {
+          sessions,
+          hasMore,
+          nextCursor
+        };
       }
-
-      const querySnapshot = await getDocs(sessionsQuery);
-      const sessionDocs = querySnapshot.docs.slice(0, limitCount);
-
-      const sessions = await populateSessionsWithDetails(sessionDocs);
-      const hasMore = querySnapshot.docs.length > limitCount;
-      const nextCursor = hasMore ? querySnapshot.docs[limitCount - 1]?.id : undefined;
-
-      return {
-        sessions,
-        hasMore,
-        nextCursor
-      };
     } catch (error: any) {
       console.error('Error in getFeedSessions:', error);
       throw new Error(getErrorMessage(error, 'Failed to get feed sessions'));
@@ -2892,10 +2998,9 @@ export const firebaseCommentApi = {
       const mentionRegex = /@(\w+)/g;
       const mentions = [...data.content.matchAll(mentionRegex)].map(match => match[1]);
       
-      const commentData = {
+      const commentData: any = {
         sessionId: data.sessionId,
         userId,
-        parentId: data.parentId,
         content: data.content,
         likeCount: 0,
         replyCount: 0,
@@ -2903,6 +3008,11 @@ export const firebaseCommentApi = {
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       };
+
+      // Only add parentId if it exists
+      if (data.parentId) {
+        commentData.parentId = data.parentId;
+      }
 
       const docRef = await addDoc(collection(db, 'comments'), commentData);
 
@@ -2932,7 +3042,7 @@ export const firebaseCommentApi = {
           where('username', 'in', mentions)
         );
         const usersSnapshot = await getDocs(usersQuery);
-        
+
         const notificationPromises = usersSnapshot.docs.map(async (userDoc) => {
           const mentionedUserId = userDoc.id;
           if (mentionedUserId !== userId) {
@@ -2942,33 +3052,33 @@ export const firebaseCommentApi = {
               type: 'mention',
               title: 'New mention',
               message: `${userData?.name} mentioned you in a comment`,
-              linkUrl: `/posts/${data.postId}`,
+              linkUrl: `/sessions/${data.sessionId}`,
               actorId: userId,
-              postId: data.postId,
+              sessionId: data.sessionId,
               commentId: docRef.id,
               isRead: false,
               createdAt: serverTimestamp()
             });
           }
         });
-        
+
         await Promise.all(notificationPromises);
       }
-      
-      // Create notification for post owner (if not commenting on own post)
+
+      // Create notification for session owner (if not commenting on own session)
       if (!data.parentId) {
-        const postDoc = await getDoc(postRef);
-        const postData = postDoc.data();
-        
-        if (postData && postData.userId !== userId) {
+        const sessionDoc = await getDoc(sessionRef);
+        const sessionData = sessionDoc.data();
+
+        if (sessionData && sessionData.userId !== userId) {
           await addDoc(collection(db, 'notifications'), {
-            userId: postData.userId,
+            userId: sessionData.userId,
             type: 'comment',
             title: 'New comment',
-            message: `${userData?.name} commented on your post`,
-            linkUrl: `/posts/${data.postId}`,
+            message: `${userData?.name} commented on your session`,
+            linkUrl: `/sessions/${data.sessionId}`,
             actorId: userId,
-            postId: data.postId,
+            sessionId: data.sessionId,
             commentId: docRef.id,
             isRead: false,
             createdAt: serverTimestamp()
@@ -2978,26 +3088,26 @@ export const firebaseCommentApi = {
         // Create notification for parent comment owner (if replying to someone else)
         const parentCommentDoc = await getDoc(doc(db, 'comments', data.parentId));
         const parentCommentData = parentCommentDoc.data();
-        
+
         if (parentCommentData && parentCommentData.userId !== userId) {
           await addDoc(collection(db, 'notifications'), {
             userId: parentCommentData.userId,
             type: 'reply',
             title: 'New reply',
             message: `${userData?.name} replied to your comment`,
-            linkUrl: `/posts/${data.postId}`,
+            linkUrl: `/sessions/${data.sessionId}`,
             actorId: userId,
-            postId: data.postId,
+            sessionId: data.sessionId,
             commentId: docRef.id,
             isRead: false,
             createdAt: serverTimestamp()
           });
         }
       }
-      
+
       return {
         id: docRef.id,
-        postId: data.postId,
+        sessionId: data.sessionId,
         userId,
         parentId: data.parentId,
         content: data.content,
@@ -3254,6 +3364,11 @@ export const firebaseCommentApi = {
         hasMore
       };
     } catch (error: any) {
+      console.error('getSessionComments error details:', {
+        code: error?.code,
+        message: error?.message,
+        details: error
+      });
       throw new Error(getErrorMessage(error, 'Failed to get session comments'));
     }
   },

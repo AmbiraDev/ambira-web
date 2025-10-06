@@ -7,6 +7,7 @@ import { UserProfile, UserStats } from '@/types';
 import { WeekStreakCalendar } from './WeekStreakCalendar';
 import { User, TrendingUp, Calendar, Target, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 function LeftSidebar() {
   const { user } = useAuth();
@@ -76,11 +77,23 @@ function LeftSidebar() {
               </div>
             ) : (
               <div className="p-6 hover:bg-gray-50 transition-colors cursor-pointer">
-                <div className="w-16 h-16 bg-[#FC4C02] rounded-full mb-3 flex items-center justify-center">
-                  <span className="text-2xl font-semibold text-white">
-                    {profile?.name?.charAt(0)?.toUpperCase() || user?.name?.charAt(0)?.toUpperCase() || 'U'}
-                  </span>
-                </div>
+                {profile?.profilePicture || user?.profilePicture ? (
+                  <div className="w-16 h-16 rounded-full mb-3 overflow-hidden ring-2 ring-white">
+                    <Image
+                      src={profile?.profilePicture || user?.profilePicture || ''}
+                      alt={profile?.name || user?.name || 'User'}
+                      width={64}
+                      height={64}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                ) : (
+                  <div className="w-16 h-16 bg-[#FC4C02] rounded-full mb-3 flex items-center justify-center">
+                    <span className="text-2xl font-semibold text-white">
+                      {profile?.name?.charAt(0)?.toUpperCase() || user?.name?.charAt(0)?.toUpperCase() || 'U'}
+                    </span>
+                  </div>
+                )}
                 <h2 className="text-lg font-bold text-gray-900">
                   {profile?.name || user?.name || 'User'}
                 </h2>

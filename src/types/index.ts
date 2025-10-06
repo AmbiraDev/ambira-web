@@ -118,6 +118,8 @@ export interface Session {
   howFelt?: number; // 1-5 rating
   privateNotes?: string;
   isArchived: boolean;
+  images?: string[]; // Array of image URLs (max 3)
+  allowComments?: boolean; // Whether comments are allowed (default: true)
   // Social engagement fields (sessions are posts)
   supportCount: number;
   commentCount: number;
@@ -744,6 +746,7 @@ export interface CreateSessionData {
   hideTaskNames?: boolean;
   howFelt?: number;
   privateNotes?: string;
+  images?: string[]; // Array of image URLs (max 3)
 }
 
 // Session management interfaces
@@ -760,6 +763,8 @@ export interface SessionFormData {
   hideTaskNames?: boolean;
   howFelt?: number;
   privateNotes?: string;
+  images?: string[]; // Array of image URLs (max 3)
+  allowComments?: boolean; // Whether comments are allowed (default: true)
 }
 
 export interface SessionFilters {
