@@ -8,15 +8,17 @@ import { Heart, MessageCircle, ChevronDown, MoreVertical, Edit2, Trash2 } from '
 
 interface CommentItemProps {
   comment: CommentWithDetails;
-  onReply: (commentId: string, content: string) => Promise<void>;
-  onEdit: (commentId: string, content: string) => Promise<void>;
-  onDelete: (commentId: string) => Promise<void>;
+  onReply?: (commentId: string, content: string) => Promise<void>;
+  onEdit?: (commentId: string, content: string) => Promise<void>;
+  onDelete?: (commentId: string) => Promise<void>;
   onLike: (commentId: string) => Promise<void>;
   onUnlike: (commentId: string) => Promise<void>;
-  onLoadReplies: (commentId: string) => Promise<void>;
+  onLoadReplies?: (commentId: string) => Promise<void>;
   currentUserId?: string;
   depth?: number;
   maxDepth?: number;
+  compact?: boolean;
+  showReplies?: boolean;
 }
 
 export const CommentItem: React.FC<CommentItemProps> = ({
@@ -29,12 +31,14 @@ export const CommentItem: React.FC<CommentItemProps> = ({
   onLoadReplies,
   currentUserId,
   depth = 0,
-  maxDepth = 3
+  maxDepth = 3,
+  compact = false,
+  showReplies: showRepliesProp = true
 }) => {
   const [showReplyInput, setShowReplyInput] = useState(false);
   const [showEditInput, setShowEditInput] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
-  const [showReplies, setShowReplies] = useState(false);
+  const [showReplies, setShowReplies] = useState(showRepliesProp);
   const [isDeleting, setIsDeleting] = useState(false);
 
   const isOwner = currentUserId === comment.userId;
@@ -95,20 +99,23 @@ export const CommentItem: React.FC<CommentItemProps> = ({
   };
 
   const handleReplySubmit = async (content: string) => {
+    if (!onReply) return;
     await onReply(comment.id, content);
     setShowReplyInput(false);
-    if (!showReplies && comment.replyCount > 0) {
+    if (!showReplies && comment.replyCount > 0 && onLoadReplies) {
       setShowReplies(true);
       await onLoadReplies(comment.id);
     }
   };
 
   const handleEditSubmit = async (content: string) => {
+    if (!onEdit) return;
     await onEdit(comment.id, content);
     setShowEditInput(false);
   };
 
   const handleDelete = async () => {
+    if (!onDelete) return;
     if (window.confirm('Are you sure you want to delete this comment?')) {
       setIsDeleting(true);
       try {
@@ -129,7 +136,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({
   };
 
   const handleToggleReplies = async () => {
-    if (!showReplies && comment.replies && comment.replies.length === 0) {
+    if (!showReplies && comment.replies && comment.replies.length === 0 && onLoadReplies) {
       await onLoadReplies(comment.id);
     }
     setShowReplies(!showReplies);

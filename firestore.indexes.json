@@ -139,6 +139,20 @@
           "order": "DESCENDING"
         }
       ]
+    },
+    {
+      "collectionGroup": "comments",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "sessionId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "likeCount",
+          "order": "DESCENDING"
+        }
+      ]
     }
   ],
   "fieldOverrides": []

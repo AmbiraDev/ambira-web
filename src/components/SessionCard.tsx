@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { SessionWithDetails, User } from '@/types';
 import SessionStats from './SessionStats';
 import SessionInteractions from './SessionInteractions';
-import CommentList from './CommentList';
+import TopComments from './TopComments';
 import { ImageGallery } from './ImageGallery';
 import { MoreVertical, Heart, MessageCircle, Share2, Clock, ListTodo, Tag } from 'lucide-react';
 import Link from 'next/link';
@@ -32,7 +32,6 @@ export const SessionCard: React.FC<SessionCardProps> = ({
   showComments = false
 }) => {
   const [showMenu, setShowMenu] = useState(false);
-  const [showCommentSection, setShowCommentSection] = useState(showComments);
   const [isExpanded, setIsExpanded] = useState(false);
   const [localCommentCount, setLocalCommentCount] = useState(session.commentCount || 0);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -238,15 +237,15 @@ export const SessionCard: React.FC<SessionCardProps> = ({
 
         <div className="w-px h-6 bg-gray-200"></div>
 
-        <button
-          onClick={() => setShowCommentSection(!showCommentSection)}
+        <Link
+          href={`/sessions/${session.id}`}
           className="flex-1 flex items-center justify-center gap-2 py-3 text-gray-600 hover:bg-gray-50 transition-colors"
         >
           <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
           </svg>
           <span className="text-sm font-medium">{localCommentCount}</span>
-        </button>
+        </Link>
 
         <div className="w-px h-6 bg-gray-200"></div>
 
@@ -260,16 +259,11 @@ export const SessionCard: React.FC<SessionCardProps> = ({
         </button>
       </div>
 
-      {/* Comments Section */}
-      {showCommentSection && (
-        <div className="border-t border-gray-200">
-          <CommentList
-            sessionId={session.id}
-            initialCommentCount={session.commentCount}
-            onCommentCountChange={setLocalCommentCount}
-          />
-        </div>
-      )}
+      {/* Top Comments Section */}
+      <TopComments
+        sessionId={session.id}
+        totalCommentCount={localCommentCount}
+      />
 
     </article>
   );

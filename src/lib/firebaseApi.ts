@@ -2339,6 +2339,110 @@ export const firebaseSessionApi = {
     } catch (error: any) {
       throw new Error(getErrorMessage(error, 'Failed to get session'));
     }
+  },
+
+  // Get a single session with full details (user and project info)
+  getSessionWithDetails: async (sessionId: string) => {
+    try {
+      if (!auth.currentUser) {
+        throw new Error('User not authenticated');
+      }
+
+      const sessionRef = doc(db, 'sessions', sessionId);
+      const sessionDoc = await getDoc(sessionRef);
+
+      if (!sessionDoc.exists()) {
+        throw new Error('Session not found');
+      }
+
+      const data = sessionDoc.data();
+
+      // Get user data
+      const userData = await fetchUserDataForSocialContext(data.userId);
+
+      // Get project data
+      let project = null;
+      if (data.projectId) {
+        const projectRef = doc(db, 'projects', data.userId, 'userProjects', data.projectId);
+        const projectDoc = await getDoc(projectRef);
+        if (projectDoc.exists()) {
+          const projectData = projectDoc.data();
+          project = {
+            id: projectDoc.id,
+            userId: data.userId,
+            name: projectData.name,
+            description: projectData.description || '',
+            color: projectData.color || '#007AFF',
+            icon: projectData.icon || 'FolderIcon',
+            status: projectData.status || 'active',
+            totalTime: projectData.totalTime || 0,
+            sessionCount: projectData.sessionCount || 0,
+            isArchived: projectData.isArchived || false,
+            createdAt: convertTimestamp(projectData.createdAt),
+            updatedAt: convertTimestamp(projectData.updatedAt)
+          };
+        }
+      }
+
+      // Check if current user has supported this session
+      const supportId = `${auth.currentUser.uid}_${sessionId}`;
+      const supportRef = doc(db, 'sessionSupports', supportId);
+      const supportDoc = await getDoc(supportRef);
+      const isSupported = supportDoc.exists();
+
+      return {
+        id: sessionDoc.id,
+        userId: data.userId,
+        projectId: data.projectId || '',
+        title: data.title,
+        description: data.description,
+        duration: data.duration,
+        startTime: convertTimestamp(data.startTime),
+        tasks: data.tasks || [],
+        tags: data.tags || [],
+        visibility: data.visibility || 'private',
+        howFelt: data.howFelt,
+        privateNotes: data.privateNotes,
+        isArchived: data.isArchived || false,
+        images: data.images || [],
+        supportCount: data.supportCount || 0,
+        commentCount: data.commentCount || 0,
+        isSupported,
+        createdAt: convertTimestamp(data.createdAt),
+        updatedAt: convertTimestamp(data.updatedAt),
+        user: {
+          id: data.userId,
+          name: userData?.name || 'Unknown User',
+          username: userData?.username || '',
+          email: userData?.email || '',
+          profilePicture: userData?.profilePicture,
+          bio: userData?.bio,
+          location: userData?.location,
+          totalHours: userData?.totalHours || 0,
+          profileVisibility: userData?.profileVisibility || 'everyone',
+          activityVisibility: userData?.activityVisibility || 'everyone',
+          projectVisibility: userData?.projectVisibility || 'everyone',
+          createdAt: userData?.createdAt || new Date(),
+          updatedAt: userData?.updatedAt || new Date()
+        },
+        project: project || {
+          id: '',
+          userId: data.userId,
+          name: 'No Project',
+          description: '',
+          color: '#007AFF',
+          icon: 'FolderIcon',
+          status: 'active',
+          totalTime: 0,
+          sessionCount: 0,
+          isArchived: false,
+          createdAt: new Date(),
+          updatedAt: new Date()
+        }
+      };
+    } catch (error: any) {
+      throw new Error(getErrorMessage(error, 'Failed to get session with details'));
+    }
   }
 };
 
@@ -3517,6 +3621,79 @@ export const firebaseCommentApi = {
       return replies;
     } catch (error: any) {
       throw new Error(getErrorMessage(error, 'Failed to get replies'));
+    }
+  },
+
+  // Get top comments sorted by like count
+  getTopComments: async (
+    sessionId: string,
+    limitCount: number = 2
+  ): Promise<CommentWithDetails[]> => {
+    try {
+      if (!auth.currentUser) {
+        throw new Error('User not authenticated');
+      }
+
+      const userId = auth.currentUser.uid;
+
+      // Get top-level comments sorted by likeCount
+      const q = query(
+        collection(db, 'comments'),
+        where('sessionId', '==', sessionId),
+        orderBy('likeCount', 'desc'),
+        limit(limitCount)
+      );
+
+      const snapshot = await getDocs(q);
+
+      // Filter for top-level comments only (no parentId)
+      const topLevelDocs = snapshot.docs.filter(doc => !doc.data().parentId);
+
+      // Get all comment likes for current user in one query
+      const commentIds = topLevelDocs.map(d => d.id);
+      let likedCommentIds = new Set<string>();
+      if (commentIds.length > 0) {
+        const likesQuery = query(
+          collection(db, 'commentLikes'),
+          where('userId', '==', userId),
+          where('commentId', 'in', commentIds)
+        );
+        const likesSnapshot = await getDocs(likesQuery);
+        likedCommentIds = new Set(likesSnapshot.docs.map(d => d.data().commentId));
+      }
+
+      // Build comments with user details
+      const comments: CommentWithDetails[] = await Promise.all(
+        topLevelDocs.map(async (docSnapshot) => {
+          const data = docSnapshot.data();
+
+          const userData = await fetchUserDataForSocialContext(data.userId);
+
+          return {
+            id: docSnapshot.id,
+            sessionId: data.sessionId,
+            userId: data.userId,
+            parentId: data.parentId,
+            content: data.content,
+            likeCount: data.likeCount || 0,
+            replyCount: data.replyCount || 0,
+            isLiked: likedCommentIds.has(docSnapshot.id),
+            isEdited: data.isEdited || false,
+            createdAt: convertTimestamp(data.createdAt),
+            updatedAt: convertTimestamp(data.updatedAt),
+            user: buildCommentUserDetails(data.userId, userData)
+          };
+        })
+      );
+
+      return comments;
+    } catch (error: any) {
+      console.error('getTopComments error details:', {
+        code: error?.code,
+        message: error?.message,
+        details: error
+      });
+      throw new Error(getErrorMessage(error, 'Failed to get top comments'));
     }
   }
 };

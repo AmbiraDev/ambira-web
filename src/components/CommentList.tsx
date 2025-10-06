@@ -11,6 +11,8 @@ interface CommentListProps {
   sessionId: string;
   initialCommentCount?: number;
   onCommentCountChange?: (count: number) => void;
+  showPagination?: boolean;
+  commentsPerPage?: number;
 }
 
 export const CommentList: React.FC<CommentListProps> = ({
