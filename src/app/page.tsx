@@ -64,11 +64,6 @@ function HomeContent() {
         </div>
       </div>
 
-      {/* Floating Action Button Menu - only show on desktop */}
-      <div className="hidden md:block">
-        <FABMenu />
-      </div>
-
       {/* Bottom padding for mobile navigation */}
       <div className="h-20 md:hidden" />
 
