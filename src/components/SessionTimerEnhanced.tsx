@@ -4,12 +4,13 @@ import React, { useState, useEffect } from 'react';
 import { useTimer } from '@/contexts/TimerContext';
 import { useProjects } from '@/contexts/ProjectsContext';
 import { useTasks } from '@/contexts/TasksContext';
-import { Play, Pause, Square, X, ChevronDown, Check, Flag, Image as ImageIcon, XCircle } from 'lucide-react';
+import { Play, Pause, Square, X, ChevronDown, Check, Flag, Image as ImageIcon, XCircle, Edit3 } from 'lucide-react';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 import { GlobalTasks } from './GlobalTasks';
 import { uploadImages, compressImage } from '@/lib/imageUpload';
 import Image from 'next/image';
+import Link from 'next/link';
 
 interface SessionTimerEnhancedProps {
   projectId: string;
@@ -923,20 +924,30 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
             {/* Timer Controls - Pill Buttons with Text */}
             <div className="flex items-center justify-center gap-2 md:gap-4 flex-wrap">
               {!timerState.isRunning && !timerState.startTime && (
-                <button
-                  onClick={handleStartTimer}
-                  disabled={!selectedProjectId}
-                  className={`px-8 md:px-12 py-3 md:py-5 rounded-full flex items-center gap-2 md:gap-3 transition-all text-base md:text-xl font-semibold ${
-                    selectedProjectId
-                      ? 'bg-[#007AFF] hover:bg-[#0056D6] text-white shadow-lg hover:shadow-xl'
-                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  }`}
-                >
-                  <svg className="w-6 h-6 md:w-8 md:h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M8 5v14l11-7z" />
-                  </svg>
-                  <span>Start</span>
-                </button>
+                <>
+                  <button
+                    onClick={handleStartTimer}
+                    disabled={!selectedProjectId}
+                    className={`px-8 md:px-12 py-3 md:py-5 rounded-full flex items-center gap-2 md:gap-3 transition-all text-base md:text-xl font-semibold ${
+                      selectedProjectId
+                        ? 'bg-[#007AFF] hover:bg-[#0056D6] text-white shadow-lg hover:shadow-xl'
+                        : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    }`}
+                  >
+                    <svg className="w-6 h-6 md:w-8 md:h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M8 5v14l11-7z" />
+                    </svg>
+                    <span>Start</span>
+                  </button>
+                  
+                  <Link
+                    href="/record-manual"
+                    className="px-6 md:px-10 py-3 md:py-5 rounded-full bg-white border-2 border-[#007AFF] text-[#007AFF] hover:bg-blue-50 flex items-center gap-2 md:gap-3 transition-all shadow-lg hover:shadow-xl text-base md:text-xl font-semibold"
+                  >
+                    <Edit3 className="w-5 h-5 md:w-6 md:h-6" />
+                    <span>Record Manually</span>
+                  </Link>
+                </>
               )}
 
               {timerState.isRunning && (
