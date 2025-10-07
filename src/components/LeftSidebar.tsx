@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { firebaseApi } from '@/lib/firebaseApi';
 import { UserProfile, UserStats } from '@/types';
 import { WeekStreakCalendar } from './WeekStreakCalendar';
-import { User, TrendingUp, Calendar, Target, ChevronRight, Clock } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -124,81 +124,6 @@ function LeftSidebar() {
             )}
           </div>
         </Link>
-
-        {/* Today's Goals */}
-        <div className="bg-white rounded-2xl border border-gray-200 p-4 shadow-sm">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-semibold text-gray-900">Today's Goals</h3>
-            <Link href="/you?tab=progress" className="text-xs text-[#007AFF] hover:text-[#0056D6] font-medium">
-              Manage
-            </Link>
-          </div>
-          
-          <div className="space-y-4">
-            {/* Daily Hours Goal */}
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center">
-                    <Clock className="w-4 h-4 text-blue-600" />
-                  </div>
-                  <div>
-                    <div className="text-sm font-medium text-gray-900">Focus Time</div>
-                    <div className="text-xs text-gray-500">{stats?.weeklyHours ? (stats.weeklyHours / 7).toFixed(1) : 0} / 2.0 hrs</div>
-                  </div>
-                </div>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div 
-                  className="bg-gradient-to-r from-blue-500 to-blue-600 h-2 rounded-full transition-all duration-500"
-                  style={{ width: `${Math.min(100, ((stats?.weeklyHours ? stats.weeklyHours / 7 : 0) / 2) * 100)}%` }}
-                ></div>
-              </div>
-            </div>
-
-            {/* Daily Sessions Goal */}
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-lg bg-purple-100 flex items-center justify-center">
-                    <Target className="w-4 h-4 text-purple-600" />
-                  </div>
-                  <div>
-                    <div className="text-sm font-medium text-gray-900">Sessions</div>
-                    <div className="text-xs text-gray-500">{stats?.sessionsThisWeek ? Math.round(stats.sessionsThisWeek / 7) : 0} / 3 today</div>
-                  </div>
-                </div>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div 
-                  className="bg-gradient-to-r from-purple-500 to-purple-600 h-2 rounded-full transition-all duration-500"
-                  style={{ width: `${Math.min(100, ((stats?.sessionsThisWeek ? stats.sessionsThisWeek / 7 : 0) / 3) * 100)}%` }}
-                ></div>
-              </div>
-            </div>
-
-            {/* Streak Goal */}
-            <div>
-              <div className="flex items-center justify-between mb-2">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-lg bg-orange-100 flex items-center justify-center">
-                    <TrendingUp className="w-4 h-4 text-orange-600" />
-                  </div>
-                  <div>
-                    <div className="text-sm font-medium text-gray-900">Streak</div>
-                    <div className="text-xs text-gray-500">{stats?.currentStreak || 0} day streak</div>
-                  </div>
-                </div>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div 
-                  className="bg-gradient-to-r from-orange-500 to-orange-600 h-2 rounded-full transition-all duration-500"
-                  style={{ width: `${Math.min(100, ((stats?.currentStreak || 0) / 7) * 100)}%` }}
-                ></div>
-              </div>
-            </div>
-          </div>
-        </div>
 
       </div>
     </aside>
