@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { X, Share, Plus, MoreVertical } from 'lucide-react';
+import { X, Share, Plus, MoreVertical, Square } from 'lucide-react';
 
 type Platform = 'ios' | 'android' | 'unknown';
 
@@ -124,10 +124,13 @@ export const PWAInstallPrompt: React.FC = () => {
                   <span className="text-[#007AFF] font-semibold text-lg">1</span>
                 </div>
                 <div className="flex-1">
-                  <p className="text-gray-900 font-semibold text-lg mb-2">Tap the Share button</p>
+                  <p className="text-gray-900 font-semibold text-lg mb-2">Press the Share button</p>
                   <div className="flex items-center gap-2 text-base text-gray-600">
-                    <Share className="w-5 h-5" />
-                    <span>at the bottom of your browser</span>
+                    <div className="relative w-5 h-5">
+                      <Square className="w-5 h-5 absolute" />
+                      <Share className="w-3 h-3 absolute top-1 left-1" />
+                    </div>
+                    <span>in your browser</span>
                   </div>
                 </div>
               </div>

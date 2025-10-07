@@ -431,7 +431,7 @@ export const LandingPage: React.FC = () => {
                   </button>
                 </form>
               ) : (
-                <form onSubmit={handleSignupSubmit} className="space-y-4">
+                <form onSubmit={handleSignupSubmit} className="space-y-3">
                   {/* Google Button */}
                   <button
                     onClick={handleGoogleSignIn}
@@ -448,29 +448,147 @@ export const LandingPage: React.FC = () => {
                     Continue with Google
                   </button>
 
-                  <div className="flex items-center gap-3 my-4">
+                  <div className="flex items-center gap-3 my-3">
                     <div className="flex-1 border-t border-gray-300"></div>
                     <span className="text-gray-500 text-sm">or</span>
                     <div className="flex-1 border-t border-gray-300"></div>
                   </div>
 
+                  {error && (
+                    <div className="bg-red-50 border border-red-200 text-red-600 px-3 py-2 rounded-lg text-sm">
+                      {error}
+                    </div>
+                  )}
+
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                    <input
+                      name="name"
+                      type="text"
+                      autoComplete="name"
+                      value={signupData.name}
+                      onChange={handleSignupChange}
+                      className={`w-full px-4 py-3 border rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-[#007AFF] ${
+                        signupErrors.name ? 'border-red-300' : 'border-gray-300'
+                      }`}
+                      placeholder="Enter your full name"
+                    />
+                    {signupErrors.name && (
+                      <p className="mt-1 text-xs text-red-600">{signupErrors.name}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                    <div className="relative">
+                      <input
+                        name="username"
+                        type="text"
+                        autoComplete="username"
+                        value={signupData.username}
+                        onChange={handleSignupChange}
+                        className={`w-full px-4 py-3 pr-10 border rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-[#007AFF] ${
+                          signupErrors.username ? 'border-red-300' : 
+                          usernameAvailable === true ? 'border-green-300' :
+                          usernameAvailable === false ? 'border-red-300' : 'border-gray-300'
+                        }`}
+                        placeholder="Choose a username"
+                      />
+                      {usernameCheckLoading && (
+                        <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500"></div>
+                        </div>
+                      )}
+                      {!usernameCheckLoading && usernameAvailable === true && signupData.username.trim().length >= 3 && (
+                        <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                          <svg className="h-4 w-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                        </div>
+                      )}
+                      {!usernameCheckLoading && usernameAvailable === false && (
+                        <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                          <svg className="h-4 w-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </div>
+                      )}
+                    </div>
+                    {signupErrors.username && (
+                      <p className="mt-1 text-xs text-red-600">{signupErrors.username}</p>
+                    )}
+                    {!signupErrors.username && usernameAvailable === true && signupData.username.trim().length >= 3 && (
+                      <p className="mt-1 text-xs text-green-600">Username is available!</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Email address</label>
                     <input
                       name="email"
                       type="email"
+                      autoComplete="email"
                       value={signupData.email}
                       onChange={handleSignupChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-[#007AFF]"
-                      placeholder="Email"
+                      className={`w-full px-4 py-3 border rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-[#007AFF] ${
+                        signupErrors.email ? 'border-red-300' : 'border-gray-300'
+                      }`}
+                      placeholder="Enter your email"
                     />
+                    {signupErrors.email && (
+                      <p className="mt-1 text-xs text-red-600">{signupErrors.email}</p>
+                    )}
                   </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                    <input
+                      name="password"
+                      type="password"
+                      autoComplete="new-password"
+                      value={signupData.password}
+                      onChange={handleSignupChange}
+                      className={`w-full px-4 py-3 border rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-[#007AFF] ${
+                        signupErrors.password ? 'border-red-300' : 'border-gray-300'
+                      }`}
+                      placeholder="Create a password"
+                    />
+                    {signupErrors.password && (
+                      <p className="mt-1 text-xs text-red-600">{signupErrors.password}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
+                    <input
+                      name="confirmPassword"
+                      type="password"
+                      autoComplete="new-password"
+                      value={confirmPassword}
+                      onChange={handleSignupChange}
+                      className={`w-full px-4 py-3 border rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-[#007AFF] ${
+                        signupErrors.confirmPassword ? 'border-red-300' : 'border-gray-300'
+                      }`}
+                      placeholder="Confirm your password"
+                    />
+                    {signupErrors.confirmPassword && (
+                      <p className="mt-1 text-xs text-red-600">{signupErrors.confirmPassword}</p>
+                    )}
+                  </div>
+
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full py-4 bg-[#007AFF] text-white font-semibold text-lg rounded-xl hover:bg-[#0056D6] transition-colors"
+                    className="w-full py-4 bg-[#007AFF] text-white font-semibold text-lg rounded-xl hover:bg-[#0056D6] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {isLoading ? 'Creating account...' : 'Sign Up'}
+                    {isLoading ? (
+                      <div className="flex items-center justify-center">
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                        Creating account...
+                      </div>
+                    ) : (
+                      'Create account'
+                    )}
                   </button>
                 </form>
               )}

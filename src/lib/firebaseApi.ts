@@ -1322,31 +1322,51 @@ export const firebaseUserApi = {
   // Get suggested users
   getSuggestedUsers: async (limitCount: number = 10): Promise<SuggestedUser[]> => {
     try {
+      if (!auth.currentUser) {
+        return [];
+      }
+
+      // Get users with public profiles, ordered by followers
       const usersQuery = query(
         collection(db, 'users'),
+        where('profileVisibility', '==', 'everyone'),
         orderBy('followersCount', 'desc'),
-        limit(limitCount)
+        limit(limitCount * 2) // Get more to filter out current user and following
       );
       
       const querySnapshot = await getDocs(usersQuery);
       const suggestions: SuggestedUser[] = [];
       
+      // Get list of users we're already following
+      const followingList = await firebaseUserApi.getFollowing(auth.currentUser.uid);
+      const followingIds = new Set(followingList.map(u => u.id));
+      
       querySnapshot.forEach((doc, index) => {
         const userData = doc.data();
-        suggestions.push({
-          id: doc.id,
-          username: userData.username,
-          name: userData.name,
-          bio: userData.bio,
-          profilePicture: userData.profilePicture,
-          followersCount: userData.followersCount || 0,
-          reason: index < 3 ? 'popular_user' : 'similar_interests',
-          isFollowing: false
-        });
+        
+        // Skip current user and users we're already following
+        if (doc.id === auth.currentUser?.uid || followingIds.has(doc.id)) {
+          return;
+        }
+        
+        // Only add up to the limit
+        if (suggestions.length < limitCount) {
+          suggestions.push({
+            id: doc.id,
+            username: userData.username,
+            name: userData.name,
+            bio: userData.bio,
+            profilePicture: userData.profilePicture,
+            followersCount: userData.followersCount || 0,
+            reason: index < 3 ? 'popular_user' : 'similar_interests',
+            isFollowing: false
+          });
+        }
       });
       
       return suggestions;
     } catch (error: any) {
+      console.error('Error getting suggested users:', error);
       throw new Error(error.message || 'Failed to get suggested users');
     }
   },

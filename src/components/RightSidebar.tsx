@@ -51,17 +51,9 @@ function RightSidebar() {
 
       // Load suggested users (top 3)
       try {
-        // Get list of users we're already following
-        const followingList = await firebaseUserApi.getFollowing(user.id);
-        const followingIds = new Set(followingList.map(u => u.id));
-        
-        // Load more users to ensure we have enough suggestions
-        const { users } = await firebaseUserApi.searchUsers('', 1, 50);
-        const filtered = users
-          .filter(u => u.id !== user.id && !followingIds.has(u.id)) // Exclude self and already following
-          .sort((a, b) => (b.followersCount || 0) - (a.followersCount || 0))
-          .slice(0, 3);
-        setSuggestedUsers(filtered);
+        // Use the getSuggestedUsers API which filters by profileVisibility
+        const suggestions = await firebaseUserApi.getSuggestedUsers(3);
+        setSuggestedUsers(suggestions);
       } catch (error) {
         console.error('Failed to load suggested users:', error);
       }
@@ -138,7 +130,7 @@ function RightSidebar() {
                       {suggestedUser.name}
                     </div>
                     <div className="text-xs text-gray-500 truncate">
-                      @{suggestedUser.username}
+                      {suggestedUser.followersCount || 0} followers
                     </div>
                   </div>
                   <ChevronRight className="w-4 h-4 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />

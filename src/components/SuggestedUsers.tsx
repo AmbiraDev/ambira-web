@@ -203,7 +203,9 @@ const SuggestedUsers: React.FC<SuggestedUsersProps> = ({
                   {/* User Info */}
                   <div className="min-w-0 flex-1">
                     <h4 className="font-medium text-foreground truncate">{user.name}</h4>
-                    <p className="text-sm text-muted-foreground truncate">@{user.username}</p>
+                    <p className="text-sm text-muted-foreground truncate">
+                      {user.followersCount || 0} followers
+                    </p>
                     <div className="flex items-center gap-1 mt-1">
                       {getReasonIcon(user.reason)}
                       <span className={`text-xs ${getReasonColor(user.reason)}`}>
