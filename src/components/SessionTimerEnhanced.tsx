@@ -733,24 +733,6 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
               </div>
             )}
 
-            {/* Tag Button */}
-            <div className="flex flex-col items-center gap-1">
-              <button
-                onClick={() => setShowTagPicker(true)}
-                className="relative w-16 h-16 rounded-full flex items-center justify-center transition-all border-2 active:scale-95"
-                style={selectedTagConfig ? {
-                  backgroundColor: selectedTagConfig.bgColor,
-                  borderColor: selectedTagConfig.color
-                } : {
-                  backgroundColor: '#F3F4F6',
-                  borderColor: '#D1D5DB'
-                }}
-              >
-                <span className="text-2xl">🏷️</span>
-              </button>
-              <span className="text-xs text-gray-600 font-medium">Tag</span>
-            </div>
-
             {/* Pause Button - When Running */}
             {timerState.isRunning && (
               <div className="flex flex-col items-center gap-1">
