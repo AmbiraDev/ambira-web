@@ -308,48 +308,53 @@ export default function ManualSessionRecorder() {
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Photos (Optional)
             </label>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="space-y-2">
               {/* Image Previews */}
-              {imagePreviewUrls.map((url, index) => (
-                <div key={index} className="relative aspect-square rounded-lg overflow-hidden border-2 border-gray-200">
-                  <Image
-                    src={url}
-                    alt={`Preview ${index + 1}`}
-                    fill
-                    className="object-cover"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveImage(index)}
-                    className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
-                    disabled={isLoading}
-                  >
-                    <XCircle className="w-4 h-4" />
-                  </button>
+              {imagePreviewUrls.length > 0 && (
+                <div className="grid grid-cols-3 gap-2">
+                  {imagePreviewUrls.map((url, index) => (
+                    <div key={index} className="relative aspect-square rounded-lg overflow-hidden bg-gray-100">
+                      <Image
+                        src={url}
+                        alt={`Preview ${index + 1}`}
+                        width={300}
+                        height={300}
+                        quality={90}
+                        className="w-full h-full object-cover"
+                        unoptimized
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveImage(index)}
+                        className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                      >
+                        <XCircle className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              )}
 
               {/* Upload Button */}
               {selectedImages.length < 3 && (
-                <label className="aspect-square flex flex-col items-center justify-center gap-2 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 hover:bg-gray-50 transition-colors">
+                <label className="flex flex-col items-center justify-center gap-2 px-4 py-8 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-[#007AFF] hover:bg-gray-50 transition-colors min-h-[120px]">
                   <ImageIcon className="w-8 h-8 text-gray-400" />
-                  <span className="text-xs font-medium text-gray-600">
-                    Add Photo
+                  <span className="text-sm font-medium text-gray-600">
+                    {imagePreviewUrls.length === 0 ? 'Add images' : `Add ${3 - imagePreviewUrls.length} more`}
+                  </span>
+                  <span className="text-xs text-gray-400">
+                    JPG, PNG, HEIC (max 5MB each)
                   </span>
                   <input
                     type="file"
-                    accept="image/*"
+                    accept="image/*,.heic,.heif"
                     multiple
                     onChange={handleImageSelect}
                     className="hidden"
-                    disabled={isLoading}
                   />
                 </label>
               )}
             </div>
-            <p className="text-xs text-gray-500 mt-2">
-              Upload up to 3 photos (max 10MB each)
-            </p>
           </div>
 
           {/* Tags */}
