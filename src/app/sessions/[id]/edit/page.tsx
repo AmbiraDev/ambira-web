@@ -114,7 +114,7 @@ export default function EditSessionPage() {
     try {
       setIsDeleting(true);
       await firebaseSessionApi.deleteSession(sessionId);
-      router.push('/you');
+      router.push('/');
     } catch (error) {
       console.error('Failed to delete session:', error);
       alert('Failed to delete session. Please try again.');
@@ -145,7 +145,7 @@ export default function EditSessionPage() {
         allowComments
       });
 
-      router.push('/you');
+      router.push('/');
     } catch (error) {
       console.error('Failed to update session:', error);
       alert('Failed to update session. Please try again.');
