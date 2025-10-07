@@ -262,10 +262,14 @@ export default function SettingsPage() {
             <div className="flex-1">
               <div className="bg-white md:rounded-lg md:shadow-sm p-4 md:p-8">
                 {activeTab === 'profile' && (
-                  <div>
-                    <h2 className="text-2xl font-bold text-gray-900 mb-6">My Profile</h2>
-                    
-                    <form onSubmit={handleSubmit} className="space-y-6">
+                  <form onSubmit={handleSubmit}>
+                    <div className="space-y-6">
+                      <h2 className="text-2xl font-bold text-gray-900 mb-2 flex items-center gap-2">
+                        <User className="w-6 h-6 text-[#007AFF]" />
+                        My Profile
+                      </h2>
+                      <p className="text-gray-600 text-sm mb-8">Update your personal information and profile settings</p>
+
                       {/* Profile Picture */}
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -273,19 +277,19 @@ export default function SettingsPage() {
                         </label>
                         <div className="flex flex-col md:flex-row md:items-center gap-4">
                           {profilePictureUrl || user?.profilePicture ? (
-                            <div className="w-20 h-20 rounded-full overflow-hidden flex-shrink-0">
+                            <div className="w-24 h-24 rounded-full overflow-hidden ring-4 ring-white flex-shrink-0">
                               <Image
                                 src={profilePictureUrl || user.profilePicture || ''}
                                 alt="Profile"
-                                width={160}
-                                height={160}
+                                width={96}
+                                height={96}
                                 quality={95}
                                 priority
                                 className="w-full h-full object-cover"
                               />
                             </div>
                           ) : (
-                            <div className="w-20 h-20 bg-gradient-to-br from-[#007AFF] to-[#0051D5] rounded-full flex items-center justify-center text-white text-3xl font-bold shadow-lg flex-shrink-0">
+                            <div className="w-24 h-24 bg-gradient-to-br from-[#FC4C02] to-[#FF8800] rounded-full flex items-center justify-center text-white text-4xl font-bold flex-shrink-0">
                               {user?.name.charAt(0).toUpperCase() || 'N'}
                             </div>
                           )}
@@ -545,13 +549,24 @@ export default function SettingsPage() {
                 )}
 
                 {activeTab === 'privacy' && (
-                  <div>
-                    <h2 className="text-2xl font-bold text-gray-900 mb-6">Privacy Controls</h2>
-                    <div className="space-y-6">
-                      <div>
-                        <label htmlFor="profileVisibility" className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-                          <Globe className="w-4 h-4" />
+                  <div className="space-y-6">
+                    <h2 className="text-2xl font-bold text-gray-900 mb-2 flex items-center gap-2">
+                      <Shield className="w-6 h-6 text-[#007AFF]" />
+                      Privacy Controls
+                    </h2>
+                    <p className="text-gray-600 text-sm mb-8">Control who can see your profile and content</p>
+
+                    <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                      <div className="px-6 py-4 border-b border-gray-200">
+                        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
+                          <Globe className="w-5 h-5 text-[#007AFF]" />
                           Profile Visibility
+                        </h3>
+                        <p className="text-sm text-gray-600 mt-1">Control who can view your profile and sessions</p>
+                      </div>
+                      <div className="px-6 py-4">
+                        <label htmlFor="profileVisibility" className="text-sm font-medium text-gray-700 mb-2 block">
+                          Profile Access
                         </label>
                         <select
                           id="profileVisibility"
@@ -559,9 +574,9 @@ export default function SettingsPage() {
                           onChange={(e) => setFormData({ ...formData, profileVisibility: e.target.value as any })}
                           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] outline-none"
                         >
-                          <option value="everyone">Everyone - Your profile and sessions are visible to all users</option>
-                          <option value="followers">Followers Only - Only your followers can see your profile and sessions</option>
-                          <option value="private">Only You - Your profile and sessions are completely private</option>
+                          <option value="everyone">🌐 Everyone - Your profile and sessions are visible to all users</option>
+                          <option value="followers">👥 Followers Only - Only your followers can see your profile and sessions</option>
+                          <option value="private">🔒 Only You - Your profile and sessions are completely private</option>
                         </select>
                         <p className="text-xs text-gray-500 mt-2">
                           {formData.profileVisibility === 'everyone' && 'Your profile, sessions, and stats are visible to everyone.'}
@@ -569,31 +584,31 @@ export default function SettingsPage() {
                           {formData.profileVisibility === 'private' && 'Your profile is completely private. Only you can see your sessions and stats.'}
                         </p>
                       </div>
-                      
-                      {/* Submit Buttons */}
-                      <div className="flex flex-col md:flex-row gap-3 pt-4">
-                        <button
-                          type="button"
-                          onClick={() => setFormData({ ...formData, profileVisibility: originalFormData.profileVisibility })}
-                          className="px-6 py-3 md:py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors text-center"
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          type="button"
-                          onClick={handlePrivacySubmit}
-                          disabled={isSaving || !hasChanges}
-                          className={`px-6 py-3 md:py-2 rounded-lg transition-colors text-white ${
-                            isSaving || !hasChanges
-                              ? 'bg-gray-400 cursor-not-allowed' 
-                              : saved 
-                                ? 'bg-green-600 hover:bg-green-600' 
-                                : 'bg-[#007AFF] hover:bg-[#0051D5]'
-                          }`}
-                        >
-                          {isSaving ? 'Saving…' : saved ? '✓ Saved' : 'Save Changes'}
-                        </button>
-                      </div>
+                    </div>
+
+                    {/* Submit Buttons */}
+                    <div className="flex flex-col md:flex-row gap-3 pt-2">
+                      <button
+                        type="button"
+                        onClick={() => setFormData({ ...formData, profileVisibility: originalFormData.profileVisibility })}
+                        className="px-6 py-3 md:py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors text-center"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handlePrivacySubmit}
+                        disabled={isSaving || !hasChanges}
+                        className={`px-6 py-3 md:py-2 rounded-lg transition-colors text-white ${
+                          isSaving || !hasChanges
+                            ? 'bg-gray-400 cursor-not-allowed'
+                            : saved
+                              ? 'bg-[#34C759] hover:bg-[#34C759]'
+                              : 'bg-[#007AFF] hover:bg-[#0051D5]'
+                        }`}
+                      >
+                        {isSaving ? 'Saving…' : saved ? '✓ Saved' : 'Save Changes'}
+                      </button>
                     </div>
                   </div>
                 )}
@@ -603,9 +618,22 @@ export default function SettingsPage() {
                 )}
 
                 {activeTab === 'display' && (
-                  <div>
-                    <h2 className="text-2xl font-bold text-gray-900 mb-6">Display Preferences</h2>
-                    <p className="text-gray-600">Customize how the app looks and feels.</p>
+                  <div className="space-y-6">
+                    <h2 className="text-2xl font-bold text-gray-900 mb-2 flex items-center gap-2">
+                      <Globe className="w-6 h-6 text-[#007AFF]" />
+                      Display Preferences
+                    </h2>
+                    <p className="text-gray-600 text-sm">Customize how the app looks and feels.</p>
+
+                    <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                      <div className="px-6 py-8 text-center">
+                        <Globe className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                        <h3 className="font-medium text-gray-900 mb-1">Coming Soon</h3>
+                        <p className="text-sm text-gray-600">
+                          Display preferences will be available in a future update
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>

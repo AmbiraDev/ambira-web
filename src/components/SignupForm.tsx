@@ -113,143 +113,147 @@ export const SignupForm: React.FC = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-8">
       {submitError && (
         <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded-md">
           {submitError}
         </div>
       )}
 
-      <div>
-        <label htmlFor="name" className="block text-sm font-medium text-foreground mb-2">
-          Full Name
-        </label>
-        <input
-          id="name"
-          name="name"
-          type="text"
-          autoComplete="name"
-          value={formData.name}
-          onChange={handleChange}
-          className={`w-full px-3 py-2 border rounded-md shadow-sm placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent ${
-            errors.name ? 'border-destructive' : 'border-border'
-          }`}
-          placeholder="Enter your full name"
-        />
-        {errors.name && (
-          <p className="mt-1 text-sm text-destructive">{errors.name}</p>
-        )}
+      <div className="space-y-5">
+        <div>
+          <label htmlFor="name" className="block text-sm font-medium text-foreground mb-2">
+            Full Name
+          </label>
+          <input
+            id="name"
+            name="name"
+            type="text"
+            autoComplete="name"
+            value={formData.name}
+            onChange={handleChange}
+            className={`w-full px-4 py-3 border rounded-md shadow-sm placeholder-muted-foreground text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent ${
+              errors.name ? 'border-destructive' : 'border-border'
+            }`}
+            placeholder="Enter your full name"
+          />
+          {errors.name && (
+            <p className="mt-2 text-sm text-destructive">{errors.name}</p>
+          )}
+        </div>
+
+        <div>
+          <label htmlFor="username" className="block text-sm font-medium text-foreground mb-2">
+            Username
+          </label>
+          <input
+            id="username"
+            name="username"
+            type="text"
+            autoComplete="username"
+            value={formData.username}
+            onChange={handleChange}
+            className={`w-full px-4 py-3 border rounded-md shadow-sm placeholder-muted-foreground text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent ${
+              errors.username ? 'border-destructive' : 'border-border'
+            }`}
+            placeholder="Choose a username"
+          />
+          {errors.username && (
+            <p className="mt-2 text-sm text-destructive">{errors.username}</p>
+          )}
+        </div>
+
+        <div>
+          <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
+            Email address
+          </label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            autoComplete="email"
+            value={formData.email}
+            onChange={handleChange}
+            className={`w-full px-4 py-3 border rounded-md shadow-sm placeholder-muted-foreground text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent ${
+              errors.email ? 'border-destructive' : 'border-border'
+            }`}
+            placeholder="Enter your email"
+          />
+          {errors.email && (
+            <p className="mt-2 text-sm text-destructive">{errors.email}</p>
+          )}
+        </div>
+
+        <div>
+          <label htmlFor="password" className="block text-sm font-medium text-foreground mb-2">
+            Password
+          </label>
+          <input
+            id="password"
+            name="password"
+            type="password"
+            autoComplete="new-password"
+            value={formData.password}
+            onChange={handleChange}
+            className={`w-full px-4 py-3 border rounded-md shadow-sm placeholder-muted-foreground text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent ${
+              errors.password ? 'border-destructive' : 'border-border'
+            }`}
+            placeholder="Create a password"
+          />
+          {errors.password && (
+            <p className="mt-2 text-sm text-destructive">{errors.password}</p>
+          )}
+        </div>
+
+        <div>
+          <label htmlFor="confirmPassword" className="block text-sm font-medium text-foreground mb-2">
+            Confirm Password
+          </label>
+          <input
+            id="confirmPassword"
+            name="confirmPassword"
+            type="password"
+            autoComplete="new-password"
+            value={confirmPassword}
+            onChange={handleChange}
+            className={`w-full px-4 py-3 border rounded-md shadow-sm placeholder-muted-foreground text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent ${
+              errors.confirmPassword ? 'border-destructive' : 'border-border'
+            }`}
+            placeholder="Confirm your password"
+          />
+          {errors.confirmPassword && (
+            <p className="mt-2 text-sm text-destructive">{errors.confirmPassword}</p>
+          )}
+        </div>
       </div>
 
-      <div>
-        <label htmlFor="username" className="block text-sm font-medium text-foreground mb-2">
-          Username
-        </label>
-        <input
-          id="username"
-          name="username"
-          type="text"
-          autoComplete="username"
-          value={formData.username}
-          onChange={handleChange}
-          className={`w-full px-3 py-2 border rounded-md shadow-sm placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent ${
-            errors.username ? 'border-destructive' : 'border-border'
-          }`}
-          placeholder="Choose a username"
-        />
-        {errors.username && (
-          <p className="mt-1 text-sm text-destructive">{errors.username}</p>
-        )}
-      </div>
+      <div className="space-y-4">
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-base font-medium text-primary-foreground bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        >
+          {isSubmitting ? (
+            <div className="flex items-center">
+              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+              Creating account...
+            </div>
+          ) : (
+            'Create account'
+          )}
+        </button>
 
-      <div>
-        <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
-          Email address
-        </label>
-        <input
-          id="email"
-          name="email"
-          type="email"
-          autoComplete="email"
-          value={formData.email}
-          onChange={handleChange}
-          className={`w-full px-3 py-2 border rounded-md shadow-sm placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent ${
-            errors.email ? 'border-destructive' : 'border-border'
-          }`}
-          placeholder="Enter your email"
-        />
-        {errors.email && (
-          <p className="mt-1 text-sm text-destructive">{errors.email}</p>
-        )}
-      </div>
-
-      <div>
-        <label htmlFor="password" className="block text-sm font-medium text-foreground mb-2">
-          Password
-        </label>
-        <input
-          id="password"
-          name="password"
-          type="password"
-          autoComplete="new-password"
-          value={formData.password}
-          onChange={handleChange}
-          className={`w-full px-3 py-2 border rounded-md shadow-sm placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent ${
-            errors.password ? 'border-destructive' : 'border-border'
-          }`}
-          placeholder="Create a password"
-        />
-        {errors.password && (
-          <p className="mt-1 text-sm text-destructive">{errors.password}</p>
-        )}
-      </div>
-
-      <div>
-        <label htmlFor="confirmPassword" className="block text-sm font-medium text-foreground mb-2">
-          Confirm Password
-        </label>
-        <input
-          id="confirmPassword"
-          name="confirmPassword"
-          type="password"
-          autoComplete="new-password"
-          value={confirmPassword}
-          onChange={handleChange}
-          className={`w-full px-3 py-2 border rounded-md shadow-sm placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent ${
-            errors.confirmPassword ? 'border-destructive' : 'border-border'
-          }`}
-          placeholder="Confirm your password"
-        />
-        {errors.confirmPassword && (
-          <p className="mt-1 text-sm text-destructive">{errors.confirmPassword}</p>
-        )}
-      </div>
-
-      <button
-        type="submit"
-        disabled={isSubmitting}
-        className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-primary-foreground bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        {isSubmitting ? (
-          <div className="flex items-center">
-            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-            Creating account...
-          </div>
-        ) : (
-          'Create account'
-        )}
-      </button>
-
-      <div className="text-center">
-        <p className="text-sm text-muted-foreground">
-          Already have an account?{' '}
-          <a
-            href="/login"
-            className="font-medium text-primary hover:text-primary/80"
-          >
-            Sign in
-          </a>
-        </p>
+        <div className="text-center pt-2">
+          <p className="text-sm text-muted-foreground">
+            Already have an account?{' '}
+            <a
+              href="/login"
+              className="font-medium text-primary hover:text-primary/80 transition-colors"
+            >
+              Sign in
+            </a>
+          </p>
+        </div>
       </div>
     </form>
   );

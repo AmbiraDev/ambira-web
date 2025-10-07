@@ -7,12 +7,9 @@ import { Challenge, ChallengeFilters, ChallengeProgress } from '@/types';
 import Header from '@/components/HeaderComponent';
 import ChallengeCard from '@/components/ChallengeCard';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { 
-  Trophy, 
+import {
+  Trophy,
   Target,
-  Plus,
-  Filter,
   Search,
   TrendingUp,
   Zap,
@@ -123,20 +120,18 @@ export default function ChallengesPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-      
-      <div className="max-w-[1400px] mx-auto px-4 py-6">
+
+      <div className="max-w-6xl mx-auto px-4 md:px-6 lg:px-8 py-6">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Challenges</h1>
-            <p className="text-gray-600">
-              Participate in productivity challenges and compete with others
-            </p>
-          </div>
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Challenges</h1>
+          <p className="text-gray-600">
+            Participate in productivity challenges and compete with others
+          </p>
         </div>
 
         {/* Filters */}
-        <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
+        <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6 mb-6">
           {/* Status Filter Tabs */}
           <div className="flex flex-wrap gap-2 mb-4">
             {filterTabs.map((tab) => {
@@ -147,9 +142,9 @@ export default function ChallengesPage() {
                 <button
                   key={tab.key}
                   onClick={() => setActiveFilter(tab.key as any)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
+                  className={`flex items-center gap-2 px-4 py-2.5 rounded-lg font-semibold text-sm transition-colors min-h-[44px] ${
                     isActive
-                      ? 'bg-blue-100 text-blue-700 border border-blue-200'
+                      ? 'bg-[#007AFF] text-white'
                       : 'bg-gray-50 text-gray-600 hover:bg-gray-100 border border-transparent'
                   }`}
                 >
@@ -190,9 +185,9 @@ export default function ChallengesPage() {
 
         {/* Results */}
         {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             {[...Array(6)].map((_, i) => (
-              <div key={i} className="bg-white rounded-lg border border-gray-200 p-6 animate-pulse">
+              <div key={i} className="bg-white rounded-lg border border-gray-200 shadow-sm p-6 animate-pulse">
                 <div className="h-4 bg-gray-200 rounded mb-4"></div>
                 <div className="h-3 bg-gray-200 rounded mb-2"></div>
                 <div className="h-3 bg-gray-200 rounded mb-4"></div>
@@ -201,7 +196,7 @@ export default function ChallengesPage() {
             ))}
           </div>
         ) : filteredChallenges.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             {filteredChallenges.map((challenge) => (
               <ChallengeCard
                 key={challenge.id}
@@ -215,13 +210,13 @@ export default function ChallengesPage() {
             ))}
           </div>
         ) : (
-          <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
-            <Trophy className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
+          <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-12 text-center">
+            <Trophy className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">
               {searchQuery ? 'No challenges found' : 'No challenges available'}
-            </h3>
-            <p className="text-gray-500 mb-6">
-              {searchQuery 
+            </h2>
+            <p className="text-gray-600 mb-6">
+              {searchQuery
                 ? 'Try adjusting your search or filters'
                 : 'Check back later for new challenges to join'
               }

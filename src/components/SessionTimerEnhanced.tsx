@@ -296,7 +296,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                 <button onClick={() => setShowFinishModal(false)} className="text-gray-500 hover:text-gray-700">Close</button>
               </div>
               {/* Reuse existing completion UI from below */}
-              <div className="space-y-6">
+              <div className="space-y-3">
               {/* Session Title */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -306,7 +306,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                   type="text"
                   value={sessionTitle}
                   onChange={(e) => setSessionTitle(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF]"
                   placeholder="Enter session title"
                 />
               </div>
@@ -319,7 +319,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                 <textarea
                   value={sessionDescription}
                   onChange={(e) => setSessionDescription(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF]"
                   rows={3}
                   placeholder="How did the session go? What did you accomplish?"
                 />
@@ -393,20 +393,20 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                 <textarea
                   value={privateNotes}
                   onChange={(e) => setPrivateNotes(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF]"
                   rows={2}
                   placeholder="Personal reflections (never shown publicly)"
                 />
               </div>
 
               {/* Privacy and Publishing Options */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Visibility</label>
                   <select
                     value={visibility}
                     onChange={(e) => setVisibility(e.target.value as any)}
-                    className="w-full pl-3 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none bg-white"
+                    className="w-full pl-3 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] appearance-none bg-white"
                     style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 12 12\'%3E%3Cpath fill=\'%23666\' d=\'M6 9L1 4h10z\'/%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.75rem center' }}
                   >
                     <option value="everyone">Everyone</option>
@@ -485,19 +485,19 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
               </div>
 
               {/* Actions */}
-              <div className="flex gap-4 pt-4">
+              <div className="flex gap-3 pt-3">
                 <button
                   onClick={() => setShowCancelConfirm(true)}
-                  className="flex-1 px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors"
+                  className="flex-1 px-3 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
                 >
-                  Cancel Session
+                  Cancel
                 </button>
                 <button
                   onClick={handleFinishTimer}
                   disabled={!sessionTitle.trim() || isUploadingImages}
-                  className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 px-3 py-2 bg-[#007AFF] text-white border border-[#007AFF] rounded-lg hover:bg-[#0051D5] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isUploadingImages ? 'Uploading Images...' : 'Save Session'}
+                  {isUploadingImages ? 'Uploading...' : 'Save'}
                 </button>
               </div>
               </div>
@@ -524,7 +524,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                   onClick={handleCancelTimer}
                   className="flex-1 px-4 py-3 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors font-medium"
                 >
-                  Cancel Session
+                  Cancel
                 </button>
               </div>
             </div>
@@ -722,7 +722,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                     setSelectedProjectId('');
                     setShowProjectPicker(false);
                   }}
-                  className={`w-full flex items-center gap-4 p-4 rounded-xl transition-all ${
+                  className={`w-full flex items-center gap-3 p-4 rounded-xl transition-all ${
                     !selectedProjectId
                       ? 'bg-blue-100 border-2 border-blue-500'
                       : 'bg-gray-50 border-2 border-transparent hover:bg-gray-100'
@@ -748,7 +748,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                       setSelectedProjectId(project.id);
                       setShowProjectPicker(false);
                     }}
-                    className={`w-full flex items-center gap-4 p-4 rounded-xl transition-all ${
+                    className={`w-full flex items-center gap-3 p-4 rounded-xl transition-all ${
                       selectedProjectId === project.id
                         ? 'bg-blue-100 border-2 border-blue-500'
                         : 'bg-gray-50 border-2 border-transparent hover:bg-gray-100'
@@ -801,7 +801,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                       setSessionTags([tagConfig.name]);
                       setShowTagPicker(false);
                     }}
-                    className="w-full flex items-center gap-4 p-4 rounded-xl transition-all border-2"
+                    className="w-full flex items-center gap-3 p-4 rounded-xl transition-all border-2"
                     style={selectedTag === tagConfig.name ? {
                       backgroundColor: tagConfig.bgColor,
                       borderColor: tagConfig.color
@@ -830,13 +830,13 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
       {/* Desktop: Two-column layout */}
       <div className="hidden md:grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-12 pb-4 px-4 max-w-7xl mx-auto">
         {/* Left Column - Timer & Controls */}
-        <div className="flex flex-col items-center justify-start space-y-6 lg:space-y-8 lg:sticky lg:top-24 pt-8">
+        <div className="flex flex-col items-center justify-start space-y-3 lg:space-y-8 lg:sticky lg:top-24 pt-8">
           {/* Large Timer Display */}
           <div className="text-center w-full">
             <div className="text-6xl md:text-7xl lg:text-9xl font-mono font-bold text-gray-900" aria-label={`Timer: ${Math.floor(displayTime / 3600)} hours, ${Math.floor((displayTime % 3600) / 60)} minutes, ${displayTime % 60} seconds`}>
               {getFormattedTime(displayTime)}
             </div>
-            <div className="flex items-center justify-center gap-3 md:gap-4 lg:gap-6 mt-2 md:mt-3 lg:mt-4 mb-4 lg:mb-8 text-sm md:text-base lg:text-xl text-gray-500 font-medium tracking-wide">
+            <div className="flex items-center justify-center gap-3 md:gap-3 lg:gap-6 mt-2 md:mt-3 lg:mt-4 mb-4 lg:mb-8 text-sm md:text-base lg:text-xl text-gray-500 font-medium tracking-wide">
               <span className="inline-block w-14 md:w-16 lg:w-24 text-center">Hours</span>
               <span className="text-gray-400">:</span>
               <span className="inline-block w-14 md:w-16 lg:w-24 text-center">Mins</span>
@@ -845,7 +845,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
             </div>
 
             {/* Timer Controls - Pill Buttons with Text */}
-            <div className="flex items-center justify-center gap-2 md:gap-4 flex-wrap">
+            <div className="flex items-center justify-center gap-2 md:gap-3 flex-wrap">
               {!timerState.isRunning && !timerState.startTime && (
                 <>
                   <button
@@ -909,7 +909,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
           </div>
 
           {/* Project & Tag Dropdowns */}
-          <div className="w-full max-w-xl grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+          <div className="w-full max-w-xl grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-3">
             {/* Project Dropdown */}
             <div className="relative">
               <select
@@ -978,7 +978,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
               <button onClick={() => setShowFinishModal(false)} className="text-gray-500 hover:text-gray-700">Close</button>
             </div>
 
-            <div className="space-y-6">
+            <div className="space-y-3">
               {/* Session Title */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -988,7 +988,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                   type="text"
                   value={sessionTitle}
                   onChange={(e) => setSessionTitle(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF]"
                   placeholder="Enter session title"
                 />
               </div>
@@ -1001,14 +1001,14 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                 <textarea
                   value={sessionDescription}
                   onChange={(e) => setSessionDescription(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF]"
                   rows={3}
                   placeholder="How did the session go? What did you accomplish?"
                 />
               </div>
 
               {/* Project and Tags - Side by Side */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-2 gap-3">
                 {/* Project Selection */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -1085,7 +1085,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                 <textarea
                   value={privateNotes}
                   onChange={(e) => setPrivateNotes(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF]"
                   rows={2}
                   placeholder="Personal reflections (never shown publicly)"
                 />
@@ -1145,19 +1145,19 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
               </div>
 
               {/* Actions */}
-              <div className="flex gap-4 pt-4">
+              <div className="flex gap-3 pt-3">
                 <button
                   onClick={() => setShowCancelConfirm(true)}
-                  className="flex-1 px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors"
+                  className="flex-1 px-3 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
                 >
-                  Cancel Session
+                  Cancel
                 </button>
                 <button
                   onClick={handleFinishTimer}
                   disabled={!sessionTitle.trim() || isUploadingImages}
-                  className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 px-3 py-2 bg-[#007AFF] text-white border border-[#007AFF] rounded-lg hover:bg-[#0051D5] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isUploadingImages ? 'Uploading Images...' : 'Save Session'}
+                  {isUploadingImages ? 'Uploading...' : 'Save'}
                 </button>
               </div>
             </div>

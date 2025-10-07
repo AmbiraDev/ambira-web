@@ -82,16 +82,16 @@ export default function DayOverview() {
   }
 
   return (
-    <Link href="/you?tab=progress" className="md:hidden block bg-gradient-to-r from-blue-50 to-purple-50 border-b border-gray-200 px-4 py-3">
-      <div className="flex items-center justify-between mb-2">
-        <h3 className="text-xs font-semibold text-gray-600 uppercase tracking-wide">Today's Progress</h3>
-        <TrendingUp className="w-4 h-4 text-blue-600" />
+    <Link href="/you?tab=progress" className="md:hidden block bg-white border-b border-gray-200 px-4 py-4">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-sm font-semibold text-gray-900">Today's Progress</h3>
+        <TrendingUp className="w-5 h-5 text-[#007AFF]" />
       </div>
-      
-      <div className="grid grid-cols-3 gap-2">
+
+      <div className="grid grid-cols-3 gap-3">
         {/* Total Time */}
-        <div className="bg-white rounded-lg p-3 shadow-sm">
-          <Clock className="w-5 h-5 text-blue-600 mb-2" />
+        <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+          <Clock className="w-5 h-5 text-[#007AFF] mb-2" />
           <div className="text-lg font-bold text-gray-900">
             {formatTime(todayStats.totalTime)}
           </div>
@@ -99,8 +99,8 @@ export default function DayOverview() {
         </div>
 
         {/* Sessions */}
-        <div className="bg-white rounded-lg p-3 shadow-sm">
-          <Target className="w-5 h-5 text-green-600 mb-2" />
+        <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+          <Target className="w-5 h-5 text-[#22C55E] mb-2" />
           <div className="text-lg font-bold text-gray-900">
             {todayStats.sessionsCount}
           </div>
@@ -108,8 +108,8 @@ export default function DayOverview() {
         </div>
 
         {/* Streak */}
-        <div className="bg-white rounded-lg p-3 shadow-sm">
-          <Flame className="w-5 h-5 text-orange-600 mb-2" />
+        <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
+          <Flame className="w-5 h-5 text-[#FC4C02] mb-2" />
           <div className="text-lg font-bold text-gray-900">
             {todayStats.currentStreak}
           </div>

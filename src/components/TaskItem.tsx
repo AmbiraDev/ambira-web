@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Task, UpdateTaskData } from '@/types';
-import { Edit, Archive, Trash2, MoreVertical, Circle, CheckCircle2 } from 'lucide-react';
+import { Edit, Archive, Trash2, MoreVertical, Circle, CheckCircle2, Check, XCircle } from 'lucide-react';
 
 interface TaskItemProps {
   task: Task;
@@ -151,28 +151,30 @@ export const TaskItem: React.FC<TaskItemProps> = ({
 
   if (isEditing) {
     return (
-      <div className="flex items-center gap-2 p-3 bg-white border border-gray-200 rounded-lg">
-        <form onSubmit={handleEditSubmit} className="flex-1 flex gap-2">
+      <div className="flex items-center gap-3 p-3 bg-white border border-gray-300 rounded-lg">
+        <form onSubmit={handleEditSubmit} className="flex-1 flex gap-3">
           <input
             type="text"
             value={editName}
             onChange={(e) => setEditName(e.target.value)}
-            className="flex-1 px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-orange-500"
+            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF]"
             autoFocus
           />
           <button
             type="submit"
             disabled={!editName.trim()}
-            className="px-3 py-1 bg-orange-500 text-white rounded hover:bg-orange-600 disabled:bg-gray-300 text-sm"
+            className="w-10 h-10 flex items-center justify-center bg-[#007AFF] text-white border border-[#007AFF] rounded-lg hover:bg-[#0051D5] disabled:opacity-50 disabled:cursor-not-allowed"
+            title="Save"
           >
-            Save
+            <Check className="w-5 h-5" />
           </button>
           <button
             type="button"
             onClick={handleEditCancel}
-            className="px-3 py-1 bg-gray-500 text-white rounded hover:bg-gray-600 text-sm"
+            className="w-10 h-10 flex items-center justify-center border border-gray-300 rounded-lg hover:bg-gray-50"
+            title="Cancel"
           >
-            Cancel
+            <XCircle className="w-5 h-5 text-gray-600" />
           </button>
         </form>
       </div>
@@ -182,8 +184,8 @@ export const TaskItem: React.FC<TaskItemProps> = ({
   return (
     <div
       data-task-id={task.id}
-      className={`flex items-center gap-3 p-3 bg-white border border-gray-200 rounded-lg transition-colors ${
-        isSelected ? 'bg-orange-50 border-orange-200' : 'hover:bg-gray-50'
+      className={`flex items-center gap-3 p-3 bg-white border border-gray-300 rounded-lg transition-colors ${
+        isSelected ? 'bg-blue-50 border-[#007AFF]' : 'hover:bg-gray-50'
       }`}
     >
       {/* Status button - circle */}
@@ -219,11 +221,11 @@ export const TaskItem: React.FC<TaskItemProps> = ({
       {/* Actions - Desktop: Individual buttons, Mobile: Three-dot menu */}
       <div className="flex items-center gap-1">
         {/* Desktop - Individual buttons */}
-        <div className="hidden md:flex items-center gap-1">
+        <div className="hidden md:flex items-center gap-2">
           {task.status === 'active' && (
             <button
               onClick={onStartEdit}
-              className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
+              className="w-8 h-8 flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
               title="Edit task"
             >
               <Edit className="w-4 h-4" />
@@ -234,7 +236,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({
             <button
               onClick={handleArchive}
               disabled={isUpdating}
-              className="p-1 text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50"
+              className="w-8 h-8 flex items-center justify-center text-gray-600 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
               title="Archive task"
             >
               <Archive className="w-4 h-4" />
@@ -244,7 +246,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({
           <button
             onClick={handleDelete}
             disabled={isUpdating}
-            className="p-1 text-gray-400 hover:text-red-600 transition-colors disabled:opacity-50"
+            className="w-8 h-8 flex items-center justify-center text-gray-600 hover:bg-red-50 hover:text-red-600 rounded-lg transition-colors disabled:opacity-50"
             title="Delete task"
           >
             <Trash2 className="w-4 h-4" />

@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Mail, MessageSquare, HelpCircle, Bug } from 'lucide-react';
+import { staticPageStyles } from '@/styles/staticPages';
 
 interface FormErrors {
   name?: string;
@@ -134,67 +135,67 @@ export default function ContactPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
+    <div className={staticPageStyles.containers.page}>
+      <div className={staticPageStyles.containers.content}>
         {/* Header */}
-        <div className="mb-8">
-          <Button variant="ghost" asChild className="mb-4">
+        <div className={staticPageStyles.spacing.sectionMargin}>
+          <Button variant="ghost" asChild className={staticPageStyles.backButton}>
             <Link href="/">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Home
             </Link>
           </Button>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Contact Us</h1>
-          <p className="text-gray-600">
+          <h1 className={`${staticPageStyles.typography.pageTitle} mb-2`}>Contact Us</h1>
+          <p className={staticPageStyles.typography.pageDescription}>
             Have a question, suggestion, or need support? We're here to help.
           </p>
         </div>
 
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
+        <div className={`grid md:grid-cols-3 gap-6 ${staticPageStyles.spacing.sectionMargin}`}>
           {/* Contact Methods */}
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <div className="bg-[#007AFF] rounded-lg p-3 w-fit mb-4">
-              <Mail className="w-6 h-6 text-white" />
+          <div className={staticPageStyles.containers.card}>
+            <div className={`${staticPageStyles.iconBackgrounds.blue} rounded-lg p-3 w-fit mb-4`}>
+              <Mail className={`${staticPageStyles.icons.medium} ${staticPageStyles.icons.white}`} />
             </div>
-            <h3 className="font-semibold text-gray-900 mb-2">Email Support</h3>
-            <p className="text-gray-600 text-sm mb-3">
+            <h3 className={`${staticPageStyles.typography.subsectionHeading} mb-2`}>Email Support</h3>
+            <p className={`${staticPageStyles.typography.smallText} mb-3`}>
               Get help from our support team
             </p>
             <a
               href="mailto:support@ambira.app"
-              className="text-[#007AFF] hover:underline text-sm font-medium"
+              className={`${staticPageStyles.links.email} ${staticPageStyles.typography.smallText} font-medium`}
             >
               support@ambira.app
             </a>
           </div>
 
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <div className="bg-[#34C759] rounded-lg p-3 w-fit mb-4">
-              <MessageSquare className="w-6 h-6 text-white" />
+          <div className={staticPageStyles.containers.card}>
+            <div className={`${staticPageStyles.iconBackgrounds.green} rounded-lg p-3 w-fit mb-4`}>
+              <MessageSquare className={`${staticPageStyles.icons.medium} ${staticPageStyles.icons.white}`} />
             </div>
-            <h3 className="font-semibold text-gray-900 mb-2">General Inquiries</h3>
-            <p className="text-gray-600 text-sm mb-3">
+            <h3 className={`${staticPageStyles.typography.subsectionHeading} mb-2`}>General Inquiries</h3>
+            <p className={`${staticPageStyles.typography.smallText} mb-3`}>
               For partnerships and press
             </p>
             <a
               href="mailto:hello@ambira.app"
-              className="text-[#007AFF] hover:underline text-sm font-medium"
+              className={`${staticPageStyles.links.email} ${staticPageStyles.typography.smallText} font-medium`}
             >
               hello@ambira.app
             </a>
           </div>
 
-          <div className="bg-white rounded-lg shadow-sm p-6">
-            <div className="bg-[#FF9500] rounded-lg p-3 w-fit mb-4">
-              <Bug className="w-6 h-6 text-white" />
+          <div className={staticPageStyles.containers.card}>
+            <div className={`${staticPageStyles.iconBackgrounds.orange} rounded-lg p-3 w-fit mb-4`}>
+              <Bug className={`${staticPageStyles.icons.medium} ${staticPageStyles.icons.white}`} />
             </div>
-            <h3 className="font-semibold text-gray-900 mb-2">Report a Bug</h3>
-            <p className="text-gray-600 text-sm mb-3">
+            <h3 className={`${staticPageStyles.typography.subsectionHeading} mb-2`}>Report a Bug</h3>
+            <p className={`${staticPageStyles.typography.smallText} mb-3`}>
               Help us improve Ambira
             </p>
             <a
               href="mailto:bugs@ambira.app"
-              className="text-[#007AFF] hover:underline text-sm font-medium"
+              className={`${staticPageStyles.links.email} ${staticPageStyles.typography.smallText} font-medium`}
             >
               bugs@ambira.app
             </a>
@@ -202,10 +203,10 @@ export default function ContactPage() {
         </div>
 
         {/* Contact Form */}
-        <div className="bg-white rounded-lg shadow-sm p-8 mb-8">
+        <div className={`${staticPageStyles.containers.card} ${staticPageStyles.spacing.sectionMargin}`}>
           <div className="flex items-center mb-6">
-            <HelpCircle className="w-6 h-6 text-[#007AFF] mr-2" />
-            <h2 className="text-2xl font-bold text-gray-900">Send us a Message</h2>
+            <HelpCircle className={`${staticPageStyles.icons.medium} ${staticPageStyles.icons.primary} mr-2`} />
+            <h2 className={staticPageStyles.typography.sectionHeading}>Send us a Message</h2>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6" noValidate>
@@ -356,9 +357,9 @@ export default function ContactPage() {
                   aria-invalid={errors.privacyAgree && touched.has('privacyAgree') ? 'true' : 'false'}
                   aria-describedby={errors.privacyAgree && touched.has('privacyAgree') ? 'privacy-error' : undefined}
                 />
-                <label htmlFor="privacy-agree" className="text-sm text-gray-600">
+                <label htmlFor="privacy-agree" className={staticPageStyles.typography.smallText}>
                   I agree to the{' '}
-                  <Link href="/privacy" className="text-[#007AFF] hover:underline">
+                  <Link href="/privacy" className={staticPageStyles.links.inline}>
                     Privacy Policy
                   </Link>{' '}
                   and understand my data will be processed to respond to this inquiry.{' '}
@@ -384,9 +385,9 @@ export default function ContactPage() {
         </div>
 
         {/* Quick Links */}
-        <div className="bg-white rounded-lg shadow-sm p-6">
-          <h3 className="font-semibold text-gray-900 mb-4">Before you contact us...</h3>
-          <p className="text-gray-600 mb-4">
+        <div className={staticPageStyles.containers.card}>
+          <h3 className={`${staticPageStyles.typography.subsectionHeading} mb-4`}>Before you contact us...</h3>
+          <p className={`${staticPageStyles.typography.bodyText} mb-4`}>
             You might find the answer to your question in our help resources:
           </p>
           <div className="flex flex-wrap gap-3">

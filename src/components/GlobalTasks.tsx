@@ -155,7 +155,7 @@ export const GlobalTasks: React.FC<GlobalTasksProps> = ({
       </div>
 
       {/* Filters */}
-      <div className="flex flex-col md:flex-row md:flex-wrap gap-4">
+      <div className="flex flex-col md:flex-row md:flex-wrap gap-3">
         {/* Mobile: Two dropdowns side by side */}
         <div className="flex md:hidden gap-3 w-full">
           {/* Status dropdown - Mobile only */}
@@ -198,7 +198,7 @@ export const GlobalTasks: React.FC<GlobalTasksProps> = ({
         </div>
 
         {/* Desktop: Status tabs and project dropdown */}
-        <div className="hidden md:flex items-center justify-between gap-3 md:gap-4 w-full md:w-auto">
+        <div className="hidden md:flex items-center justify-between gap-3 w-full md:w-auto">
           <div className="flex bg-gray-100 rounded-lg p-1 flex-1 md:flex-initial">
             {[
               { id: 'active', label: 'Active', count: getTaskCount('active') },
@@ -243,46 +243,41 @@ export const GlobalTasks: React.FC<GlobalTasksProps> = ({
       </div>
 
       {/* Add new task */}
-      <div className="bg-white border border-gray-200 rounded-lg p-4">
-        <h3 className="text-lg font-semibold text-gray-900 mb-3">Add New Task</h3>
-        <div className="flex gap-4">
-          <div className="flex-1">
-            <TaskInput
-              projectId={filterProject === 'all' ? '' : filterProject === 'unassigned' ? '' : filterProject}
-              onCreateTask={handleCreateTask}
-              isLoading={isCreating}
-              placeholder="Enter task name..."
-              disabled={false}
-            />
-          </div>
-        </div>
+      <div className="bg-white border border-gray-300 rounded-lg p-3">
+        <TaskInput
+          projectId={filterProject === 'all' ? '' : filterProject === 'unassigned' ? '' : filterProject}
+          onCreateTask={handleCreateTask}
+          isLoading={isCreating}
+          placeholder="Add task..."
+          disabled={false}
+        />
       </div>
 
       {/* Bulk actions */}
       {currentSelectedTasks.length > 0 && (
-        <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+        <div className="bg-blue-50 border border-[#007AFF] rounded-lg p-3">
           <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-orange-800">
-              {currentSelectedTasks.length} {currentSelectedTasks.length === 1 ? 'task' : 'tasks'} selected
+            <span className="text-sm font-medium text-gray-900">
+              {currentSelectedTasks.length} selected
             </span>
-            <div className="flex gap-2">
+            <div className="flex gap-3">
               <button
                 onClick={() => handleBulkUpdate({ taskIds: currentSelectedTasks, status: 'completed' })}
-                className="px-3 py-1 bg-green-500 text-white rounded text-sm hover:bg-green-600 transition-colors"
+                className="px-3 py-2 bg-green-600 text-white border border-green-600 rounded-lg hover:bg-green-700 transition-colors text-sm"
               >
-                Complete All
+                Complete
               </button>
               <button
                 onClick={() => handleBulkUpdate({ taskIds: currentSelectedTasks, status: 'archived' })}
-                className="px-3 py-1 bg-gray-500 text-white rounded text-sm hover:bg-gray-600 transition-colors"
+                className="px-3 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm"
               >
-                Archive All
+                Archive
               </button>
               <button
                 onClick={() => setSelectedTasks([])}
-                className="px-3 py-1 bg-gray-300 text-gray-700 rounded text-sm hover:bg-gray-400 transition-colors"
+                className="px-3 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors text-sm"
               >
-                Clear Selection
+                Clear
               </button>
             </div>
           </div>
@@ -346,14 +341,14 @@ export const GlobalTasks: React.FC<GlobalTasksProps> = ({
             }, {} as Record<string, typeof filteredTasks>);
 
             return Object.entries(groupedTasks).map(([projectId, tasks]) => (
-              <div key={projectId} className="bg-white border border-gray-200 rounded-lg p-4">
+              <div key={projectId} className="bg-white border border-gray-300 rounded-lg p-3">
                 {/* Project header */}
-                <div className="flex items-center gap-2 mb-3 pb-2 border-b border-gray-100">
+                <div className="flex items-center gap-2 mb-3 pb-2 border-b border-gray-200">
                   <div className={`w-3 h-3 rounded-full ${getProjectColor(projectId === 'unassigned' ? null : projectId)}`}></div>
-                  <span className="text-sm font-medium text-gray-700">
-                    {projectId === 'unassigned' ? 'Unassigned Tasks' : getProjectName(projectId)}
+                  <span className="text-sm font-medium text-gray-900">
+                    {projectId === 'unassigned' ? 'Unassigned' : getProjectName(projectId)}
                   </span>
-                  <span className="text-xs text-gray-500">({tasks.length} {tasks.length === 1 ? 'task' : 'tasks'})</span>
+                  <span className="text-xs text-gray-500">({tasks.length})</span>
                 </div>
 
                 {/* Tasks in this project */}

@@ -18,6 +18,7 @@ import { toast } from 'sonner';
 import Link from 'next/link';
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
 import { useUserFollowers, useUserFollowing } from '@/hooks/useCache';
+import { UnifiedProfileCard } from '@/components/UnifiedProfileCard';
 
 type YouTab = 'progress' | 'sessions' | 'profile';
 type TimePeriod = 'day' | 'week' | 'month' | 'year';
@@ -357,36 +358,54 @@ export default function ProfilePage() {
                 <div className="bg-white rounded-xl border border-gray-200 p-6">
                   {/* Profile Picture */}
                   {profile.profilePicture ? (
-                    <img
-                      src={profile.profilePicture}
-                      alt={`${profile.name}'s profile picture`}
-                      className="w-24 h-24 rounded-full object-cover mb-4"
-                    />
+                    <div className="w-24 h-24 rounded-full mb-4 overflow-hidden ring-4 ring-white">
+                      <img
+                        src={profile.profilePicture}
+                        alt={`${profile.name}'s profile picture`}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
                   ) : (
-                    <div className="w-24 h-24 bg-gradient-to-br from-[#007AFF] to-[#0051D5] rounded-full flex items-center justify-center mb-4">
+                    <div className="w-24 h-24 bg-gradient-to-br from-[#FC4C02] to-[#FF8800] rounded-full flex items-center justify-center mb-4">
                       <span className="text-white font-bold text-4xl">
                         {profile.name.charAt(0).toUpperCase()}
                       </span>
                     </div>
                   )}
 
-                  {/* Name and Location */}
+                  {/* Name and Username */}
                   <h1 className="text-2xl font-bold text-gray-900 mb-1">{profile.name}</h1>
+                  <p className="text-gray-500 mb-3">@{profile.username}</p>
+
+                  {/* Bio */}
+                  {profile.bio && (
+                    <p className="text-gray-700 mb-3 leading-relaxed">
+                      {profile.bio}
+                    </p>
+                  )}
+
+                  {/* Location */}
                   {profile.location && (
-                    <p className="text-gray-600 mb-4">{profile.location}</p>
+                    <div className="flex items-center gap-1 text-gray-600 mb-4">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      <span className="text-sm">{profile.location}</span>
+                    </div>
                   )}
 
                   {/* Stats */}
                   <div className="flex gap-8 mb-4">
                     <div>
                       <div className="text-sm text-gray-600">Following</div>
-                      <div className="text-xl font-bold">
+                      <div className="text-xl font-bold text-gray-900">
                         {following.length}
                       </div>
                     </div>
                     <div>
                       <div className="text-sm text-gray-600">Followers</div>
-                      <div className="text-xl font-bold">
+                      <div className="text-xl font-bold text-gray-900">
                         {followers.length}
                       </div>
                     </div>
@@ -755,55 +774,18 @@ export default function ProfilePage() {
               <div className="max-w-4xl mx-auto">
                 {/* Profile Header - Only show for own profile */}
                 {isOwnProfile && (
-                  <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
-                    {/* Profile Picture */}
-                    {profile.profilePicture ? (
-                      <img
-                        src={profile.profilePicture}
-                        alt={`${profile.name}'s profile picture`}
-                        className="w-24 h-24 rounded-full object-cover mb-4"
-                      />
-                    ) : (
-                      <div className="w-24 h-24 bg-gradient-to-br from-[#007AFF] to-[#0051D5] rounded-full flex items-center justify-center mb-4">
-                        <span className="text-white font-bold text-4xl">
-                          {profile.name.charAt(0).toUpperCase()}
-                        </span>
-                      </div>
-                    )}
-
-                    {/* Name and Location */}
-                    <h1 className="text-2xl font-bold text-gray-900 mb-1">{profile.name}</h1>
-                    <p className="text-gray-600 mb-4">
-                      {profile.location || 'Location not set'}
-                    </p>
-
-                    {/* Stats */}
-                    <div className="flex gap-8 mb-4">
-                      <div>
-                        <div className="text-sm text-gray-600">Following</div>
-                        <div className="text-xl font-bold">
-                          {following.length}
-                        </div>
-                      </div>
-                      <div>
-                        <div className="text-sm text-gray-600">Followers</div>
-                        <div className="text-xl font-bold">
-                          {followers.length}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Edit Profile Button */}
-                    <div className="flex gap-2">
-                      <Link
-                        href="/settings"
-                        className="flex-1 flex items-center justify-center gap-2 py-3 border-2 border-[#FC4C02] text-[#FC4C02] rounded-xl font-medium"
-                      >
-                        <Edit className="w-5 h-5" />
-                        Edit Profile
-                      </Link>
-                    </div>
-                  </div>
+                  <UnifiedProfileCard
+                    name={profile.name}
+                    username={profile.username}
+                    profilePicture={profile.profilePicture}
+                    bio={profile.bio}
+                    location={profile.location}
+                    followersCount={followers.length}
+                    followingCount={following.length}
+                    isOwnProfile={true}
+                    editButtonHref="/settings"
+                    className="mb-6"
+                  />
                 )}
 
                 {/* This Week Section */}

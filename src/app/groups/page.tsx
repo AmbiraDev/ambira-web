@@ -115,48 +115,52 @@ export default function GroupsPage() {
       </div>
       <MobileHeader title="Groups" />
 
-      <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
+      <div className="max-w-6xl mx-auto px-4 md:px-6 lg:px-8 py-6">
+        {/* Page Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Groups</h1>
+          <p className="text-gray-600">Connect with others who share your goals</p>
+        </div>
+
         {/* Tabs */}
-        <div className="sticky top-14 md:top-0 bg-white md:bg-gray-50  z-30">
-          <div className="bg-gray-50 border-b md:border-b-0 border-gray-200">
-            <div className="max-w-4xl mx-auto flex gap-8 px-4 md:px-6 lg:px-8">
-              <button
-                onClick={() => setActiveTab('active')}
-                className={`flex-1 md:flex-initial py-3 md:py-4 px-1 text-sm md:text-base font-medium transition-colors border-b-2 ${
-                  activeTab === 'active'
-                    ? 'text-[#007AFF] md:text-gray-900 border-[#007AFF]'
-                    : 'text-gray-600 border-transparent hover:text-gray-900'
-                }`}
-              >
-                Active
-              </button>
-              <button
-                onClick={() => setActiveTab('challenges')}
-                className={`flex-1 md:flex-initial py-3 md:py-4 px-1 text-sm md:text-base font-medium transition-colors border-b-2 ${
-                  activeTab === 'challenges'
-                    ? 'text-[#007AFF] md:text-gray-900 border-[#007AFF]'
-                    : 'text-gray-600 border-transparent hover:text-gray-900'
-                }`}
-              >
-                Challenges
-              </button>
-              <button
-                onClick={() => setActiveTab('create')}
-                className={`flex-1 md:flex-initial py-3 md:py-4 px-1 text-sm md:text-base font-medium transition-colors border-b-2 flex items-center justify-center gap-1 ${
-                  activeTab === 'create'
-                    ? 'text-[#007AFF] md:text-gray-900 border-[#007AFF]'
-                    : 'text-gray-600 border-transparent hover:text-gray-900'
-                }`}
-              >
-                <Plus className="w-4 h-4 md:hidden" />
-                Create
-              </button>
-            </div>
+        <div className="bg-white rounded-lg border border-gray-200 shadow-sm mb-6 overflow-hidden">
+          <div className="flex border-b border-gray-200">
+            <button
+              onClick={() => setActiveTab('active')}
+              className={`flex-1 md:flex-initial py-4 px-6 text-sm md:text-base font-semibold transition-colors border-b-2 ${
+                activeTab === 'active'
+                  ? 'text-[#007AFF] border-[#007AFF]'
+                  : 'text-gray-600 border-transparent hover:text-gray-900'
+              }`}
+            >
+              Active
+            </button>
+            <button
+              onClick={() => setActiveTab('challenges')}
+              className={`flex-1 md:flex-initial py-4 px-6 text-sm md:text-base font-semibold transition-colors border-b-2 ${
+                activeTab === 'challenges'
+                  ? 'text-[#007AFF] border-[#007AFF]'
+                  : 'text-gray-600 border-transparent hover:text-gray-900'
+              }`}
+            >
+              Challenges
+            </button>
+            <button
+              onClick={() => setActiveTab('create')}
+              className={`flex-1 md:flex-initial py-4 px-6 text-sm md:text-base font-semibold transition-colors border-b-2 flex items-center justify-center gap-2 ${
+                activeTab === 'create'
+                  ? 'text-[#007AFF] border-[#007AFF]'
+                  : 'text-gray-600 border-transparent hover:text-gray-900'
+              }`}
+            >
+              <Plus className="w-4 h-4" />
+              Create
+            </button>
           </div>
         </div>
 
         {/* Content */}
-        <div className="max-w-4xl mx-auto py-6">
+        <div>
           {activeTab === 'create' ? (
             // Create Group Form
             <CreateGroupModal
@@ -173,14 +177,14 @@ export default function GroupsPage() {
                   <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#007AFF]"></div>
                 </div>
               ) : groups.length > 0 ? (
-                <div className="grid gap-3 md:gap-4">
+                <div className="grid gap-4 md:gap-6">
                   {groups.map(group => (
                     <Link
                       key={group.id}
                       href={`/groups/${group.id}`}
-                      className="group block bg-white rounded-xl border border-gray-100 hover:border-[#007AFF]/30 hover:shadow-sm transition-all duration-200"
+                      className="group block bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200"
                     >
-                      <div className="p-4 md:p-5">
+                      <div className="p-6">
                         <div className="flex items-start gap-3 md:gap-4">
                           {/* Group Icon/Avatar */}
                           <div className="relative flex-shrink-0">
@@ -237,16 +241,16 @@ export default function GroupsPage() {
                   ))}
                 </div>
               ) : (
-                <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
                   {/* Hero Section */}
-                  <div className="bg-gradient-to-br from-[#007AFF]/5 via-[#0051D5]/5 to-transparent p-8 md:p-12 border-b border-gray-100">
+                  <div className="bg-gradient-to-br from-[#007AFF]/5 via-[#0051D5]/5 to-transparent p-8 md:p-12">
                     <div className="max-w-md mx-auto text-center">
-                      <div className="w-20 h-20 md:w-24 md:h-24 bg-gradient-to-br from-[#007AFF] to-[#0051D5] rounded-3xl flex items-center justify-center mx-auto mb-5 shadow-lg">
+                      <div className="w-20 h-20 md:w-24 md:h-24 bg-gradient-to-br from-[#007AFF] to-[#0051D5] rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-sm">
                         <Users className="w-10 h-10 md:w-12 md:h-12 text-white" />
                       </div>
-                      <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">
+                      <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">
                         Join Your First Group
-                      </h3>
+                      </h2>
                       <p className="text-base md:text-lg text-gray-700 mb-2">
                         Connect with others who share your goals
                       </p>
@@ -298,10 +302,10 @@ export default function GroupsPage() {
                   {/* CTA Section */}
                   <div className="p-6 md:p-8 bg-gray-50">
                     <div className="max-w-md mx-auto text-center">
-                      <div className="flex flex-col sm:flex-row gap-3 justify-center mb-5">
+                      <div className="flex flex-col sm:flex-row gap-3 justify-center mb-6">
                         <Link
                           href="/search?type=groups"
-                          className="inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-[#007AFF] text-white text-sm md:text-base font-semibold rounded-xl hover:bg-[#0051D5] transition-all duration-200 shadow-sm hover:shadow-md"
+                          className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#007AFF] text-white text-sm md:text-base font-semibold rounded-lg hover:bg-[#0051D5] transition-colors shadow-sm min-h-[44px]"
                         >
                           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -310,7 +314,7 @@ export default function GroupsPage() {
                         </Link>
                         <button
                           onClick={() => setActiveTab('create')}
-                          className="inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-white text-[#007AFF] text-sm md:text-base font-semibold rounded-xl border-2 border-[#007AFF] hover:bg-[#007AFF]/5 transition-all duration-200"
+                          className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-white text-[#007AFF] text-sm md:text-base font-semibold rounded-lg border border-gray-300 hover:border-gray-400 hover:bg-gray-50 transition-colors min-h-[44px]"
                         >
                           <Plus className="w-5 h-5" />
                           Create a Group
@@ -335,13 +339,13 @@ export default function GroupsPage() {
               {/* Active Challenges */}
               {activeChallenges.length > 0 && (
                 <div>
-                  <h2 className="text-lg font-bold text-gray-900 mb-4">Your Active Challenges</h2>
-                  <div className="space-y-3">
+                  <h2 className="text-xl font-bold text-gray-900 mb-4">Your Active Challenges</h2>
+                  <div className="space-y-4">
                     {activeChallenges.map(challenge => (
                       <Link
                         key={challenge.id}
                         href={`/challenges/${challenge.id}`}
-                        className="block bg-white rounded-lg border border-[#007AFF] p-4"
+                        className="block bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-all p-6"
                       >
                         <div className="flex items-start gap-3">
                           <div className="w-10 h-10 bg-[#007AFF] rounded-lg flex items-center justify-center flex-shrink-0">
@@ -370,7 +374,7 @@ export default function GroupsPage() {
 
               {/* Available Challenges by Category */}
               <div>
-                <h2 className="text-lg font-bold text-gray-900 mb-4">
+                <h2 className="text-xl font-bold text-gray-900 mb-4">
                   {activeChallenges.length > 0 ? 'Discover More Challenges' : 'Available Challenges'}
                 </h2>
 
@@ -378,17 +382,17 @@ export default function GroupsPage() {
                   <div className="space-y-6">
                     {Object.entries(challengesByCategory).map(([category, categoryChallenges]) => (
                       <div key={category}>
-                        <div className="flex items-center gap-2 mb-3">
+                        <div className="flex items-center gap-2 mb-4">
                           <div className="w-6 h-6 text-[#007AFF]">
                             {categoryIcons[category.toLowerCase()] || categoryIcons.default}
                           </div>
-                          <h3 className="font-semibold text-gray-900 capitalize">{category}</h3>
+                          <h3 className="text-lg font-semibold text-gray-900 capitalize">{category}</h3>
                         </div>
-                        <div className="space-y-3">
+                        <div className="space-y-4">
                           {categoryChallenges.map(challenge => (
                             <div
                               key={challenge.id}
-                              className="bg-white rounded-lg border border-gray-200 p-4"
+                              className="bg-white rounded-lg border border-gray-200 shadow-sm p-6"
                             >
                               <div className="flex items-start justify-between gap-3">
                                 <div className="flex-1 min-w-0">
@@ -407,7 +411,7 @@ export default function GroupsPage() {
                                 </div>
                                 <button
                                   onClick={() => handleJoinChallenge(challenge.id)}
-                                  className="px-4 py-2 bg-[#007AFF] text-white text-sm font-medium rounded-lg hover:bg-[#0051D5] transition-colors flex-shrink-0"
+                                  className="px-4 py-2 bg-[#007AFF] text-white text-sm font-semibold rounded-lg hover:bg-[#0051D5] transition-colors flex-shrink-0 min-h-[44px]"
                                 >
                                   Join
                                 </button>
@@ -419,9 +423,9 @@ export default function GroupsPage() {
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-12 bg-white rounded-lg border border-gray-200">
+                  <div className="text-center py-12 bg-white rounded-lg border border-gray-200 shadow-sm">
                     <Trophy className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">No Challenges Available</h3>
+                    <h2 className="text-xl font-semibold text-gray-900 mb-2">No Challenges Available</h2>
                     <p className="text-gray-600">Check back later for new challenges</p>
                   </div>
                 )}

@@ -3,10 +3,17 @@
 import React, { useState, useEffect } from 'react';
 import { NotificationPreferences } from '@/types';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Bell, Mail, BellRing } from 'lucide-react';
+import {
+  SettingsSection,
+  SettingsHeader,
+  SettingsCard,
+  SettingsCardHeader,
+  SettingsCardContent,
+  SettingsRow,
+  SettingsRowGroup
+} from '@/components/ui/settings-section';
+import { Bell, Mail, BellRing, Heart, MessageCircle, UserPlus, Trophy, Flame, Users } from 'lucide-react';
 
 interface NotificationSettingsProps {
   onClose?: () => void;
@@ -90,12 +97,12 @@ export const NotificationSettings: React.FC<NotificationSettingsProps> = ({
     }
   };
 
-  const NotificationToggle = ({ 
-    label, 
-    description, 
-    emailEnabled, 
-    inAppEnabled, 
-    settingKey 
+  const NotificationToggle = ({
+    label,
+    description,
+    emailEnabled,
+    inAppEnabled,
+    settingKey
   }: {
     label: string;
     description: string;
@@ -103,11 +110,7 @@ export const NotificationSettings: React.FC<NotificationSettingsProps> = ({
     inAppEnabled: boolean;
     settingKey: keyof NotificationPreferences['email'];
   }) => (
-    <div className="flex items-start justify-between py-3 border-b border-gray-200 last:border-0">
-      <div className="flex-1 pr-4">
-        <Label className="text-sm font-medium text-gray-900">{label}</Label>
-        <p className="text-xs text-gray-500 mt-0.5">{description}</p>
-      </div>
+    <SettingsRow label={label} description={description}>
       <div className="flex gap-4 items-center">
         <div className="flex items-center gap-2">
           <Mail className="w-4 h-4 text-gray-400" />
@@ -124,44 +127,37 @@ export const NotificationSettings: React.FC<NotificationSettingsProps> = ({
           />
         </div>
       </div>
-    </div>
+    </SettingsRow>
   );
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
+      <SettingsSection>
         {[1, 2].map((i) => (
-          <Card key={i} className="animate-pulse">
-            <CardHeader>
-              <div className="h-6 bg-gray-200 rounded w-1/3" />
-              <div className="h-4 bg-gray-200 rounded w-2/3" />
-            </CardHeader>
-            <CardContent>
+          <SettingsCard key={i} className="animate-pulse">
+            <SettingsCardHeader title="" description="" />
+            <SettingsCardContent>
               <div className="space-y-3">
                 <div className="h-10 bg-gray-200 rounded" />
                 <div className="h-10 bg-gray-200 rounded" />
                 <div className="h-10 bg-gray-200 rounded" />
               </div>
-            </CardContent>
-          </Card>
+            </SettingsCardContent>
+          </SettingsCard>
         ))}
-      </div>
+      </SettingsSection>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <SettingsSection>
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <BellRing className="w-6 h-6" />
-            Notification Preferences
-          </h2>
-          <p className="text-gray-600 mt-1">
-            Choose how you want to be notified about activity
-          </p>
-        </div>
+        <SettingsHeader
+          icon={BellRing}
+          title="Email Notifications"
+          description="Choose how you want to be notified about activity"
+        />
         {isModal && onClose && (
           <Button variant="ghost" onClick={onClose}>
             Close
@@ -170,8 +166,8 @@ export const NotificationSettings: React.FC<NotificationSettingsProps> = ({
       </div>
 
       {/* Legend */}
-      <Card>
-        <CardContent className="pt-6">
+      <SettingsCard>
+        <SettingsCardContent>
           <div className="flex items-center justify-end gap-6 text-sm text-gray-600">
             <div className="flex items-center gap-2">
               <Mail className="w-4 h-4" />
@@ -182,19 +178,18 @@ export const NotificationSettings: React.FC<NotificationSettingsProps> = ({
               <span>In-App</span>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </SettingsCardContent>
+      </SettingsCard>
 
       {/* Social Notifications */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Social Notifications</CardTitle>
-          <CardDescription>
-            Get notified when people interact with you
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-1">
+      <SettingsCard>
+        <SettingsCardHeader
+          icon={UserPlus}
+          title="Social Notifications"
+          description="Get notified when people interact with you"
+        />
+        <SettingsCardContent>
+          <SettingsRowGroup>
             <NotificationToggle
               label="New Followers"
               description="Someone starts following you"
@@ -230,20 +225,19 @@ export const NotificationSettings: React.FC<NotificationSettingsProps> = ({
               inAppEnabled={preferences.inApp.replies}
               settingKey="replies"
             />
-          </div>
-        </CardContent>
-      </Card>
+          </SettingsRowGroup>
+        </SettingsCardContent>
+      </SettingsCard>
 
       {/* Activity Notifications */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Activity Notifications</CardTitle>
-          <CardDescription>
-            Get notified about your productivity milestones
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-1">
+      <SettingsCard>
+        <SettingsCardHeader
+          icon={Trophy}
+          title="Activity Notifications"
+          description="Get notified about your productivity milestones"
+        />
+        <SettingsCardContent>
+          <SettingsRowGroup>
             <NotificationToggle
               label="Achievements"
               description="You unlock a new achievement"
@@ -258,20 +252,19 @@ export const NotificationSettings: React.FC<NotificationSettingsProps> = ({
               inAppEnabled={preferences.inApp.streaks}
               settingKey="streaks"
             />
-          </div>
-        </CardContent>
-      </Card>
+          </SettingsRowGroup>
+        </SettingsCardContent>
+      </SettingsCard>
 
       {/* Group Notifications */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Group & Challenge Notifications</CardTitle>
-          <CardDescription>
-            Get notified about group activities and challenges
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-1">
+      <SettingsCard>
+        <SettingsCardHeader
+          icon={Users}
+          title="Group & Challenge Notifications"
+          description="Get notified about group activities and challenges"
+        />
+        <SettingsCardContent>
+          <SettingsRowGroup>
             <NotificationToggle
               label="Group Posts"
               description="New posts in your groups"
@@ -286,16 +279,16 @@ export const NotificationSettings: React.FC<NotificationSettingsProps> = ({
               inAppEnabled={preferences.inApp.challenges}
               settingKey="challenges"
             />
-          </div>
-        </CardContent>
-      </Card>
+          </SettingsRowGroup>
+        </SettingsCardContent>
+      </SettingsCard>
 
       {/* Save Button */}
-      <div className="flex justify-end">
+      <div className="flex justify-end pt-2">
         <Button
           onClick={handleSave}
           disabled={isSaving}
-          className="min-w-[120px]"
+          className="min-w-[120px] bg-[#007AFF] hover:bg-[#0051D5]"
         >
           {isSaving ? (
             <div className="flex items-center gap-2">
@@ -307,7 +300,7 @@ export const NotificationSettings: React.FC<NotificationSettingsProps> = ({
           )}
         </Button>
       </div>
-    </div>
+    </SettingsSection>
   );
 };
 

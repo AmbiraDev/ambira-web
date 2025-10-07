@@ -4,72 +4,73 @@ import React from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, FileText, AlertCircle, Scale, Users, Shield, Ban } from 'lucide-react';
+import { staticPageStyles } from '@/styles/staticPages';
 
 export default function TermsOfServicePage() {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
+    <div className={staticPageStyles.containers.page}>
+      <div className={staticPageStyles.containers.content}>
         {/* Header */}
-        <div className="mb-8">
-          <Button variant="ghost" asChild className="mb-4">
+        <div className={staticPageStyles.spacing.sectionMargin}>
+          <Button variant="ghost" asChild className={staticPageStyles.backButton}>
             <Link href="/">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Home
             </Link>
           </Button>
           <div className="flex items-center mb-4">
-            <FileText className="w-8 h-8 text-[#007AFF] mr-3" />
-            <h1 className="text-3xl font-bold text-gray-900">Terms of Service</h1>
+            <FileText className={`${staticPageStyles.icons.large} ${staticPageStyles.icons.primary} mr-3`} />
+            <h1 className={staticPageStyles.typography.pageTitle}>Terms of Service</h1>
           </div>
-          <p className="text-gray-600">
+          <p className={staticPageStyles.lastUpdated}>
             Last updated: {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
           </p>
         </div>
 
         {/* Introduction */}
-        <div className="bg-white rounded-lg shadow-sm p-8 mb-6">
-          <p className="text-gray-700 leading-relaxed mb-4">
+        <div className={`${staticPageStyles.containers.card} mb-6`}>
+          <p className={`${staticPageStyles.typography.bodyText} ${staticPageStyles.spacing.paragraphSpacing}`}>
             Welcome to Ambira! These Terms of Service ("Terms") govern your access to and use of the Ambira
             platform, website, and services (collectively, the "Service"). By accessing or using the Service,
             you agree to be bound by these Terms.
           </p>
-          <p className="text-gray-700 leading-relaxed">
+          <p className={staticPageStyles.typography.bodyText}>
             Please read these Terms carefully. If you do not agree to these Terms, you may not access or use
             the Service.
           </p>
         </div>
 
         {/* Key Points */}
-        <div className="grid md:grid-cols-3 gap-4 mb-8">
-          <div className="bg-white rounded-lg shadow-sm p-4 text-center">
-            <div className="bg-[#007AFF] rounded-lg p-3 w-fit mx-auto mb-3">
-              <Users className="w-5 h-5 text-white" />
+        <div className={`grid md:grid-cols-3 gap-4 ${staticPageStyles.spacing.sectionMargin}`}>
+          <div className={`${staticPageStyles.containers.card} text-center`}>
+            <div className={`${staticPageStyles.iconBackgrounds.blue} rounded-lg p-3 w-fit mx-auto mb-3`}>
+              <Users className={`${staticPageStyles.icons.small} ${staticPageStyles.icons.white}`} />
             </div>
-            <h3 className="font-semibold text-gray-900 text-sm">13+ Only</h3>
+            <h3 className={`${staticPageStyles.typography.subsectionHeading} ${staticPageStyles.typography.smallText}`}>13+ Only</h3>
           </div>
-          <div className="bg-white rounded-lg shadow-sm p-4 text-center">
-            <div className="bg-[#34C759] rounded-lg p-3 w-fit mx-auto mb-3">
-              <Shield className="w-5 h-5 text-white" />
+          <div className={`${staticPageStyles.containers.card} text-center`}>
+            <div className={`${staticPageStyles.iconBackgrounds.green} rounded-lg p-3 w-fit mx-auto mb-3`}>
+              <Shield className={`${staticPageStyles.icons.small} ${staticPageStyles.icons.white}`} />
             </div>
-            <h3 className="font-semibold text-gray-900 text-sm">Respectful Community</h3>
+            <h3 className={`${staticPageStyles.typography.subsectionHeading} ${staticPageStyles.typography.smallText}`}>Respectful Community</h3>
           </div>
-          <div className="bg-white rounded-lg shadow-sm p-4 text-center">
-            <div className="bg-[#FF9500] rounded-lg p-3 w-fit mx-auto mb-3">
-              <Scale className="w-5 h-5 text-white" />
+          <div className={`${staticPageStyles.containers.card} text-center`}>
+            <div className={`${staticPageStyles.iconBackgrounds.orange} rounded-lg p-3 w-fit mx-auto mb-3`}>
+              <Scale className={`${staticPageStyles.icons.small} ${staticPageStyles.icons.white}`} />
             </div>
-            <h3 className="font-semibold text-gray-900 text-sm">Your Content Rights</h3>
+            <h3 className={`${staticPageStyles.typography.subsectionHeading} ${staticPageStyles.typography.smallText}`}>Your Content Rights</h3>
           </div>
         </div>
 
         {/* Main Content */}
         <div className="space-y-6">
           {/* Account Terms */}
-          <div className="bg-white rounded-lg shadow-sm p-8">
+          <div className={staticPageStyles.containers.card}>
             <div className="flex items-center mb-4">
-              <Users className="w-6 h-6 text-[#007AFF] mr-2" />
-              <h2 className="text-2xl font-bold text-gray-900">Account Terms</h2>
+              <Users className={`${staticPageStyles.icons.medium} ${staticPageStyles.icons.primary} mr-2`} />
+              <h2 className={staticPageStyles.typography.sectionHeading}>Account Terms</h2>
             </div>
-            <div className="space-y-3 text-gray-700">
+            <div className={`${staticPageStyles.spacing.elementSpacing} ${staticPageStyles.typography.bodyText}`}>
               <p>
                 <strong>Eligibility:</strong> You must be at least 13 years old to use Ambira. By using the Service,
                 you represent that you meet this age requirement.
@@ -95,77 +96,77 @@ export default function TermsOfServicePage() {
           </div>
 
           {/* Acceptable Use */}
-          <div className="bg-white rounded-lg shadow-sm p-8">
+          <div className={staticPageStyles.containers.card}>
             <div className="flex items-center mb-4">
-              <Shield className="w-6 h-6 text-[#007AFF] mr-2" />
-              <h2 className="text-2xl font-bold text-gray-900">Acceptable Use</h2>
+              <Shield className={`${staticPageStyles.icons.medium} ${staticPageStyles.icons.primary} mr-2`} />
+              <h2 className={staticPageStyles.typography.sectionHeading}>Acceptable Use</h2>
             </div>
-            <p className="text-gray-700 mb-4">
+            <p className={`${staticPageStyles.typography.bodyText} mb-4`}>
               You agree to use the Service in a lawful and respectful manner. You may not:
             </p>
-            <ul className="space-y-2 text-gray-700">
-              <li className="flex items-start">
-                <span className="text-[#007AFF] mr-2 mt-1">•</span>
+            <ul className={staticPageStyles.lists.container}>
+              <li className={staticPageStyles.lists.item}>
+                <span className={staticPageStyles.lists.bullet}>•</span>
                 <span>Violate any applicable laws or regulations</span>
               </li>
-              <li className="flex items-start">
-                <span className="text-[#007AFF] mr-2 mt-1">•</span>
+              <li className={staticPageStyles.lists.item}>
+                <span className={staticPageStyles.lists.bullet}>•</span>
                 <span>Post content that is illegal, harmful, threatening, abusive, harassing, defamatory, or otherwise objectionable</span>
               </li>
-              <li className="flex items-start">
-                <span className="text-[#007AFF] mr-2 mt-1">•</span>
+              <li className={staticPageStyles.lists.item}>
+                <span className={staticPageStyles.lists.bullet}>•</span>
                 <span>Impersonate any person or entity or falsely state or misrepresent your affiliation</span>
               </li>
-              <li className="flex items-start">
-                <span className="text-[#007AFF] mr-2 mt-1">•</span>
+              <li className={staticPageStyles.lists.item}>
+                <span className={staticPageStyles.lists.bullet}>•</span>
                 <span>Upload viruses, malware, or any other malicious code</span>
               </li>
-              <li className="flex items-start">
-                <span className="text-[#007AFF] mr-2 mt-1">•</span>
+              <li className={staticPageStyles.lists.item}>
+                <span className={staticPageStyles.lists.bullet}>•</span>
                 <span>Attempt to gain unauthorized access to the Service or related systems</span>
               </li>
-              <li className="flex items-start">
-                <span className="text-[#007AFF] mr-2 mt-1">•</span>
+              <li className={staticPageStyles.lists.item}>
+                <span className={staticPageStyles.lists.bullet}>•</span>
                 <span>Use the Service to spam, harass, or send unsolicited messages</span>
               </li>
-              <li className="flex items-start">
-                <span className="text-[#007AFF] mr-2 mt-1">•</span>
+              <li className={staticPageStyles.lists.item}>
+                <span className={staticPageStyles.lists.bullet}>•</span>
                 <span>Scrape, crawl, or use automated means to access the Service without permission</span>
               </li>
-              <li className="flex items-start">
-                <span className="text-[#007AFF] mr-2 mt-1">•</span>
+              <li className={staticPageStyles.lists.item}>
+                <span className={staticPageStyles.lists.bullet}>•</span>
                 <span>Interfere with or disrupt the Service or servers or networks connected to the Service</span>
               </li>
-              <li className="flex items-start">
-                <span className="text-[#007AFF] mr-2 mt-1">•</span>
+              <li className={staticPageStyles.lists.item}>
+                <span className={staticPageStyles.lists.bullet}>•</span>
                 <span>Attempt to manipulate metrics, leaderboards, or challenges through fraudulent means</span>
               </li>
             </ul>
           </div>
 
           {/* Content and Intellectual Property */}
-          <div className="bg-white rounded-lg shadow-sm p-8">
+          <div className={staticPageStyles.containers.card}>
             <div className="flex items-center mb-4">
-              <Scale className="w-6 h-6 text-[#007AFF] mr-2" />
-              <h2 className="text-2xl font-bold text-gray-900">Content and Intellectual Property</h2>
+              <Scale className={`${staticPageStyles.icons.medium} ${staticPageStyles.icons.primary} mr-2`} />
+              <h2 className={staticPageStyles.typography.sectionHeading}>Content and Intellectual Property</h2>
             </div>
-            <div className="space-y-4">
+            <div className={staticPageStyles.spacing.elementSpacing}>
               <div>
-                <h3 className="font-semibold text-gray-900 mb-2">Your Content</h3>
-                <p className="text-gray-700 mb-2">
+                <h3 className={`${staticPageStyles.typography.subsectionHeading} mb-2`}>Your Content</h3>
+                <p className={`${staticPageStyles.typography.bodyText} mb-2`}>
                   You retain all rights to the content you post on Ambira, including work sessions, comments,
                   profile information, and any other materials ("Your Content"). By posting Your Content, you grant
                   Ambira a worldwide, non-exclusive, royalty-free license to use, display, reproduce, and distribute
                   Your Content solely for the purpose of operating and improving the Service.
                 </p>
-                <p className="text-gray-700">
+                <p className={staticPageStyles.typography.bodyText}>
                   You represent and warrant that you own or have the necessary rights to Your Content and that
                   posting Your Content does not violate any third-party rights or applicable laws.
                 </p>
               </div>
               <div>
-                <h3 className="font-semibold text-gray-900 mb-2">Ambira's Intellectual Property</h3>
-                <p className="text-gray-700">
+                <h3 className={`${staticPageStyles.typography.subsectionHeading} mb-2`}>Ambira's Intellectual Property</h3>
+                <p className={staticPageStyles.typography.bodyText}>
                   The Service and its original content, features, and functionality are owned by Ambira and are
                   protected by international copyright, trademark, patent, trade secret, and other intellectual
                   property laws. You may not copy, modify, distribute, sell, or lease any part of the Service
@@ -173,8 +174,8 @@ export default function TermsOfServicePage() {
                 </p>
               </div>
               <div>
-                <h3 className="font-semibold text-gray-900 mb-2">Content Moderation</h3>
-                <p className="text-gray-700">
+                <h3 className={`${staticPageStyles.typography.subsectionHeading} mb-2`}>Content Moderation</h3>
+                <p className={staticPageStyles.typography.bodyText}>
                   Ambira reserves the right to remove or modify any content that violates these Terms or that we
                   determine, in our sole discretion, to be inappropriate or harmful. We are not responsible for
                   any content posted by users.
@@ -184,9 +185,9 @@ export default function TermsOfServicePage() {
           </div>
 
           {/* Privacy */}
-          <div className="bg-white rounded-lg shadow-sm p-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Privacy</h2>
-            <p className="text-gray-700 mb-4">
+          <div className={staticPageStyles.containers.card}>
+            <h2 className={`${staticPageStyles.typography.sectionHeading} mb-4`}>Privacy</h2>
+            <p className={`${staticPageStyles.typography.bodyText} mb-4`}>
               Your privacy is important to us. Our Privacy Policy explains how we collect, use, and protect your
               personal information. By using the Service, you agree to our collection and use of information as
               described in the Privacy Policy.
@@ -325,21 +326,21 @@ export default function TermsOfServicePage() {
           </div>
 
           {/* Contact */}
-          <div className="bg-gradient-to-r from-[#007AFF] to-[#0051D5] text-white rounded-lg p-8">
-            <h2 className="text-2xl font-bold mb-4">Questions About These Terms?</h2>
+          <div className={staticPageStyles.gradientCta}>
+            <h2 className={`${staticPageStyles.typography.sectionHeading} text-white mb-4`}>Questions About These Terms?</h2>
             <p className="mb-4">
               If you have any questions or concerns about these Terms of Service, please contact us:
             </p>
             <div className="space-y-2 mb-6">
               <p>
                 <strong>Email:</strong>{' '}
-                <a href="mailto:hello@ambira.app" className="underline hover:text-gray-200">
+                <a href="mailto:hello@ambira.app" className="underline hover:text-gray-200 transition-colors">
                   hello@ambira.app
                 </a>
               </p>
               <p>
                 <strong>Legal Inquiries:</strong>{' '}
-                <a href="mailto:legal@ambira.app" className="underline hover:text-gray-200">
+                <a href="mailto:legal@ambira.app" className="underline hover:text-gray-200 transition-colors">
                   legal@ambira.app
                 </a>
               </p>

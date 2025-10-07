@@ -15,7 +15,7 @@ export default function SignupPage() {
             Start your productivity journey with friends
           </p>
         </div>
-        <div className="bg-white p-8 rounded-xl shadow-lg border border-gray-200">
+        <div className="bg-white p-10 rounded-xl shadow-lg border border-gray-200">
           <SignupForm />
         </div>
       </div>

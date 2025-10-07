@@ -26,7 +26,7 @@ interface ChallengeDetailProps {
   onJoin: () => Promise<void>;
   onLeave: () => Promise<void>;
   onEdit?: () => void;
-  onDelete?: () => void;
+  onDelete?: () => void; // eslint-disable-line @typescript-eslint/no-unused-vars
   isLoading: boolean;
 }
 
@@ -125,15 +125,15 @@ export default function ChallengeDetail({
   return (
     <div className="max-w-4xl mx-auto">
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg p-8 mb-8">
+      <div className="bg-gradient-to-r from-[#007AFF] to-[#0051D5] text-white rounded-lg shadow-sm p-8 mb-8">
         <div className="flex items-start justify-between mb-6">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-white/20 rounded-lg">
+          <div className="flex items-center gap-4 flex-1 min-w-0">
+            <div className="p-3 bg-white/20 rounded-lg flex-shrink-0">
               <TypeIcon className="w-8 h-8" />
             </div>
-            <div>
+            <div className="min-w-0 flex-1">
               <h1 className="text-3xl font-bold mb-2">{challenge.name}</h1>
-              <p className="text-blue-100 text-lg">{typeConfig.description}</p>
+              <p className="text-white/80 text-lg">{typeConfig.description}</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -149,25 +149,25 @@ export default function ChallengeDetail({
 
         {/* Challenge Meta */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-          <div className="text-center">
-            <div className="text-2xl font-bold">{challenge.participantCount}</div>
-            <div className="text-blue-100">Participants</div>
+          <div className="text-center p-4 bg-white/10 rounded-lg">
+            <div className="text-3xl font-bold">{challenge.participantCount}</div>
+            <div className="text-white/80 text-sm mt-1">Participants</div>
           </div>
-          <div className="text-center">
+          <div className="text-center p-4 bg-white/10 rounded-lg">
             <div className="text-2xl font-bold">
-              {isActive ? formatTimeRemaining() : 
+              {isActive ? formatTimeRemaining() :
                isUpcoming ? `Starts ${startDate.toLocaleDateString()}` :
                `Ended ${endDate.toLocaleDateString()}`}
             </div>
-            <div className="text-blue-100">
+            <div className="text-white/80 text-sm mt-1">
               {isActive ? 'Time Remaining' : isUpcoming ? 'Start Date' : 'End Date'}
             </div>
           </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold">
+          <div className="text-center p-4 bg-white/10 rounded-lg">
+            <div className="text-3xl font-bold">
               {challenge.goalValue ? formatProgress(challenge.goalValue) : 'No limit'}
             </div>
-            <div className="text-blue-100">Target Goal</div>
+            <div className="text-white/80 text-sm mt-1">Target Goal</div>
           </div>
         </div>
 
@@ -197,13 +197,13 @@ export default function ChallengeDetail({
         )}
 
         {/* Action Buttons */}
-        <div className="flex items-center gap-3 mt-6">
+        <div className="flex flex-wrap items-center gap-3 mt-6">
           {!isParticipating && !isCompleted && (
             <Button
               onClick={onJoin}
               disabled={isLoading}
               size="lg"
-              className="bg-white text-blue-600 hover:bg-blue-50"
+              className="bg-white text-[#007AFF] hover:bg-gray-50 font-semibold"
             >
               {isLoading ? 'Joining...' : 'Join Challenge'}
             </Button>
@@ -214,7 +214,7 @@ export default function ChallengeDetail({
               onClick={onLeave}
               disabled={isLoading}
               size="lg"
-              className="border-white text-white hover:bg-white/10"
+              className="border-white text-white hover:bg-white/10 font-semibold"
             >
               {isLoading ? 'Leaving...' : 'Leave Challenge'}
             </Button>
@@ -222,7 +222,7 @@ export default function ChallengeDetail({
           <Button
             variant="outline"
             size="lg"
-            className="border-white text-white hover:bg-white/10"
+            className="border-white text-white hover:bg-white/10 font-semibold"
           >
             <Share2 className="w-4 h-4 mr-2" />
             Share
@@ -231,24 +231,24 @@ export default function ChallengeDetail({
       </div>
 
       {/* Navigation Tabs */}
-      <div className="bg-white rounded-lg border border-gray-200 mb-6">
+      <div className="bg-white rounded-lg border border-gray-200 shadow-sm mb-6">
         <div className="flex border-b border-gray-200">
           <button
             onClick={() => setActiveSection('overview')}
-            className={`px-6 py-4 font-medium text-sm border-b-2 transition-colors ${
+            className={`px-6 py-4 font-semibold text-sm border-b-2 transition-colors ${
               activeSection === 'overview'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700'
+                ? 'border-[#007AFF] text-[#007AFF]'
+                : 'border-transparent text-gray-600 hover:text-gray-900'
             }`}
           >
             Overview
           </button>
           <button
             onClick={() => setActiveSection('leaderboard')}
-            className={`px-6 py-4 font-medium text-sm border-b-2 transition-colors ${
+            className={`px-6 py-4 font-semibold text-sm border-b-2 transition-colors ${
               activeSection === 'leaderboard'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700'
+                ? 'border-[#007AFF] text-[#007AFF]'
+                : 'border-transparent text-gray-600 hover:text-gray-900'
             }`}
           >
             Leaderboard
@@ -260,14 +260,14 @@ export default function ChallengeDetail({
             <div className="space-y-6">
               {/* Description */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">About This Challenge</h3>
+                <h2 className="text-xl font-bold text-gray-900 mb-3">About This Challenge</h2>
                 <p className="text-gray-600 leading-relaxed">{challenge.description}</p>
               </div>
 
               {/* Rules */}
               {challenge.rules && (
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3">Rules & Requirements</h3>
+                  <h2 className="text-xl font-bold text-gray-900 mb-3">Rules & Requirements</h2>
                   <div className="bg-gray-50 rounded-lg p-4">
                     <p className="text-gray-600 whitespace-pre-wrap">{challenge.rules}</p>
                   </div>
@@ -276,7 +276,7 @@ export default function ChallengeDetail({
 
               {/* Challenge Details */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Challenge Details</h3>
+                <h2 className="text-xl font-bold text-gray-900 mb-3">Challenge Details</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="bg-gray-50 rounded-lg p-4">
                     <div className="flex items-center gap-2 mb-2">
@@ -302,15 +302,15 @@ export default function ChallengeDetail({
               {/* Rewards */}
               {challenge.rewards && challenge.rewards.length > 0 && (
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3">Rewards</h3>
-                  <div className="bg-yellow-50 rounded-lg p-4">
+                  <h2 className="text-xl font-bold text-gray-900 mb-3">Rewards</h2>
+                  <div className="bg-yellow-50 rounded-lg p-4 border border-yellow-200">
                     <div className="flex items-center gap-2 mb-2">
                       <Award className="w-5 h-5 text-yellow-600" />
-                      <span className="font-medium text-yellow-800">What You'll Earn</span>
+                      <span className="font-semibold text-yellow-900">What You'll Earn</span>
                     </div>
                     <ul className="space-y-1">
                       {challenge.rewards.map((reward, index) => (
-                        <li key={index} className="text-yellow-700">• {reward}</li>
+                        <li key={index} className="text-yellow-800">• {reward}</li>
                       ))}
                     </ul>
                   </div>
@@ -319,7 +319,7 @@ export default function ChallengeDetail({
 
               {/* Statistics */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">Challenge Statistics</h3>
+                <h2 className="text-xl font-bold text-gray-900 mb-3">Challenge Statistics</h2>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div className="bg-blue-50 rounded-lg p-4 text-center">
                     <div className="text-2xl font-bold text-blue-600">{stats.totalParticipants}</div>

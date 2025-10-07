@@ -102,22 +102,22 @@ export default function ChallengeCard({
   };
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+    <div className="bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-all">
       <div className="p-6">
         {/* Header */}
         <div className="flex items-start justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <div className={`p-2 rounded-lg ${typeConfig.color.replace('text-', 'bg-').replace('800', '500/10')}`}>
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            <div className={`p-2.5 rounded-lg ${typeConfig.color.replace('text-', 'bg-').replace('800', '500/10')} flex-shrink-0`}>
               <TypeIcon className="w-5 h-5 text-current" />
             </div>
-            <div>
-              <Link 
+            <div className="min-w-0 flex-1">
+              <Link
                 href={`/challenges/${challenge.id}`}
-                className="text-lg font-semibold text-gray-900 hover:text-blue-600 transition-colors"
+                className="text-lg font-bold text-gray-900 hover:text-[#007AFF] transition-colors block truncate"
               >
                 {challenge.name}
               </Link>
-              <p className="text-sm text-gray-500">{typeConfig.description}</p>
+              <p className="text-sm text-gray-600">{typeConfig.description}</p>
             </div>
           </div>
           {getStatusBadge()}
@@ -203,12 +203,12 @@ export default function ChallengeCard({
 
         {/* Actions */}
         {showActions && (
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             {!isParticipating && !isCompleted && (
               <Button
                 onClick={onJoin}
                 disabled={isLoading}
-                className="flex-1"
+                className="flex-1 font-semibold"
               >
                 {isLoading ? 'Joining...' : 'Join Challenge'}
               </Button>
@@ -218,13 +218,13 @@ export default function ChallengeCard({
                 variant="outline"
                 onClick={onLeave}
                 disabled={isLoading}
-                className="flex-1"
+                className="flex-1 font-semibold"
               >
                 {isLoading ? 'Leaving...' : 'Leave Challenge'}
               </Button>
             )}
             <Link href={`/challenges/${challenge.id}`}>
-              <Button variant="outline" size="sm">
+              <Button variant="outline" className="font-semibold">
                 View Details
               </Button>
             </Link>

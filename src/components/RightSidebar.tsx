@@ -140,7 +140,7 @@ function RightSidebar() {
                 >
                   <div className="flex items-center gap-3">
                     <Link href={`/profile/${suggestedUser.username}`}>
-                      <div className="w-12 h-12 bg-gradient-to-br from-orange-400 to-orange-600 rounded-full flex items-center justify-center flex-shrink-0 ring-2 ring-white shadow-sm">
+                      <div className="w-12 h-12 bg-[#FC4C02] rounded-full flex items-center justify-center flex-shrink-0 ring-2 ring-white">
                         <span className="text-white font-semibold text-sm">
                           {suggestedUser.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
                         </span>
@@ -159,14 +159,13 @@ function RightSidebar() {
                         e.preventDefault();
                         handleFollowToggle(suggestedUser.id);
                       }}
-                      className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all whitespace-nowrap flex-shrink-0 ${
+                      className={`px-4 py-2 text-sm font-semibold rounded-lg transition-colors whitespace-nowrap flex-shrink-0 min-h-[36px] min-w-[80px] ${
                         followingUsers.has(suggestedUser.id)
-                          ? 'border border-gray-300 hover:bg-gray-100 text-gray-700 hover:border-gray-400'
-                          : 'bg-[#007AFF] hover:bg-[#0051D5] text-white shadow-sm'
+                          ? 'border border-gray-300 hover:border-gray-400 hover:bg-gray-50 text-gray-700 bg-white'
+                          : 'bg-[#007AFF] hover:bg-[#0051D5] text-white'
                       }`}
                       aria-label={followingUsers.has(suggestedUser.id) ? `Unfollow ${suggestedUser.name}` : `Follow ${suggestedUser.name}`}
                       aria-pressed={followingUsers.has(suggestedUser.id)}
-                      style={{minHeight: '36px', minWidth: '80px'}}
                     >
                       {followingUsers.has(suggestedUser.id) ? 'Following' : 'Follow'}
                     </button>

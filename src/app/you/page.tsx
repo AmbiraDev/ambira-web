@@ -16,6 +16,7 @@ import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'rec
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useUserSessions, useUserStats, useUserProfile, useUserFollowers, useUserFollowing } from '@/hooks/useCache';
 import { ImageGallery } from '@/components/ImageGallery';
+import { UnifiedProfileCard } from '@/components/UnifiedProfileCard';
 
 type YouTab = 'progress' | 'sessions' | 'projects' | 'profile';
 type TimePeriod = 'day' | 'week' | 'month' | 'year';
@@ -600,71 +601,18 @@ export default function YouPage() {
             {activeTab === 'profile' && (
               <div className="max-w-4xl mx-auto">
                 {/* Profile Header */}
-                <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
-                  {/* Profile Picture */}
-                  {userProfile?.profilePicture || user.profilePicture ? (
-                    <div className="w-24 h-24 rounded-full mb-4 overflow-hidden ring-4 ring-white">
-                      <Image
-                        src={userProfile?.profilePicture || user.profilePicture || ''}
-                        alt={user.name}
-                        width={96}
-                        height={96}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  ) : (
-                    <div className="w-24 h-24 bg-[#FC4C02] rounded-full flex items-center justify-center mb-4">
-                      <span className="text-white font-bold text-4xl">
-                        {user.name.charAt(0).toUpperCase()}
-                      </span>
-                    </div>
-                  )}
-
-                  {/* Name and Username */}
-                  <h1 className="text-2xl font-bold text-gray-900 mb-1">{user.name}</h1>
-                  <p className="text-gray-500 mb-2">@{user.username}</p>
-                  
-                  {/* Bio */}
-                  {(userProfile?.bio || user.bio) && (
-                    <p className="text-gray-700 mb-3">
-                      {userProfile?.bio || user.bio}
-                    </p>
-                  )}
-                  
-                  {/* Location */}
-                  {(userProfile?.location || user.location) && (
-                    <p className="text-gray-600 mb-4">
-                      📍 {userProfile?.location || user.location}
-                    </p>
-                  )}
-
-                  {/* Stats */}
-                  <div className="flex gap-8 mb-4">
-                    <div>
-                      <div className="text-sm text-gray-600">Following</div>
-                      <div className="text-xl font-bold">
-                        {following.length}
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-sm text-gray-600">Followers</div>
-                      <div className="text-xl font-bold">
-                        {followers.length}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Action Buttons */}
-                  <div className="flex gap-2">
-                    <Link
-                      href="/settings"
-                      className="flex-1 flex items-center justify-center gap-2 py-3 border-2 border-gray-300 text-gray-700 hover:bg-gray-50 rounded-xl font-medium transition-colors"
-                    >
-                      <Edit className="w-5 h-5" />
-                      Edit Profile
-                    </Link>
-                  </div>
-                </div>
+                <UnifiedProfileCard
+                  name={user.name}
+                  username={user.username}
+                  profilePicture={userProfile?.profilePicture || user.profilePicture}
+                  bio={userProfile?.bio || user.bio}
+                  location={userProfile?.location || user.location}
+                  followersCount={followers.length}
+                  followingCount={following.length}
+                  isOwnProfile={true}
+                  editButtonHref="/settings"
+                  className="mb-6"
+                />
 
                 {/* This Week Section */}
                 <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">

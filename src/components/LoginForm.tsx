@@ -76,80 +76,84 @@ export const LoginForm: React.FC = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-8">
       {submitError && (
         <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded-md">
           {submitError}
         </div>
       )}
 
-      <div>
-        <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
-          Email address
-        </label>
-        <input
-          id="email"
-          name="email"
-          type="email"
-          autoComplete="email"
-          value={formData.email}
-          onChange={handleChange}
-          className={`w-full px-3 py-2 border rounded-md shadow-sm placeholder-muted-foreground text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent ${
-            errors.email ? 'border-destructive' : 'border-border'
-          }`}
-          placeholder="Enter your email"
-        />
-        {errors.email && (
-          <p className="mt-1 text-sm text-destructive">{errors.email}</p>
-        )}
+      <div className="space-y-6">
+        <div>
+          <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
+            Email address
+          </label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            autoComplete="email"
+            value={formData.email}
+            onChange={handleChange}
+            className={`w-full px-4 py-3 border rounded-md shadow-sm placeholder-muted-foreground text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent ${
+              errors.email ? 'border-destructive' : 'border-border'
+            }`}
+            placeholder="Enter your email"
+          />
+          {errors.email && (
+            <p className="mt-2 text-sm text-destructive">{errors.email}</p>
+          )}
+        </div>
+
+        <div>
+          <label htmlFor="password" className="block text-sm font-medium text-foreground mb-2">
+            Password
+          </label>
+          <input
+            id="password"
+            name="password"
+            type="password"
+            autoComplete="current-password"
+            value={formData.password}
+            onChange={handleChange}
+            className={`w-full px-4 py-3 border rounded-md shadow-sm placeholder-muted-foreground text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent ${
+              errors.password ? 'border-destructive' : 'border-border'
+            }`}
+            placeholder="Enter your password"
+          />
+          {errors.password && (
+            <p className="mt-2 text-sm text-destructive">{errors.password}</p>
+          )}
+        </div>
       </div>
 
-      <div>
-        <label htmlFor="password" className="block text-sm font-medium text-foreground mb-2">
-          Password
-        </label>
-        <input
-          id="password"
-          name="password"
-          type="password"
-          autoComplete="current-password"
-          value={formData.password}
-          onChange={handleChange}
-          className={`w-full px-3 py-2 border rounded-md shadow-sm placeholder-muted-foreground text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent ${
-            errors.password ? 'border-destructive' : 'border-border'
-          }`}
-          placeholder="Enter your password"
-        />
-        {errors.password && (
-          <p className="mt-1 text-sm text-destructive">{errors.password}</p>
-        )}
-      </div>
+      <div className="space-y-4">
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-base font-medium text-primary-foreground bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        >
+          {isSubmitting ? (
+            <div className="flex items-center">
+              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+              Signing in...
+            </div>
+          ) : (
+            'Sign in'
+          )}
+        </button>
 
-      <button
-        type="submit"
-        disabled={isSubmitting}
-        className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-primary-foreground bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        {isSubmitting ? (
-          <div className="flex items-center">
-            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-            Signing in...
-          </div>
-        ) : (
-          'Sign in'
-        )}
-      </button>
-
-      <div className="text-center">
-        <p className="text-sm text-muted-foreground">
-          Don't have an account?{' '}
-          <a
-            href="/signup"
-            className="font-medium text-primary hover:text-primary/80"
-          >
-            Sign up
-          </a>
-        </p>
+        <div className="text-center pt-2">
+          <p className="text-sm text-muted-foreground">
+            Don't have an account?{' '}
+            <a
+              href="/signup"
+              className="font-medium text-primary hover:text-primary/80 transition-colors"
+            >
+              Sign up
+            </a>
+          </p>
+        </div>
       </div>
     </form>
   );

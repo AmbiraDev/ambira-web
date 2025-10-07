@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, ChevronDown, ChevronUp } from 'lucide-react';
+import { staticPageStyles } from '@/styles/staticPages';
 
 const faqs = [
   {
@@ -98,15 +99,15 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
         onClick={() => setIsOpen(!isOpen)}
         className="w-full py-4 flex items-start justify-between text-left hover:bg-gray-50 transition-colors px-4"
       >
-        <span className="font-medium text-gray-900 pr-4">{question}</span>
+        <span className={`${staticPageStyles.typography.subsectionHeading} pr-4`}>{question}</span>
         {isOpen ? (
-          <ChevronUp className="w-5 h-5 text-gray-500 flex-shrink-0 mt-0.5" />
+          <ChevronUp className={`${staticPageStyles.icons.small} text-gray-500 flex-shrink-0 mt-0.5`} />
         ) : (
-          <ChevronDown className="w-5 h-5 text-gray-500 flex-shrink-0 mt-0.5" />
+          <ChevronDown className={`${staticPageStyles.icons.small} text-gray-500 flex-shrink-0 mt-0.5`} />
         )}
       </button>
       {isOpen && (
-        <div className="px-4 pb-4 text-gray-600 leading-relaxed">
+        <div className={`px-4 pb-4 ${staticPageStyles.typography.bodyText}`}>
           {answer}
         </div>
       )}
@@ -116,18 +117,18 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
 
 export default function HelpPage() {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
+    <div className={staticPageStyles.containers.page}>
+      <div className={staticPageStyles.containers.content}>
         {/* Header */}
-        <div className="mb-8">
-          <Button variant="ghost" asChild className="mb-4">
+        <div className={staticPageStyles.spacing.sectionMargin}>
+          <Button variant="ghost" asChild className={staticPageStyles.backButton}>
             <Link href="/">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Home
             </Link>
           </Button>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Help Center</h1>
-          <p className="text-gray-600">
+          <h1 className={`${staticPageStyles.typography.pageTitle} mb-2`}>Help Center</h1>
+          <p className={staticPageStyles.typography.pageDescription}>
             Find answers to common questions about using Ambira
           </p>
         </div>
@@ -136,8 +137,8 @@ export default function HelpPage() {
         <div className="space-y-8">
           {faqs.map((section) => (
             <div key={section.category} className="bg-white rounded-lg shadow-sm overflow-hidden">
-              <div className="bg-[#007AFF] text-white px-6 py-4">
-                <h2 className="text-xl font-semibold">{section.category}</h2>
+              <div className={`${staticPageStyles.iconBackgrounds.blue} text-white px-6 py-4`}>
+                <h2 className={`${staticPageStyles.typography.sectionHeading} text-white`}>{section.category}</h2>
               </div>
               <div>
                 {section.questions.map((item, index) => (
@@ -149,11 +150,11 @@ export default function HelpPage() {
         </div>
 
         {/* Contact Support */}
-        <div className="mt-12 bg-white rounded-lg shadow-sm p-6 text-center">
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">
+        <div className={`mt-12 ${staticPageStyles.containers.card} text-center`}>
+          <h2 className={`${staticPageStyles.typography.sectionHeading} mb-2`}>
             Still need help?
           </h2>
-          <p className="text-gray-600 mb-4">
+          <p className={`${staticPageStyles.typography.bodyText} mb-4`}>
             Can't find the answer you're looking for? Reach out to our support team.
           </p>
           <Button asChild>

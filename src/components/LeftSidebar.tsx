@@ -68,7 +68,7 @@ function LeftSidebar() {
       <div className="space-y-4 h-full overflow-y-auto scrollbar-hide">
         {/* Profile Card - Subtle Design */}
         <Link href="/you" className="block group" aria-label="View your profile">
-          <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-all duration-300">
+          <div className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm hover:shadow-md transition-all duration-300">
             {isLoading ? (
               <div className="animate-pulse">
                 <div className="w-20 h-20 bg-gray-200 rounded-full mb-4"></div>
@@ -89,7 +89,7 @@ function LeftSidebar() {
                       />
                     </div>
                   ) : (
-                    <div className="w-20 h-20 bg-gradient-to-br from-[#007AFF] to-[#0051D5] rounded-full flex items-center justify-center ring-2 ring-gray-200">
+                    <div className="w-20 h-20 bg-[#FC4C02] rounded-full flex items-center justify-center ring-2 ring-white">
                       <span className="text-3xl font-bold text-white">
                         {profile?.name?.charAt(0)?.toUpperCase() || user?.name?.charAt(0)?.toUpperCase() || 'U'}
                       </span>

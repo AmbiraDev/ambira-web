@@ -4,35 +4,36 @@ import React from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Shield, Eye, Lock, Database, UserCheck, Mail } from 'lucide-react';
+import { staticPageStyles } from '@/styles/staticPages';
 
 export default function PrivacyPolicyPage() {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
+    <div className={staticPageStyles.containers.page}>
+      <div className={staticPageStyles.containers.content}>
         {/* Header */}
-        <div className="mb-8">
-          <Button variant="ghost" asChild className="mb-4">
+        <div className={staticPageStyles.spacing.sectionMargin}>
+          <Button variant="ghost" asChild className={staticPageStyles.backButton}>
             <Link href="/">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Home
             </Link>
           </Button>
           <div className="flex items-center mb-4">
-            <Shield className="w-8 h-8 text-[#007AFF] mr-3" />
-            <h1 className="text-3xl font-bold text-gray-900">Privacy Policy</h1>
+            <Shield className={`${staticPageStyles.icons.large} ${staticPageStyles.icons.primary} mr-3`} />
+            <h1 className={staticPageStyles.typography.pageTitle}>Privacy Policy</h1>
           </div>
-          <p className="text-gray-600">
+          <p className={staticPageStyles.lastUpdated}>
             Last updated: {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
           </p>
         </div>
 
         {/* Introduction */}
-        <div className="bg-white rounded-lg shadow-sm p-8 mb-6">
-          <p className="text-gray-700 leading-relaxed mb-4">
+        <div className={`${staticPageStyles.containers.card} mb-6`}>
+          <p className={`${staticPageStyles.typography.bodyText} ${staticPageStyles.spacing.paragraphSpacing}`}>
             At Ambira, we take your privacy seriously. This Privacy Policy explains how we collect, use,
             disclose, and safeguard your information when you use our social productivity tracking platform.
           </p>
-          <p className="text-gray-700 leading-relaxed">
+          <p className={staticPageStyles.typography.bodyText}>
             By using Ambira, you agree to the collection and use of information in accordance with this policy.
           </p>
         </div>
@@ -259,9 +260,9 @@ export default function PrivacyPolicyPage() {
                 <span>Object to certain data processing activities</span>
               </li>
             </ul>
-            <p className="text-gray-700 mt-4">
+            <p className={`${staticPageStyles.typography.bodyText} mt-4`}>
               To exercise these rights, please contact us at{' '}
-              <a href="mailto:privacy@ambira.app" className="text-[#007AFF] hover:underline">
+              <a href="mailto:privacy@ambira.app" className={staticPageStyles.links.email}>
                 privacy@ambira.app
               </a>
             </p>
@@ -307,10 +308,10 @@ export default function PrivacyPolicyPage() {
           </div>
 
           {/* Contact */}
-          <div className="bg-gradient-to-r from-[#007AFF] to-[#0051D5] text-white rounded-lg p-8">
+          <div className={staticPageStyles.gradientCta}>
             <div className="flex items-center mb-4">
-              <Mail className="w-6 h-6 mr-2" />
-              <h2 className="text-2xl font-bold">Contact Us</h2>
+              <Mail className={`${staticPageStyles.icons.medium} mr-2`} />
+              <h2 className={`${staticPageStyles.typography.sectionHeading} text-white`}>Contact Us</h2>
             </div>
             <p className="mb-4">
               If you have questions or concerns about this Privacy Policy or our data practices, please contact us:
@@ -318,13 +319,13 @@ export default function PrivacyPolicyPage() {
             <div className="space-y-2">
               <p>
                 <strong>Email:</strong>{' '}
-                <a href="mailto:privacy@ambira.app" className="underline hover:text-gray-200">
+                <a href="mailto:privacy@ambira.app" className="underline hover:text-gray-200 transition-colors">
                   privacy@ambira.app
                 </a>
               </p>
               <p>
                 <strong>General Inquiries:</strong>{' '}
-                <a href="mailto:hello@ambira.app" className="underline hover:text-gray-200">
+                <a href="mailto:hello@ambira.app" className="underline hover:text-gray-200 transition-colors">
                   hello@ambira.app
                 </a>
               </p>

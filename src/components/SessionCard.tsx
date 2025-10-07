@@ -116,25 +116,25 @@ export const SessionCard: React.FC<SessionCardProps> = ({
   };
 
   return (
-    <article className={`bg-white md:rounded-lg md:border md:border-gray-200 md:shadow-sm mb-0 md:mb-6 border-b border-gray-200 md:border-b-0 ${className}`}>
+    <article className={`bg-white md:rounded-lg md:border md:border-gray-200 md:shadow-sm mb-0 md:mb-4 border-b border-gray-200 md:border-b-0 ${className}`}>
       {/* Session Header */}
-      <div className="flex items-center justify-between px-3 md:px-4 pt-3 md:pt-4 pb-2 md:pb-3">
+      <div className="flex items-center justify-between px-4 pt-4 pb-3">
         <Link href={`/profile/${session.user.username}`} className="flex items-center gap-2 md:gap-3 min-w-0 flex-1">
           {/* User Avatar */}
           {session.user.profilePicture ? (
-            <div className="w-9 h-9 md:w-10 md:h-10 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-white">
+            <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-white">
               <Image
                 src={session.user.profilePicture}
                 alt={session.user.name}
-                width={80}
-                height={80}
+                width={40}
+                height={40}
                 quality={90}
                 className="w-full h-full object-cover"
               />
             </div>
           ) : (
-            <div className="w-9 h-9 md:w-10 md:h-10 bg-[#FC4C02] rounded-full flex items-center justify-center flex-shrink-0 ring-2 ring-white">
-              <span className="text-white font-semibold text-xs md:text-sm">
+            <div className="w-10 h-10 bg-[#FC4C02] rounded-full flex items-center justify-center flex-shrink-0 ring-2 ring-white">
+              <span className="text-white font-semibold text-sm">
                 {getUserInitials(session.user)}
               </span>
             </div>
@@ -151,7 +151,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({
         <div className="relative" ref={menuRef}>
           <button
             onClick={() => setShowMenu(!showMenu)}
-            className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full p-2 transition-colors"
+            className="text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg p-2 transition-colors min-h-[44px] min-w-[44px]"
             aria-label="Session options"
             aria-expanded={showMenu}
             aria-haspopup="true"
@@ -201,7 +201,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({
       </div>
 
       {/* Title and Description */}
-      <div className="px-3 md:px-4 pb-2 md:pb-3">
+      <div className="px-4 pb-3">
         <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 mb-1 leading-tight">
           {session.title || 'Focus Session'}
         </h3>
@@ -213,7 +213,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({
             {session.description.length > 280 && (
               <button
                 onClick={() => setIsExpanded(!isExpanded)}
-                className="text-[#007AFF] text-sm font-medium mt-1 hover:underline min-h-[44px] flex items-center"
+                className="text-[#007AFF] text-sm font-semibold mt-1 hover:underline min-h-[44px] flex items-center"
                 aria-expanded={isExpanded}
                 aria-label={isExpanded ? 'Show less description' : 'Show more description'}
               >
@@ -226,21 +226,21 @@ export const SessionCard: React.FC<SessionCardProps> = ({
 
       {/* Image Gallery */}
       {session.images && session.images.length > 0 && (
-        <div className="px-3 md:px-4 pb-3 md:pb-4">
+        <div className="px-4 pb-4">
           <ImageGallery images={session.images} />
         </div>
       )}
 
       {/* Stats - Strava style */}
-      <div className="px-3 md:px-4 pb-1">
-        <div className="grid grid-cols-2 gap-3 sm:gap-4 md:gap-6">
+      <div className="px-4 pb-2">
+        <div className="grid grid-cols-2 gap-4">
           <div>
-            <div className="text-xs text-gray-500 mb-0.5">Time</div>
-            <div className="text-sm sm:text-base md:text-lg font-semibold text-gray-900">{formatTime(session.duration)}</div>
+            <div className="text-xs text-gray-500 mb-1">Time</div>
+            <div className="text-base font-semibold text-gray-900">{formatTime(session.duration)}</div>
           </div>
           <div className="min-w-0">
-            <div className="text-xs text-gray-500 mb-0.5">Project</div>
-            <div className="text-sm sm:text-base md:text-lg font-semibold text-gray-900 truncate">{session.project?.name || 'N/A'}</div>
+            <div className="text-xs text-gray-500 mb-1">Project</div>
+            <div className="text-base font-semibold text-gray-900 truncate">{session.project?.name || 'N/A'}</div>
           </div>
         </div>
       </div>

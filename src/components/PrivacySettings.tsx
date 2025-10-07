@@ -5,17 +5,25 @@ import { PrivacySettings, UserProfile } from '@/types';
 import { firebaseUserApi } from '@/lib/firebaseApi';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { 
-  Shield, 
-  Globe, 
-  Users, 
-  Lock, 
-  Eye, 
-  UserX, 
-  Check
+import {
+  SettingsSection,
+  SettingsHeader,
+  SettingsCard,
+  SettingsCardHeader,
+  SettingsCardContent,
+  SettingsField
+} from '@/components/ui/settings-section';
+import {
+  Shield,
+  Globe,
+  Users,
+  Lock,
+  Eye,
+  UserX,
+  Check,
+  Activity,
+  FolderKanban
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -136,38 +144,31 @@ export const PrivacySettings: React.FC<PrivacySettingsProps> = ({
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
+      <SettingsSection>
         {[1, 2, 3].map((i) => (
-          <Card key={i} className="animate-pulse">
-            <CardHeader>
-              <div className="h-6 bg-muted rounded w-1/3" />
-              <div className="h-4 bg-muted rounded w-2/3" />
-            </CardHeader>
-            <CardContent>
+          <SettingsCard key={i} className="animate-pulse">
+            <SettingsCardHeader title="" description="" />
+            <SettingsCardContent>
               <div className="space-y-3">
-                <div className="h-10 bg-muted rounded" />
-                <div className="h-4 bg-muted rounded w-1/2" />
+                <div className="h-10 bg-gray-200 rounded" />
+                <div className="h-4 bg-gray-200 rounded w-1/2" />
               </div>
-            </CardContent>
-          </Card>
+            </SettingsCardContent>
+          </SettingsCard>
         ))}
-      </div>
+      </SettingsSection>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <SettingsSection>
       {/* Header */}
       <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-foreground flex items-center gap-2">
-            <Shield className="w-6 h-6" />
-            Privacy Settings
-          </h2>
-          <p className="text-muted-foreground mt-1">
-            Control who can see your profile, activity, and projects
-          </p>
-        </div>
+        <SettingsHeader
+          icon={Shield}
+          title="Privacy Controls"
+          description="Control who can see your profile, activity, and projects"
+        />
         {isModal && onClose && (
           <Button variant="ghost" onClick={onClose}>
             Close
@@ -176,210 +177,155 @@ export const PrivacySettings: React.FC<PrivacySettingsProps> = ({
       </div>
 
       {/* Profile Visibility */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            {getVisibilityIcon(settings.profileVisibility)}
-            Profile Visibility
-          </CardTitle>
-          <CardDescription>
-            Control who can view your profile information
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="profile-visibility">Profile Access</Label>
+      <SettingsCard>
+        <SettingsCardHeader
+          icon={Eye}
+          title="Profile Visibility"
+          description="Control who can view your profile information"
+        />
+        <SettingsCardContent>
+          <SettingsField label="Profile Access">
             <Select
               value={settings.profileVisibility}
               onValueChange={(value: string) => handleSettingChange('profileVisibility', value)}
             >
-              <SelectTrigger>
+              <SelectTrigger className="w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="everyone">
                   <div className="flex items-center gap-2">
                     <Globe className="w-4 h-4" />
-                    <div>
-                      <div className="font-medium">Everyone</div>
-                      <div className="text-sm text-muted-foreground">Anyone can view your profile</div>
-                    </div>
+                    <span>Everyone - Anyone can view your profile</span>
                   </div>
                 </SelectItem>
                 <SelectItem value="followers">
                   <div className="flex items-center gap-2">
                     <Users className="w-4 h-4" />
-                    <div>
-                      <div className="font-medium">Followers Only</div>
-                      <div className="text-sm text-muted-foreground">Only people you follow back</div>
-                    </div>
+                    <span>Followers Only - Only people you follow back</span>
                   </div>
                 </SelectItem>
                 <SelectItem value="private">
                   <div className="flex items-center gap-2">
                     <Lock className="w-4 h-4" />
-                    <div>
-                      <div className="font-medium">Private</div>
-                      <div className="text-sm text-muted-foreground">Only you can view your profile</div>
-                    </div>
+                    <span>Private - Only you can view your profile</span>
                   </div>
                 </SelectItem>
               </SelectContent>
             </Select>
-          </div>
-          <p className="text-sm text-muted-foreground">
-            {getVisibilityDescription(settings.profileVisibility, 'profileVisibility')}
-          </p>
-        </CardContent>
-      </Card>
+          </SettingsField>
+        </SettingsCardContent>
+      </SettingsCard>
 
       {/* Activity Visibility */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            {getVisibilityIcon(settings.activityVisibility)}
-            Activity Visibility
-          </CardTitle>
-          <CardDescription>
-            Control who can see your productivity activity and sessions
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="activity-visibility">Activity Access</Label>
+      <SettingsCard>
+        <SettingsCardHeader
+          icon={Activity}
+          title="Activity Visibility"
+          description="Control who can see your productivity activity and sessions"
+        />
+        <SettingsCardContent>
+          <SettingsField label="Activity Access">
             <Select
               value={settings.activityVisibility}
               onValueChange={(value: string) => handleSettingChange('activityVisibility', value)}
             >
-              <SelectTrigger>
+              <SelectTrigger className="w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="everyone">
                   <div className="flex items-center gap-2">
                     <Globe className="w-4 h-4" />
-                    <div>
-                      <div className="font-medium">Everyone</div>
-                      <div className="text-sm text-muted-foreground">Your activity is public</div>
-                    </div>
+                    <span>Everyone - Your activity is public</span>
                   </div>
                 </SelectItem>
                 <SelectItem value="followers">
                   <div className="flex items-center gap-2">
                     <Users className="w-4 h-4" />
-                    <div>
-                      <div className="font-medium">Followers Only</div>
-                      <div className="text-sm text-muted-foreground">Only your followers can see your activity</div>
-                    </div>
+                    <span>Followers Only - Only your followers can see</span>
                   </div>
                 </SelectItem>
                 <SelectItem value="private">
                   <div className="flex items-center gap-2">
                     <Lock className="w-4 h-4" />
-                    <div>
-                      <div className="font-medium">Private</div>
-                      <div className="text-sm text-muted-foreground">Your activity is completely private</div>
-                    </div>
+                    <span>Private - Your activity is completely private</span>
                   </div>
                 </SelectItem>
               </SelectContent>
             </Select>
-          </div>
-          <p className="text-sm text-muted-foreground">
-            {getVisibilityDescription(settings.activityVisibility, 'activityVisibility')}
-          </p>
-        </CardContent>
-      </Card>
+          </SettingsField>
+        </SettingsCardContent>
+      </SettingsCard>
 
       {/* Project Visibility */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            {getVisibilityIcon(settings.projectVisibility)}
-            Project Visibility
-          </CardTitle>
-          <CardDescription>
-            Control who can see your projects and their details
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="project-visibility">Project Access</Label>
+      <SettingsCard>
+        <SettingsCardHeader
+          icon={FolderKanban}
+          title="Project Visibility"
+          description="Control who can see your projects and their details"
+        />
+        <SettingsCardContent>
+          <SettingsField label="Project Access">
             <Select
               value={settings.projectVisibility}
               onValueChange={(value: string) => handleSettingChange('projectVisibility', value)}
             >
-              <SelectTrigger>
+              <SelectTrigger className="w-full">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="everyone">
                   <div className="flex items-center gap-2">
                     <Globe className="w-4 h-4" />
-                    <div>
-                      <div className="font-medium">Everyone</div>
-                      <div className="text-sm text-muted-foreground">Your projects are public</div>
-                    </div>
+                    <span>Everyone - Your projects are public</span>
                   </div>
                 </SelectItem>
                 <SelectItem value="followers">
                   <div className="flex items-center gap-2">
                     <Users className="w-4 h-4" />
-                    <div>
-                      <div className="font-medium">Followers Only</div>
-                      <div className="text-sm text-muted-foreground">Only your followers can see your projects</div>
-                    </div>
+                    <span>Followers Only - Only your followers can see</span>
                   </div>
                 </SelectItem>
                 <SelectItem value="private">
                   <div className="flex items-center gap-2">
                     <Lock className="w-4 h-4" />
-                    <div>
-                      <div className="font-medium">Private</div>
-                      <div className="text-sm text-muted-foreground">Your projects are completely private</div>
-                    </div>
+                    <span>Private - Your projects are completely private</span>
                   </div>
                 </SelectItem>
               </SelectContent>
             </Select>
-          </div>
-          <p className="text-sm text-muted-foreground">
-            {getVisibilityDescription(settings.projectVisibility, 'projectVisibility')}
-          </p>
-        </CardContent>
-      </Card>
+          </SettingsField>
+        </SettingsCardContent>
+      </SettingsCard>
 
       {/* Blocked Users */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <UserX className="w-5 h-5" />
-            Blocked Users
-          </CardTitle>
-          <CardDescription>
-            Manage users you have blocked from viewing your profile
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+      <SettingsCard>
+        <SettingsCardHeader
+          icon={UserX}
+          title="Blocked Users"
+          description="Manage users you have blocked from viewing your profile"
+        />
+        <SettingsCardContent>
           {blockedUsers.length > 0 ? (
             <div className="space-y-3">
               {blockedUsers.map((blockedUser) => (
-                <div key={blockedUser.id} className="flex items-center justify-between p-3 border border-border rounded-lg">
+                <div key={blockedUser.id} className="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
                   <div className="flex items-center gap-3">
                     {blockedUser.profilePicture ? (
                       <img
                         src={blockedUser.profilePicture}
                         alt={`${blockedUser.name}'s profile picture`}
-                        className="w-10 h-10 rounded-full object-cover border border-border"
+                        className="w-10 h-10 rounded-full object-cover border border-gray-200"
                       />
                     ) : (
-                      <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-semibold">
+                      <div className="w-10 h-10 bg-gradient-to-br from-[#FC4C02] to-[#FF8800] rounded-full flex items-center justify-center text-white text-sm font-semibold">
                         {blockedUser.name.charAt(0).toUpperCase()}
                       </div>
                     )}
                     <div>
-                      <h4 className="font-medium text-foreground">{blockedUser.name}</h4>
-                      <p className="text-sm text-muted-foreground">@{blockedUser.username}</p>
+                      <h4 className="font-medium text-gray-900">{blockedUser.name}</h4>
+                      <p className="text-sm text-gray-600">@{blockedUser.username}</p>
                     </div>
                   </div>
                   <Button
@@ -396,22 +342,22 @@ export const PrivacySettings: React.FC<PrivacySettingsProps> = ({
             </div>
           ) : (
             <div className="text-center py-8">
-              <UserX className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
-              <h3 className="font-medium text-foreground mb-1">No blocked users</h3>
-              <p className="text-sm text-muted-foreground">
+              <UserX className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+              <h3 className="font-medium text-gray-900 mb-1">No blocked users</h3>
+              <p className="text-sm text-gray-600">
                 Users you block will appear here
               </p>
             </div>
           )}
-        </CardContent>
-      </Card>
+        </SettingsCardContent>
+      </SettingsCard>
 
       {/* Save Button */}
-      <div className="flex justify-end">
+      <div className="flex justify-end pt-2">
         <Button
           onClick={handleSave}
           disabled={isSaving}
-          className="min-w-[120px]"
+          className="min-w-[120px] bg-[#007AFF] hover:bg-[#0051D5]"
         >
           {isSaving ? (
             <div className="flex items-center gap-2">
@@ -423,7 +369,7 @@ export const PrivacySettings: React.FC<PrivacySettingsProps> = ({
           )}
         </Button>
       </div>
-    </div>
+    </SettingsSection>
   );
 };
 
