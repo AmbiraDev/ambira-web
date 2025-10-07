@@ -751,43 +751,53 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
               <span className="text-xs text-gray-600 font-medium">Tag</span>
             </div>
 
+            {/* Pause Button - Centered */}
             {timerState.isRunning && (
-              <div className="flex flex-col items-center gap-1">
-                <button
-                  onClick={handlePauseTimer}
-                  className="w-24 h-24 rounded-full bg-gray-900 hover:bg-gray-800 active:scale-95 flex items-center justify-center transition-all shadow-xl"
-                >
-                  <svg className="w-9 h-9 text-white" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
-                  </svg>
-                </button>
-                <span className="text-xs text-gray-600 font-medium">Pause</span>
-              </div>
-            )}
-
-            {!timerState.isRunning && timerState.startTime && (
-              <div className="flex gap-3">
+              <>
+                <div className="w-16"></div> {/* Spacer */}
                 <div className="flex flex-col items-center gap-1">
                   <button
-                    onClick={handleResumeTimer}
-                    className="w-20 h-20 rounded-full bg-green-600 hover:bg-green-700 active:scale-95 flex items-center justify-center transition-all shadow-xl"
+                    onClick={handlePauseTimer}
+                    className="w-24 h-24 rounded-full bg-gray-900 hover:bg-gray-800 active:scale-95 flex items-center justify-center transition-all shadow-xl"
                   >
-                    <svg className="w-8 h-8 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M8 5v14l11-7z" />
+                    <svg className="w-9 h-9 text-white" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
                     </svg>
                   </button>
-                  <span className="text-xs text-gray-600 font-medium">Resume</span>
+                  <span className="text-xs text-gray-600 font-medium">Pause</span>
                 </div>
-                <div className="flex flex-col items-center gap-1">
-                  <button
-                    onClick={() => setShowFinishModal(true)}
-                    className="w-20 h-20 rounded-full bg-[#FC4C02] hover:bg-[#E04502] active:scale-95 flex items-center justify-center transition-all shadow-xl"
-                  >
-                    <Flag className="w-7 h-7 text-white" />
-                  </button>
-                  <span className="text-xs text-gray-600 font-medium">Finish</span>
+                <div className="w-16"></div> {/* Spacer */}
+              </>
+            )}
+
+            {/* Resume & Finish - Centered */}
+            {!timerState.isRunning && timerState.startTime && (
+              <>
+                <div className="w-16"></div> {/* Spacer */}
+                <div className="flex gap-3">
+                  <div className="flex flex-col items-center gap-1">
+                    <button
+                      onClick={handleResumeTimer}
+                      className="w-20 h-20 rounded-full bg-[#22C55E] hover:bg-[#16A34A] active:scale-95 flex items-center justify-center transition-all shadow-xl"
+                    >
+                      <svg className="w-8 h-8 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M8 5v14l11-7z" />
+                      </svg>
+                    </button>
+                    <span className="text-xs text-gray-600 font-medium">Resume</span>
+                  </div>
+                  <div className="flex flex-col items-center gap-1">
+                    <button
+                      onClick={() => setShowFinishModal(true)}
+                      className="w-20 h-20 rounded-full bg-[#FC4C02] hover:bg-[#E04502] active:scale-95 flex items-center justify-center transition-all shadow-xl"
+                    >
+                      <Flag className="w-7 h-7 text-white" />
+                    </button>
+                    <span className="text-xs text-gray-600 font-medium">Finish</span>
+                  </div>
                 </div>
-              </div>
+                <div className="w-16"></div> {/* Spacer */}
+              </>
             )}
           </div>
         </div>
