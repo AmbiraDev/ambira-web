@@ -28,9 +28,14 @@ function HomeContent() {
       <MobileHeader title="Feed" />
 
       <div className="max-w-[1400px] mx-auto md:px-4 md:py-6">
-        <div className="md:flex md:justify-center gap-6">
+        <div className="md:flex gap-6 justify-center">
+          {/* Left Sidebar - hidden on mobile */}
+          <div className="hidden md:block">
+            <LeftSidebar />
+          </div>
+
           {/* Main Feed - Centered */}
-          <main className="w-full md:w-[600px] flex-shrink-0">
+          <main className="flex-1 min-w-0 max-w-[600px]">
             {/* Following Feed */}
             <Feed filters={{ type: 'following' }} key="following-feed" showEndMessage={false} />
 
@@ -50,7 +55,7 @@ function HomeContent() {
           </main>
 
           {/* Right Sidebar - hidden on mobile */}
-          <div className="hidden md:block md:w-[320px] flex-shrink-0">
+          <div className="hidden md:block">
             <RightSidebar />
           </div>
         </div>
