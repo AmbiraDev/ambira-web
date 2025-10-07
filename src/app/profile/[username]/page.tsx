@@ -356,17 +356,25 @@ export default function ProfilePage() {
               <div className="max-w-4xl mx-auto">
                 <div className="bg-white rounded-xl border border-gray-200 p-6">
                   {/* Profile Picture */}
-                  <div className="w-24 h-24 bg-[#FC4C02] rounded-full flex items-center justify-center mb-4">
-                    <span className="text-white font-bold text-4xl">
-                      {profile.name.charAt(0).toUpperCase()}
-                    </span>
-                  </div>
+                  {profile.profilePicture ? (
+                    <img
+                      src={profile.profilePicture}
+                      alt={`${profile.name}'s profile picture`}
+                      className="w-24 h-24 rounded-full object-cover mb-4"
+                    />
+                  ) : (
+                    <div className="w-24 h-24 bg-gradient-to-br from-[#007AFF] to-[#0051D5] rounded-full flex items-center justify-center mb-4">
+                      <span className="text-white font-bold text-4xl">
+                        {profile.name.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                  )}
 
                   {/* Name and Location */}
                   <h1 className="text-2xl font-bold text-gray-900 mb-1">{profile.name}</h1>
-                  <p className="text-gray-600 mb-4">
-                    {profile.location || 'Location not set'}
-                  </p>
+                  {profile.location && (
+                    <p className="text-gray-600 mb-4">{profile.location}</p>
+                  )}
 
                   {/* Stats */}
                   <div className="flex gap-8 mb-4">
@@ -385,30 +393,28 @@ export default function ProfilePage() {
                   </div>
 
                   {/* Follow Button */}
-                  <div className="flex gap-2">
-                    <button
-                      onClick={async () => {
-                        try {
-                          if (profile.isFollowing) {
-                            await firebaseUserApi.unfollowUser(profile.id);
-                            handleProfileUpdate({ ...profile, isFollowing: false });
-                          } else {
-                            await firebaseUserApi.followUser(profile.id);
-                            handleProfileUpdate({ ...profile, isFollowing: true });
-                          }
-                        } catch (error) {
-                          console.error('Follow error:', error);
+                  <button
+                    onClick={async () => {
+                      try {
+                        if (profile.isFollowing) {
+                          await firebaseUserApi.unfollowUser(profile.id);
+                          handleProfileUpdate({ ...profile, isFollowing: false });
+                        } else {
+                          await firebaseUserApi.followUser(profile.id);
+                          handleProfileUpdate({ ...profile, isFollowing: true });
                         }
-                      }}
-                      className={`flex-1 flex items-center justify-center gap-2 py-3 border-2 rounded-xl font-medium ${
-                        profile.isFollowing
-                          ? 'border-gray-300 text-gray-700'
-                          : 'border-[#FC4C02] text-[#FC4C02]'
-                      }`}
-                    >
-                      {profile.isFollowing ? 'Following' : 'Follow'}
-                    </button>
-                  </div>
+                      } catch (error) {
+                        console.error('Follow error:', error);
+                      }
+                    }}
+                    className={`w-full py-3 rounded-xl font-semibold transition-colors ${
+                      profile.isFollowing
+                        ? 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                        : 'bg-[#007AFF] text-white hover:bg-[#0056D6]'
+                    }`}
+                  >
+                    {profile.isFollowing ? 'Following' : 'Follow'}
+                  </button>
                 </div>
               </div>
             </div>
@@ -657,11 +663,19 @@ export default function ProfilePage() {
                       <div className="flex items-center justify-between p-4 pb-3">
                         <div className="flex items-center gap-3">
                           <Link href={`/profile/${username}?tab=profile`}>
-                            <div className="w-10 h-10 bg-[#FC4C02] rounded-full flex items-center justify-center flex-shrink-0 ring-2 ring-white">
-                              <span className="text-white font-semibold text-sm">
-                                {profile.name.charAt(0).toUpperCase()}
-                              </span>
-                            </div>
+                            {profile.profilePicture ? (
+                              <img
+                                src={profile.profilePicture}
+                                alt={`${profile.name}'s profile picture`}
+                                className="w-10 h-10 rounded-full object-cover flex-shrink-0 ring-2 ring-white"
+                              />
+                            ) : (
+                              <div className="w-10 h-10 bg-gradient-to-br from-[#007AFF] to-[#0051D5] rounded-full flex items-center justify-center flex-shrink-0 ring-2 ring-white">
+                                <span className="text-white font-semibold text-sm">
+                                  {profile.name.charAt(0).toUpperCase()}
+                                </span>
+                              </div>
+                            )}
                           </Link>
                           <div>
                             <div className="font-semibold text-gray-900 text-base">{profile.name}</div>
@@ -743,11 +757,19 @@ export default function ProfilePage() {
                 {isOwnProfile && (
                   <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
                     {/* Profile Picture */}
-                    <div className="w-24 h-24 bg-[#FC4C02] rounded-full flex items-center justify-center mb-4">
-                      <span className="text-white font-bold text-4xl">
-                        {profile.name.charAt(0).toUpperCase()}
-                      </span>
-                    </div>
+                    {profile.profilePicture ? (
+                      <img
+                        src={profile.profilePicture}
+                        alt={`${profile.name}'s profile picture`}
+                        className="w-24 h-24 rounded-full object-cover mb-4"
+                      />
+                    ) : (
+                      <div className="w-24 h-24 bg-gradient-to-br from-[#007AFF] to-[#0051D5] rounded-full flex items-center justify-center mb-4">
+                        <span className="text-white font-bold text-4xl">
+                          {profile.name.charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                    )}
 
                     {/* Name and Location */}
                     <h1 className="text-2xl font-bold text-gray-900 mb-1">{profile.name}</h1>
