@@ -56,11 +56,19 @@ export const ImageLightbox: React.FC<ImageLightboxProps> = ({
   return (
     <div
       className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/90"
-      onClick={onClose}
+      onClick={(e) => {
+        // Only close if clicking the background, not the image
+        if (e.target === e.currentTarget) {
+          onClose();
+        }
+      }}
     >
       {/* Close button */}
       <button
-        onClick={onClose}
+        onClick={(e) => {
+          e.stopPropagation();
+          onClose();
+        }}
         className="absolute top-4 right-4 z-10 p-2 text-white hover:text-gray-300 transition-colors"
         aria-label="Close lightbox"
       >
@@ -70,7 +78,6 @@ export const ImageLightbox: React.FC<ImageLightboxProps> = ({
       {/* Main image container */}
       <div
         className="relative w-full h-full flex items-center justify-center p-4 md:p-8"
-        onClick={(e) => e.stopPropagation()}
       >
         {/* Image */}
         <div className="relative max-w-7xl max-h-full w-full h-full flex items-center justify-center">
