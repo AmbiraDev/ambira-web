@@ -8,10 +8,10 @@ import BottomNavigation from '@/components/BottomNavigation';
 import CreateGroupModal from '@/components/CreateGroupModal';
 import { Group, Challenge } from '@/types';
 import { firebaseApi } from '@/lib/firebaseApi';
-import { Users, Trophy, Target, Calendar, Award, Dumbbell, Book, Briefcase, Heart, Plus } from 'lucide-react';
+import { Users, Trophy, Target, Calendar, Award, Dumbbell, Book, Briefcase, Heart, Plus, Search } from 'lucide-react';
 import Link from 'next/link';
 
-type TabType = 'active' | 'challenges' | 'create';
+type TabType = 'active' | 'discover' | 'challenges' | 'create';
 
 const categoryIcons: Record<string, React.ReactNode> = {
   fitness: <Dumbbell className="w-5 h-5" />,
@@ -25,6 +25,7 @@ export default function GroupsPage() {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<TabType>('active');
   const [groups, setGroups] = useState<Group[]>([]);
+  const [suggestedGroups, setSuggestedGroups] = useState<Group[]>([]);
   const [challenges, setChallenges] = useState<Challenge[]>([]);
   const [userChallenges, setUserChallenges] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -44,6 +45,12 @@ export default function GroupsPage() {
       // Load user's groups
       const userGroupsData = await firebaseApi.group.getUserGroups(user.id);
       setGroups(userGroupsData);
+
+      // Load suggested groups (public groups the user hasn't joined)
+      const allPublicGroups = await firebaseApi.group.searchGroups({ privacySetting: 'public' }, 20);
+      const userGroupIds = new Set(userGroupsData.map(g => g.id));
+      const suggested = allPublicGroups.filter(g => !userGroupIds.has(g.id));
+      setSuggestedGroups(suggested);
 
       // Load all challenges
       const allChallenges = await firebaseApi.challenge.searchChallenges({}, 50);
@@ -136,6 +143,16 @@ export default function GroupsPage() {
               Active
             </button>
             <button
+              onClick={() => setActiveTab('discover')}
+              className={`flex-1 md:flex-initial py-4 px-6 text-sm md:text-base font-semibold transition-colors border-b-2 ${
+                activeTab === 'discover'
+                  ? 'text-[#007AFF] border-[#007AFF]'
+                  : 'text-gray-600 border-transparent hover:text-gray-900'
+              }`}
+            >
+              Discover
+            </button>
+            <button
               onClick={() => setActiveTab('challenges')}
               className={`flex-1 md:flex-initial py-4 px-6 text-sm md:text-base font-semibold transition-colors border-b-2 ${
                 activeTab === 'challenges'
@@ -169,6 +186,95 @@ export default function GroupsPage() {
               onClose={() => setActiveTab('active')}
               onSubmit={handleCreateGroup}
             />
+          ) : activeTab === 'discover' ? (
+            // Discover Groups Tab
+            <div>
+              {isLoading ? (
+                <div className="text-center py-20">
+                  <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#007AFF]"></div>
+                </div>
+              ) : suggestedGroups.length > 0 ? (
+                <div>
+                  <h2 className="text-xl font-bold text-gray-900 mb-4">Suggested Groups</h2>
+                  <div className="grid gap-4 md:gap-6">
+                    {suggestedGroups.map(group => (
+                      <Link
+                        key={group.id}
+                        href={`/groups/${group.id}`}
+                        className="group block bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200"
+                      >
+                        <div className="p-6">
+                          <div className="flex items-start gap-3 md:gap-4">
+                            {/* Group Icon/Avatar */}
+                            <div className="relative flex-shrink-0">
+                              <div className="w-14 h-14 md:w-16 md:h-16 bg-gradient-to-br from-[#007AFF] to-[#0051D5] rounded-2xl flex items-center justify-center shadow-sm">
+                                <Users className="w-7 h-7 md:w-8 md:h-8 text-white" />
+                              </div>
+                              {/* Member count badge */}
+                              <div className="absolute -bottom-1 -right-1 bg-white rounded-full px-2 py-0.5 shadow-sm border border-gray-100">
+                                <span className="text-xs font-semibold text-gray-700">{group.memberCount}</span>
+                              </div>
+                            </div>
+
+                            {/* Group Info */}
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-start justify-between gap-3 mb-1">
+                                <h3 className="font-semibold text-base md:text-lg text-gray-900 group-hover:text-[#007AFF] transition-colors">
+                                  {group.name}
+                                </h3>
+                                {/* Privacy indicator */}
+                                <div className="flex-shrink-0">
+                                  <div className={`px-2 py-1 rounded-md text-xs font-medium ${
+                                    group.privacySetting === 'public'
+                                      ? 'bg-green-50 text-green-700'
+                                      : 'bg-orange-50 text-orange-700'
+                                  }`}>
+                                    {group.privacySetting === 'public' ? 'Public' : 'Approval Required'}
+                                  </div>
+                                </div>
+                              </div>
+
+                              {group.description && (
+                                <p className="text-sm text-gray-600 line-clamp-2 mb-3">
+                                  {group.description}
+                                </p>
+                              )}
+
+                              {/* Metadata */}
+                              <div className="flex items-center gap-3 text-xs text-gray-500">
+                                <span className="flex items-center gap-1">
+                                  <Users className="w-3.5 h-3.5" />
+                                  {group.memberCount} {group.memberCount === 1 ? 'member' : 'members'}
+                                </span>
+                                {group.category && (
+                                  <span className="flex items-center gap-1">
+                                    <Target className="w-3.5 h-3.5" />
+                                    <span className="capitalize">{group.category}</span>
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-12 bg-white rounded-lg border border-gray-200 shadow-sm">
+                  <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                  <h2 className="text-xl font-semibold text-gray-900 mb-2">No Groups to Discover</h2>
+                  <p className="text-gray-600 mb-4">You've explored all available groups</p>
+                  <button
+                    onClick={() => setActiveTab('create')}
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-[#007AFF] text-white text-sm font-semibold rounded-lg hover:bg-[#0051D5] transition-colors"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Create a Group
+                  </button>
+                </div>
+              )}
+            </div>
           ) : activeTab === 'active' ? (
             // Active Groups Tab
             <div>

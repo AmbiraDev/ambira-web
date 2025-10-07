@@ -559,13 +559,6 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
             <div className="text-6xl font-bold tracking-tight text-gray-900 font-mono" aria-label={`Timer: ${Math.floor(displayTime / 3600)} hours, ${Math.floor((displayTime % 3600) / 60)} minutes, ${displayTime % 60} seconds`}>
               {getFormattedTime(displayTime)}
             </div>
-            <div className="flex items-center justify-center gap-2 mt-2 text-xs text-gray-500 font-medium tracking-wide">
-              <span className="inline-block w-12 text-center">Hours</span>
-              <span className="text-gray-400">:</span>
-              <span className="inline-block w-12 text-center">Mins</span>
-              <span className="text-gray-400">:</span>
-              <span className="inline-block w-12 text-center">Secs</span>
-            </div>
           </div>
         </div>
 
@@ -833,15 +826,8 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
         <div className="flex flex-col items-center justify-start space-y-3 lg:space-y-8 lg:sticky lg:top-24 pt-8">
           {/* Large Timer Display */}
           <div className="text-center w-full">
-            <div className="text-6xl md:text-7xl lg:text-9xl font-mono font-bold text-gray-900" aria-label={`Timer: ${Math.floor(displayTime / 3600)} hours, ${Math.floor((displayTime % 3600) / 60)} minutes, ${displayTime % 60} seconds`}>
+            <div className="text-6xl md:text-7xl lg:text-9xl font-mono font-bold text-gray-900 mb-4 lg:mb-8" aria-label={`Timer: ${Math.floor(displayTime / 3600)} hours, ${Math.floor((displayTime % 3600) / 60)} minutes, ${displayTime % 60} seconds`}>
               {getFormattedTime(displayTime)}
-            </div>
-            <div className="flex items-center justify-center gap-3 md:gap-3 lg:gap-6 mt-2 md:mt-3 lg:mt-4 mb-4 lg:mb-8 text-sm md:text-base lg:text-xl text-gray-500 font-medium tracking-wide">
-              <span className="inline-block w-14 md:w-16 lg:w-24 text-center">Hours</span>
-              <span className="text-gray-400">:</span>
-              <span className="inline-block w-14 md:w-16 lg:w-24 text-center">Mins</span>
-              <span className="text-gray-400">:</span>
-              <span className="inline-block w-14 md:w-16 lg:w-24 text-center">Secs</span>
             </div>
 
             {/* Timer Controls - Pill Buttons with Text */}

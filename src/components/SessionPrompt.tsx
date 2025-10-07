@@ -50,7 +50,7 @@ export default function SessionPrompt() {
 
           {/* Manual Entry Button */}
           <Link
-            href="/timer?manual=true"
+            href="/record-manual"
             className="flex items-center gap-3 px-6 py-4 rounded-lg hover:bg-gray-50 transition-colors flex-1 justify-center"
           >
             <Edit3

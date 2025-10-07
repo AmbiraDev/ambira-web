@@ -11,7 +11,6 @@ import { FABMenu } from '@/components/FABMenu';
 import Feed from '@/components/Feed';
 import FeedCarousel from '@/components/FeedCarousel';
 import DayOverview from '@/components/DayOverview';
-import SessionPrompt from '@/components/SessionPrompt';
 import { useState } from 'react';
 import { FeedFilters } from '@/types';
 
@@ -39,11 +38,6 @@ function HomeContent() {
 
             {/* Main Feed - Scrollable Container */}
             <main className="flex-1 min-w-0 max-w-[600px] h-full overflow-y-auto scrollbar-hide">
-              {/* Session Prompt - Only show on desktop */}
-              <div className="hidden md:block">
-                <SessionPrompt />
-              </div>
-
               {/* Following Feed */}
               <Feed filters={{ type: 'following' }} key="following-feed" showEndMessage={false} />
 

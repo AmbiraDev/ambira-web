@@ -6,7 +6,7 @@ import { useState, useEffect, useRef } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useTimer } from '@/contexts/TimerContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { Search, X, ChevronDown, Menu, LayoutDashboard, Users, BarChart3, Timer } from 'lucide-react';
+import { Search, X, ChevronDown, Menu, LayoutDashboard, Users, BarChart3, Timer, Edit3 } from 'lucide-react';
 
 export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -234,13 +234,46 @@ export default function Header() {
           </div>
 
           {/* Right side actions */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-3">
+
+            {/* Session Actions - Only show when NO active session */}
+            {!timerState.currentProject && (
+              <>
+                {/* Start Session Button */}
+                <Link
+                  href="/timer"
+                  className="hidden md:flex items-center gap-2 px-3 py-2 hover:bg-gray-50 rounded-lg transition-colors"
+                >
+                  <Timer
+                    className="w-5 h-5 text-[#5E8B47]"
+                    strokeWidth={2}
+                  />
+                  <span className="font-medium text-base text-gray-700">
+                    Start Session
+                  </span>
+                </Link>
+
+                {/* Log Manually Button */}
+                <Link
+                  href="/record-manual"
+                  className="hidden md:flex items-center gap-2 px-3 py-2 hover:bg-gray-50 rounded-lg transition-colors"
+                >
+                  <Edit3
+                    className="w-5 h-5 text-[#C37D16]"
+                    strokeWidth={2}
+                  />
+                  <span className="font-medium text-base text-gray-700">
+                    Log Manually
+                  </span>
+                </Link>
+              </>
+            )}
 
             {/* Active Session Status - Only show when there's an active/paused session */}
             {timerState.currentProject && (timerState.isRunning || timerState.pausedDuration > 0) && (
               <Link
                 href="/timer"
-                className="hidden md:flex items-center space-x-2 px-4 py-1.5 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors"
+                className="hidden md:flex items-center space-x-2 px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors"
               >
                 <div className="w-2 h-2 rounded-full bg-green-300" />
                 <span>{pathname.startsWith('/timer') ? 'Active' : headerTimer || 'Active'}</span>

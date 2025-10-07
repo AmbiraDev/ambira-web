@@ -96,7 +96,7 @@ export const SessionInteractions: React.FC<SessionInteractionsProps> = ({
               className={`w-5 h-5 transition-colors ${
                 isSupported
                   ? 'fill-blue-600 text-blue-600'
-                  : 'text-gray-600'
+                  : 'text-[#3B82F6]'
               }`}
               strokeWidth={1.5}
             />
@@ -113,7 +113,7 @@ export const SessionInteractions: React.FC<SessionInteractionsProps> = ({
             className="flex items-center gap-2 px-4 py-3 rounded-lg hover:bg-gray-100 transition-colors flex-1 justify-center"
           >
             <MessageSquare
-              className="w-5 h-5 text-gray-600"
+              className="w-5 h-5 text-[#10B981]"
               strokeWidth={1.5}
             />
             <span className="font-medium text-sm text-gray-600">
@@ -130,7 +130,7 @@ export const SessionInteractions: React.FC<SessionInteractionsProps> = ({
             }`}
           >
             <Share2
-              className="w-5 h-5 text-gray-600"
+              className="w-5 h-5 text-[#F59E0B]"
               strokeWidth={1.5}
             />
             <span className="font-medium text-sm text-gray-600">
