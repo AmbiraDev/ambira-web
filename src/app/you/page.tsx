@@ -14,7 +14,6 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { EditSessionModal } from '@/components/EditSessionModal';
 import { useUserSessions, useUserStats, useUserProfile, useUserFollowers, useUserFollowing } from '@/hooks/useCache';
 import { ImageGallery } from '@/components/ImageGallery';
 
@@ -48,7 +47,6 @@ export default function YouPage() {
   );
   const [timePeriod, setTimePeriod] = useState<TimePeriod>('week');
   const [showTimePeriodDropdown, setShowTimePeriodDropdown] = useState(false);
-  const [editingSession, setEditingSession] = useState<Session | null>(null);
   const [sessionMenuOpen, setSessionMenuOpen] = useState<string | null>(null);
   const [deleteConfirmSession, setDeleteConfirmSession] = useState<Session | null>(null);
 
@@ -188,17 +186,6 @@ export default function YouPage() {
       return `Yesterday at ${date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`;
     } else {
       return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
-    }
-  };
-
-  const handleEditSession = async (sessionId: string, data: any) => {
-    try {
-      await firebaseSessionApi.updateSession(sessionId, data);
-      // React Query will automatically refetch
-      alert('Session updated successfully');
-    } catch (error) {
-      console.error('Failed to update session:', error);
-      throw error;
     }
   };
 
@@ -512,7 +499,7 @@ export default function YouPage() {
                           <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
                             <button
                               onClick={() => {
-                                setEditingSession(session);
+                                router.push(`/sessions/${session.id}/edit`);
                                 setSessionMenuOpen(null);
                               }}
                               className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
@@ -821,14 +808,6 @@ export default function YouPage() {
           <BottomNavigation />
         </div>
 
-        {/* Edit Session Modal */}
-        {editingSession && (
-          <EditSessionModal
-            session={editingSession}
-            onClose={() => setEditingSession(null)}
-            onSave={handleEditSession}
-          />
-        )}
 
         {/* Delete Confirmation Modal */}
         {deleteConfirmSession && (

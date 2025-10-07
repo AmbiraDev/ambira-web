@@ -78,9 +78,23 @@ export const ImageLightbox: React.FC<ImageLightboxProps> = ({
       {/* Main image container */}
       <div
         className="relative w-full h-full flex items-center justify-center p-4 md:p-8"
+        onClick={(e) => {
+          // Close if clicking the padding area around the image
+          if (e.target === e.currentTarget) {
+            onClose();
+          }
+        }}
       >
         {/* Image */}
-        <div className="relative max-w-7xl max-h-full w-full h-full flex items-center justify-center">
+        <div 
+          className="relative max-w-7xl max-h-full w-full h-full flex items-center justify-center"
+          onClick={(e) => {
+            // Close if clicking the container but not the actual image
+            if (e.target === e.currentTarget) {
+              onClose();
+            }
+          }}
+        >
           <Image
             src={images[currentIndex]}
             alt={`Image ${currentIndex + 1} of ${images.length}`}
