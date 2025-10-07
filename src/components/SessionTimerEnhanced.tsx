@@ -681,7 +681,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
 
         {/* Fixed Bottom Controls - Strava Style */}
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-6 py-6 safe-area-bottom">
-          <div className="grid grid-cols-4 gap-4 max-w-md mx-auto">
+          <div className="flex items-end justify-center gap-6 max-w-md mx-auto">
             {/* Project Button */}
             <div className="flex flex-col items-center gap-1">
               <button
@@ -702,7 +702,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
 
             {/* Center: Main Action Button */}
             {!timerState.isRunning && !timerState.startTime && (
-              <div className="col-span-2 flex flex-col items-center gap-1">
+              <div className="flex flex-col items-center gap-1">
                 <button
                   onClick={handleStartTimer}
                   disabled={!selectedProjectId}
@@ -720,37 +720,36 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
               </div>
             )}
 
-            {/* Right Side: Manual + Tag */}
+            {/* Manual Button */}
             {!timerState.isRunning && !timerState.startTime && (
-              <div className="flex gap-2">
-                <div className="flex flex-col items-center gap-1">
-                  <Link
-                    href="/record-manual"
-                    className="w-14 h-14 rounded-full bg-[#3B82F6] hover:bg-[#2563EB] active:scale-95 flex items-center justify-center transition-all shadow-lg"
-                  >
-                    <Edit3 className="w-5 h-5 text-white" />
-                  </Link>
-                  <span className="text-xs text-gray-600 font-medium">Manual</span>
-                </div>
-                
-                <div className="flex flex-col items-center gap-1">
-                  <button
-                    onClick={() => setShowTagPicker(true)}
-                    className="relative w-14 h-14 rounded-full flex items-center justify-center transition-all border-2 active:scale-95"
-                    style={selectedTagConfig ? {
-                      backgroundColor: selectedTagConfig.bgColor,
-                      borderColor: selectedTagConfig.color
-                    } : {
-                      backgroundColor: '#F3F4F6',
-                      borderColor: '#D1D5DB'
-                    }}
-                  >
-                    <span className="text-xl">🏷️</span>
-                  </button>
-                  <span className="text-xs text-gray-600 font-medium">Tag</span>
-                </div>
+              <div className="flex flex-col items-center gap-1">
+                <Link
+                  href="/record-manual"
+                  className="w-16 h-16 rounded-full bg-[#3B82F6] hover:bg-[#2563EB] active:scale-95 flex items-center justify-center transition-all shadow-lg"
+                >
+                  <Edit3 className="w-6 h-6 text-white" />
+                </Link>
+                <span className="text-xs text-gray-600 font-medium">Manual</span>
               </div>
             )}
+
+            {/* Tag Button */}
+            <div className="flex flex-col items-center gap-1">
+              <button
+                onClick={() => setShowTagPicker(true)}
+                className="relative w-16 h-16 rounded-full flex items-center justify-center transition-all border-2 active:scale-95"
+                style={selectedTagConfig ? {
+                  backgroundColor: selectedTagConfig.bgColor,
+                  borderColor: selectedTagConfig.color
+                } : {
+                  backgroundColor: '#F3F4F6',
+                  borderColor: '#D1D5DB'
+                }}
+              >
+                <span className="text-2xl">🏷️</span>
+              </button>
+              <span className="text-xs text-gray-600 font-medium">Tag</span>
+            </div>
 
             {timerState.isRunning && (
               <div className="flex flex-col items-center gap-1">
@@ -790,24 +789,6 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                 </div>
               </div>
             )}
-
-            {/* Tag Button */}
-            <div className="flex flex-col items-center gap-1">
-              <button
-                onClick={() => setShowTagPicker(true)}
-                className="relative w-16 h-16 rounded-full flex items-center justify-center transition-all border-2 active:scale-95"
-                style={selectedTagConfig ? {
-                  backgroundColor: selectedTagConfig.bgColor,
-                  borderColor: selectedTagConfig.color
-                } : {
-                  backgroundColor: '#F3F4F6',
-                  borderColor: '#D1D5DB'
-                }}
-              >
-                <span className="text-2xl">🏷️</span>
-              </button>
-              <span className="text-xs text-gray-600 font-medium">Tag</span>
-            </div>
           </div>
         </div>
 
