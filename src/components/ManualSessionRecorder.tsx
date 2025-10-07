@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { SessionFormData, Project } from '@/types';
+import { SessionFormData, Project, CreateSessionData } from '@/types';
 import { firebaseApi } from '@/lib/firebaseApi';
 import { useAuth } from '@/contexts/AuthContext';
 import { ArrowLeft, Check, Image as ImageIcon, XCircle } from 'lucide-react';
@@ -36,7 +36,12 @@ export default function ManualSessionRecorder() {
   
   // Manual time inputs
   const [sessionDate, setSessionDate] = useState(new Date().toISOString().split('T')[0]);
-  const [startTime, setStartTime] = useState('09:00');
+  const [startTime, setStartTime] = useState(() => {
+    const now = new Date();
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    return `${hours}:${minutes}`;
+  });
   const [endTime, setEndTime] = useState('10:00');
   const [manualDurationHours, setManualDurationHours] = useState('1');
   const [manualDurationMinutes, setManualDurationMinutes] = useState('0');
@@ -111,8 +116,10 @@ export default function ManualSessionRecorder() {
         
         if (isHeic) {
           try {
-            // Dynamically import heic2any
-            const heic2any = (await import('heic2any')).default;
+            // Dynamically import heic2any - handle both default and named exports
+            const heic2anyModule = await import('heic2any');
+            const heic2any = heic2anyModule.default || heic2anyModule;
+            
             const convertedBlob = await heic2any({
               blob: file,
               toType: 'image/jpeg',
@@ -124,9 +131,11 @@ export default function ManualSessionRecorder() {
               file.name.replace(/\.heic$/i, '.jpg').replace(/\.heif$/i, '.jpg'),
               { type: 'image/jpeg' }
             );
+            console.log(`✅ Successfully converted HEIC file: ${file.name}`);
           } catch (error) {
             console.error('Error converting HEIC:', error);
-            alert(`Failed to convert ${file.name}. Please use JPG or PNG.`);
+            // More helpful error message
+            alert(`HEIC conversion is currently unavailable. Please convert ${file.name} to JPG or PNG before uploading, or try refreshing the page.`);
             continue;
           }
         }
@@ -226,7 +235,7 @@ export default function ManualSessionRecorder() {
         setIsUploadingImages(false);
       }
       
-      const formData = {
+      const formData: CreateSessionData = {
         projectId,
         title,
         description,
@@ -236,11 +245,11 @@ export default function ManualSessionRecorder() {
         tags: selectedTags,
         visibility,
         privateNotes,
-        imageUrls,
+        images: imageUrls,
       };
 
       // Create session with post
-      await firebaseApi.session.createSessionWithPost(formData as any, description, visibility);
+      await firebaseApi.session.createSessionWithPost(formData, description, visibility);
       
       // Redirect to home feed
       router.push('/');
@@ -264,7 +273,7 @@ export default function ManualSessionRecorder() {
             <h1 className="text-2xl font-bold text-gray-900">Manual</h1>
           </div>
           <p className="text-sm text-gray-600 mt-2">
-            Log a productivity session that you completed earlier
+            Log a session that you completed earlier
           </p>
         </div>
       </div>

@@ -25,7 +25,7 @@ export default function SessionsPage() {
         <div className="max-w-[600px] mx-auto px-0 md:px-4 md:py-6">
           <div className="mb-4 md:mb-6 px-4 md:px-0 pt-4 md:pt-0">
             <h1 className="text-2xl md:text-3xl font-bold text-gray-900">My Sessions</h1>
-            <p className="text-gray-600 mt-1 md:mt-2">View and manage your productivity sessions</p>
+            <p className="text-gray-600 mt-1 md:mt-2">View and manage your work sessions</p>
           </div>
           
           {/* Use Feed component with user filter */}

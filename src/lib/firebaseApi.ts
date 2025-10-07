@@ -1804,7 +1804,7 @@ export const firebaseSessionApi = {
       }
 
       // Prepare session data for Firestore
-      const sessionData = {
+      const sessionData: any = {
         userId: auth.currentUser.uid,
         projectId: data.projectId,
         title: data.title,
@@ -1817,7 +1817,6 @@ export const firebaseSessionApi = {
         showStartTime: data.showStartTime || false,
         hideTaskNames: data.hideTaskNames || false,
         publishToFeeds: data.publishToFeeds ?? true,
-        howFelt: data.howFelt,
         privateNotes: data.privateNotes || '',
         images: data.images || [],
         isArchived: false,
@@ -1827,6 +1826,11 @@ export const firebaseSessionApi = {
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
       };
+
+      // Only add howFelt if it's defined (Firestore doesn't allow undefined values)
+      if (data.howFelt !== undefined) {
+        sessionData.howFelt = data.howFelt;
+      }
 
       const docRef = await addDoc(collection(db, 'sessions'), sessionData);
 
