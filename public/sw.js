@@ -1,5 +1,5 @@
 // Service Worker for Ambira PWA
-const CACHE_NAME = 'ambira-v1';
+const CACHE_NAME = 'ambira-v2'; // Bumped version to clear old cache
 const urlsToCache = [
   '/',
   '/manifest.json',
@@ -13,6 +13,7 @@ self.addEventListener('install', (event) => {
     caches.open(CACHE_NAME)
       .then((cache) => cache.addAll(urlsToCache))
       .then(() => self.skipWaiting())
+      .catch((err) => console.log('SW install error:', err))
   );
 });
 
@@ -31,17 +32,27 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Fetch event - serve from cache, fallback to network
+// Fetch event - network first, fallback to cache
 self.addEventListener('fetch', (event) => {
   event.respondWith(
-    caches.match(event.request)
+    fetch(event.request)
       .then((response) => {
-        // Cache hit - return response
-        if (response) {
-          return response;
+        // Clone the response
+        const responseToCache = response.clone();
+        
+        // Only cache successful responses
+        if (response.status === 200) {
+          caches.open(CACHE_NAME)
+            .then((cache) => {
+              cache.put(event.request, responseToCache);
+            });
         }
-        return fetch(event.request);
-      }
-    )
+        
+        return response;
+      })
+      .catch(() => {
+        // Network failed, try cache
+        return caches.match(event.request);
+      })
   );
 });
