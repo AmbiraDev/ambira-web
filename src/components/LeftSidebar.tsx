@@ -65,7 +65,7 @@ function LeftSidebar() {
   }, [user]);
   return (
     <aside className="hidden lg:block w-[280px] flex-shrink-0">
-      <div className="sticky top-[88px] space-y-4">
+      <div className="sticky top-[88px] space-y-4 max-h-[calc(100vh-104px)] overflow-y-auto">
         {/* Profile Card - Subtle Design */}
         <Link href="/you" className="block group">
           <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-all duration-300">

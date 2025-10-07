@@ -82,7 +82,7 @@ function RightSidebar() {
 
   return (
     <aside className="hidden lg:block w-[300px] flex-shrink-0">
-      <div className="sticky top-[88px] space-y-4">
+      <div className="sticky top-[88px] space-y-4 max-h-[calc(100vh-104px)] overflow-y-auto">
 
         {/* Suggested Friends - Redesigned */}
         <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
