@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { SessionFormData, Project, Task } from '@/types';
+import { SessionFormData, Project } from '@/types';
 import { firebaseApi } from '@/lib/firebaseApi';
 import { useAuth } from '@/contexts/AuthContext';
 import { ArrowLeft, Check } from 'lucide-react';
@@ -21,8 +21,6 @@ export default function ManualSessionRecorder() {
   const { user } = useAuth();
   
   const [projects, setProjects] = useState<Project[]>([]);
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [selectedTasks, setSelectedTasks] = useState<Task[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -57,26 +55,6 @@ export default function ManualSessionRecorder() {
     loadProjects();
   }, [user]);
 
-  // Load tasks when project changes
-  useEffect(() => {
-    const loadTasks = async () => {
-      if (!projectId) {
-        setTasks([]);
-        setSelectedTasks([]);
-        return;
-      }
-
-      try {
-        const taskList = await firebaseApi.task.getProjectTasks(projectId);
-        setTasks(taskList.filter(task => task.status === 'active'));
-      } catch (error) {
-        console.error('Failed to load tasks:', error);
-      }
-    };
-
-    loadTasks();
-  }, [projectId]);
-
   // Auto-generate title based on time of day and project
   useEffect(() => {
     if (!title && projectId) {
@@ -92,18 +70,6 @@ export default function ManualSessionRecorder() {
       setTitle(smartTitle);
     }
   }, [projectId, projects]);
-
-  const handleTaskToggle = (taskId: string) => {
-    const task = tasks.find(t => t.id === taskId);
-    if (!task) return;
-
-    const isSelected = selectedTasks.some(t => t.id === taskId);
-    if (isSelected) {
-      setSelectedTasks(selectedTasks.filter(t => t.id !== taskId));
-    } else {
-      setSelectedTasks([...selectedTasks, task]);
-    }
-  };
 
   const handleTagToggle = (tag: string) => {
     const isSelected = selectedTags.includes(tag);
@@ -166,7 +132,7 @@ export default function ManualSessionRecorder() {
         description,
         duration,
         startTime: sessionDateTime,
-        taskIds: selectedTasks.map(t => t.id),
+        taskIds: [],
         tags: selectedTags,
         visibility,
         privateNotes,
@@ -265,32 +231,6 @@ export default function ManualSessionRecorder() {
               disabled={isLoading}
             />
           </div>
-
-          {/* Tasks */}
-          {tasks.length > 0 && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Tasks Completed
-              </label>
-              <div className="space-y-2 max-h-48 overflow-y-auto border border-gray-200 rounded-lg p-3">
-                {tasks.map((task) => (
-                  <label
-                    key={task.id}
-                    className="flex items-center gap-2 p-2 hover:bg-gray-50 rounded cursor-pointer"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={selectedTasks.some(t => t.id === task.id)}
-                      onChange={() => handleTaskToggle(task.id)}
-                      className="w-4 h-4 text-blue-600 rounded focus:ring-2 focus:ring-blue-500"
-                      disabled={isLoading}
-                    />
-                    <span className="text-sm text-gray-700">{task.name}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
-          )}
 
           {/* Tags */}
           <div>
