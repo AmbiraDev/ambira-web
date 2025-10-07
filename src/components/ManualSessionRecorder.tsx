@@ -5,8 +5,10 @@ import { useRouter } from 'next/navigation';
 import { SessionFormData, Project } from '@/types';
 import { firebaseApi } from '@/lib/firebaseApi';
 import { useAuth } from '@/contexts/AuthContext';
-import { ArrowLeft, Check } from 'lucide-react';
+import { ArrowLeft, Check, Image as ImageIcon, XCircle } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
+import { uploadImages, compressImage } from '@/lib/imageUpload';
 
 const TAGS = ['Study', 'Work', 'Side Project', 'Reading', 'Learning', 'Exercise', 'Creative', 'Other'];
 
@@ -38,6 +40,11 @@ export default function ManualSessionRecorder() {
   const [endTime, setEndTime] = useState('10:00');
   const [manualDurationHours, setManualDurationHours] = useState('1');
   const [manualDurationMinutes, setManualDurationMinutes] = useState('0');
+  
+  // Image upload state
+  const [selectedImages, setSelectedImages] = useState<File[]>([]);
+  const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
+  const [isUploadingImages, setIsUploadingImages] = useState(false);
 
   // Load projects on mount
   useEffect(() => {
@@ -78,6 +85,51 @@ export default function ManualSessionRecorder() {
     } else {
       setSelectedTags([...selectedTags, tag]);
     }
+  };
+
+  const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    
+    if (files.length + selectedImages.length > 3) {
+      alert('Maximum 3 images allowed');
+      return;
+    }
+
+    const validFiles: File[] = [];
+    const previewUrls: string[] = [];
+
+    for (const file of files) {
+      if (!file.type.startsWith('image/')) {
+        alert(`${file.name} is not an image file`);
+        continue;
+      }
+
+      if (file.size > 10 * 1024 * 1024) {
+        alert(`${file.name} is too large. Maximum size is 10MB`);
+        continue;
+      }
+
+      try {
+        const compressedFile = await compressImage(file);
+        validFiles.push(compressedFile);
+        const previewUrl = URL.createObjectURL(compressedFile);
+        previewUrls.push(previewUrl);
+      } catch (error) {
+        console.error('Error compressing image:', error);
+        alert(`Failed to process ${file.name}`);
+      }
+    }
+
+    if (validFiles.length > 0) {
+      setSelectedImages(prev => [...prev, ...validFiles]);
+      setImagePreviewUrls(prev => [...prev, ...previewUrls]);
+    }
+  };
+
+  const handleRemoveImage = (index: number) => {
+    URL.revokeObjectURL(imagePreviewUrls[index]);
+    setSelectedImages(prev => prev.filter((_, i) => i !== index));
+    setImagePreviewUrls(prev => prev.filter((_, i) => i !== index));
   };
 
   const calculateDuration = (): number => {
@@ -126,6 +178,24 @@ export default function ManualSessionRecorder() {
       // Parse the session date and start time
       const sessionDateTime = new Date(`${sessionDate}T${startTime}`);
       
+      // Upload images first if any
+      let imageUrls: string[] = [];
+      if (selectedImages.length > 0) {
+        setIsUploadingImages(true);
+        try {
+          const uploadResults = await uploadImages(selectedImages);
+          imageUrls = uploadResults.map(result => result.url);
+          console.log('📸 Images uploaded:', imageUrls);
+        } catch (error) {
+          console.error('Failed to upload images:', error);
+          setErrors({ submit: 'Failed to upload images. Please try again.' });
+          setIsUploadingImages(false);
+          setIsLoading(false);
+          return;
+        }
+        setIsUploadingImages(false);
+      }
+      
       const formData = {
         projectId,
         title,
@@ -136,6 +206,7 @@ export default function ManualSessionRecorder() {
         tags: selectedTags,
         visibility,
         privateNotes,
+        imageUrls,
       };
 
       // Create session with post
@@ -230,6 +301,55 @@ export default function ManualSessionRecorder() {
               placeholder="What did you accomplish during this session?"
               disabled={isLoading}
             />
+          </div>
+
+          {/* Image Upload */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Photos (Optional)
+            </label>
+            <div className="grid grid-cols-3 gap-3">
+              {/* Image Previews */}
+              {imagePreviewUrls.map((url, index) => (
+                <div key={index} className="relative aspect-square rounded-lg overflow-hidden border-2 border-gray-200">
+                  <Image
+                    src={url}
+                    alt={`Preview ${index + 1}`}
+                    fill
+                    className="object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveImage(index)}
+                    className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                    disabled={isLoading}
+                  >
+                    <XCircle className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
+
+              {/* Upload Button */}
+              {selectedImages.length < 3 && (
+                <label className="aspect-square flex flex-col items-center justify-center gap-2 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 hover:bg-gray-50 transition-colors">
+                  <ImageIcon className="w-8 h-8 text-gray-400" />
+                  <span className="text-xs font-medium text-gray-600">
+                    Add Photo
+                  </span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    onChange={handleImageSelect}
+                    className="hidden"
+                    disabled={isLoading}
+                  />
+                </label>
+              )}
+            </div>
+            <p className="text-xs text-gray-500 mt-2">
+              Upload up to 3 photos (max 10MB each)
+            </p>
           </div>
 
           {/* Tags */}
@@ -404,10 +524,15 @@ export default function ManualSessionRecorder() {
             </button>
             <button
               type="submit"
-              className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 items-center justify-center gap-2"
-              disabled={isLoading}
+              className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+              disabled={isLoading || isUploadingImages}
             >
-              {isLoading ? (
+              {isUploadingImages ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  Uploading Images...
+                </>
+              ) : isLoading ? (
                 <>
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   Creating...
