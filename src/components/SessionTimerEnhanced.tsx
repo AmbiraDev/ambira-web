@@ -720,6 +720,19 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
               </div>
             )}
 
+            {/* Manual Button - Mobile */}
+            {!timerState.isRunning && !timerState.startTime && (
+              <div className="flex flex-col items-center gap-1">
+                <Link
+                  href="/record-manual"
+                  className="w-16 h-16 rounded-full bg-[#007AFF] hover:bg-[#0056D6] active:scale-95 flex items-center justify-center transition-all shadow-lg"
+                >
+                  <Edit3 className="w-6 h-6 text-white" />
+                </Link>
+                <span className="text-xs text-gray-600 font-medium">Manual</span>
+              </div>
+            )}
+
             {timerState.isRunning && (
               <div className="flex flex-col items-center gap-1">
                 <button

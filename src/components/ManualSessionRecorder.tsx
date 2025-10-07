@@ -99,23 +99,53 @@ export default function ManualSessionRecorder() {
     const previewUrls: string[] = [];
 
     for (const file of files) {
-      if (!file.type.startsWith('image/')) {
-        alert(`${file.name} is not an image file`);
-        continue;
-      }
-
-      if (file.size > 10 * 1024 * 1024) {
-        alert(`${file.name} is too large. Maximum size is 10MB`);
-        continue;
-      }
-
       try {
-        const compressedFile = await compressImage(file);
-        validFiles.push(compressedFile);
-        const previewUrl = URL.createObjectURL(compressedFile);
+        // Convert HEIC to JPEG first
+        let processedFile = file;
+        
+        // Check if it's HEIC and convert
+        const isHeic = file.name.toLowerCase().endsWith('.heic') || 
+                      file.name.toLowerCase().endsWith('.heif') ||
+                      file.type === 'image/heic' || 
+                      file.type === 'image/heif';
+        
+        if (isHeic) {
+          try {
+            // Dynamically import heic2any
+            const heic2any = (await import('heic2any')).default;
+            const convertedBlob = await heic2any({
+              blob: file,
+              toType: 'image/jpeg',
+              quality: 0.9
+            });
+            const blob = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob;
+            processedFile = new File(
+              [blob],
+              file.name.replace(/\.heic$/i, '.jpg').replace(/\.heif$/i, '.jpg'),
+              { type: 'image/jpeg' }
+            );
+          } catch (error) {
+            console.error('Error converting HEIC:', error);
+            alert(`Failed to convert ${file.name}. Please use JPG or PNG.`);
+            continue;
+          }
+        }
+
+        if (!processedFile.type.startsWith('image/')) {
+          alert(`${file.name} is not an image file`);
+          continue;
+        }
+
+        if (processedFile.size > 10 * 1024 * 1024) {
+          alert(`${file.name} is too large. Maximum size is 10MB`);
+          continue;
+        }
+
+        validFiles.push(processedFile);
+        const previewUrl = URL.createObjectURL(processedFile);
         previewUrls.push(previewUrl);
       } catch (error) {
-        console.error('Error compressing image:', error);
+        console.error('Error processing image:', error);
         alert(`Failed to process ${file.name}`);
       }
     }
@@ -231,7 +261,7 @@ export default function ManualSessionRecorder() {
             <Link href="/" className="text-gray-600 hover:text-gray-900">
               <ArrowLeft className="w-6 h-6" />
             </Link>
-            <h1 className="text-2xl font-bold text-gray-900">Record Manual Session</h1>
+            <h1 className="text-2xl font-bold text-gray-900">Manual</h1>
           </div>
           <p className="text-sm text-gray-600 mt-2">
             Log a productivity session that you completed earlier
