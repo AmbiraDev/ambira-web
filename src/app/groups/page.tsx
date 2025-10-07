@@ -237,20 +237,95 @@ export default function GroupsPage() {
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-16 md:py-20">
-                  <div className="w-16 h-16 md:w-20 md:h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Users className="w-8 h-8 md:w-10 md:h-10 text-gray-400" />
+                <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                  {/* Hero Section */}
+                  <div className="bg-gradient-to-br from-[#007AFF]/5 via-[#0051D5]/5 to-transparent p-8 md:p-12 border-b border-gray-100">
+                    <div className="max-w-md mx-auto text-center">
+                      <div className="w-20 h-20 md:w-24 md:h-24 bg-gradient-to-br from-[#007AFF] to-[#0051D5] rounded-3xl flex items-center justify-center mx-auto mb-5 shadow-lg">
+                        <Users className="w-10 h-10 md:w-12 md:h-12 text-white" />
+                      </div>
+                      <h3 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">
+                        Join Your First Group
+                      </h3>
+                      <p className="text-base md:text-lg text-gray-700 mb-2">
+                        Connect with others who share your goals
+                      </p>
+                      <p className="text-sm md:text-base text-gray-600">
+                        Track productivity together, compete in challenges, and stay motivated as a team
+                      </p>
+                    </div>
                   </div>
-                  <h3 className="text-lg md:text-xl font-semibold text-gray-900 mb-2">No groups yet</h3>
-                  <p className="text-sm md:text-base text-gray-600 mb-6 max-w-sm mx-auto">
-                    Join a group to track productivity with friends and compete in challenges
-                  </p>
-                  <Link
-                    href="/search?type=groups"
-                    className="inline-flex items-center px-5 py-2.5 bg-[#007AFF] text-white text-sm font-medium rounded-xl hover:bg-[#0051D5] transition-colors shadow-sm"
-                  >
-                    Discover Groups
-                  </Link>
+
+                  {/* Benefits Grid */}
+                  <div className="p-6 md:p-8 border-b border-gray-100">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 max-w-3xl mx-auto">
+                      <div className="text-center p-4">
+                        <div className="w-12 h-12 bg-green-50 rounded-xl flex items-center justify-center mx-auto mb-3">
+                          <Trophy className="w-6 h-6 text-green-600" />
+                        </div>
+                        <h4 className="font-semibold text-gray-900 mb-1 text-sm md:text-base">
+                          Compete Together
+                        </h4>
+                        <p className="text-xs md:text-sm text-gray-600">
+                          Join challenges and climb leaderboards
+                        </p>
+                      </div>
+                      <div className="text-center p-4">
+                        <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center mx-auto mb-3">
+                          <Target className="w-6 h-6 text-blue-600" />
+                        </div>
+                        <h4 className="font-semibold text-gray-900 mb-1 text-sm md:text-base">
+                          Track Progress
+                        </h4>
+                        <p className="text-xs md:text-sm text-gray-600">
+                          See group stats and achievements
+                        </p>
+                      </div>
+                      <div className="text-center p-4">
+                        <div className="w-12 h-12 bg-orange-50 rounded-xl flex items-center justify-center mx-auto mb-3">
+                          <Award className="w-6 h-6 text-orange-600" />
+                        </div>
+                        <h4 className="font-semibold text-gray-900 mb-1 text-sm md:text-base">
+                          Stay Motivated
+                        </h4>
+                        <p className="text-xs md:text-sm text-gray-600">
+                          Support and inspire each other
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* CTA Section */}
+                  <div className="p-6 md:p-8 bg-gray-50">
+                    <div className="max-w-md mx-auto text-center">
+                      <div className="flex flex-col sm:flex-row gap-3 justify-center mb-5">
+                        <Link
+                          href="/search?type=groups"
+                          className="inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-[#007AFF] text-white text-sm md:text-base font-semibold rounded-xl hover:bg-[#0051D5] transition-all duration-200 shadow-sm hover:shadow-md"
+                        >
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                          </svg>
+                          Discover Groups
+                        </Link>
+                        <button
+                          onClick={() => setActiveTab('create')}
+                          className="inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-white text-[#007AFF] text-sm md:text-base font-semibold rounded-xl border-2 border-[#007AFF] hover:bg-[#007AFF]/5 transition-all duration-200"
+                        >
+                          <Plus className="w-5 h-5" />
+                          Create a Group
+                        </button>
+                      </div>
+                      <div className="flex items-start gap-2 text-xs md:text-sm text-gray-500 bg-white rounded-lg p-3 border border-gray-200">
+                        <svg className="w-4 h-4 text-[#007AFF] flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                        </svg>
+                        <p className="text-left">
+                          <span className="font-medium text-gray-700">Quick tip:</span> Start by joining a public group to explore features, or create your own with custom privacy settings
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               )}
             </div>

@@ -7,6 +7,8 @@ import SessionStats from './SessionStats';
 import SessionInteractions from './SessionInteractions';
 import TopComments from './TopComments';
 import { ImageGallery } from './ImageGallery';
+import LikesModal from './LikesModal';
+import CommentsModal from './CommentsModal';
 import { MoreVertical, Heart, MessageCircle, Share2, Clock, ListTodo, Tag } from 'lucide-react';
 import Link from 'next/link';
 
@@ -34,9 +36,14 @@ export const SessionCard: React.FC<SessionCardProps> = ({
   const [showMenu, setShowMenu] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [localCommentCount, setLocalCommentCount] = useState(session.commentCount || 0);
+  const [showCommentInput, setShowCommentInput] = useState(false);
+  const [showLikesModal, setShowLikesModal] = useState(false);
+  const [showCommentsModal, setShowCommentsModal] = useState(false);
+  const [expandComments, setExpandComments] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const commentSectionRef = useRef<HTMLDivElement>(null);
 
-  // Close menu when clicking outside
+  // Close menu when clicking outside or pressing escape
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
@@ -44,12 +51,20 @@ export const SessionCard: React.FC<SessionCardProps> = ({
       }
     };
 
+    const handleEscapeKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setShowMenu(false);
+      }
+    };
+
     if (showMenu) {
       document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleEscapeKey);
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscapeKey);
     };
   }, [showMenu]);
 
@@ -101,13 +116,13 @@ export const SessionCard: React.FC<SessionCardProps> = ({
   };
 
   return (
-    <article className={`bg-white rounded-lg md:border md:border-gray-200 md:shadow-sm mb-4 md:mb-6 ${className}`}>
+    <article className={`bg-white md:rounded-lg md:border md:border-gray-200 md:shadow-sm mb-0 md:mb-6 border-b border-gray-200 md:border-b-0 ${className}`}>
       {/* Session Header */}
-      <div className="flex items-center justify-between px-4 pt-4 pb-3">
-        <Link href={`/profile/${session.user.username}`} className="flex items-center gap-3">
+      <div className="flex items-center justify-between px-3 md:px-4 pt-3 md:pt-4 pb-2 md:pb-3">
+        <Link href={`/profile/${session.user.username}`} className="flex items-center gap-2 md:gap-3 min-w-0 flex-1">
           {/* User Avatar */}
           {session.user.profilePicture ? (
-            <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-white">
+            <div className="w-9 h-9 md:w-10 md:h-10 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-white">
               <Image
                 src={session.user.profilePicture}
                 alt={session.user.name}
@@ -118,16 +133,16 @@ export const SessionCard: React.FC<SessionCardProps> = ({
               />
             </div>
           ) : (
-            <div className="w-10 h-10 bg-[#FC4C02] rounded-full flex items-center justify-center flex-shrink-0 ring-2 ring-white">
-              <span className="text-white font-semibold text-sm">
+            <div className="w-9 h-9 md:w-10 md:h-10 bg-[#FC4C02] rounded-full flex items-center justify-center flex-shrink-0 ring-2 ring-white">
+              <span className="text-white font-semibold text-xs md:text-sm">
                 {getUserInitials(session.user)}
               </span>
             </div>
           )}
 
           {/* User Info */}
-          <div>
-            <div className="font-semibold text-gray-900 text-base hover:underline">{session.user.name}</div>
+          <div className="min-w-0 flex-1">
+            <div className="font-semibold text-gray-900 text-sm md:text-base hover:underline truncate">{session.user.name}</div>
             <div className="text-xs text-gray-500">{formatTimeAgo(session.createdAt)}</div>
           </div>
         </Link>
@@ -137,12 +152,19 @@ export const SessionCard: React.FC<SessionCardProps> = ({
           <button
             onClick={() => setShowMenu(!showMenu)}
             className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full p-2 transition-colors"
+            aria-label="Session options"
+            aria-expanded={showMenu}
+            aria-haspopup="true"
           >
-            <MoreVertical className="w-5 h-5" />
+            <MoreVertical className="w-5 h-5" aria-hidden="true" />
           </button>
 
           {showMenu && (
-            <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
+            <div
+              className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10"
+              role="menu"
+              aria-label="Session options menu"
+            >
               {onEdit && (
                 <button
                   onClick={() => {
@@ -150,6 +172,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({
                     setShowMenu(false);
                   }}
                   className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50"
+                  role="menuitem"
                 >
                   Edit session
                 </button>
@@ -161,11 +184,15 @@ export const SessionCard: React.FC<SessionCardProps> = ({
                     setShowMenu(false);
                   }}
                   className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-gray-50"
+                  role="menuitem"
                 >
                   Delete session
                 </button>
               )}
-              <button className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-gray-50">
+              <button
+                className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-gray-50"
+                role="menuitem"
+              >
                 Report session
               </button>
             </div>
@@ -174,19 +201,21 @@ export const SessionCard: React.FC<SessionCardProps> = ({
       </div>
 
       {/* Title and Description */}
-      <div className="px-4 pb-3">
-        <h3 className="text-2xl font-bold text-gray-900 mb-1">
+      <div className="px-3 md:px-4 pb-2 md:pb-3">
+        <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 mb-1 leading-tight">
           {session.title || 'Focus Session'}
         </h3>
         {session.description && (
           <div>
-            <p className={`text-gray-600 text-sm whitespace-pre-wrap ${!isExpanded && session.description.length > 280 ? 'line-clamp-4' : ''}`}>
+            <p className={`text-gray-600 text-sm md:text-base whitespace-pre-wrap break-words ${!isExpanded && session.description.length > 280 ? 'line-clamp-3 sm:line-clamp-4' : ''}`}>
               {session.description.length > 1000 ? session.description.slice(0, 1000) : session.description}
             </p>
             {session.description.length > 280 && (
               <button
                 onClick={() => setIsExpanded(!isExpanded)}
-                className="text-[#007AFF] text-sm font-medium mt-1 hover:underline"
+                className="text-[#007AFF] text-sm font-medium mt-1 hover:underline min-h-[44px] flex items-center"
+                aria-expanded={isExpanded}
+                aria-label={isExpanded ? 'Show less description' : 'Show more description'}
               >
                 {isExpanded ? 'Show less' : 'Show more'}
               </button>
@@ -197,69 +226,63 @@ export const SessionCard: React.FC<SessionCardProps> = ({
 
       {/* Image Gallery */}
       {session.images && session.images.length > 0 && (
-        <div className="px-4 pb-4">
+        <div className="px-3 md:px-4 pb-3 md:pb-4">
           <ImageGallery images={session.images} />
         </div>
       )}
-      {/* Debug: Log if session has images but they're not showing */}
-      {session.images && session.images.length > 0 && console.log('Session has images:', session.id, session.images)}
 
       {/* Stats - Strava style */}
-      <div className="px-4 pb-4">
-        <div className="grid grid-cols-2 gap-6">
+      <div className="px-3 md:px-4 pb-1">
+        <div className="grid grid-cols-2 gap-3 sm:gap-4 md:gap-6">
           <div>
             <div className="text-xs text-gray-500 mb-0.5">Time</div>
-            <div className="text-lg font-semibold text-gray-900">{formatTime(session.duration)}</div>
+            <div className="text-sm sm:text-base md:text-lg font-semibold text-gray-900">{formatTime(session.duration)}</div>
           </div>
-          <div>
+          <div className="min-w-0">
             <div className="text-xs text-gray-500 mb-0.5">Project</div>
-            <div className="text-lg font-semibold text-gray-900 truncate">{session.project?.name || 'N/A'}</div>
+            <div className="text-sm sm:text-base md:text-lg font-semibold text-gray-900 truncate">{session.project?.name || 'N/A'}</div>
           </div>
         </div>
       </div>
 
-      {/* Action Buttons */}
-      <div className="flex items-center border-t border-gray-100">
-        <button
-          onClick={() => session.isSupported ? onRemoveSupport(session.id) : onSupport(session.id)}
-          className="flex-1 flex items-center justify-center gap-2 py-3 text-gray-600 hover:bg-gray-50 transition-colors"
-        >
-          <svg
-            className={`w-6 h-6 ${session.isSupported ? 'fill-red-500 text-red-500' : ''}`}
-            fill={session.isSupported ? 'currentColor' : 'none'}
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-          </svg>
-          <span className="text-sm font-medium">{session.supportCount || 0}</span>
-        </button>
-
-        <div className="w-px h-6 bg-gray-200"></div>
-
-        <button
-          className="flex-1 flex items-center justify-center gap-2 py-3 text-gray-600 hover:bg-gray-50 transition-colors"
-        >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-          </svg>
-          <span className="text-sm font-medium">{localCommentCount}</span>
-        </button>
-
-        <div className="w-px h-6 bg-gray-200"></div>
-
-        <button
-          onClick={() => onShare(session.id)}
-          className="flex-1 flex items-center justify-center gap-2 py-3 text-gray-600 hover:bg-gray-50 transition-colors"
-        >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-          </svg>
-        </button>
-      </div>
+      {/* Interactions */}
+      <SessionInteractions
+        sessionId={session.id}
+        supportCount={session.supportCount}
+        commentCount={localCommentCount}
+        isSupported={session.isSupported || false}
+        supportedBy={session.supportedBy}
+        onSupport={onSupport}
+        onRemoveSupport={onRemoveSupport}
+        onShare={onShare}
+        onCommentClick={() => setShowCommentsModal(true)}
+        onLikesClick={() => setShowLikesModal(true)}
+        onViewAllCommentsClick={() => setShowCommentsModal(true)}
+      />
 
       {/* Top Comments Section */}
-      <TopComments
+      <div ref={commentSectionRef}>
+        <TopComments
+          sessionId={session.id}
+          totalCommentCount={localCommentCount}
+          onCommentCountChange={setLocalCommentCount}
+          autoFocus={showCommentInput}
+          initialExpanded={expandComments}
+        />
+      </div>
+
+      {/* Likes Modal */}
+      <LikesModal
+        isOpen={showLikesModal}
+        onClose={() => setShowLikesModal(false)}
+        userIds={session.supportedBy || []}
+        totalLikes={session.supportCount}
+      />
+
+      {/* Comments Modal */}
+      <CommentsModal
+        isOpen={showCommentsModal}
+        onClose={() => setShowCommentsModal(false)}
         sessionId={session.id}
         totalCommentCount={localCommentCount}
         onCommentCountChange={setLocalCommentCount}

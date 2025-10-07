@@ -41,7 +41,7 @@ export const CommentList: React.FC<CommentListProps> = ({
       setComments(response.comments);
       setHasMore(response.hasMore);
     } catch (err: any) {
-      console.error('Failed to load comments:', err);
+      // Permission errors are handled gracefully in firebaseApi, so this should only catch real errors
       setError(err.message || 'Failed to load comments');
     } finally {
       setIsLoading(false);

@@ -159,8 +159,11 @@ export const LandingPage: React.FC = () => {
       setUsernameCheckLoading(true);
       const available = await firebaseUserApi.checkUsernameAvailability(username);
       setUsernameAvailable(available);
-    } catch (error) {
-      console.error('Username check error:', error);
+    } catch (error: any) {
+      // Log error for debugging but don't show to user
+      console.warn('Username availability check failed:', error.message);
+      // Set to null to indicate check couldn't be completed
+      // Registration will still proceed with server-side validation
       setUsernameAvailable(null);
     } finally {
       setUsernameCheckLoading(false);

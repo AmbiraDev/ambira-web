@@ -3,9 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/contexts/AuthContext';
-import { firebaseChallengeApi, firebaseUserApi, firebaseApi } from '@/lib/firebaseApi';
-import { Challenge } from '@/types';
-import { Trophy, Users, UserPlus, ChevronRight } from 'lucide-react';
+import { firebaseUserApi, firebaseApi } from '@/lib/firebaseApi';
+import { Users } from 'lucide-react';
 
 interface SuggestedUser {
   id: string;
@@ -24,10 +23,10 @@ interface SuggestedGroup {
 
 function RightSidebar() {
   const { user } = useAuth();
-  const [activeChallenges, setActiveChallenges] = useState<Challenge[]>([]);
   const [suggestedUsers, setSuggestedUsers] = useState<SuggestedUser[]>([]);
   const [suggestedGroups, setSuggestedGroups] = useState<SuggestedGroup[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [followingUsers, setFollowingUsers] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (user) {
@@ -40,14 +39,6 @@ function RightSidebar() {
       setIsLoading(true);
 
       if (!user) return;
-
-      // Load challenges (top 2)
-      try {
-        const challenges = await firebaseChallengeApi.getChallenges({ status: 'active' });
-        setActiveChallenges(challenges.slice(0, 2));
-      } catch (error) {
-        console.error('Failed to load challenges:', error);
-      }
 
       // Load suggested users (top 3)
       try {
@@ -72,196 +63,184 @@ function RightSidebar() {
     }
   };
 
+  const handleFollowToggle = async (userId: string) => {
+    if (!user) return;
+
+    const isFollowing = followingUsers.has(userId);
+
+    // Optimistic update
+    setFollowingUsers(prev => {
+      const next = new Set(prev);
+      if (isFollowing) {
+        next.delete(userId);
+      } else {
+        next.add(userId);
+      }
+      return next;
+    });
+
+    try {
+      if (isFollowing) {
+        await firebaseApi.user.unfollowUser(userId);
+      } else {
+        await firebaseApi.user.followUser(userId);
+      }
+    } catch (error) {
+      console.error('Failed to toggle follow:', error);
+      // Revert on error
+      setFollowingUsers(prev => {
+        const next = new Set(prev);
+        if (isFollowing) {
+          next.add(userId);
+        } else {
+          next.delete(userId);
+        }
+        return next;
+      });
+    }
+  };
+
   return (
-    <aside className="hidden lg:block w-[300px] flex-shrink-0">
-      <div className="space-y-4 h-full overflow-y-auto scrollbar-hide">
+    <aside className="hidden xl:block w-[320px] flex-shrink-0" aria-label="Suggestions and groups sidebar">
+      <div className="space-y-4 h-full overflow-y-auto scrollbar-hide pb-6">
 
         {/* Suggested Friends - Redesigned */}
-        <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
-          <div className="p-4 bg-gradient-to-r from-purple-50 via-pink-50 to-purple-50">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2">
-                <UserPlus className="w-5 h-5 text-purple-600" />
-                <h3 className="font-bold text-gray-900">Connect</h3>
-              </div>
+        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+          <div className="px-4 py-3 border-b border-gray-100">
+            <div className="flex items-center justify-between">
+              <h3 className="text-base font-semibold text-gray-900">Suggested for you</h3>
               <Link href="/search?type=people" className="text-xs text-[#007AFF] hover:text-[#0056D6] font-semibold">
-                See All
+                See all
               </Link>
             </div>
-            <p className="text-xs text-gray-600">
-              Discover people on similar journeys
-            </p>
           </div>
 
           {isLoading ? (
-            <div className="p-4 space-y-3">
+            <div className="p-3 space-y-3">
               {[1, 2, 3].map(i => (
-                <div key={i} className="flex items-center gap-3 animate-pulse">
-                  <div className="w-10 h-10 bg-gray-200 rounded-full"></div>
+                <div key={i} className="flex items-center gap-3 animate-pulse p-2">
+                  <div className="w-12 h-12 bg-gray-200 rounded-full"></div>
                   <div className="flex-1">
-                    <div className="h-4 bg-gray-200 rounded w-24 mb-1"></div>
+                    <div className="h-4 bg-gray-200 rounded w-24 mb-2"></div>
                     <div className="h-3 bg-gray-200 rounded w-16"></div>
                   </div>
                 </div>
               ))}
             </div>
           ) : suggestedUsers.length === 0 ? (
-            <div className="p-6 text-center">
-              <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-2">
-                <UserPlus className="w-6 h-6 text-gray-400" />
-              </div>
-              <p className="text-sm text-gray-500">No suggestions yet</p>
+            <div className="p-8 text-center">
+              <p className="text-sm text-gray-500">No suggestions available</p>
             </div>
           ) : (
-            <div className="p-3 space-y-1">
-              {suggestedUsers.map(suggestedUser => (
-                <Link
+            <div className="py-2">
+              {suggestedUsers.map((suggestedUser, index) => (
+                <div
                   key={suggestedUser.id}
-                  href={`/profile/${suggestedUser.username}`}
-                  className="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-50 transition-colors group"
+                  className="px-4 py-3 hover:bg-gray-50 transition-colors"
                 >
-                  <div className="w-10 h-10 bg-gradient-to-br from-[#007AFF] to-[#0051D5] rounded-full flex items-center justify-center flex-shrink-0">
-                    <span className="text-white font-semibold text-sm">
-                      {suggestedUser.name.charAt(0).toUpperCase()}
-                    </span>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-medium text-gray-900 text-sm truncate">
-                      {suggestedUser.name}
+                  <div className="flex items-center gap-3">
+                    <Link href={`/profile/${suggestedUser.username}`}>
+                      <div className="w-12 h-12 bg-gradient-to-br from-orange-400 to-orange-600 rounded-full flex items-center justify-center flex-shrink-0 ring-2 ring-white shadow-sm">
+                        <span className="text-white font-semibold text-sm">
+                          {suggestedUser.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                        </span>
+                      </div>
+                    </Link>
+                    <div className="flex-1 min-w-0">
+                      <Link href={`/profile/${suggestedUser.username}`} className="font-semibold text-sm text-gray-900 hover:text-[#007AFF] truncate block mb-0.5">
+                        {suggestedUser.name}
+                      </Link>
+                      <p className="text-xs text-gray-500 truncate">
+                        @{suggestedUser.username}
+                      </p>
                     </div>
-                    <div className="text-xs text-gray-500 truncate">
-                      {suggestedUser.followersCount || 0} followers
-                    </div>
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleFollowToggle(suggestedUser.id);
+                      }}
+                      className={`px-4 py-2 text-xs font-semibold rounded-lg transition-all whitespace-nowrap flex-shrink-0 ${
+                        followingUsers.has(suggestedUser.id)
+                          ? 'border border-gray-300 hover:bg-gray-100 text-gray-700 hover:border-gray-400'
+                          : 'bg-[#007AFF] hover:bg-[#0051D5] text-white shadow-sm'
+                      }`}
+                      aria-label={followingUsers.has(suggestedUser.id) ? `Unfollow ${suggestedUser.name}` : `Follow ${suggestedUser.name}`}
+                      aria-pressed={followingUsers.has(suggestedUser.id)}
+                      style={{minHeight: '36px', minWidth: '80px'}}
+                    >
+                      {followingUsers.has(suggestedUser.id) ? 'Following' : 'Follow'}
+                    </button>
                   </div>
-                  <ChevronRight className="w-4 h-4 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-                </Link>
+                </div>
               ))}
             </div>
           )}
         </div>
 
         {/* Clubs - Redesigned */}
-        <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
-          <div className="p-4 bg-gradient-to-r from-blue-50 via-cyan-50 to-blue-50">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2">
-                <Users className="w-5 h-5 text-blue-600" />
-                <h3 className="font-bold text-gray-900">Clubs</h3>
-              </div>
+        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+          <div className="px-4 py-3 border-b border-gray-100">
+            <div className="flex items-center justify-between">
+              <h3 className="text-base font-semibold text-gray-900">Groups to join</h3>
               <Link href="/groups" className="text-xs text-[#007AFF] hover:text-[#0056D6] font-semibold">
-                Explore
+                See all
               </Link>
             </div>
-            <p className="text-xs text-gray-600">
-              Join communities and grow together
-            </p>
           </div>
 
           {isLoading ? (
-            <div className="p-4 space-y-3">
+            <div className="p-3 space-y-3">
               {[1, 2, 3].map(i => (
-                <div key={i} className="flex items-center gap-3 animate-pulse">
-                  <div className="w-10 h-10 bg-gray-200 rounded-lg"></div>
+                <div key={i} className="flex items-center gap-3 animate-pulse p-2">
+                  <div className="w-12 h-12 bg-gray-200 rounded-lg"></div>
                   <div className="flex-1">
-                    <div className="h-4 bg-gray-200 rounded w-24 mb-1"></div>
+                    <div className="h-4 bg-gray-200 rounded w-24 mb-2"></div>
                     <div className="h-3 bg-gray-200 rounded w-16"></div>
                   </div>
                 </div>
               ))}
             </div>
           ) : suggestedGroups.length === 0 ? (
-            <div className="p-6 text-center">
-              <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-3">
-                <Users className="w-6 h-6 text-gray-400" />
-              </div>
-              <p className="text-sm text-gray-500 font-medium">No clubs yet</p>
-              <p className="text-xs text-gray-400 mt-1">Be the first to create one!</p>
+            <div className="p-8 text-center">
+              <p className="text-sm text-gray-500">No groups available</p>
             </div>
           ) : (
-            <div className="p-3 space-y-1">
+            <div className="py-2">
               {suggestedGroups.map(group => (
                 <Link
                   key={group.id}
                   href={`/groups/${group.id}`}
-                  className="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-50 transition-colors group"
+                  className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors group"
                 >
-                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center flex-shrink-0">
-                    <span className="text-white font-bold text-sm">
-                      {group.name.charAt(0).toUpperCase()}
-                    </span>
+                  <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center flex-shrink-0 group-hover:from-blue-200 group-hover:to-blue-300 transition-all">
+                    <Users className="w-6 h-6 text-blue-600" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="font-medium text-gray-900 text-sm truncate">
+                    <div className="font-semibold text-sm text-gray-900 truncate group-hover:text-[#007AFF] transition-colors">
                       {group.name}
                     </div>
-                    <div className="text-xs text-gray-500">
-                      {group.memberCount || 0} members
+                    <div className="text-xs text-gray-500 mt-0.5">
+                      {group.memberCount || 0} {group.memberCount === 1 ? 'member' : 'members'}
                     </div>
                   </div>
-                  <ChevronRight className="w-4 h-4 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
                 </Link>
               ))}
             </div>
           )}
         </div>
 
-        {/* Challenges - Redesigned */}
-        <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
-          <div className="p-4 bg-gradient-to-r from-orange-50 via-amber-50 to-orange-50">
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2">
-                <Trophy className="w-5 h-5 text-orange-600" />
-                <h3 className="font-bold text-gray-900">Challenges</h3>
-              </div>
-              <Link href="/challenges" className="text-xs text-[#007AFF] hover:text-[#0056D6] font-semibold">
-                View All
-              </Link>
-            </div>
-            <p className="text-xs text-gray-600">
-              Compete and achieve your goals
-            </p>
+        {/* Footer Links */}
+        <div className="px-4 py-3">
+          <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-gray-500">
+            <Link href="/about" className="hover:underline">About</Link>
+            <span>·</span>
+            <Link href="/help" className="hover:underline">Help</Link>
+            <span>·</span>
+            <Link href="/privacy" className="hover:underline">Privacy</Link>
+            <span>·</span>
+            <Link href="/terms" className="hover:underline">Terms</Link>
           </div>
-
-          {isLoading ? (
-            <div className="p-4 space-y-3">
-              {[1, 2].map(i => (
-                <div key={i} className="animate-pulse">
-                  <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                  <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-                </div>
-              ))}
-            </div>
-          ) : activeChallenges.length === 0 ? (
-            <div className="p-6 text-center">
-              <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center mx-auto mb-2">
-                <Trophy className="w-6 h-6 text-gray-400" />
-              </div>
-              <p className="text-sm text-gray-500">No active challenges</p>
-            </div>
-          ) : (
-            <div className="p-3 space-y-1">
-              {activeChallenges.map(challenge => (
-                <Link
-                  key={challenge.id}
-                  href={`/challenges/${challenge.id}`}
-                  className="flex items-center gap-3 p-2 rounded-xl hover:bg-gray-50 transition-colors group"
-                >
-                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center flex-shrink-0">
-                    <Trophy className="w-5 h-5 text-white" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-medium text-gray-900 text-sm truncate">
-                      {challenge.name}
-                    </div>
-                    <div className="text-xs text-gray-500">
-                      {challenge.participantCount || 0} participants
-                    </div>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity" />
-                </Link>
-              ))}
-            </div>
-          )}
+          <p className="text-xs text-gray-400 mt-2">© 2025 Ambira</p>
         </div>
 
       </div>

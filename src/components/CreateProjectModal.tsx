@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { CreateProjectData } from '@/types';
 import { useProjects } from '@/contexts/ProjectsContext';
+import { useToast } from '@/contexts/ToastContext';
 
 interface CreateProjectModalProps {
   isOpen: boolean;
@@ -16,6 +17,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
   onSuccess,
 }) => {
   const { createProject } = useProjects();
+  const { success, error: showError } = useToast();
   const [formData, setFormData] = useState<CreateProjectData>({
     name: '',
     description: '',
@@ -86,6 +88,9 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
         totalTarget: formData.totalTarget || undefined,
       });
 
+      // Show success message
+      success(`Project "${project.name}" created!`);
+
       // Reset form
       setFormData({
         name: '',
@@ -101,6 +106,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
       onClose();
     } catch (error) {
       console.error('Failed to create project:', error);
+      showError('Failed to create project. Please try again.');
       setErrors({ name: 'Failed to create project. Please try again.' });
     } finally {
       setIsSubmitting(false);
@@ -118,24 +124,28 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div 
+    <div
       className="fixed inset-0 bg-gray-500 bg-opacity-30 flex items-center justify-center z-40 p-4"
       onClick={(e) => {
         if (e.target === e.currentTarget) {
           onClose();
         }
       }}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="create-project-title"
     >
       <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-xl">
-        <div className="p-8">
+        <div className="p-4 sm:p-8">
           {/* Header */}
-          <div className="flex justify-between items-center mb-8">
-            <h2 className="text-2xl font-bold text-gray-900">Create New Project</h2>
+          <div className="flex justify-between items-center mb-6 sm:mb-8">
+            <h2 id="create-project-title" className="text-xl sm:text-2xl font-bold text-gray-900">Create New Project</h2>
             <button
               onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 transition-colors"
+              className="text-gray-400 hover:text-gray-600 transition-colors p-2 rounded-lg hover:bg-gray-100"
+              aria-label="Close dialog"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
@@ -172,9 +182,13 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
                   }`}
                   placeholder="Enter project name"
                   maxLength={50}
+                  aria-required="true"
+                  aria-invalid={!!errors.name}
+                  aria-describedby={errors.name ? 'name-error' : undefined}
+                  autoFocus
                 />
                 {errors.name && (
-                  <p className="mt-1 text-sm text-red-600">{errors.name}</p>
+                  <p id="name-error" className="mt-1 text-sm text-red-600" role="alert">{errors.name}</p>
                 )}
               </div>
 
@@ -206,20 +220,23 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {/* Icon Picker */}
               <div>
-                <label className="block text-sm font-semibold text-gray-900 mb-3">
+                <label id="icon-picker-label" className="block text-sm font-semibold text-gray-900 mb-3">
                   Icon
                 </label>
-                <div className="grid grid-cols-5 gap-3">
+                <div className="grid grid-cols-5 gap-3" role="radiogroup" aria-labelledby="icon-picker-label">
                   {availableIcons.map((icon) => (
                     <button
                       key={icon}
                       type="button"
+                      role="radio"
+                      aria-checked={formData.icon === icon}
                       onClick={() => handleInputChange('icon', icon)}
                       className={`w-14 h-14 rounded-lg border-2 flex items-center justify-center text-2xl transition-all ${
                         formData.icon === icon
                           ? 'border-[#007AFF] bg-blue-50 shadow-md'
                           : 'border-gray-200 hover:border-gray-300 hover:shadow-sm'
                       }`}
+                      aria-label={`Select ${icon} icon`}
                     >
                       {icon}
                     </button>
@@ -229,14 +246,16 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
 
               {/* Color Picker */}
               <div>
-                <label className="block text-sm font-semibold text-gray-900 mb-3">
+                <label id="color-picker-label" className="block text-sm font-semibold text-gray-900 mb-3">
                   Color
                 </label>
-                <div className="grid grid-cols-4 gap-3">
+                <div className="grid grid-cols-4 gap-3" role="radiogroup" aria-labelledby="color-picker-label">
                   {availableColors.map((color) => (
                     <button
                       key={color.name}
                       type="button"
+                      role="radio"
+                      aria-checked={formData.color === color.name}
                       onClick={() => handleInputChange('color', color.name)}
                       className={`w-14 h-14 rounded-lg border-2 transition-all ${
                         formData.color === color.name
@@ -244,9 +263,10 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
                           : 'border-gray-200 hover:border-gray-300 hover:scale-105'
                       }`}
                       style={{ backgroundColor: color.hex }}
+                      aria-label={`Select ${color.name} color`}
                     >
                       {formData.color === color.name && (
-                        <svg className="w-6 h-6 text-white drop-shadow-md" fill="currentColor" viewBox="0 0 20 20">
+                        <svg className="w-6 h-6 text-white drop-shadow-md" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
                           <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                         </svg>
                       )}

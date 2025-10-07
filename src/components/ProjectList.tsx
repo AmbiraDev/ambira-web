@@ -190,23 +190,46 @@ export const ProjectList: React.FC<ProjectListProps> = ({
 
       {/* Projects Grid/List */}
       {filteredProjects.length === 0 ? (
-        <div className="text-center py-12">
-          <div className="text-gray-400 text-6xl mb-4">📁</div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">No projects found</h3>
-          <p className="text-gray-600 mb-4">
-            {filter === 'all' 
-              ? "Get started by creating your first project."
-              : `No ${filter} projects found.`
-            }
-          </p>
-          {filter === 'all' && onCreateProject && (
-            <button
-              onClick={onCreateProject}
-              className="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors"
-            >
-              Create Your First Project
-            </button>
-          )}
+        <div className="bg-white rounded-xl border border-gray-200 p-8 md:p-12">
+          <div className="max-w-md mx-auto text-center">
+            <div className="w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-[#007AFF] to-[#0051D5] rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm">
+              <svg className="w-8 h-8 md:w-10 md:h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+            <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-2">
+              {filter === 'all' ? 'No projects yet' : `No ${filter} projects`}
+            </h3>
+            <p className="text-sm md:text-base text-gray-600 mb-6">
+              {filter === 'all'
+                ? "Projects help you organize your work sessions and track progress over time. Create your first project to get started!"
+                : `No ${filter} projects found. Try adjusting your filter or create a new project.`
+              }
+            </p>
+            {filter === 'all' ? (
+              <>
+                <button
+                  onClick={() => router.push('/projects/new')}
+                  className="inline-flex items-center gap-2 bg-[#007AFF] text-white px-6 py-3 rounded-xl hover:bg-[#0056D6] transition-colors font-medium shadow-sm mb-4"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  </svg>
+                  Create Your First Project
+                </button>
+                <p className="text-xs text-gray-500">
+                  Tip: You can assign tasks to projects and track time spent on each one
+                </p>
+              </>
+            ) : (
+              <button
+                onClick={() => setFilter('all')}
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors"
+              >
+                View All Projects
+              </button>
+            )}
+          </div>
         </div>
       ) : (
         <div className={

@@ -91,17 +91,18 @@ export default function Header() {
 
             {/* Search Area */}
             {isSearchOpen ? (
-              <div className="flex items-center space-x-2">
-                <form onSubmit={handleSearch} className="flex items-center space-x-2">
+              <div className="flex items-center space-x-1 md:space-x-2 flex-1 md:flex-none">
+                <form onSubmit={handleSearch} className="flex items-center space-x-1 md:space-x-2 flex-1 md:flex-none">
                   {/* Filter Dropdown */}
-                  <div className="relative">
+                  <div className="relative flex-shrink-0">
                     <button
                       type="button"
                       onClick={() => setIsFilterDropdownOpen(!isFilterDropdownOpen)}
-                      className="flex items-center space-x-1.5 px-3 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors whitespace-nowrap text-sm"
+                      className="flex items-center space-x-1 md:space-x-1.5 px-2 md:px-3 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors whitespace-nowrap text-xs md:text-sm"
                     >
-                      <span className="font-medium">{getFilterLabel()}</span>
-                      <ChevronDown className="w-4 h-4" />
+                      <span className="font-medium hidden md:inline">{getFilterLabel()}</span>
+                      <span className="font-medium md:hidden">{getFilterLabel().slice(0, 1)}</span>
+                      <ChevronDown className="w-3 h-3 md:w-4 md:h-4" />
                     </button>
 
                     {/* Dropdown Menu */}
@@ -148,16 +149,16 @@ export default function Header() {
                   </div>
 
                   {/* Search Input */}
-                  <div className="relative w-80">
+                  <div className="relative flex-1 md:w-80 md:flex-none min-w-0">
                     <input
                       ref={searchInputRef}
                       type="text"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       placeholder={`Search ${getFilterLabel().toLowerCase()}...`}
-                      className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:border-transparent text-sm"
+                      className="w-full px-3 md:px-4 py-2 pr-8 md:pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:border-transparent text-xs md:text-sm"
                     />
-                    <Search className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                    <Search className="w-3 h-3 md:w-4 md:h-4 absolute right-2 md:right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                   </div>
                 </form>
 

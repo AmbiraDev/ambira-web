@@ -20,6 +20,7 @@ function CreateProjectContent() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Partial<CreateProjectData>>({});
+  const [successMessage, setSuccessMessage] = useState('');
 
   // Preset icons
   const availableIcons = [
@@ -63,6 +64,18 @@ function CreateProjectContent() {
     return Object.keys(newErrors).length === 0;
   };
 
+  const resetForm = () => {
+    setFormData({
+      name: '',
+      description: '',
+      icon: '💻',
+      color: 'orange',
+      weeklyTarget: undefined,
+      totalTarget: undefined,
+    });
+    setErrors({});
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -72,6 +85,7 @@ function CreateProjectContent() {
 
     try {
       setIsSubmitting(true);
+      setSuccessMessage('');
       const project = await createProject({
         ...formData,
         name: formData.name.trim(),
@@ -80,11 +94,19 @@ function CreateProjectContent() {
         totalTarget: formData.totalTarget || undefined,
       });
 
-      // Navigate to projects page
-      router.push('/projects');
+      // Show success message and reset form
+      setSuccessMessage('Project created successfully!');
+      resetForm();
+
+      // Navigate to projects page after a brief delay
+      setTimeout(() => {
+        router.push('/projects');
+      }, 1500);
     } catch (error) {
       console.error('Failed to create project:', error);
-      setErrors({ name: 'Failed to create project. Please try again.' });
+      const errorMessage = error instanceof Error ? error.message : 'Failed to create project. Please try again.';
+      setErrors({ name: errorMessage });
+      setSuccessMessage('');
     } finally {
       setIsSubmitting(false);
     }
@@ -92,9 +114,12 @@ function CreateProjectContent() {
 
   const handleInputChange = (field: keyof CreateProjectData, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    // Clear error when user starts typing
+    // Clear error and success message when user starts typing
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: undefined }));
+    }
+    if (successMessage) {
+      setSuccessMessage('');
     }
   };
 
@@ -109,6 +134,16 @@ function CreateProjectContent() {
             <h1 className="text-3xl font-bold text-gray-900">Create New Project</h1>
             <p className="text-gray-600 mt-2">Set up a new project to track your productivity</p>
           </div>
+
+          {/* Success Message */}
+          {successMessage && (
+            <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center gap-3">
+              <svg className="w-5 h-5 text-green-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+              <p className="text-sm font-medium text-green-800">{successMessage}</p>
+            </div>
+          )}
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-8">

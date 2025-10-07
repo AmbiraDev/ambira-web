@@ -81,7 +81,7 @@ export default function YouPage() {
     if (!sessions) return [];
 
     const now = new Date();
-    let data: ChartDataPoint[] = [];
+    const data: ChartDataPoint[] = [];
 
     if (timePeriod === 'day') {
       // Last 24 hours by hour

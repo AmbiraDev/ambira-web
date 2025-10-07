@@ -149,7 +149,7 @@ export const GlobalTasks: React.FC<GlobalTasksProps> = ({
       <div className="hidden md:flex items-center justify-between">
         <h2 className="text-2xl font-bold text-gray-900">All Tasks</h2>
         <div className="text-sm text-gray-600">
-          {filteredTasks.length} tasks
+          {filteredTasks.length} {filteredTasks.length === 1 ? 'task' : 'tasks'}
           {currentSelectedTasks.length > 0 && ` • ${currentSelectedTasks.length} selected`}
         </div>
       </div>
@@ -263,7 +263,7 @@ export const GlobalTasks: React.FC<GlobalTasksProps> = ({
         <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium text-orange-800">
-              {currentSelectedTasks.length} tasks selected
+              {currentSelectedTasks.length} {currentSelectedTasks.length === 1 ? 'task' : 'tasks'} selected
             </span>
             <div className="flex gap-2">
               <button
@@ -292,10 +292,46 @@ export const GlobalTasks: React.FC<GlobalTasksProps> = ({
       {/* Task list */}
       <div className="space-y-2">
         {filteredTasks.length === 0 ? (
-          <div className="text-center py-8 text-gray-500">
-            <div className="text-4xl mb-2">📝</div>
-            <p>No tasks found</p>
-            <p className="text-sm mt-1">Try adjusting your filters or add a new task</p>
+          <div className="bg-white rounded-xl border border-gray-200 p-8 md:p-12">
+            <div className="max-w-md mx-auto text-center">
+              <div className="w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-[#007AFF] to-[#0051D5] rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm">
+                <svg className="w-8 h-8 md:w-10 md:h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                </svg>
+              </div>
+              <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-2">
+                {tasks.length === 0 ? 'No tasks yet' : 'No tasks found'}
+              </h3>
+              <p className="text-sm md:text-base text-gray-600 mb-6">
+                {tasks.length === 0
+                  ? "Create your first task to track your work. Tasks can be assigned to projects or left unassigned."
+                  : "Try adjusting your filters or create a new task to get started."
+                }
+              </p>
+              {tasks.length === 0 ? (
+                <>
+                  <div className="inline-block">
+                    <p className="text-xs text-gray-500 mb-2">Use the form above to create a task</p>
+                    <div className="flex items-center gap-2 text-xs text-gray-500">
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                      </svg>
+                      <span>Tip: Assign tasks to projects to track time and progress</span>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <button
+                  onClick={() => {
+                    setFilterProject('all');
+                    setFilterStatus('active');
+                  }}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors"
+                >
+                  Clear Filters
+                </button>
+              )}
+            </div>
           </div>
         ) : (
           (() => {
@@ -317,7 +353,7 @@ export const GlobalTasks: React.FC<GlobalTasksProps> = ({
                   <span className="text-sm font-medium text-gray-700">
                     {projectId === 'unassigned' ? 'Unassigned Tasks' : getProjectName(projectId)}
                   </span>
-                  <span className="text-xs text-gray-500">({tasks.length})</span>
+                  <span className="text-xs text-gray-500">({tasks.length} {tasks.length === 1 ? 'task' : 'tasks'})</span>
                 </div>
 
                 {/* Tasks in this project */}

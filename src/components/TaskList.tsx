@@ -160,14 +160,14 @@ export const TaskList: React.FC<TaskListProps> = ({
         <div className="flex items-center gap-2">
           <span className="text-lg">{getStatusIcon()}</span>
           <h3 className="text-lg font-semibold text-gray-900">
-            {getStatusLabel()} ({filteredTasks.length})
+            {getStatusLabel()} ({filteredTasks.length} {filteredTasks.length === 1 ? 'task' : 'tasks'})
           </h3>
         </div>
         
         {showBulkActions && selectedTasks.length > 0 && (
           <div className="flex items-center gap-2">
             <span className="text-sm text-gray-600">
-              {selectedTasks.length} selected
+              {selectedTasks.length} {selectedTasks.length === 1 ? 'task' : 'tasks'} selected
             </span>
             {status === 'active' && (
               <button

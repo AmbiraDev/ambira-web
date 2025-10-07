@@ -8,8 +8,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectItem } from '@/components/ui/select';
-import { X, Upload, User, MapPin, FileText, Globe, Lock, Users } from 'lucide-react';
+import { X, User, MapPin, FileText, Globe } from 'lucide-react';
 import { toast } from 'sonner';
+import { ImageUpload } from '@/components/ImageUpload';
 
 interface EditProfileModalProps {
   profile: UserProfile;
@@ -32,53 +33,47 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
   });
   const [isLoading, setIsLoading] = useState(false);
   const [profileVisibility, setProfileVisibility] = useState<'everyone' | 'followers' | 'private'>('everyone');
+  const [profileImageFile, setProfileImageFile] = useState<File[]>([]);
+  const [profileImagePreview, setProfileImagePreview] = useState<string[]>(
+    profile.profilePicture ? [profile.profilePicture] : []
+  );
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+  const handleProfileImageChange = (images: File[], previewUrls: string[]) => {
+    setProfileImageFile(images);
+    setProfileImagePreview(previewUrls);
+  };
 
-    // Validate file type and size
-    const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-    const maxSize = 5 * 1024 * 1024; // 5MB
-
-    if (!validTypes.includes(file.type)) {
-      toast.error('Please upload a valid image file (JPEG, PNG, GIF, or WebP)');
-      return;
-    }
-
-    if (file.size > maxSize) {
-      toast.error('Image size must be less than 5MB');
-      return;
-    }
+  const handleProfileImageUpload = async (files: File[]): Promise<string[]> => {
+    const file = files[0];
+    if (!file) return [];
 
     try {
-      setIsLoading(true);
       toast.loading('Uploading profile picture...', { id: 'upload-profile-pic' });
-      
+
       // Upload to Firebase Storage
       const downloadURL = await firebaseUserApi.uploadProfilePicture(file);
-      
+
       // Delete old profile picture if it exists and is a Firebase Storage URL
       if (profile.profilePicture && profile.profilePicture.includes('firebasestorage.googleapis.com')) {
         try {
           await firebaseUserApi.deleteProfilePicture(profile.profilePicture);
         } catch (error) {
           console.warn('Failed to delete old profile picture:', error);
-          // Continue anyway - this is not critical
         }
       }
-      
+
       setFormData(prev => ({ ...prev, profilePicture: downloadURL }));
       toast.success('Profile picture uploaded successfully', { id: 'upload-profile-pic' });
+
+      return [downloadURL];
     } catch (error) {
       console.error('File upload error:', error);
       toast.error('Failed to upload image', { id: 'upload-profile-pic' });
-    } finally {
-      setIsLoading(false);
+      throw error;
     }
   };
 
@@ -92,7 +87,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
       onProfileUpdate(updatedProfile);
       onClose();
       toast.success('Profile updated successfully');
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Profile update error:', error);
       toast.error('Failed to update profile');
     } finally {
@@ -135,43 +130,19 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {/* Profile Picture */}
           <div className="space-y-4">
-            <Label className="text-base font-medium">Profile Picture</Label>
-            <div className="flex items-center gap-4">
-              <div className="relative">
-                {formData.profilePicture ? (
-                  <img
-                    src={formData.profilePicture}
-                    alt="Profile preview"
-                    className="w-20 h-20 rounded-full object-cover border-2 border-border"
-                  />
-                ) : (
-                  <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-2xl font-bold">
-                    {formData.name.charAt(0).toUpperCase()}
-                  </div>
-                )}
-              </div>
-              
-              <div className="flex-1">
-                <input
-                  type="file"
-                  id="profile-picture"
-                  accept="image/*"
-                  onChange={handleFileUpload}
-                  className="hidden"
-                  disabled={isLoading}
-                />
-                <Label
-                  htmlFor="profile-picture"
-                  className="cursor-pointer inline-flex items-center gap-2 px-4 py-2 border border-border rounded-md hover:bg-muted transition-colors"
-                >
-                  <Upload className="w-4 h-4" />
-                  {isLoading ? 'Uploading...' : 'Upload Photo'}
-                </Label>
-                <p className="text-sm text-muted-foreground mt-1">
-                  JPG, PNG, GIF or WebP. Max 5MB.
-                </p>
-              </div>
-            </div>
+            <ImageUpload
+              label="Profile Picture"
+              singleImage={true}
+              maxSizeMB={5}
+              images={profileImageFile}
+              previewUrls={profileImagePreview}
+              onImagesChange={handleProfileImageChange}
+              uploadMode="instant"
+              onUpload={handleProfileImageUpload}
+              showProgress={true}
+              placeholder="Upload profile picture"
+              disabled={isLoading}
+            />
           </div>
 
           {/* Name */}
@@ -239,7 +210,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
                 <Globe className="w-4 h-4 inline mr-2" />
                 Profile Visibility
               </Label>
-            <Select value={profileVisibility} onChange={(e) => setProfileVisibility(e.target.value as any)}>
+            <Select value={profileVisibility} onChange={(e) => setProfileVisibility(e.target.value as 'everyone' | 'followers' | 'private')}>
               <SelectItem value="everyone">Everyone</SelectItem>
               <SelectItem value="followers">Followers only</SelectItem>
               <SelectItem value="private">Private</SelectItem>

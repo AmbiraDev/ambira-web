@@ -6,14 +6,18 @@ import Header from '@/components/HeaderComponent';
 import MobileHeader from '@/components/MobileHeader';
 import BottomNavigation from '@/components/BottomNavigation';
 import NotificationSettings from '@/components/NotificationSettings';
-import { 
-  User, 
-  Shield, 
-  Bell, 
+import {
+  User,
+  Shield,
+  Bell,
   Globe,
   Mail,
   Upload,
-  ChevronRight
+  ChevronRight,
+  Link as LinkIcon,
+  Twitter,
+  Github,
+  Linkedin
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import Image from 'next/image';
@@ -29,8 +33,14 @@ export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<SettingsTab>('profile');
   const [formData, setFormData] = useState({
     name: user?.name || '',
+    tagline: user?.tagline || '',
+    pronouns: user?.pronouns || '',
     bio: user?.bio || '',
     location: user?.location || '',
+    website: user?.website || '',
+    twitter: user?.socialLinks?.twitter || '',
+    github: user?.socialLinks?.github || '',
+    linkedin: user?.socialLinks?.linkedin || '',
     profileVisibility: 'everyone' as 'everyone' | 'followers' | 'private',
   });
   const [isSaving, setIsSaving] = useState(false);
@@ -39,8 +49,14 @@ export default function SettingsPage() {
   const [profilePictureUrl, setProfilePictureUrl] = useState(user?.profilePicture || '');
   const [originalFormData, setOriginalFormData] = useState({
     name: user?.name || '',
+    tagline: user?.tagline || '',
+    pronouns: user?.pronouns || '',
     bio: user?.bio || '',
     location: user?.location || '',
+    website: user?.website || '',
+    twitter: user?.socialLinks?.twitter || '',
+    github: user?.socialLinks?.github || '',
+    linkedin: user?.socialLinks?.linkedin || '',
     profileVisibility: (user?.profileVisibility || 'everyone') as 'everyone' | 'followers' | 'private',
   });
 
@@ -52,10 +68,16 @@ export default function SettingsPage() {
   ];
 
   // Check if form has been modified
-  const hasChanges = 
+  const hasChanges =
     formData.name !== originalFormData.name ||
+    formData.tagline !== originalFormData.tagline ||
+    formData.pronouns !== originalFormData.pronouns ||
     formData.bio !== originalFormData.bio ||
     formData.location !== originalFormData.location ||
+    formData.website !== originalFormData.website ||
+    formData.twitter !== originalFormData.twitter ||
+    formData.github !== originalFormData.github ||
+    formData.linkedin !== originalFormData.linkedin ||
     formData.profileVisibility !== originalFormData.profileVisibility;
 
   // Update form data when user data loads
@@ -63,8 +85,14 @@ export default function SettingsPage() {
     if (user) {
       const userData = {
         name: user.name || '',
+        tagline: user.tagline || '',
+        pronouns: user.pronouns || '',
         bio: user.bio || '',
         location: user.location || '',
+        website: user.website || '',
+        twitter: user.socialLinks?.twitter || '',
+        github: user.socialLinks?.github || '',
+        linkedin: user.socialLinks?.linkedin || '',
         profileVisibility: 'everyone' as 'everyone' | 'followers' | 'private',
       };
       setFormData({
@@ -118,15 +146,26 @@ export default function SettingsPage() {
     e.preventDefault();
     try {
       setIsSaving(true);
+
+      // Build social links object only if at least one link is provided
+      const socialLinks: { twitter?: string; github?: string; linkedin?: string } = {};
+      if (formData.twitter) socialLinks.twitter = formData.twitter;
+      if (formData.github) socialLinks.github = formData.github;
+      if (formData.linkedin) socialLinks.linkedin = formData.linkedin;
+
       await firebaseUserApi.updateProfile({
         name: formData.name,
-        bio: formData.bio,
-        location: formData.location,
+        tagline: formData.tagline || undefined,
+        pronouns: formData.pronouns || undefined,
+        bio: formData.bio || undefined,
+        location: formData.location || undefined,
+        website: formData.website || undefined,
+        socialLinks: Object.keys(socialLinks).length > 0 ? socialLinks : undefined,
         profileVisibility: formData.profileVisibility,
       });
       toast.success('Profile updated successfully!');
       setSaved(true);
-      
+
       // Reload the page after a short delay to refresh the user context
       setTimeout(() => {
         window.location.reload();
@@ -312,7 +351,40 @@ export default function SettingsPage() {
                             className="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
                           />
                         </div>
-                        <p className="text-xs text-gray-500 mt-1">Username cannot be changed</p>
+                        <p className="text-xs text-gray-500 mt-1">Username cannot be changed - it&apos;s your unique identifier</p>
+                      </div>
+
+                      {/* Tagline */}
+                      <div>
+                        <label htmlFor="tagline" className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                          Tagline
+                        </label>
+                        <input
+                          type="text"
+                          id="tagline"
+                          value={formData.tagline}
+                          onChange={(e) => setFormData({ ...formData, tagline: e.target.value })}
+                          maxLength={60}
+                          placeholder="Your headline or current status..."
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] outline-none"
+                        />
+                        <p className="text-sm text-gray-500 mt-1">{formData.tagline.length}/60 • Appears below your name on your profile</p>
+                      </div>
+
+                      {/* Pronouns */}
+                      <div>
+                        <label htmlFor="pronouns" className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                          Pronouns
+                        </label>
+                        <input
+                          type="text"
+                          id="pronouns"
+                          value={formData.pronouns}
+                          onChange={(e) => setFormData({ ...formData, pronouns: e.target.value })}
+                          maxLength={20}
+                          placeholder="e.g., she/her, he/him, they/them"
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] outline-none"
+                        />
                       </div>
 
                       {/* Bio */}
@@ -346,6 +418,78 @@ export default function SettingsPage() {
                           placeholder="City, Country"
                           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] outline-none"
                         />
+                      </div>
+
+                      {/* Links Section */}
+                      <div className="pt-4 border-t border-gray-200">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Links</h3>
+
+                        {/* Website */}
+                        <div className="mb-4">
+                          <label htmlFor="website" className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                            <LinkIcon className="w-4 h-4" />
+                            Website
+                          </label>
+                          <input
+                            type="url"
+                            id="website"
+                            value={formData.website}
+                            onChange={(e) => setFormData({ ...formData, website: e.target.value })}
+                            placeholder="https://yourwebsite.com"
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] outline-none"
+                          />
+                        </div>
+
+                        {/* Social Links */}
+                        <div className="space-y-4">
+                          <div>
+                            <label htmlFor="twitter" className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                              <Twitter className="w-4 h-4" />
+                              Twitter/X
+                            </label>
+                            <div className="relative">
+                              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">@</span>
+                              <input
+                                type="text"
+                                id="twitter"
+                                value={formData.twitter}
+                                onChange={(e) => setFormData({ ...formData, twitter: e.target.value })}
+                                placeholder="username"
+                                className="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] outline-none"
+                              />
+                            </div>
+                          </div>
+
+                          <div>
+                            <label htmlFor="github" className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                              <Github className="w-4 h-4" />
+                              GitHub
+                            </label>
+                            <input
+                              type="text"
+                              id="github"
+                              value={formData.github}
+                              onChange={(e) => setFormData({ ...formData, github: e.target.value })}
+                              placeholder="username"
+                              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] outline-none"
+                            />
+                          </div>
+
+                          <div>
+                            <label htmlFor="linkedin" className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                              <Linkedin className="w-4 h-4" />
+                              LinkedIn
+                            </label>
+                            <input
+                              type="text"
+                              id="linkedin"
+                              value={formData.linkedin}
+                              onChange={(e) => setFormData({ ...formData, linkedin: e.target.value })}
+                              placeholder="username"
+                              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] outline-none"
+                            />
+                          </div>
+                        </div>
                       </div>
 
                       {/* Account Information */}

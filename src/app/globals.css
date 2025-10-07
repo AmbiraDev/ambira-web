@@ -101,25 +101,59 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, button, input, textarea, select {
   * {
     -webkit-tap-highlight-color: transparent;
   }
-  
-  /* Ensure mobile buttons are touch-friendly */
-  button, a, input, select, textarea {
+
+  /* Ensure mobile buttons and interactive elements are touch-friendly (Apple HIG: minimum 44x44pt) */
+  button, a[role="button"], [role="button"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Form inputs should be at least 44px for better touch interaction */
+  input, select, textarea {
     min-height: 44px;
   }
-  
+
   /* Mobile typography improvements */
   body {
     font-size: 16px; /* Prevent zoom on iOS */
+    line-height: 1.5;
   }
-  
+
+  /* Improve text readability on mobile */
+  h1, h2, h3, h4, h5, h6 {
+    line-height: 1.3;
+  }
+
   /* Better mobile spacing */
   .mobile-padding {
     padding: 1rem;
   }
-  
+
   /* Safe area insets for iPhone X+ */
   .mobile-safe-area {
     padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* Prevent horizontal overflow */
+  body {
+    overflow-x: hidden;
+  }
+
+  /* Better image handling on mobile */
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* Ensure cards and containers have proper mobile padding */
+  .card, [class*="card"] {
+    padding: 1rem;
+  }
+
+  /* Fix common overflow issues */
+  * {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
   }
 }
 

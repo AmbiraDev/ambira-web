@@ -58,7 +58,7 @@ export default function SessionDetailPage() {
       const response = await firebaseCommentApi.getSessionComments(sessionId, COMMENTS_PER_PAGE);
       setComments(response.comments);
     } catch (err: any) {
-      console.error('Failed to load comments:', err);
+      // Permission errors are handled gracefully in firebaseApi, so this should only catch real errors
       setError(err.message || 'Failed to load comments');
     } finally {
       setIsLoadingComments(false);

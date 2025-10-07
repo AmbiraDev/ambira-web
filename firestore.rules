@@ -8,9 +8,9 @@ service cloud.firestore {
 
       // Allow any authenticated user to update follower/following counts
       // This is safe because only increment/decrement operations are used in the code
-      allow update: if request.auth != null && 
+      allow update: if request.auth != null &&
         request.resource.data.keys().hasAny(['followersCount', 'followingCount', 'inboundFriendshipCount', 'outboundFriendshipCount', 'mutualFriendshipCount', 'updatedAt']) &&
-        !request.resource.data.diff(resource.data).affectedKeys().hasAny(['email', 'username', 'name', 'bio', 'location', 'profilePicture', 'totalHours', 'profileVisibility', 'activityVisibility', 'projectVisibility', 'createdAt']);
+        !request.resource.data.diff(resource.data).affectedKeys().hasAny(['email', 'username', 'name', 'bio', 'tagline', 'pronouns', 'location', 'website', 'socialLinks', 'profilePicture', 'totalHours', 'profileVisibility', 'activityVisibility', 'projectVisibility', 'createdAt']);
 
       // Allow authenticated users to read user profiles based on visibility settings
       allow read: if request.auth != null &&
@@ -24,6 +24,12 @@ service cloud.firestore {
 
       // Allow listing users for discovery when authenticated
       allow list: if request.auth != null;
+
+      // Allow unauthenticated username availability checks (read-only, query by username)
+      // This is safe because it only reveals if a username exists, not other profile data
+      allow list: if request.query.where.field == 'username' &&
+        request.query.where.op == '==' &&
+        request.query.limit <= 1;
 
       // Active session subcollection - user can read/write their own active timer
       match /activeSession/{docId} {
@@ -93,22 +99,58 @@ service cloud.firestore {
     
     // Sessions
     match /sessions/{sessionId} {
+      function isAuthenticated() {
+        return request.auth != null;
+      }
+
+      function isSessionOwner() {
+        return isAuthenticated() && resource.data.userId == request.auth.uid;
+      }
+
+      function isFollowing(userId) {
+        return exists(/databases/$(database)/documents/follows/$(request.auth.uid + '_' + userId));
+      }
+
+      function canReadSession() {
+        return isAuthenticated() && (
+          // Owner can always read their own sessions
+          isSessionOwner() ||
+          // Public sessions can be read by anyone
+          resource.data.visibility == 'everyone' ||
+          // Followers can read 'followers' visibility sessions
+          (resource.data.visibility == 'followers' && isFollowing(resource.data.userId)) ||
+          // Fallback: allow if visibility field doesn't exist
+          !('visibility' in resource.data)
+        );
+      }
+
       // Create: validate userId on the incoming document
-      allow create: if request.auth != null && request.resource.data.userId == request.auth.uid;
-      // Read/Update/Delete: validate against stored document
-      allow read, update, delete: if request.auth != null && resource.data.userId == request.auth.uid;
-      // Allow reading sessions for stats calculation (authenticated users can read any session)
-      allow read: if request.auth != null;
-      // Allow authenticated users to update supportCount and commentCount (for likes/comments)
-      allow update: if request.auth != null &&
-        request.resource.data.keys().hasAny(['supportCount', 'commentCount', 'updatedAt']) &&
-        !request.resource.data.diff(resource.data).affectedKeys().hasAny(['userId', 'projectId', 'title', 'description', 'duration', 'startTime', 'tasks', 'tags', 'visibility', 'createdAt']);
-    }
-    
-    // Session supports (likes/kudos)
-    match /sessionSupports/{supportId} {
-      allow read, write: if request.auth != null &&
-        (request.auth.uid == supportId.split('_')[0] || request.auth.uid == supportId.split('_')[1]);
+      allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
+
+      // Read: allow based on visibility settings
+      allow read: if canReadSession();
+
+      // Update/Delete: only session owner
+      allow update, delete: if isSessionOwner();
+
+      // Allow authenticated users to update supportedBy array and commentCount for likes/comments
+      // User can only add/remove their own ID from supportedBy array
+      allow update: if isAuthenticated() &&
+        request.resource.data.keys().hasAny(['supportedBy', 'supportCount', 'commentCount', 'updatedAt']) &&
+        !request.resource.data.diff(resource.data).affectedKeys().hasAny(['userId', 'projectId', 'title', 'description', 'duration', 'startTime', 'tasks', 'tags', 'visibility', 'createdAt']) &&
+        (
+          // Either supportedBy wasn't changed
+          !request.resource.data.diff(resource.data).affectedKeys().hasAny(['supportedBy']) ||
+          // Or the user is only adding/removing their own ID
+          (
+            // Check if user is adding their ID (not already in supportedBy)
+            (request.resource.data.supportedBy.hasAll([request.auth.uid]) &&
+             !resource.data.get('supportedBy', []).hasAll([request.auth.uid])) ||
+            // Check if user is removing their ID (was in supportedBy)
+            (!request.resource.data.supportedBy.hasAll([request.auth.uid]) &&
+             resource.data.get('supportedBy', []).hasAll([request.auth.uid]))
+          )
+        );
     }
     
     // Comments

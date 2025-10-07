@@ -47,7 +47,7 @@ export const ProjectProgressView: React.FC<ProjectProgressViewProps> = ({ projec
 
   const processChartData = () => {
     const now = new Date();
-    let data: ChartDataPoint[] = [];
+    const data: ChartDataPoint[] = [];
 
     if (timePeriod === 'day') {
       // Last 24 hours by hour
@@ -143,7 +143,7 @@ export const ProjectProgressView: React.FC<ProjectProgressViewProps> = ({ projec
   let currentStreak = 0;
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  let checkDate = new Date(today);
+  const checkDate = new Date(today);
 
   while (true) {
     const dateStr = checkDate.toISOString().split('T')[0];

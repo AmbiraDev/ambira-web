@@ -6,8 +6,16 @@ export interface User {
   name: string;
   username: string;
   bio?: string;
+  tagline?: string; // Short headline/status (60 chars max)
+  pronouns?: string; // e.g., "she/her", "he/him", "they/them"
   location?: string;
   profilePicture?: string;
+  website?: string; // Personal website or portfolio
+  socialLinks?: {
+    twitter?: string;
+    github?: string;
+    linkedin?: string;
+  };
   createdAt: Date;
   updatedAt: Date;
   // New friendship counts
@@ -121,9 +129,10 @@ export interface Session {
   images?: string[]; // Array of image URLs (max 3)
   allowComments?: boolean; // Whether comments are allowed (default: true)
   // Social engagement fields (sessions are posts)
-  supportCount: number;
+  supportCount: number; // Computed from supportedBy array length
+  supportedBy?: string[]; // Array of user IDs who supported this session
   commentCount: number;
-  isSupported?: boolean; // Whether current user has supported this session
+  isSupported?: boolean; // Whether current user has supported this session (computed)
   createdAt: Date;
   updatedAt: Date;
 }
@@ -545,8 +554,16 @@ export interface UserProfile {
   username: string;
   name: string;
   bio?: string;
+  tagline?: string;
+  pronouns?: string;
   location?: string;
   profilePicture?: string;
+  website?: string;
+  socialLinks?: {
+    twitter?: string;
+    github?: string;
+    linkedin?: string;
+  };
   followersCount: number;
   followingCount: number;
   totalHours: number;
@@ -605,6 +622,8 @@ export interface UserSearchResult {
   username: string;
   name: string;
   bio?: string;
+  tagline?: string;
+  pronouns?: string;
   profilePicture?: string;
   followersCount: number;
   isFollowing?: boolean;
@@ -615,6 +634,8 @@ export interface SuggestedUser {
   username: string;
   name: string;
   bio?: string;
+  tagline?: string;
+  pronouns?: string;
   profilePicture?: string;
   followersCount: number;
   reason: string; // Why this user was suggested
@@ -630,8 +651,16 @@ export interface AuthUser {
   name: string;
   username: string;
   bio?: string;
+  tagline?: string;
+  pronouns?: string;
   location?: string;
   profilePicture?: string;
+  website?: string;
+  socialLinks?: {
+    twitter?: string;
+    github?: string;
+    linkedin?: string;
+  };
   createdAt: Date;
   updatedAt: Date;
 }

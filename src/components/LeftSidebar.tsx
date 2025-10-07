@@ -64,10 +64,10 @@ function LeftSidebar() {
     loadUserData();
   }, [user]);
   return (
-    <aside className="hidden lg:block w-[280px] flex-shrink-0">
+    <aside className="hidden lg:block w-[280px] flex-shrink-0" aria-label="User profile sidebar">
       <div className="space-y-4 h-full overflow-y-auto scrollbar-hide">
         {/* Profile Card - Subtle Design */}
-        <Link href="/you" className="block group">
+        <Link href="/you" className="block group" aria-label="View your profile">
           <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-all duration-300">
             {isLoading ? (
               <div className="animate-pulse">
@@ -101,12 +101,30 @@ function LeftSidebar() {
                 <h2 className="text-xl font-bold text-gray-900 mb-1">
                   {profile?.name || user?.name || 'User'}
                 </h2>
-                <p className="text-sm text-gray-500 mb-4">
-                  @{user?.username || 'username'}
-                </p>
+
+                {/* Bio */}
+                {profile?.bio && (
+                  <p className="text-sm text-gray-600 mb-2 line-clamp-2">
+                    {profile.bio}
+                  </p>
+                )}
+
+                {/* Location */}
+                {profile?.location && (
+                  <p className="text-sm text-gray-500 mb-3">
+                    {profile.location}
+                  </p>
+                )}
+
+                {/* Profile Views */}
+                <div className="pt-3 border-t border-gray-200">
+                  <span className="text-xs text-gray-500">
+                    View Profile
+                  </span>
+                </div>
 
                 {/* Quick Stats */}
-                <div className="grid grid-cols-3 gap-3 pt-4 border-t border-gray-200">
+                <div className="grid grid-cols-3 gap-3 pt-3 border-t border-gray-200 mt-3">
                   <div className="text-center">
                     <div className="text-2xl font-bold text-gray-900">{stats?.sessionsThisWeek || 0}</div>
                     <div className="text-xs text-gray-500 mt-1">Sessions</div>

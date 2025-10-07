@@ -1,5 +1,5 @@
 // Service Worker for Ambira PWA
-const CACHE_NAME = 'ambira-v2'; // Bumped version to clear old cache
+const CACHE_NAME = 'ambira-v3'; // Bumped version to clear old cache
 const urlsToCache = [
   '/',
   '/manifest.json',
@@ -34,12 +34,18 @@ self.addEventListener('activate', (event) => {
 
 // Fetch event - network first, fallback to cache
 self.addEventListener('fetch', (event) => {
+  // Skip caching for POST, PUT, DELETE, PATCH requests
+  if (event.request.method !== 'GET') {
+    event.respondWith(fetch(event.request));
+    return;
+  }
+
   event.respondWith(
     fetch(event.request)
       .then((response) => {
         // Clone the response
         const responseToCache = response.clone();
-        
+
         // Only cache successful responses
         if (response.status === 200) {
           caches.open(CACHE_NAME)
@@ -47,7 +53,7 @@ self.addEventListener('fetch', (event) => {
               cache.put(event.request, responseToCache);
             });
         }
-        
+
         return response;
       })
       .catch(() => {

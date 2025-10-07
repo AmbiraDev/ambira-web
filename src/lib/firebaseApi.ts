@@ -35,13 +35,19 @@ import {
 } from 'firebase/auth';
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { db, auth, storage } from './firebase';
+import {
+  handleError,
+  withErrorHandling,
+  withNullOnError,
+  isPermissionError,
+  isNotFoundError,
+  ErrorSeverity
+} from './errorHandler';
 
-// Helper function for safe error handling
+// Legacy helper for backwards compatibility - now wraps handleError
 const getErrorMessage = (error: any, defaultMessage: string): string => {
-  if (!error) return defaultMessage;
-  if (error?.message) return error.message;
-  if (error?.toString) return error.toString();
-  return defaultMessage;
+  const apiError = handleError(error, 'Operation', { defaultMessage, silent: true });
+  return apiError.userMessage;
 };
 
 import {
@@ -185,8 +191,9 @@ const updateSocialGraph = async (currentUserId: string, targetUserId: string, ac
       transaction.update(currentUserRef, currentUserUpdate);
       transaction.update(targetUserRef, targetUserUpdate);
     });
-  } catch (error: any) {
-    throw new Error(error.message || `Failed to ${action} user.`);
+  } catch (error) {
+    const apiError = handleError(error, `${action.charAt(0).toUpperCase() + action.slice(1)} user`);
+    throw new Error(apiError.userMessage);
   }
 };
 
@@ -200,11 +207,12 @@ const fetchUserDataForSocialContext = async (userId: string): Promise<DocumentDa
       return null;
     }
     return userDoc.data();
-  } catch (error: any) {
-    if (error?.code === 'permission-denied' || error?.code === 'not-found') {
+  } catch (error) {
+    if (isPermissionError(error) || isNotFoundError(error)) {
       return null;
     }
-    throw error;
+    const apiError = handleError(error, 'Fetch user data');
+    throw new Error(apiError.userMessage);
   }
 };
 
@@ -256,13 +264,13 @@ const populateSessionsWithDetails = async (sessionDocs: any[]): Promise<SessionW
             projectData = projectDoc.data();
           }
         } catch (error) {
-          console.error(`Error fetching project ${projectId}:`, error);
+          handleError(error, `Fetch project ${projectId}`, { severity: ErrorSeverity.WARNING });
         }
       }
 
       // Check if current user has supported this session
-      const supportDoc = await getDoc(doc(db, 'sessionSupports', `${auth.currentUser!.uid}_${sessionDoc.id}`));
-      const isSupported = supportDoc.exists();
+      const supportedBy = sessionData.supportedBy || [];
+      const isSupported = supportedBy.includes(auth.currentUser!.uid);
 
       // Build the session with full details
       const session: SessionWithDetails = {
@@ -383,8 +391,9 @@ export const firebaseAuthApi = {
       const token = await firebaseUser.getIdToken();
       
       return { user, token };
-    } catch (error: any) {
-      throw new Error(getErrorMessage(error, 'Login failed'));
+    } catch (error) {
+      const apiError = handleError(error, 'Login', { defaultMessage: 'Login failed' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -437,8 +446,9 @@ export const firebaseAuthApi = {
       const token = await firebaseUser.getIdToken();
       
       return { user, token };
-    } catch (error: any) {
-      throw new Error(getErrorMessage(error, 'Signup failed'));
+    } catch (error) {
+      const apiError = handleError(error, 'Signup', { defaultMessage: 'Signup failed' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -507,8 +517,9 @@ export const firebaseAuthApi = {
       const token = await firebaseUser.getIdToken();
 
       return { user, token };
-    } catch (error: any) {
-      throw new Error(getErrorMessage(error, 'Google sign-in failed'));
+    } catch (error) {
+      const apiError = handleError(error, 'Google sign-in', { defaultMessage: 'Google sign-in failed' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -516,8 +527,9 @@ export const firebaseAuthApi = {
   logout: async (): Promise<void> => {
     try {
       await signOut(auth);
-    } catch (error: any) {
-      throw new Error(error.message || 'Logout failed');
+    } catch (error) {
+      const apiError = handleError(error, 'Logout', { defaultMessage: 'Logout failed' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -565,8 +577,9 @@ export const firebaseAuthApi = {
         createdAt: convertTimestamp(userData.createdAt),
         updatedAt: convertTimestamp(userData.updatedAt)
       };
-    } catch (error: any) {
-      throw new Error(error.message || 'Failed to get current user');
+    } catch (error) {
+      const apiError = handleError(error, 'Get current user', { defaultMessage: 'Failed to get current user' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -653,7 +666,7 @@ export const firebaseUserApi = {
             });
           }
         } catch (error) {
-          console.warn('Failed to recalculate follower counts:', error);
+          handleError(error, 'Recalculate follower counts', { severity: ErrorSeverity.WARNING });
           // Keep the default values if recalculation fails
         }
       }
@@ -673,8 +686,11 @@ export const firebaseUserApi = {
         createdAt: convertTimestamp(userData.createdAt),
         updatedAt: convertTimestamp(userData.updatedAt)
       };
-    } catch (error: any) {
-      throw new Error(error.message || 'Failed to get user profile');
+    } catch (error) {
+      // Re-throw with standardized error messages
+      // The calling code will handle displaying appropriate UI to users
+      const apiError = handleError(error, 'Get user profile', { defaultMessage: 'Failed to get user profile' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -700,9 +716,9 @@ export const firebaseUserApi = {
         createdAt: convertTimestamp(userData.createdAt),
         updatedAt: convertTimestamp(userData.updatedAt)
       };
-    } catch (error: any) {
-      console.error('Failed to get user by ID:', error);
-      throw new Error(error.message || 'Failed to get user');
+    } catch (error) {
+      const apiError = handleError(error, 'Get user by ID', { defaultMessage: 'Failed to get user' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -749,8 +765,9 @@ export const firebaseUserApi = {
       }
 
       return results;
-    } catch (error: any) {
-      throw new Error(error.message || 'Failed to get daily activity');
+    } catch (error) {
+      const apiError = handleError(error, 'Get daily activity', { defaultMessage: 'Failed to get daily activity' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -807,8 +824,9 @@ export const firebaseUserApi = {
       }
 
       return results;
-    } catch (error: any) {
-      throw new Error(error.message || 'Failed to get weekly activity');
+    } catch (error) {
+      const apiError = handleError(error, 'Get weekly activity', { defaultMessage: 'Failed to get weekly activity' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -866,8 +884,9 @@ export const firebaseUserApi = {
       // Sort by hours desc
       results.sort((a, b) => b.hours - a.hours);
       return results;
-    } catch (error: any) {
-      throw new Error(error.message || 'Failed to get project breakdown');
+    } catch (error) {
+      const apiError = handleError(error, 'Get project breakdown', { defaultMessage: 'Failed to get project breakdown' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -911,8 +930,9 @@ export const firebaseUserApi = {
       const downloadURL = await getDownloadURL(snapshot.ref);
       
       return downloadURL;
-    } catch (error: any) {
-      throw new Error(error.message || 'Failed to upload profile picture');
+    } catch (error) {
+      const apiError = handleError(error, 'Upload profile picture', { defaultMessage: 'Failed to upload profile picture' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -934,14 +954,14 @@ export const firebaseUserApi = {
       // Delete the file (will fail silently if file doesn't exist)
       try {
         await deleteObject(storageRef);
-      } catch (error: any) {
+      } catch (error) {
         // Ignore errors if file doesn't exist
-        if (error.code !== 'storage/object-not-found') {
-          console.warn('Failed to delete old profile picture:', error);
+        if (!isNotFoundError(error)) {
+          handleError(error, 'Delete old profile picture', { severity: ErrorSeverity.WARNING });
         }
       }
-    } catch (error: any) {
-      console.warn('Error in deleteProfilePicture:', error);
+    } catch (error) {
+      handleError(error, 'in deleteProfilePicture', { severity: ErrorSeverity.WARNING });
       // Don't throw error - this is a cleanup operation
     }
   },
@@ -984,8 +1004,9 @@ export const firebaseUserApi = {
         createdAt: convertTimestamp(userData.createdAt),
         updatedAt: convertTimestamp(userData.updatedAt)
       };
-    } catch (error: any) {
-      throw new Error(error.message || 'Failed to update profile');
+    } catch (error) {
+      const apiError = handleError(error, 'Update profile', { defaultMessage: 'Failed to update profile' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -1043,7 +1064,7 @@ export const firebaseUserApi = {
         daysWithActivity.add(start.toISOString().substring(0, 10));
       });
       let currentStreak = 0;
-      let cursor = new Date();
+      const cursor = new Date();
       cursor.setHours(0, 0, 0, 0);
       while (daysWithActivity.has(cursor.toISOString().substring(0, 10))) {
         currentStreak += 1;
@@ -1084,8 +1105,8 @@ export const firebaseUserApi = {
         averageSessionLength: averageSessionDuration,
         mostProductiveDay: 'Monday', // TODO: Calculate from actual data
       };
-    } catch (error: any) {
-      console.error('Failed to get user stats:', error);
+    } catch (error) {
+      handleError(error, 'get user stats', { severity: ErrorSeverity.ERROR });
       // Return default stats instead of throwing error
       return {
         totalHours: 0,
@@ -1115,6 +1136,17 @@ export const firebaseUserApi = {
       throw new Error('User not authenticated');
     }
     await updateSocialGraph(auth.currentUser.uid, userId, 'unfollow');
+  },
+
+  // Check if current user is following another user
+  isFollowing: async (currentUserId: string, targetUserId: string): Promise<boolean> => {
+    try {
+      const socialGraphDoc = await getDoc(doc(db, `social_graph/${currentUserId}/outbound`, targetUserId));
+      return socialGraphDoc.exists();
+    } catch (error) {
+      handleError(error, 'checking follow status', { severity: ErrorSeverity.ERROR });
+      return false;
+    }
   },
 
   // Get followers for a user
@@ -1152,9 +1184,10 @@ export const firebaseUserApi = {
       }
 
       return followers;
-    } catch (error: any) {
-      console.error('Error fetching followers:', error);
-      throw new Error(error.message || 'Failed to fetch followers');
+    } catch (error) {
+      handleError(error, 'fetching followers', { severity: ErrorSeverity.ERROR });
+      const apiError = handleError(error, 'Fetch followers', { defaultMessage: 'Failed to fetch followers' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -1193,9 +1226,10 @@ export const firebaseUserApi = {
       }
 
       return following;
-    } catch (error: any) {
-      console.error('Error fetching following:', error);
-      throw new Error(error.message || 'Failed to fetch following');
+    } catch (error) {
+      handleError(error, 'fetching following', { severity: ErrorSeverity.ERROR });
+      const apiError = handleError(error, 'Fetch following', { defaultMessage: 'Failed to fetch following' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -1226,8 +1260,9 @@ export const firebaseUserApi = {
       });
       
       return { followersCount, followingCount };
-    } catch (error: any) {
-      throw new Error(error.message || 'Failed to sync follower counts');
+    } catch (error) {
+      const apiError = handleError(error, 'Sync follower counts', { defaultMessage: 'Failed to sync follower counts' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -1314,8 +1349,9 @@ export const firebaseUserApi = {
       }
 
       return { users, totalCount: users.length, hasMore: users.length === limitCount };
-    } catch (error: any) {
-      throw new Error(error.message || 'Failed to search users');
+    } catch (error) {
+      const apiError = handleError(error, 'Search users', { defaultMessage: 'Failed to search users' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -1365,9 +1401,10 @@ export const firebaseUserApi = {
       });
       
       return suggestions;
-    } catch (error: any) {
-      console.error('Error getting suggested users:', error);
-      throw new Error(error.message || 'Failed to get suggested users');
+    } catch (error) {
+      handleError(error, 'getting suggested users', { severity: ErrorSeverity.ERROR });
+      const apiError = handleError(error, 'Get suggested users', { defaultMessage: 'Failed to get suggested users' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -1387,8 +1424,9 @@ export const firebaseUserApi = {
         projectVisibility: userData?.projectVisibility || 'everyone',
         blockedUsers: userData?.blockedUsers || []
       };
-    } catch (error: any) {
-      throw new Error(error.message || 'Failed to get privacy settings');
+    } catch (error) {
+      const apiError = handleError(error, 'Get privacy settings', { defaultMessage: 'Failed to get privacy settings' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -1412,19 +1450,32 @@ export const firebaseUserApi = {
         projectVisibility: settings.projectVisibility || 'everyone',
         blockedUsers: settings.blockedUsers || []
       };
-    } catch (error: any) {
-      throw new Error(error.message || 'Failed to update privacy settings');
+    } catch (error) {
+      const apiError = handleError(error, 'Update privacy settings', { defaultMessage: 'Failed to update privacy settings' });
+      throw new Error(apiError.userMessage);
     }
   },
 
   // Check if username is available
   checkUsernameAvailability: async (username: string): Promise<boolean> => {
     try {
-      const usersQuery = query(collection(db, 'users'), where('username', '==', username));
+      const usersQuery = query(
+        collection(db, 'users'),
+        where('username', '==', username),
+        limit(1)
+      );
       const querySnapshot = await getDocs(usersQuery);
       return querySnapshot.empty;
-    } catch (error: any) {
-      throw new Error(error.message || 'Failed to check username availability');
+    } catch (error) {
+      // Handle Firebase permission errors gracefully
+      if (isPermissionError(error)) {
+        handleError(error, 'Check username availability', { severity: ErrorSeverity.WARNING });
+        // In case of permission error, assume username is available to allow registration to proceed
+        // The actual uniqueness will be enforced by Firebase Auth and server-side validation
+        return true;
+      }
+      const apiError = handleError(error, 'Check username availability');
+      throw new Error(apiError.userMessage || 'Unable to verify username availability. Please try again.');
     }
   }
 };
@@ -1464,8 +1515,9 @@ export const firebaseProjectApi = {
       });
       
       return projects;
-    } catch (error: any) {
-      throw new Error(error.message || 'Failed to get projects');
+    } catch (error) {
+      const apiError = handleError(error, 'Get projects', { defaultMessage: 'Failed to get projects' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -1498,8 +1550,9 @@ export const firebaseProjectApi = {
         createdAt: new Date(),
         updatedAt: new Date()
       };
-    } catch (error: any) {
-      throw new Error(error.message || 'Failed to create project');
+    } catch (error) {
+      const apiError = handleError(error, 'Create project', { defaultMessage: 'Failed to create project' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -1534,8 +1587,9 @@ export const firebaseProjectApi = {
         createdAt: convertTimestamp(projectData.createdAt),
         updatedAt: convertTimestamp(projectData.updatedAt)
       };
-    } catch (error: any) {
-      throw new Error(error.message || 'Failed to update project');
+    } catch (error) {
+      const apiError = handleError(error, 'Update project', { defaultMessage: 'Failed to update project' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -1547,8 +1601,9 @@ export const firebaseProjectApi = {
       }
       
       await deleteDoc(doc(db, 'projects', auth.currentUser.uid, 'userProjects', id));
-    } catch (error: any) {
-      throw new Error(error.message || 'Failed to delete project');
+    } catch (error) {
+      const apiError = handleError(error, 'Delete project', { defaultMessage: 'Failed to delete project' });
+      throw new Error(apiError.userMessage);
     }
   }
 };
@@ -1581,9 +1636,10 @@ export const firebaseTaskApi = {
       
       console.log('Firebase API: Processed tasks:', tasks);
       return tasks;
-    } catch (error: any) {
-      console.error('Firebase API: Error getting project tasks:', error);
-      throw new Error(getErrorMessage(error, 'Failed to get project tasks'));
+    } catch (error) {
+      handleError(error, 'Firebase API: getting project tasks', { severity: ErrorSeverity.ERROR });
+      const apiError = handleError(error, 'Get project tasks', { defaultMessage: 'Failed to get project tasks' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -1615,8 +1671,9 @@ export const firebaseTaskApi = {
       // In the future, we should also load tasks from all projects
       
       return unassignedTasks;
-    } catch (error: any) {
-      throw new Error(error.message || 'Failed to get all tasks');
+    } catch (error) {
+      const apiError = handleError(error, 'Get all tasks', { defaultMessage: 'Failed to get all tasks' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -1657,8 +1714,9 @@ export const firebaseTaskApi = {
         createdAt: new Date(),
         updatedAt: new Date(),
       } as Task;
-    } catch (error: any) {
-      throw new Error(getErrorMessage(error, 'Failed to create task'));
+    } catch (error) {
+      const apiError = handleError(error, 'Create task', { defaultMessage: 'Failed to create task' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -1693,8 +1751,9 @@ export const firebaseTaskApi = {
         updatedAt: new Date(),
         completedAt: data.status === 'completed' ? new Date() : undefined,
       } as Task;
-    } catch (error: any) {
-      throw new Error(getErrorMessage(error, 'Failed to update task'));
+    } catch (error) {
+      const apiError = handleError(error, 'Update task', { defaultMessage: 'Failed to update task' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -1708,8 +1767,9 @@ export const firebaseTaskApi = {
       await deleteDoc(
         doc(db, 'projects', auth.currentUser.uid, 'userProjects', projectId, 'tasks', id)
       );
-    } catch (error: any) {
-      throw new Error(error.message || 'Failed to delete task');
+    } catch (error) {
+      const apiError = handleError(error, 'Delete task', { defaultMessage: 'Failed to delete task' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -1732,9 +1792,10 @@ export const firebaseTaskApi = {
       });
       
       await batch.commit();
-    } catch (error: any) {
-      console.error('Bulk update tasks error:', error);
-      throw new Error(getErrorMessage(error, 'Failed to bulk update tasks'));
+    } catch (error) {
+      handleError(error, 'Bulk update tasks error', { severity: ErrorSeverity.ERROR });
+      const apiError = handleError(error, 'Bulk update tasks', { defaultMessage: 'Failed to bulk update tasks' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -1755,8 +1816,9 @@ export const firebaseTaskApi = {
         completionRate: 0,
         averageCompletionTime: 0,
       };
-    } catch (error: any) {
-      throw new Error(error.message || 'Failed to get task stats');
+    } catch (error) {
+      const apiError = handleError(error, 'Get task stats', { defaultMessage: 'Failed to get task stats' });
+      throw new Error(apiError.userMessage);
     }
   },
 };
@@ -1818,7 +1880,7 @@ export const firebaseSessionApi = {
               }
             }
           } catch (error) {
-            console.warn(`Failed to fetch task ${taskId}:`, error);
+            handleError(error, `Fetch task ${taskId}`, { severity: ErrorSeverity.WARNING });
           }
         }
       }
@@ -1842,6 +1904,7 @@ export const firebaseSessionApi = {
         isArchived: false,
         // Social engagement fields (sessions ARE posts)
         supportCount: 0,
+        supportedBy: [], // Initialize empty array for user IDs who support this session
         commentCount: 0,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
@@ -1863,7 +1926,7 @@ export const firebaseSessionApi = {
           tasks: selectedTasks
         });
       } catch (error) {
-        console.warn('Failed to update challenge progress:', error);
+        handleError(error, 'update challenge progress', { severity: ErrorSeverity.WARNING });
         // Don't fail session creation if challenge update fails
       }
 
@@ -1895,8 +1958,9 @@ export const firebaseSessionApi = {
 
       console.log('Session created successfully:', newSession);
       return newSession;
-    } catch (error: any) {
-      throw new Error(getErrorMessage(error, 'Failed to create session'));
+    } catch (error) {
+      const apiError = handleError(error, 'Create session', { defaultMessage: 'Failed to create session' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -1931,9 +1995,10 @@ export const firebaseSessionApi = {
       }
 
       return { session, post };
-    } catch (error: any) {
-      console.error('Error in createSessionWithPost:', error);
-      throw new Error(getErrorMessage(error, 'Failed to create session with post'));
+    } catch (error) {
+      handleError(error, 'in createSessionWithPost', { severity: ErrorSeverity.ERROR });
+      const apiError = handleError(error, 'Create session with post', { defaultMessage: 'Failed to create session with post' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -1973,9 +2038,9 @@ export const firebaseSessionApi = {
       });
       
       console.log('Active session saved successfully');
-    } catch (error: any) {
-      console.error('Failed to save active session:', error?.message || error);
-      throw error;
+    } catch (error) {
+      const apiError = handleError(error, 'Save active session');
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -2004,7 +2069,7 @@ export const firebaseSessionApi = {
       
       // Validate data exists and has required fields
       if (!data || !data.startTime || !data.projectId) {
-        console.warn('Active session data is incomplete');
+        handleError(new Error('Active session data is incomplete'), 'Get active session', { severity: ErrorSeverity.WARNING });
         return null;
       }
       
@@ -2015,12 +2080,12 @@ export const firebaseSessionApi = {
         pausedDuration: data.pausedDuration || 0,
         isPaused: !!data.isPaused
       };
-    } catch (error: any) {
+    } catch (error) {
       // If it's a permission error or document doesn't exist, silently return null
-      if (error?.code === 'permission-denied' || error?.code === 'not-found') {
+      if (isPermissionError(error) || isNotFoundError(error)) {
         return null;
       }
-      console.error('Failed to get active session:', error);
+      handleError(error, 'Get active session', { severity: ErrorSeverity.ERROR });
       return null;
     }
   },
@@ -2036,7 +2101,7 @@ export const firebaseSessionApi = {
       const activeSessionRef = doc(db, 'users', userId, 'activeSession', 'current');
       await deleteDoc(activeSessionRef);
     } catch (error) {
-      console.error('Failed to clear active session:', error);
+      handleError(error, 'clear active session', { severity: ErrorSeverity.ERROR });
     }
   },
 
@@ -2104,7 +2169,7 @@ export const firebaseSessionApi = {
               projectData = projectDoc.data();
             }
           } catch (error) {
-            console.error(`Error fetching project ${projectId}:`, error);
+            handleError(error, `Fetch project ${projectId}`, { severity: ErrorSeverity.WARNING });
           }
         }
 
@@ -2159,9 +2224,10 @@ export const firebaseSessionApi = {
 
       console.log(`Found ${sessions.length} sessions for user ${userId}`);
       return sessions;
-    } catch (error: any) {
-      console.error('Failed to get user sessions:', error);
-      throw new Error(getErrorMessage(error, 'Failed to get user sessions'));
+    } catch (error) {
+      handleError(error, 'get user sessions', { severity: ErrorSeverity.ERROR });
+      const apiError = handleError(error, 'Get user sessions', { defaultMessage: 'Failed to get user sessions' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -2191,8 +2257,8 @@ export const firebaseSessionApi = {
 
       const querySnapshot = await getDocs(sessionsQuery);
       return querySnapshot.size;
-    } catch (error: any) {
-      console.error('Failed to get user sessions count:', error);
+    } catch (error) {
+      handleError(error, 'get user sessions count', { severity: ErrorSeverity.ERROR });
       return 0;
     }
   },
@@ -2254,8 +2320,9 @@ export const firebaseSessionApi = {
         totalCount: sessions.length,
         hasMore: querySnapshot.docs.length === limitCount
       };
-    } catch (error: any) {
-      throw new Error(getErrorMessage(error, 'Failed to get sessions'));
+    } catch (error) {
+      const apiError = handleError(error, 'Get sessions', { defaultMessage: 'Failed to get sessions' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -2294,8 +2361,9 @@ export const firebaseSessionApi = {
       );
 
       await updateDoc(sessionRef, updateData);
-    } catch (error: any) {
-      throw new Error(getErrorMessage(error, 'Failed to update session'));
+    } catch (error) {
+      const apiError = handleError(error, 'Update session', { defaultMessage: 'Failed to update session' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -2314,8 +2382,9 @@ export const firebaseSessionApi = {
       }
 
       await deleteDoc(sessionRef);
-    } catch (error: any) {
-      throw new Error(getErrorMessage(error, 'Failed to delete session'));
+    } catch (error) {
+      const apiError = handleError(error, 'Delete session', { defaultMessage: 'Failed to delete session' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -2360,8 +2429,9 @@ export const firebaseSessionApi = {
         createdAt: convertTimestamp(data.createdAt),
         updatedAt: convertTimestamp(data.updatedAt)
       };
-    } catch (error: any) {
-      throw new Error(getErrorMessage(error, 'Failed to get session'));
+    } catch (error) {
+      const apiError = handleError(error, 'Get session', { defaultMessage: 'Failed to get session' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -2409,10 +2479,8 @@ export const firebaseSessionApi = {
       }
 
       // Check if current user has supported this session
-      const supportId = `${auth.currentUser.uid}_${sessionId}`;
-      const supportRef = doc(db, 'sessionSupports', supportId);
-      const supportDoc = await getDoc(supportRef);
-      const isSupported = supportDoc.exists();
+      const supportedBy = data.supportedBy || [];
+      const isSupported = supportedBy.includes(auth.currentUser.uid);
 
       return {
         id: sessionDoc.id,
@@ -2464,8 +2532,9 @@ export const firebaseSessionApi = {
           updatedAt: new Date()
         }
       };
-    } catch (error: any) {
-      throw new Error(getErrorMessage(error, 'Failed to get session with details'));
+    } catch (error) {
+      const apiError = handleError(error, 'Get session with details', { defaultMessage: 'Failed to get session with details' });
+      throw new Error(apiError.userMessage);
     }
   }
 };
@@ -2490,7 +2559,7 @@ const processPosts = async (postDocs: any[]): Promise<PostWithDetails[]> => {
 
       // Get project data
       let projectData = null;
-      let projectId = sessionData?.projectId;
+      const projectId = sessionData?.projectId;
       if (projectId) {
         try {
           const projectDoc = await getDoc(doc(db, 'projects', postData.userId, 'userProjects', projectId));
@@ -2498,7 +2567,7 @@ const processPosts = async (postDocs: any[]): Promise<PostWithDetails[]> => {
             projectData = projectDoc.data();
           }
         } catch (error) {
-          console.error(`Error fetching project ${projectId}:`, error);
+          handleError(error, `Fetch project ${projectId}`, { severity: ErrorSeverity.WARNING });
         }
       }
 
@@ -2627,8 +2696,9 @@ export const firebasePostApi = {
         createdAt: new Date(),
         updatedAt: new Date()
       };
-    } catch (error: any) {
-      throw new Error(getErrorMessage(error, 'Failed to create post'));
+    } catch (error) {
+      const apiError = handleError(error, 'Create post', { defaultMessage: 'Failed to create post' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -2836,9 +2906,10 @@ export const firebasePostApi = {
           nextCursor
         };
       }
-    } catch (error: any) {
-      console.error('Error in getFeedSessions:', error);
-      throw new Error(getErrorMessage(error, 'Failed to get feed sessions'));
+    } catch (error) {
+      handleError(error, 'in getFeedSessions', { severity: ErrorSeverity.ERROR });
+      const apiError = handleError(error, 'Get feed sessions', { defaultMessage: 'Failed to get feed sessions' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -2849,26 +2920,34 @@ export const firebasePostApi = {
         throw new Error('User not authenticated');
       }
 
-      const batch = writeBatch(db);
-
-      // Add support relationship
-      const supportId = `${auth.currentUser.uid}_${sessionId}`;
-      batch.set(doc(db, 'sessionSupports', supportId), {
-        sessionId,
-        userId: auth.currentUser.uid,
-        createdAt: serverTimestamp()
-      });
-
-      // Increment support count on the session
       const sessionRef = doc(db, 'sessions', sessionId);
-      batch.update(sessionRef, {
-        supportCount: increment(1),
-        updatedAt: serverTimestamp()
-      });
 
-      await batch.commit();
-    } catch (error: any) {
-      throw new Error(getErrorMessage(error, 'Failed to support session'));
+      // Use transaction to safely add user ID to supportedBy array
+      await runTransaction(db, async (transaction) => {
+        const sessionDoc = await transaction.get(sessionRef);
+
+        if (!sessionDoc.exists()) {
+          throw new Error('Session not found');
+        }
+
+        const sessionData = sessionDoc.data();
+        const supportedBy = sessionData.supportedBy || [];
+
+        // Check if user already supported this session
+        if (supportedBy.includes(auth.currentUser!.uid)) {
+          return; // Already supported, do nothing
+        }
+
+        // Add user ID to supportedBy array and update supportCount
+        transaction.update(sessionRef, {
+          supportedBy: [...supportedBy, auth.currentUser!.uid],
+          supportCount: supportedBy.length + 1,
+          updatedAt: serverTimestamp()
+        });
+      });
+    } catch (error) {
+      const apiError = handleError(error, 'Support session', { defaultMessage: 'Failed to support session' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -2879,22 +2958,35 @@ export const firebasePostApi = {
         throw new Error('User not authenticated');
       }
 
-      const batch = writeBatch(db);
-
-      // Remove support relationship
-      const supportId = `${auth.currentUser.uid}_${sessionId}`;
-      batch.delete(doc(db, 'sessionSupports', supportId));
-
-      // Decrement support count on the session
       const sessionRef = doc(db, 'sessions', sessionId);
-      batch.update(sessionRef, {
-        supportCount: increment(-1),
-        updatedAt: serverTimestamp()
-      });
 
-      await batch.commit();
-    } catch (error: any) {
-      throw new Error(getErrorMessage(error, 'Failed to remove support'));
+      // Use transaction to safely remove user ID from supportedBy array
+      await runTransaction(db, async (transaction) => {
+        const sessionDoc = await transaction.get(sessionRef);
+
+        if (!sessionDoc.exists()) {
+          throw new Error('Session not found');
+        }
+
+        const sessionData = sessionDoc.data();
+        const supportedBy = sessionData.supportedBy || [];
+
+        // Check if user has supported this session
+        if (!supportedBy.includes(auth.currentUser!.uid)) {
+          return; // Not supported, do nothing
+        }
+
+        // Remove user ID from supportedBy array and update supportCount
+        const newSupportedBy = supportedBy.filter((id: string) => id !== auth.currentUser!.uid);
+        transaction.update(sessionRef, {
+          supportedBy: newSupportedBy,
+          supportCount: newSupportedBy.length,
+          updatedAt: serverTimestamp()
+        });
+      });
+    } catch (error) {
+      const apiError = handleError(error, 'Remove support', { defaultMessage: 'Failed to remove support' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -2926,8 +3018,9 @@ export const firebasePostApi = {
         createdAt: convertTimestamp(postData.createdAt),
         updatedAt: convertTimestamp(postData.updatedAt)
       };
-    } catch (error: any) {
-      throw new Error(getErrorMessage(error, 'Failed to update post'));
+    } catch (error) {
+      const apiError = handleError(error, 'Update post', { defaultMessage: 'Failed to update post' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -2947,8 +3040,9 @@ export const firebasePostApi = {
       }
 
       await deleteDoc(doc(db, 'posts', postId));
-    } catch (error: any) {
-      throw new Error(getErrorMessage(error, 'Failed to delete post'));
+    } catch (error) {
+      const apiError = handleError(error, 'Delete post', { defaultMessage: 'Failed to delete post' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -2957,47 +3051,30 @@ export const firebasePostApi = {
     if (!auth.currentUser) return () => {};
 
     const unsubscribers: (() => void)[] = [];
+    const currentUserId = auth.currentUser.uid;
 
     sessionIds.forEach(sessionId => {
-      // Listen to session support count changes
+      // Listen to session support count changes and support status
       const sessionUnsubscribe = onSnapshot(
         doc(db, 'sessions', sessionId),
         (sessionDoc) => {
           if (sessionDoc.exists()) {
             const sessionData = sessionDoc.data();
+            const supportedBy = sessionData.supportedBy || [];
             callback({
               [sessionId]: {
                 supportCount: sessionData.supportCount || 0,
-                isSupported: false // Will be updated by support listener
+                isSupported: supportedBy.includes(currentUserId)
               }
             });
           }
         },
         (error) => {
-          console.error(`Error listening to session ${sessionId}:`, error);
+          handleError(error, `Listen to session ${sessionId}`, { severity: ErrorSeverity.ERROR });
         }
       );
 
-      // Listen to user's support status for this session
-      const supportUnsubscribe = onSnapshot(
-        doc(db, 'sessionSupports', `${auth.currentUser!.uid}_${sessionId}`),
-        (supportDoc) => {
-          callback({
-            [sessionId]: {
-              supportCount: 0, // Will be updated by session listener
-              isSupported: supportDoc.exists()
-            }
-          });
-        },
-        (error) => {
-          // Ignore errors for support docs that don't exist
-          if (error.code !== 'permission-denied') {
-            console.error(`Error listening to support for session ${sessionId}:`, error);
-          }
-        }
-      );
-
-      unsubscribers.push(sessionUnsubscribe, supportUnsubscribe);
+      unsubscribers.push(sessionUnsubscribe);
     });
 
     // Return cleanup function
@@ -3047,7 +3124,7 @@ export const firebasePostApi = {
         
         // Get project data
         let projectData = null;
-        let projectId = sessionData?.projectId;
+        const projectId = sessionData?.projectId;
         if (projectId) {
           try {
             const projectDoc = await getDoc(doc(db, 'projects', postData.userId, 'userProjects', projectId));
@@ -3055,7 +3132,7 @@ export const firebasePostApi = {
               projectData = projectDoc.data();
             }
           } catch (error) {
-            console.error(`Error fetching project ${projectId}:`, error);
+            handleError(error, `Fetch project ${projectId}`, { severity: ErrorSeverity.WARNING });
           }
         }
 
@@ -3141,8 +3218,9 @@ export const firebasePostApi = {
       }
 
       return posts;
-    } catch (error: any) {
-      throw new Error(getErrorMessage(error, 'Failed to get user posts'));
+    } catch (error) {
+      const apiError = handleError(error, 'Get user posts', { defaultMessage: 'Failed to get user posts' });
+      throw new Error(apiError.userMessage);
     }
   }
 };
@@ -3283,8 +3361,9 @@ export const firebaseCommentApi = {
         updatedAt: new Date(),
         user: buildCommentUserDetails(userId, userData || null)
       };
-    } catch (error: any) {
-      throw new Error(getErrorMessage(error, 'Failed to create comment'));
+    } catch (error) {
+      const apiError = handleError(error, 'Create comment', { defaultMessage: 'Failed to create comment' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -3322,8 +3401,9 @@ export const firebaseCommentApi = {
         createdAt: convertTimestamp(commentData.createdAt),
         updatedAt: new Date()
       } as Comment;
-    } catch (error: any) {
-      throw new Error(getErrorMessage(error, 'Failed to update comment'));
+    } catch (error) {
+      const apiError = handleError(error, 'Update comment', { defaultMessage: 'Failed to update comment' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -3377,8 +3457,9 @@ export const firebaseCommentApi = {
           replyCount: increment(-1)
         });
       }
-    } catch (error: any) {
-      throw new Error(getErrorMessage(error, 'Failed to delete comment'));
+    } catch (error) {
+      const apiError = handleError(error, 'Delete comment', { defaultMessage: 'Failed to delete comment' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -3410,8 +3491,9 @@ export const firebaseCommentApi = {
       await updateDoc(commentRef, {
         likeCount: increment(1)
       });
-    } catch (error: any) {
-      throw new Error(getErrorMessage(error, 'Failed to like comment'));
+    } catch (error) {
+      const apiError = handleError(error, 'Like comment', { defaultMessage: 'Failed to like comment' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -3439,8 +3521,9 @@ export const firebaseCommentApi = {
       await updateDoc(commentRef, {
         likeCount: increment(-1)
       });
-    } catch (error: any) {
-      throw new Error(getErrorMessage(error, 'Failed to unlike comment'));
+    } catch (error) {
+      const apiError = handleError(error, 'Unlike comment', { defaultMessage: 'Failed to unlike comment' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -3527,13 +3610,18 @@ export const firebaseCommentApi = {
         comments,
         hasMore
       };
-    } catch (error: any) {
-      console.error('getSessionComments error details:', {
-        code: error?.code,
-        message: error?.message,
-        details: error
-      });
-      throw new Error(getErrorMessage(error, 'Failed to get session comments'));
+    } catch (error) {
+      // Handle permission errors gracefully - return empty comments
+      if (isPermissionError(error)) {
+        return {
+          comments: [],
+          hasMore: false
+        };
+      }
+
+      // For other errors, throw with appropriate message
+      const apiError = handleError(error, 'Get session comments', { defaultMessage: 'Failed to get session comments' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -3620,8 +3708,9 @@ export const firebaseCommentApi = {
         hasMore,
         nextCursor: hasMore ? docs[docs.length - 1].id : undefined
       };
-    } catch (error: any) {
-      throw new Error(getErrorMessage(error, 'Failed to get comments'));
+    } catch (error) {
+      const apiError = handleError(error, 'Get comments', { defaultMessage: 'Failed to get comments' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -3679,8 +3768,9 @@ export const firebaseCommentApi = {
       );
       
       return replies;
-    } catch (error: any) {
-      throw new Error(getErrorMessage(error, 'Failed to get replies'));
+    } catch (error) {
+      const apiError = handleError(error, 'Get replies', { defaultMessage: 'Failed to get replies' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -3747,13 +3837,15 @@ export const firebaseCommentApi = {
       );
 
       return comments;
-    } catch (error: any) {
-      console.error('getTopComments error details:', {
-        code: error?.code,
-        message: error?.message,
-        details: error
-      });
-      throw new Error(getErrorMessage(error, 'Failed to get top comments'));
+    } catch (error) {
+      // Handle permission errors gracefully - return empty array
+      if (isPermissionError(error)) {
+        return [];
+      }
+
+      // For other errors, throw with appropriate message
+      const apiError = handleError(error, 'Get top comments', { defaultMessage: 'Failed to get top comments' });
+      throw new Error(apiError.userMessage);
     }
   }
 };
@@ -3795,8 +3887,9 @@ const firebaseGroupApi = {
         createdAt: new Date(),
         updatedAt: new Date()
       };
-    } catch (error: any) {
-      throw new Error(getErrorMessage(error, 'Failed to create group'));
+    } catch (error) {
+      const apiError = handleError(error, 'Create group', { defaultMessage: 'Failed to create group' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -3828,8 +3921,9 @@ const firebaseGroupApi = {
         createdAt: convertTimestamp(data.createdAt),
         updatedAt: convertTimestamp(data.updatedAt)
       };
-    } catch (error: any) {
-      throw new Error(getErrorMessage(error, 'Failed to get group'));
+    } catch (error) {
+      const apiError = handleError(error, 'Get group', { defaultMessage: 'Failed to get group' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -3851,8 +3945,9 @@ const firebaseGroupApi = {
       }
 
       return updatedGroup;
-    } catch (error: any) {
-      throw new Error(getErrorMessage(error, 'Failed to update group'));
+    } catch (error) {
+      const apiError = handleError(error, 'Update group', { defaultMessage: 'Failed to update group' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -3876,8 +3971,9 @@ const firebaseGroupApi = {
       batch.delete(groupRef);
       
       await batch.commit();
-    } catch (error: any) {
-      throw new Error(getErrorMessage(error, 'Failed to delete group'));
+    } catch (error) {
+      const apiError = handleError(error, 'Delete group', { defaultMessage: 'Failed to delete group' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -3939,8 +4035,9 @@ const firebaseGroupApi = {
       });
 
       return groups;
-    } catch (error: any) {
-      throw new Error(getErrorMessage(error, 'Failed to search groups'));
+    } catch (error) {
+      const apiError = handleError(error, 'Search groups', { defaultMessage: 'Failed to search groups' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -3980,8 +4077,9 @@ const firebaseGroupApi = {
       batch.set(membershipRef, membershipData);
 
       await batch.commit();
-    } catch (error: any) {
-      throw new Error(getErrorMessage(error, 'Failed to join group'));
+    } catch (error) {
+      const apiError = handleError(error, 'Join group', { defaultMessage: 'Failed to join group' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -4022,8 +4120,9 @@ const firebaseGroupApi = {
       });
 
       await batch.commit();
-    } catch (error: any) {
-      throw new Error(getErrorMessage(error, 'Failed to leave group'));
+    } catch (error) {
+      const apiError = handleError(error, 'Leave group', { defaultMessage: 'Failed to leave group' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -4064,8 +4163,9 @@ const firebaseGroupApi = {
       }
 
       return users;
-    } catch (error: any) {
-      throw new Error(getErrorMessage(error, 'Failed to get group members'));
+    } catch (error) {
+      const apiError = handleError(error, 'Get group members', { defaultMessage: 'Failed to get group members' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -4095,8 +4195,9 @@ const firebaseGroupApi = {
       }
 
       return groups;
-    } catch (error: any) {
-      throw new Error(getErrorMessage(error, 'Failed to get user groups'));
+    } catch (error) {
+      const apiError = handleError(error, 'Get user groups', { defaultMessage: 'Failed to get user groups' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -4123,7 +4224,7 @@ const firebaseGroupApi = {
       let totalHours = 0;
       let weeklyHours = 0;
       let monthlyHours = 0;
-      let totalSessions = sessionsSnapshot.size;
+      const totalSessions = sessionsSnapshot.size;
       const projectHours: { [key: string]: { hours: number; name: string; memberCount: number } } = {};
       const activeMemberIds = new Set<string>();
 
@@ -4175,8 +4276,9 @@ const firebaseGroupApi = {
         activeMembers: activeMemberIds.size,
         topProjects
       };
-    } catch (error: any) {
-      throw new Error(getErrorMessage(error, 'Failed to get group stats'));
+    } catch (error) {
+      const apiError = handleError(error, 'Get group stats', { defaultMessage: 'Failed to get group stats' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -4190,7 +4292,7 @@ const firebaseGroupApi = {
 
       const now = new Date();
       let startDate: Date;
-      let intervals: { start: Date; end: Date; label: string }[] = [];
+      const intervals: { start: Date; end: Date; label: string }[] = [];
 
       // Calculate time range and intervals
       if (timeRange === 'week') {
@@ -4292,8 +4394,9 @@ const firebaseGroupApi = {
         hoursData,
         membershipGrowth
       };
-    } catch (error: any) {
-      throw new Error(getErrorMessage(error, 'Failed to get group analytics'));
+    } catch (error) {
+      const apiError = handleError(error, 'Get group analytics', { defaultMessage: 'Failed to get group analytics' });
+      throw new Error(apiError.userMessage);
     }
   }
 };
@@ -4341,8 +4444,9 @@ export const firebaseChallengeApi = {
         createdAt: new Date(),
         updatedAt: new Date()
       };
-    } catch (error: any) {
-      throw new Error(error.message || 'Failed to create challenge');
+    } catch (error) {
+      const apiError = handleError(error, 'Create challenge', { defaultMessage: 'Failed to create challenge' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -4374,8 +4478,9 @@ export const firebaseChallengeApi = {
         isActive: data.isActive !== false,
         rewards: data.rewards
       };
-    } catch (error: any) {
-      throw new Error(error.message || 'Failed to get challenge');
+    } catch (error) {
+      const apiError = handleError(error, 'Get challenge', { defaultMessage: 'Failed to get challenge' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -4435,7 +4540,7 @@ export const firebaseChallengeApi = {
             }
           } catch (error) {
             // If we can't check participation, skip this challenge
-            console.warn('Failed to check participation for challenge:', challengeDoc.id, error);
+            handleError(error, `Check participation for challenge ${challengeDoc.id}`, { severity: ErrorSeverity.WARNING });
             continue;
           }
         }
@@ -4461,9 +4566,10 @@ export const firebaseChallengeApi = {
       }
 
       return challenges;
-    } catch (error: any) {
-      console.error('Error in getChallenges:', error);
-      throw new Error(error.message || 'Failed to get challenges');
+    } catch (error) {
+      handleError(error, 'in getChallenges', { severity: ErrorSeverity.ERROR });
+      const apiError = handleError(error, 'Get challenges', { defaultMessage: 'Failed to get challenges' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -4518,8 +4624,9 @@ export const firebaseChallengeApi = {
       });
 
       await batch.commit();
-    } catch (error: any) {
-      throw new Error(error.message || 'Failed to join challenge');
+    } catch (error) {
+      const apiError = handleError(error, 'Join challenge', { defaultMessage: 'Failed to join challenge' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -4550,8 +4657,9 @@ export const firebaseChallengeApi = {
       });
 
       await batch.commit();
-    } catch (error: any) {
-      throw new Error(error.message || 'Failed to leave challenge');
+    } catch (error) {
+      const apiError = handleError(error, 'Leave challenge', { defaultMessage: 'Failed to leave challenge' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -4599,7 +4707,7 @@ export const firebaseChallengeApi = {
             rank++;
           }
         } catch (error) {
-          console.warn(`Failed to load user data for participant ${participantData.userId}:`, error);
+          handleError(error, `Load user data for participant ${participantData.userId}`, { severity: ErrorSeverity.WARNING });
         }
       }
 
@@ -4608,8 +4716,9 @@ export const firebaseChallengeApi = {
         entries,
         lastUpdated: new Date()
       };
-    } catch (error: any) {
-      throw new Error(error.message || 'Failed to get challenge leaderboard');
+    } catch (error) {
+      const apiError = handleError(error, 'Get challenge leaderboard', { defaultMessage: 'Failed to get challenge leaderboard' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -4657,8 +4766,9 @@ export const firebaseChallengeApi = {
         isCompleted: participantData.isCompleted || false,
         lastUpdated: convertTimestamp(participantData.updatedAt) || new Date()
       };
-    } catch (error: any) {
-      throw new Error(error.message || 'Failed to get challenge progress');
+    } catch (error) {
+      const apiError = handleError(error, 'Get challenge progress', { defaultMessage: 'Failed to get challenge progress' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -4749,8 +4859,8 @@ export const firebaseChallengeApi = {
       }
 
       await batch.commit();
-    } catch (error: any) {
-      console.error('Failed to update challenge progress:', error);
+    } catch (error) {
+      handleError(error, 'update challenge progress', { severity: ErrorSeverity.ERROR });
       // Don't throw error to avoid breaking session creation
     }
   },
@@ -4802,8 +4912,9 @@ export const firebaseChallengeApi = {
         timeRemaining: Math.floor(timeRemaining / 1000), // Convert to seconds
         daysRemaining
       };
-    } catch (error: any) {
-      throw new Error(error.message || 'Failed to get challenge stats');
+    } catch (error) {
+      const apiError = handleError(error, 'Get challenge stats', { defaultMessage: 'Failed to get challenge stats' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -4845,8 +4956,9 @@ export const firebaseChallengeApi = {
 
       // Return updated challenge
       return await firebaseChallengeApi.getChallenge(challengeId);
-    } catch (error: any) {
-      throw new Error(error.message || 'Failed to update challenge');
+    } catch (error) {
+      const apiError = handleError(error, 'Update challenge', { defaultMessage: 'Failed to update challenge' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -4896,8 +5008,9 @@ export const firebaseChallengeApi = {
       });
 
       await batch.commit();
-    } catch (error: any) {
-      throw new Error(error.message || 'Failed to delete challenge');
+    } catch (error) {
+      const apiError = handleError(error, 'Delete challenge', { defaultMessage: 'Failed to delete challenge' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -4977,9 +5090,10 @@ export const firebaseChallengeApi = {
       }
 
       return challenges;
-    } catch (error: any) {
-      console.error('Error in searchChallenges:', error);
-      throw new Error(error.message || 'Failed to search challenges');
+    } catch (error) {
+      handleError(error, 'in searchChallenges', { severity: ErrorSeverity.ERROR });
+      const apiError = handleError(error, 'Search challenges', { defaultMessage: 'Failed to search challenges' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -5004,7 +5118,7 @@ export const firebaseChallengeApi = {
           const challenge = await firebaseChallengeApi.getChallenge(challengeId);
           challenges.push(challenge);
         } catch (error) {
-          console.warn(`Failed to load challenge ${challengeId}:`, error);
+          handleError(error, `Load challenge ${challengeId}`, { severity: ErrorSeverity.WARNING });
         }
       }
 
@@ -5012,8 +5126,9 @@ export const firebaseChallengeApi = {
       challenges.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 
       return challenges;
-    } catch (error: any) {
-      throw new Error(error.message || 'Failed to get user challenges');
+    } catch (error) {
+      const apiError = handleError(error, 'Get user challenges', { defaultMessage: 'Failed to get user challenges' });
+      throw new Error(apiError.userMessage);
     }
   }
 };
@@ -5064,8 +5179,9 @@ export const firebaseStreakApi = {
         streakHistory: data.streakHistory || [],
         isPublic: data.isPublic !== false
       };
-    } catch (error: any) {
-      throw new Error(getErrorMessage(error, 'Failed to get streak data'));
+    } catch (error) {
+      const apiError = handleError(error, 'Get streak data', { defaultMessage: 'Failed to get streak data' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -5096,8 +5212,9 @@ export const firebaseStreakApi = {
         streakAtRisk,
         nextMilestone
       };
-    } catch (error: any) {
-      throw new Error(getErrorMessage(error, 'Failed to get streak stats'));
+    } catch (error) {
+      const apiError = handleError(error, 'Get streak stats', { defaultMessage: 'Failed to get streak stats' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -5168,8 +5285,9 @@ export const firebaseStreakApi = {
       });
       
       return updatedStreak;
-    } catch (error: any) {
-      throw new Error(getErrorMessage(error, 'Failed to update streak'));
+    } catch (error) {
+      const apiError = handleError(error, 'Update streak', { defaultMessage: 'Failed to update streak' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -5188,8 +5306,9 @@ export const firebaseStreakApi = {
       });
       
       return newVisibility;
-    } catch (error: any) {
-      throw new Error(getErrorMessage(error, 'Failed to toggle streak visibility'));
+    } catch (error) {
+      const apiError = handleError(error, 'Toggle streak visibility', { defaultMessage: 'Failed to toggle streak visibility' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -5206,8 +5325,9 @@ export const firebaseStreakApi = {
         currentStreak: streakValue,
         lastActivityDate: Timestamp.fromDate(new Date())
       });
-    } catch (error: any) {
-      throw new Error(getErrorMessage(error, 'Failed to restore streak'));
+    } catch (error) {
+      const apiError = handleError(error, 'Restore streak', { defaultMessage: 'Failed to restore streak' });
+      throw new Error(apiError.userMessage);
     }
   }
 };
@@ -5254,8 +5374,9 @@ export const firebaseAchievementApi = {
         ...doc.data(),
         earnedAt: convertTimestamp(doc.data().earnedAt)
       } as Achievement));
-    } catch (error: any) {
-      throw new Error(getErrorMessage(error, 'Failed to get achievements'));
+    } catch (error) {
+      const apiError = handleError(error, 'Get achievements', { defaultMessage: 'Failed to get achievements' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -5331,8 +5452,9 @@ export const firebaseAchievementApi = {
       });
       
       return progress;
-    } catch (error: any) {
-      throw new Error(getErrorMessage(error, 'Failed to get achievement progress'));
+    } catch (error) {
+      const apiError = handleError(error, 'Get achievement progress', { defaultMessage: 'Failed to get achievement progress' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -5374,8 +5496,9 @@ export const firebaseAchievementApi = {
         challengesCompleted: 0, // TODO: Get from challenges
         challengesWon: 0 // TODO: Get from challenges
       };
-    } catch (error: any) {
-      throw new Error(getErrorMessage(error, 'Failed to get user achievement data'));
+    } catch (error) {
+      const apiError = handleError(error, 'Get user achievement data', { defaultMessage: 'Failed to get user achievement data' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -5449,8 +5572,9 @@ export const firebaseAchievementApi = {
       }
       
       return newAchievements;
-    } catch (error: any) {
-      throw new Error(getErrorMessage(error, 'Failed to check achievements'));
+    } catch (error) {
+      const apiError = handleError(error, 'Check achievements', { defaultMessage: 'Failed to check achievements' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -5487,8 +5611,9 @@ export const firebaseAchievementApi = {
         ...achievementData,
         earnedAt: new Date()
       } as Achievement;
-    } catch (error: any) {
-      throw new Error(getErrorMessage(error, 'Failed to award achievement'));
+    } catch (error) {
+      const apiError = handleError(error, 'Award achievement', { defaultMessage: 'Failed to award achievement' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -5526,8 +5651,9 @@ export const firebaseAchievementApi = {
       await updateDoc(doc(db, 'achievements', achievementId), {
         isShared: true
       });
-    } catch (error: any) {
-      throw new Error(getErrorMessage(error, 'Failed to share achievement'));
+    } catch (error) {
+      const apiError = handleError(error, 'Share achievement', { defaultMessage: 'Failed to share achievement' });
+      throw new Error(apiError.userMessage);
     }
   }
 };
@@ -5549,8 +5675,9 @@ export const firebaseNotificationApi = {
         ...notification,
         createdAt: new Date()
       };
-    } catch (error: any) {
-      throw new Error(error.message || 'Failed to create notification');
+    } catch (error) {
+      const apiError = handleError(error, 'Create notification', { defaultMessage: 'Failed to create notification' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -5582,8 +5709,9 @@ export const firebaseNotificationApi = {
       });
 
       return notifications;
-    } catch (error: any) {
-      throw new Error(error.message || 'Failed to get notifications');
+    } catch (error) {
+      const apiError = handleError(error, 'Get notifications', { defaultMessage: 'Failed to get notifications' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -5594,8 +5722,9 @@ export const firebaseNotificationApi = {
         isRead: true,
         updatedAt: serverTimestamp()
       });
-    } catch (error: any) {
-      throw new Error(error.message || 'Failed to mark notification as read');
+    } catch (error) {
+      const apiError = handleError(error, 'Mark notification as read', { defaultMessage: 'Failed to mark notification as read' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -5619,8 +5748,9 @@ export const firebaseNotificationApi = {
       });
 
       await batch.commit();
-    } catch (error: any) {
-      throw new Error(error.message || 'Failed to mark all notifications as read');
+    } catch (error) {
+      const apiError = handleError(error, 'Mark all notifications as read', { defaultMessage: 'Failed to mark all notifications as read' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -5628,8 +5758,9 @@ export const firebaseNotificationApi = {
   deleteNotification: async (notificationId: string): Promise<void> => {
     try {
       await deleteDoc(doc(db, 'notifications', notificationId));
-    } catch (error: any) {
-      throw new Error(error.message || 'Failed to delete notification');
+    } catch (error) {
+      const apiError = handleError(error, 'Delete notification', { defaultMessage: 'Failed to delete notification' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -5644,8 +5775,9 @@ export const firebaseNotificationApi = {
 
       const snapshot = await getDocs(notificationsQuery);
       return snapshot.size;
-    } catch (error: any) {
-      throw new Error(error.message || 'Failed to get unread count');
+    } catch (error) {
+      const apiError = handleError(error, 'Get unread count', { defaultMessage: 'Failed to get unread count' });
+      throw new Error(apiError.userMessage);
     }
   }
 };
@@ -5670,7 +5802,7 @@ export const challengeNotifications = {
 
       await firebaseNotificationApi.createNotification(notification);
     } catch (error) {
-      console.error('Failed to send completion notification:', error);
+      handleError(error, 'send completion notification', { severity: ErrorSeverity.ERROR });
     }
   },
 
@@ -5711,7 +5843,7 @@ export const challengeNotifications = {
 
       await batch.commit();
     } catch (error) {
-      console.error('Failed to send participant joined notifications:', error);
+      handleError(error, 'send participant joined notifications', { severity: ErrorSeverity.ERROR });
     }
   },
 
@@ -5748,7 +5880,7 @@ export const challengeNotifications = {
 
       await batch.commit();
     } catch (error) {
-      console.error('Failed to send ending soon notifications:', error);
+      handleError(error, 'send ending soon notifications', { severity: ErrorSeverity.ERROR });
     }
   },
 
@@ -5787,7 +5919,7 @@ export const challengeNotifications = {
 
       await batch.commit();
     } catch (error) {
-      console.error('Failed to send new challenge notifications:', error);
+      handleError(error, 'send new challenge notifications', { severity: ErrorSeverity.ERROR });
     }
   },
 
@@ -5813,7 +5945,7 @@ export const challengeNotifications = {
         await firebaseNotificationApi.createNotification(notification);
       }
     } catch (error) {
-      console.error('Failed to send rank change notification:', error);
+      handleError(error, 'send rank change notification', { severity: ErrorSeverity.ERROR });
     }
   },
 
@@ -5844,7 +5976,7 @@ export const challengeNotifications = {
         }
       }
     } catch (error) {
-      console.error('Failed to send milestone notification:', error);
+      handleError(error, 'send milestone notification', { severity: ErrorSeverity.ERROR });
     }
   }
 };

@@ -83,23 +83,58 @@ export default function CreateChallengeModal({
   });
 
   const [newReward, setNewReward] = useState('');
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   if (!isOpen) return null;
 
+  const validateForm = (): boolean => {
+    const newErrors: Record<string, string> = {};
+
+    if (!formData.name.trim()) {
+      newErrors.name = 'Challenge name is required';
+    } else if (formData.name.length < 3) {
+      newErrors.name = 'Challenge name must be at least 3 characters';
+    } else if (formData.name.length > 100) {
+      newErrors.name = 'Challenge name must be less than 100 characters';
+    }
+
+    if (!formData.description.trim()) {
+      newErrors.description = 'Challenge description is required';
+    } else if (formData.description.length < 10) {
+      newErrors.description = 'Description must be at least 10 characters';
+    } else if (formData.description.length > 500) {
+      newErrors.description = 'Description must be less than 500 characters';
+    }
+
+    if (formData.startDate >= formData.endDate) {
+      newErrors.endDate = 'End date must be after start date';
+    }
+
+    const now = new Date();
+    if (formData.startDate < now) {
+      newErrors.startDate = 'Start date cannot be in the past';
+    }
+
+    if (formData.goalValue !== undefined && formData.goalValue <= 0) {
+      newErrors.goalValue = 'Goal value must be greater than 0';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleInputChange = (field: string, value: any) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    // Clear error when user starts typing
+    if (errors[field]) {
+      setErrors(prev => ({ ...prev, [field]: '' }));
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Validation
-    if (!formData.name.trim()) {
-      alert('Please enter a challenge name');
-      return;
-    }
-    if (!formData.description.trim()) {
-      alert('Please enter a challenge description');
-      return;
-    }
-    if (formData.startDate >= formData.endDate) {
-      alert('End date must be after start date');
+
+    if (!validateForm()) {
       return;
     }
 
@@ -120,8 +155,10 @@ export default function CreateChallengeModal({
         rewards: []
       });
       setNewReward('');
+      setErrors({});
     } catch (error) {
       console.error('Failed to create challenge:', error);
+      setErrors({ submit: 'Failed to create challenge. Please try again.' });
     }
   };
 
@@ -155,33 +192,55 @@ export default function CreateChallengeModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="create-challenge-title"
+    >
       <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <h2 className="text-xl font-semibold text-gray-900">Create New Challenge</h2>
+        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200">
+          <h2 id="create-challenge-title" className="text-lg sm:text-xl font-semibold text-gray-900">Create New Challenge</h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            className="text-gray-400 hover:text-gray-600 transition-colors p-2 rounded-lg hover:bg-gray-100"
+            aria-label="Close dialog"
           >
-            <X className="w-6 h-6" />
+            <X className="w-6 h-6" aria-hidden="true" />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
+          {/* Error Banner */}
+          {errors.submit && (
+            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <p className="text-red-600 text-sm">{errors.submit}</p>
+            </div>
+          )}
+
           {/* Basic Info */}
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label htmlFor="challenge-name" className="block text-sm font-medium text-gray-700 mb-2">
                 Challenge Name *
               </label>
               <input
                 type="text"
+                id="challenge-name"
                 value={formData.name}
-                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                onChange={(e) => handleInputChange('name', e.target.value)}
+                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                  errors.name ? 'border-red-500' : 'border-gray-300'
+                }`}
                 placeholder="Enter challenge name"
-                required
+                aria-required="true"
+                aria-invalid={!!errors.name}
+                aria-describedby={errors.name ? 'challenge-name-error' : undefined}
+                autoFocus
               />
+              {errors.name && (
+                <p id="challenge-name-error" className="text-red-500 text-sm mt-1" role="alert">{errors.name}</p>
+              )}
             </div>
 
             <div>
@@ -190,38 +249,48 @@ export default function CreateChallengeModal({
               </label>
               <textarea
                 value={formData.description}
-                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                onChange={(e) => handleInputChange('description', e.target.value)}
                 rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                  errors.description ? 'border-red-500' : 'border-gray-300'
+                }`}
                 placeholder="Describe what this challenge is about"
-                required
               />
+              {errors.description && (
+                <p className="text-red-500 text-sm mt-1">{errors.description}</p>
+              )}
+              <p className="text-sm text-gray-500 mt-1">
+                {formData.description.length}/500 characters
+              </p>
             </div>
           </div>
 
           {/* Challenge Type */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">
+            <label id="challenge-type-label" className="block text-sm font-medium text-gray-700 mb-3">
               Challenge Type *
             </label>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3" role="radiogroup" aria-labelledby="challenge-type-label">
               {challengeTypes.map((type) => {
                 const Icon = type.icon;
                 const isSelected = formData.type === type.type;
-                
+
                 return (
                   <button
                     key={type.type}
                     type="button"
+                    role="radio"
+                    aria-checked={isSelected}
                     onClick={() => setFormData(prev => ({ ...prev, type: type.type }))}
                     className={`p-4 border-2 rounded-lg text-left transition-colors ${
                       isSelected
                         ? 'border-blue-500 bg-blue-50'
                         : 'border-gray-200 hover:border-gray-300'
                     }`}
+                    aria-label={`${type.label}: ${type.description}`}
                   >
                     <div className="flex items-center gap-3 mb-2">
-                      <Icon className={`w-5 h-5 ${isSelected ? 'text-blue-600' : 'text-gray-500'}`} />
+                      <Icon className={`w-5 h-5 ${isSelected ? 'text-blue-600' : 'text-gray-500'}`} aria-hidden="true" />
                       <span className={`font-medium ${isSelected ? 'text-blue-900' : 'text-gray-900'}`}>
                         {type.label}
                       </span>
@@ -245,13 +314,15 @@ export default function CreateChallengeModal({
               step="0.1"
               min="0"
               value={formData.goalValue || ''}
-              onChange={(e) => setFormData(prev => ({ 
-                ...prev, 
-                goalValue: e.target.value ? parseFloat(e.target.value) : undefined 
-              }))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              onChange={(e) => handleInputChange('goalValue', e.target.value ? parseFloat(e.target.value) : undefined)}
+              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                errors.goalValue ? 'border-red-500' : 'border-gray-300'
+              }`}
               placeholder={selectedType.goalPlaceholder}
             />
+            {errors.goalValue && (
+              <p className="text-red-500 text-sm mt-1">{errors.goalValue}</p>
+            )}
             <p className="text-sm text-gray-500 mt-1">
               Leave empty for no specific target goal
             </p>
@@ -266,13 +337,14 @@ export default function CreateChallengeModal({
               <input
                 type="datetime-local"
                 value={formData.startDate.toISOString().slice(0, 16)}
-                onChange={(e) => setFormData(prev => ({ 
-                  ...prev, 
-                  startDate: new Date(e.target.value) 
-                }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                required
+                onChange={(e) => handleInputChange('startDate', new Date(e.target.value))}
+                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                  errors.startDate ? 'border-red-500' : 'border-gray-300'
+                }`}
               />
+              {errors.startDate && (
+                <p className="text-red-500 text-sm mt-1">{errors.startDate}</p>
+              )}
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -281,13 +353,14 @@ export default function CreateChallengeModal({
               <input
                 type="datetime-local"
                 value={formData.endDate.toISOString().slice(0, 16)}
-                onChange={(e) => setFormData(prev => ({ 
-                  ...prev, 
-                  endDate: new Date(e.target.value) 
-                }))}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                required
+                onChange={(e) => handleInputChange('endDate', new Date(e.target.value))}
+                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                  errors.endDate ? 'border-red-500' : 'border-gray-300'
+                }`}
               />
+              {errors.endDate && (
+                <p className="text-red-500 text-sm mt-1">{errors.endDate}</p>
+              )}
             </div>
           </div>
 

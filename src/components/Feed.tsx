@@ -123,7 +123,8 @@ export const Feed: React.FC<FeedProps> = ({
           ? {
               ...session,
               isSupported: true,
-              supportCount: session.supportCount + 1
+              supportCount: session.supportCount + 1,
+              supportedBy: [...(session.supportedBy || []), user?.id || ''].filter(Boolean)
             }
           : session
       ));
@@ -131,7 +132,7 @@ export const Feed: React.FC<FeedProps> = ({
       console.error('Failed to support session:', err);
       // Could show error toast here
     }
-  }, []);
+  }, [user]);
 
   // Handle remove support
   const handleRemoveSupport = useCallback(async (sessionId: string) => {
@@ -144,7 +145,8 @@ export const Feed: React.FC<FeedProps> = ({
           ? {
               ...session,
               isSupported: false,
-              supportCount: Math.max(0, session.supportCount - 1)
+              supportCount: Math.max(0, session.supportCount - 1),
+              supportedBy: (session.supportedBy || []).filter(id => id !== user?.id)
             }
           : session
       ));
@@ -152,7 +154,7 @@ export const Feed: React.FC<FeedProps> = ({
       console.error('Failed to remove support:', err);
       // Could show error toast here
     }
-  }, []);
+  }, [user]);
 
   // Handle share
   const handleShare = useCallback(async (sessionId: string) => {
@@ -260,14 +262,27 @@ export const Feed: React.FC<FeedProps> = ({
   }
 
   if (error) {
+    const errorMessage = String(error);
+    const isPermissionError = errorMessage.includes('permission') || errorMessage.includes('insufficient');
+
     return (
-      <div className={`text-center py-8 ${className}`}>
+      <div className={`text-center py-8 px-4 ${className}`} role="alert" aria-live="polite">
         <div className="text-red-600 mb-4">
-          <svg className="w-12 h-12 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-12 h-12 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 18.5c-.77.833.192 2.5 1.732 2.5z" />
           </svg>
-          <p className="font-medium">Failed to load sessions</p>
-          <p className="text-sm text-gray-600 mt-1">{String(error)}</p>
+          <p className="font-medium text-sm sm:text-base">Failed to load sessions</p>
+          <p className="text-sm text-gray-600 mt-1">
+            {isPermissionError
+              ? 'There was a permissions issue loading the feed. This may be due to security rules that need updating.'
+              : errorMessage
+            }
+          </p>
+          {isPermissionError && (
+            <p className="text-xs text-gray-500 mt-2">
+              If you're the app administrator, try deploying the latest Firestore security rules.
+            </p>
+          )}
         </div>
         <button
           onClick={refreshSessions}
@@ -302,12 +317,13 @@ export const Feed: React.FC<FeedProps> = ({
         <div className="mb-4 sticky top-0 z-10">
           <button
             onClick={refreshSessions}
-            className="w-full py-3 px-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200 flex items-center justify-center gap-2 font-medium"
+            className="w-full py-3 px-3 sm:px-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200 flex items-center justify-center gap-2 font-medium text-sm sm:text-base"
+            aria-label={`${newSessionsCount} new sessions available, click to refresh`}
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
             </svg>
-            <span>
+            <span className="truncate">
               {newSessionsCount} new {newSessionsCount === 1 ? 'session' : 'sessions'} - Click to refresh
             </span>
           </button>
@@ -334,9 +350,9 @@ export const Feed: React.FC<FeedProps> = ({
 
       {/* Load more indicator */}
       {isLoadingMore && (
-        <div className="text-center py-4">
+        <div className="text-center py-4" role="status" aria-live="polite">
           <div className="inline-flex items-center space-x-2 text-gray-600">
-            <div className="w-4 h-4 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin"></div>
+            <div className="w-4 h-4 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin" aria-hidden="true"></div>
             <span className="text-sm">Loading more sessions...</span>
           </div>
         </div>

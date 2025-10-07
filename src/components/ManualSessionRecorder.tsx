@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { SessionFormData, Project, CreateSessionData } from '@/types';
 import { firebaseApi } from '@/lib/firebaseApi';
 import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/contexts/ToastContext';
 import { ArrowLeft, Check, Image as ImageIcon, XCircle } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -21,7 +22,8 @@ const PRIVACY_OPTIONS = [
 export default function ManualSessionRecorder() {
   const router = useRouter();
   const { user } = useAuth();
-  
+  const { success, error: showError } = useToast();
+
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -250,11 +252,15 @@ export default function ManualSessionRecorder() {
 
       // Create session with post
       await firebaseApi.session.createSessionWithPost(formData, description, visibility);
-      
+
+      // Show success message
+      success('Session created successfully!');
+
       // Redirect to home feed
       router.push('/');
     } catch (error) {
       console.error('Failed to create manual session:', error);
+      showError('Failed to create session. Please try again.');
       setErrors({ submit: 'Failed to create session. Please try again.' });
     } finally {
       setIsLoading(false);
@@ -441,7 +447,9 @@ export default function ManualSessionRecorder() {
                     errors.sessionDate ? 'border-red-500' : 'border-gray-300'
                   }`}
                   disabled={isLoading}
+                  required
                 />
+                <p className="text-xs text-gray-500 mt-1">Select the date of your session</p>
                 {errors.sessionDate && (
                   <p className="text-red-500 text-sm mt-1">{errors.sessionDate}</p>
                 )}
@@ -459,6 +467,7 @@ export default function ManualSessionRecorder() {
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   disabled={isLoading}
                 />
+                <p className="text-xs text-gray-500 mt-1">When you started working</p>
               </div>
             </div>
 

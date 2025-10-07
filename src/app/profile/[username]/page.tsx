@@ -92,7 +92,7 @@ export default function ProfilePage() {
       try {
         sessionsData = await firebaseSessionApi.getUserSessions(profileData.id, 50, isOwnProfile);
       } catch (sessionError) {
-        console.error('Error loading sessions:', sessionError);
+        // Silently handle session loading errors, default to empty array
         sessionsData = [];
       }
       setSessions(sessionsData);
@@ -104,7 +104,7 @@ export default function ProfilePage() {
       // Note: Followers and following are now loaded via cached hooks above
 
     } catch (error: any) {
-      console.error('Profile load error:', error);
+      // Handle profile load errors gracefully without console logging
       if (error.message?.includes('not found')) {
         setError('User not found');
       } else if (error.message?.includes('private')) {
@@ -137,7 +137,7 @@ export default function ProfilePage() {
 
   const processChartData = () => {
     const now = new Date();
-    let data: ChartDataPoint[] = [];
+    const data: ChartDataPoint[] = [];
 
     if (timePeriod === 'day') {
       for (let i = 23; i >= 0; i--) {

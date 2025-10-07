@@ -9,7 +9,7 @@ import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 import { GlobalTasks } from './GlobalTasks';
 import { uploadImages, compressImage } from '@/lib/imageUpload';
-import Image from 'next/image';
+import { ImageUpload } from '@/components/ImageUpload';
 import Link from 'next/link';
 
 interface SessionTimerEnhancedProps {
@@ -188,73 +188,9 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
     }
   };
 
-  const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    console.log('📸 Files selected:', files.length);
-
-    if (files.length + selectedImages.length > 3) {
-      alert('Maximum 3 images allowed');
-      return;
-    }
-
-    // Validate file size (max 5MB per image)
-    const maxSize = 5 * 1024 * 1024; // 5MB
-    const validFiles: File[] = [];
-    const previewUrls: string[] = [];
-
-    for (const file of files) {
-      console.log('📸 Processing file:', file.name, file.type, `${(file.size / 1024 / 1024).toFixed(2)}MB`);
-
-      // Check if it's HEIC - we'll handle conversion during upload
-      const isHeic = file.type === 'image/heic' ||
-                     file.type === 'image/heif' ||
-                     file.name.toLowerCase().endsWith('.heic') ||
-                     file.name.toLowerCase().endsWith('.heif');
-
-      // Check file size
-      if (file.size > maxSize) {
-        const sizeMB = (file.size / 1024 / 1024).toFixed(1);
-        alert(`Image "${file.name}" is too large (${sizeMB}MB). Maximum size is 5MB.`);
-        continue;
-      }
-
-      // Allow HEIC files as well as regular images
-      if (!file.type.startsWith('image/') && !isHeic) {
-        alert(`"${file.name}" is not an image file. Please use JPG, PNG, GIF, WebP, or HEIC.`);
-        continue;
-      }
-
-      try {
-        // No compression - just use the original file
-        const processedFile = file;
-
-        // Create preview URL
-        const previewUrl = URL.createObjectURL(processedFile);
-        console.log(`✅ Added image: ${file.name}, preview URL: ${previewUrl}`);
-
-        validFiles.push(processedFile);
-        previewUrls.push(previewUrl);
-      } catch (error) {
-        console.error('❌ Error processing image:', error);
-        alert(`Failed to process "${file.name}". Please try another image.`);
-      }
-    }
-
-    if (validFiles.length > 0) {
-      setSelectedImages(prev => [...prev, ...validFiles]);
-      setImagePreviewUrls(prev => [...prev, ...previewUrls]);
-      console.log('✅ Total images now:', validFiles.length + selectedImages.length);
-    }
-  };
-
-  const handleRemoveImage = (index: number) => {
-    setSelectedImages(prev => prev.filter((_, i) => i !== index));
-    setImagePreviewUrls(prev => {
-      const newUrls = prev.filter((_, i) => i !== index);
-      // Revoke the URL to free memory
-      URL.revokeObjectURL(prev[index]);
-      return newUrls;
-    });
+  const handleImagesChange = (images: File[], previewUrls: string[]) => {
+    setSelectedImages(images);
+    setImagePreviewUrls(previewUrls);
   };
 
   const handleFinishTimer = async () => {
@@ -390,58 +326,16 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
               </div>
 
               {/* Image Upload */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Add Images (Optional, max 3)
-                </label>
-                <div className="space-y-3">
-                  {/* Image Previews */}
-                  {imagePreviewUrls.length > 0 && (
-                    <div className="grid grid-cols-3 gap-2">
-                      {imagePreviewUrls.map((url, index) => (
-                        <div key={index} className="relative aspect-square rounded-lg overflow-hidden bg-gray-100">
-                          <Image
-                            src={url}
-                            alt={`Preview ${index + 1}`}
-                            width={300}
-                            height={300}
-                            quality={90}
-                            className="w-full h-full object-cover"
-                            unoptimized
-                          />
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveImage(index)}
-                            className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
-                          >
-                            <XCircle className="w-4 h-4" />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Upload Button */}
-                  {selectedImages.length < 3 && (
-                    <label className="flex flex-col items-center justify-center gap-2 px-4 py-8 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-[#007AFF] hover:bg-gray-50 transition-colors min-h-[120px]">
-                      <ImageIcon className="w-8 h-8 text-gray-400" />
-                      <span className="text-sm font-medium text-gray-600">
-                        {imagePreviewUrls.length === 0 ? 'Add images' : `Add ${3 - imagePreviewUrls.length} more`}
-                      </span>
-                      <span className="text-xs text-gray-400">
-                        JPG, PNG, HEIC (max 5MB each)
-                      </span>
-                      <input
-                        type="file"
-                        accept="image/*,.heic,.heif"
-                        multiple
-                        onChange={handleImageSelect}
-                        className="hidden"
-                      />
-                    </label>
-                  )}
-                </div>
-              </div>
+              <ImageUpload
+                label="Add Images (Optional, max 3)"
+                maxImages={3}
+                maxSizeMB={5}
+                images={selectedImages}
+                previewUrls={imagePreviewUrls}
+                onImagesChange={handleImagesChange}
+                uploadMode="deferred"
+                showProgress={false}
+              />
 
               {/* Project and Tags - Side by Side */}
               <div className="grid grid-cols-2 gap-3">
@@ -662,8 +556,15 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
         {/* Timer at top - Fixed/Sticky */}
         <div className="flex-shrink-0 flex flex-col items-center justify-center px-4 pt-12 pb-6 bg-white">
           <div className="text-center">
-            <div className="text-6xl font-bold tracking-tight text-gray-900">
+            <div className="text-6xl font-bold tracking-tight text-gray-900 font-mono" aria-label={`Timer: ${Math.floor(displayTime / 3600)} hours, ${Math.floor((displayTime % 3600) / 60)} minutes, ${displayTime % 60} seconds`}>
               {getFormattedTime(displayTime)}
+            </div>
+            <div className="flex items-center justify-center gap-2 mt-2 text-xs text-gray-500 font-medium tracking-wide">
+              <span className="inline-block w-12 text-center">Hours</span>
+              <span className="text-gray-400">:</span>
+              <span className="inline-block w-12 text-center">Mins</span>
+              <span className="text-gray-400">:</span>
+              <span className="inline-block w-12 text-center">Secs</span>
             </div>
           </div>
         </div>
@@ -932,8 +833,15 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
         <div className="flex flex-col items-center justify-start space-y-6 lg:space-y-8 lg:sticky lg:top-24 pt-8">
           {/* Large Timer Display */}
           <div className="text-center w-full">
-            <div className="text-6xl md:text-7xl lg:text-9xl font-mono font-bold text-gray-900 mb-4 lg:mb-8">
+            <div className="text-6xl md:text-7xl lg:text-9xl font-mono font-bold text-gray-900" aria-label={`Timer: ${Math.floor(displayTime / 3600)} hours, ${Math.floor((displayTime % 3600) / 60)} minutes, ${displayTime % 60} seconds`}>
               {getFormattedTime(displayTime)}
+            </div>
+            <div className="flex items-center justify-center gap-3 md:gap-4 lg:gap-6 mt-2 md:mt-3 lg:mt-4 mb-4 lg:mb-8 text-sm md:text-base lg:text-xl text-gray-500 font-medium tracking-wide">
+              <span className="inline-block w-14 md:w-16 lg:w-24 text-center">Hours</span>
+              <span className="text-gray-400">:</span>
+              <span className="inline-block w-14 md:w-16 lg:w-24 text-center">Mins</span>
+              <span className="text-gray-400">:</span>
+              <span className="inline-block w-14 md:w-16 lg:w-24 text-center">Secs</span>
             </div>
 
             {/* Timer Controls - Pill Buttons with Text */}

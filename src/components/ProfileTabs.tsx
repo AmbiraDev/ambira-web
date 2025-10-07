@@ -407,9 +407,19 @@ export const PostsContent: React.FC<PostsContentProps> = ({ userId, isOwnProfile
   useEffect(() => {
     const loadSessions = async () => {
       try {
-{{ ... }}
-    }
-  }, []);
+        setIsLoadingSessions(true);
+        const userSessions = await firebaseSessionApi.getUserSessions(userId, 50);
+        setSessions(userSessions);
+      } catch (err: any) {
+        console.error('Failed to load sessions:', err);
+        setError(err.message || 'Failed to load posts');
+      } finally {
+        setIsLoadingSessions(false);
+      }
+    };
+
+    loadSessions();
+  }, [userId]);
 
   // Handle delete
   const handleDelete = useCallback(async (sessionId: string) => {
@@ -430,9 +440,6 @@ export const PostsContent: React.FC<PostsContentProps> = ({ userId, isOwnProfile
       setIsDeleting(false);
     }
   }, [deleteConfirmSession]);
-
-    );
-  }
 
   if (error) {
     return (
