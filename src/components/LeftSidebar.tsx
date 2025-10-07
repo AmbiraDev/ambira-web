@@ -64,8 +64,8 @@ function LeftSidebar() {
     loadUserData();
   }, [user]);
   return (
-    <aside className="hidden lg:block w-[280px] flex-shrink-0 self-start">
-      <div className="sticky top-[88px] space-y-4 max-h-[calc(100vh-104px)] overflow-y-auto scrollbar-hide">
+    <aside className="hidden lg:block w-[280px] flex-shrink-0">
+      <div className="space-y-4 h-full overflow-y-auto scrollbar-hide">
         {/* Profile Card - Subtle Design */}
         <Link href="/you" className="block group">
           <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-all duration-300">

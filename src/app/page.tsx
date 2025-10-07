@@ -18,52 +18,55 @@ function HomeContent() {
   const { user } = useAuth();
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header - hidden on mobile */}
-      <div className="hidden md:block">
+    <div className="h-screen flex flex-col bg-gray-50 overflow-hidden">
+      {/* Fixed Header - hidden on mobile */}
+      <div className="hidden md:block flex-shrink-0">
         <Header />
       </div>
 
       {/* Mobile header */}
       <MobileHeader title="Feed" />
 
-      <div className="max-w-[1400px] mx-auto md:px-4 md:py-6">
-        <div className="md:flex gap-6 justify-center">
-          {/* Left Sidebar - hidden on mobile */}
-          <div className="hidden md:block">
-            <LeftSidebar />
-          </div>
-
-          {/* Main Feed - Centered */}
-          <main className="flex-1 min-w-0 max-w-[600px]">
-            {/* Following Feed */}
-            <Feed filters={{ type: 'following' }} key="following-feed" showEndMessage={false} />
-
-            {/* Suggested Posts Section */}
-            <div className="mt-0">
-              <div className="bg-gradient-to-r from-purple-50 to-blue-50 md:rounded-lg border md:border-gray-200 p-4 mb-4 md:mb-6">
-                <div className="flex items-center gap-2 mb-1">
-                  <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                  </svg>
-                  <h2 className="text-lg font-bold text-gray-900">Suggested Posts</h2>
-                </div>
-                <p className="text-sm text-gray-600">Discover productive sessions from the community</p>
-              </div>
-              <Feed filters={{ type: 'recent' }} key="suggested-feed" initialLimit={20} showEndMessage={true} />
+      {/* Main Content Area - Scrollable */}
+      <div className="flex-1 overflow-hidden">
+        <div className="h-full max-w-[1400px] mx-auto md:px-4 md:py-6">
+          <div className="h-full md:flex gap-6 justify-center">
+            {/* Left Sidebar - Fixed, hidden on mobile */}
+            <div className="hidden md:block flex-shrink-0">
+              <LeftSidebar />
             </div>
-          </main>
 
-          {/* Right Sidebar - hidden on mobile */}
-          <div className="hidden md:block">
-            <RightSidebar />
+            {/* Main Feed - Scrollable Container */}
+            <main className="flex-1 min-w-0 max-w-[600px] h-full overflow-y-auto scrollbar-hide">
+              {/* Following Feed */}
+              <Feed filters={{ type: 'following' }} key="following-feed" showEndMessage={false} />
+
+              {/* Suggested Posts Section */}
+              <div className="mt-0">
+                <div className="bg-gradient-to-r from-purple-50 to-blue-50 md:rounded-lg border md:border-gray-200 p-4 mb-4 md:mb-6">
+                  <div className="flex items-center gap-2 mb-1">
+                    <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                    <h2 className="text-lg font-bold text-gray-900">Suggested Posts</h2>
+                  </div>
+                  <p className="text-sm text-gray-600">Discover productive sessions from the community</p>
+                </div>
+                <Feed filters={{ type: 'recent' }} key="suggested-feed" initialLimit={20} showEndMessage={true} />
+              </div>
+            </main>
+
+            {/* Right Sidebar - Fixed, hidden on mobile */}
+            <div className="hidden md:block flex-shrink-0">
+              <RightSidebar />
+            </div>
           </div>
         </div>
+      </div>
 
-        {/* Floating Action Button Menu - only show on desktop */}
-        <div className="hidden md:block">
-          <FABMenu />
-        </div>
+      {/* Floating Action Button Menu - only show on desktop */}
+      <div className="hidden md:block">
+        <FABMenu />
       </div>
 
       {/* Bottom padding for mobile navigation */}
