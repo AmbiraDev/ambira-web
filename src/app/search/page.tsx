@@ -512,9 +512,9 @@ function SearchContent() {
                 {/* Suggested People */}
                 {suggestedUsers.length > 0 && (
                   <div>
-                    <div className="px-4 py-4 bg-white sticky top-0">
+                    <div className="px-4 py-4 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-blue-100">
                       <h3 className="text-lg font-bold text-gray-900">Suggested People</h3>
-                      <p className="text-sm text-gray-500 mt-0.5">People you might know</p>
+                      <p className="text-sm text-gray-600 mt-0.5">People you might know</p>
                     </div>
                     <div className="bg-white">
                       {(showAllPeople ? suggestedUsers : suggestedUsers.slice(0, 5)).map((suggestedUser) => (
@@ -527,12 +527,12 @@ function SearchContent() {
                         </div>
                       ))}
                       {suggestedUsers.length > 5 && (
-                        <div className="px-4 py-3 border-t border-gray-100">
+                        <div className="px-4 py-3 bg-gray-50 border-t border-gray-200">
                           <button
                             onClick={() => setShowAllPeople(!showAllPeople)}
-                            className="w-full text-center text-[#007AFF] font-semibold text-sm py-2 hover:bg-gray-50 rounded-lg transition-colors"
+                            className="w-full text-center text-[#007AFF] font-semibold text-sm py-2.5 hover:text-[#0056D6] transition-colors"
                           >
-                            {showAllPeople ? 'Show Less' : `Show ${suggestedUsers.length - 5} More`}
+                            {showAllPeople ? 'Show Less' : `Show All ${suggestedUsers.length} People`}
                           </button>
                         </div>
                       )}
@@ -543,19 +543,19 @@ function SearchContent() {
                 {/* Suggested Groups */}
                 {suggestedGroups.length > 0 && (
                   <div>
-                    <div className="px-4 py-4 bg-white">
+                    <div className="px-4 py-4 bg-gradient-to-r from-green-50 to-emerald-50 border-b border-green-100">
                       <h3 className="text-lg font-bold text-gray-900">Suggested Groups</h3>
-                      <p className="text-sm text-gray-500 mt-0.5">Groups you might be interested in</p>
+                      <p className="text-sm text-gray-600 mt-0.5">Groups you might be interested in</p>
                     </div>
                     <div className="bg-white">
                       {(showAllGroups ? suggestedGroups : suggestedGroups.slice(0, 3)).map(renderGroupResult)}
                       {suggestedGroups.length > 3 && (
-                        <div className="px-4 py-3 border-t border-gray-100">
+                        <div className="px-4 py-3 bg-gray-50 border-t border-gray-200">
                           <button
                             onClick={() => setShowAllGroups(!showAllGroups)}
-                            className="w-full text-center text-[#007AFF] font-semibold text-sm py-2 hover:bg-gray-50 rounded-lg transition-colors"
+                            className="w-full text-center text-[#007AFF] font-semibold text-sm py-2.5 hover:text-[#0056D6] transition-colors"
                           >
-                            {showAllGroups ? 'Show Less' : `Show ${suggestedGroups.length - 3} More`}
+                            {showAllGroups ? 'Show Less' : `Show All ${suggestedGroups.length} Groups`}
                           </button>
                         </div>
                       )}
@@ -566,19 +566,19 @@ function SearchContent() {
                 {/* Suggested Challenges */}
                 {suggestedChallenges.length > 0 && (
                   <div>
-                    <div className="px-4 py-4 bg-white">
+                    <div className="px-4 py-4 bg-gradient-to-r from-orange-50 to-amber-50 border-b border-orange-100">
                       <h3 className="text-lg font-bold text-gray-900">Suggested Challenges</h3>
-                      <p className="text-sm text-gray-500 mt-0.5">Join these challenges</p>
+                      <p className="text-sm text-gray-600 mt-0.5">Join these challenges</p>
                     </div>
                     <div className="bg-white">
                       {(showAllChallenges ? suggestedChallenges : suggestedChallenges.slice(0, 3)).map(renderChallengeResult)}
                       {suggestedChallenges.length > 3 && (
-                        <div className="px-4 py-3 border-t border-gray-100">
+                        <div className="px-4 py-3 bg-gray-50 border-t border-gray-200">
                           <button
                             onClick={() => setShowAllChallenges(!showAllChallenges)}
-                            className="w-full text-center text-[#007AFF] font-semibold text-sm py-2 hover:bg-gray-50 rounded-lg transition-colors"
+                            className="w-full text-center text-[#007AFF] font-semibold text-sm py-2.5 hover:text-[#0056D6] transition-colors"
                           >
-                            {showAllChallenges ? 'Show Less' : `Show ${suggestedChallenges.length - 3} More`}
+                            {showAllChallenges ? 'Show Less' : `Show All ${suggestedChallenges.length} Challenges`}
                           </button>
                         </div>
                       )}

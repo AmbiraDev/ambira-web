@@ -344,19 +344,30 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Project
                   </label>
-                  <select
-                    value={selectedProjectId}
-                    onChange={(e) => setSelectedProjectId(e.target.value)}
-                    className="w-full pl-3 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] bg-white text-sm appearance-none"
-                    style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 12 12\'%3E%3Cpath fill=\'%23666\' d=\'M6 9L1 4h10z\'/%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.75rem center' }}
-                  >
-                    <option value="">Unassigned</option>
-                    {projects.map((project) => (
-                      <option key={project.id} value={project.id}>
-                        {project.icon} {project.name}
-                      </option>
-                    ))}
-                  </select>
+                  {projects.length === 0 ? (
+                    <div className="text-sm text-gray-600">
+                      <Link
+                        href="/projects"
+                        className="text-[#007AFF] hover:underline font-medium"
+                      >
+                        Create your first project
+                      </Link>
+                    </div>
+                  ) : (
+                    <select
+                      value={selectedProjectId}
+                      onChange={(e) => setSelectedProjectId(e.target.value)}
+                      className="w-full pl-3 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] bg-white text-sm appearance-none"
+                      style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 12 12\'%3E%3Cpath fill=\'%23666\' d=\'M6 9L1 4h10z\'/%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.75rem center' }}
+                    >
+                      <option value="">Unassigned</option>
+                      {projects.map((project) => (
+                        <option key={project.id} value={project.id}>
+                          {project.icon} {project.name}
+                        </option>
+                      ))}
+                    </select>
+                  )}
                 </div>
 
                 {/* Tags Selection */}

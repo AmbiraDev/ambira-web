@@ -187,15 +187,15 @@ export default function Header() {
             {/* Desktop Navigation - Only show when search is closed */}
             {!isSearchOpen && (
               <nav className="hidden md:flex items-center space-x-6 h-16">
-                <Link 
-                  href="/" 
+                <Link
+                  href="/"
                   className={`text-base font-medium transition-colors flex items-center gap-2 h-full relative ${
-                    isActive('/') 
-                      ? 'text-gray-900' 
+                    isActive('/')
+                      ? 'text-gray-900'
                       : 'text-gray-600 hover:text-[#007AFF]'
                   }`}
                 >
-                  <LayoutDashboard className="w-4 h-4" />
+                  <LayoutDashboard className={`w-4 h-4 ${isActive('/') ? 'text-[#007AFF]' : 'text-[#007AFF]'}`} />
                   Dashboard
                   {isActive('/') && (
                     <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#007AFF]"></div>
@@ -209,7 +209,7 @@ export default function Header() {
                       : 'text-gray-600 hover:text-[#007AFF]'
                   }`}
                 >
-                  <Users className="w-4 h-4" />
+                  <Users className={`w-4 h-4 ${isActive('/groups') ? 'text-[#10B981]' : 'text-[#10B981]'}`} />
                   Groups
                   {isActive('/groups') && (
                     <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#007AFF]"></div>
@@ -223,7 +223,7 @@ export default function Header() {
                       : 'text-gray-600 hover:text-[#007AFF]'
                   }`}
                 >
-                  <BarChart3 className="w-4 h-4" />
+                  <BarChart3 className={`w-4 h-4 ${isActive('/you') ? 'text-[#F59E0B]' : 'text-[#F59E0B]'}`} />
                   Analytics
                   {isActive('/you') && (
                     <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#007AFF]"></div>
