@@ -29,8 +29,8 @@ function HomeContent() {
 
       <div className="max-w-[1400px] mx-auto md:px-4 md:py-6">
         <div className="md:flex gap-6">
-          {/* Main Feed - Wider on Desktop */}
-          <main className="flex-1 min-w-0 md:max-w-[700px]">
+          {/* Main Feed - Centered */}
+          <main className="flex-1 min-w-0 max-w-[600px] md:mx-auto">
             {/* Following Feed */}
             <Feed filters={{ type: 'following' }} key="following-feed" showEndMessage={false} />
 
