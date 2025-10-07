@@ -350,7 +350,7 @@ export default function ManualSessionRecorder() {
               {PRIVACY_OPTIONS.map((option) => (
                 <label
                   key={option.value}
-                  className="flex items-start gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50"
+                  className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50"
                 >
                   <input
                     type="radio"
@@ -358,7 +358,7 @@ export default function ManualSessionRecorder() {
                     value={option.value}
                     checked={visibility === option.value}
                     onChange={(e) => setVisibility(e.target.value as any)}
-                    className="mt-0.5 w-4 h-4 text-blue-600 focus:ring-2 focus:ring-blue-500"
+                    className="w-4 h-4 text-blue-600 focus:ring-2 focus:ring-blue-500 flex-shrink-0"
                     disabled={isLoading}
                   />
                   <div className="flex-1">
