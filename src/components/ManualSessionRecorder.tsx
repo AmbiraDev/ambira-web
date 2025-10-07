@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { SessionFormData, Project, Task } from '@/types';
 import { firebaseApi } from '@/lib/firebaseApi';
 import { useAuth } from '@/contexts/AuthContext';
-import { Clock, Calendar, ArrowLeft, Check, X } from 'lucide-react';
+import { ArrowLeft, Check } from 'lucide-react';
 import Link from 'next/link';
 
 const TAGS = ['Study', 'Work', 'Side Project', 'Reading', 'Learning', 'Exercise', 'Creative', 'Other'];
@@ -206,93 +206,6 @@ export default function ManualSessionRecorder() {
       <div className="max-w-3xl mx-auto px-4 py-8">
         <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-6">
           
-          {/* Date and Time Section */}
-          <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
-            <h3 className="text-sm font-semibold text-gray-900 mb-4 flex items-center gap-2">
-              <Calendar className="w-4 h-4 text-blue-600" />
-              When did this session happen?
-            </h3>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Date */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Date *
-                </label>
-                <input
-                  type="date"
-                  value={sessionDate}
-                  onChange={(e) => setSessionDate(e.target.value)}
-                  max={new Date().toISOString().split('T')[0]}
-                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    errors.sessionDate ? 'border-red-500' : 'border-gray-300'
-                  }`}
-                  disabled={isLoading}
-                />
-                {errors.sessionDate && (
-                  <p className="text-red-500 text-sm mt-1">{errors.sessionDate}</p>
-                )}
-              </div>
-
-              {/* Start Time */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Start Time
-                </label>
-                <input
-                  type="time"
-                  value={startTime}
-                  onChange={(e) => setStartTime(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  disabled={isLoading}
-                />
-              </div>
-            </div>
-
-            {/* Duration */}
-            <div className="mt-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
-                <Clock className="w-4 h-4 text-blue-600" />
-                Duration *
-              </label>
-              <div className="flex gap-3">
-                <div className="flex-1">
-                  <input
-                    type="number"
-                    min="0"
-                    max="23"
-                    value={manualDurationHours}
-                    onChange={(e) => setManualDurationHours(e.target.value)}
-                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      errors.duration ? 'border-red-500' : 'border-gray-300'
-                    }`}
-                    placeholder="0"
-                    disabled={isLoading}
-                  />
-                  <p className="text-xs text-gray-500 mt-1">Hours</p>
-                </div>
-                <div className="flex-1">
-                  <input
-                    type="number"
-                    min="0"
-                    max="59"
-                    value={manualDurationMinutes}
-                    onChange={(e) => setManualDurationMinutes(e.target.value)}
-                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      errors.duration ? 'border-red-500' : 'border-gray-300'
-                    }`}
-                    placeholder="0"
-                    disabled={isLoading}
-                  />
-                  <p className="text-xs text-gray-500 mt-1">Minutes</p>
-                </div>
-              </div>
-              {errors.duration && (
-                <p className="text-red-500 text-sm mt-1">{errors.duration}</p>
-              )}
-            </div>
-          </div>
-
           {/* Project Selection */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -400,6 +313,91 @@ export default function ManualSessionRecorder() {
                   {tag}
                 </button>
               ))}
+            </div>
+          </div>
+
+          {/* Date and Time Section */}
+          <div>
+            <h3 className="text-sm font-semibold text-gray-900 mb-4">
+              When did this session happen?
+            </h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Date */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Date *
+                </label>
+                <input
+                  type="date"
+                  value={sessionDate}
+                  onChange={(e) => setSessionDate(e.target.value)}
+                  max={new Date().toISOString().split('T')[0]}
+                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                    errors.sessionDate ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                  disabled={isLoading}
+                />
+                {errors.sessionDate && (
+                  <p className="text-red-500 text-sm mt-1">{errors.sessionDate}</p>
+                )}
+              </div>
+
+              {/* Start Time */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Start Time
+                </label>
+                <input
+                  type="time"
+                  value={startTime}
+                  onChange={(e) => setStartTime(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  disabled={isLoading}
+                />
+              </div>
+            </div>
+
+            {/* Duration */}
+            <div className="mt-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Duration *
+              </label>
+              <div className="flex gap-3">
+                <div className="flex-1">
+                  <input
+                    type="number"
+                    min="0"
+                    max="23"
+                    value={manualDurationHours}
+                    onChange={(e) => setManualDurationHours(e.target.value)}
+                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                      errors.duration ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                    placeholder="0"
+                    disabled={isLoading}
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Hours</p>
+                </div>
+                <div className="flex-1">
+                  <input
+                    type="number"
+                    min="0"
+                    max="59"
+                    value={manualDurationMinutes}
+                    onChange={(e) => setManualDurationMinutes(e.target.value)}
+                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                      errors.duration ? 'border-red-500' : 'border-gray-300'
+                    }`}
+                    placeholder="0"
+                    disabled={isLoading}
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Minutes</p>
+                </div>
+              </div>
+              {errors.duration && (
+                <p className="text-red-500 text-sm mt-1">{errors.duration}</p>
+              )}
             </div>
           </div>
 

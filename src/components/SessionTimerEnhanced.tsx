@@ -942,10 +942,10 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                   
                   <Link
                     href="/record-manual"
-                    className="px-6 md:px-10 py-3 md:py-5 rounded-full bg-white border-2 border-[#007AFF] text-[#007AFF] hover:bg-blue-50 flex items-center gap-2 md:gap-3 transition-all shadow-lg hover:shadow-xl text-base md:text-xl font-semibold"
+                    className="px-8 md:px-12 py-3 md:py-5 rounded-full bg-[#007AFF] hover:bg-[#0056D6] text-white flex items-center gap-2 md:gap-3 transition-all shadow-lg hover:shadow-xl text-base md:text-xl font-semibold"
                   >
-                    <Edit3 className="w-5 h-5 md:w-6 md:h-6" />
-                    <span>Record Manually</span>
+                    <Edit3 className="w-6 h-6 md:w-8 md:h-8" />
+                    <span>Manual</span>
                   </Link>
                 </>
               )}
