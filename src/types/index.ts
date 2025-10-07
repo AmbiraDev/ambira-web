@@ -150,7 +150,7 @@ export interface FeedResponse {
 }
 
 export interface FeedFilters {
-  type?: 'following' | 'trending' | 'recent';
+  type?: 'following' | 'trending' | 'recent' | 'user';
   projectId?: string;
   userId?: string;
 }
@@ -220,6 +220,7 @@ export interface GroupFilters {
 export interface GroupStats {
   totalMembers: number;
   totalPosts: number;
+  totalSessions: number;
   totalHours: number;
   weeklyHours: number;
   monthlyHours: number;

@@ -212,11 +212,10 @@ export default function GroupHeader({
               )}
               {canLeave && (
                 <Button
-                  variant="outline"
                   size="sm"
                   onClick={handleLeave}
                   disabled={isLoading}
-                  className="font-medium"
+                  className="font-medium bg-[#007AFF] text-white hover:bg-[#0051D5] transition-colors"
                 >
                   Leave Group
                 </Button>

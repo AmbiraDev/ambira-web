@@ -202,11 +202,11 @@ export default function GroupsPage() {
                               {/* Privacy indicator */}
                               <div className="flex-shrink-0">
                                 <div className={`px-2 py-1 rounded-md text-xs font-medium ${
-                                  group.privacy === 'public'
+                                  group.privacySetting === 'public'
                                     ? 'bg-green-50 text-green-700'
                                     : 'bg-orange-50 text-orange-700'
                                 }`}>
-                                  {group.privacy === 'public' ? 'Public' : 'Private'}
+                                  {group.privacySetting === 'public' ? 'Public' : 'Approval Required'}
                                 </div>
                               </div>
                             </div>

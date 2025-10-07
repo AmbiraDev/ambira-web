@@ -7,10 +7,11 @@ import {
   Users, 
   Trophy, 
   Target,
-  ChevronDown
+  ChevronDown,
+  BarChart3
 } from 'lucide-react';
 
-export type GroupTab = 'posts' | 'members' | 'challenges' | 'leaderboard' | 'about';
+export type GroupTab = 'posts' | 'members' | 'challenges' | 'leaderboard' | 'analytics' | 'about';
 
 interface GroupTabsProps {
   activeTab: GroupTab;
@@ -40,6 +41,11 @@ const tabConfig = {
     label: 'Leaderboard',
     icon: Trophy,
     description: 'Member rankings and achievements'
+  },
+  analytics: {
+    label: 'Analytics',
+    icon: BarChart3,
+    description: 'Group statistics and insights'
   },
   about: {
     label: 'About',

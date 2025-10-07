@@ -7,6 +7,7 @@ import { firebaseApi } from '@/lib/firebaseApi';
 import SessionCard from './SessionCard';
 import { useFeedSessions } from '@/hooks/useCache';
 import { useAuth } from '@/contexts/AuthContext';
+import ConfirmDialog from './ConfirmDialog';
 
 interface FeedProps {
   filters?: FeedFilters;
@@ -27,6 +28,8 @@ export const Feed: React.FC<FeedProps> = ({
   const [hasNewSessions, setHasNewSessions] = useState(false);
   const [newSessionsCount, setNewSessionsCount] = useState(0);
   const [allSessions, setAllSessions] = useState<SessionWithDetails[]>([]);
+  const [deleteConfirmSession, setDeleteConfirmSession] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Use React Query for initial feed load with caching
   const { data, isLoading, error, refetch } = useFeedSessions(initialLimit, undefined, filters, {
@@ -177,20 +180,25 @@ export const Feed: React.FC<FeedProps> = ({
 
   // Handle delete
   const handleDelete = useCallback(async (sessionId: string) => {
-    if (!window.confirm('Are you sure you want to delete this session? This action cannot be undone.')) {
-      return;
-    }
+    setDeleteConfirmSession(sessionId);
+  }, []);
+
+  const confirmDelete = useCallback(async () => {
+    if (!deleteConfirmSession) return;
 
     try {
-      await firebaseApi.session.deleteSession(sessionId);
+      setIsDeleting(true);
+      await firebaseApi.session.deleteSession(deleteConfirmSession);
 
       // Remove from local state
-      setAllSessions(prev => prev.filter(session => session.id !== sessionId));
+      setAllSessions(prev => prev.filter(session => session.id !== deleteConfirmSession));
+      setDeleteConfirmSession(null);
     } catch (err: any) {
       console.error('Failed to delete session:', err);
-      alert('Failed to delete session. Please try again.');
+    } finally {
+      setIsDeleting(false);
     }
-  }, []);
+  }, [deleteConfirmSession]);
 
   // Real-time updates for support counts
   useEffect(() => {
@@ -333,6 +341,19 @@ export const Feed: React.FC<FeedProps> = ({
           </div>
         </div>
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={deleteConfirmSession !== null}
+        onClose={() => setDeleteConfirmSession(null)}
+        onConfirm={confirmDelete}
+        title="Delete Session"
+        message="Are you sure you want to delete this session? This action cannot be undone and all associated data will be permanently removed."
+        confirmText="Delete Session"
+        cancelText="Cancel"
+        variant="danger"
+        isLoading={isDeleting}
+      />
 
       {/* End of feed */}
       {showEndMessage && !hasMore && allSessions.length > 0 && (

@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { firebaseSessionApi, firebaseApi, firebaseUserApi } from '@/lib/firebaseApi';
 import { Session, User, Project, SessionWithDetails } from '@/types';
 import SessionCard from './SessionCard';
+import ConfirmDialog from './ConfirmDialog';
 import {
   BarChart3,
   Trophy,
@@ -398,104 +399,38 @@ interface PostsContentProps {
 
 export const PostsContent: React.FC<PostsContentProps> = ({ userId, isOwnProfile = false }) => {
   const [sessions, setSessions] = useState<SessionWithDetails[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingSessions, setIsLoadingSessions] = useState(false);
+  const [deleteConfirmSession, setDeleteConfirmSession] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const loadSessions = async () => {
       try {
-        setIsLoading(true);
-        setError(null);
-        // Fetch sessions - sessions ARE posts (Strava-like)
-        const userSessions = await firebaseSessionApi.getUserSessions(userId, 20, isOwnProfile);
-        setSessions(userSessions);
-        console.log('Loaded sessions for posts tab:', userSessions);
-      } catch (err: any) {
-        console.error('Failed to load user sessions:', err);
-        setError(err.message || 'Failed to load sessions');
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    if (userId) {
-      loadSessions();
-    }
-  }, [userId, isOwnProfile]);
-
-  // Handle support
-  const handleSupport = useCallback(async (sessionId: string) => {
-    try {
-      await firebaseApi.post.supportSession(sessionId);
-
-      // Optimistic update
-      setSessions(prev => prev.map(session =>
-        session.id === sessionId
-          ? { ...session, isSupported: true, supportCount: session.supportCount + 1 }
-          : session
-      ));
-    } catch (err: any) {
-      console.error('Failed to support session:', err);
-    }
-  }, []);
-
-  // Handle remove support
-  const handleRemoveSupport = useCallback(async (sessionId: string) => {
-    try {
-      await firebaseApi.post.removeSupportFromSession(sessionId);
-
-      // Optimistic update
-      setSessions(prev => prev.map(session =>
-        session.id === sessionId
-          ? { ...session, isSupported: false, supportCount: Math.max(0, session.supportCount - 1) }
-          : session
-      ));
-    } catch (err: any) {
-      console.error('Failed to remove support:', err);
-    }
-  }, []);
-
-  // Handle share
-  const handleShare = useCallback(async (sessionId: string) => {
-    try {
-      const sessionUrl = `${window.location.origin}/sessions/${sessionId}`;
-
-      if (navigator.share) {
-        await navigator.share({
-          title: 'Check out this session on Ambira',
-          text: 'Look at this productive session!',
-          url: sessionUrl
-        });
-      } else {
-        await navigator.clipboard.writeText(sessionUrl);
-        console.log('Link copied to clipboard');
-      }
-    } catch (err: any) {
-      console.error('Failed to share session:', err);
+{{ ... }}
     }
   }, []);
 
   // Handle delete
   const handleDelete = useCallback(async (sessionId: string) => {
-    if (!window.confirm('Are you sure you want to delete this session? This action cannot be undone.')) {
-      return;
-    }
-    try {
-      await firebaseSessionApi.deleteSession(sessionId);
-      setSessions(prev => prev.filter(session => session.id !== sessionId));
-    } catch (err: any) {
-      console.error('Failed to delete session:', err);
-    }
+    setDeleteConfirmSession(sessionId);
   }, []);
 
-  if (isLoading) {
-    return (
-      <div className="text-center py-12">
-        <div className="animate-pulse">
-          <div className="h-4 bg-muted rounded w-3/4 mx-auto mb-4"></div>
-          <div className="h-4 bg-muted rounded w-1/2 mx-auto"></div>
-        </div>
-      </div>
+  const confirmDelete = useCallback(async () => {
+    if (!deleteConfirmSession) return;
+
+    try {
+      setIsDeleting(true);
+      await firebaseSessionApi.deleteSession(deleteConfirmSession);
+      setSessions(prev => prev.filter(session => session.id !== deleteConfirmSession));
+      setDeleteConfirmSession(null);
+    } catch (err: any) {
+      console.error('Failed to delete session:', err);
+    } finally {
+      setIsDeleting(false);
+    }
+  }, [deleteConfirmSession]);
+
     );
   }
 
@@ -539,6 +474,19 @@ export const PostsContent: React.FC<PostsContentProps> = ({ userId, isOwnProfile
           showComments={true}
         />
       ))}
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={deleteConfirmSession !== null}
+        onClose={() => setDeleteConfirmSession(null)}
+        onConfirm={confirmDelete}
+        title="Delete Session"
+        message="Are you sure you want to delete this session? This action cannot be undone and all associated data will be permanently removed."
+        confirmText="Delete Session"
+        cancelText="Cancel"
+        variant="danger"
+        isLoading={isDeleting}
+      />
     </div>
   );
 };

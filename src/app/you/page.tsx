@@ -656,13 +656,13 @@ export default function YouPage() {
                     <div>
                       <div className="text-sm text-gray-600">Following</div>
                       <div className="text-xl font-bold">
-                        {userProfile?.followingCount || 0}
+                        {following.length}
                       </div>
                     </div>
                     <div>
                       <div className="text-sm text-gray-600">Followers</div>
                       <div className="text-xl font-bold">
-                        {userProfile?.followersCount || 0}
+                        {followers.length}
                       </div>
                     </div>
                   </div>

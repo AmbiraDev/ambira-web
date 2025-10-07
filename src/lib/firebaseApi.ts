@@ -2725,6 +2725,42 @@ export const firebasePostApi = {
 
         return { sessions, hasMore, nextCursor };
 
+      } else if (type === 'user') {
+        // User: fetch sessions for a specific user
+        const targetUserId = userId || auth.currentUser.uid;
+
+        sessionsQuery = query(
+          collection(db, 'sessions'),
+          where('userId', '==', targetUserId),
+          orderBy('createdAt', 'desc'),
+          limit(limitCount + 1)
+        );
+
+        if (cursor) {
+          const cursorDoc = await getDoc(doc(db, 'sessions', cursor));
+          if (cursorDoc.exists()) {
+            sessionsQuery = query(
+              collection(db, 'sessions'),
+              where('userId', '==', targetUserId),
+              orderBy('createdAt', 'desc'),
+              startAfter(cursorDoc),
+              limit(limitCount + 1)
+            );
+          }
+        }
+
+        const querySnapshot = await getDocs(sessionsQuery);
+        const sessionDocs = querySnapshot.docs.slice(0, limitCount);
+        const sessions = await populateSessionsWithDetails(sessionDocs);
+        const hasMore = querySnapshot.docs.length > limitCount;
+        const nextCursor = hasMore ? sessionDocs[sessionDocs.length - 1]?.id : undefined;
+
+        return {
+          sessions,
+          hasMore,
+          nextCursor
+        };
+
       } else {
         // Recent: default chronological feed of public sessions (excluding followed users)
         // Get list of users the current user is following to exclude them
@@ -4043,24 +4079,197 @@ const firebaseGroupApi = {
   // Get group statistics
   getGroupStats: async (groupId: string): Promise<GroupStats> => {
     try {
-      // This would typically involve complex aggregations
-      // For now, return basic stats
       const group = await firebaseGroupApi.getGroup(groupId);
       if (!group) {
         throw new Error('Group not found');
       }
 
+      // Calculate date ranges
+      const now = new Date();
+      const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      const oneMonthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+
+      // Get all sessions for group members
+      const sessionsQuery = query(
+        collection(db, 'sessions'),
+        where('userId', 'in', group.memberIds.length > 0 ? group.memberIds.slice(0, 10) : ['dummy'])
+      );
+      const sessionsSnapshot = await getDocs(sessionsQuery);
+      
+      let totalHours = 0;
+      let weeklyHours = 0;
+      let monthlyHours = 0;
+      let totalSessions = sessionsSnapshot.size;
+      const projectHours: { [key: string]: { hours: number; name: string; memberCount: number } } = {};
+      const activeMemberIds = new Set<string>();
+
+      sessionsSnapshot.forEach(doc => {
+        const data = doc.data();
+        const hours = data.duration / 3600;
+        totalHours += hours;
+
+        const sessionDate = data.createdAt?.toDate() || new Date(0);
+        if (sessionDate >= oneWeekAgo) {
+          weeklyHours += hours;
+        }
+        if (sessionDate >= oneMonthAgo) {
+          monthlyHours += hours;
+          activeMemberIds.add(data.userId);
+        }
+
+        // Track project hours
+        if (data.projectId) {
+          if (!projectHours[data.projectId]) {
+            projectHours[data.projectId] = {
+              hours: 0,
+              name: 'Project',
+              memberCount: 0
+            };
+          }
+          projectHours[data.projectId].hours += hours;
+        }
+      });
+
+      // Convert project hours to array and sort
+      const topProjects = Object.entries(projectHours)
+        .map(([projectId, data]) => ({
+          projectId,
+          projectName: data.name,
+          hours: data.hours,
+          memberCount: 1
+        }))
+        .sort((a, b) => b.hours - a.hours)
+        .slice(0, 10);
+
       return {
         totalMembers: group.memberCount,
-        totalPosts: 0, // Would need to count posts
-        totalHours: 0, // Would need to aggregate session hours
-        weeklyHours: 0,
-        monthlyHours: 0,
-        activeMembers: group.memberCount,
-        topProjects: []
+        totalPosts: 0,
+        totalSessions,
+        totalHours,
+        weeklyHours,
+        monthlyHours,
+        activeMembers: activeMemberIds.size,
+        topProjects
       };
     } catch (error: any) {
       throw new Error(getErrorMessage(error, 'Failed to get group stats'));
+    }
+  },
+
+  // Get group analytics data for charts
+  getGroupAnalytics: async (groupId: string, timeRange: 'week' | 'month' | 'year' = 'month') => {
+    try {
+      const group = await firebaseGroupApi.getGroup(groupId);
+      if (!group) {
+        throw new Error('Group not found');
+      }
+
+      const now = new Date();
+      let startDate: Date;
+      let intervals: { start: Date; end: Date; label: string }[] = [];
+
+      // Calculate time range and intervals
+      if (timeRange === 'week') {
+        startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        // Daily intervals for the week
+        for (let i = 6; i >= 0; i--) {
+          const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+          intervals.push({
+            start: new Date(date.setHours(0, 0, 0, 0)),
+            end: new Date(date.setHours(23, 59, 59, 999)),
+            label: date.toLocaleDateString('en-US', { weekday: 'short' })
+          });
+        }
+      } else if (timeRange === 'month') {
+        startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        // Weekly intervals for the month
+        for (let i = 3; i >= 0; i--) {
+          const weekStart = new Date(now.getTime() - (i + 1) * 7 * 24 * 60 * 60 * 1000);
+          const weekEnd = new Date(now.getTime() - i * 7 * 24 * 60 * 60 * 1000);
+          intervals.push({
+            start: weekStart,
+            end: weekEnd,
+            label: `Week ${4 - i}`
+          });
+        }
+      } else {
+        // year
+        startDate = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
+        // Monthly intervals for the year
+        for (let i = 11; i >= 0; i--) {
+          const monthDate = new Date(now);
+          monthDate.setMonth(monthDate.getMonth() - i);
+          monthDate.setDate(1);
+          intervals.push({
+            start: new Date(monthDate.setHours(0, 0, 0, 0)),
+            end: new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0, 23, 59, 59, 999),
+            label: monthDate.toLocaleDateString('en-US', { month: 'short' })
+          });
+        }
+      }
+
+      // Get sessions for the time range
+      const sessionsQuery = query(
+        collection(db, 'sessions'),
+        where('userId', 'in', group.memberIds.length > 0 ? group.memberIds.slice(0, 10) : ['dummy']),
+        where('createdAt', '>=', startDate),
+        orderBy('createdAt', 'asc')
+      );
+      const sessionsSnapshot = await getDocs(sessionsQuery);
+
+      // Calculate hours per interval
+      const hoursData = intervals.map(interval => {
+        let hours = 0;
+        const members = new Set<string>();
+
+        sessionsSnapshot.forEach(doc => {
+          const data = doc.data();
+          const sessionDate = data.createdAt?.toDate() || new Date(0);
+          
+          if (sessionDate >= interval.start && sessionDate <= interval.end) {
+            hours += data.duration / 3600;
+            members.add(data.userId);
+          }
+        });
+
+        return {
+          date: interval.label,
+          hours: parseFloat(hours.toFixed(1)),
+          members: members.size
+        };
+      });
+
+      // Get membership growth data
+      const membershipsQuery = query(
+        collection(db, 'groupMemberships'),
+        where('groupId', '==', groupId),
+        where('status', '==', 'active'),
+        orderBy('joinedAt', 'asc')
+      );
+      const membershipsSnapshot = await getDocs(membershipsQuery);
+
+      const membershipGrowth = intervals.map(interval => {
+        let memberCount = 0;
+        membershipsSnapshot.forEach(doc => {
+          const data = doc.data();
+          const joinDate = data.joinedAt?.toDate() || new Date(0);
+          if (joinDate <= interval.end) {
+            memberCount++;
+          }
+        });
+
+        return {
+          date: interval.label,
+          members: memberCount
+        };
+      });
+
+      return {
+        hoursData,
+        membershipGrowth
+      };
+    } catch (error: any) {
+      throw new Error(getErrorMessage(error, 'Failed to get group analytics'));
     }
   }
 };

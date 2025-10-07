@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Session, Project, SessionFilters, SessionSort } from '@/types';
 import { firebaseProjectApi, firebaseSessionApi } from '@/lib/firebaseApi';
 import { MoreVertical } from 'lucide-react';
+import ConfirmDialog from './ConfirmDialog';
 
 export const SessionHistory: React.FC = () => {
   const router = useRouter();
@@ -18,6 +19,8 @@ export const SessionHistory: React.FC = () => {
   const [hasMore, setHasMore] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showMenuForSession, setShowMenuForSession] = useState<string | null>(null);
+  const [deleteConfirmSession, setDeleteConfirmSession] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Load initial data
   useEffect(() => {
@@ -82,13 +85,16 @@ export const SessionHistory: React.FC = () => {
     router.push(`/sessions/${sessionId}/edit`);
   };
 
-  const handleSessionDelete = async (sessionId: string) => {
-    if (!window.confirm('Are you sure you want to delete this session? This action cannot be undone.')) {
-      return;
-    }
+  const handleSessionDelete = (sessionId: string) => {
+    setDeleteConfirmSession(sessionId);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteConfirmSession) return;
 
     try {
-      await firebaseSessionApi.deleteSession(sessionId);
+      setIsDeleting(true);
+      await firebaseSessionApi.deleteSession(deleteConfirmSession);
 
       // Reload sessions from Firebase
       const sessionsResp = await firebaseSessionApi.getSessions(
@@ -99,9 +105,11 @@ export const SessionHistory: React.FC = () => {
       setSessions(sessionsResp.sessions);
       setTotalCount(sessionsResp.totalCount);
       setHasMore(sessionsResp.hasMore);
+      setDeleteConfirmSession(null);
     } catch (error) {
       console.error('Failed to delete session:', error);
-      alert('Failed to delete session. Please try again.');
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -379,6 +387,19 @@ export const SessionHistory: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={deleteConfirmSession !== null}
+        onClose={() => setDeleteConfirmSession(null)}
+        onConfirm={confirmDelete}
+        title="Delete Session"
+        message="Are you sure you want to delete this session? This action cannot be undone and all associated data will be permanently removed."
+        confirmText="Delete Session"
+        cancelText="Cancel"
+        variant="danger"
+        isLoading={isDeleting}
+      />
     </div>
   );
 };

@@ -8,8 +8,10 @@ import GroupHeader from '@/components/GroupHeader';
 import GroupTabs, { GroupTab } from '@/components/GroupTabs';
 import GroupSettings from '@/components/GroupSettings';
 import GroupChallenges from '@/components/GroupChallenges';
+import GroupAnalytics from '@/components/GroupAnalytics';
 import { Group, User, GroupStats, CreateGroupData } from '@/types';
 import { firebaseApi } from '@/lib/firebaseApi';
+import Link from 'next/link';
 
 export default function GroupDetailPage() {
   const params = useParams();
@@ -302,6 +304,10 @@ export default function GroupDetailPage() {
                 </div>
               )}
 
+              {activeTab === 'analytics' && (
+                <GroupAnalytics groupId={group.id} stats={groupStats} />
+              )}
+
               {activeTab === 'about' && (
                 <div className="bg-white rounded-lg border border-gray-200 p-6">
                   <h3 className="text-lg font-semibold text-gray-900 mb-6">About This Group</h3>
@@ -421,7 +427,7 @@ export default function GroupDetailPage() {
                             <div className="text-xs text-gray-600 mt-1">Total Hours</div>
                           </div>
                           <div className="text-center p-3 bg-green-50 rounded-lg">
-                            <div className="text-2xl font-bold text-green-600">{groupStats.totalSessions}</div>
+                            <div className="text-2xl font-bold text-green-600">{groupStats.totalSessions || 0}</div>
                             <div className="text-xs text-gray-600 mt-1">Sessions</div>
                           </div>
                           <div className="text-center p-3 bg-purple-50 rounded-lg">

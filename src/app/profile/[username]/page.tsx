@@ -331,8 +331,8 @@ export default function ProfilePage() {
     totalHours: stats?.totalHours || 0,
     currentStreak: stats?.currentStreak || 0,
     achievements: 0, // TODO: Implement achievements
-    followers: profile.followersCount || 0,
-    following: profile.followingCount || 0,
+    followers: followers.length,
+    following: following.length,
     posts: postsCount,
   };
   
@@ -373,13 +373,13 @@ export default function ProfilePage() {
                     <div>
                       <div className="text-sm text-gray-600">Following</div>
                       <div className="text-xl font-bold">
-                        {profile.followingCount || 0}
+                        {following.length}
                       </div>
                     </div>
                     <div>
                       <div className="text-sm text-gray-600">Followers</div>
                       <div className="text-xl font-bold">
-                        {profile.followersCount || 0}
+                        {followers.length}
                       </div>
                     </div>
                   </div>
@@ -391,10 +391,10 @@ export default function ProfilePage() {
                         try {
                           if (profile.isFollowing) {
                             await firebaseUserApi.unfollowUser(profile.id);
-                            handleProfileUpdate({ ...profile, isFollowing: false, followersCount: Math.max(0, profile.followersCount - 1) });
+                            handleProfileUpdate({ ...profile, isFollowing: false });
                           } else {
                             await firebaseUserApi.followUser(profile.id);
-                            handleProfileUpdate({ ...profile, isFollowing: true, followersCount: profile.followersCount + 1 });
+                            handleProfileUpdate({ ...profile, isFollowing: true });
                           }
                         } catch (error) {
                           console.error('Follow error:', error);
@@ -760,13 +760,13 @@ export default function ProfilePage() {
                       <div>
                         <div className="text-sm text-gray-600">Following</div>
                         <div className="text-xl font-bold">
-                          {profile.followingCount || 0}
+                          {following.length}
                         </div>
                       </div>
                       <div>
                         <div className="text-sm text-gray-600">Followers</div>
                         <div className="text-xl font-bold">
-                          {profile.followersCount || 0}
+                          {followers.length}
                         </div>
                       </div>
                     </div>
