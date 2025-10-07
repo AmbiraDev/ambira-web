@@ -105,7 +105,7 @@ export const UnifiedProfileCard: React.FC<UnifiedProfileCardProps> = ({
           <Link
             href={editButtonHref}
             onClick={onEditClick}
-            className="flex-1 flex items-center justify-center gap-2 py-3 border-2 border-gray-300 text-gray-700 hover:bg-gray-50 rounded-xl font-medium transition-colors"
+            className="flex-1 flex items-center justify-center gap-2 py-3 bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-xl font-semibold transition-colors"
           >
             <Edit className="w-5 h-5" />
             Edit Profile

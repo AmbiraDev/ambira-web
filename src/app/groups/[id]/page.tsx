@@ -194,35 +194,29 @@ export default function GroupDetailPage() {
   const isJoined = user && group.memberIds.includes(user.id);
   const isAdmin = user && group.adminUserIds.includes(user.id);
 
+  // If showing settings, render the full settings page
+  if (showSettings) {
+    return (
+      <GroupSettings
+        group={group}
+        admins={admins}
+        onUpdate={handleUpdateGroup}
+        onDelete={handleDeleteGroup}
+        onAddAdmin={handleAddAdmin}
+        onRemoveAdmin={handleRemoveAdmin}
+        isLoading={isLoading}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="hidden md:block">
         <Header />
       </div>
-      
+
       <div className="max-w-7xl mx-auto">
-        {showSettings ? (
-          <div className="px-4 py-6">
-            <GroupSettings
-              group={group}
-              admins={admins}
-              onUpdate={handleUpdateGroup}
-              onDelete={handleDeleteGroup}
-              onAddAdmin={handleAddAdmin}
-              onRemoveAdmin={handleRemoveAdmin}
-              isLoading={isLoading}
-            />
-            <div className="mt-6">
-              <button 
-                onClick={() => setShowSettings(false)}
-                className="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700"
-              >
-                Back to Group
-              </button>
-            </div>
-          </div>
-        ) : (
-          <>
+        <>
             <GroupHeader
               group={group}
               stats={groupStats}
@@ -446,7 +440,6 @@ export default function GroupDetailPage() {
               )}
             </div>
           </>
-        )}
       </div>
     </div>
   );

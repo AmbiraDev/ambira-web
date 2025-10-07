@@ -544,8 +544,8 @@ export default function SettingsPage() {
                           {isSaving ? 'Saving…' : saved ? '✓ Saved' : 'Save Changes'}
                         </button>
                       </div>
-                    </form>
-                  </div>
+                    </div>
+                  </form>
                 )}
 
                 {activeTab === 'privacy' && (

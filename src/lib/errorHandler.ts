@@ -163,17 +163,23 @@ export function logError(
       ? console.warn
       : console.log;
 
-    logMethod('[API Error]', {
+    // Log as a single string to avoid object logging which triggers intercept-console-error
+    const errorMessage = `[API Error] ${JSON.stringify({
       code: apiError.code,
       message: apiError.message,
       userMessage: apiError.userMessage,
       severity,
       ...additionalContext,
-    });
+    })}`;
+
+    logMethod(errorMessage);
 
     // Log original error for debugging
     if (apiError.originalError && severity === ErrorSeverity.CRITICAL) {
-      console.error('[Original Error]', apiError.originalError);
+      const originalErrorMsg = apiError.originalError instanceof Error
+        ? apiError.originalError.message
+        : String(apiError.originalError);
+      console.error(`[Original Error] ${originalErrorMsg}`);
     }
   }
 }

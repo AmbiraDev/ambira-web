@@ -6,7 +6,7 @@ import { useState, useEffect, useRef } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { useTimer } from '@/contexts/TimerContext';
 import { useAuth } from '@/contexts/AuthContext';
-import { Search, X, ChevronDown, Plus, Menu } from 'lucide-react';
+import { Search, X, ChevronDown, Menu, LayoutDashboard, Users, BarChart3, Timer } from 'lucide-react';
 
 export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -186,15 +186,16 @@ export default function Header() {
 
             {/* Desktop Navigation - Only show when search is closed */}
             {!isSearchOpen && (
-              <nav className="hidden md:flex items-center space-x-8 h-16">
+              <nav className="hidden md:flex items-center space-x-6 h-16">
                 <Link 
                   href="/" 
-                  className={`text-base font-medium transition-colors flex items-center h-full relative ${
+                  className={`text-base font-medium transition-colors flex items-center gap-2 h-full relative ${
                     isActive('/') 
                       ? 'text-gray-900' 
                       : 'text-gray-600 hover:text-[#007AFF]'
                   }`}
                 >
+                  <LayoutDashboard className="w-4 h-4" />
                   Dashboard
                   {isActive('/') && (
                     <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#007AFF]"></div>
@@ -202,12 +203,13 @@ export default function Header() {
                 </Link>
                 <Link
                   href="/groups"
-                  className={`text-base font-medium transition-colors flex items-center h-full relative ${
+                  className={`text-base font-medium transition-colors flex items-center gap-2 h-full relative ${
                     isActive('/groups')
                       ? 'text-gray-900'
                       : 'text-gray-600 hover:text-[#007AFF]'
                   }`}
                 >
+                  <Users className="w-4 h-4" />
                   Groups
                   {isActive('/groups') && (
                     <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#007AFF]"></div>
@@ -215,12 +217,13 @@ export default function Header() {
                 </Link>
                 <Link
                   href="/you?tab=progress"
-                  className={`text-base font-medium transition-colors flex items-center h-full relative ${
+                  className={`text-base font-medium transition-colors flex items-center gap-2 h-full relative ${
                     isActive('/you')
                       ? 'text-gray-900'
                       : 'text-gray-600 hover:text-[#007AFF]'
                   }`}
                 >
+                  <BarChart3 className="w-4 h-4" />
                   Analytics
                   {isActive('/you') && (
                     <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#007AFF]"></div>
@@ -231,23 +234,16 @@ export default function Header() {
           </div>
 
           {/* Right side actions */}
-          <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-4">
 
-            {/* Session Status / Start Session Button */}
-            {timerState.currentProject && (timerState.isRunning || timerState.pausedDuration > 0) ? (
-              <Link 
+            {/* Active Session Status - Only show when there's an active/paused session */}
+            {timerState.currentProject && (timerState.isRunning || timerState.pausedDuration > 0) && (
+              <Link
                 href="/timer"
-                className="hidden md:flex items-center space-x-2 px-4 py-1.5 bg-green-600 text-white text-sm font-medium rounded hover:bg-green-700 transition-colors"
+                className="hidden md:flex items-center space-x-2 px-4 py-1.5 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors"
               >
                 <div className="w-2 h-2 rounded-full bg-green-300" />
                 <span>{pathname.startsWith('/timer') ? 'Active' : headerTimer || 'Active'}</span>
-              </Link>
-            ) : (
-              <Link 
-                href="/timer"
-                className="hidden md:block px-4 py-1.5 bg-[#007AFF] text-white text-sm font-medium rounded hover:bg-[#0056D6] transition-colors"
-              >
-                Record Now
               </Link>
             )}
 
@@ -270,10 +266,10 @@ export default function Header() {
                 }}
               >
                 <button 
-                  className="flex items-center space-x-1 text-gray-600 hover:text-[#007AFF] transition-colors"
+                  className="flex items-center space-x-2 text-gray-600 hover:text-[#007AFF] transition-colors"
                 >
                   {user.profilePicture ? (
-                    <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
+                    <div className="w-9 h-9 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-gray-200 hover:ring-[#007AFF] transition-all">
                       <Image
                         src={user.profilePicture}
                         alt={user.name}
@@ -284,7 +280,7 @@ export default function Header() {
                       />
                     </div>
                   ) : (
-                    <div className="w-8 h-8 bg-[#FC4C02] rounded-full flex items-center justify-center flex-shrink-0">
+                    <div className="w-9 h-9 bg-[#FC4C02] rounded-full flex items-center justify-center flex-shrink-0 ring-2 ring-gray-200 hover:ring-[#007AFF] transition-all">
                       <span className="text-sm font-medium text-white">
                         {user.name.charAt(0).toUpperCase()}
                       </span>
@@ -334,11 +330,6 @@ export default function Header() {
                 )}
               </div>
             )}
-
-            {/* Plus button */}
-            <button className="p-2 text-gray-600 hover:text-[#007AFF] transition-colors">
-              <Plus className="w-5 h-5" />
-            </button>
 
             {/* Mobile menu button */}
             <button

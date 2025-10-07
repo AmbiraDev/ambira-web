@@ -9,16 +9,18 @@ import { Label } from '@/components/ui/label';
 import { Select } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
-import { 
-  Settings, 
-  Users, 
-  Trash2, 
-  Upload, 
+import {
+  Settings,
+  Users,
+  Trash2,
+  Upload,
   Save,
   AlertTriangle,
   Image as ImageIcon,
-  X
+  X,
+  ChevronLeft
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 
 interface GroupSettingsProps {
   group: Group;
@@ -45,15 +47,16 @@ const typeOptions = [
   { value: 'other', label: 'Other' }
 ];
 
-export default function GroupSettings({ 
-  group, 
+export default function GroupSettings({
+  group,
   admins,
-  onUpdate, 
-  onDelete, 
+  onUpdate,
+  onDelete,
   onAddAdmin,
   onRemoveAdmin,
-  isLoading = false 
+  isLoading = false
 }: GroupSettingsProps) {
+  const router = useRouter();
   const [formData, setFormData] = useState<UpdateGroupData>({
     name: group.name,
     description: group.description,
@@ -133,19 +136,55 @@ export default function GroupSettings({
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-gray-900">Group Settings</h2>
-        <Button onClick={handleSave} disabled={isLoading}>
-          <Save className="w-4 h-4 mr-2" />
-          Save Changes
-        </Button>
+    <div className="min-h-screen bg-gray-50">
+      {/* Mobile Header */}
+      <div className="md:hidden sticky top-0 bg-white border-b border-gray-200 px-4 py-3 z-50 flex items-center gap-3">
+        <button
+          onClick={() => router.back()}
+          className="p-2 -ml-2 hover:bg-gray-100 rounded-full transition-colors"
+        >
+          <ChevronLeft className="w-6 h-6 text-gray-700" />
+        </button>
+        <h1 className="text-lg font-bold text-gray-900 flex-1">Edit Group</h1>
+        <button
+          onClick={handleSave}
+          disabled={isLoading}
+          className="px-4 py-2 bg-[#007AFF] text-white rounded-lg font-semibold text-sm hover:bg-[#0056D6] transition-colors disabled:opacity-50"
+        >
+          Save
+        </button>
       </div>
 
-      {/* Basic Information */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Basic Information</h3>
+      {/* Desktop Header */}
+      <div className="hidden md:block bg-white border-b border-gray-200">
+        <div className="max-w-4xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => router.back()}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+              >
+                <ChevronLeft className="w-6 h-6 text-gray-700" />
+              </button>
+              <h1 className="text-2xl font-bold text-gray-900">Edit Group</h1>
+            </div>
+            <button
+              onClick={handleSave}
+              disabled={isLoading}
+              className="px-6 py-2.5 bg-[#007AFF] text-white rounded-xl font-semibold hover:bg-[#0056D6] transition-colors disabled:opacity-50"
+            >
+              <Save className="w-4 h-4 inline mr-2" />
+              Save Changes
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-4xl mx-auto px-4 md:px-6 py-6 space-y-4">
+
+        {/* Basic Information */}
+        <div className="bg-white rounded-xl border border-gray-200 p-6">
+          <h3 className="text-lg font-bold text-gray-900 mb-4">Basic Information</h3>
         
         <div className="space-y-4">
           {/* Group Name */}
@@ -186,43 +225,49 @@ export default function GroupSettings({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="category">Category *</Label>
-              <Select
+              <select
+                id="category"
                 value={formData.category || 'other'}
-                onValueChange={(value) => handleInputChange('category', value)}
+                onChange={(e) => handleInputChange('category', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-transparent"
               >
                 {categoryOptions.map((option) => (
                   <option key={option.value} value={option.value}>
                     {option.label}
                   </option>
                 ))}
-              </Select>
+              </select>
             </div>
 
             <div>
               <Label htmlFor="type">Type *</Label>
-              <Select
+              <select
+                id="type"
                 value={formData.type || 'just-for-fun'}
-                onValueChange={(value) => handleInputChange('type', value)}
+                onChange={(e) => handleInputChange('type', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-transparent"
               >
                 {typeOptions.map((option) => (
                   <option key={option.value} value={option.value}>
                     {option.label}
                   </option>
                 ))}
-              </Select>
+              </select>
             </div>
           </div>
 
           {/* Privacy Setting */}
           <div>
             <Label htmlFor="privacySetting">Privacy Setting *</Label>
-            <Select
+            <select
+              id="privacySetting"
               value={formData.privacySetting || 'public'}
-              onValueChange={(value) => handleInputChange('privacySetting', value)}
+              onChange={(e) => handleInputChange('privacySetting', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-transparent"
             >
               <option value="public">Public - Anyone can join</option>
               <option value="approval-required">Approval Required - Admins must approve</option>
-            </Select>
+            </select>
           </div>
 
           {/* Location */}
@@ -238,12 +283,12 @@ export default function GroupSettings({
               <p className="text-sm text-red-600 mt-1">{errors.location}</p>
             )}
           </div>
+          </div>
         </div>
-      </div>
 
-      {/* Group Images */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Group Images</h3>
+        {/* Group Images */}
+        <div className="bg-white rounded-xl border border-gray-200 p-6">
+          <h3 className="text-lg font-bold text-gray-900 mb-4">Group Images</h3>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Group Avatar */}
@@ -319,12 +364,12 @@ export default function GroupSettings({
               )}
             </div>
           </div>
+          </div>
         </div>
-      </div>
 
-      {/* Administrators */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Administrators</h3>
+        {/* Administrators */}
+        <div className="bg-white rounded-xl border border-gray-200 p-6">
+          <h3 className="text-lg font-bold text-gray-900 mb-4">Administrators</h3>
         
         {/* Current Admins */}
         <div className="space-y-3 mb-4">
@@ -361,12 +406,12 @@ export default function GroupSettings({
           <Button onClick={handleAddAdmin} disabled={!newAdminUsername.trim()}>
             Add Admin
           </Button>
+          </div>
         </div>
-      </div>
 
-      {/* Danger Zone */}
-      <div className="bg-white rounded-lg border border-red-200 p-6">
-        <h3 className="text-lg font-medium text-red-900 mb-4">Danger Zone</h3>
+        {/* Danger Zone */}
+        <div className="bg-white rounded-xl border border-red-200 p-6">
+          <h3 className="text-lg font-bold text-red-900 mb-4">Danger Zone</h3>
         
         <div className="flex items-center justify-between p-4 bg-red-50 rounded-lg">
           <div>
@@ -413,7 +458,8 @@ export default function GroupSettings({
               </div>
             </div>
           </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );

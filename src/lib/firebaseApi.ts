@@ -607,35 +607,36 @@ export const firebaseUserApi = {
     try {
       const usersQuery = query(collection(db, 'users'), where('username', '==', username));
       const querySnapshot = await getDocs(usersQuery);
-      
+
       if (querySnapshot.empty) {
+        // Don't log "not found" as an error - it's expected user behavior
         throw new Error('User not found');
       }
-      
+
       const userDoc = querySnapshot.docs[0];
       const userData = userDoc.data();
       const isOwnProfile = auth.currentUser?.uid === userDoc.id;
-      
+
       // Check privacy settings
       const profileVisibility = userData.profileVisibility || 'everyone';
-      
+
       // If profile is private and not the owner, deny access
       if (!isOwnProfile && profileVisibility === 'private') {
         throw new Error('This profile is private');
       }
-      
+
       // Check if current user is following this user
       let isFollowing = false;
       if (auth.currentUser && !isOwnProfile) {
         const socialGraphDoc = await getDoc(doc(db, `social_graph/${auth.currentUser.uid}/outbound`, userDoc.id));
         isFollowing = socialGraphDoc.exists();
       }
-      
+
       // If profile is followers-only, check if current user is a follower
       if (!isOwnProfile && profileVisibility === 'followers' && !isFollowing) {
         throw new Error('This profile is only visible to followers');
       }
-      
+
       // Ensure follower/following counts are accurate
       // For OWN profile, always recalc from follows to avoid stale zeros across ports/domains
       // For others' profiles, recalc only if missing to reduce reads
@@ -654,7 +655,7 @@ export const firebaseUserApi = {
           const outboundRef = collection(db, `social_graph/${userDoc.id}/outbound`);
           const outboundSnapshot = await getDocs(outboundRef);
           followingCount = outboundSnapshot.size;
-          
+
           // Update the user document with correct counts
           // For own profile, always update to keep counts fresh
           // For others, update if they were missing
@@ -670,7 +671,7 @@ export const firebaseUserApi = {
           // Keep the default values if recalculation fails
         }
       }
-      
+
       return {
         id: userDoc.id,
         username: userData.username,
@@ -687,10 +688,17 @@ export const firebaseUserApi = {
         updatedAt: convertTimestamp(userData.updatedAt)
       };
     } catch (error) {
-      // Re-throw with standardized error messages
-      // The calling code will handle displaying appropriate UI to users
-      const apiError = handleError(error, 'Get user profile', { defaultMessage: 'Failed to get user profile' });
-      throw new Error(apiError.userMessage);
+      // Don't log "not found" and privacy errors - these are expected user flows
+      const errorMessage = error instanceof Error ? error.message : 'Failed to get user profile';
+      const isExpectedError = errorMessage === 'User not found' ||
+                              errorMessage === 'This profile is private' ||
+                              errorMessage === 'This profile is only visible to followers';
+
+      if (!isExpectedError) {
+        handleError(error, 'Get user profile', { defaultMessage: 'Failed to get user profile' });
+      }
+
+      throw error;
     }
   },
 
@@ -970,19 +978,38 @@ export const firebaseUserApi = {
   updateProfile: async (data: Partial<{
     name: string;
     bio: string;
+    tagline: string;
+    pronouns: string;
     location: string;
+    website: string;
     profilePicture: string;
+    socialLinks: {
+      twitter?: string;
+      github?: string;
+      linkedin?: string;
+    };
+    profileVisibility: 'everyone' | 'followers' | 'private';
+    activityVisibility: 'everyone' | 'followers' | 'private';
+    projectVisibility: 'everyone' | 'followers' | 'private';
   }>): Promise<UserProfile> => {
     try {
       if (!auth.currentUser) {
         throw new Error('User not authenticated');
       }
-      
+
+      // Strip undefined values to avoid Firestore errors
+      const cleanData: Record<string, any> = {};
+      Object.entries(data).forEach(([key, value]) => {
+        if (value !== undefined) {
+          cleanData[key] = value;
+        }
+      });
+
       const updateData = {
-        ...data,
+        ...cleanData,
         updatedAt: serverTimestamp()
       };
-      
+
       await updateDoc(doc(db, 'users', auth.currentUser.uid), updateData);
       
       // Get updated profile
@@ -4050,22 +4077,23 @@ const firebaseGroupApi = {
       }
 
       // Check if user is already a member
-      if (group.memberIds.includes(userId)) {
+      if (group.memberIds && group.memberIds.includes(userId)) {
         throw new Error('User is already a member of this group');
       }
 
       const batch = writeBatch(db);
 
-      // Add user to group
+      // Add user to group - ensure memberIds exists and is an array
       const groupRef = doc(db, 'groups', groupId);
+      const currentMemberIds = group.memberIds || [];
       batch.update(groupRef, {
-        memberIds: [...group.memberIds, userId],
+        memberIds: [...currentMemberIds, userId],
         memberCount: increment(1),
         updatedAt: serverTimestamp()
       });
 
       // Create membership record
-      const membershipData = {
+      const membershipData: Record<string, any> = {
         groupId,
         userId,
         role: 'member',

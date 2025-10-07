@@ -7,6 +7,7 @@ import { Group } from '@/types';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import GroupAvatar from '@/components/GroupAvatar';
 import { 
   Users, 
   MapPin, 
@@ -112,20 +113,12 @@ export default function GroupCard({
           {/* Group Avatar */}
           <div className="flex items-start gap-3 mb-3">
             <div className="relative -mt-8">
-              <div className="w-16 h-16 rounded-full bg-white border-4 border-white shadow-sm overflow-hidden">
-                {group.imageUrl ? (
-                  <Image
-                    src={group.imageUrl}
-                    alt={group.name}
-                    width={64}
-                    height={64}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-bold text-lg">
-                    {group.name.charAt(0).toUpperCase()}
-                  </div>
-                )}
+              <div className="bg-white border-4 border-white rounded-xl shadow-sm">
+                <GroupAvatar
+                  imageUrl={group.imageUrl}
+                  name={group.name}
+                  size="lg"
+                />              
               </div>
             </div>
             

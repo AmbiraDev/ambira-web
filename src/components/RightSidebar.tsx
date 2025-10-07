@@ -2,8 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useAuth } from '@/contexts/AuthContext';
 import { firebaseUserApi, firebaseApi } from '@/lib/firebaseApi';
+import GroupAvatar from '@/components/GroupAvatar';
 import { Users } from 'lucide-react';
 
 interface SuggestedUser {
@@ -19,6 +21,7 @@ interface SuggestedGroup {
   name: string;
   memberCount: number;
   description: string;
+  imageUrl?: string;
 }
 
 function RightSidebar() {
@@ -27,6 +30,7 @@ function RightSidebar() {
   const [suggestedGroups, setSuggestedGroups] = useState<SuggestedGroup[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [followingUsers, setFollowingUsers] = useState<Set<string>>(new Set());
+  const [joiningGroups, setJoiningGroups] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (user) {
@@ -134,22 +138,21 @@ function RightSidebar() {
           ) : (
             <div className="py-2">
               {suggestedUsers.map((suggestedUser, index) => (
-                <div
+                <Link
                   key={suggestedUser.id}
-                  className="px-4 py-3 hover:bg-gray-50 transition-colors"
+                  href={`/profile/${suggestedUser.username}`}
+                  className="block px-4 py-3 hover:bg-gray-50 transition-colors"
                 >
                   <div className="flex items-center gap-3">
-                    <Link href={`/profile/${suggestedUser.username}`}>
-                      <div className="w-12 h-12 bg-[#FC4C02] rounded-full flex items-center justify-center flex-shrink-0 ring-2 ring-white">
-                        <span className="text-white font-semibold text-sm">
-                          {suggestedUser.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
-                        </span>
-                      </div>
-                    </Link>
+                    <div className="w-12 h-12 bg-[#007AFF] rounded-full flex items-center justify-center flex-shrink-0 ring-2 ring-white">
+                      <span className="text-white font-semibold text-sm">
+                        {suggestedUser.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                      </span>
+                    </div>
                     <div className="flex-1 min-w-0">
-                      <Link href={`/profile/${suggestedUser.username}`} className="font-semibold text-sm text-gray-900 hover:text-[#007AFF] truncate block mb-0.5">
+                      <p className="font-semibold text-sm text-gray-900 hover:text-[#007AFF] truncate mb-0.5">
                         {suggestedUser.name}
-                      </Link>
+                      </p>
                       <p className="text-xs text-gray-500 truncate">
                         @{suggestedUser.username}
                       </p>
@@ -157,12 +160,13 @@ function RightSidebar() {
                     <button
                       onClick={(e) => {
                         e.preventDefault();
+                        e.stopPropagation();
                         handleFollowToggle(suggestedUser.id);
                       }}
-                      className={`px-4 py-2 text-sm font-semibold rounded-lg transition-colors whitespace-nowrap flex-shrink-0 min-h-[36px] min-w-[80px] ${
+                      className={`text-sm font-semibold transition-colors whitespace-nowrap flex-shrink-0 ${
                         followingUsers.has(suggestedUser.id)
-                          ? 'border border-gray-300 hover:border-gray-400 hover:bg-gray-50 text-gray-700 bg-white'
-                          : 'bg-[#007AFF] hover:bg-[#0051D5] text-white'
+                          ? 'text-gray-600 hover:text-gray-900'
+                          : 'text-[#007AFF] hover:text-[#0051D5]'
                       }`}
                       aria-label={followingUsers.has(suggestedUser.id) ? `Unfollow ${suggestedUser.name}` : `Follow ${suggestedUser.name}`}
                       aria-pressed={followingUsers.has(suggestedUser.id)}
@@ -170,7 +174,7 @@ function RightSidebar() {
                       {followingUsers.has(suggestedUser.id) ? 'Following' : 'Follow'}
                     </button>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           )}
@@ -209,18 +213,53 @@ function RightSidebar() {
                 <Link
                   key={group.id}
                   href={`/groups/${group.id}`}
-                  className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors group"
+                  className="block px-4 py-3 hover:bg-gray-50 transition-colors"
                 >
-                  <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center flex-shrink-0 group-hover:from-blue-200 group-hover:to-blue-300 transition-all">
-                    <Users className="w-6 h-6 text-blue-600" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-semibold text-sm text-gray-900 truncate group-hover:text-[#007AFF] transition-colors">
-                      {group.name}
+                  <div className="flex items-center gap-3">
+                    <GroupAvatar
+                      imageUrl={group.imageUrl}
+                      name={group.name}
+                      size="md"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-sm text-gray-900 hover:text-[#007AFF] truncate mb-0.5">
+                        {group.name}
+                      </p>
+                      <div className="text-xs text-gray-500">
+                        {group.memberCount || 0} {group.memberCount === 1 ? 'member' : 'members'}
+                      </div>
                     </div>
-                    <div className="text-xs text-gray-500 mt-0.5">
-                      {group.memberCount || 0} {group.memberCount === 1 ? 'member' : 'members'}
-                    </div>
+                    <button
+                      onClick={async (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (!user || joiningGroups.has(group.id)) return;
+
+                        setJoiningGroups(prev => new Set(prev).add(group.id));
+                        try {
+                          await firebaseApi.group.joinGroup(group.id, user.id);
+                          // Remove from suggestions after joining
+                          setSuggestedGroups(prev => prev.filter(g => g.id !== group.id));
+                        } catch (error) {
+                          // Log error message only to avoid console object logging
+                          if (error instanceof Error) {
+                            console.warn('Failed to join group:', error.message);
+                          } else {
+                            console.warn('Failed to join group: Unknown error');
+                          }
+                        } finally {
+                          setJoiningGroups(prev => {
+                            const next = new Set(prev);
+                            next.delete(group.id);
+                            return next;
+                          });
+                        }
+                      }}
+                      className="text-sm font-semibold text-[#007AFF] hover:text-[#0051D5] transition-colors whitespace-nowrap flex-shrink-0"
+                      disabled={joiningGroups.has(group.id)}
+                    >
+                      {joiningGroups.has(group.id) ? 'Joining...' : 'Join'}
+                    </button>
                   </div>
                 </Link>
               ))}

@@ -5,6 +5,7 @@ import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import Header from '@/components/HeaderComponent';
 import BottomNavigation from '@/components/BottomNavigation';
+import GroupAvatar from '@/components/GroupAvatar';
 import { firebaseUserApi, firebaseApi } from '@/lib/firebaseApi';
 import { useAuth } from '@/contexts/AuthContext';
 import { UserCardCompact } from '@/components/UserCard';
@@ -281,20 +282,25 @@ function SearchContent() {
     const isLoading = joiningGroup === group.id;
     
     return (
-      <Link
+      <div
         key={group.id}
-        href={`/groups/${group.id}`}
-        className="block p-4 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-0"
+        className="p-4 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-0"
       >
         <div className="flex items-start gap-3">
           {/* Group Icon */}
-          <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center text-2xl flex-shrink-0">
-            {group.image}
-          </div>
+          <Link href={`/groups/${group.id}`}>
+            <GroupAvatar
+              imageUrl={group.imageUrl}
+              name={group.name}
+              size="md"
+            />
+          </Link>
           
           {/* Group Info */}
           <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-gray-900 text-base truncate">{group.name}</h3>
+            <Link href={`/groups/${group.id}`}>
+              <h3 className="font-semibold text-gray-900 text-base truncate hover:text-[#007AFF] transition-colors">{group.name}</h3>
+            </Link>
             <p className="text-sm text-gray-600 mt-0.5 line-clamp-2">{group.description}</p>
             
             {/* Meta Info */}
@@ -312,29 +318,26 @@ function SearchContent() {
             </div>
           </div>
           
-          {/* Join Button */}
+          {/* Join Link */}
           <button 
             onClick={(e) => handleJoinGroup(group.id, e)}
             disabled={isLoading}
-            className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors flex-shrink-0 flex items-center gap-1.5 ${
+            className={`text-sm font-semibold transition-colors flex-shrink-0 ${
               isJoined
-                ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                : 'bg-[#007AFF] text-white hover:bg-[#0056D6]'
+                ? 'text-gray-600 hover:text-gray-900'
+                : 'text-[#007AFF] hover:text-[#0051D5]'
             } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
             {isLoading ? (
-              <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+              'Joining...'
             ) : isJoined ? (
-              <>
-                <Check className="w-4 h-4" />
-                <span className="hidden sm:inline">Joined</span>
-              </>
+              'Joined'
             ) : (
-              <span>Join</span>
+              'Join'
             )}
           </button>
         </div>
-      </Link>
+      </div>
     );
   };
 
