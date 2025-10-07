@@ -681,7 +681,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
 
         {/* Fixed Bottom Controls - Strava Style */}
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-6 py-6 safe-area-bottom">
-          <div className="flex items-center justify-center gap-6">
+          <div className="flex items-center justify-between max-w-md mx-auto">
             {/* Project Button */}
             <div className="flex flex-col items-center gap-1">
               <button
@@ -708,7 +708,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                   disabled={!selectedProjectId}
                   className={`w-24 h-24 rounded-full flex items-center justify-center transition-all shadow-xl ${
                     selectedProjectId
-                      ? 'bg-[#FC4C02] hover:bg-[#E04502] active:scale-95'
+                      ? 'bg-[#10B981] hover:bg-[#059669] active:scale-95'
                       : 'bg-gray-300 cursor-not-allowed'
                   }`}
                 >
@@ -725,7 +725,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
               <div className="flex flex-col items-center gap-1">
                 <Link
                   href="/record-manual"
-                  className="w-16 h-16 rounded-full bg-[#007AFF] hover:bg-[#0056D6] active:scale-95 flex items-center justify-center transition-all shadow-lg"
+                  className="w-16 h-16 rounded-full bg-[#10B981] hover:bg-[#059669] active:scale-95 flex items-center justify-center transition-all shadow-lg"
                 >
                   <Edit3 className="w-6 h-6 text-white" />
                 </Link>
@@ -943,7 +943,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                     disabled={!selectedProjectId}
                     className={`px-8 md:px-12 py-3 md:py-5 rounded-full flex items-center gap-2 md:gap-3 transition-all text-base md:text-xl font-semibold ${
                       selectedProjectId
-                        ? 'bg-[#007AFF] hover:bg-[#0056D6] text-white shadow-lg hover:shadow-xl'
+                        ? 'bg-[#10B981] hover:bg-[#059669] text-white shadow-lg hover:shadow-xl'
                         : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                     }`}
                   >
@@ -955,9 +955,9 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                   
                   <Link
                     href="/record-manual"
-                    className="px-8 md:px-12 py-3 md:py-5 rounded-full bg-[#007AFF] hover:bg-[#0056D6] text-white flex items-center gap-2 md:gap-3 transition-all shadow-lg hover:shadow-xl text-base md:text-xl font-semibold"
+                    className="px-6 md:px-8 py-2.5 md:py-4 rounded-full bg-[#10B981] hover:bg-[#059669] text-white flex items-center gap-2 transition-all shadow-lg hover:shadow-xl text-sm md:text-lg font-semibold"
                   >
-                    <Edit3 className="w-6 h-6 md:w-8 md:h-8" />
+                    <Edit3 className="w-5 h-5 md:w-6 md:h-6" />
                     <span>Manual</span>
                   </Link>
                 </>
