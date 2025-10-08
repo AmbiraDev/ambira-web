@@ -6,6 +6,8 @@ import Image from 'next/image';
 import { useAuth } from '@/contexts/AuthContext';
 import { firebaseUserApi, firebaseApi } from '@/lib/firebaseApi';
 import GroupAvatar from '@/components/GroupAvatar';
+import SuggestedPeopleModal from '@/components/SuggestedPeopleModal';
+import SuggestedGroupsModal from '@/components/SuggestedGroupsModal';
 import { Users } from 'lucide-react';
 
 interface SuggestedUser {
@@ -31,6 +33,8 @@ function RightSidebar() {
   const [isLoading, setIsLoading] = useState(true);
   const [followingUsers, setFollowingUsers] = useState<Set<string>>(new Set());
   const [joiningGroups, setJoiningGroups] = useState<Set<string>>(new Set());
+  const [showPeopleModal, setShowPeopleModal] = useState(false);
+  const [showGroupsModal, setShowGroupsModal] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -113,9 +117,12 @@ function RightSidebar() {
           <div className="px-4 py-3 border-b border-gray-100">
             <div className="flex items-center justify-between">
               <h3 className="text-base font-semibold text-gray-900">Suggested for you</h3>
-              <Link href="/search?type=people" className="text-xs text-[#007AFF] hover:text-[#0056D6] font-semibold">
+              <button
+                onClick={() => setShowPeopleModal(true)}
+                className="text-xs text-[#007AFF] hover:text-[#0056D6] font-semibold"
+              >
                 See all
-              </Link>
+              </button>
             </div>
           </div>
 
@@ -185,9 +192,12 @@ function RightSidebar() {
           <div className="px-4 py-3 border-b border-gray-100">
             <div className="flex items-center justify-between">
               <h3 className="text-base font-semibold text-gray-900">Groups to join</h3>
-              <Link href="/groups" className="text-xs text-[#007AFF] hover:text-[#0056D6] font-semibold">
+              <button
+                onClick={() => setShowGroupsModal(true)}
+                className="text-xs text-[#007AFF] hover:text-[#0056D6] font-semibold"
+              >
                 See all
-              </Link>
+              </button>
             </div>
           </div>
 
@@ -282,6 +292,16 @@ function RightSidebar() {
         </div>
 
       </div>
+
+      {/* Modals */}
+      <SuggestedPeopleModal
+        isOpen={showPeopleModal}
+        onClose={() => setShowPeopleModal(false)}
+      />
+      <SuggestedGroupsModal
+        isOpen={showGroupsModal}
+        onClose={() => setShowGroupsModal(false)}
+      />
     </aside>
   );
 }
