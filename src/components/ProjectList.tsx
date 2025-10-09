@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Project } from '@/types';
 import { ProjectCard } from './ProjectCard';
@@ -11,6 +11,8 @@ interface ProjectListProps {
   onEditProject?: (project: Project) => void;
 }
 
+const STORAGE_KEY = 'projectViewMode';
+
 export const ProjectList: React.FC<ProjectListProps> = ({
   onCreateProject,
   onEditProject,
@@ -20,6 +22,20 @@ export const ProjectList: React.FC<ProjectListProps> = ({
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [filter, setFilter] = useState<'all' | 'active' | 'completed' | 'archived'>('all');
   const [deleteConfirm, setDeleteConfirm] = useState<Project | null>(null);
+
+  // Load view mode from localStorage on mount
+  useEffect(() => {
+    const savedViewMode = localStorage.getItem(STORAGE_KEY);
+    if (savedViewMode === 'grid' || savedViewMode === 'list') {
+      setViewMode(savedViewMode);
+    }
+  }, []);
+
+  // Save view mode to localStorage whenever it changes
+  const handleViewModeChange = (mode: 'grid' | 'list') => {
+    setViewMode(mode);
+    localStorage.setItem(STORAGE_KEY, mode);
+  };
 
   // Filter projects based on selected filter
   const filteredProjects = projects.filter(project => {
@@ -112,7 +128,7 @@ export const ProjectList: React.FC<ProjectListProps> = ({
   if (error) {
     return (
       <div className="text-center py-12">
-        <div className="text-red-500 text-lg mb-4">Error loading projects</div>
+        <div className="text-red-500 text-lg mb-4">Error loading activities</div>
         <p className="text-gray-600 mb-4">{error}</p>
         <button
           onClick={() => window.location.reload()}
@@ -129,9 +145,9 @@ export const ProjectList: React.FC<ProjectListProps> = ({
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Projects</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Activities</h1>
           <p className="text-gray-600">
-            {filteredProjects.length} project{filteredProjects.length !== 1 ? 's' : ''}
+            {filteredProjects.length} activit{filteredProjects.length !== 1 ? 'ies' : 'y'}
             {filter !== 'all' && ` (${filter})`}
           </p>
         </div>
@@ -143,11 +159,11 @@ export const ProjectList: React.FC<ProjectListProps> = ({
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
             </svg>
-            New Project
+            New Activity
           </button>
           <div className="flex border border-gray-200 rounded-lg">
             <button
-              onClick={() => setViewMode('grid')}
+              onClick={() => handleViewModeChange('grid')}
               className={`p-2 ${viewMode === 'grid' ? 'bg-[#007AFF] text-white' : 'text-gray-600 hover:bg-gray-50'}`}
             >
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -155,7 +171,7 @@ export const ProjectList: React.FC<ProjectListProps> = ({
               </svg>
             </button>
             <button
-              onClick={() => setViewMode('list')}
+              onClick={() => handleViewModeChange('list')}
               className={`p-2 ${viewMode === 'list' ? 'bg-[#007AFF] text-white' : 'text-gray-600 hover:bg-gray-50'}`}
             >
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -198,12 +214,12 @@ export const ProjectList: React.FC<ProjectListProps> = ({
               </svg>
             </div>
             <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-2">
-              {filter === 'all' ? 'No projects yet' : `No ${filter} projects`}
+              {filter === 'all' ? 'No activities yet' : `No ${filter} activities`}
             </h3>
             <p className="text-sm md:text-base text-gray-600 mb-6">
               {filter === 'all'
-                ? "Projects help you organize your work sessions and track progress over time. Create your first project to get started!"
-                : `No ${filter} projects found. Try adjusting your filter or create a new project.`
+                ? "Activities help you organize your work sessions and track progress over time. Create your first activity to get started!"
+                : `No ${filter} activities found. Try adjusting your filter or create a new activity.`
               }
             </p>
             {filter === 'all' ? (
@@ -215,10 +231,10 @@ export const ProjectList: React.FC<ProjectListProps> = ({
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                   </svg>
-                  Create Your First Project
+                  Create Your First Activity
                 </button>
                 <p className="text-xs text-gray-500">
-                  Tip: You can assign tasks to projects and track time spent on each one
+                  Tip: You can assign tasks to activities and track time spent on each one
                 </p>
               </>
             ) : (
@@ -226,7 +242,7 @@ export const ProjectList: React.FC<ProjectListProps> = ({
                 onClick={() => setFilter('all')}
                 className="inline-flex items-center gap-2 px-5 py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors"
               >
-                View All Projects
+                View All Activities
               </button>
             )}
           </div>
@@ -253,7 +269,7 @@ export const ProjectList: React.FC<ProjectListProps> = ({
       {deleteConfirm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Delete Project</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Delete Activity</h3>
             <p className="text-gray-600 mb-6">
               Are you sure you want to delete "{deleteConfirm.name}"? This action cannot be undone.
             </p>

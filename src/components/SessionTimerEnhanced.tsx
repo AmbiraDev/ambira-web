@@ -11,23 +11,12 @@ import { GlobalTasks } from './GlobalTasks';
 import { uploadImages, compressImage } from '@/lib/imageUpload';
 import { ImageUpload } from '@/components/ImageUpload';
 import Link from 'next/link';
+import { DEFAULT_ACTIVITIES, Activity } from '@/types';
+import { IconRenderer } from '@/components/IconRenderer';
 
 interface SessionTimerEnhancedProps {
   projectId: string;
 }
-interface TagConfig {
-  name: string;
-  color: string;
-  bgColor: string;
-}
-
-const TAG_CONFIGS: TagConfig[] = [
-  { name: 'Study', color: '#3B82F6', bgColor: '#DBEAFE' },      // Blue
-  { name: 'Work', color: '#8B5CF6', bgColor: '#EDE9FE' },        // Purple
-  { name: 'Side Project', color: '#F59E0B', bgColor: '#FEF3C7' }, // Amber
-  { name: 'Reading', color: '#10B981', bgColor: '#D1FAE5' },     // Green
-  { name: 'Learning', color: '#EC4899', bgColor: '#FCE7F3' },    // Pink
-];
 
 export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
   const { 
@@ -50,56 +39,60 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
   const [showFinishModal, setShowFinishModal] = useState(false);
   const [sessionTitle, setSessionTitle] = useState('');
   const [sessionDescription, setSessionDescription] = useState('');
-  const [sessionTags, setSessionTags] = useState<string[]>([]);
   const [visibility, setVisibility] = useState<'everyone' | 'followers' | 'private'>('everyone');
   const [showStartTime, setShowStartTime] = useState(false);
   const [hideTaskNames, setHideTaskNames] = useState(false);
   const [publishToFeeds, setPublishToFeeds] = useState(true);
   const [howFelt, setHowFelt] = useState<number>(3);
   const [privateNotes, setPrivateNotes] = useState('');
-  const [selectedProjectId, setSelectedProjectId] = useState<string>('');
+  const [selectedActivityId, setSelectedActivityId] = useState<string>('');
   const [displayTime, setDisplayTime] = useState(0);
-  const [showProjectPicker, setShowProjectPicker] = useState(false);
-  const [showTagPicker, setShowTagPicker] = useState(false);
+  const [showActivityPicker, setShowActivityPicker] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [adjustedDuration, setAdjustedDuration] = useState(0);
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
   const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
   const [isUploadingImages, setIsUploadingImages] = useState(false);
 
-  // Load last used project and tag from local storage on mount
+  // Combine default activities with custom activities
+  const allActivities: Activity[] = [
+    ...DEFAULT_ACTIVITIES.map(def => ({
+      id: def.id,
+      userId: '',
+      name: def.name,
+      icon: def.icon,
+      color: def.color,
+      description: '',
+      status: 'active' as const,
+      isDefault: true,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    })),
+    ...projects
+  ];
+
+  // Load last used activity from local storage on mount
   useEffect(() => {
-    const savedProjectId = localStorage.getItem('lastSessionProject');
-    const savedTag = localStorage.getItem('lastSessionTag');
-    
-    if (savedProjectId) {
-      setSelectedProjectId(savedProjectId);
-    }
-    if (savedTag) {
-      setSessionTags([savedTag]);
+    const savedActivityId = localStorage.getItem('lastSessionActivity');
+
+    if (savedActivityId) {
+      setSelectedActivityId(savedActivityId);
     }
   }, []);
 
-  // Initialize selectedProjectId from timerState if there's an active session
+  // Initialize selectedActivityId from timerState if there's an active session
   useEffect(() => {
-    if (timerState.currentProject && !selectedProjectId) {
-      setSelectedProjectId(timerState.currentProject.id);
+    if (timerState.currentProject && !selectedActivityId) {
+      setSelectedActivityId(timerState.currentProject.id);
     }
-  }, [timerState.currentProject]);
+  }, [timerState.currentProject, selectedActivityId]);
 
-  // Save project to local storage whenever it changes
+  // Save activity to local storage whenever it changes
   useEffect(() => {
-    if (selectedProjectId) {
-      localStorage.setItem('lastSessionProject', selectedProjectId);
+    if (selectedActivityId) {
+      localStorage.setItem('lastSessionActivity', selectedActivityId);
     }
-  }, [selectedProjectId]);
-
-  // Save tag to local storage whenever it changes
-  useEffect(() => {
-    if (sessionTags.length > 0 && sessionTags[0]) {
-      localStorage.setItem('lastSessionTag', sessionTags[0]);
-    }
-  }, [sessionTags]);
+  }, [selectedActivityId]);
 
   // Count completed tasks in this session
   useEffect(() => {
@@ -159,13 +152,13 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
   };
 
   const handleStartTimer = async () => {
-    if (!selectedProjectId) {
-      alert('Please select a project first');
+    if (!selectedActivityId) {
+      alert('Please select an activity first');
       return;
     }
-    
+
     try {
-      await startTimer(selectedProjectId, selectedTaskIds);
+      await startTimer(selectedActivityId, selectedTaskIds);
     } catch (error) {
       console.error('Failed to start timer:', error);
       alert('Failed to start timer. Please try again.');
@@ -215,7 +208,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
       const session = await finishTimer(
         sessionTitle,
         sessionDescription,
-        sessionTags,
+        [], // tags removed
         howFelt,
         privateNotes,
         {
@@ -234,7 +227,6 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
       // Reset all session state
       setSessionTitle('');
       setSessionDescription('');
-      setSessionTags([]);
       setPrivateNotes('');
       setHowFelt(3);
 
@@ -257,7 +249,6 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
       // Reset all state
       setSessionTitle('');
       setSessionDescription('');
-      setSessionTags([]);
       setPrivateNotes('');
       setHowFelt(3);
       // Route to feed page
@@ -337,63 +328,35 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                 showProgress={false}
               />
 
-              {/* Project and Tags - Side by Side */}
-              <div className="grid grid-cols-2 gap-3">
-                {/* Project Selection */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Project
-                  </label>
-                  {projects.length === 0 ? (
-                    <div className="text-sm text-gray-600">
-                      <Link
-                        href="/projects"
-                        className="text-[#007AFF] hover:underline font-medium"
-                      >
-                        Create your first project
-                      </Link>
-                    </div>
-                  ) : (
-                    <select
-                      value={selectedProjectId}
-                      onChange={(e) => setSelectedProjectId(e.target.value)}
-                      className="w-full pl-3 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] bg-white text-sm appearance-none"
-                      style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 12 12\'%3E%3Cpath fill=\'%23666\' d=\'M6 9L1 4h10z\'/%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.75rem center' }}
+              {/* Activity Selection */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Activity
+                </label>
+                {projects.length === 0 ? (
+                  <div className="text-sm text-gray-600">
+                    <Link
+                      href="/projects"
+                      className="text-[#007AFF] hover:underline font-medium"
                     >
-                      <option value="">Unassigned</option>
-                      {projects.map((project) => (
-                        <option key={project.id} value={project.id}>
-                          {project.icon} {project.name}
-                        </option>
-                      ))}
-                    </select>
-                  )}
-                </div>
-
-                {/* Tags Selection */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Tag
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                      <span className="text-base">🏷️</span>
-                    </div>
-                    <select
-                      value={sessionTags[0] || ''}
-                      onChange={(e) => setSessionTags(e.target.value ? [e.target.value] : [])}
-                      className="w-full pl-9 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] bg-white text-sm appearance-none"
-                      style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 12 12\'%3E%3Cpath fill=\'%23666\' d=\'M6 9L1 4h10z\'/%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.75rem center' }}
-                    >
-                      <option value="">Select Tag</option>
-                      {TAG_CONFIGS.map((tagConfig) => (
-                        <option key={tagConfig.name} value={tagConfig.name}>
-                          {tagConfig.name}
-                        </option>
-                      ))}
-                    </select>
+                      Create your first activity
+                    </Link>
                   </div>
-                </div>
+                ) : (
+                  <select
+                    value={selectedActivityId}
+                    onChange={(e) => setSelectedActivityId(e.target.value)}
+                    className="w-full pl-3 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] bg-white text-sm appearance-none"
+                    style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 12 12\'%3E%3Cpath fill=\'%23666\' d=\'M6 9L1 4h10z\'/%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.75rem center' }}
+                  >
+                    <option value="">Unassigned</option>
+                    {allActivities.map((activity) => (
+                      <option key={activity.id} value={activity.id}>
+                        {activity.icon} {activity.name}
+                      </option>
+                    ))}
+                  </select>
+                )}
               </div>
 
               {/* Private Notes */}
@@ -491,7 +454,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                 <div className="text-sm text-gray-600 space-y-1">
                   <div>Duration: {getFormattedTime(adjustedDuration)}</div>
                   <div>Tasks completed: {completedTasksCount} of {selectedTasks.length}</div>
-                  <div>Project: {projects.find(p => p.id === selectedProjectId)?.name || timerState.currentProject?.name || 'Unassigned'}</div>
+                  <div>Activity: {allActivities.find(a => a.id === selectedActivityId)?.name || timerState.currentProject?.name || 'Unassigned'}</div>
                 </div>
               </div>
 
@@ -546,9 +509,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
   }
 
   // Main timer UI - only show when not completing a session
-  const selectedProject = projects.find(p => p.id === selectedProjectId) || timerState.currentProject;
-  const selectedTag = sessionTags[0];
-  const selectedTagConfig = TAG_CONFIGS.find(t => t.name === selectedTag);
+  const selectedActivity = allActivities.find(a => a.id === selectedActivityId) || timerState.currentProject;
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
@@ -587,22 +548,26 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
         {/* Fixed Bottom Controls - Strava Style */}
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 px-6 py-6 safe-area-bottom">
           <div className="flex items-end justify-center gap-6 max-w-md mx-auto">
-            {/* Project Button */}
+            {/* Activity Button */}
             <div className="flex flex-col items-center gap-1">
               <button
-                onClick={() => setShowProjectPicker(true)}
+                onClick={() => setShowActivityPicker(true)}
                 className="relative w-16 h-16 rounded-full flex items-center justify-center transition-all border-2 active:scale-95"
-                style={selectedProjectId && selectedProject ? {
-                  backgroundColor: `${selectedProject.color}20`,
-                  borderColor: selectedProject.color
+                style={selectedActivityId && selectedActivity ? {
+                  backgroundColor: `${selectedActivity.color}20`,
+                  borderColor: selectedActivity.color
                 } : {
                   backgroundColor: '#F3F4F6',
                   borderColor: '#D1D5DB'
                 }}
               >
-                <span className="text-2xl">{selectedProject?.icon || '📁'}</span>
+                {selectedActivity?.icon ? (
+                  <IconRenderer iconName={selectedActivity.icon} className="w-7 h-7 text-gray-700" />
+                ) : (
+                  <IconRenderer iconName="Folder" className="w-7 h-7 text-gray-700" />
+                )}
               </button>
-              <span className="text-xs text-gray-600 font-medium">Project</span>
+              <span className="text-xs text-gray-600 font-medium">Activity</span>
             </div>
 
             {/* Center: Main Action Button */}
@@ -610,9 +575,9 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
               <div className="flex flex-col items-center gap-1">
                 <button
                   onClick={handleStartTimer}
-                  disabled={!selectedProjectId}
+                  disabled={!selectedActivityId}
                   className={`w-24 h-24 rounded-full flex items-center justify-center transition-all shadow-xl ${
-                    selectedProjectId
+                    selectedActivityId
                       ? 'bg-[#22C55E] hover:bg-[#16A34A] active:scale-95'
                       : 'bg-gray-300 cursor-not-allowed'
                   }`}
@@ -678,40 +643,22 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                 </div>
               </>
             )}
-
-            {/* Tag Button - Always visible on the right */}
-            <div className="flex flex-col items-center gap-1">
-              <button
-                onClick={() => setShowTagPicker(true)}
-                className="relative w-16 h-16 rounded-full flex items-center justify-center transition-all border-2 active:scale-95"
-                style={selectedTagConfig ? {
-                  backgroundColor: selectedTagConfig.bgColor,
-                  borderColor: selectedTagConfig.color
-                } : {
-                  backgroundColor: '#F3F4F6',
-                  borderColor: '#D1D5DB'
-                }}
-              >
-                <span className="text-2xl">🏷️</span>
-              </button>
-              <span className="text-xs text-gray-600 font-medium">Tag</span>
-            </div>
           </div>
         </div>
 
-        {/* Project Picker Modal - Slide up with timer visible */}
-        {showProjectPicker && (
+        {/* Activity Picker Modal - Slide up with timer visible */}
+        {showActivityPicker && (
           <div
             className="fixed inset-0 z-50 flex items-end"
             onClick={(e) => {
-              if (e.target === e.currentTarget) setShowProjectPicker(false);
+              if (e.target === e.currentTarget) setShowActivityPicker(false);
             }}
           >
             <div className="bg-white w-full rounded-t-3xl p-6 max-h-[60vh] overflow-y-auto shadow-2xl animate-slide-up">
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-gray-900">Select Project</h2>
+                <h2 className="text-xl font-bold text-gray-900">Select Activity</h2>
                 <button
-                  onClick={() => setShowProjectPicker(false)}
+                  onClick={() => setShowActivityPicker(false)}
                   className="p-2 text-gray-500 hover:text-gray-900"
                 >
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -720,106 +667,41 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                 </button>
               </div>
               <div className="space-y-3">
-                {/* Unassigned Option */}
-                <button
-                  onClick={() => {
-                    setSelectedProjectId('');
-                    setShowProjectPicker(false);
-                  }}
-                  className={`w-full flex items-center gap-3 p-4 rounded-xl transition-all ${
-                    !selectedProjectId
-                      ? 'bg-blue-100 border-2 border-blue-500'
-                      : 'bg-gray-50 border-2 border-transparent hover:bg-gray-100'
-                  }`}
-                >
-                  <span className="text-3xl">📁</span>
-                  <div className="flex-1 text-left">
-                    <div className="font-semibold text-gray-900">Unassigned</div>
-                    <div className="text-sm text-gray-500">No project selected</div>
-                  </div>
-                  {!selectedProjectId && (
-                    <svg className="w-6 h-6 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                    </svg>
-                  )}
-                </button>
-
-                {/* Project List */}
-                {projects.map((project) => (
+                {/* Activity List - Shows default activities + custom activities */}
+                {allActivities.map((activity) => (
                   <button
-                    key={project.id}
+                    key={activity.id}
                     onClick={() => {
-                      setSelectedProjectId(project.id);
-                      setShowProjectPicker(false);
+                      setSelectedActivityId(activity.id);
+                      setShowActivityPicker(false);
                     }}
                     className={`w-full flex items-center gap-3 p-4 rounded-xl transition-all ${
-                      selectedProjectId === project.id
+                      selectedActivityId === activity.id
                         ? 'bg-blue-100 border-2 border-blue-500'
                         : 'bg-gray-50 border-2 border-transparent hover:bg-gray-100'
                     }`}
                   >
-                    <span className="text-3xl">{project.icon}</span>
+                    <div
+                      className="w-12 h-12 rounded-lg flex items-center justify-center"
+                      style={{ backgroundColor: `${activity.color}20` }}
+                    >
+                      <IconRenderer
+                        iconName={activity.icon}
+                        className="w-6 h-6"
+                        style={{ color: activity.color }}
+                      />
+                    </div>
                     <div className="flex-1 text-left">
-                      <div className="font-semibold text-gray-900">{project.name}</div>
-                      {project.description && (
-                        <div className="text-sm text-gray-500">{project.description}</div>
+                      <div className="font-semibold text-gray-900">{activity.name}</div>
+                      {activity.description && (
+                        <div className="text-sm text-gray-500">{activity.description}</div>
+                      )}
+                      {activity.isDefault && (
+                        <div className="text-xs text-blue-600 mt-0.5">Default</div>
                       )}
                     </div>
-                    {selectedProjectId === project.id && (
+                    {selectedActivityId === activity.id && (
                       <svg className="w-6 h-6 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                      </svg>
-                    )}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Tag Picker Modal - Slide up with timer visible */}
-        {showTagPicker && (
-          <div
-            className="fixed inset-0 z-50 flex items-end"
-            onClick={(e) => {
-              if (e.target === e.currentTarget) setShowTagPicker(false);
-            }}
-          >
-            <div className="bg-white w-full rounded-t-3xl p-6 max-h-[60vh] overflow-y-auto shadow-2xl animate-slide-up">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-gray-900">Select Tag</h2>
-                <button
-                  onClick={() => setShowTagPicker(false)}
-                  className="p-2 text-gray-500 hover:text-gray-900"
-                >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-              <div className="space-y-3">
-                {TAG_CONFIGS.map((tagConfig) => (
-                  <button
-                    key={tagConfig.name}
-                    onClick={() => {
-                      setSessionTags([tagConfig.name]);
-                      setShowTagPicker(false);
-                    }}
-                    className="w-full flex items-center gap-3 p-4 rounded-xl transition-all border-2"
-                    style={selectedTag === tagConfig.name ? {
-                      backgroundColor: tagConfig.bgColor,
-                      borderColor: tagConfig.color
-                    } : {
-                      backgroundColor: '#F9FAFB',
-                      borderColor: 'transparent'
-                    }}
-                  >
-                    <span className="text-2xl">🏷️</span>
-                    <div className="flex-1 text-left">
-                      <div className="font-semibold text-gray-900">{tagConfig.name}</div>
-                    </div>
-                    {selectedTag === tagConfig.name && (
-                      <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" style={{ color: tagConfig.color }}>
                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                       </svg>
                     )}
@@ -847,9 +729,9 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                 <>
                   <button
                     onClick={handleStartTimer}
-                    disabled={!selectedProjectId}
+                    disabled={!selectedActivityId}
                     className={`px-8 md:px-12 py-3 md:py-5 rounded-full flex items-center gap-2 md:gap-3 transition-all text-base md:text-xl font-semibold ${
-                      selectedProjectId
+                      selectedActivityId
                         ? 'bg-[#22C55E] hover:bg-[#16A34A] text-white shadow-lg hover:shadow-xl'
                         : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                     }`}
@@ -905,43 +787,18 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
             </div>
           </div>
 
-          {/* Project & Tag Dropdowns */}
-          <div className="w-full max-w-xl grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-3">
-            {/* Project Dropdown */}
+          {/* Activity Dropdown */}
+          <div className="w-full max-w-xl">
             <div className="relative">
               <select
-                value={selectedProjectId}
-                onChange={(e) => setSelectedProjectId(e.target.value)}
+                value={selectedActivityId}
+                onChange={(e) => setSelectedActivityId(e.target.value)}
                 className="w-full px-3 md:px-4 py-2 md:py-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] bg-white appearance-none cursor-pointer text-sm md:text-base"
               >
                 <option value="">Unassigned</option>
-                {projects.map((project) => (
-                  <option key={project.id} value={project.id}>
-                    {project.icon} {project.name}
-                  </option>
-                ))}
-              </select>
-              <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                <svg className="w-4 h-4 md:w-5 md:h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </div>
-            </div>
-
-            {/* Tag Dropdown */}
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 flex items-center pl-3 md:pl-4 pointer-events-none z-10">
-                <span className="text-lg">🏷️</span>
-              </div>
-              <select
-                value={sessionTags[0] || ''}
-                onChange={(e) => setSessionTags(e.target.value ? [e.target.value] : [])}
-                className="w-full pl-10 md:pl-12 pr-10 py-2 md:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] bg-white appearance-none cursor-pointer text-sm md:text-base"
-              >
-                <option value="">Select Tag</option>
-                {TAG_CONFIGS.map((tagConfig) => (
-                  <option key={tagConfig.name} value={tagConfig.name}>
-                    {tagConfig.name}
+                {allActivities.map((activity) => (
+                  <option key={activity.id} value={activity.id}>
+                    {activity.icon} {activity.name}
                   </option>
                 ))}
               </select>
@@ -1004,52 +861,24 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                 />
               </div>
 
-              {/* Project and Tags - Side by Side */}
-              <div className="grid grid-cols-2 gap-3">
-                {/* Project Selection */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Project
-                  </label>
-                  <select
-                    value={selectedProjectId}
-                    onChange={(e) => setSelectedProjectId(e.target.value)}
-                    className="w-full pl-3 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] bg-white appearance-none"
-                    style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 12 12\'%3E%3Cpath fill=\'%23666\' d=\'M6 9L1 4h10z\'/%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.75rem center' }}
-                  >
-                    <option value="">Unassigned</option>
-                    {projects.map((project) => (
-                      <option key={project.id} value={project.id}>
-                        {project.icon} {project.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Tags Selection */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Tag
-                  </label>
-                  <div className="relative">
-                    <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                      <span className="text-base">🏷️</span>
-                    </div>
-                    <select
-                      value={sessionTags[0] || ''}
-                      onChange={(e) => setSessionTags(e.target.value ? [e.target.value] : [])}
-                      className="w-full pl-9 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] bg-white appearance-none"
-                      style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 12 12\'%3E%3Cpath fill=\'%23666\' d=\'M6 9L1 4h10z\'/%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.75rem center' }}
-                    >
-                      <option value="">Select Tag</option>
-                      {TAG_CONFIGS.map((tagConfig) => (
-                        <option key={tagConfig.name} value={tagConfig.name}>
-                          {tagConfig.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
+              {/* Activity Selection */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Activity
+                </label>
+                <select
+                  value={selectedActivityId}
+                  onChange={(e) => setSelectedActivityId(e.target.value)}
+                  className="w-full pl-3 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] bg-white appearance-none"
+                  style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 12 12\'%3E%3Cpath fill=\'%23666\' d=\'M6 9L1 4h10z\'/%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.75rem center' }}
+                >
+                  <option value="">Unassigned</option>
+                  {allActivities.map((activity) => (
+                    <option key={activity.id} value={activity.id}>
+                      {activity.icon} {activity.name}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               {/* How did it feel */}
@@ -1137,7 +966,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                 <div className="text-sm text-gray-600 space-y-1">
                   <div>Duration: {getFormattedTime(adjustedDuration)}</div>
                   <div>Tasks completed: {completedTasksCount} of {selectedTasks.length}</div>
-                  <div>Project: {projects.find(p => p.id === selectedProjectId)?.name || timerState.currentProject?.name || 'Unassigned'}</div>
+                  <div>Activity: {allActivities.find(a => a.id === selectedActivityId)?.name || timerState.currentProject?.name || 'Unassigned'}</div>
                 </div>
               </div>
 

@@ -9,6 +9,7 @@ import { CreateProjectModal } from './CreateProjectModal';
 import { TaskList } from './TaskList';
 import { firebaseSessionApi } from '@/lib/firebaseApi';
 import { ProjectProgressView } from './ProjectProgressView';
+import { IconRenderer } from './IconRenderer';
 
 interface ProjectDetailPageProps {
   projectId: string;
@@ -118,7 +119,9 @@ export const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({ projectId 
     return (
       <div className="max-w-4xl mx-auto p-6">
         <div className="text-center py-12">
-          <div className="text-gray-400 text-6xl mb-4">📁</div>
+          <div className="flex justify-center mb-4">
+            <IconRenderer iconName="flat-color-icons:folder" size={80} />
+          </div>
           <h3 className="text-lg font-semibold text-gray-900 mb-2">Project not found</h3>
           <p className="text-gray-600 mb-4">The project you're looking for doesn't exist or you don't have access to it.</p>
           <button
@@ -158,8 +161,8 @@ export const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({ projectId 
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center gap-4 mb-6">
-          <div className={`w-16 h-16 ${colorClass} rounded-lg flex items-center justify-center text-white text-2xl`}>
-            {project.icon}
+          <div className={`w-16 h-16 ${colorClass} rounded-lg flex items-center justify-center p-2`}>
+            <IconRenderer iconName={project.icon} size={48} />
           </div>
           <div className="flex-1">
             <h1 className="text-3xl font-bold text-gray-900">{project.name}</h1>
@@ -509,10 +512,8 @@ const ProfileTab: React.FC<ProfileTabProps> = ({ project, stats }) => {
       {/* Project Info Card */}
       <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
         {/* Project Icon */}
-        <div className={`w-24 h-24 ${colorClass} rounded-2xl flex items-center justify-center mb-4`}>
-          <span className="text-white text-4xl">
-            {project.icon}
-          </span>
+        <div className={`w-24 h-24 ${colorClass} rounded-2xl flex items-center justify-center mb-4 p-3`}>
+          <IconRenderer iconName={project.icon} size={72} />
         </div>
 
         {/* Name and Description */}

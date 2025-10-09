@@ -11,11 +11,13 @@ import { Search, X, ChevronDown, Menu, LayoutDashboard, Users, BarChart3, Timer,
 export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const [isAnalyticsMenuOpen, setIsAnalyticsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchFilter, setSearchFilter] = useState<'people' | 'groups' | 'challenges'>('people');
   const [isFilterDropdownOpen, setIsFilterDropdownOpen] = useState(false);
   const profileCloseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const analyticsCloseTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const pathname = usePathname();
   const router = useRouter();
@@ -78,7 +80,7 @@ export default function Header() {
   return (
     <header className="sticky top-0 left-0 right-0 z-50 bg-white border-b border-gray-200">
         <div className="max-w-[1400px] mx-auto px-4">
-          <div className="flex items-center justify-between h-16">
+          <div className="flex items-center justify-between h-14">
           {/* Left side: Logo + Search + Navigation */}
           <div className="flex items-center space-x-4">
             {/* Logo */}
@@ -186,7 +188,7 @@ export default function Header() {
 
             {/* Desktop Navigation - Only show when search is closed */}
             {!isSearchOpen && (
-              <nav className="hidden md:flex items-center space-x-6 h-16">
+              <nav className="hidden md:flex items-center space-x-6 h-14">
                 <Link
                   href="/"
                   className={`text-base font-medium transition-colors flex items-center gap-2 h-full relative ${
@@ -216,16 +218,16 @@ export default function Header() {
                   )}
                 </Link>
                 <Link
-                  href="/you?tab=progress"
+                  href="/projects"
                   className={`text-base font-medium transition-colors flex items-center gap-2 h-full relative ${
-                    isActive('/you')
+                    isActive('/projects') || isActive('/activities')
                       ? 'text-gray-900'
                       : 'text-gray-600 hover:text-[#007AFF]'
                   }`}
                 >
-                  <BarChart3 className={`w-4 h-4 ${isActive('/you') ? 'text-[#F59E0B]' : 'text-[#F59E0B]'}`} />
-                  Analytics
-                  {isActive('/you') && (
+                  <Timer className={`w-4 h-4 ${isActive('/projects') || isActive('/activities') ? 'text-[#5E8B47]' : 'text-[#5E8B47]'}`} />
+                  Activities
+                  {(isActive('/projects') || isActive('/activities')) && (
                     <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#007AFF]"></div>
                   )}
                 </Link>
@@ -242,28 +244,30 @@ export default function Header() {
                 {/* Start Session Button */}
                 <Link
                   href="/timer"
-                  className="hidden md:flex items-center gap-2 px-3 py-2 hover:bg-gray-50 rounded-lg transition-colors"
+                  className="hidden md:flex items-center gap-2 px-3 py-2 hover:bg-gray-50 rounded-lg transition-colors whitespace-nowrap"
                 >
                   <Timer
                     className="w-5 h-5 text-[#5E8B47]"
                     strokeWidth={2}
                   />
                   <span className="font-medium text-base text-gray-700">
-                    Start Session
+                    <span className="hidden 2xl:inline">Start Session</span>
+                    <span className="2xl:hidden">Start</span>
                   </span>
                 </Link>
 
                 {/* Log Manually Button */}
                 <Link
                   href="/record-manual"
-                  className="hidden md:flex items-center gap-2 px-3 py-2 hover:bg-gray-50 rounded-lg transition-colors"
+                  className="hidden md:flex items-center gap-2 px-3 py-2 hover:bg-gray-50 rounded-lg transition-colors whitespace-nowrap"
                 >
                   <Edit3
                     className="w-5 h-5 text-[#C37D16]"
                     strokeWidth={2}
                   />
                   <span className="font-medium text-base text-gray-700">
-                    Log Manually
+                    <span className="hidden 2xl:inline">Log Manually</span>
+                    <span className="2xl:hidden">Manual</span>
                   </span>
                 </Link>
               </>
@@ -280,9 +284,9 @@ export default function Header() {
               </Link>
             )}
 
-            {/* Profile with dropdown (opens on hover, with small close delay) - Only show when authenticated */}
+            {/* Profile with Strava-style dropdown - Only show when authenticated */}
             {user && (
-              <div 
+              <div
                 className="relative"
                 onMouseEnter={() => {
                   if (profileCloseTimerRef.current) {
@@ -298,9 +302,7 @@ export default function Header() {
                   profileCloseTimerRef.current = setTimeout(() => setIsProfileMenuOpen(false), 200);
                 }}
               >
-                <button 
-                  className="flex items-center space-x-2 text-gray-600 hover:text-[#007AFF] transition-colors"
-                >
+                <button className="text-gray-600 hover:text-[#007AFF] transition-colors">
                   {user.profilePicture ? (
                     <div className="w-9 h-9 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-gray-200 hover:ring-[#007AFF] transition-all">
                       <Image
@@ -319,13 +321,12 @@ export default function Header() {
                       </span>
                     </div>
                   )}
-                  <ChevronDown className="w-4 h-4 hidden md:block" />
                 </button>
 
-                {/* Dropdown Menu */}
+                {/* Strava-style Dropdown Menu */}
                 {isProfileMenuOpen && (
-                  <div 
-                    className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-20"
+                  <div
+                    className="absolute right-0 top-0 z-20"
                     onMouseEnter={() => {
                       if (profileCloseTimerRef.current) {
                         clearTimeout(profileCloseTimerRef.current);
@@ -340,25 +341,47 @@ export default function Header() {
                       profileCloseTimerRef.current = setTimeout(() => setIsProfileMenuOpen(false), 200);
                     }}
                   >
-                      <Link
-                        href="/you?tab=profile"
-                        className="block px-4 py-2 text-gray-900 hover:bg-gray-50 transition-colors"
-                      >
-                        My Profile
-                      </Link>
-                      <Link
-                        href="/settings"
-                        className="block px-4 py-2 text-gray-900 hover:bg-gray-50 transition-colors"
-                      >
-                        Settings
-                      </Link>
-                      <hr className="my-2 border-gray-200" />
-                      <button
-                        onClick={() => logout()}
-                        className="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 transition-colors"
-                      >
-                        Log Out
-                      </button>
+                    {/* Top part - wraps around profile picture */}
+                    <div className="bg-white border border-gray-300 shadow-lg">
+                      <div className="p-1">
+                        {user.profilePicture ? (
+                          <div className="w-9 h-9 rounded-full overflow-hidden flex-shrink-0">
+                            <Image
+                              src={user.profilePicture}
+                              alt={user.name}
+                              width={64}
+                              height={64}
+                              quality={90}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                        ) : (
+                          <div className="w-9 h-9 bg-[#FC4C02] rounded-full flex items-center justify-center flex-shrink-0">
+                            <span className="text-sm font-medium text-white">
+                              {user.name.charAt(0).toUpperCase()}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Bottom part - menu items (wider rectangle) */}
+                    <div className="bg-white border-t-0 border-x border-b border-gray-300 shadow-lg w-48">
+                      <div className="py-1">
+                        <Link
+                          href="/profile"
+                          className="block px-4 py-2 text-sm text-gray-900 hover:bg-gray-100 transition-colors"
+                        >
+                          My Profile
+                        </Link>
+                        <Link
+                          href="/settings"
+                          className="block px-4 py-2 text-sm text-gray-900 hover:bg-gray-100 transition-colors"
+                        >
+                          Settings
+                        </Link>
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>
@@ -399,14 +422,14 @@ export default function Header() {
                 Groups
               </Link>
               <Link
-                href="/you?tab=progress"
+                href="/projects"
                 className={`block px-4 py-2 transition-colors ${
-                  isActive('/you')
+                  isActive('/projects') || isActive('/activities')
                     ? 'text-[#007AFF] bg-blue-50'
                     : 'text-gray-600 hover:text-[#007AFF]'
                 }`}
               >
-                Analytics
+                Activities
               </Link>
             </nav>
           </div>

@@ -6,6 +6,130 @@ import Header from '@/components/HeaderComponent';
 import { CreateProjectData } from '@/types';
 import { useProjects } from '@/contexts/ProjectsContext';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
+import { IconSelector } from '@/components/IconSelector';
+import { ColorSelector } from '@/components/ColorSelector';
+import { Icon } from '@iconify/react';
+
+// Available icons from Iconify flat-color-icons
+const AVAILABLE_ICONS = [
+  { name: 'briefcase', icon: 'flat-color-icons:briefcase', label: 'Work' },
+  { name: 'reading', icon: 'flat-color-icons:reading', label: 'Study' },
+  { name: 'electronics', icon: 'flat-color-icons:electronics', label: 'Programming' },
+  { name: 'laptop', icon: 'flat-color-icons:laptop', label: 'Computer' },
+  { name: 'graduation-cap', icon: 'flat-color-icons:graduation-cap', label: 'Learning' },
+  { name: 'idea', icon: 'flat-color-icons:idea', label: 'Ideas' },
+  { name: 'book', icon: 'flat-color-icons:book', label: 'Book' },
+  { name: 'document', icon: 'flat-color-icons:document', label: 'Writing' },
+  { name: 'template', icon: 'flat-color-icons:template', label: 'Design' },
+  { name: 'gallery', icon: 'flat-color-icons:gallery', label: 'Gallery' },
+  { name: 'music', icon: 'flat-color-icons:music', label: 'Music' },
+  { name: 'video-file', icon: 'flat-color-icons:video-file', label: 'Video' },
+  { name: 'camera', icon: 'flat-color-icons:camera', label: 'Camera' },
+  { name: 'sports-mode', icon: 'flat-color-icons:sports-mode', label: 'Sports' },
+  { name: 'like', icon: 'flat-color-icons:like', label: 'Health' },
+  { name: 'binoculars', icon: 'flat-color-icons:binoculars', label: 'Explore' },
+  { name: 'timeline', icon: 'flat-color-icons:timeline', label: 'Timeline' },
+  { name: 'bullish', icon: 'flat-color-icons:bullish', label: 'Goals' },
+  { name: 'flash-on', icon: 'flat-color-icons:flash-on', label: 'Energy' },
+  { name: 'advertising', icon: 'flat-color-icons:advertising', label: 'Marketing' },
+  { name: 'collaboration', icon: 'flat-color-icons:collaboration', label: 'Team' },
+  { name: 'positive-dynamic', icon: 'flat-color-icons:positive-dynamic', label: 'Growth' },
+  { name: 'approval', icon: 'flat-color-icons:approval', label: 'Approval' },
+  { name: 'ratings', icon: 'flat-color-icons:ratings', label: 'Favorite' },
+  { name: 'calendar', icon: 'flat-color-icons:calendar', label: 'Calendar' },
+  { name: 'todo-list', icon: 'flat-color-icons:todo-list', label: 'Tasks' },
+  { name: 'ok', icon: 'flat-color-icons:ok', label: 'Complete' },
+  { name: 'globe', icon: 'flat-color-icons:globe', label: 'Globe' },
+  { name: 'headset', icon: 'flat-color-icons:headset', label: 'Audio' },
+  { name: 'video-call', icon: 'flat-color-icons:video-call', label: 'Call' },
+  { name: 'smartphone-tablet', icon: 'flat-color-icons:smartphone-tablet', label: 'Mobile' },
+  { name: 'parallel-tasks', icon: 'flat-color-icons:parallel-tasks', label: 'Database' },
+  { name: 'package', icon: 'flat-color-icons:package', label: 'Package' },
+  { name: 'workflow', icon: 'flat-color-icons:workflow', label: 'Workflow' },
+  { name: 'settings', icon: 'flat-color-icons:settings', label: 'Settings' },
+  { name: 'mind-map', icon: 'flat-color-icons:mind-map', label: 'Planning' },
+  { name: 'business-contact', icon: 'flat-color-icons:business-contact', label: 'Contact' },
+  { name: 'calculator', icon: 'flat-color-icons:calculator', label: 'Calculator' },
+  { name: 'puzzle', icon: 'flat-color-icons:puzzle', label: 'Puzzle' },
+  { name: 'support', icon: 'flat-color-icons:support', label: 'Support' },
+  { name: 'planner', icon: 'flat-color-icons:planner', label: 'Planner' },
+  { name: 'faq', icon: 'flat-color-icons:faq', label: 'FAQ' },
+  { name: 'money-transfer', icon: 'flat-color-icons:money-transfer', label: 'Finance' },
+  { name: 'survey', icon: 'flat-color-icons:survey', label: 'Survey' },
+  { name: 'data-sheet', icon: 'flat-color-icons:data-sheet', label: 'Data' },
+  { name: 'filing-cabinet', icon: 'flat-color-icons:filing-cabinet', label: 'Files' },
+  { name: 'key', icon: 'flat-color-icons:key', label: 'Security' },
+  { name: 'shop', icon: 'flat-color-icons:shop', label: 'Shop' },
+  { name: 'donate', icon: 'flat-color-icons:donate', label: 'Donate' },
+  { name: 'news', icon: 'flat-color-icons:news', label: 'News' },
+  { name: 'alarm-clock', icon: 'flat-color-icons:alarm-clock', label: 'Clock' },
+  { name: 'tree-structure', icon: 'flat-color-icons:tree-structure', label: 'Structure' },
+  { name: 'organization', icon: 'flat-color-icons:organization', label: 'Organization' },
+  { name: 'bulleted-list', icon: 'flat-color-icons:bulleted-list', label: 'List' },
+  { name: 'voice-presentation', icon: 'flat-color-icons:voice-presentation', label: 'Present' },
+  { name: 'bar-chart', icon: 'flat-color-icons:bar-chart', label: 'Chart' },
+  { name: 'overtime', icon: 'flat-color-icons:overtime', label: 'Overtime' },
+  { name: 'multiple-inputs', icon: 'flat-color-icons:multiple-inputs', label: 'Input' },
+  { name: 'rules', icon: 'flat-color-icons:rules', label: 'Rules' },
+  { name: 'podium-with-speaker', icon: 'flat-color-icons:podium-with-speaker', label: 'Speaker' },
+  { name: 'database', icon: 'flat-color-icons:database', label: 'Database' },
+  { name: 'cloud', icon: 'flat-color-icons:cloud', label: 'Cloud' },
+  { name: 'linux', icon: 'flat-color-icons:linux', label: 'Linux' },
+  { name: 'android-os', icon: 'flat-color-icons:android-os', label: 'Android' },
+  { name: 'apple', icon: 'flat-color-icons:iphone', label: 'iOS' },
+  { name: 'diploma', icon: 'flat-color-icons:diploma', label: 'Diploma' },
+  { name: 'manager', icon: 'flat-color-icons:manager', label: 'Manager' },
+  { name: 'business', icon: 'flat-color-icons:business', label: 'Business' },
+  { name: 'engineering', icon: 'flat-color-icons:engineering', label: 'Engineering' },
+  { name: 'home', icon: 'flat-color-icons:home', label: 'Home' },
+  { name: 'services', icon: 'flat-color-icons:services', label: 'Services' },
+  { name: 'library', icon: 'flat-color-icons:library', label: 'Library' },
+  { name: 'landscape', icon: 'flat-color-icons:landscape', label: 'Nature' },
+  { name: 'basketball', icon: 'flat-color-icons:basketball', label: 'Basketball' },
+  { name: 'automotive', icon: 'flat-color-icons:automotive', label: 'Automotive' },
+  { name: 'shipped', icon: 'flat-color-icons:shipped', label: 'Shipping' },
+  { name: 'factory', icon: 'flat-color-icons:factory', label: 'Factory' },
+  { name: 'about', icon: 'flat-color-icons:about', label: 'About' },
+  { name: 'light', icon: 'flat-color-icons:light', label: 'Light' },
+  { name: 'search', icon: 'flat-color-icons:search', label: 'Search' },
+  { name: 'add-image', icon: 'flat-color-icons:add-image', label: 'Add Image' },
+  { name: 'film-reel', icon: 'flat-color-icons:film-reel', label: 'Film' },
+  { name: 'stack-of-photos', icon: 'flat-color-icons:stack-of-photos', label: 'Photos' },
+  { name: 'self-service-kiosk', icon: 'flat-color-icons:self-service-kiosk', label: 'Kiosk' },
+  { name: 'inspection', icon: 'flat-color-icons:inspection', label: 'Inspection' },
+  { name: 'briefcase-2', icon: 'flat-color-icons:business-contact', label: 'Business Contact' },
+  { name: 'conference-call', icon: 'flat-color-icons:conference-call', label: 'Conference' },
+  { name: 'cursor', icon: 'flat-color-icons:cursor', label: 'Cursor' },
+  { name: 'display', icon: 'flat-color-icons:display', label: 'Display' },
+  { name: 'feedback', icon: 'flat-color-icons:feedback', label: 'Feedback' },
+  { name: 'self-destruct-button', icon: 'flat-color-icons:delete-database', label: 'Delete' },
+  { name: 'idea-sharing', icon: 'flat-color-icons:idea-sharing', label: 'Ideas Sharing' },
+  { name: 'sports', icon: 'flat-color-icons:sports-mode', label: 'Sports' },
+  { name: 'grid', icon: 'flat-color-icons:grid', label: 'Grid' },
+  { name: 'puzzle-2', icon: 'flat-color-icons:puzzle', label: 'Puzzle' },
+];
+
+// Color options
+const AVAILABLE_COLORS = [
+  { name: 'orange', hex: '#f97316', label: 'Orange' },
+  { name: 'blue', hex: '#3b82f6', label: 'Blue' },
+  { name: 'green', hex: '#22c55e', label: 'Green' },
+  { name: 'purple', hex: '#a855f7', label: 'Purple' },
+  { name: 'red', hex: '#ef4444', label: 'Red' },
+  { name: 'yellow', hex: '#eab308', label: 'Yellow' },
+  { name: 'pink', hex: '#ec4899', label: 'Pink' },
+  { name: 'indigo', hex: '#6366f1', label: 'Indigo' },
+  { name: 'teal', hex: '#14b8a6', label: 'Teal' },
+  { name: 'cyan', hex: '#06b6d4', label: 'Cyan' },
+  { name: 'lime', hex: '#84cc16', label: 'Lime' },
+  { name: 'amber', hex: '#f59e0b', label: 'Amber' },
+  { name: 'emerald', hex: '#10b981', label: 'Emerald' },
+  { name: 'violet', hex: '#8b5cf6', label: 'Violet' },
+  { name: 'fuchsia', hex: '#d946ef', label: 'Fuchsia' },
+  { name: 'rose', hex: '#f43f5e', label: 'Rose' },
+  { name: 'sky', hex: '#0ea5e9', label: 'Sky' },
+  { name: 'slate', hex: '#64748b', label: 'Slate' },
+];
 
 function CreateProjectContent() {
   const router = useRouter();
@@ -13,7 +137,7 @@ function CreateProjectContent() {
   const [formData, setFormData] = useState<CreateProjectData>({
     name: '',
     description: '',
-    icon: '💻',
+    icon: 'briefcase',
     color: 'orange',
     weeklyTarget: undefined,
     totalTarget: undefined,
@@ -22,30 +146,13 @@ function CreateProjectContent() {
   const [errors, setErrors] = useState<Partial<CreateProjectData>>({});
   const [successMessage, setSuccessMessage] = useState('');
 
-  // Preset icons
-  const availableIcons = [
-    '💻', '⚛️', '💪', '📚', '🎨', '🏃', '🎵', '🔬', '📝', '🚀'
-  ];
-
-  // Preset colors
-  const availableColors = [
-    { name: 'orange', class: 'bg-orange-500', hex: '#f97316' },
-    { name: 'blue', class: 'bg-blue-500', hex: '#3b82f6' },
-    { name: 'green', class: 'bg-green-500', hex: '#22c55e' },
-    { name: 'purple', class: 'bg-purple-500', hex: '#a855f7' },
-    { name: 'red', class: 'bg-red-500', hex: '#ef4444' },
-    { name: 'yellow', class: 'bg-yellow-500', hex: '#eab308' },
-    { name: 'pink', class: 'bg-pink-500', hex: '#ec4899' },
-    { name: 'indigo', class: 'bg-indigo-500', hex: '#6366f1' },
-  ];
-
   const validateForm = (): boolean => {
     const newErrors: Partial<CreateProjectData> = {};
 
     if (!formData.name.trim()) {
-      newErrors.name = 'Project name is required';
+      newErrors.name = 'Activity name is required';
     } else if (formData.name.length > 50) {
-      newErrors.name = 'Project name must be less than 50 characters';
+      newErrors.name = 'Activity name must be less than 50 characters';
     }
 
     if (formData.description.trim() && formData.description.length > 200) {
@@ -68,7 +175,7 @@ function CreateProjectContent() {
     setFormData({
       name: '',
       description: '',
-      icon: '💻',
+      icon: 'briefcase',
       color: 'orange',
       weeklyTarget: undefined,
       totalTarget: undefined,
@@ -94,17 +201,15 @@ function CreateProjectContent() {
         totalTarget: formData.totalTarget || undefined,
       });
 
-      // Show success message and reset form
-      setSuccessMessage('Project created successfully!');
+      setSuccessMessage('Activity created successfully!');
       resetForm();
 
-      // Navigate to projects page after a brief delay
       setTimeout(() => {
         router.push('/projects');
       }, 1500);
     } catch (error) {
-      console.error('Failed to create project:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to create project. Please try again.';
+      console.error('Failed to create activity:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to create activity. Please try again.';
       setErrors({ name: errorMessage });
       setSuccessMessage('');
     } finally {
@@ -114,7 +219,6 @@ function CreateProjectContent() {
 
   const handleInputChange = (field: keyof CreateProjectData, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    // Clear error and success message when user starts typing
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: undefined }));
     }
@@ -123,16 +227,22 @@ function CreateProjectContent() {
     }
   };
 
+  // Get current icon string
+  const selectedIconData = AVAILABLE_ICONS.find(i => i.name === formData.icon) || AVAILABLE_ICONS[0];
+
+  // Get current color
+  const selectedColorData = AVAILABLE_COLORS.find(c => c.name === formData.color) || AVAILABLE_COLORS[0];
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Header />
-      
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        <div className="bg-white rounded-lg shadow-md p-8">
+
+      <div className="max-w-2xl mx-auto px-4 py-8">
+        <div className="bg-white rounded-lg shadow-md p-6 md:p-8">
           {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900">Create New Project</h1>
-            <p className="text-gray-600 mt-2">Set up a new project to track your productivity</p>
+          <div className="mb-6">
+            <h1 className="text-3xl font-bold text-gray-900">Create New Activity</h1>
+            <p className="text-gray-600 mt-2">Set up a new activity to track your productivity</p>
           </div>
 
           {/* Success Message */}
@@ -145,172 +255,149 @@ function CreateProjectContent() {
             </div>
           )}
 
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-8">
-            {/* Project Preview */}
-            <div className="flex flex-col items-center pb-8 border-b border-gray-200">
-              <div className={`w-24 h-24 ${availableColors.find(c => c.name === formData.color)?.class || 'bg-orange-500'} rounded-xl flex items-center justify-center text-white text-4xl mb-4 shadow-lg`}>
-                {formData.icon}
+          {/* Preview Card */}
+          <div className="mb-8 p-6 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border border-gray-200">
+            <div className="flex items-center gap-4">
+              <div
+                className="w-16 h-16 rounded-xl flex items-center justify-center shadow-lg p-2"
+                style={{ backgroundColor: selectedColorData.hex }}
+              >
+                <Icon icon={selectedIconData.icon} width={48} height={48} />
               </div>
-              <h2 className="text-xl font-bold text-gray-900">
-                {formData.name || 'Project Name'}
-              </h2>
-              <p className="text-sm text-gray-500 mt-1">
-                {formData.description || 'Project description'}
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Name */}
-              <div>
-                <label htmlFor="name" className="block text-sm font-semibold text-gray-900 mb-2">
-                  Project Name *
-                </label>
-                <input
-                  type="text"
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) => handleInputChange('name', e.target.value)}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] transition-colors ${
-                    errors.name ? 'border-red-500' : 'border-gray-300'
-                  }`}
-                  placeholder="Enter project name"
-                  maxLength={50}
-                />
-                {errors.name && (
-                  <p className="mt-1 text-sm text-red-600">{errors.name}</p>
-                )}
-              </div>
-
-              {/* Description */}
-              <div>
-                <label htmlFor="description" className="block text-sm font-semibold text-gray-900 mb-2">
-                  Description
-                </label>
-                <textarea
-                  id="description"
-                  value={formData.description}
-                  onChange={(e) => handleInputChange('description', e.target.value)}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] resize-none transition-colors ${
-                    errors.description ? 'border-red-500' : 'border-gray-300'
-                  }`}
-                  placeholder="Describe your project (optional)"
-                  rows={3}
-                  maxLength={200}
-                />
-                {errors.description && (
-                  <p className="mt-1 text-sm text-red-600">{errors.description}</p>
-                )}
-                <p className="mt-1 text-xs text-gray-500">
-                  {formData.description.length}/200 characters
+              <div className="flex-1">
+                <h2 className="text-xl font-bold text-gray-900">
+                  {formData.name || 'Activity Name'}
+                </h2>
+                <p className="text-sm text-gray-600 mt-1">
+                  {formData.description || 'Activity description'}
                 </p>
               </div>
             </div>
+          </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {/* Icon Picker */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-900 mb-3">
-                  Icon
-                </label>
-                <div className="grid grid-cols-5 gap-3">
-                  {availableIcons.map((icon) => (
-                    <button
-                      key={icon}
-                      type="button"
-                      onClick={() => handleInputChange('icon', icon)}
-                      className={`w-14 h-14 rounded-lg border-2 flex items-center justify-center text-2xl transition-all ${
-                        formData.icon === icon
-                          ? 'border-[#007AFF] bg-blue-50 shadow-md'
-                          : 'border-gray-200 hover:border-gray-300 hover:shadow-sm'
-                      }`}
-                    >
-                      {icon}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Color Picker */}
-              <div>
-                <label className="block text-sm font-semibold text-gray-900 mb-3">
-                  Color
-                </label>
-                <div className="grid grid-cols-4 gap-3">
-                  {availableColors.map((color) => (
-                    <button
-                      key={color.name}
-                      type="button"
-                      onClick={() => handleInputChange('color', color.name)}
-                      className={`w-14 h-14 rounded-lg border-2 transition-all ${
-                        formData.color === color.name
-                          ? 'border-gray-800 scale-110 shadow-lg'
-                          : 'border-gray-200 hover:border-gray-300 hover:scale-105'
-                      }`}
-                      style={{ backgroundColor: color.hex }}
-                    >
-                      {formData.color === color.name && (
-                        <svg className="w-6 h-6 text-white drop-shadow-md" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                        </svg>
-                      )}
-                    </button>
-                  ))}
-                </div>
-              </div>
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Activity Name */}
+            <div>
+              <label htmlFor="name" className="block text-sm font-semibold text-gray-900 mb-2">
+                Activity Name *
+              </label>
+              <input
+                type="text"
+                id="name"
+                value={formData.name}
+                onChange={(e) => handleInputChange('name', e.target.value)}
+                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] transition-colors ${
+                  errors.name ? 'border-red-500' : 'border-gray-300'
+                }`}
+                placeholder="Enter activity name"
+                maxLength={50}
+              />
+              {errors.name && (
+                <p className="mt-1 text-sm text-red-600">{errors.name}</p>
+              )}
             </div>
 
-            {/* Targets */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-gray-200">
-              <div>
-                <label htmlFor="weeklyTarget" className="block text-sm font-semibold text-gray-900 mb-2">
-                  Weekly Target (hours)
-                </label>
-                <input
-                  type="number"
-                  id="weeklyTarget"
-                  value={formData.weeklyTarget || ''}
-                  onChange={(e) => handleInputChange('weeklyTarget', e.target.value ? Number(e.target.value) : undefined)}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] transition-colors ${
-                    errors.weeklyTarget ? 'border-red-500' : 'border-gray-300'
-                  }`}
-                  placeholder="Optional"
-                  min="0"
-                  max="168"
-                  step="0.5"
-                />
-                {errors.weeklyTarget && (
-                  <p className="mt-1 text-sm text-red-600">{errors.weeklyTarget}</p>
-                )}
-                <p className="mt-1 text-xs text-gray-500">Set a weekly goal for this project</p>
-              </div>
+            {/* Description */}
+            <div>
+              <label htmlFor="description" className="block text-sm font-semibold text-gray-900 mb-2">
+                Description
+              </label>
+              <textarea
+                id="description"
+                value={formData.description}
+                onChange={(e) => handleInputChange('description', e.target.value)}
+                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] resize-none transition-colors ${
+                  errors.description ? 'border-red-500' : 'border-gray-300'
+                }`}
+                placeholder="Describe your activity (optional)"
+                rows={3}
+                maxLength={200}
+              />
+              {errors.description && (
+                <p className="mt-1 text-sm text-red-600">{errors.description}</p>
+              )}
+              <p className="mt-1 text-xs text-gray-500">
+                {formData.description.length}/200 characters
+              </p>
+            </div>
 
-              <div>
-                <label htmlFor="totalTarget" className="block text-sm font-semibold text-gray-900 mb-2">
-                  Total Target (hours)
-                </label>
-                <input
-                  type="number"
-                  id="totalTarget"
-                  value={formData.totalTarget || ''}
-                  onChange={(e) => handleInputChange('totalTarget', e.target.value ? Number(e.target.value) : undefined)}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] transition-colors ${
-                    errors.totalTarget ? 'border-red-500' : 'border-gray-300'
-                  }`}
-                  placeholder="Optional"
-                  min="0"
-                  max="10000"
-                  step="1"
-                />
-                {errors.totalTarget && (
-                  <p className="mt-1 text-sm text-red-600">{errors.totalTarget}</p>
-                )}
-                <p className="mt-1 text-xs text-gray-500">Set an overall project goal</p>
-              </div>
+            {/* Icon Selector */}
+            <div>
+              <label htmlFor="icon" className="block text-sm font-semibold text-gray-900 mb-2">
+                Icon
+              </label>
+              <IconSelector
+                icons={AVAILABLE_ICONS}
+                value={formData.icon}
+                onChange={(iconName) => handleInputChange('icon', iconName)}
+              />
+              <p className="mt-1 text-xs text-gray-500">Choose an icon that represents this activity</p>
+            </div>
+
+            {/* Color Selector */}
+            <div>
+              <label htmlFor="color" className="block text-sm font-semibold text-gray-900 mb-2">
+                Color
+              </label>
+              <ColorSelector
+                colors={AVAILABLE_COLORS}
+                value={formData.color}
+                onChange={(colorName) => handleInputChange('color', colorName)}
+              />
+              <p className="mt-1 text-xs text-gray-500">Pick a color to identify this activity</p>
+            </div>
+
+            {/* Weekly Target */}
+            <div>
+              <label htmlFor="weeklyTarget" className="block text-sm font-semibold text-gray-900 mb-2">
+                Weekly Target (hours)
+              </label>
+              <input
+                type="number"
+                id="weeklyTarget"
+                value={formData.weeklyTarget || ''}
+                onChange={(e) => handleInputChange('weeklyTarget', e.target.value ? Number(e.target.value) : undefined)}
+                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] transition-colors ${
+                  errors.weeklyTarget ? 'border-red-500' : 'border-gray-300'
+                }`}
+                placeholder="Optional"
+                min="0"
+                max="168"
+                step="0.5"
+              />
+              {errors.weeklyTarget && (
+                <p className="mt-1 text-sm text-red-600">{errors.weeklyTarget}</p>
+              )}
+              <p className="mt-1 text-xs text-gray-500">Set a weekly goal for this activity</p>
+            </div>
+
+            {/* Total Target */}
+            <div>
+              <label htmlFor="totalTarget" className="block text-sm font-semibold text-gray-900 mb-2">
+                Total Target (hours)
+              </label>
+              <input
+                type="number"
+                id="totalTarget"
+                value={formData.totalTarget || ''}
+                onChange={(e) => handleInputChange('totalTarget', e.target.value ? Number(e.target.value) : undefined)}
+                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] transition-colors ${
+                  errors.totalTarget ? 'border-red-500' : 'border-gray-300'
+                }`}
+                placeholder="Optional"
+                min="0"
+                max="10000"
+                step="1"
+              />
+              {errors.totalTarget && (
+                <p className="mt-1 text-sm text-red-600">{errors.totalTarget}</p>
+              )}
+              <p className="mt-1 text-xs text-gray-500">Set an overall activity goal</p>
             </div>
 
             {/* Actions */}
-            <div className="flex gap-4 pt-6 border-t border-gray-200">
+            <div className="flex flex-col sm:flex-row gap-3 pt-6 border-t border-gray-200">
               <button
                 type="button"
                 onClick={() => router.push('/projects')}
@@ -324,7 +411,7 @@ function CreateProjectContent() {
                 disabled={isSubmitting}
                 className="flex-1 px-6 py-3 bg-[#007AFF] text-white rounded-lg hover:bg-[#0056D6] transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-md"
               >
-                {isSubmitting ? 'Creating...' : 'Create Project'}
+                {isSubmitting ? 'Creating...' : 'Create Activity'}
               </button>
             </div>
           </form>
@@ -341,4 +428,3 @@ export default function CreateProjectPage() {
     </ProtectedRoute>
   );
 }
-

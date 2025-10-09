@@ -44,7 +44,8 @@ export default function SessionPrompt() {
               strokeWidth={2.5}
             />
             <span className="font-bold text-lg text-gray-700">
-              Start Session
+              <span className="hidden lg:inline">Start Session</span>
+              <span className="hidden sm:inline lg:hidden">Start</span>
             </span>
           </Link>
 
@@ -58,7 +59,8 @@ export default function SessionPrompt() {
               strokeWidth={2.5}
             />
             <span className="font-bold text-lg text-gray-700">
-              Log Manually
+              <span className="hidden lg:inline">Log Manually</span>
+              <span className="hidden sm:inline lg:hidden">Manual</span>
             </span>
           </Link>
         </div>

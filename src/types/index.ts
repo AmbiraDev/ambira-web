@@ -32,7 +32,8 @@ export interface SocialGraphUser {
   createdAt: Date;
 }
 
-export interface Project {
+// Activity (renamed from Project)
+export interface Activity {
   id: string;
   userId: string;
   name: string;
@@ -42,11 +43,15 @@ export interface Project {
   weeklyTarget?: number; // hours
   totalTarget?: number; // hours
   status: 'active' | 'completed' | 'archived';
+  isDefault?: boolean; // True for default activities
   createdAt: Date;
   updatedAt: Date;
 }
 
-export interface ProjectStats {
+// Backwards compatibility alias
+export type Project = Activity;
+
+export interface ActivityStats {
   totalHours: number;
   weeklyHours: number;
   sessionCount: number;
@@ -57,9 +62,25 @@ export interface ProjectStats {
   lastSessionDate?: Date;
 }
 
+// Backwards compatibility alias
+export type ProjectStats = ActivityStats;
+
+// Default activities available to all users
+export const DEFAULT_ACTIVITIES = [
+  { id: 'work', name: 'Work', icon: 'flat-color-icons:briefcase', color: '#007AFF' },
+  { id: 'study', name: 'Study', icon: 'flat-color-icons:reading', color: '#34C759' },
+  { id: 'side-project', name: 'Side Project', icon: 'flat-color-icons:electronics', color: '#FF9500' },
+  { id: 'reading', name: 'Reading', icon: 'flat-color-icons:book', color: '#FF2D55' },
+  { id: 'writing', name: 'Writing', icon: 'flat-color-icons:document', color: '#AF52DE' },
+  { id: 'creative', name: 'Creative', icon: 'flat-color-icons:gallery', color: '#FF6482' },
+  { id: 'exercise', name: 'Exercise', icon: 'flat-color-icons:sports-mode', color: '#32ADE6' },
+  { id: 'learning', name: 'Learning', icon: 'flat-color-icons:graduation-cap', color: '#FFD60A' },
+] as const;
+
 export interface Task {
   id: string;
-  projectId: string;
+  activityId: string; // Changed from projectId
+  projectId?: string; // Backwards compatibility
   name: string;
   status: 'active' | 'completed' | 'archived';
   createdAt: Date;
@@ -70,7 +91,8 @@ export interface Task {
 // Task management interfaces
 export interface CreateTaskData {
   name: string;
-  projectId: string;
+  activityId: string; // Changed from projectId
+  projectId?: string; // Backwards compatibility
 }
 
 export interface UpdateTaskData {
@@ -113,13 +135,14 @@ export interface TaskContextType {
 export interface Session {
   id: string;
   userId: string;
-  projectId: string;
+  activityId: string; // Changed from projectId
+  projectId?: string; // Kept for backwards compatibility
   title: string;
   description?: string;
   duration: number; // seconds
   startTime: Date;
   tasks: Task[];
-  tags: string[];
+  tags?: string[]; // Deprecated but kept for backwards compatibility
   visibility: 'everyone' | 'followers' | 'private';
   showStartTime?: boolean;
   hideTaskNames?: boolean;
@@ -140,7 +163,8 @@ export interface Session {
 // Sessions with populated related data for display
 export interface SessionWithDetails extends Session {
   user: User;
-  project: Project;
+  activity: Activity;
+  project?: Activity; // Backwards compatibility alias
 }
 
 // Session support (like/kudos)
@@ -160,7 +184,8 @@ export interface FeedResponse {
 
 export interface FeedFilters {
   type?: 'following' | 'trending' | 'recent' | 'user';
-  projectId?: string;
+  activityId?: string; // Changed from projectId
+  projectId?: string; // Backwards compatibility
   userId?: string;
 }
 
@@ -693,7 +718,7 @@ export interface AuthContextType {
 }
 
 // Project-related types
-export interface CreateProjectData {
+export interface CreateActivityData {
   name: string;
   description: string;
   icon: string;
@@ -702,7 +727,7 @@ export interface CreateProjectData {
   totalTarget?: number;
 }
 
-export interface UpdateProjectData {
+export interface UpdateActivityData {
   name?: string;
   description?: string;
   icon?: string;
@@ -712,27 +737,42 @@ export interface UpdateProjectData {
   status?: 'active' | 'completed' | 'archived';
 }
 
-export interface ProjectWithStats extends Project {
-  stats: ProjectStats;
+export interface ActivityWithStats extends Activity {
+  stats: ActivityStats;
 }
 
-export interface ProjectContextType {
-  projects: Project[];
+export interface ActivitiesContextType {
+  activities: Activity[];
   isLoading: boolean;
   error: string | null;
-  createProject: (data: CreateProjectData) => Promise<Project>;
-  updateProject: (id: string, data: UpdateProjectData) => Promise<Project>;
-  deleteProject: (id: string) => Promise<void>;
-  archiveProject: (id: string) => Promise<Project>;
-  restoreProject: (id: string) => Promise<Project>;
-  getProjectStats: (id: string) => Promise<ProjectStats>;
+  createActivity: (data: CreateActivityData) => Promise<Activity>;
+  updateActivity: (id: string, data: UpdateActivityData) => Promise<Activity>;
+  deleteActivity: (id: string) => Promise<void>;
+  archiveActivity: (id: string) => Promise<Activity>;
+  restoreActivity: (id: string) => Promise<Activity>;
+  getActivityStats: (id: string) => Promise<ActivityStats>;
+  // Backwards compatibility methods
+  projects?: Activity[];
+  createProject?: (data: CreateActivityData) => Promise<Activity>;
+  updateProject?: (id: string, data: UpdateActivityData) => Promise<Activity>;
+  deleteProject?: (id: string) => Promise<void>;
+  archiveProject?: (id: string) => Promise<Activity>;
+  restoreProject?: (id: string) => Promise<Activity>;
+  getProjectStats?: (id: string) => Promise<ActivityStats>;
 }
+
+// Backwards compatibility aliases
+export type CreateProjectData = CreateActivityData;
+export type UpdateProjectData = UpdateActivityData;
+export type ProjectWithStats = ActivityWithStats;
+export type ProjectContextType = ActivitiesContextType;
 
 // Timer-related types
 export interface ActiveTimer {
   id: string;
   userId: string;
-  projectId: string;
+  activityId: string; // Changed from projectId
+  projectId?: string; // Backwards compatibility
   startTime: Date;
   pausedDuration: number; // seconds
   selectedTaskIds: string[];
@@ -764,13 +804,14 @@ export interface TimerContextType {
 }
 
 export interface CreateSessionData {
-  projectId: string;
+  activityId: string; // Changed from projectId
+  projectId?: string; // Backwards compatibility
   title: string;
   description?: string;
   duration: number;
   startTime: Date;
   taskIds: string[];
-  tags?: string[];
+  tags?: string[]; // Deprecated but kept for backwards compatibility
   visibility?: 'everyone' | 'followers' | 'private';
   showStartTime?: boolean;
   hideTaskNames?: boolean;
@@ -781,13 +822,14 @@ export interface CreateSessionData {
 
 // Session management interfaces
 export interface SessionFormData {
-  projectId: string;
+  activityId: string; // Changed from projectId
+  projectId?: string; // Backwards compatibility
   title: string;
   description?: string;
   duration: number;
   startTime: Date;
   taskIds?: string[];
-  tags: string[];
+  tags?: string[]; // Deprecated but kept for backwards compatibility
   visibility: 'everyone' | 'followers' | 'private';
   showStartTime?: boolean;
   hideTaskNames?: boolean;

@@ -175,6 +175,10 @@ export const Feed: React.FC<FeedProps> = ({
         console.log('Link copied to clipboard');
       }
     } catch (err: any) {
+      // Silently ignore if user cancels the share dialog
+      if (err.name === 'AbortError') {
+        return;
+      }
       console.error('Failed to share session:', err);
       // Could show error toast here
     }

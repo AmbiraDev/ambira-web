@@ -31,7 +31,9 @@ import {
   updateProfile,
   sendEmailVerification,
   GoogleAuthProvider,
-  signInWithPopup
+  signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult
 } from 'firebase/auth';
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { db, auth, storage } from './firebase';
@@ -408,6 +410,8 @@ export const firebaseAuthApi = {
         email: credentials.email,
         name: credentials.name,
         username: credentials.username,
+        usernameLower: credentials.username.toLowerCase(),
+        nameLower: credentials.name.toLowerCase(),
         bio: '',
         location: '',
         profilePicture: null,
@@ -456,7 +460,29 @@ export const firebaseAuthApi = {
   signInWithGoogle: async (): Promise<AuthResponse> => {
     try {
       const provider = new GoogleAuthProvider();
-      const userCredential = await signInWithPopup(auth, provider);
+      // Add scopes for better user info
+      provider.addScope('profile');
+      provider.addScope('email');
+
+      let userCredential;
+      try {
+        // Try popup first (preferred for desktop)
+        userCredential = await signInWithPopup(auth, provider);
+      } catch (popupError: any) {
+        // If popup was blocked or failed, provide helpful error
+        if (popupError.code === 'auth/popup-blocked') {
+          throw new Error('Popup was blocked. Please allow popups for this site and try again.');
+        } else if (popupError.code === 'auth/popup-closed-by-user') {
+          throw new Error('Sign-in was cancelled.');
+        } else if (popupError.code === 'auth/configuration-not-found') {
+          throw new Error('Google Sign-in is not configured. Please enable Google authentication in Firebase Console.');
+        } else if (popupError.code === 'auth/unauthorized-domain') {
+          throw new Error('This domain is not authorized for Google Sign-in. Please add it to authorized domains in Firebase Console.');
+        }
+        // Re-throw if it's a different error
+        throw popupError;
+      }
+
       const firebaseUser = userCredential.user;
 
       // Check if user profile exists
@@ -517,8 +543,17 @@ export const firebaseAuthApi = {
       const token = await firebaseUser.getIdToken();
 
       return { user, token };
-    } catch (error) {
-      const apiError = handleError(error, 'Google sign-in', { defaultMessage: 'Google sign-in failed' });
+    } catch (error: any) {
+      console.error('Google sign-in error:', error);
+
+      // Provide more specific error messages
+      if (error.message && error.message.includes('Firebase Console')) {
+        throw error; // Re-throw our custom error messages
+      }
+
+      const apiError = handleError(error, 'Google sign-in', {
+        defaultMessage: 'Google sign-in failed. Please check that Google authentication is enabled in Firebase Console.'
+      });
       throw new Error(apiError.userMessage);
     }
   },
@@ -1005,6 +1040,11 @@ export const firebaseUserApi = {
         }
       });
 
+      // Add lowercase fields for searchability
+      if (cleanData.name) {
+        cleanData.nameLower = cleanData.name.toLowerCase();
+      }
+
       const updateData = {
         ...cleanData,
         updatedAt: serverTimestamp()
@@ -1305,21 +1345,24 @@ export const firebaseUserApi = {
         return { users: [], totalCount: 0, hasMore: false };
       }
 
-      // 1) Search by username prefix
+      // Convert search term to lowercase for case-insensitive search
+      const termLower = term.toLowerCase();
+
+      // 1) Search by username prefix (case-insensitive)
       const usernameQ = query(
         collection(db, 'users'),
-        orderBy('username'),
-        where('username', '>=', term),
-        where('username', '<=', term + '\uf8ff'),
+        orderBy('usernameLower'),
+        where('usernameLower', '>=', termLower),
+        where('usernameLower', '<=', termLower + '\uf8ff'),
         limit(limitCount)
       );
 
-      // 2) Search by name prefix (requires 'name' field present)
+      // 2) Search by name prefix (case-insensitive)
       const nameQ = query(
         collection(db, 'users'),
-        orderBy('name'),
-        where('name', '>=', term),
-        where('name', '<=', term + '\uf8ff'),
+        orderBy('nameLower'),
+        where('nameLower', '>=', termLower),
+        where('nameLower', '<=', termLower + '\uf8ff'),
         limit(limitCount)
       );
 
@@ -1503,6 +1546,56 @@ export const firebaseUserApi = {
       }
       const apiError = handleError(error, 'Check username availability');
       throw new Error(apiError.userMessage || 'Unable to verify username availability. Please try again.');
+    }
+  },
+
+  // Migration: Add lowercase fields to existing users
+  migrateUsersToLowercase: async (): Promise<{ success: number; failed: number; total: number }> => {
+    try {
+      if (!auth.currentUser) {
+        throw new Error('User not authenticated');
+      }
+
+      const usersQuery = query(collection(db, 'users'), limit(500));
+      const querySnapshot = await getDocs(usersQuery);
+
+      let success = 0;
+      let failed = 0;
+      const total = querySnapshot.size;
+
+      console.log(`Starting migration for ${total} users...`);
+
+      for (const userDoc of querySnapshot.docs) {
+        try {
+          const userData = userDoc.data();
+          const updates: any = { updatedAt: serverTimestamp() };
+
+          if (userData.username && !userData.usernameLower) {
+            updates.usernameLower = userData.username.toLowerCase();
+          }
+
+          if (userData.name && !userData.nameLower) {
+            updates.nameLower = userData.name.toLowerCase();
+          }
+
+          // Only update if there are new fields to add
+          if (Object.keys(updates).length > 1) {
+            await updateDoc(doc(db, 'users', userDoc.id), updates);
+            success++;
+            console.log(`Migrated user ${userDoc.id} (${userData.username})`);
+          }
+        } catch (error) {
+          failed++;
+          console.error(`Failed to migrate user ${userDoc.id}:`, error);
+        }
+      }
+
+      const result = { success, failed, total };
+      console.log('Migration complete:', result);
+      return result;
+    } catch (error) {
+      const apiError = handleError(error, 'Migrate users to lowercase', { defaultMessage: 'Failed to migrate users' });
+      throw new Error(apiError.userMessage);
     }
   }
 };
@@ -1913,15 +2006,17 @@ export const firebaseSessionApi = {
       }
 
       // Prepare session data for Firestore
+      const activityId = data.activityId || data.projectId; // Support both for backwards compatibility
       const sessionData: any = {
         userId: auth.currentUser.uid,
-        projectId: data.projectId,
+        activityId: activityId, // New field
+        projectId: activityId, // Keep for backwards compatibility
         title: data.title,
         description: data.description || '',
         duration: data.duration,
         startTime: Timestamp.fromDate(data.startTime),
         tasks: selectedTasks,
-        tags: data.tags || [],
+        // tags removed - no longer used
         visibility: data.visibility || 'private',
         showStartTime: data.showStartTime || false,
         hideTaskNames: data.hideTaskNames || false,
@@ -1961,13 +2056,14 @@ export const firebaseSessionApi = {
       const newSession: Session = {
         id: docRef.id,
         userId: auth.currentUser.uid,
-        projectId: data.projectId,
+        activityId: activityId,
+        projectId: activityId, // Backwards compatibility
         title: data.title,
         description: data.description,
         duration: data.duration,
         startTime: data.startTime,
         tasks: selectedTasks,
-        tags: data.tags || [],
+        // tags removed - no longer used
         visibility: sessionData.visibility,
         showStartTime: sessionData.showStartTime,
         hideTaskNames: sessionData.hideTaskNames,
@@ -6009,11 +6105,15 @@ export const challengeNotifications = {
   }
 };
 
+// Activity API (alias for Project API for new naming convention)
+export const firebaseActivityApi = firebaseProjectApi;
+
 // Export combined API (moved to end to include all APIs)
 export const firebaseApi = {
   auth: firebaseAuthApi,
   user: firebaseUserApi,
   project: firebaseProjectApi,
+  activity: firebaseActivityApi, // New alias
   task: firebaseTaskApi,
   session: firebaseSessionApi,
   post: firebasePostApi,

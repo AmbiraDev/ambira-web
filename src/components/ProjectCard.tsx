@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { Project, ProjectStats } from '@/types';
 import { useProjects } from '@/contexts/ProjectsContext';
+import { IconRenderer } from '@/components/IconRenderer';
 
 interface ProjectCardProps {
   project: Project;
@@ -79,11 +80,14 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 hover:shadow-md transition-shadow duration-200 relative group">
-      <Link href={`/projects/${project.id}`} className="block p-6">
+      <Link href={`/activities/${project.id}`} className="block p-6">
         {/* Header with icon and menu */}
         <div className="flex items-start justify-between mb-4">
-          <div className={`w-12 h-12 ${colorClass} rounded-lg flex items-center justify-center text-white text-xl`}>
-            {project.icon}
+          <div
+            className="w-12 h-12 rounded-lg flex items-center justify-center p-1.5"
+            style={{ backgroundColor: project.color }}
+          >
+            <IconRenderer iconName={project.icon} size={40} />
           </div>
           <button
             onClick={handleMenuToggle}
@@ -148,16 +152,6 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
         ) : (
           <div className="text-sm text-gray-500">
             No targets set
-          </div>
-        )}
-
-        {/* Stats summary */}
-        {currentStats && (
-          <div className="mt-4 pt-4 border-t border-gray-100">
-            <div className="flex justify-between text-xs text-gray-600">
-              <span>{currentStats.sessionCount || 0} sessions</span>
-              <span>{currentStats.currentStreak || 0} day streak</span>
-            </div>
           </div>
         )}
       </Link>

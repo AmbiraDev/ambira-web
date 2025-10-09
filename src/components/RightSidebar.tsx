@@ -277,20 +277,6 @@ function RightSidebar() {
           )}
         </div>
 
-        {/* Footer Links */}
-        <div className="px-4 py-3">
-          <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-gray-500">
-            <Link href="/about" className="hover:underline">About</Link>
-            <span>·</span>
-            <Link href="/help" className="hover:underline">Help</Link>
-            <span>·</span>
-            <Link href="/privacy" className="hover:underline">Privacy</Link>
-            <span>·</span>
-            <Link href="/terms" className="hover:underline">Terms</Link>
-          </div>
-          <p className="text-xs text-gray-400 mt-2">© 2025 Ambira</p>
-        </div>
-
       </div>
 
       {/* Modals */}
