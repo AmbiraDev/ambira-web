@@ -67,57 +67,67 @@ export const SessionInteractions: React.FC<SessionInteractionsProps> = ({
 
   return (
     <div className={className}>
-      {/* Counts section */}
-      <div className="px-4 pb-2 flex items-center justify-between text-sm text-gray-600">
-        <div className="flex items-center gap-2">
+      {/* Counts section - top left */}
+      <div className="px-4 pb-3 flex items-center justify-between text-sm text-gray-600">
+        <div className="flex items-center gap-4">
           {supportCount > 0 && (
             <button
               onClick={onLikesClick}
-              className="hover:text-blue-600 hover:underline transition-colors"
+              className="hover:text-gray-900 hover:underline transition-colors font-medium"
             >
               {supportCount} {supportCount === 1 ? 'like' : 'likes'}
+            </button>
+          )}
+          {commentCount > 0 && (
+            <button
+              onClick={onViewAllCommentsClick}
+              className="hover:text-gray-900 hover:underline transition-colors font-medium"
+            >
+              {commentCount} {commentCount === 1 ? 'comment' : 'comments'}
             </button>
           )}
         </div>
       </div>
 
-      {/* Action buttons - LinkedIn style */}
-      <div className="border-t border-b border-gray-200 px-2">
-        <div className="flex items-center justify-around">
+      {/* Action buttons - Strava style (bottom right on desktop) */}
+      <div className="border-t border-gray-200 px-4 py-3">
+        <div className="flex items-center justify-end gap-2">
           {/* Like button */}
           <button
             onClick={handleSupport}
             disabled={isSupporting}
-            className={`flex items-center gap-2 px-4 py-3 rounded-lg hover:bg-gray-100 transition-colors flex-1 justify-center ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded hover:bg-gray-100 transition-colors ${
               isSupporting ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
             }`}
+            title="Like"
           >
             <ThumbsUp
               className={`w-5 h-5 transition-colors ${
                 isSupported
-                  ? 'fill-blue-600 text-blue-600'
-                  : 'text-[#3B82F6]'
+                  ? 'fill-gray-700 text-gray-700'
+                  : 'text-gray-600'
               }`}
               strokeWidth={1.5}
             />
-            <span className={`font-medium text-sm ${
-              isSupported ? 'text-blue-600' : 'text-gray-600'
+            <span className={`hidden md:inline text-sm font-medium ${
+              isSupported ? 'text-gray-700' : 'text-gray-600'
             }`}>
-              Like
+              {supportCount > 0 ? supportCount : ''}
             </span>
           </button>
 
           {/* Comment button */}
           <button
             onClick={onCommentClick}
-            className="flex items-center gap-2 px-4 py-3 rounded-lg hover:bg-gray-100 transition-colors flex-1 justify-center"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded hover:bg-gray-100 transition-colors"
+            title="Comment"
           >
             <MessageSquare
-              className="w-5 h-5 text-[#10B981]"
+              className="w-5 h-5 text-gray-600"
               strokeWidth={1.5}
             />
-            <span className="font-medium text-sm text-gray-600">
-              Comment
+            <span className="hidden md:inline text-sm font-medium text-gray-600">
+              {commentCount > 0 ? commentCount : ''}
             </span>
           </button>
 
@@ -125,32 +135,18 @@ export const SessionInteractions: React.FC<SessionInteractionsProps> = ({
           <button
             onClick={handleShare}
             disabled={isSharing}
-            className={`flex items-center gap-2 px-4 py-3 rounded-lg hover:bg-gray-100 transition-colors flex-1 justify-center ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded hover:bg-gray-100 transition-colors ${
               isSharing ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
             }`}
+            title="Share"
           >
             <Share2
-              className="w-5 h-5 text-[#F59E0B]"
+              className="w-5 h-5 text-gray-600"
               strokeWidth={1.5}
             />
-            <span className="font-medium text-sm text-gray-600">
-              Send
-            </span>
           </button>
         </div>
       </div>
-
-      {/* View all comments button - show if there are any comments */}
-      {commentCount > 0 && (
-        <div className="px-4 pt-2 pb-1">
-          <button
-            onClick={onViewAllCommentsClick}
-            className="text-sm text-gray-600 hover:text-gray-900 font-medium"
-          >
-            View all {commentCount} {commentCount === 1 ? 'comment' : 'comments'}
-          </button>
-        </div>
-      )}
     </div>
   );
 };

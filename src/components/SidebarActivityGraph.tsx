@@ -12,6 +12,7 @@ type TimePeriod = 'week' | 'month';
 interface ChartDataPoint {
   name: string;
   hours: number;
+  isToday?: boolean;
 }
 
 function SidebarActivityGraph() {
@@ -74,6 +75,7 @@ function SidebarActivityGraph() {
         data.push({
           name: dayNames[day.getDay()],
           hours: Number(hoursWorked.toFixed(1)),
+          isToday: i === 0,
         });
       }
     } else if (timePeriod === 'month') {
@@ -99,6 +101,7 @@ function SidebarActivityGraph() {
         data.push({
           name: `W${4 - i}`,
           hours: Number(hoursWorked.toFixed(1)),
+          isToday: i === 0,
         });
       }
     }
@@ -106,13 +109,13 @@ function SidebarActivityGraph() {
     setChartData(data);
   };
 
-  const totalHours = sessions.reduce((sum, s) => sum + s.duration / 3600, 0);
-
   return (
     <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
       {/* Header with dropdown */}
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="text-base font-semibold text-gray-900">Activity</h3>
+      <div className="flex items-center justify-between mb-6">
+        <h3 className="text-lg font-semibold text-gray-900">
+          {timePeriod === 'week' ? 'This Week' : 'This Month'}
+        </h3>
         <div className="relative">
           <button
             onClick={() => setShowDropdown(!showDropdown)}
@@ -150,33 +153,48 @@ function SidebarActivityGraph() {
         </div>
       </div>
 
-      {/* Total hours stat */}
-      <div className="mb-4">
-        <div className="text-3xl font-bold text-gray-900">{totalHours.toFixed(1)}h</div>
-        <div className="text-sm text-gray-500">Total time</div>
-      </div>
-
       {/* Chart */}
       {isLoading ? (
         <div className="h-48 bg-gray-100 rounded animate-pulse"></div>
       ) : (
         <div className="h-48">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={chartData} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
+            <LineChart data={chartData} margin={{ top: 10, right: 10, left: 5, bottom: 5 }}>
               <XAxis
                 dataKey="name"
-                tick={{ fontSize: 10, fill: '#9ca3af' }}
+                tick={{ fontSize: 11, fill: '#6b7280' }}
                 axisLine={false}
                 tickLine={false}
               />
-              <YAxis hide />
+              <YAxis
+                tick={{ fontSize: 11, fill: '#6b7280' }}
+                axisLine={false}
+                tickLine={false}
+                width={25}
+                domain={[0, 'dataMax']}
+              />
               <Line
                 type="monotone"
                 dataKey="hours"
                 stroke="#007AFF"
-                strokeWidth={2}
-                dot={false}
-                activeDot={{ r: 4 }}
+                strokeWidth={2.5}
+                dot={(props: any) => {
+                  const { cx, cy, payload, index } = props;
+                  const isToday = payload.isToday;
+                  const radius = isToday ? 7 : 5;
+
+                  return (
+                    <circle
+                      key={`dot-${index}`}
+                      cx={cx}
+                      cy={cy}
+                      r={radius}
+                      fill={isToday ? "#007AFF" : "white"}
+                      stroke="#007AFF"
+                      strokeWidth={isToday ? 2.5 : 2}
+                    />
+                  );
+                }}
               />
             </LineChart>
           </ResponsiveContainer>

@@ -113,23 +113,21 @@ function RightSidebar() {
       <div className="space-y-4 h-full overflow-y-auto scrollbar-hide pb-6">
 
         {/* Suggested Friends - Redesigned */}
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
-          <div className="px-4 py-3 border-b border-gray-100">
-            <div className="flex items-center justify-between">
-              <h3 className="text-base font-semibold text-gray-900">Suggested for you</h3>
-              <button
-                onClick={() => setShowPeopleModal(true)}
-                className="text-xs text-[#007AFF] hover:text-[#0056D6] font-semibold"
-              >
-                See all
-              </button>
-            </div>
+        <div className="px-2">
+          <div className="flex items-center justify-between mb-3 px-2">
+            <h3 className="text-lg font-semibold text-gray-900">Suggested for you</h3>
+            <button
+              onClick={() => setShowPeopleModal(true)}
+              className="text-xs text-[#007AFF] hover:text-[#0056D6] font-semibold"
+            >
+              See more
+            </button>
           </div>
 
           {isLoading ? (
-            <div className="p-3 space-y-3">
+            <div className="space-y-2">
               {[1, 2, 3].map(i => (
-                <div key={i} className="flex items-center gap-3 animate-pulse p-2">
+                <div key={i} className="flex items-center gap-3 animate-pulse p-3 bg-white rounded-lg">
                   <div className="w-12 h-12 bg-gray-200 rounded-full"></div>
                   <div className="flex-1">
                     <div className="h-4 bg-gray-200 rounded w-24 mb-2"></div>
@@ -139,19 +137,19 @@ function RightSidebar() {
               ))}
             </div>
           ) : suggestedUsers.length === 0 ? (
-            <div className="p-8 text-center">
+            <div className="p-6 text-center bg-white rounded-lg">
               <p className="text-sm text-gray-500">No suggestions available</p>
             </div>
           ) : (
-            <div className="py-2">
+            <div className="space-y-1">
               {suggestedUsers.map((suggestedUser, index) => (
                 <Link
                   key={suggestedUser.id}
                   href={`/profile/${suggestedUser.username}`}
-                  className="block px-4 py-3 hover:bg-gray-50 transition-colors"
+                  className="block px-3 py-3 bg-white hover:bg-gray-50 rounded-lg transition-colors"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-[#007AFF] rounded-full flex items-center justify-center flex-shrink-0 ring-2 ring-white">
+                    <div className="w-12 h-12 bg-[#007AFF] rounded-full flex items-center justify-center flex-shrink-0">
                       <span className="text-white font-semibold text-sm">
                         {suggestedUser.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
                       </span>
@@ -188,23 +186,21 @@ function RightSidebar() {
         </div>
 
         {/* Clubs - Redesigned */}
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
-          <div className="px-4 py-3 border-b border-gray-100">
-            <div className="flex items-center justify-between">
-              <h3 className="text-base font-semibold text-gray-900">Groups to join</h3>
-              <button
-                onClick={() => setShowGroupsModal(true)}
-                className="text-xs text-[#007AFF] hover:text-[#0056D6] font-semibold"
-              >
-                See all
-              </button>
-            </div>
+        <div className="px-2">
+          <div className="flex items-center justify-between mb-3 px-2">
+            <h3 className="text-lg font-semibold text-gray-900">Groups to join</h3>
+            <button
+              onClick={() => setShowGroupsModal(true)}
+              className="text-xs text-[#007AFF] hover:text-[#0056D6] font-semibold"
+            >
+              See more
+            </button>
           </div>
 
           {isLoading ? (
-            <div className="p-3 space-y-3">
+            <div className="space-y-2">
               {[1, 2, 3].map(i => (
-                <div key={i} className="flex items-center gap-3 animate-pulse p-2">
+                <div key={i} className="flex items-center gap-3 animate-pulse p-3 bg-white rounded-lg">
                   <div className="w-12 h-12 bg-gray-200 rounded-lg"></div>
                   <div className="flex-1">
                     <div className="h-4 bg-gray-200 rounded w-24 mb-2"></div>
@@ -214,16 +210,16 @@ function RightSidebar() {
               ))}
             </div>
           ) : suggestedGroups.length === 0 ? (
-            <div className="p-8 text-center">
+            <div className="p-6 text-center bg-white rounded-lg">
               <p className="text-sm text-gray-500">No groups available</p>
             </div>
           ) : (
-            <div className="py-2">
+            <div className="space-y-1">
               {suggestedGroups.map(group => (
                 <Link
                   key={group.id}
                   href={`/groups/${group.id}`}
-                  className="block px-4 py-3 hover:bg-gray-50 transition-colors"
+                  className="block px-3 py-3 bg-white hover:bg-gray-50 rounded-lg transition-colors"
                 >
                   <div className="flex items-center gap-3">
                     <GroupAvatar

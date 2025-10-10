@@ -285,8 +285,8 @@ export default function ManualSessionRecorder() {
       </div>
 
       {/* Form */}
-      <div className="max-w-3xl mx-auto px-4 py-8">
-        <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-6">
+      <div className="max-w-3xl mx-auto px-4 py-6 sm:py-8">
+        <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 space-y-4 sm:space-y-6">
           
           {/* Project Selection */}
           <div>
@@ -356,9 +356,9 @@ export default function ManualSessionRecorder() {
             <div className="space-y-2">
               {/* Image Previews */}
               {imagePreviewUrls.length > 0 && (
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   {imagePreviewUrls.map((url, index) => (
-                    <div key={index} className="relative aspect-square rounded-lg overflow-hidden bg-gray-100">
+                    <div key={index} className="relative aspect-square rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
                       <Image
                         src={url}
                         alt={`Preview ${index + 1}`}
@@ -428,11 +428,11 @@ export default function ManualSessionRecorder() {
 
           {/* Date and Time Section */}
           <div>
-            <h3 className="text-sm font-semibold text-gray-900 mb-4">
+            <h3 className="text-sm font-semibold text-gray-900 mb-3 sm:mb-4">
               When did this session happen?
             </h3>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
               {/* Date */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -472,11 +472,11 @@ export default function ManualSessionRecorder() {
             </div>
 
             {/* Duration */}
-            <div className="mt-4">
+            <div className="mt-3 sm:mt-4">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Duration *
               </label>
-              <div className="flex gap-3">
+              <div className="flex gap-2 sm:gap-3">
                 <div className="flex-1">
                   <input
                     type="number"
@@ -566,18 +566,18 @@ export default function ManualSessionRecorder() {
           )}
 
           {/* Action Buttons */}
-          <div className="flex gap-3 pt-4">
+          <div className="flex flex-col sm:flex-row gap-3 pt-4 sticky bottom-0 bg-white -mx-4 sm:mx-0 -mb-4 sm:mb-0 px-4 sm:px-0 py-4 sm:py-0 border-t sm:border-t-0 border-gray-200 sm:border-0 sm:static">
             <button
               type="button"
               onClick={() => router.back()}
-              className="flex-1 px-4 py-3 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors disabled:opacity-50"
+              className="flex-1 px-4 py-3 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors disabled:opacity-50 min-h-[48px]"
               disabled={isLoading}
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+              className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 min-h-[48px]"
               disabled={isLoading || isUploadingImages}
             >
               {isUploadingImages ? (

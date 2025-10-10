@@ -256,95 +256,102 @@ export default function ProfilePage() {
                   </div>
                 </div>
 
-                {/* Profile Info */}
-                <div className="flex items-start gap-4 mb-6">
-                  {user.profilePicture || userProfile?.profilePicture ? (
-                    <div className="w-20 h-20 rounded-full overflow-hidden ring-4 ring-white shadow-md flex-shrink-0">
-                      <Image
-                        src={userProfile?.profilePicture || user.profilePicture || ''}
-                        alt={user.name}
-                        width={80}
-                        height={80}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  ) : (
-                    <div className="w-20 h-20 bg-[#FC4C02] rounded-full flex items-center justify-center ring-4 ring-white shadow-md flex-shrink-0">
-                      <span className="text-white font-bold text-2xl">
-                        {user.name.charAt(0).toUpperCase()}
-                      </span>
-                    </div>
-                  )}
-
-                  <div className="flex-1 min-w-0">
-                    <h1 className="text-2xl font-bold text-gray-900">{user.name}</h1>
-                    <p className="text-gray-600">@{user.username}</p>
-                    {(userProfile?.bio || user.bio) && (
-                      <p className="text-gray-700 mt-2">{userProfile?.bio || user.bio}</p>
+                {/* Two Column Layout */}
+                <div className="flex gap-8">
+                  {/* Left Column - Profile Info */}
+                  <div className="flex-1">
+                    {/* Profile Picture */}
+                    {user.profilePicture || userProfile?.profilePicture ? (
+                      <div className="w-32 h-32 rounded-full overflow-hidden ring-4 ring-white shadow-md mb-4">
+                        <Image
+                          src={userProfile?.profilePicture || user.profilePicture || ''}
+                          alt={user.name}
+                          width={128}
+                          height={128}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-32 h-32 bg-[#FC4C02] rounded-full flex items-center justify-center ring-4 ring-white shadow-md mb-4">
+                        <span className="text-white font-bold text-4xl">
+                          {user.name.charAt(0).toUpperCase()}
+                        </span>
+                      </div>
                     )}
+
+                    {/* Name and Username */}
+                    <h1 className="text-2xl font-bold text-gray-900">{user.name}</h1>
+                    <p className="text-gray-600 mb-3">@{user.username}</p>
+
+                    {/* Bio */}
+                    {(userProfile?.bio || user.bio) && (
+                      <p className="text-gray-700 mb-3">{userProfile?.bio || user.bio}</p>
+                    )}
+
+                    {/* Location */}
                     {(userProfile?.location || user.location) && (
-                      <p className="text-gray-500 text-sm mt-1">📍 {userProfile?.location || user.location}</p>
+                      <p className="text-gray-500 text-sm mb-4">📍 {userProfile?.location || user.location}</p>
                     )}
 
                     {/* Edit Profile Button */}
                     <Link
                       href="/settings"
-                      className="inline-flex items-center gap-2 mt-4 px-4 py-2 bg-[#007AFF] text-white rounded-lg hover:bg-[#0066CC] transition-colors font-medium text-sm"
+                      className="inline-flex items-center gap-2 mb-4 px-4 py-2.5 bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-lg transition-colors font-semibold text-sm"
                     >
                       <Edit className="w-4 h-4" />
                       Edit Profile
                     </Link>
-                  </div>
-                </div>
 
-                {/* Follower/Following Counts */}
-                <div className="flex gap-6 mb-6">
-                  <button
-                    onClick={() => {
-                      setActiveTab('followers');
-                      router.push('/profile?tab=followers');
-                    }}
-                    className="hover:underline"
-                  >
-                    <span className="font-bold text-gray-900">{followers.length}</span>{' '}
-                    <span className="text-gray-600">Followers</span>
-                  </button>
-                  <button
-                    onClick={() => {
-                      setActiveTab('following');
-                      router.push('/profile?tab=following');
-                    }}
-                    className="hover:underline"
-                  >
-                    <span className="font-bold text-gray-900">{following.length}</span>{' '}
-                    <span className="text-gray-600">Following</span>
-                  </button>
-                </div>
-
-                {/* This Week Stats */}
-                <div className="border-t border-gray-200 pt-4">
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="w-5 h-5 text-[#FC4C02]">📊</div>
-                    <h2 className="text-base font-bold">This week</h2>
+                    {/* Follower/Following Counts */}
+                    <div className="flex gap-6">
+                      <button
+                        onClick={() => {
+                          setActiveTab('followers');
+                          router.push('/profile?tab=followers');
+                        }}
+                        className="hover:underline"
+                      >
+                        <span className="font-bold text-gray-900">{followers.length}</span>{' '}
+                        <span className="text-gray-600">Followers</span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          setActiveTab('following');
+                          router.push('/profile?tab=following');
+                        }}
+                        className="hover:underline"
+                      >
+                        <span className="font-bold text-gray-900">{following.length}</span>{' '}
+                        <span className="text-gray-600">Following</span>
+                      </button>
+                    </div>
                   </div>
 
-                  <div className="flex gap-6">
-                    <div>
-                      <div className="text-xs text-gray-600">Time</div>
-                      <div className="text-lg font-bold">
-                        {stats?.weeklyHours?.toFixed(1) || 0}h
-                      </div>
+                  {/* Right Column - This Week Stats */}
+                  <div className="w-64 border-l border-gray-200 pl-8">
+                    <div className="flex items-center gap-2 mb-4">
+                      <div className="w-5 h-5 text-[#FC4C02]">📊</div>
+                      <h2 className="text-base font-bold">This week</h2>
                     </div>
-                    <div>
-                      <div className="text-xs text-gray-600">Sessions</div>
-                      <div className="text-lg font-bold">
-                        {stats?.sessionsThisWeek || 0}
+
+                    <div className="space-y-4">
+                      <div>
+                        <div className="text-xs text-gray-600">Time</div>
+                        <div className="text-2xl font-bold">
+                          {stats?.weeklyHours?.toFixed(1) || 0}h
+                        </div>
                       </div>
-                    </div>
-                    <div>
-                      <div className="text-xs text-gray-600">Streak</div>
-                      <div className="text-lg font-bold">
-                        {stats?.currentStreak || 0} days
+                      <div>
+                        <div className="text-xs text-gray-600">Sessions</div>
+                        <div className="text-2xl font-bold">
+                          {stats?.sessionsThisWeek || 0}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-xs text-gray-600">Streak</div>
+                        <div className="text-2xl font-bold">
+                          {stats?.currentStreak || 0} days
+                        </div>
                       </div>
                     </div>
                   </div>

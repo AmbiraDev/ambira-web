@@ -7,10 +7,10 @@ import Header from '@/components/HeaderComponent';
 
 function ProjectsContent() {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       <Header />
-      
-      <div className="max-w-[1400px] mx-auto px-4 py-6">
+
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-8">
         <ProjectList />
       </div>
     </div>

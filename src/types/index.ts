@@ -183,16 +183,19 @@ export interface FeedResponse {
 }
 
 export interface FeedFilters {
-  type?: 'following' | 'trending' | 'recent' | 'user';
+  type?: 'following' | 'trending' | 'recent' | 'user' | 'group';
   activityId?: string; // Changed from projectId
   projectId?: string; // Backwards compatibility
   userId?: string;
+  groupId?: string;
 }
 
 export interface Group {
   id: string;
   name: string;
   description: string;
+  icon?: string;
+  color?: string;
   imageUrl?: string;
   bannerUrl?: string;
   location?: string;
@@ -224,6 +227,8 @@ export interface GroupPost extends Post {
 export interface CreateGroupData {
   name: string;
   description: string;
+  icon?: string;
+  color?: string;
   category: 'work' | 'study' | 'side-project' | 'learning' | 'other';
   type: 'just-for-fun' | 'professional' | 'competitive' | 'other';
   privacySetting: 'public' | 'approval-required';
@@ -235,6 +240,8 @@ export interface CreateGroupData {
 export interface UpdateGroupData {
   name?: string;
   description?: string;
+  icon?: string;
+  color?: string;
   category?: 'work' | 'study' | 'side-project' | 'learning' | 'other';
   type?: 'just-for-fun' | 'professional' | 'competitive' | 'other';
   privacySetting?: 'public' | 'approval-required';

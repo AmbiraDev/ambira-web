@@ -279,15 +279,15 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
   if (showFinishModal) {
     return (
       <>
-        <div className="min-h-[calc(100vh-120px)]">
-          <div className="max-w-3xl mx-auto">
-            <div className="bg-white rounded-lg p-6 w-full shadow">
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-xl font-bold text-gray-900">Complete Session</h3>
-                <button onClick={() => setShowFinishModal(false)} className="text-gray-500 hover:text-gray-700">Close</button>
+        <div className="min-h-screen sm:min-h-[calc(100vh-120px)] bg-gray-50 sm:bg-transparent">
+          <div className="max-w-3xl mx-auto h-full sm:h-auto">
+            <div className="bg-white sm:rounded-lg p-4 sm:p-6 w-full sm:shadow min-h-screen sm:min-h-0">
+              <div className="flex justify-between items-center mb-4 sm:mb-6">
+                <h3 className="text-lg sm:text-xl font-bold text-gray-900">Complete Session</h3>
+                <button onClick={() => setShowFinishModal(false)} className="text-gray-500 hover:text-gray-700 min-h-[44px] min-w-[44px] flex items-center justify-center">Close</button>
               </div>
               {/* Reuse existing completion UI from below */}
-              <div className="space-y-3">
+              <div className="space-y-3 sm:space-y-4">
               {/* Session Title */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -374,13 +374,13 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
               </div>
 
               {/* Privacy and Publishing Options */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Visibility</label>
                   <select
                     value={visibility}
                     onChange={(e) => setVisibility(e.target.value as any)}
-                    className="w-full pl-3 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] appearance-none bg-white"
+                    className="w-full pl-3 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] appearance-none bg-white min-h-[44px]"
                     style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 12 12\'%3E%3Cpath fill=\'%23666\' d=\'M6 9L1 4h10z\'/%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.75rem center' }}
                   >
                     <option value="everyone">Everyone</option>
@@ -390,16 +390,16 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                 </div>
                 <div className="space-y-2">
                   <label className="block text-sm font-medium text-gray-700">Options</label>
-                  <label className="flex items-center gap-2 text-sm text-gray-700">
-                    <input type="checkbox" checked={showStartTime} onChange={(e) => setShowStartTime(e.target.checked)} />
+                  <label className="flex items-center gap-2 text-sm text-gray-700 min-h-[36px]">
+                    <input type="checkbox" checked={showStartTime} onChange={(e) => setShowStartTime(e.target.checked)} className="w-4 h-4 flex-shrink-0" />
                     Show start time
                   </label>
-                  <label className="flex items-center gap-2 text-sm text-gray-700">
-                    <input type="checkbox" checked={hideTaskNames} onChange={(e) => setHideTaskNames(e.target.checked)} />
+                  <label className="flex items-center gap-2 text-sm text-gray-700 min-h-[36px]">
+                    <input type="checkbox" checked={hideTaskNames} onChange={(e) => setHideTaskNames(e.target.checked)} className="w-4 h-4 flex-shrink-0" />
                     Don't show task names
                   </label>
-                  <label className="flex items-center gap-2 text-sm text-gray-700">
-                    <input type="checkbox" checked={publishToFeeds} onChange={(e) => setPublishToFeeds(e.target.checked)} />
+                  <label className="flex items-center gap-2 text-sm text-gray-700 min-h-[36px]">
+                    <input type="checkbox" checked={publishToFeeds} onChange={(e) => setPublishToFeeds(e.target.checked)} className="w-4 h-4 flex-shrink-0" />
                     Publish to home/group feeds
                   </label>
                 </div>
@@ -459,17 +459,17 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
               </div>
 
               {/* Actions */}
-              <div className="flex gap-3 pt-3">
+              <div className="flex flex-col sm:flex-row gap-3 pt-4 sticky bottom-0 sm:static bg-white -mx-4 sm:mx-0 -mb-4 sm:mb-0 px-4 sm:px-0 py-4 sm:py-0 border-t sm:border-t-0 border-gray-200 sm:border-0">
                 <button
                   onClick={() => setShowCancelConfirm(true)}
-                  className="flex-1 px-3 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                  className="flex-1 px-3 py-3 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors min-h-[48px]"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleFinishTimer}
                   disabled={!sessionTitle.trim() || isUploadingImages}
-                  className="flex-1 px-3 py-2 bg-[#007AFF] text-white border border-[#007AFF] rounded-lg hover:bg-[#0051D5] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="flex-1 px-3 py-3 bg-[#007AFF] text-white border border-[#007AFF] rounded-lg hover:bg-[#0051D5] transition-colors disabled:opacity-50 disabled:cursor-not-allowed min-h-[48px]"
                 >
                   {isUploadingImages ? 'Uploading...' : 'Save'}
                 </button>

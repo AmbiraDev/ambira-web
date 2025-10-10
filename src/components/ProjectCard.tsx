@@ -79,19 +79,19 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 hover:shadow-md transition-shadow duration-200 relative group">
+    <div className="bg-white rounded-xl border border-gray-200 hover:shadow-lg hover:border-gray-300 transition-all duration-200 relative group">
       <Link href={`/activities/${project.id}`} className="block p-6">
         {/* Header with icon and menu */}
-        <div className="flex items-start justify-between mb-4">
+        <div className="flex items-start justify-between mb-5">
           <div
-            className="w-12 h-12 rounded-lg flex items-center justify-center p-1.5"
+            className="w-14 h-14 rounded-xl flex items-center justify-center p-2 shadow-sm"
             style={{ backgroundColor: project.color }}
           >
             <IconRenderer iconName={project.icon} size={40} />
           </div>
           <button
             onClick={handleMenuToggle}
-            className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-gray-100 rounded-full"
+            className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 hover:bg-gray-100 rounded-lg"
           >
             <svg className="w-5 h-5 text-gray-500" fill="currentColor" viewBox="0 0 20 20">
               <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
@@ -100,33 +100,33 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
         </div>
 
         {/* Project info */}
-        <div className="mb-4">
-          <h3 className="text-lg font-semibold text-gray-900 mb-1">{project.name}</h3>
-          <p className="text-gray-600 text-sm line-clamp-2">{project.description}</p>
+        <div className="mb-5">
+          <h3 className="text-xl font-bold text-gray-900 mb-2">{project.name}</h3>
+          <p className="text-gray-600 text-sm line-clamp-2 leading-relaxed">{project.description}</p>
         </div>
 
         {/* Progress indicators */}
         {isLoadingStats ? (
-          <div className="space-y-3">
+          <div className="space-y-4">
             <div className="animate-pulse">
-              <div className="h-2 bg-gray-200 rounded w-full"></div>
+              <div className="h-2.5 bg-gray-200 rounded-full w-full"></div>
             </div>
             <div className="animate-pulse">
-              <div className="h-2 bg-gray-200 rounded w-3/4"></div>
+              <div className="h-2.5 bg-gray-200 rounded-full w-3/4"></div>
             </div>
           </div>
         ) : currentStats ? (
-          <div className="space-y-3">
+          <div className="space-y-4">
             {/* Weekly progress */}
             {project.weeklyTarget && (
               <div>
-                <div className="flex justify-between text-xs text-gray-600 mb-1">
+                <div className="flex justify-between text-xs font-medium text-gray-700 mb-2">
                   <span>This week</span>
-                  <span>{(currentStats.weeklyHours || 0).toFixed(1)}h / {project.weeklyTarget}h</span>
+                  <span className="text-gray-900">{(currentStats.weeklyHours || 0).toFixed(1)}h / {project.weeklyTarget}h</span>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div 
-                    className={`${colorClass} h-2 rounded-full transition-all duration-300`}
+                <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
+                  <div
+                    className={`${colorClass} h-2.5 rounded-full transition-all duration-300 shadow-sm`}
                     style={{ width: `${Math.min(100, weeklyProgress)}%` }}
                   ></div>
                 </div>
@@ -136,13 +136,13 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
             {/* Total progress */}
             {project.totalTarget && (
               <div>
-                <div className="flex justify-between text-xs text-gray-600 mb-1">
+                <div className="flex justify-between text-xs font-medium text-gray-700 mb-2">
                   <span>Total</span>
-                  <span>{(currentStats.totalHours || 0).toFixed(1)}h / {project.totalTarget}h</span>
+                  <span className="text-gray-900">{(currentStats.totalHours || 0).toFixed(1)}h / {project.totalTarget}h</span>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div 
-                    className={`${colorClass} h-2 rounded-full transition-all duration-300`}
+                <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
+                  <div
+                    className={`${colorClass} h-2.5 rounded-full transition-all duration-300 shadow-sm`}
                     style={{ width: `${Math.min(100, totalProgress)}%` }}
                   ></div>
                 </div>
@@ -150,7 +150,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
             )}
           </div>
         ) : (
-          <div className="text-sm text-gray-500">
+          <div className="text-sm text-gray-500 italic">
             No targets set
           </div>
         )}
@@ -158,31 +158,32 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
 
       {/* Dropdown menu */}
       {showMenu && (
-        <div className="absolute top-16 right-4 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-10 min-w-[140px]">
+        <div className="absolute top-16 right-4 bg-white border border-gray-200 rounded-xl shadow-lg py-2 z-10 min-w-[150px]">
           <button
             onClick={(e) => handleAction(e, () => onEdit?.(project))}
-            className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50"
+            className="w-full px-4 py-2 text-left text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
           >
             Edit
           </button>
           {project.status === 'active' ? (
             <button
               onClick={(e) => handleAction(e, () => onArchive?.(project))}
-              className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50"
+              className="w-full px-4 py-2 text-left text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
             >
               Archive
             </button>
           ) : (
             <button
               onClick={(e) => handleAction(e, () => onArchive?.(project))}
-              className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50"
+              className="w-full px-4 py-2 text-left text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
             >
               Restore
             </button>
           )}
+          <div className="my-1 border-t border-gray-100"></div>
           <button
             onClick={(e) => handleAction(e, () => onDelete?.(project))}
-            className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50"
+            className="w-full px-4 py-2 text-left text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
           >
             Delete
           </button>

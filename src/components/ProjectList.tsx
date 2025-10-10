@@ -20,7 +20,6 @@ export const ProjectList: React.FC<ProjectListProps> = ({
   const router = useRouter();
   const { projects, isLoading, error, deleteProject, archiveProject } = useProjects();
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const [filter, setFilter] = useState<'all' | 'active' | 'completed' | 'archived'>('all');
   const [deleteConfirm, setDeleteConfirm] = useState<Project | null>(null);
 
   // Load view mode from localStorage on mount
@@ -37,16 +36,8 @@ export const ProjectList: React.FC<ProjectListProps> = ({
     localStorage.setItem(STORAGE_KEY, mode);
   };
 
-  // Filter projects based on selected filter
-  const filteredProjects = projects.filter(project => {
-    if (filter === 'all') return true;
-    return project.status === filter;
-  });
-
-  // Group projects by status for better organization
-  const activeProjects = filteredProjects.filter(p => p.status === 'active');
-  const completedProjects = filteredProjects.filter(p => p.status === 'completed');
-  const archivedProjects = filteredProjects.filter(p => p.status === 'archived');
+  // Show all projects
+  const filteredProjects = projects;
 
   const handleDelete = async (project: Project) => {
     try {
@@ -141,67 +132,46 @@ export const ProjectList: React.FC<ProjectListProps> = ({
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Activities</h1>
-          <p className="text-gray-600">
-            {filteredProjects.length} activit{filteredProjects.length !== 1 ? 'ies' : 'y'}
-            {filter !== 'all' && ` (${filter})`}
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <button
-            onClick={() => router.push('/projects/new')}
-            className="bg-[#007AFF] text-white px-4 py-2 rounded-lg hover:bg-[#0056D6] transition-colors flex items-center gap-2 font-medium"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-            </svg>
-            New Activity
-          </button>
-          <div className="flex border border-gray-200 rounded-lg">
+    <div className="space-y-8">
+      <div className={viewMode === 'list' ? 'max-w-3xl mx-auto' : ''}>
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-2">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-1">Activities</h1>
+            <p className="text-gray-600 text-sm">
+              {filteredProjects.length} activit{filteredProjects.length !== 1 ? 'ies' : 'y'}
+            </p>
+          </div>
+          <div className="flex gap-2">
             <button
-              onClick={() => handleViewModeChange('grid')}
-              className={`p-2 ${viewMode === 'grid' ? 'bg-[#007AFF] text-white' : 'text-gray-600 hover:bg-gray-50'}`}
+              onClick={() => router.push('/projects/new')}
+              className="bg-[#007AFF] text-white px-5 py-2.5 rounded-lg hover:bg-[#0056D6] transition-colors flex items-center gap-2 font-medium shadow-sm hover:shadow-md"
             >
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                <path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
               </svg>
+              New Activity
             </button>
-            <button
-              onClick={() => handleViewModeChange('list')}
-              className={`p-2 ${viewMode === 'list' ? 'bg-[#007AFF] text-white' : 'text-gray-600 hover:bg-gray-50'}`}
-            >
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
-              </svg>
-            </button>
+            <div className="flex border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+              <button
+                onClick={() => handleViewModeChange('grid')}
+                className={`p-2.5 ${viewMode === 'grid' ? 'bg-[#007AFF] text-white' : 'bg-white text-gray-600 hover:bg-gray-50'} transition-colors`}
+              >
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                </svg>
+              </button>
+              <button
+                onClick={() => handleViewModeChange('list')}
+                className={`p-2.5 ${viewMode === 'list' ? 'bg-[#007AFF] text-white' : 'bg-white text-gray-600 hover:bg-gray-50'} transition-colors`}
+              >
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
-      </div>
-
-      {/* Filters */}
-      <div className="flex flex-wrap gap-2">
-        {[
-          { key: 'all', label: 'All', count: projects.length },
-          { key: 'active', label: 'Active', count: activeProjects.length },
-          { key: 'completed', label: 'Completed', count: completedProjects.length },
-          { key: 'archived', label: 'Archived', count: archivedProjects.length },
-        ].map(({ key, label, count }) => (
-          <button
-            key={key}
-            onClick={() => setFilter(key as any)}
-            className={`px-3 py-1 rounded-full text-sm transition-colors ${
-              filter === key
-                ? 'bg-orange-500 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-            }`}
-          >
-            {label} ({count})
-          </button>
-        ))}
       </div>
 
       {/* Projects Grid/List */}
@@ -214,44 +184,30 @@ export const ProjectList: React.FC<ProjectListProps> = ({
               </svg>
             </div>
             <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-2">
-              {filter === 'all' ? 'No activities yet' : `No ${filter} activities`}
+              No activities yet
             </h3>
             <p className="text-sm md:text-base text-gray-600 mb-6">
-              {filter === 'all'
-                ? "Activities help you organize your work sessions and track progress over time. Create your first activity to get started!"
-                : `No ${filter} activities found. Try adjusting your filter or create a new activity.`
-              }
+              Activities help you organize your work sessions and track progress over time. Create your first activity to get started!
             </p>
-            {filter === 'all' ? (
-              <>
-                <button
-                  onClick={() => router.push('/projects/new')}
-                  className="inline-flex items-center gap-2 bg-[#007AFF] text-white px-6 py-3 rounded-xl hover:bg-[#0056D6] transition-colors font-medium shadow-sm mb-4"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                  </svg>
-                  Create Your First Activity
-                </button>
-                <p className="text-xs text-gray-500">
-                  Tip: You can assign tasks to activities and track time spent on each one
-                </p>
-              </>
-            ) : (
-              <button
-                onClick={() => setFilter('all')}
-                className="inline-flex items-center gap-2 px-5 py-2.5 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors"
-              >
-                View All Activities
-              </button>
-            )}
+            <button
+              onClick={() => router.push('/projects/new')}
+              className="inline-flex items-center gap-2 bg-[#007AFF] text-white px-6 py-3 rounded-xl hover:bg-[#0056D6] transition-colors font-medium shadow-sm mb-4"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+              Create Your First Activity
+            </button>
+            <p className="text-xs text-gray-500">
+              Tip: You can assign tasks to activities and track time spent on each one
+            </p>
           </div>
         </div>
       ) : (
         <div className={
           viewMode === 'grid'
             ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'
-            : 'space-y-4'
+            : 'max-w-3xl mx-auto space-y-5'
         }>
           {filteredProjects.map((project) => (
             <ProjectCard
@@ -267,22 +223,22 @@ export const ProjectList: React.FC<ProjectListProps> = ({
 
       {/* Delete Confirmation Modal */}
       {deleteConfirm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Delete Activity</h3>
-            <p className="text-gray-600 mb-6">
-              Are you sure you want to delete "{deleteConfirm.name}"? This action cannot be undone.
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl p-6 max-w-md w-full shadow-xl">
+            <h3 className="text-xl font-bold text-gray-900 mb-3">Delete Activity</h3>
+            <p className="text-gray-600 mb-6 leading-relaxed">
+              Are you sure you want to delete <span className="font-semibold text-gray-900">"{deleteConfirm.name}"</span>? This action cannot be undone.
             </p>
             <div className="flex gap-3 justify-end">
               <button
                 onClick={() => setDeleteConfirm(null)}
-                className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                className="px-5 py-2.5 text-gray-700 font-medium border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={() => handleDelete(deleteConfirm)}
-                className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                className="px-5 py-2.5 bg-red-500 text-white font-medium rounded-lg hover:bg-red-600 transition-colors shadow-sm hover:shadow-md"
               >
                 Delete
               </button>

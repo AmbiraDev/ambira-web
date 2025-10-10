@@ -2837,10 +2837,58 @@ export const firebasePostApi = {
       }
 
       let sessionsQuery;
-      const { type = 'recent', userId, projectId } = filters;
+      const { type = 'recent', userId, projectId, groupId } = filters;
 
       // Handle different feed types - fetch from sessions collection
-      if (type === 'following') {
+      if (type === 'group' && groupId) {
+        // Group: fetch sessions from group members
+        const membershipsQuery = query(
+          collection(db, 'groupMemberships'),
+          where('groupId', '==', groupId),
+          where('status', '==', 'active')
+        );
+        const membershipsSnapshot = await getDocs(membershipsQuery);
+        const memberIds = membershipsSnapshot.docs.map(doc => doc.data().userId);
+
+        if (memberIds.length === 0) {
+          return { sessions: [], hasMore: false, nextCursor: undefined };
+        }
+
+        // Fetch sessions from group members
+        // Due to Firestore limitations, fetch all and filter
+        sessionsQuery = query(
+          collection(db, 'sessions'),
+          where('visibility', 'in', ['everyone', 'followers']),
+          orderBy('createdAt', 'desc'),
+          limit(limitCount * 3) // Fetch more to account for filtering
+        );
+
+        if (cursor) {
+          const cursorDoc = await getDoc(doc(db, 'sessions', cursor));
+          if (cursorDoc.exists()) {
+            sessionsQuery = query(
+              collection(db, 'sessions'),
+              where('visibility', 'in', ['everyone', 'followers']),
+              orderBy('createdAt', 'desc'),
+              startAfter(cursorDoc),
+              limit(limitCount * 3)
+            );
+          }
+        }
+
+        const querySnapshot = await getDocs(sessionsQuery);
+        // Filter to only sessions from group members
+        const filteredDocs = querySnapshot.docs.filter(doc =>
+          memberIds.includes(doc.data().userId)
+        ).slice(0, limitCount + 1);
+
+        const sessions = await populateSessionsWithDetails(filteredDocs.slice(0, limitCount));
+        const hasMore = filteredDocs.length > limitCount;
+        const nextCursor = hasMore ? filteredDocs[limitCount - 1]?.id : undefined;
+
+        return { sessions, hasMore, nextCursor };
+
+      } else if (type === 'following') {
         // Get list of users the current user is following
         const followingQuery = query(
           collection(db, 'follows'),

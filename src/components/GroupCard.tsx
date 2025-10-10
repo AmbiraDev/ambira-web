@@ -82,120 +82,18 @@ export default function GroupCard({
   };
 
   return (
-    <Card className="group hover:shadow-lg transition-all duration-200 border-0 shadow-sm">
-      <Link href={`/groups/${group.id}`} className="block">
-        {/* Group Banner */}
-        <div className="relative h-32 bg-gradient-to-r from-blue-500 to-purple-600 rounded-t-lg overflow-hidden">
-          {group.bannerUrl && (
-            <Image
-              src={group.bannerUrl}
-              alt={`${group.name} banner`}
-              fill
-              className="object-cover"
-            />
-          )}
-          <div className="absolute top-3 right-3">
-            {group.privacySetting === 'public' ? (
-              <Badge variant="secondary" className="bg-white/90 text-gray-700">
-                <Globe className="w-3 h-3 mr-1" />
-                Public
-              </Badge>
-            ) : (
-              <Badge variant="secondary" className="bg-white/90 text-gray-700">
-                <Lock className="w-3 h-3 mr-1" />
-                Approval Required
-              </Badge>
-            )}
-          </div>
+    <Link href={`/groups/${group.id}`}>
+      <Card className="group hover:shadow-sm transition-all duration-200 border border-gray-200/60 hover:border-[#007AFF]/30 aspect-square p-6 flex flex-col items-center justify-center text-center">
+        {/* Group Avatar */}
+        <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0 group-hover:bg-[#007AFF]/5 transition-colors mb-4">
+          <Users className="w-10 h-10 text-gray-600 group-hover:text-[#007AFF] transition-colors" />
         </div>
 
-        <div className="p-4">
-          {/* Group Avatar */}
-          <div className="flex items-start gap-3 mb-3">
-            <div className="relative -mt-8">
-              <div className="bg-white border-4 border-white rounded-xl shadow-sm">
-                <GroupAvatar
-                  imageUrl={group.imageUrl}
-                  name={group.name}
-                  size="lg"
-                />              
-              </div>
-            </div>
-            
-            <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-gray-900 text-lg leading-tight group-hover:text-blue-600 transition-colors">
-                {group.name}
-              </h3>
-              <p className="text-sm text-gray-600 line-clamp-2 mt-1">
-                {group.description}
-              </p>
-            </div>
-          </div>
-
-          {/* Group Stats */}
-          <div className="flex items-center gap-4 mb-3 text-sm text-gray-500">
-            <div className="flex items-center gap-1">
-              <Users className="w-4 h-4" />
-              <span>{group.memberCount} members</span>
-            </div>
-            {group.location && (
-              <div className="flex items-center gap-1">
-                <MapPin className="w-4 h-4" />
-                <span className="truncate max-w-24">{group.location}</span>
-              </div>
-            )}
-            <div className="flex items-center gap-1">
-              <Calendar className="w-4 h-4" />
-              <span>Created {new Date(group.createdAt).toLocaleDateString()}</span>
-            </div>
-          </div>
-
-          {/* Category and Type Badges */}
-          <div className="flex flex-wrap gap-2 mb-4">
-            <Badge className={categoryColors[group.category]}>
-              {categoryLabels[group.category]}
-            </Badge>
-            <Badge className={typeColors[group.type]}>
-              {typeLabels[group.type]}
-            </Badge>
-          </div>
-
-          {/* Action Button */}
-          <div className="flex justify-end">
-            {isAdmin && (
-              <Button variant="outline" size="sm" disabled>
-                <UserCheck className="w-4 h-4 mr-1" />
-                Admin
-              </Button>
-            )}
-            {canJoin && (
-              <Button 
-                size="sm" 
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleJoin();
-                }}
-                disabled={isLoading}
-              >
-                {group.privacySetting === 'public' ? 'Join Group' : 'Request to Join'}
-              </Button>
-            )}
-            {canLeave && (
-              <Button 
-                variant="outline" 
-                size="sm"
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleLeave();
-                }}
-                disabled={isLoading}
-              >
-                Leave Group
-              </Button>
-            )}
-          </div>
-        </div>
-      </Link>
-    </Card>
+        {/* Group Name */}
+        <h3 className="font-semibold text-gray-900 group-hover:text-[#007AFF] transition-colors line-clamp-2">
+          {group.name}
+        </h3>
+      </Card>
+    </Link>
   );
 }

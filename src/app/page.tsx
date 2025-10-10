@@ -11,11 +11,16 @@ import { FABMenu } from '@/components/FABMenu';
 import Feed from '@/components/Feed';
 import FeedCarousel from '@/components/FeedCarousel';
 import DayOverview from '@/components/DayOverview';
+import { FeedFilterDropdown, FeedFilterOption } from '@/components/FeedFilterDropdown';
 import { useState } from 'react';
 import { FeedFilters } from '@/types';
 
 function HomeContent() {
   const { user } = useAuth();
+  const [selectedFilter, setSelectedFilter] = useState<FeedFilterOption>({
+    type: 'following',
+    label: 'Following'
+  });
 
   return (
     <div className="h-screen flex flex-col bg-gray-50 overflow-hidden">
@@ -38,22 +43,50 @@ function HomeContent() {
 
             {/* Main Feed - Scrollable Container */}
             <main className="flex-1 min-w-0 max-w-[600px] h-full overflow-y-auto scrollbar-hide">
-              {/* Following Feed */}
-              <Feed filters={{ type: 'following' }} key="following-feed" showEndMessage={false} />
-
-              {/* Suggested Posts Section */}
-              <div className="mt-0">
-                <div className="bg-white md:rounded-lg border md:border-gray-200 p-4 mb-4">
-                  <div className="flex items-center gap-2 mb-1">
-                    <svg className="w-5 h-5 text-[#007AFF]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                    </svg>
-                    <h2 className="text-base font-semibold text-gray-900">Suggested Posts</h2>
-                  </div>
-                  <p className="text-sm text-gray-500">Discover productive sessions from the community</p>
-                </div>
-                <Feed filters={{ type: 'recent' }} key="suggested-feed" initialLimit={20} showEndMessage={true} />
+              {/* Filter Dropdown */}
+              <div className="px-0 md:px-0 pt-3 pb-2 sticky top-0 z-10 bg-gray-50">
+                <FeedFilterDropdown
+                  selectedFilter={selectedFilter}
+                  onFilterChange={(filter) => setSelectedFilter(filter)}
+                />
               </div>
+
+              {/* Feed based on selected filter */}
+              {selectedFilter.type === 'following' && (
+                <>
+                  <Feed filters={{ type: 'following' }} key="following-feed" showEndMessage={false} />
+
+                  {/* Suggested Posts Section */}
+                  <div className="mt-0">
+                    <div className="bg-white md:rounded-lg border md:border-gray-200 p-4 mb-4">
+                      <div className="flex items-center gap-2 mb-1">
+                        <svg className="w-5 h-5 text-[#007AFF]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                        <h2 className="text-base font-semibold text-gray-900">Suggested Posts</h2>
+                      </div>
+                      <p className="text-sm text-gray-500">Discover productive sessions from the community</p>
+                    </div>
+                    <Feed filters={{ type: 'recent' }} key="suggested-feed" initialLimit={20} showEndMessage={true} />
+                  </div>
+                </>
+              )}
+
+              {selectedFilter.type === 'user' && (
+                <Feed
+                  filters={{ type: 'user', userId: user?.id }}
+                  key={`user-feed-${user?.id}`}
+                  showEndMessage={true}
+                />
+              )}
+
+              {selectedFilter.type === 'group' && selectedFilter.groupId && (
+                <Feed
+                  filters={{ type: 'group', groupId: selectedFilter.groupId }}
+                  key={`group-feed-${selectedFilter.groupId}`}
+                  showEndMessage={true}
+                />
+              )}
             </main>
 
             {/* Right Sidebar - Fixed, hidden on mobile */}

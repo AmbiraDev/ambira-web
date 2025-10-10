@@ -191,13 +191,12 @@ export default function Header() {
               <nav className="hidden md:flex items-center space-x-6 h-14">
                 <Link
                   href="/"
-                  className={`text-base font-medium transition-colors flex items-center gap-2 h-full relative ${
+                  className={`text-base font-medium transition-colors h-full relative flex items-center ${
                     isActive('/')
                       ? 'text-gray-900'
-                      : 'text-gray-600 hover:text-[#007AFF]'
+                      : 'text-gray-600 hover:text-gray-900'
                   }`}
                 >
-                  <LayoutDashboard className={`w-4 h-4 ${isActive('/') ? 'text-[#007AFF]' : 'text-[#007AFF]'}`} />
                   Dashboard
                   {isActive('/') && (
                     <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#007AFF]"></div>
@@ -205,13 +204,12 @@ export default function Header() {
                 </Link>
                 <Link
                   href="/groups"
-                  className={`text-base font-medium transition-colors flex items-center gap-2 h-full relative ${
+                  className={`text-base font-medium transition-colors h-full relative flex items-center ${
                     isActive('/groups')
                       ? 'text-gray-900'
-                      : 'text-gray-600 hover:text-[#007AFF]'
+                      : 'text-gray-600 hover:text-gray-900'
                   }`}
                 >
-                  <Users className={`w-4 h-4 ${isActive('/groups') ? 'text-[#10B981]' : 'text-[#10B981]'}`} />
                   Groups
                   {isActive('/groups') && (
                     <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#007AFF]"></div>
@@ -219,13 +217,12 @@ export default function Header() {
                 </Link>
                 <Link
                   href="/projects"
-                  className={`text-base font-medium transition-colors flex items-center gap-2 h-full relative ${
+                  className={`text-base font-medium transition-colors h-full relative flex items-center ${
                     isActive('/projects') || isActive('/activities')
                       ? 'text-gray-900'
-                      : 'text-gray-600 hover:text-[#007AFF]'
+                      : 'text-gray-600 hover:text-gray-900'
                   }`}
                 >
-                  <Timer className={`w-4 h-4 ${isActive('/projects') || isActive('/activities') ? 'text-[#5E8B47]' : 'text-[#5E8B47]'}`} />
                   Activities
                   {(isActive('/projects') || isActive('/activities')) && (
                     <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#007AFF]"></div>
@@ -244,31 +241,27 @@ export default function Header() {
                 {/* Start Session Button */}
                 <Link
                   href="/timer"
-                  className="hidden md:flex items-center gap-2 px-3 py-2 hover:bg-gray-50 rounded-lg transition-colors whitespace-nowrap"
+                  className="hidden md:flex items-center gap-2 px-4 py-2 bg-white border-2 border-[#007AFF] text-[#007AFF] hover:bg-[#007AFF] hover:text-white rounded-md transition-colors whitespace-nowrap font-semibold text-sm"
                 >
                   <Timer
-                    className="w-5 h-5 text-[#5E8B47]"
-                    strokeWidth={2}
+                    className="w-4 h-4"
+                    strokeWidth={2.5}
                   />
-                  <span className="font-medium text-base text-gray-700">
-                    <span className="hidden 2xl:inline">Start Session</span>
-                    <span className="2xl:hidden">Start</span>
-                  </span>
+                  <span className="hidden xl:inline">Start Session</span>
+                  <span className="xl:hidden">Start</span>
                 </Link>
 
                 {/* Log Manually Button */}
                 <Link
                   href="/record-manual"
-                  className="hidden md:flex items-center gap-2 px-3 py-2 hover:bg-gray-50 rounded-lg transition-colors whitespace-nowrap"
+                  className="hidden md:flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-md transition-colors whitespace-nowrap font-semibold text-sm"
                 >
                   <Edit3
-                    className="w-5 h-5 text-[#C37D16]"
-                    strokeWidth={2}
+                    className="w-4 h-4"
+                    strokeWidth={2.5}
                   />
-                  <span className="font-medium text-base text-gray-700">
-                    <span className="hidden 2xl:inline">Log Manually</span>
-                    <span className="2xl:hidden">Manual</span>
-                  </span>
+                  <span className="hidden xl:inline">Log Manually</span>
+                  <span className="xl:hidden">Manual</span>
                 </Link>
               </>
             )}
@@ -286,47 +279,59 @@ export default function Header() {
 
             {/* Profile with Strava-style dropdown - Only show when authenticated */}
             {user && (
-              <div
-                className="relative"
-                onMouseEnter={() => {
-                  if (profileCloseTimerRef.current) {
-                    clearTimeout(profileCloseTimerRef.current);
-                    profileCloseTimerRef.current = null;
-                  }
-                  setIsProfileMenuOpen(true);
-                }}
-                onMouseLeave={() => {
-                  if (profileCloseTimerRef.current) {
-                    clearTimeout(profileCloseTimerRef.current);
-                  }
-                  profileCloseTimerRef.current = setTimeout(() => setIsProfileMenuOpen(false), 200);
-                }}
-              >
-                <button className="text-gray-600 hover:text-[#007AFF] transition-colors">
-                  {user.profilePicture ? (
-                    <div className="w-9 h-9 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-gray-200 hover:ring-[#007AFF] transition-all">
-                      <Image
-                        src={user.profilePicture}
-                        alt={user.name}
-                        width={64}
-                        height={64}
-                        quality={90}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  ) : (
-                    <div className="w-9 h-9 bg-[#FC4C02] rounded-full flex items-center justify-center flex-shrink-0 ring-2 ring-gray-200 hover:ring-[#007AFF] transition-all">
-                      <span className="text-sm font-medium text-white">
-                        {user.name.charAt(0).toUpperCase()}
-                      </span>
-                    </div>
-                  )}
-                </button>
+              <div className="relative">
+                {/* Profile Container - Hover triggers dropdown */}
+                <div
+                  className="flex items-center gap-1 cursor-pointer"
+                  onMouseEnter={() => {
+                    if (profileCloseTimerRef.current) {
+                      clearTimeout(profileCloseTimerRef.current);
+                      profileCloseTimerRef.current = null;
+                    }
+                    setIsProfileMenuOpen(true);
+                  }}
+                  onMouseLeave={() => {
+                    if (profileCloseTimerRef.current) {
+                      clearTimeout(profileCloseTimerRef.current);
+                    }
+                    profileCloseTimerRef.current = setTimeout(() => setIsProfileMenuOpen(false), 200);
+                  }}
+                >
+                  {/* Profile Picture - Click to go to profile */}
+                  <Link href="/profile" className="text-gray-600 hover:text-[#007AFF] transition-colors">
+                    {user.profilePicture ? (
+                      <div className="w-9 h-9 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-gray-200 transition-all">
+                        <Image
+                          src={user.profilePicture}
+                          alt={user.name}
+                          width={64}
+                          height={64}
+                          quality={90}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-9 h-9 bg-[#FC4C02] rounded-full flex items-center justify-center flex-shrink-0 ring-2 ring-gray-200 transition-all">
+                        <span className="text-sm font-medium text-white">
+                          {user.name.charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                    )}
+                  </Link>
 
-                {/* Strava-style Dropdown Menu */}
+                  {/* Dropdown Icon */}
+                  <button
+                    onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
+                    className="p-1 text-gray-600 hover:text-[#007AFF] transition-colors"
+                  >
+                    <ChevronDown className="w-5 h-5" />
+                  </button>
+                </div>
+
+                {/* Dropdown Menu */}
                 {isProfileMenuOpen && (
                   <div
-                    className="absolute right-0 top-0 z-20"
+                    className="absolute right-0 top-full mt-2 z-20 w-48 bg-white border border-gray-300 shadow-lg overflow-hidden"
                     onMouseEnter={() => {
                       if (profileCloseTimerRef.current) {
                         clearTimeout(profileCloseTimerRef.current);
@@ -341,46 +346,19 @@ export default function Header() {
                       profileCloseTimerRef.current = setTimeout(() => setIsProfileMenuOpen(false), 200);
                     }}
                   >
-                    {/* Top part - wraps around profile picture */}
-                    <div className="bg-white border border-gray-300 shadow-lg">
-                      <div className="p-1">
-                        {user.profilePicture ? (
-                          <div className="w-9 h-9 rounded-full overflow-hidden flex-shrink-0">
-                            <Image
-                              src={user.profilePicture}
-                              alt={user.name}
-                              width={64}
-                              height={64}
-                              quality={90}
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                        ) : (
-                          <div className="w-9 h-9 bg-[#FC4C02] rounded-full flex items-center justify-center flex-shrink-0">
-                            <span className="text-sm font-medium text-white">
-                              {user.name.charAt(0).toUpperCase()}
-                            </span>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Bottom part - menu items (wider rectangle) */}
-                    <div className="bg-white border-t-0 border-x border-b border-gray-300 shadow-lg w-48">
-                      <div className="py-1">
-                        <Link
-                          href="/profile"
-                          className="block px-4 py-2 text-sm text-gray-900 hover:bg-gray-100 transition-colors"
-                        >
-                          My Profile
-                        </Link>
-                        <Link
-                          href="/settings"
-                          className="block px-4 py-2 text-sm text-gray-900 hover:bg-gray-100 transition-colors"
-                        >
-                          Settings
-                        </Link>
-                      </div>
+                    <div className="py-1">
+                      <Link
+                        href="/profile"
+                        className="block px-4 py-2 text-sm text-gray-900 hover:bg-gray-100 transition-colors"
+                      >
+                        My Profile
+                      </Link>
+                      <Link
+                        href="/settings"
+                        className="block px-4 py-2 text-sm text-gray-900 hover:bg-gray-100 transition-colors"
+                      >
+                        Settings
+                      </Link>
                     </div>
                   </div>
                 )}

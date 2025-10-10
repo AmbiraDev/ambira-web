@@ -122,7 +122,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({
         <Link href={`/profile/${session.user.username}`} className="flex items-center gap-2 md:gap-3 min-w-0 flex-1">
           {/* User Avatar */}
           {session.user.profilePicture ? (
-            <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-white">
+            <div className="w-10 h-10 min-w-[2.5rem] aspect-square rounded-full overflow-hidden flex-shrink-0 ring-2 ring-white">
               <Image
                 src={session.user.profilePicture}
                 alt={session.user.name}
@@ -133,7 +133,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({
               />
             </div>
           ) : (
-            <div className="w-10 h-10 bg-[#FC4C02] rounded-full flex items-center justify-center flex-shrink-0 ring-2 ring-white">
+            <div className="w-10 h-10 min-w-[2.5rem] aspect-square bg-[#FC4C02] rounded-full flex items-center justify-center flex-shrink-0 ring-2 ring-white">
               <span className="text-white font-semibold text-sm">
                 {getUserInitials(session.user)}
               </span>
