@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { SignupCredentials } from '@/types';
@@ -285,8 +286,14 @@ export const LandingPage: React.FC = () => {
           <div className="md:hidden flex-1 flex flex-col justify-between py-12 pb-8">
             {/* Logo */}
             <div className="text-center">
-              <div className="w-20 h-20 bg-[#007AFF] rounded-2xl flex items-center justify-center mx-auto mb-6">
-                <span className="text-white font-bold text-3xl">A</span>
+              <div className="w-48 h-48 flex items-center justify-center mx-auto mb-6">
+                <Image
+                  src="/logo.svg"
+                  alt="Ambira Logo"
+                  width={192}
+                  height={192}
+                  priority
+                />
               </div>
             </div>
 
@@ -613,8 +620,14 @@ export const LandingPage: React.FC = () => {
           {!showLogin && !showSignup && (
             <>
               <div className="text-center mb-8">
-                <div className="w-16 h-16 bg-[#007AFF] rounded-lg flex items-center justify-center mx-auto mb-4">
-                  <span className="text-white font-bold text-2xl">A</span>
+                <div className="w-48 h-48 flex items-center justify-center mx-auto mb-6">
+                  <Image
+                    src="/logo.svg"
+                    alt="Ambira Logo"
+                    width={192}
+                    height={192}
+                    priority
+                  />
                 </div>
                 <h1 className="text-4xl font-bold text-gray-900 mb-2">Welcome to Ambira</h1>
                 <p className="text-lg text-gray-600">
@@ -640,8 +653,14 @@ export const LandingPage: React.FC = () => {
           {/* Login Form Header - Show when login form is active */}
           {showLogin && (
             <div className="text-center mb-8">
-              <div className="w-16 h-16 bg-[#007AFF] rounded-lg flex items-center justify-center mx-auto mb-4">
-                <span className="text-white font-bold text-2xl">A</span>
+              <div className="w-48 h-48 flex items-center justify-center mx-auto mb-6">
+                <Image
+                  src="/logo.svg"
+                  alt="Ambira Logo"
+                  width={192}
+                  height={192}
+                  priority
+                />
               </div>
               <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h1>
               <p className="text-lg text-gray-600">
@@ -653,8 +672,14 @@ export const LandingPage: React.FC = () => {
           {/* Signup Form Header - Show when signup form is active */}
           {showSignup && (
             <div className="text-center mb-8">
-              <div className="w-16 h-16 bg-[#007AFF] rounded-lg flex items-center justify-center mx-auto mb-4">
-                <span className="text-white font-bold text-2xl">A</span>
+              <div className="w-32 h-32 flex items-center justify-center mx-auto mb-6">
+                <Image
+                  src="/logo.svg"
+                  alt="Ambira Logo"
+                  width={128}
+                  height={128}
+                  priority
+                />
               </div>
               <h1 className="text-3xl font-bold text-gray-900 mb-2">Join Ambira</h1>
               <p className="text-lg text-gray-600">
@@ -958,8 +983,13 @@ export const LandingPage: React.FC = () => {
             {/* Brand */}
             <div className="md:col-span-1">
               <div className="flex items-center space-x-2 mb-4">
-                <div className="w-8 h-8 bg-[#007AFF] rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-lg">A</span>
+                <div className="w-8 h-8 flex items-center justify-center">
+                  <Image
+                    src="/logo.svg"
+                    alt="Ambira Logo"
+                    width={32}
+                    height={32}
+                  />
                 </div>
                 <span className="text-xl font-bold text-gray-900">Ambira</span>
               </div>

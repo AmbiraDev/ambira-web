@@ -17,7 +17,8 @@ import {
   Link as LinkIcon,
   Twitter,
   Github,
-  Linkedin
+  Linkedin,
+  LogOut
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import Image from 'next/image';
@@ -28,7 +29,7 @@ import { useRouter } from 'next/navigation';
 type SettingsTab = 'profile' | 'privacy' | 'notifications' | 'display';
 
 export default function SettingsPage() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<SettingsTab>('profile');
   const [formData, setFormData] = useState({
@@ -184,7 +185,7 @@ export default function SettingsPage() {
       });
       toast.success('Privacy settings updated successfully!');
       setSaved(true);
-      
+
       // Reload the page after a short delay
       setTimeout(() => {
         window.location.reload();
@@ -192,6 +193,15 @@ export default function SettingsPage() {
     } catch (err: any) {
       toast.error(err?.message || 'Failed to update privacy settings');
       setIsSaving(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      toast.success('Logged out successfully');
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to log out');
     }
   };
 
@@ -636,6 +646,17 @@ export default function SettingsPage() {
                     </div>
                   </div>
                 )}
+              </div>
+
+              {/* Logout Button */}
+              <div className="mt-6">
+                <button
+                  onClick={handleLogout}
+                  className="flex items-center gap-2 px-6 py-3 md:py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                >
+                  <LogOut className="w-4 h-4" />
+                  Log Out
+                </button>
               </div>
             </div>
           </div>

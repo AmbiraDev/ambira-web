@@ -23,14 +23,14 @@ const iconSizes = {
   xl: 'w-12 h-12'
 };
 
-export default function GroupAvatar({ 
-  imageUrl, 
-  name, 
+export default function GroupAvatar({
+  imageUrl,
+  name,
   size = 'md',
-  className = '' 
+  className = ''
 }: GroupAvatarProps) {
   return (
-    <div className={`${sizeClasses[size]} rounded-xl bg-[#007AFF] flex items-center justify-center overflow-hidden shadow-sm ${className}`}>
+    <div className={`${sizeClasses[size]} rounded-xl bg-gray-100 flex items-center justify-center overflow-hidden shadow-sm ${className}`}>
       {imageUrl ? (
         <Image
           src={imageUrl}
@@ -40,7 +40,7 @@ export default function GroupAvatar({
           className="w-full h-full object-cover"
         />
       ) : (
-        <Users className={`${iconSizes[size]} text-white`} />
+        <Users className={`${iconSizes[size]} text-gray-600`} />
       )}
     </div>
   );
