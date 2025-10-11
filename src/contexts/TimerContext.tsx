@@ -430,14 +430,9 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
         });
       }
 
-      // Clear active session from Firebase
-      try {
-        await firebaseSessionApi.clearActiveSession();
-        console.log('🧹 Active session cleared from Firebase');
-      } catch (clearError) {
-        console.error('Failed to clear active session from Firebase:', clearError);
-        // Continue anyway - we still want to reset the local state
-      }
+      // Clear active session from Firebase - this is critical, so throw if it fails
+      await firebaseSessionApi.clearActiveSession();
+      console.log('🧹 Active session cleared from Firebase');
 
       console.log('🧹 Session saved to Firebase and active session cleared successfully');
 
@@ -467,23 +462,25 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
     if (!timerState.activeTimerId) return;
 
     try {
-      // Clear active session from Firebase
+      // Clear active session from Firebase first
       await firebaseSessionApi.clearActiveSession();
       console.log('Timer cancelled and cleared from Firebase');
+
+      // Only reset state after successful deletion
+      setTimerState({
+        isRunning: false,
+        startTime: null,
+        pausedDuration: 0,
+        currentProject: null,
+        selectedTasks: [],
+        activeTimerId: null,
+        isConnected: true,
+        lastAutoSave: null,
+      });
     } catch (error) {
       console.error('Failed to cancel timer:', error);
+      throw error; // Re-throw to allow UI to handle the error
     }
-
-    setTimerState({
-      isRunning: false,
-      startTime: null,
-      pausedDuration: 0,
-      currentProject: null,
-      selectedTasks: [],
-      activeTimerId: null,
-      isConnected: true,
-      lastAutoSave: null,
-    });
   };
 
   // Update selected tasks

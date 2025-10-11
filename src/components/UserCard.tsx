@@ -85,8 +85,15 @@ export const UserCard: React.FC<UserCardProps> = ({
     return count.toString();
   };
 
+  // Use clean list style for search variant (like suggested friends)
+  const isSearchVariant = variant === 'search';
+
   return (
-    <div className="bg-card-background rounded-lg border border-border p-4 hover:shadow-md transition-shadow">
+    <div className={
+      isSearchVariant
+        ? "bg-white hover:bg-gray-50 rounded-lg transition-colors p-3"
+        : "bg-card-background rounded-lg border border-border p-4 hover:shadow-md transition-shadow"
+    }>
       <div className="flex items-start gap-3">
         {/* Avatar */}
         <Link href={`/profile/${user.username}`} className="flex-shrink-0" onClick={(e) => e.stopPropagation()}>
@@ -110,69 +117,93 @@ export const UserCard: React.FC<UserCardProps> = ({
           <div className="flex items-start justify-between">
             <div className="min-w-0 flex-1">
               <Link href={`/profile/${user.username}`} onClick={(e) => e.stopPropagation()}>
-                <h3 className="font-semibold text-foreground hover:text-primary transition-colors truncate">
+                <h3 className={
+                  isSearchVariant
+                    ? "font-semibold text-sm text-gray-900 hover:text-[#007AFF] truncate"
+                    : "font-semibold text-foreground hover:text-primary transition-colors truncate"
+                }>
                   {user.name}
                 </h3>
               </Link>
-              <p className="text-sm text-muted-foreground">@{user.username}</p>
-              
-              {user.bio && (
+              <p className={
+                isSearchVariant
+                  ? "text-xs text-gray-500 truncate"
+                  : "text-sm text-muted-foreground"
+              }>@{user.username}</p>
+
+              {user.bio && !isSearchVariant && (
                 <p className="text-sm text-foreground mt-1 line-clamp-2">
                   {user.bio}
                 </p>
               )}
 
               {/* Stats and badges */}
-              <div className="flex items-center gap-3 mt-2">
-                <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                  <Users className="w-3 h-3" />
-                  <span>{formatFollowerCount(user.followersCount)} followers</span>
-                </div>
-
-                {/* Suggestion reason */}
-                {'reason' in user && user.reason && (
-                  <Badge 
-                    variant={getReasonBadge(user.reason).variant}
-                    className="text-xs"
-                  >
-                    {getReasonBadge(user.reason).label}
-                  </Badge>
-                )}
-
-                {/* Location if available */}
-                {'location' in user && user.location && (
+              {!isSearchVariant && (
+                <div className="flex items-center gap-3 mt-2">
                   <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                    <MapPin className="w-3 h-3" />
-                    <span>{user.location}</span>
+                    <Users className="w-3 h-3" />
+                    <span>{formatFollowerCount(user.followersCount)} followers</span>
                   </div>
-                )}
-              </div>
+
+                  {/* Suggestion reason */}
+                  {'reason' in user && user.reason && (
+                    <Badge
+                      variant={getReasonBadge(user.reason).variant}
+                      className="text-xs"
+                    >
+                      {getReasonBadge(user.reason).label}
+                    </Badge>
+                  )}
+
+                  {/* Location if available */}
+                  {'location' in user && user.location && (
+                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                      <MapPin className="w-3 h-3" />
+                      <span>{user.location}</span>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Follow Button */}
             {canFollow && (
               <div className="flex-shrink-0 ml-2">
-                <Button
-                  onClick={handleFollow}
-                  disabled={isLoading}
-                  variant={isFollowing ? "outline" : "default"}
-                  size="sm"
-                  className="flex items-center gap-1 min-w-[80px]"
-                >
-                  {isLoading ? (
-                    <div className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                  ) : isFollowing ? (
-                    <>
-                      <Check className="w-3 h-3" />
-                      Following
-                    </>
-                  ) : (
-                    <>
-                      <UserPlus className="w-3 h-3" />
-                      Follow
-                    </>
-                  )}
-                </Button>
+                {isSearchVariant ? (
+                  <button
+                    onClick={handleFollow}
+                    disabled={isLoading}
+                    className={`text-sm font-semibold transition-colors whitespace-nowrap ${
+                      isFollowing
+                        ? 'text-gray-600 hover:text-gray-900'
+                        : 'text-[#007AFF] hover:text-[#0051D5]'
+                    }`}
+                  >
+                    {isLoading ? '...' : isFollowing ? 'Following' : 'Follow'}
+                  </button>
+                ) : (
+                  <Button
+                    onClick={handleFollow}
+                    disabled={isLoading}
+                    variant={isFollowing ? "outline" : "default"}
+                    size="sm"
+                    className="flex items-center gap-1 min-w-[80px]"
+                  >
+                    {isLoading ? (
+                      <div className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                    ) : isFollowing ? (
+                      <>
+                        <Check className="w-3 h-3" />
+                        Following
+                      </>
+                    ) : (
+                      <>
+                        <UserPlus className="w-3 h-3" />
+                        Follow
+                      </>
+                    )}
+                  </Button>
+                )}
               </div>
             )}
           </div>

@@ -500,7 +500,7 @@ function SearchContent() {
         </div>
 
         {/* Results */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div>
           {type === 'suggested' ? (
             isLoading ? (
               <div className="p-8 text-center">
@@ -508,15 +508,15 @@ function SearchContent() {
                 <p className="text-gray-600 mt-4">Loading suggestions...</p>
               </div>
             ) : (
-              <div className="divide-y-8 divide-gray-100">
+              <div className="space-y-8">
                 {/* Suggested People */}
                 {suggestedUsers.length > 0 && (
                   <div>
-                    <div className="px-4 py-4 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-blue-100">
+                    <div className="px-4 py-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-t-lg border-b border-blue-100">
                       <h3 className="text-lg font-bold text-gray-900">Suggested People</h3>
                       <p className="text-sm text-gray-600 mt-0.5">People you might know</p>
                     </div>
-                    <div className="bg-white">
+                    <div className="bg-white rounded-b-lg border border-gray-200 border-t-0 overflow-hidden">
                       {(showAllPeople ? suggestedUsers : suggestedUsers.slice(0, 5)).map((suggestedUser) => (
                         <div key={suggestedUser.id} className="border-b border-gray-100 last:border-0">
                           <UserCardCompact
@@ -543,11 +543,11 @@ function SearchContent() {
                 {/* Suggested Groups */}
                 {suggestedGroups.length > 0 && (
                   <div>
-                    <div className="px-4 py-4 bg-gradient-to-r from-green-50 to-emerald-50 border-b border-green-100">
+                    <div className="px-4 py-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-t-lg border-b border-green-100">
                       <h3 className="text-lg font-bold text-gray-900">Suggested Groups</h3>
                       <p className="text-sm text-gray-600 mt-0.5">Groups you might be interested in</p>
                     </div>
-                    <div className="bg-white">
+                    <div className="bg-white rounded-b-lg border border-gray-200 border-t-0 overflow-hidden">
                       {(showAllGroups ? suggestedGroups : suggestedGroups.slice(0, 3)).map(renderGroupResult)}
                       {suggestedGroups.length > 3 && (
                         <div className="px-4 py-3 bg-gray-50 border-t border-gray-200">
@@ -566,11 +566,11 @@ function SearchContent() {
                 {/* Suggested Challenges */}
                 {suggestedChallenges.length > 0 && (
                   <div>
-                    <div className="px-4 py-4 bg-gradient-to-r from-orange-50 to-amber-50 border-b border-orange-100">
+                    <div className="px-4 py-4 bg-gradient-to-r from-orange-50 to-amber-50 rounded-t-lg border-b border-orange-100">
                       <h3 className="text-lg font-bold text-gray-900">Suggested Challenges</h3>
                       <p className="text-sm text-gray-600 mt-0.5">Join these challenges</p>
                     </div>
-                    <div className="bg-white">
+                    <div className="bg-white rounded-b-lg border border-gray-200 border-t-0 overflow-hidden">
                       {(showAllChallenges ? suggestedChallenges : suggestedChallenges.slice(0, 3)).map(renderChallengeResult)}
                       {suggestedChallenges.length > 3 && (
                         <div className="px-4 py-3 bg-gray-50 border-t border-gray-200">
@@ -588,7 +588,7 @@ function SearchContent() {
               </div>
             )
           ) : !initialQuery.trim() ? (
-            <div className="p-8 md:p-12 text-center">
+            <div className="bg-white rounded-lg border border-gray-200 p-8 md:p-12 text-center">
               <svg className="w-16 h-16 md:w-20 md:h-20 mx-auto text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
@@ -598,12 +598,12 @@ function SearchContent() {
               </p>
             </div>
           ) : isLoading ? (
-            <div className="p-8 text-center">
+            <div className="bg-white rounded-lg border border-gray-200 p-8 text-center">
               <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#007AFF]"></div>
               <p className="text-gray-600 mt-4">Searching...</p>
             </div>
           ) : results.length === 0 ? (
-            <div className="p-12 text-center">
+            <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
               <svg className="w-20 h-20 mx-auto text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
@@ -617,12 +617,12 @@ function SearchContent() {
             </div>
           ) : (
             <div>
-              <div className="px-4 py-3 bg-gray-50 border-b border-gray-200">
+              <div className="mb-2">
                 <p className="text-sm text-gray-600">
                   Found {results.length} {results.length === 1 ? 'result' : 'results'}
                 </p>
               </div>
-              <div>
+              <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
                 {type === 'people' && results.map(renderUserResult)}
                 {type === 'groups' && results.map(renderGroupResult)}
                 {type === 'challenges' && results.map(renderChallengeResult)}

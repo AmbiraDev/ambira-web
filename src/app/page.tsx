@@ -18,8 +18,8 @@ import { FeedFilters } from '@/types';
 function HomeContent() {
   const { user } = useAuth();
   const [selectedFilter, setSelectedFilter] = useState<FeedFilterOption>({
-    type: 'following',
-    label: 'Following'
+    type: 'all',
+    label: 'All'
   });
 
   return (
@@ -52,6 +52,10 @@ function HomeContent() {
               </div>
 
               {/* Feed based on selected filter */}
+              {selectedFilter.type === 'all' && (
+                <Feed filters={{ type: 'all' }} key="all-feed" showEndMessage={true} />
+              )}
+
               {selectedFilter.type === 'following' && (
                 <>
                   <Feed filters={{ type: 'following' }} key="following-feed" showEndMessage={false} />

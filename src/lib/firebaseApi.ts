@@ -252,8 +252,24 @@ const populateSessionsWithDetails = async (sessionDocs: any[]): Promise<SessionW
     const batchPromises = batch.map(async (sessionDoc) => {
       const sessionData = sessionDoc.data();
 
-      // Get user data
-      const userDoc = await getDoc(doc(db, 'users', sessionData.userId));
+      // Get user data - skip session if user has been deleted or is inaccessible
+      let userDoc;
+      try {
+        userDoc = await getDoc(doc(db, 'users', sessionData.userId));
+      } catch (error) {
+        // Handle permission errors for deleted users
+        if (isPermissionError(error) || isNotFoundError(error)) {
+          console.warn(`Skipping session ${sessionDoc.id} - user ${sessionData.userId} is inaccessible or deleted`);
+          return null;
+        }
+        // Re-throw other errors
+        throw error;
+      }
+
+      if (!userDoc.exists()) {
+        console.warn(`Skipping session ${sessionDoc.id} - user ${sessionData.userId} no longer exists`);
+        return null;
+      }
       const userData = userDoc.data();
 
       // Get project data
@@ -338,10 +354,106 @@ const populateSessionsWithDetails = async (sessionDocs: any[]): Promise<SessionW
     });
 
     const batchResults = await Promise.all(batchPromises);
-    sessions.push(...batchResults);
+    // Filter out null values (sessions from deleted users)
+    const validSessions = batchResults.filter((session): session is SessionWithDetails => session !== null);
+    sessions.push(...validSessions);
   }
 
   return sessions;
+};
+
+// Helper function to check if username already exists
+const checkUsernameExists = async (username: string): Promise<boolean> => {
+  try {
+    const usersRef = collection(db, 'users');
+    const q = query(
+      usersRef,
+      where('usernameLower', '==', username.toLowerCase()),
+      limit(1)
+    );
+    const snapshot = await getDocs(q);
+    return !snapshot.empty;
+  } catch (error) {
+    const apiError = handleError(error, 'Check username availability', {
+      severity: ErrorSeverity.WARNING
+    });
+    // If there's an error checking, allow the signup to proceed
+    // Firebase Auth will handle duplicate emails
+    console.warn('Error checking username availability:', apiError.userMessage);
+    return false;
+  }
+};
+
+// Helper function to check if email already exists in Firestore
+// Note: Firebase Auth is the primary check for email uniqueness
+const checkEmailExistsInFirestore = async (email: string): Promise<boolean> => {
+  try {
+    const usersRef = collection(db, 'users');
+    const q = query(
+      usersRef,
+      where('email', '==', email.toLowerCase()),
+      limit(1)
+    );
+    const snapshot = await getDocs(q);
+    return !snapshot.empty;
+  } catch (error) {
+    const apiError = handleError(error, 'Check email availability', {
+      severity: ErrorSeverity.WARNING
+    });
+    // If there's an error checking, allow the signup to proceed
+    // Firebase Auth will handle duplicate emails
+    console.warn('Error checking email availability:', apiError.userMessage);
+    return false;
+  }
+};
+
+// Helper function to generate a unique username from an email
+const generateUniqueUsername = async (email: string, displayName?: string): Promise<string> => {
+  // Try using display name first if provided
+  if (displayName) {
+    const baseUsername = displayName
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, '')
+      .substring(0, 20);
+
+    if (baseUsername.length >= 3) {
+      // Try the base username first
+      if (!(await checkUsernameExists(baseUsername))) {
+        return baseUsername;
+      }
+
+      // Try with numbers appended
+      for (let i = 1; i <= 999; i++) {
+        const candidate = `${baseUsername}${i}`;
+        if (!(await checkUsernameExists(candidate))) {
+          return candidate;
+        }
+      }
+    }
+  }
+
+  // Fall back to email-based username
+  const baseUsername = email.split('@')[0]
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '')
+    .substring(0, 20);
+
+  // Try the base username first
+  if (baseUsername.length >= 3 && !(await checkUsernameExists(baseUsername))) {
+    return baseUsername;
+  }
+
+  // Try with numbers appended
+  for (let i = 1; i <= 9999; i++) {
+    const candidate = `${baseUsername}${i}`;
+    if (!(await checkUsernameExists(candidate))) {
+      return candidate;
+    }
+  }
+
+  // Last resort: use a random string
+  const randomSuffix = Math.random().toString(36).substring(2, 10);
+  return `user_${randomSuffix}`;
 };
 
 // Auth API methods
@@ -403,9 +515,16 @@ export const firebaseAuthApi = {
   // Signup
   signup: async (credentials: SignupCredentials): Promise<AuthResponse> => {
     try {
+      // Validate username uniqueness BEFORE creating Firebase Auth user
+      const usernameExists = await checkUsernameExists(credentials.username);
+      if (usernameExists) {
+        throw new Error('This username is already taken. Please choose a different username.');
+      }
+
+      // Create Firebase Auth user (this will throw if email already exists)
       const userCredential = await createUserWithEmailAndPassword(auth, credentials.email, credentials.password);
       const firebaseUser = userCredential.user;
-      
+
       // Create user profile in Firestore
       const userData = {
         email: credentials.email,
@@ -428,7 +547,7 @@ export const firebaseAuthApi = {
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp()
       };
-      
+
       await setDoc(doc(db, 'users', firebaseUser.uid), userData);
       
       // Update Firebase Auth profile
@@ -504,24 +623,18 @@ export const firebaseAuthApi = {
 
       // If user profile doesn't exist, create it
       if (!userData) {
-        // Generate username from email
-        const baseUsername = firebaseUser.email!.split('@')[0];
-        let username = baseUsername;
-        let counter = 1;
-
-        // Check if username exists, if so append number
-        while (true) {
-          const usernameQuery = query(collection(db, 'users'), where('username', '==', username));
-          const usernameSnapshot = await getDocs(usernameQuery);
-          if (usernameSnapshot.empty) break;
-          username = `${baseUsername}${counter}`;
-          counter++;
-        }
+        // Generate a unique username using the helper function
+        const username = await generateUniqueUsername(
+          firebaseUser.email!,
+          firebaseUser.displayName || undefined
+        );
 
         userData = {
           email: firebaseUser.email!,
           name: firebaseUser.displayName || 'New User',
           username: username,
+          usernameLower: username.toLowerCase(),
+          nameLower: (firebaseUser.displayName || 'New User').toLowerCase(),
           bio: '',
           location: '',
           profilePicture: firebaseUser.photoURL || null,
@@ -661,24 +774,18 @@ export const firebaseAuthApi = {
 
       // If user profile doesn't exist, create it
       if (!userData) {
-        // Generate username from email
-        const baseUsername = firebaseUser.email!.split('@')[0];
-        let username = baseUsername;
-        let counter = 1;
-
-        // Check if username exists, if so append number
-        while (true) {
-          const usernameQuery = query(collection(db, 'users'), where('username', '==', username));
-          const usernameSnapshot = await getDocs(usernameQuery);
-          if (usernameSnapshot.empty) break;
-          username = `${baseUsername}${counter}`;
-          counter++;
-        }
+        // Generate a unique username using the helper function
+        const username = await generateUniqueUsername(
+          firebaseUser.email!,
+          firebaseUser.displayName || undefined
+        );
 
         userData = {
           email: firebaseUser.email!,
           name: firebaseUser.displayName || 'New User',
           username: username,
+          usernameLower: username.toLowerCase(),
+          nameLower: (firebaseUser.displayName || 'New User').toLowerCase(),
           bio: '',
           location: '',
           profilePicture: firebaseUser.photoURL || null,
@@ -725,6 +832,12 @@ export const firebaseAuthApi = {
 
   onAuthStateChanged: (callback: (user: FirebaseUser | null) => void) => {
     return onAuthStateChanged(auth, callback);
+  },
+
+  // Check if username is available (for signup validation)
+  checkUsernameAvailability: async (username: string): Promise<boolean> => {
+    const exists = await checkUsernameExists(username);
+    return !exists; // Return true if available (username does not exist)
   }
 };
 
@@ -853,6 +966,10 @@ export const firebaseUserApi = {
         updatedAt: convertTimestamp(userData.updatedAt)
       };
     } catch (error) {
+      // Handle permission errors for deleted users gracefully
+      if (isPermissionError(error)) {
+        throw new Error('User not found');
+      }
       const apiError = handleError(error, 'Get user by ID', { defaultMessage: 'Failed to get user' });
       throw new Error(apiError.userMessage);
     }
@@ -1697,6 +1814,116 @@ export const firebaseUserApi = {
       const apiError = handleError(error, 'Migrate users to lowercase', { defaultMessage: 'Failed to migrate users' });
       throw new Error(apiError.userMessage);
     }
+  },
+
+  // Delete user account and all associated data
+  deleteAccount: async (): Promise<void> => {
+    try {
+      if (!auth.currentUser) {
+        throw new Error('No authenticated user');
+      }
+
+      const userId = auth.currentUser.uid;
+      console.log(`Starting account deletion for user ${userId}`);
+
+      // 1. Delete all user's sessions
+      console.log('Deleting sessions...');
+      const sessionsQuery = query(collection(db, 'sessions'), where('userId', '==', userId));
+      const sessionsSnapshot = await getDocs(sessionsQuery);
+      const sessionDeletes = sessionsSnapshot.docs.map(doc => deleteDoc(doc.ref));
+      await Promise.all(sessionDeletes);
+      console.log(`Deleted ${sessionsSnapshot.size} sessions`);
+
+      // 2. Delete all user's comments
+      console.log('Deleting comments...');
+      const commentsQuery = query(collection(db, 'comments'), where('userId', '==', userId));
+      const commentsSnapshot = await getDocs(commentsQuery);
+      const commentDeletes = commentsSnapshot.docs.map(doc => deleteDoc(doc.ref));
+      await Promise.all(commentDeletes);
+      console.log(`Deleted ${commentsSnapshot.size} comments`);
+
+      // 3. Delete all follow relationships where user is follower or following
+      console.log('Deleting follow relationships...');
+      const followsAsFollowerQuery = query(collection(db, 'follows'), where('followerId', '==', userId));
+      const followsAsFollowingQuery = query(collection(db, 'follows'), where('followingId', '==', userId));
+      const [followsAsFollowerSnapshot, followsAsFollowingSnapshot] = await Promise.all([
+        getDocs(followsAsFollowerQuery),
+        getDocs(followsAsFollowingQuery)
+      ]);
+      const followDeletes = [
+        ...followsAsFollowerSnapshot.docs.map(doc => deleteDoc(doc.ref)),
+        ...followsAsFollowingSnapshot.docs.map(doc => deleteDoc(doc.ref))
+      ];
+      await Promise.all(followDeletes);
+      console.log(`Deleted ${followsAsFollowerSnapshot.size + followsAsFollowingSnapshot.size} follow relationships`);
+
+      // 4. Delete user's projects and their tasks
+      console.log('Deleting projects and tasks...');
+      const projectsRef = collection(db, 'projects', userId, 'userProjects');
+      const projectsSnapshot = await getDocs(projectsRef);
+
+      for (const projectDoc of projectsSnapshot.docs) {
+        // Delete tasks in each project
+        const tasksRef = collection(db, 'projects', userId, 'userProjects', projectDoc.id, 'tasks');
+        const tasksSnapshot = await getDocs(tasksRef);
+        const taskDeletes = tasksSnapshot.docs.map(doc => deleteDoc(doc.ref));
+        await Promise.all(taskDeletes);
+
+        // Delete the project
+        await deleteDoc(projectDoc.ref);
+      }
+      console.log(`Deleted ${projectsSnapshot.size} projects and their tasks`);
+
+      // 5. Delete user's streak data
+      console.log('Deleting streak data...');
+      try {
+        const streakRef = doc(db, 'streaks', userId);
+        await deleteDoc(streakRef);
+        console.log('Deleted streak data');
+      } catch (error) {
+        console.log('No streak data to delete or error:', error);
+      }
+
+      // 6. Delete user's active session data
+      console.log('Deleting active session data...');
+      try {
+        const activeSessionRef = doc(db, 'users', userId, 'activeSession', 'current');
+        await deleteDoc(activeSessionRef);
+        console.log('Deleted active session data');
+      } catch (error) {
+        console.log('No active session data to delete or error:', error);
+      }
+
+      // 7. Delete profile picture from storage if it exists
+      console.log('Deleting profile picture...');
+      try {
+        const userDoc = await getDoc(doc(db, 'users', userId));
+        const userData = userDoc.data();
+        if (userData?.profilePicture) {
+          const storageRef = ref(storage, `profile-pictures/${userId}`);
+          await deleteObject(storageRef);
+          console.log('Deleted profile picture from storage');
+        }
+      } catch (error) {
+        console.log('No profile picture to delete or error:', error);
+      }
+
+      // 8. Delete the user document from Firestore
+      console.log('Deleting user document...');
+      await deleteDoc(doc(db, 'users', userId));
+      console.log('Deleted user document');
+
+      // 9. Finally, delete the Firebase Auth user
+      console.log('Deleting Firebase Auth user...');
+      await auth.currentUser.delete();
+      console.log('Account deletion complete');
+
+    } catch (error) {
+      const apiError = handleError(error, 'Delete account', {
+        defaultMessage: 'Failed to delete account. Please try logging out and back in, then try again.'
+      });
+      throw new Error(apiError.userMessage);
+    }
   }
 };
 
@@ -2323,8 +2550,10 @@ export const firebaseSessionApi = {
       const userId = auth.currentUser.uid;
       const activeSessionRef = doc(db, 'users', userId, 'activeSession', 'current');
       await deleteDoc(activeSessionRef);
+      console.log('Active session cleared successfully');
     } catch (error) {
-      handleError(error, 'clear active session', { severity: ErrorSeverity.ERROR });
+      const apiError = handleError(error, 'Clear active session', { defaultMessage: 'Failed to clear active session' });
+      throw new Error(apiError.userMessage);
     }
   },
 
@@ -3108,6 +3337,40 @@ export const firebasePostApi = {
             sessionsQuery = query(
               collection(db, 'sessions'),
               where('userId', '==', targetUserId),
+              orderBy('createdAt', 'desc'),
+              startAfter(cursorDoc),
+              limit(limitCount + 1)
+            );
+          }
+        }
+
+        const querySnapshot = await getDocs(sessionsQuery);
+        const sessionDocs = querySnapshot.docs.slice(0, limitCount);
+        const sessions = await populateSessionsWithDetails(sessionDocs);
+        const hasMore = querySnapshot.docs.length > limitCount;
+        const nextCursor = hasMore ? sessionDocs[sessionDocs.length - 1]?.id : undefined;
+
+        return {
+          sessions,
+          hasMore,
+          nextCursor
+        };
+
+      } else if (type === 'all') {
+        // All: chronological feed of all public sessions (not filtering anyone out)
+        sessionsQuery = query(
+          collection(db, 'sessions'),
+          where('visibility', 'in', ['everyone', 'followers']),
+          orderBy('createdAt', 'desc'),
+          limit(limitCount + 1)
+        );
+
+        if (cursor) {
+          const cursorDoc = await getDoc(doc(db, 'sessions', cursor));
+          if (cursorDoc.exists()) {
+            sessionsQuery = query(
+              collection(db, 'sessions'),
+              where('visibility', 'in', ['everyone', 'followers']),
               orderBy('createdAt', 'desc'),
               startAfter(cursorDoc),
               limit(limitCount + 1)

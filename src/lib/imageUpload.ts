@@ -107,14 +107,20 @@ export async function uploadImage(file: File, folder: string = 'session-images')
     throw new Error('File must be an image (JPG, PNG, GIF, WebP)');
   }
 
-  // Validate file size (max 5MB)
+  console.log(`📦 Processing file: ${processedFile.name} (${(processedFile.size / 1024 / 1024).toFixed(2)}MB)`);
+
+  // Compress if file is larger than 5MB
   const maxSize = 5 * 1024 * 1024; // 5MB
   if (processedFile.size > maxSize) {
     const sizeMB = (processedFile.size / 1024 / 1024).toFixed(1);
-    throw new Error(`Image is too large (${sizeMB}MB). Maximum size is 5MB.`);
+    console.log(`🔄 Image is ${sizeMB}MB, compressing to reduce size...`);
+    try {
+      processedFile = await compressToSize(processedFile, 5);
+    } catch (error: any) {
+      console.error('❌ Compression failed:', error);
+      throw new Error('Failed to compress image. Please try a smaller file.');
+    }
   }
-
-  console.log(`📦 Processing file: ${processedFile.name} (${(processedFile.size / 1024 / 1024).toFixed(2)}MB)`);
 
   // Generate unique filename
   const timestamp = Date.now();
@@ -192,7 +198,7 @@ export async function deleteImages(paths: string[]): Promise<void> {
 }
 
 /**
- * Compress and resize image before upload
+ * Compress and resize image before upload using Canvas API
  * @param file - The image file
  * @param maxWidth - Maximum width in pixels
  * @param maxHeight - Maximum height in pixels
@@ -201,11 +207,134 @@ export async function deleteImages(paths: string[]): Promise<void> {
  */
 export async function compressImage(
   file: File,
-  maxWidth: number = 1200,
-  maxHeight: number = 1200,
-  quality: number = 0.7
+  maxWidth: number = 1920,
+  maxHeight: number = 1920,
+  quality: number = 0.8
 ): Promise<File> {
-  // Just return the original file - skip compression entirely
-  // This avoids all the browser compatibility and decoding issues
-  return file;
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onload = (e) => {
+      const img = new Image();
+
+      img.onload = () => {
+        try {
+          // Calculate new dimensions maintaining aspect ratio
+          let width = img.width;
+          let height = img.height;
+
+          if (width > maxWidth || height > maxHeight) {
+            const aspectRatio = width / height;
+
+            if (width > height) {
+              width = maxWidth;
+              height = width / aspectRatio;
+            } else {
+              height = maxHeight;
+              width = height * aspectRatio;
+            }
+          }
+
+          // Create canvas and draw resized image
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            throw new Error('Failed to get canvas context');
+          }
+
+          // Use better image smoothing
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = 'high';
+          ctx.drawImage(img, 0, 0, width, height);
+
+          // Convert to blob
+          canvas.toBlob(
+            (blob) => {
+              if (!blob) {
+                reject(new Error('Failed to compress image'));
+                return;
+              }
+
+              // Create new file from blob
+              const compressedFile = new File(
+                [blob],
+                file.name.replace(/\.[^.]+$/, '.jpg'),
+                { type: 'image/jpeg' }
+              );
+
+              console.log(`✅ Compressed: ${(file.size / 1024 / 1024).toFixed(2)}MB → ${(compressedFile.size / 1024 / 1024).toFixed(2)}MB`);
+              resolve(compressedFile);
+            },
+            'image/jpeg',
+            quality
+          );
+        } catch (error) {
+          reject(error);
+        }
+      };
+
+      img.onerror = () => {
+        reject(new Error('Failed to load image'));
+      };
+
+      img.src = e.target?.result as string;
+    };
+
+    reader.onerror = () => {
+      reject(new Error('Failed to read file'));
+    };
+
+    reader.readAsDataURL(file);
+  });
+}
+
+/**
+ * Progressively compress an image until it's under the target size
+ * @param file - The image file
+ * @param maxSizeMB - Maximum size in megabytes
+ * @returns Compressed image file
+ */
+async function compressToSize(file: File, maxSizeMB: number = 5): Promise<File> {
+  const maxSizeBytes = maxSizeMB * 1024 * 1024;
+
+  // If file is already under the limit, return it
+  if (file.size <= maxSizeBytes) {
+    return file;
+  }
+
+  console.log(`📉 File is ${(file.size / 1024 / 1024).toFixed(2)}MB, compressing to under ${maxSizeMB}MB...`);
+
+  // Start with aggressive compression settings
+  let quality = 0.8;
+  let maxDimension = 1920;
+  let compressedFile = file;
+
+  // Try progressively more aggressive compression
+  const attempts = [
+    { quality: 0.8, maxDimension: 1920 },
+    { quality: 0.7, maxDimension: 1600 },
+    { quality: 0.6, maxDimension: 1400 },
+    { quality: 0.5, maxDimension: 1200 },
+  ];
+
+  for (const attempt of attempts) {
+    compressedFile = await compressImage(
+      file,
+      attempt.maxDimension,
+      attempt.maxDimension,
+      attempt.quality
+    );
+
+    if (compressedFile.size <= maxSizeBytes) {
+      console.log(`✅ Compression successful at quality ${attempt.quality}, ${attempt.maxDimension}px`);
+      return compressedFile;
+    }
+  }
+
+  // If still too large after all attempts, return the smallest version
+  console.warn(`⚠️ Could not compress to under ${maxSizeMB}MB, using smallest version (${(compressedFile.size / 1024 / 1024).toFixed(2)}MB)`);
+  return compressedFile;
 }

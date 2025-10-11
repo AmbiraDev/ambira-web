@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { SignupCredentials } from '@/types';
+import { firebaseAuthApi } from '@/lib/firebaseApi';
 
 export const SignupForm: React.FC = () => {
   const [formData, setFormData] = useState<SignupCredentials>({
@@ -16,24 +17,65 @@ export const SignupForm: React.FC = () => {
   const [errors, setErrors] = useState<Partial<SignupCredentials & { confirmPassword: string }>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string>('');
+  const [isCheckingUsername, setIsCheckingUsername] = useState(false);
+  const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
 
   const { signup } = useAuth();
   const router = useRouter();
 
+  // Real-time username availability check with debounce
+  useEffect(() => {
+    const checkUsername = async () => {
+      const username = formData.username.trim();
+
+      // Only check if username meets minimum requirements
+      if (username.length < 3) {
+        setUsernameAvailable(null);
+        return;
+      }
+
+      // Validate username format
+      if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+        setUsernameAvailable(null);
+        return;
+      }
+
+      setIsCheckingUsername(true);
+      try {
+        const isAvailable = await firebaseAuthApi.checkUsernameAvailability(username);
+        setUsernameAvailable(isAvailable);
+      } catch (error) {
+        console.error('Error checking username:', error);
+        setUsernameAvailable(null);
+      } finally {
+        setIsCheckingUsername(false);
+      }
+    };
+
+    // Debounce: wait 500ms after user stops typing
+    const timeoutId = setTimeout(checkUsername, 500);
+    return () => clearTimeout(timeoutId);
+  }, [formData.username]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    
+
     if (name === 'confirmPassword') {
       setConfirmPassword(value);
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
     }
-    
+
+    // Reset username availability when username changes
+    if (name === 'username') {
+      setUsernameAvailable(null);
+    }
+
     // Clear field-specific error when user starts typing
     if (errors[name as keyof (SignupCredentials & { confirmPassword: string })]) {
       setErrors(prev => ({ ...prev, [name]: undefined }));
     }
-    
+
     // Clear submit error
     if (submitError) {
       setSubmitError('');
@@ -55,6 +97,8 @@ export const SignupForm: React.FC = () => {
       newErrors.username = 'Username must be at least 3 characters';
     } else if (!/^[a-zA-Z0-9_]+$/.test(formData.username.trim())) {
       newErrors.username = 'Username can only contain letters, numbers, and underscores';
+    } else if (usernameAvailable === false) {
+      newErrors.username = 'This username is already taken';
     }
 
     if (!formData.email) {
@@ -146,20 +190,53 @@ export const SignupForm: React.FC = () => {
           <label htmlFor="username" className="block text-sm font-medium text-foreground mb-2">
             Username
           </label>
-          <input
-            id="username"
-            name="username"
-            type="text"
-            autoComplete="username"
-            value={formData.username}
-            onChange={handleChange}
-            className={`w-full px-4 py-3 border rounded-md shadow-sm placeholder-muted-foreground text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent ${
-              errors.username ? 'border-destructive' : 'border-border'
-            }`}
-            placeholder="Choose a username"
-          />
+          <div className="relative">
+            <input
+              id="username"
+              name="username"
+              type="text"
+              autoComplete="username"
+              value={formData.username}
+              onChange={handleChange}
+              className={`w-full px-4 py-3 border rounded-md shadow-sm placeholder-muted-foreground text-base focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent ${
+                errors.username
+                  ? 'border-destructive'
+                  : usernameAvailable === true
+                  ? 'border-green-500'
+                  : usernameAvailable === false
+                  ? 'border-destructive'
+                  : 'border-border'
+              }`}
+              placeholder="Choose a username"
+            />
+            {isCheckingUsername && (
+              <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
+              </div>
+            )}
+            {!isCheckingUsername && usernameAvailable === true && formData.username.length >= 3 && (
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 text-green-500">
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                </svg>
+              </div>
+            )}
+            {!isCheckingUsername && usernameAvailable === false && formData.username.length >= 3 && (
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 text-destructive">
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                </svg>
+              </div>
+            )}
+          </div>
           {errors.username && (
             <p className="mt-2 text-sm text-destructive">{errors.username}</p>
+          )}
+          {!errors.username && usernameAvailable === true && formData.username.length >= 3 && (
+            <p className="mt-2 text-sm text-green-600">Username is available!</p>
+          )}
+          {!errors.username && usernameAvailable === false && formData.username.length >= 3 && (
+            <p className="mt-2 text-sm text-destructive">This username is already taken</p>
           )}
         </div>
 

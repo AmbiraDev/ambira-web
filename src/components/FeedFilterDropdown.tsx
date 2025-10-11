@@ -7,7 +7,7 @@ import { firebaseApi } from '@/lib/firebaseApi';
 import { Group } from '@/types';
 
 export interface FeedFilterOption {
-  type: 'following' | 'user' | 'group';
+  type: 'following' | 'user' | 'group' | 'all';
   label: string;
   groupId?: string;
 }
@@ -96,6 +96,29 @@ export const FeedFilterDropdown: React.FC<FeedFilterDropdownProps> = ({
       {isOpen && (
         <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 overflow-hidden">
           <div className="py-1">
+            {/* All */}
+            <button
+              onClick={() =>
+                handleFilterSelect({ type: 'all', label: 'All' })
+              }
+              className={`w-full flex items-center justify-between px-4 py-3 transition-colors ${
+                isSelected({ type: 'all', label: 'All' })
+                  ? 'bg-gray-50'
+                  : 'hover:bg-gray-50'
+              }`}
+            >
+              <span className={`${
+                isSelected({ type: 'all', label: 'All' })
+                  ? 'font-medium text-gray-900'
+                  : 'text-gray-700'
+              }`}>
+                All
+              </span>
+              {isSelected({ type: 'all', label: 'All' }) && (
+                <Check className="w-5 h-5 text-gray-900" />
+              )}
+            </button>
+
             {/* Following */}
             <button
               onClick={() =>

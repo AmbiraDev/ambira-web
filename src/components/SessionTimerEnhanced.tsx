@@ -177,6 +177,12 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
     try {
       console.log('💾 Starting session save...');
 
+      // Validate required fields
+      if (!sessionTitle.trim()) {
+        alert('Please enter a session title');
+        return;
+      }
+
       // Upload images first if any
       let imageUrls: string[] = [];
       if (selectedImages.length > 0) {
@@ -192,6 +198,8 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
           setIsUploadingImages(false);
         }
       }
+
+      // Finish the timer and create session
       const session = await finishTimer(
         sessionTitle,
         sessionDescription,
@@ -209,13 +217,14 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
       );
       console.log('✅ Session saved successfully:', session.id);
 
+      // Reset modal and form state
       setShowFinishModal(false);
-
-      // Reset all session state
       setSessionTitle('');
       setSessionDescription('');
       setPrivateNotes('');
       setHowFelt(3);
+      setSelectedImages([]);
+      setImagePreviewUrls([]);
 
       // Wait a moment to ensure state is cleared, then navigate
       await new Promise(resolve => setTimeout(resolve, 100));
@@ -224,7 +233,8 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
       window.location.href = '/you?tab=sessions';
     } catch (error) {
       console.error('Failed to finish timer:', error);
-      alert('Failed to save session. Please try again.');
+      const errorMessage = error instanceof Error ? error.message : 'Failed to save session. Please try again.';
+      alert(errorMessage);
     }
   };
 
@@ -238,10 +248,13 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
       setSessionDescription('');
       setPrivateNotes('');
       setHowFelt(3);
+      setSelectedImages([]);
+      setImagePreviewUrls([]);
       // Route to feed page
       window.location.href = '/';
     } catch (error) {
       console.error('Failed to cancel timer:', error);
+      alert('Failed to cancel session. Please try again.');
     }
   };
 

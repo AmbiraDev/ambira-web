@@ -18,13 +18,15 @@ import {
   Twitter,
   Github,
   Linkedin,
-  LogOut
+  LogOut,
+  Trash2
 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import Image from 'next/image';
 import { firebaseUserApi } from '@/lib/firebaseApi';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
+import ConfirmDialog from '@/components/ConfirmDialog';
 
 type SettingsTab = 'profile' | 'privacy' | 'notifications' | 'display';
 
@@ -48,6 +50,8 @@ export default function SettingsPage() {
   const [saved, setSaved] = useState(false);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
   const [profilePictureUrl, setProfilePictureUrl] = useState(user?.profilePicture || '');
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [originalFormData, setOriginalFormData] = useState({
     name: user?.name || '',
     tagline: user?.tagline || '',
@@ -202,6 +206,23 @@ export default function SettingsPage() {
       toast.success('Logged out successfully');
     } catch (err: any) {
       toast.error(err?.message || 'Failed to log out');
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!user) return;
+
+    try {
+      setIsDeleting(true);
+      // We'll implement the actual API call next
+      await firebaseUserApi.deleteAccount();
+      toast.success('Account deleted successfully');
+      // The logout will happen automatically as part of deleteAccount
+    } catch (err: any) {
+      console.error('Delete account error:', err);
+      toast.error(err?.message || 'Failed to delete account');
+      setIsDeleting(false);
+      setShowDeleteConfirm(false);
     }
   };
 
@@ -648,8 +669,9 @@ export default function SettingsPage() {
                 )}
               </div>
 
-              {/* Logout Button */}
-              <div className="mt-6">
+              {/* Danger Zone */}
+              <div className="mt-6 space-y-4">
+                {/* Logout Button */}
                 <button
                   onClick={handleLogout}
                   className="flex items-center gap-2 px-6 py-3 md:py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
@@ -657,6 +679,24 @@ export default function SettingsPage() {
                   <LogOut className="w-4 h-4" />
                   Log Out
                 </button>
+
+                {/* Delete Account Section */}
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <h3 className="text-sm font-semibold text-red-900 mb-1 flex items-center gap-2">
+                    <Trash2 className="w-4 h-4" />
+                    Delete Account
+                  </h3>
+                  <p className="text-xs text-red-700 mb-3">
+                    Permanently delete your account and all associated data. This action cannot be undone.
+                  </p>
+                  <button
+                    onClick={() => setShowDeleteConfirm(true)}
+                    className="text-sm px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    Delete Account
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -666,6 +706,19 @@ export default function SettingsPage() {
         <div className="md:hidden">
           <BottomNavigation />
         </div>
+
+        {/* Delete Account Confirmation Dialog */}
+        <ConfirmDialog
+          isOpen={showDeleteConfirm}
+          onClose={() => setShowDeleteConfirm(false)}
+          onConfirm={handleDeleteAccount}
+          title="Delete Account"
+          message="Are you absolutely sure you want to delete your account? This will permanently delete all your data including sessions, projects, follows, and comments. This action cannot be undone."
+          confirmText="Delete My Account"
+          cancelText="Cancel"
+          variant="danger"
+          isLoading={isDeleting}
+        />
       </div>
     </ProtectedRoute>
   );

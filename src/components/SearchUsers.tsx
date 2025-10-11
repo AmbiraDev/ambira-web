@@ -160,7 +160,7 @@ export const SearchUsers: React.FC<SearchUsersProps> = ({
               </div>
 
               {/* User Cards */}
-              <div className="space-y-2">
+              <div className="space-y-1">
                 {results.map((user) => (
                   <div key={user.id} onClick={() => handleUserSelect(user)}>
                     <UserCardComponent

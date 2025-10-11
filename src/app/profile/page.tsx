@@ -9,15 +9,13 @@ import Header from '@/components/HeaderComponent';
 import { useUserSessions, useUserStats, useUserProfile, useUserFollowers, useUserFollowing } from '@/hooks/useCache';
 import Link from 'next/link';
 import Image from 'next/image';
-import { User as UserIcon, Users, Settings, Clock, Target, Calendar, Heart, ChevronDown, MoreVertical, Edit, Trash2, MessageCircle, Share2, LogOut } from 'lucide-react';
+import { User as UserIcon, Users, Settings, Clock, Target, Calendar, Heart, LogOut, Edit, TrendingUp } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip, Area, ComposedChart } from 'recharts';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { Session } from '@/types';
-import { ImageGallery } from '@/components/ImageGallery';
-import { firebaseSessionApi } from '@/lib/firebaseApi';
+import Feed from '@/components/Feed';
 
 type ProfileTab = 'progress' | 'sessions' | 'followers' | 'following';
-type TimePeriod = 'day' | 'week' | 'month' | 'year';
+type TimePeriod = '7D' | '2W' | '4W' | '3M' | '1Y';
 
 interface ChartDataPoint {
   name: string;
@@ -44,11 +42,8 @@ export default function ProfilePage() {
     tabParam === 'followers' ? 'followers' :
     tabParam === 'following' ? 'following' : 'progress'
   );
-  const [timePeriod, setTimePeriod] = useState<TimePeriod>('week');
-  const [showTimePeriodDropdown, setShowTimePeriodDropdown] = useState(false);
+  const [timePeriod, setTimePeriod] = useState<TimePeriod>('7D');
   const [showSettingsMenu, setShowSettingsMenu] = useState(false);
-  const [sessionMenuOpen, setSessionMenuOpen] = useState<string | null>(null);
-  const [deleteConfirmSession, setDeleteConfirmSession] = useState<Session | null>(null);
 
   // Use React Query hooks for data with automatic caching
   const { data: sessions = [], isLoading: sessionsLoading } = useUserSessions(user?.id || '', 50, {
@@ -83,24 +78,7 @@ export default function ProfilePage() {
     const now = new Date();
     const data: ChartDataPoint[] = [];
 
-    if (timePeriod === 'day') {
-      // Last 24 hours by hour
-      for (let i = 23; i >= 0; i--) {
-        const hour = new Date(now);
-        hour.setHours(hour.getHours() - i);
-        const hourLabel = hour.getHours().toString().padStart(2, '0');
-
-        const hoursWorked = sessions.length > 0 ? sessions
-          .filter(s => {
-            const sessionDate = new Date(s.createdAt);
-            return sessionDate.getHours() === hour.getHours() &&
-                   sessionDate.toDateString() === hour.toDateString();
-          })
-          .reduce((sum, s) => sum + s.duration / 3600, 0) : 0;
-
-        data.push({ name: hourLabel, hours: Number(hoursWorked.toFixed(2)) });
-      }
-    } else if (timePeriod === 'week') {
+    if (timePeriod === '7D') {
       // Last 7 days
       const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
       for (let i = 6; i >= 0; i--) {
@@ -116,8 +94,24 @@ export default function ProfilePage() {
           hours: Number(hoursWorked.toFixed(2))
         });
       }
-    } else if (timePeriod === 'month') {
-      // Last 30 days grouped by week
+    } else if (timePeriod === '2W') {
+      // Last 14 days
+      const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      for (let i = 13; i >= 0; i--) {
+        const day = new Date(now);
+        day.setDate(day.getDate() - i);
+
+        const hoursWorked = sessions.length > 0 ? sessions
+          .filter(s => new Date(s.createdAt).toDateString() === day.toDateString())
+          .reduce((sum, s) => sum + s.duration / 3600, 0) : 0;
+
+        data.push({
+          name: `${dayNames[day.getDay()]} ${day.getDate()}`,
+          hours: Number(hoursWorked.toFixed(2))
+        });
+      }
+    } else if (timePeriod === '4W') {
+      // Last 4 weeks
       for (let i = 3; i >= 0; i--) {
         const weekStart = new Date(now);
         weekStart.setDate(weekStart.getDate() - (i * 7 + 6));
@@ -136,7 +130,27 @@ export default function ProfilePage() {
           hours: Number(hoursWorked.toFixed(2))
         });
       }
-    } else if (timePeriod === 'year') {
+    } else if (timePeriod === '3M') {
+      // Last 3 months
+      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      for (let i = 11; i >= 0; i--) {
+        const month = new Date(now);
+        month.setMonth(month.getMonth() - i);
+
+        const hoursWorked = sessions.length > 0 ? sessions
+          .filter(s => {
+            const sessionDate = new Date(s.createdAt);
+            return sessionDate.getMonth() === month.getMonth() &&
+                   sessionDate.getFullYear() === month.getFullYear();
+          })
+          .reduce((sum, s) => sum + s.duration / 3600, 0) : 0;
+
+        data.push({
+          name: monthNames[month.getMonth()],
+          hours: Number(hoursWorked.toFixed(2))
+        });
+      }
+    } else if (timePeriod === '1Y') {
       // Last 12 months
       const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
       for (let i = 11; i >= 0; i--) {
@@ -173,32 +187,6 @@ export default function ProfilePage() {
     return `${minutes}m`;
   };
 
-  const formatDate = (date: Date) => {
-    const today = new Date();
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
-
-    if (date.toDateString() === today.toDateString()) {
-      return `Today at ${date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`;
-    } else if (date.toDateString() === yesterday.toDateString()) {
-      return `Yesterday at ${date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`;
-    } else {
-      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
-    }
-  };
-
-  const handleDeleteSession = async (sessionId: string) => {
-    try {
-      await firebaseSessionApi.deleteSession(sessionId);
-      setDeleteConfirmSession(null);
-      // React Query will automatically refetch
-      alert('Session deleted successfully');
-    } catch (error) {
-      console.error('Failed to delete session:', error);
-      alert('Failed to delete session. Please try again.');
-    }
-  };
-
   if (!user) return null;
 
   return (
@@ -219,9 +207,9 @@ export default function ProfilePage() {
           <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-6">
             <div className="max-w-4xl mx-auto">
               {/* Profile Card with This Week Stats */}
-              <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6 relative">
+              <div className="bg-white rounded-xl border border-gray-200 p-4 md:p-6 mb-6 relative">
                 {/* Settings Icon */}
-                <div className="absolute top-4 right-4">
+                <div className="absolute top-4 right-4 z-10">
                   <div className="relative">
                     <button
                       onClick={() => setShowSettingsMenu(!showSettingsMenu)}
@@ -256,13 +244,13 @@ export default function ProfilePage() {
                   </div>
                 </div>
 
-                {/* Two Column Layout */}
-                <div className="flex gap-8">
+                {/* Responsive Layout - Stacks on mobile, side-by-side on desktop */}
+                <div className="flex flex-col md:flex-row md:gap-8">
                   {/* Left Column - Profile Info */}
                   <div className="flex-1">
                     {/* Profile Picture */}
                     {user.profilePicture || userProfile?.profilePicture ? (
-                      <div className="w-32 h-32 rounded-full overflow-hidden ring-4 ring-white shadow-md mb-4">
+                      <div className="w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden ring-4 ring-white shadow-md mb-4">
                         <Image
                           src={userProfile?.profilePicture || user.profilePicture || ''}
                           alt={user.name}
@@ -272,20 +260,20 @@ export default function ProfilePage() {
                         />
                       </div>
                     ) : (
-                      <div className="w-32 h-32 bg-[#FC4C02] rounded-full flex items-center justify-center ring-4 ring-white shadow-md mb-4">
-                        <span className="text-white font-bold text-4xl">
+                      <div className="w-24 h-24 md:w-32 md:h-32 bg-[#FC4C02] rounded-full flex items-center justify-center ring-4 ring-white shadow-md mb-4">
+                        <span className="text-white font-bold text-3xl md:text-4xl">
                           {user.name.charAt(0).toUpperCase()}
                         </span>
                       </div>
                     )}
 
                     {/* Name and Username */}
-                    <h1 className="text-2xl font-bold text-gray-900">{user.name}</h1>
+                    <h1 className="text-xl md:text-2xl font-bold text-gray-900">{user.name}</h1>
                     <p className="text-gray-600 mb-3">@{user.username}</p>
 
                     {/* Bio */}
                     {(userProfile?.bio || user.bio) && (
-                      <p className="text-gray-700 mb-3">{userProfile?.bio || user.bio}</p>
+                      <p className="text-gray-700 mb-3 text-sm md:text-base">{userProfile?.bio || user.bio}</p>
                     )}
 
                     {/* Location */}
@@ -303,7 +291,7 @@ export default function ProfilePage() {
                     </Link>
 
                     {/* Follower/Following Counts */}
-                    <div className="flex gap-6">
+                    <div className="flex gap-6 mb-6 md:mb-0">
                       <button
                         onClick={() => {
                           setActiveTab('followers');
@@ -328,28 +316,28 @@ export default function ProfilePage() {
                   </div>
 
                   {/* Right Column - This Week Stats */}
-                  <div className="w-64 border-l border-gray-200 pl-8">
+                  <div className="md:w-64 border-t md:border-t-0 md:border-l border-gray-200 pt-6 md:pt-0 md:pl-8">
                     <div className="flex items-center gap-2 mb-4">
                       <div className="w-5 h-5 text-[#FC4C02]">📊</div>
                       <h2 className="text-base font-bold">This week</h2>
                     </div>
 
-                    <div className="space-y-4">
+                    <div className="grid grid-cols-3 md:grid-cols-1 gap-4 md:space-y-0">
                       <div>
                         <div className="text-xs text-gray-600">Time</div>
-                        <div className="text-2xl font-bold">
+                        <div className="text-xl md:text-2xl font-bold">
                           {stats?.weeklyHours?.toFixed(1) || 0}h
                         </div>
                       </div>
                       <div>
                         <div className="text-xs text-gray-600">Sessions</div>
-                        <div className="text-2xl font-bold">
+                        <div className="text-xl md:text-2xl font-bold">
                           {stats?.sessionsThisWeek || 0}
                         </div>
                       </div>
                       <div>
                         <div className="text-xs text-gray-600">Streak</div>
-                        <div className="text-2xl font-bold">
+                        <div className="text-xl md:text-2xl font-bold">
                           {stats?.currentStreak || 0} days
                         </div>
                       </div>
@@ -360,7 +348,7 @@ export default function ProfilePage() {
 
               {/* Tabs */}
               <div className="sticky top-12 md:top-14 bg-white md:bg-gray-50 z-30 -mx-4 md:mx-0">
-                <div className="bg-gray-50 border-b md:border-b-0 border-gray-200">
+                <div className="bg-white md:bg-gray-50 border-b border-gray-200">
                   <div className="flex md:gap-8 px-4 md:px-0">
                     <button
                       onClick={() => {
@@ -369,7 +357,7 @@ export default function ProfilePage() {
                       }}
                       className={`flex-1 md:flex-initial py-3 md:py-4 px-1 text-sm md:text-base font-medium border-b-2 transition-colors ${
                         activeTab === 'progress'
-                          ? 'border-[#007AFF] text-[#007AFF] md:text-gray-900'
+                          ? 'border-[#007AFF] text-[#007AFF]'
                           : 'border-transparent text-gray-500 md:text-gray-600 hover:text-gray-700 md:hover:text-gray-900'
                       }`}
                     >
@@ -382,7 +370,7 @@ export default function ProfilePage() {
                       }}
                       className={`flex-1 md:flex-initial py-3 md:py-4 px-1 text-sm md:text-base font-medium border-b-2 transition-colors ${
                         activeTab === 'sessions'
-                          ? 'border-[#007AFF] text-[#007AFF] md:text-gray-900'
+                          ? 'border-[#007AFF] text-[#007AFF]'
                           : 'border-transparent text-gray-500 md:text-gray-600 hover:text-gray-700 md:hover:text-gray-900'
                       }`}
                     >
@@ -395,7 +383,7 @@ export default function ProfilePage() {
                       }}
                       className={`flex-1 md:flex-initial py-3 md:py-4 px-1 text-sm md:text-base font-medium border-b-2 transition-colors ${
                         activeTab === 'followers'
-                          ? 'border-[#007AFF] text-[#007AFF] md:text-gray-900'
+                          ? 'border-[#007AFF] text-[#007AFF]'
                           : 'border-transparent text-gray-500 md:text-gray-600 hover:text-gray-700 md:hover:text-gray-900'
                       }`}
                     >
@@ -408,7 +396,7 @@ export default function ProfilePage() {
                       }}
                       className={`flex-1 md:flex-initial py-3 md:py-4 px-1 text-sm md:text-base font-medium border-b-2 transition-colors ${
                         activeTab === 'following'
-                          ? 'border-[#007AFF] text-[#007AFF] md:text-gray-900'
+                          ? 'border-[#007AFF] text-[#007AFF]'
                           : 'border-transparent text-gray-500 md:text-gray-600 hover:text-gray-700 md:hover:text-gray-900'
                       }`}
                     >
@@ -422,98 +410,47 @@ export default function ProfilePage() {
               <div className="mt-6">
                 {activeTab === 'progress' && (
                   <div className="max-w-4xl mx-auto space-y-6">
-                    {/* Stats Overview */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover:shadow-md transition-shadow">
-                        <div className="flex items-center gap-2 mb-3">
-                          <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center">
-                            <Clock className="w-4 h-4 text-[#007AFF]" />
-                          </div>
+                    {/* Header with Time Period Selector */}
+                    <div className="bg-white rounded-xl border border-gray-200 p-6">
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                        <h2 className="text-xl font-bold text-gray-900">Account overview</h2>
+                        <div className="flex items-center gap-2 overflow-x-auto pb-1">
+                          {(['7D', '2W', '4W', '3M', '1Y'] as TimePeriod[]).map((period) => (
+                            <button
+                              key={period}
+                              onClick={() => setTimePeriod(period)}
+                              className={`px-4 py-2 text-sm font-medium rounded-full transition-colors whitespace-nowrap ${
+                                timePeriod === period
+                                  ? 'bg-gray-900 text-white'
+                                  : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                              }`}
+                            >
+                              {period}
+                            </button>
+                          ))}
                         </div>
-                        <div className="text-2xl font-bold text-gray-900">
-                          {stats?.totalHours?.toFixed(1) || 0}h
-                        </div>
-                        <p className="text-xs text-gray-500 mt-1">Total Time</p>
-                      </div>
-
-                      <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover:shadow-md transition-shadow">
-                        <div className="flex items-center gap-2 mb-3">
-                          <div className="w-8 h-8 bg-green-50 rounded-lg flex items-center justify-center">
-                            <Calendar className="w-4 h-4 text-green-600" />
-                          </div>
-                        </div>
-                        <div className="text-2xl font-bold text-gray-900">
-                          {sessions.length}
-                        </div>
-                        <p className="text-xs text-gray-500 mt-1">Total Sessions</p>
-                      </div>
-
-                      <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover:shadow-md transition-shadow">
-                        <div className="flex items-center gap-2 mb-3">
-                          <div className="w-8 h-8 bg-purple-50 rounded-lg flex items-center justify-center">
-                            <Target className="w-4 h-4 text-purple-600" />
-                          </div>
-                        </div>
-                        <div className="text-2xl font-bold text-gray-900">
-                          {sessions.length > 0 ? Math.round(sessions.reduce((sum, s) => sum + s.duration, 0) / sessions.length / 60) : 0}
-                        </div>
-                        <p className="text-xs text-gray-500 mt-1">Avg Session (min)</p>
-                      </div>
-
-                      <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover:shadow-md transition-shadow">
-                        <div className="flex items-center gap-2 mb-3">
-                          <div className="w-8 h-8 bg-orange-50 rounded-lg flex items-center justify-center">
-                            <Heart className="w-4 h-4 text-[#FC4C02]" />
-                          </div>
-                        </div>
-                        <div className="text-2xl font-bold text-gray-900">
-                          {stats?.longestStreak || 0}
-                        </div>
-                        <p className="text-xs text-gray-500 mt-1">Longest Streak</p>
                       </div>
                     </div>
 
                     {/* Activity Chart */}
-                    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
-                      <div className="flex items-center justify-between mb-6">
+                    <div className="bg-white rounded-xl border border-gray-200 p-4 md:p-6">
+                      <div className="mb-4 md:mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                         <div>
-                          <h3 className="text-xl font-bold text-gray-900">Activity Overview</h3>
-                          <p className="text-sm text-gray-500 mt-1">
-                            {timePeriod === 'day' && 'Last 24 hours'}
-                            {timePeriod === 'week' && 'Last 7 days'}
-                            {timePeriod === 'month' && 'Last 4 weeks'}
-                            {timePeriod === 'year' && 'Last 12 months'}
+                          <h3 className="text-base font-medium text-gray-900">Hours Tracked</h3>
+                          <p className="text-xs md:text-sm text-gray-500 mt-0.5">
+                            {timePeriod === '7D' && 'Daily'}
+                            {timePeriod === '2W' && 'Daily'}
+                            {timePeriod === '4W' && 'Weekly'}
+                            {timePeriod === '3M' && 'Monthly'}
+                            {timePeriod === '1Y' && 'Monthly'}
                           </p>
                         </div>
-                        <div className="relative">
-                          <button
-                            onClick={() => setShowTimePeriodDropdown(!showTimePeriodDropdown)}
-                            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-50 border border-gray-200 rounded-xl hover:bg-gray-100 transition-colors"
-                          >
-                            {timePeriod.charAt(0).toUpperCase() + timePeriod.slice(1)}
-                            <ChevronDown className={`w-4 h-4 transition-transform ${showTimePeriodDropdown ? 'rotate-180' : ''}`} />
-                          </button>
-                          {showTimePeriodDropdown && (
-                            <div className="absolute right-0 mt-2 w-40 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50">
-                              {(['day', 'week', 'month', 'year'] as TimePeriod[]).map((period) => (
-                                <button
-                                  key={period}
-                                  onClick={() => {
-                                    setTimePeriod(period);
-                                    setShowTimePeriodDropdown(false);
-                                  }}
-                                  className={`w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 transition-colors ${
-                                    timePeriod === period ? 'text-[#007AFF] font-semibold bg-blue-50' : 'text-gray-700'
-                                  }`}
-                                >
-                                  {period.charAt(0).toUpperCase() + period.slice(1)}
-                                </button>
-                              ))}
-                            </div>
-                          )}
+                        <div className="text-xs md:text-sm text-gray-500 flex items-center gap-1">
+                          <TrendingUp className="w-4 h-4 md:w-5 md:h-5" />
+                          <span className="hidden sm:inline">Line</span>
                         </div>
                       </div>
-                      <div className="h-64">
+                      <div className="h-64 md:h-72">
                         {isLoading ? (
                           <div className="h-full bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl animate-pulse flex items-center justify-center">
                             <p className="text-gray-400 text-sm">Loading...</p>
@@ -522,42 +459,40 @@ export default function ProfilePage() {
                           <ResponsiveContainer width="100%" height="100%">
                             <ComposedChart
                               data={chartData}
-                              margin={{ top: 10, right: 10, left: -20, bottom: 5 }}
+                              margin={{ top: 10, right: 10, left: -15, bottom: 5 }}
                             >
                               <defs>
                                 <linearGradient id="colorHours" x1="0" y1="0" x2="0" y2="1">
-                                  <stop offset="5%" stopColor="#007AFF" stopOpacity={0.15}/>
+                                  <stop offset="5%" stopColor="#007AFF" stopOpacity={0.1}/>
                                   <stop offset="95%" stopColor="#007AFF" stopOpacity={0}/>
                                 </linearGradient>
                               </defs>
                               <XAxis
                                 dataKey="name"
-                                tick={{ fontSize: 12, fill: '#6b7280', fontWeight: 500 }}
-                                axisLine={false}
+                                tick={{ fontSize: 11, fill: '#9ca3af' }}
+                                axisLine={{ stroke: '#e5e7eb' }}
                                 tickLine={false}
                                 dy={8}
                               />
                               <YAxis
-                                tick={{ fontSize: 12, fill: '#9ca3af' }}
-                                axisLine={false}
+                                tick={{ fontSize: 11, fill: '#9ca3af' }}
+                                axisLine={{ stroke: '#e5e7eb' }}
                                 tickLine={false}
-                                width={40}
+                                width={35}
                                 domain={[0, 'dataMax + 0.5']}
-                                tickFormatter={(value) => `${value}h`}
+                                tickFormatter={(value) => `${value}`}
                               />
                               <Tooltip
                                 contentStyle={{
-                                  backgroundColor: 'rgba(0, 0, 0, 0.9)',
+                                  backgroundColor: 'rgba(0, 0, 0, 0.85)',
                                   border: 'none',
-                                  borderRadius: '12px',
-                                  padding: '12px 16px',
-                                  fontSize: '13px',
+                                  borderRadius: '8px',
+                                  padding: '8px 12px',
+                                  fontSize: '12px',
                                   color: 'white',
-                                  boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
                                 }}
-                                labelStyle={{ color: 'white', marginBottom: '4px', fontWeight: 600 }}
-                                formatter={(value: number) => [`${value.toFixed(1)} hours`, 'Focus Time']}
-                                cursor={{ stroke: '#e5e7eb', strokeWidth: 1, strokeDasharray: '3 3' }}
+                                formatter={(value: number) => [`${value.toFixed(1)}h`, 'Hours']}
+                                cursor={{ stroke: '#e5e7eb', strokeWidth: 1 }}
                               />
                               <Area
                                 type="monotone"
@@ -569,27 +504,13 @@ export default function ProfilePage() {
                                 type="monotone"
                                 dataKey="hours"
                                 stroke="#007AFF"
-                                strokeWidth={3}
-                                dot={(props: any) => {
-                                  const { cx, cy, index } = props;
-                                  const isLast = index === chartData.length - 1;
-                                  return (
-                                    <circle
-                                      key={`dot-${index}`}
-                                      cx={cx}
-                                      cy={cy}
-                                      r={isLast ? 6 : 4}
-                                      fill={isLast ? '#007AFF' : '#fff'}
-                                      stroke="#007AFF"
-                                      strokeWidth={2.5}
-                                    />
-                                  );
-                                }}
+                                strokeWidth={2}
+                                dot={false}
                                 activeDot={{
-                                  r: 8,
+                                  r: 4,
                                   fill: '#007AFF',
                                   stroke: 'white',
-                                  strokeWidth: 3
+                                  strokeWidth: 2
                                 }}
                               />
                             </ComposedChart>
@@ -598,109 +519,235 @@ export default function ProfilePage() {
                       </div>
                     </div>
 
-                    {/* Insights Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {/* Weekly Comparison */}
-                      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
-                        <h3 className="text-lg font-bold text-gray-900 mb-4">Weekly Comparison</h3>
-                        <div className="space-y-4">
-                          <div>
-                            <div className="flex items-center justify-between text-sm mb-2">
-                              <span className="text-gray-600">This Week</span>
-                              <span className="font-semibold text-gray-900">
-                                {chartData.slice(-7).reduce((sum, d) => sum + d.hours, 0).toFixed(1)}h
-                              </span>
+                    {/* Secondary Charts */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                      {/* Sessions over time */}
+                      <div className="bg-white rounded-xl border border-gray-200 p-4 md:p-6">
+                        <h3 className="text-sm md:text-base font-medium text-gray-900 mb-3 md:mb-4">Sessions over time</h3>
+                        <div className="h-40 md:h-48">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <ComposedChart
+                              data={chartData}
+                              margin={{ top: 10, right: 10, left: -20, bottom: 5 }}
+                            >
+                              <XAxis
+                                dataKey="name"
+                                tick={{ fontSize: 11, fill: '#6b7280' }}
+                                axisLine={false}
+                                tickLine={false}
+                              />
+                              <YAxis
+                                tick={{ fontSize: 11, fill: '#9ca3af' }}
+                                axisLine={false}
+                                tickLine={false}
+                                width={30}
+                              />
+                              <Tooltip
+                                contentStyle={{
+                                  backgroundColor: 'rgba(0, 0, 0, 0.9)',
+                                  border: 'none',
+                                  borderRadius: '8px',
+                                  padding: '8px 12px',
+                                  fontSize: '12px',
+                                  color: 'white',
+                                }}
+                              />
+                              <defs>
+                                <linearGradient id="colorSessions" x1="0" y1="0" x2="0" y2="1">
+                                  <stop offset="5%" stopColor="#007AFF" stopOpacity={0.3}/>
+                                  <stop offset="95%" stopColor="#007AFF" stopOpacity={0}/>
+                                </linearGradient>
+                              </defs>
+                              <Area
+                                type="monotone"
+                                dataKey="hours"
+                                stroke="#007AFF"
+                                strokeWidth={2}
+                                fill="url(#colorSessions)"
+                              />
+                            </ComposedChart>
+                          </ResponsiveContainer>
+                        </div>
+                      </div>
+
+                      {/* Productivity trends */}
+                      <div className="bg-white rounded-xl border border-gray-200 p-4 md:p-6">
+                        <h3 className="text-sm md:text-base font-medium text-gray-900 mb-3 md:mb-4">Productivity trends</h3>
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                                <Clock className="w-5 h-5 text-[#007AFF]" />
+                              </div>
+                              <div>
+                                <div className="text-sm font-medium text-gray-900">Total hours</div>
+                                <div className="text-xs text-gray-500">All time</div>
+                              </div>
                             </div>
-                            <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
-                              <div
-                                className="bg-gradient-to-r from-[#007AFF] to-[#0051D5] h-3 rounded-full transition-all duration-500"
-                                style={{ width: `${Math.min(100, (chartData.slice(-7).reduce((sum, d) => sum + d.hours, 0) / 40) * 100)}%` }}
-                              ></div>
+                            <div className="text-right">
+                              <div className="text-lg font-bold text-gray-900">{stats?.totalHours?.toFixed(1) || 0}h</div>
+                              <div className="text-xs text-green-600">↑ 100%</div>
                             </div>
                           </div>
-                          <div>
-                            <div className="flex items-center justify-between text-sm mb-2">
-                              <span className="text-gray-600">Last Week</span>
-                              <span className="font-semibold text-gray-900">
-                                {chartData.slice(-14, -7).reduce((sum, d) => sum + d.hours, 0).toFixed(1)}h
-                              </span>
+
+                          <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+                                <Target className="w-5 h-5 text-green-600" />
+                              </div>
+                              <div>
+                                <div className="text-sm font-medium text-gray-900">Avg session</div>
+                                <div className="text-xs text-gray-500">Per session</div>
+                              </div>
                             </div>
-                            <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
-                              <div
-                                className="bg-gray-300 h-3 rounded-full transition-all duration-500"
-                                style={{ width: `${Math.min(100, (chartData.slice(-14, -7).reduce((sum, d) => sum + d.hours, 0) / 40) * 100)}%` }}
-                              ></div>
+                            <div className="text-right">
+                              <div className="text-lg font-bold text-gray-900">
+                                {sessions.length > 0 ? Math.round(sessions.reduce((sum, s) => sum + s.duration, 0) / sessions.length / 60) : 0}m
+                              </div>
+                              <div className="text-xs text-green-600">↑ 100%</div>
                             </div>
                           </div>
-                          <div className="pt-2 border-t border-gray-100">
-                            <div className="flex items-center gap-2">
-                              {chartData.slice(-7).reduce((sum, d) => sum + d.hours, 0) >= chartData.slice(-14, -7).reduce((sum, d) => sum + d.hours, 0) ? (
-                                <>
-                                  <div className="w-8 h-8 bg-green-50 rounded-lg flex items-center justify-center">
-                                    <span className="text-green-600 text-lg">↑</span>
-                                  </div>
-                                  <div>
-                                    <p className="text-sm font-semibold text-gray-900">Great progress!</p>
-                                    <p className="text-xs text-gray-500">You're trending upward</p>
-                                  </div>
-                                </>
-                              ) : (
-                                <>
-                                  <div className="w-8 h-8 bg-orange-50 rounded-lg flex items-center justify-center">
-                                    <span className="text-orange-600 text-lg">↓</span>
-                                  </div>
-                                  <div>
-                                    <p className="text-sm font-semibold text-gray-900">Keep pushing!</p>
-                                    <p className="text-xs text-gray-500">You can do better</p>
-                                  </div>
-                                </>
-                              )}
+
+                          <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
+                                <Heart className="w-5 h-5 text-[#FC4C02]" />
+                              </div>
+                              <div>
+                                <div className="text-sm font-medium text-gray-900">Current streak</div>
+                                <div className="text-xs text-gray-500">Consecutive days</div>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-lg font-bold text-gray-900">{stats?.currentStreak || 0}</div>
+                              <div className="text-xs text-green-600">↑ 100%</div>
                             </div>
                           </div>
                         </div>
                       </div>
+                    </div>
 
-                      {/* Productivity Insights */}
-                      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
-                        <h3 className="text-lg font-bold text-gray-900 mb-4">Productivity Insights</h3>
-                        <div className="space-y-4">
-                          <div className="flex items-start gap-3">
-                            <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center flex-shrink-0">
-                              <Clock className="w-5 h-5 text-[#007AFF]" />
-                            </div>
-                            <div className="flex-1">
-                              <p className="text-sm font-semibold text-gray-900">Most Productive Day</p>
-                              <p className="text-xs text-gray-500 mt-0.5">
-                                {chartData.length > 0
-                                  ? chartData.reduce((max, d) => d.hours > max.hours ? d : max, chartData[0]).name
-                                  : 'N/A'}
-                                {chartData.length > 0 && ` - ${chartData.reduce((max, d) => d.hours > max.hours ? d : max, chartData[0]).hours}h`}
-                              </p>
-                            </div>
-                          </div>
-                          <div className="flex items-start gap-3">
-                            <div className="w-10 h-10 bg-orange-50 rounded-xl flex items-center justify-center flex-shrink-0">
-                              <Target className="w-5 h-5 text-[#FC4C02]" />
-                            </div>
-                            <div className="flex-1">
-                              <p className="text-sm font-semibold text-gray-900">Weekly Goal Progress</p>
-                              <p className="text-xs text-gray-500 mt-0.5">
-                                {chartData.slice(-7).reduce((sum, d) => sum + d.hours, 0).toFixed(1)}h / 40h
-                                ({Math.round((chartData.slice(-7).reduce((sum, d) => sum + d.hours, 0) / 40) * 100)}%)
-                              </p>
-                            </div>
-                          </div>
-                          <div className="flex items-start gap-3">
-                            <div className="w-10 h-10 bg-green-50 rounded-xl flex items-center justify-center flex-shrink-0">
-                              <Calendar className="w-5 h-5 text-green-600" />
-                            </div>
-                            <div className="flex-1">
-                              <p className="text-sm font-semibold text-gray-900">Active Days This Week</p>
-                              <p className="text-xs text-gray-500 mt-0.5">
-                                {chartData.slice(-7).filter(d => d.hours > 0).length} out of 7 days
-                              </p>
-                            </div>
-                          </div>
+                    {/* Metrics Grid */}
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4">
+                      {/* Total Hours */}
+                      <div className="bg-white rounded-xl border border-gray-200 p-3 md:p-4">
+                        <div className="text-xs md:text-sm text-gray-600 mb-1">Total hours</div>
+                        <div className="text-xl md:text-2xl font-bold text-gray-900">
+                          {stats?.totalHours?.toFixed(1) || '0'}
+                        </div>
+                        <div className="text-xs text-green-600 mt-1 flex items-center gap-1">
+                          <span>↑</span>
+                          <span>100%</span>
+                        </div>
+                      </div>
+
+                      {/* Sessions */}
+                      <div className="bg-white rounded-xl border border-gray-200 p-3 md:p-4">
+                        <div className="text-xs md:text-sm text-gray-600 mb-1">Sessions</div>
+                        <div className="text-xl md:text-2xl font-bold text-gray-900">
+                          {sessions.length}
+                        </div>
+                        <div className="text-xs text-green-600 mt-1 flex items-center gap-1">
+                          <span>↑</span>
+                          <span>100%</span>
+                        </div>
+                      </div>
+
+                      {/* Avg Duration */}
+                      <div className="bg-white rounded-xl border border-gray-200 p-3 md:p-4">
+                        <div className="text-xs md:text-sm text-gray-600 mb-1">Avg duration</div>
+                        <div className="text-xl md:text-2xl font-bold text-gray-900">
+                          {sessions.length > 0 ? Math.round(sessions.reduce((sum, s) => sum + s.duration, 0) / sessions.length / 60) : 0}m
+                        </div>
+                        <div className="text-xs text-green-600 mt-1 flex items-center gap-1">
+                          <span>↑</span>
+                          <span>100%</span>
+                        </div>
+                      </div>
+
+                      {/* Current Streak */}
+                      <div className="bg-white rounded-xl border border-gray-200 p-3 md:p-4">
+                        <div className="text-xs md:text-sm text-gray-600 mb-1">Current streak</div>
+                        <div className="text-xl md:text-2xl font-bold text-gray-900">
+                          {stats?.currentStreak || 0}
+                        </div>
+                        <div className="text-xs text-green-600 mt-1 flex items-center gap-1">
+                          <span>↑</span>
+                          <span>100%</span>
+                        </div>
+                      </div>
+
+                      {/* Longest Streak */}
+                      <div className="bg-white rounded-xl border border-gray-200 p-3 md:p-4">
+                        <div className="text-xs md:text-sm text-gray-600 mb-1">Longest streak</div>
+                        <div className="text-xl md:text-2xl font-bold text-gray-900">
+                          {stats?.longestStreak || 0}
+                        </div>
+                        <div className="text-xs text-green-600 mt-1 flex items-center gap-1">
+                          <span>↑</span>
+                          <span>100%</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Secondary Metrics Grid */}
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4">
+                      {/* Weekly Hours */}
+                      <div className="bg-white rounded-xl border border-gray-200 p-3 md:p-4">
+                        <div className="text-xs md:text-sm text-gray-600 mb-1">This week</div>
+                        <div className="text-xl md:text-2xl font-bold text-gray-900">
+                          {stats?.weeklyHours?.toFixed(1) || '0'}h
+                        </div>
+                        <div className="text-xs text-green-600 mt-1 flex items-center gap-1">
+                          <span>↑</span>
+                          <span>100%</span>
+                        </div>
+                      </div>
+
+                      {/* Weekly Sessions */}
+                      <div className="bg-white rounded-xl border border-gray-200 p-3 md:p-4">
+                        <div className="text-xs md:text-sm text-gray-600 mb-1">Weekly sessions</div>
+                        <div className="text-xl md:text-2xl font-bold text-gray-900">
+                          {stats?.sessionsThisWeek || 0}
+                        </div>
+                        <div className="text-xs text-green-600 mt-1 flex items-center gap-1">
+                          <span>↑</span>
+                          <span>100%</span>
+                        </div>
+                      </div>
+
+                      {/* Active Days */}
+                      <div className="bg-white rounded-xl border border-gray-200 p-3 md:p-4">
+                        <div className="text-xs md:text-sm text-gray-600 mb-1">Active days</div>
+                        <div className="text-xl md:text-2xl font-bold text-gray-900">
+                          {chartData.slice(-7).filter(d => d.hours > 0).length}
+                        </div>
+                        <div className="text-xs text-gray-600 mt-1">
+                          This week
+                        </div>
+                      </div>
+
+                      {/* Total Projects */}
+                      <div className="bg-white rounded-xl border border-gray-200 p-3 md:p-4">
+                        <div className="text-xs md:text-sm text-gray-600 mb-1">Projects</div>
+                        <div className="text-xl md:text-2xl font-bold text-gray-900">
+                          {/* Will be populated when we have project count */}
+                          0
+                        </div>
+                        <div className="text-xs text-gray-600 mt-1">
+                          All time
+                        </div>
+                      </div>
+
+                      {/* Followers */}
+                      <div className="bg-white rounded-xl border border-gray-200 p-3 md:p-4">
+                        <div className="text-xs md:text-sm text-gray-600 mb-1">Followers</div>
+                        <div className="text-xl md:text-2xl font-bold text-gray-900">
+                          {followers.length}
+                        </div>
+                        <div className="text-xs text-green-600 mt-1 flex items-center gap-1">
+                          <span>↑</span>
+                          <span>100%</span>
                         </div>
                       </div>
                     </div>
@@ -708,149 +755,17 @@ export default function ProfilePage() {
                 )}
 
                 {activeTab === 'sessions' && (
-                  <div className="max-w-4xl mx-auto space-y-4">
-                    {isLoading ? (
-                      <div className="p-8 text-center text-gray-500">Loading sessions...</div>
-                    ) : sessions.length === 0 ? (
-                      <div className="p-8 text-center text-gray-500">No sessions yet</div>
-                    ) : (
-                      sessions.map((session) => (
-                        <div key={session.id} className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100">
-                          {/* Session Header */}
-                          <div className="flex items-center justify-between p-4 pb-3">
-                            <div className="flex items-center gap-3">
-                              <Link href="/profile">
-                                {userProfile?.profilePicture || user.profilePicture ? (
-                                  <div className="w-10 h-10 rounded-full overflow-hidden ring-2 ring-white">
-                                    <Image
-                                      src={userProfile?.profilePicture || user.profilePicture || ''}
-                                      alt={user.name}
-                                      width={40}
-                                      height={40}
-                                      className="w-full h-full object-cover"
-                                    />
-                                  </div>
-                                ) : (
-                                  <div className="w-10 h-10 bg-[#FC4C02] rounded-full flex items-center justify-center flex-shrink-0 ring-2 ring-white">
-                                    <span className="text-white font-semibold text-sm">
-                                      {user.name.charAt(0).toUpperCase()}
-                                    </span>
-                                  </div>
-                                )}
-                              </Link>
-                              <div>
-                                <div className="font-semibold text-gray-900 text-base">{user.name}</div>
-                                <div className="text-xs text-gray-500">
-                                  {formatDate(new Date(session.createdAt))}
-                                </div>
-                              </div>
-                            </div>
-                            <div className="relative">
-                              <button
-                                onClick={() => setSessionMenuOpen(sessionMenuOpen === session.id ? null : session.id)}
-                                className="text-gray-400 hover:text-gray-600 transition-colors p-2"
-                              >
-                                <MoreVertical className="w-5 h-5" />
-                              </button>
-                              {sessionMenuOpen === session.id && (
-                                <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
-                                  <button
-                                    onClick={() => {
-                                      router.push(`/sessions/${session.id}/edit`);
-                                      setSessionMenuOpen(null);
-                                    }}
-                                    className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
-                                  >
-                                    <Edit className="w-4 h-4" />
-                                    Edit session
-                                  </button>
-                                  <button
-                                    onClick={() => {
-                                      setDeleteConfirmSession(session);
-                                      setSessionMenuOpen(null);
-                                    }}
-                                    className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-gray-50 flex items-center gap-2"
-                                  >
-                                    <Trash2 className="w-4 h-4" />
-                                    Delete session
-                                  </button>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-
-                          {/* Session Title and Description */}
-                          <div className="px-4 pb-3">
-                            <h3 className="text-2xl font-bold text-gray-900 mb-1">
-                              {session.title || 'Focus Session'}
-                            </h3>
-                            {session.description && (
-                              <p className="text-gray-600 text-sm line-clamp-2">
-                                {session.description}
-                              </p>
-                            )}
-                          </div>
-
-                          {/* Image Gallery */}
-                          {session.images && session.images.length > 0 && (
-                            <div className="px-4 pb-4">
-                              <ImageGallery images={session.images} />
-                            </div>
-                          )}
-
-                          {/* Session Stats - Strava style */}
-                          <div className="px-4 pb-4">
-                            <div className="grid grid-cols-3 gap-4">
-                              <div>
-                                <div className="text-xs text-gray-500 uppercase tracking-wide mb-0.5">Time</div>
-                                <div className="text-xl font-bold text-gray-900">
-                                  {formatTime(session.duration)}
-                                </div>
-                              </div>
-                              <div>
-                                <div className="text-xs text-gray-500 uppercase tracking-wide mb-0.5">Tasks</div>
-                                <div className="text-xl font-bold text-gray-900">
-                                  {session.tasks?.length || 0}
-                                </div>
-                              </div>
-                              <div>
-                                <div className="text-xs text-gray-500 uppercase tracking-wide mb-0.5">Tags</div>
-                                <div className="text-xl font-bold text-gray-900">
-                                  {session.tags?.length || 0}
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Action Buttons */}
-                          <div className="flex items-center border-t border-gray-100 px-2">
-                            <Link href={`/sessions/${session.id}`} className="flex-1 flex items-center justify-center gap-2 py-3 text-gray-600 hover:bg-gray-50 transition-colors rounded-lg">
-                              <Heart className="w-6 h-6" />
-                              <span className="text-sm font-medium">
-                                {session.supportCount || 0}
-                              </span>
-                            </Link>
-                            <div className="w-px h-6 bg-gray-200"></div>
-                            <Link href={`/sessions/${session.id}`} className="flex-1 flex items-center justify-center gap-2 py-3 text-gray-600 hover:bg-gray-50 transition-colors rounded-lg">
-                              <MessageCircle className="w-6 h-6" />
-                              <span className="text-sm font-medium">
-                                {session.commentCount || 0}
-                              </span>
-                            </Link>
-                            <div className="w-px h-6 bg-gray-200"></div>
-                            <button className="flex-1 flex items-center justify-center gap-2 py-3 text-gray-600 hover:bg-gray-50 transition-colors rounded-lg">
-                              <Share2 className="w-6 h-6" />
-                            </button>
-                          </div>
-                        </div>
-                      ))
-                    )}
+                  <div className="max-w-4xl mx-auto">
+                    <Feed
+                      filters={{ type: 'user', userId: user.id }}
+                      showEndMessage={true}
+                    />
                   </div>
                 )}
 
                 {activeTab === 'followers' && (
-                  <div className="bg-white rounded-xl border border-gray-200 p-6">
-                    <h3 className="text-lg font-bold mb-4">Followers ({followers.length})</h3>
+                  <div className="bg-white rounded-xl border border-gray-200 p-4 md:p-6">
+                    <h3 className="text-base md:text-lg font-bold mb-4">Followers ({followers.length})</h3>
                     {followers.length > 0 ? (
                       <div className="space-y-3">
                         {followers.map((follower) => (
@@ -893,8 +808,8 @@ export default function ProfilePage() {
                 )}
 
                 {activeTab === 'following' && (
-                  <div className="bg-white rounded-xl border border-gray-200 p-6">
-                    <h3 className="text-lg font-bold mb-4">Following ({following.length})</h3>
+                  <div className="bg-white rounded-xl border border-gray-200 p-4 md:p-6">
+                    <h3 className="text-base md:text-lg font-bold mb-4">Following ({following.length})</h3>
                     {following.length > 0 ? (
                       <div className="space-y-3">
                         {following.map((followedUser) => (
@@ -944,32 +859,6 @@ export default function ProfilePage() {
         <div className="md:hidden">
           <BottomNavigation />
         </div>
-
-        {/* Delete Confirmation Modal */}
-        {deleteConfirmSession && (
-          <div className="fixed inset-0 bg-black/50 z-[9999] flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl">
-              <h3 className="text-xl font-bold text-gray-900 mb-3">Delete Session?</h3>
-              <p className="text-gray-600 mb-6">
-                Are you sure you want to delete this session? This action cannot be undone.
-              </p>
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setDeleteConfirmSession(null)}
-                  className="flex-1 px-4 py-3 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition-colors font-medium"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={() => deleteConfirmSession && handleDeleteSession(deleteConfirmSession.id)}
-                  className="flex-1 px-4 py-3 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors font-medium"
-                >
-                  Delete
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </ProtectedRoute>
   );

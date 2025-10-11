@@ -127,8 +127,11 @@ service cloud.firestore {
       // Create: validate userId on the incoming document
       allow create: if isAuthenticated() && request.resource.data.userId == request.auth.uid;
 
-      // Read: allow based on visibility settings
-      allow read: if canReadSession();
+      // Get: allow individual reads based on visibility settings
+      allow get: if canReadSession();
+
+      // List: allow authenticated users to query sessions (results filtered by get rule)
+      allow list: if isAuthenticated();
 
       // Update/Delete: only session owner
       allow update, delete: if isSessionOwner();

@@ -183,7 +183,7 @@ export interface FeedResponse {
 }
 
 export interface FeedFilters {
-  type?: 'following' | 'trending' | 'recent' | 'user' | 'group';
+  type?: 'following' | 'trending' | 'recent' | 'user' | 'group' | 'all';
   activityId?: string; // Changed from projectId
   projectId?: string; // Backwards compatibility
   userId?: string;
