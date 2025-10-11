@@ -54,7 +54,7 @@ export const PersonalAnalyticsDashboard: React.FC<PersonalAnalyticsDashboardProp
       }
 
       const filteredSessions = response.sessions.filter(session =>
-        new Date(session.startTime) >= cutoffDate && session.userId === userId
+        new Date(session.createdAt) >= cutoffDate && session.userId === userId
       );
 
       setSessions(filteredSessions);
@@ -81,7 +81,7 @@ export const PersonalAnalyticsDashboard: React.FC<PersonalAnalyticsDashboardProp
 
     // Calculate streak
     const sortedSessions = [...sessions].sort((a, b) =>
-      new Date(b.startTime).getTime() - new Date(a.startTime).getTime()
+      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     );
 
     let currentStreak = 0;
@@ -92,7 +92,7 @@ export const PersonalAnalyticsDashboard: React.FC<PersonalAnalyticsDashboardProp
 
     const sessionsByDate = new Map<string, boolean>();
     sortedSessions.forEach(s => {
-      const date = new Date(s.startTime);
+      const date = new Date(s.createdAt);
       date.setHours(0, 0, 0, 0);
       const dateStr = date.toISOString().split('T')[0];
       sessionsByDate.set(dateStr, true);
@@ -144,7 +144,7 @@ export const PersonalAnalyticsDashboard: React.FC<PersonalAnalyticsDashboardProp
     ];
 
     sessions.forEach(s => {
-      const dayOfWeek = new Date(s.startTime).getDay();
+      const dayOfWeek = new Date(s.createdAt).getDay();
       activityByDay[dayOfWeek].hours += (s.duration || 0) / 3600;
       activityByDay[dayOfWeek].sessions += 1;
     });
@@ -156,7 +156,7 @@ export const PersonalAnalyticsDashboard: React.FC<PersonalAnalyticsDashboardProp
     }));
 
     sessions.forEach(s => {
-      const hour = new Date(s.startTime).getHours();
+      const hour = new Date(s.createdAt).getHours();
       activityByHour[hour].sessions += 1;
     });
 
@@ -179,7 +179,7 @@ export const PersonalAnalyticsDashboard: React.FC<PersonalAnalyticsDashboardProp
       const dateStr = date.toISOString().split('T')[0];
 
       const daySessions = sessions.filter(s => {
-        const sessionDate = new Date(s.startTime).toISOString().split('T')[0];
+        const sessionDate = new Date(s.createdAt).toISOString().split('T')[0];
         return sessionDate === dateStr;
       });
 

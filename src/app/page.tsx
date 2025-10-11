@@ -67,7 +67,7 @@ function HomeContent() {
                       </div>
                       <p className="text-sm text-gray-500">Discover productive sessions from the community</p>
                     </div>
-                    <Feed filters={{ type: 'recent' }} key="suggested-feed" initialLimit={20} showEndMessage={true} />
+                    <Feed filters={{ type: 'recent' }} key="suggested-feed" initialLimit={10} showEndMessage={true} />
                   </div>
                 </>
               )}

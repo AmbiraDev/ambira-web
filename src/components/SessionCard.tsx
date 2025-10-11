@@ -133,8 +133,8 @@ export const SessionCard: React.FC<SessionCardProps> = ({
               />
             </div>
           ) : (
-            <div className="w-10 h-10 min-w-[2.5rem] aspect-square bg-[#FC4C02] rounded-full flex items-center justify-center flex-shrink-0 ring-2 ring-white">
-              <span className="text-white font-semibold text-sm">
+            <div className="w-10 h-10 min-w-[2.5rem] aspect-square bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0 ring-2 ring-white">
+              <span className="text-gray-600 font-semibold text-sm">
                 {getUserInitials(session.user)}
               </span>
             </div>

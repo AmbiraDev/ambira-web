@@ -33,9 +33,9 @@ export default function DayOverview() {
       today.setHours(0, 0, 0, 0);
       
       const todaySessions = sessions.filter(session => {
-        const sessionDate = session.startTime instanceof Date 
-          ? session.startTime 
-          : new Date(session.startTime);
+        const sessionDate = session.createdAt instanceof Date
+          ? session.createdAt
+          : new Date(session.createdAt);
         const sessionDay = new Date(sessionDate);
         sessionDay.setHours(0, 0, 0, 0);
         return sessionDay.getTime() === today.getTime();

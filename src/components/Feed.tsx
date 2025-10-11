@@ -19,7 +19,7 @@ interface FeedProps {
 export const Feed: React.FC<FeedProps> = ({
   filters = {},
   className = '',
-  initialLimit = 20,
+  initialLimit = 10,
   showEndMessage = true
 }) => {
   const router = useRouter();
@@ -42,11 +42,52 @@ export const Feed: React.FC<FeedProps> = ({
   // Update sessions when data changes
   useEffect(() => {
     if (data) {
+      console.log('=== FEED DEBUG ===');
+      console.log('Feed filter:', filters);
+      console.log('Total sessions loaded:', data.sessions.length);
+      console.log('Has more:', data.hasMore);
+
+      // Helper to get session date
+      const getSessionDate = (session: any): Date => {
+        if (session.startTime) {
+          return session.startTime instanceof Date
+            ? session.startTime
+            : new Date(session.startTime);
+        }
+        return session.createdAt instanceof Date
+          ? session.createdAt
+          : new Date(session.createdAt);
+      };
+
+      // Log today's sessions
+      const now = new Date();
+      const todaySessions = data.sessions.filter(s => {
+        const sessionDate = getSessionDate(s);
+        return sessionDate.toDateString() === now.toDateString();
+      });
+
+      console.log('Today\'s date:', now.toDateString());
+      console.log('Today\'s sessions in feed:', todaySessions.length);
+      console.log('Today\'s sessions details:', todaySessions.map(s => ({
+        title: s.title,
+        startTime: getSessionDate(s).toString(),
+        duration: (s.duration / 3600).toFixed(2) + 'h',
+        userId: s.userId,
+      })));
+
+      console.log('All sessions:', data.sessions.map(s => ({
+        id: s.id,
+        title: s.title,
+        startTime: getSessionDate(s).toString(),
+        duration: (s.duration / 3600).toFixed(2) + 'h',
+      })));
+      console.log('==================');
+
       setAllSessions(data.sessions);
       setHasMore(data.hasMore);
       setNextCursor(data.nextCursor);
     }
-  }, [data]);
+  }, [data, filters]);
 
   const loadSessions = useCallback(async (cursor?: string, append = false) => {
     try {

@@ -110,7 +110,7 @@ function RightSidebar() {
 
   return (
     <aside className="hidden xl:block w-[320px] flex-shrink-0" aria-label="Suggestions and groups sidebar">
-      <div className="space-y-4 h-full overflow-y-auto scrollbar-hide pb-6">
+      <div className="space-y-4 h-full overflow-y-auto scrollbar-hide pt-20 pb-6">
 
         {/* Suggested Friends - Redesigned */}
         <div className="px-2">
@@ -149,8 +149,8 @@ function RightSidebar() {
                   className="block px-3 py-3 bg-white hover:bg-gray-50 rounded-lg transition-colors"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-[#007AFF] rounded-full flex items-center justify-center flex-shrink-0">
-                      <span className="text-white font-semibold text-sm">
+                    <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
+                      <span className="text-gray-600 font-semibold text-sm">
                         {suggestedUser.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
                       </span>
                     </div>

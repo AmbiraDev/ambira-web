@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useQueryClient } from '@tanstack/react-query';
 import { SessionFormData, Project, CreateSessionData } from '@/types';
 import { firebaseApi } from '@/lib/firebaseApi';
 import { useAuth } from '@/contexts/AuthContext';
@@ -10,8 +11,6 @@ import { ArrowLeft, Check, Image as ImageIcon, XCircle } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { uploadImages, compressImage } from '@/lib/imageUpload';
-
-const TAGS = ['Study', 'Work', 'Side Project', 'Reading', 'Learning', 'Exercise', 'Creative', 'Other'];
 
 const PRIVACY_OPTIONS = [
   { value: 'everyone', label: 'Everyone', description: 'Visible to all users' },
@@ -23,6 +22,7 @@ export default function ManualSessionRecorder() {
   const router = useRouter();
   const { user } = useAuth();
   const { success, error: showError } = useToast();
+  const queryClient = useQueryClient();
 
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -32,7 +32,6 @@ export default function ManualSessionRecorder() {
   const [projectId, setProjectId] = useState('');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [visibility, setVisibility] = useState<'everyone' | 'followers' | 'private'>('everyone');
   const [privateNotes, setPrivateNotes] = useState('');
   
@@ -84,15 +83,6 @@ export default function ManualSessionRecorder() {
       setTitle(smartTitle);
     }
   }, [projectId, projects]);
-
-  const handleTagToggle = (tag: string) => {
-    const isSelected = selectedTags.includes(tag);
-    if (isSelected) {
-      setSelectedTags(selectedTags.filter(t => t !== tag));
-    } else {
-      setSelectedTags([...selectedTags, tag]);
-    }
-  };
 
   const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -244,7 +234,7 @@ export default function ManualSessionRecorder() {
         duration,
         startTime: sessionDateTime,
         taskIds: [],
-        tags: selectedTags,
+        tags: [],
         visibility,
         privateNotes,
         images: imageUrls,
@@ -252,6 +242,15 @@ export default function ManualSessionRecorder() {
 
       // Create session with post
       await firebaseApi.session.createSessionWithPost(formData, description, visibility);
+
+      // Invalidate caches to refresh UI immediately
+      if (user) {
+        queryClient.invalidateQueries({ queryKey: ['user', 'sessions', user.id] });
+        queryClient.invalidateQueries({ queryKey: ['user', 'stats', user.id] });
+        queryClient.invalidateQueries({ queryKey: ['streak', user.id] });
+        queryClient.invalidateQueries({ queryKey: ['feed'] });
+        queryClient.invalidateQueries({ queryKey: ['sessions', 'feed'] });
+      }
 
       // Show success message
       success('Session created successfully!');
@@ -399,30 +398,6 @@ export default function ManualSessionRecorder() {
                   />
                 </label>
               )}
-            </div>
-          </div>
-
-          {/* Tags */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Tags
-            </label>
-            <div className="flex flex-wrap gap-2">
-              {TAGS.map((tag) => (
-                <button
-                  key={tag}
-                  type="button"
-                  onClick={() => handleTagToggle(tag)}
-                  className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                    selectedTags.includes(tag)
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
-                  disabled={isLoading}
-                >
-                  {tag}
-                </button>
-              ))}
             </div>
           </div>
 

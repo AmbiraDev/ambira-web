@@ -172,18 +172,37 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
 
       // Get project and task details
       const projects = await firebaseProjectApi.getProjects();
-      const project = projects.find(p => p.id === activeSession.projectId);
-      
+      let project = projects.find(p => p.id === activeSession.projectId);
+
       if (!project) {
-        console.error('Project not found for active session');
-        return;
+        console.warn('Project not found for active session');
+
+        // If user has no projects, clear the active session
+        if (projects.length === 0) {
+          console.log('No projects available, clearing active session');
+          await firebaseSessionApi.clearActiveSession();
+          return;
+        }
+
+        // Otherwise, assign to the first project
+        project = projects[0];
+        console.log(`Reassigning active session to first project: ${project.name}`);
+
+        // Update the active session with the new project
+        await firebaseSessionApi.saveActiveSession({
+          startTime: activeSession.startTime,
+          projectId: project.id,
+          selectedTaskIds: [], // Clear tasks since they belonged to the old project
+          pausedDuration: activeSession.pausedDuration,
+          isPaused: activeSession.isPaused,
+        });
       }
 
       // Get task details
       const selectedTasks = [];
       try {
-        const projectTasks = await firebaseTaskApi.getProjectTasks(activeSession.projectId);
-        selectedTasks.push(...projectTasks.filter(task => 
+        const projectTasks = await firebaseTaskApi.getProjectTasks(project.id);
+        selectedTasks.push(...projectTasks.filter(task =>
           activeSession.selectedTaskIds.includes(task.id)
         ));
       } catch (error) {

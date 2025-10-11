@@ -20,8 +20,8 @@ export function calculateProjectStats(
   const oneWeekAgo = new Date();
   oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
   
-  const weeklySessions = projectSessions.filter(session => 
-    new Date(session.startTime) >= oneWeekAgo
+  const weeklySessions = projectSessions.filter(session =>
+    new Date(session.createdAt) >= oneWeekAgo
   );
   
   const weeklyHours = weeklySessions.reduce((total, session) => {
@@ -50,7 +50,7 @@ export function calculateProjectStats(
 
   // Find last session date
   const lastSessionDate = projectSessions.length > 0
-    ? new Date(Math.max(...projectSessions.map(s => new Date(s.startTime).getTime())))
+    ? new Date(Math.max(...projectSessions.map(s => new Date(s.createdAt).getTime())))
     : undefined;
 
   return {
@@ -74,8 +74,8 @@ function calculateCurrentStreak(sessions: Session[]): number {
   // Sort sessions by date (most recent first)
   const sortedSessions = sessions
     .map(session => ({
-      date: new Date(session.startTime).toDateString(),
-      timestamp: new Date(session.startTime).getTime()
+      date: new Date(session.createdAt).toDateString(),
+      timestamp: new Date(session.createdAt).getTime()
     }))
     .sort((a, b) => b.timestamp - a.timestamp);
 
@@ -151,8 +151,8 @@ export function calculateWeeklyAverage(
   const cutoffDate = new Date();
   cutoffDate.setDate(cutoffDate.getDate() - (weeks * 7));
 
-  const recentSessions = sessions.filter(session => 
-    new Date(session.startTime) >= cutoffDate
+  const recentSessions = sessions.filter(session =>
+    new Date(session.createdAt) >= cutoffDate
   );
 
   const totalHours = recentSessions.reduce((total, session) => {

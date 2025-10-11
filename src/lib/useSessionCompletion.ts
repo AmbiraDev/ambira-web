@@ -1,10 +1,13 @@
 import { useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { firebaseApi } from './firebaseApi';
 import { Session, Achievement } from '@/types';
+import { CACHE_KEYS } from './queryClient';
 
 export const useSessionCompletion = () => {
   const [newAchievements, setNewAchievements] = useState<Achievement[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
+  const queryClient = useQueryClient();
 
   const completeSession = async (
     sessionData: any,
@@ -25,6 +28,14 @@ export const useSessionCompletion = () => {
       );
 
       setNewAchievements(achievements);
+
+      // 4. Invalidate caches to refresh UI immediately
+      // Use partial key matching to invalidate all related caches
+      queryClient.invalidateQueries({ queryKey: ['user', 'sessions', userId] });
+      queryClient.invalidateQueries({ queryKey: ['user', 'stats', userId] });
+      queryClient.invalidateQueries({ queryKey: ['streak', userId] });
+      queryClient.invalidateQueries({ queryKey: ['feed'] });
+      queryClient.invalidateQueries({ queryKey: ['sessions', 'feed'] });
 
       return { session, achievements };
     } catch (error) {

@@ -141,8 +141,8 @@ export const CommentItem: React.FC<CommentItemProps> = ({
             className="w-8 h-8 min-w-[2rem] min-h-[2rem] rounded-full object-cover shrink-0"
           />
         ) : (
-          <div className={`w-8 h-8 min-w-[2rem] min-h-[2rem] ${getUserColor(comment.user.id)} rounded-full flex items-center justify-center shrink-0`}>
-            <span className="text-xs font-semibold text-white">
+          <div className="w-8 h-8 min-w-[2rem] min-h-[2rem] bg-gray-100 rounded-full flex items-center justify-center shrink-0">
+            <span className="text-xs font-semibold text-gray-600">
               {getUserInitials(comment.user.name)}
             </span>
           </div>

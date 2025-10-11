@@ -27,8 +27,6 @@ export default function EditSessionPage() {
   const [description, setDescription] = useState('');
   const [projectId, setProjectId] = useState('');
   const [visibility, setVisibility] = useState<'everyone' | 'followers' | 'private'>('private');
-  const [tags, setTags] = useState<string[]>([]);
-  const [tagInput, setTagInput] = useState('');
   const [privateNotes, setPrivateNotes] = useState('');
   const [images, setImages] = useState<string[]>([]);
   const [allowComments, setAllowComments] = useState<boolean>(true);
@@ -50,7 +48,6 @@ export default function EditSessionPage() {
         setDescription(sessionData.description || '');
         setProjectId(sessionData.projectId);
         setVisibility(sessionData.visibility);
-        setTags(sessionData.tags || []);
         setPrivateNotes(sessionData.privateNotes || '');
         setImages(sessionData.images || []);
         setAllowComments(sessionData.allowComments !== false); // default to true
@@ -65,17 +62,6 @@ export default function EditSessionPage() {
 
     loadData();
   }, [sessionId, router]);
-
-  const handleAddTag = () => {
-    if (tagInput.trim() && !tags.includes(tagInput.trim())) {
-      setTags([...tags, tagInput.trim()]);
-      setTagInput('');
-    }
-  };
-
-  const handleRemoveTag = (tagToRemove: string) => {
-    setTags(tags.filter(tag => tag !== tagToRemove));
-  };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -139,7 +125,6 @@ export default function EditSessionPage() {
         description: description.trim(),
         projectId,
         visibility,
-        tags,
         privateNotes: privateNotes.trim(),
         images,
         allowComments
@@ -243,54 +228,6 @@ export default function EditSessionPage() {
                 <option value="followers">Followers</option>
                 <option value="private">Private</option>
               </select>
-            </div>
-
-            {/* Tags */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Tags
-              </label>
-              <div className="flex gap-2 mb-2">
-                <input
-                  type="text"
-                  value={tagInput}
-                  onChange={(e) => setTagInput(e.target.value)}
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      handleAddTag();
-                    }
-                  }}
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Add a tag"
-                />
-                <button
-                  type="button"
-                  onClick={handleAddTag}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-                >
-                  Add
-                </button>
-              </div>
-              {tags.length > 0 && (
-                <div className="flex flex-wrap gap-2">
-                  {tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="px-3 py-1 bg-blue-100 text-blue-800 text-sm rounded-full flex items-center gap-1"
-                    >
-                      {tag}
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveTag(tag)}
-                        className="text-blue-600 hover:text-blue-800"
-                      >
-                        ×
-                      </button>
-                    </span>
-                  ))}
-                </div>
-              )}
             </div>
 
             {/* Images */}

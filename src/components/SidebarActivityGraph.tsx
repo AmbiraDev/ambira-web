@@ -65,7 +65,7 @@ function SidebarActivityGraph() {
           sessions.length > 0
             ? sessions
                 .filter((s) => {
-                  const sessionDate = new Date(s.startTime);
+                  const sessionDate = new Date(s.createdAt);
                   sessionDate.setHours(0, 0, 0, 0);
                   return sessionDate.getTime() === day.getTime();
                 })
@@ -92,7 +92,7 @@ function SidebarActivityGraph() {
           sessions.length > 0
             ? sessions
                 .filter((s) => {
-                  const sessionDate = new Date(s.startTime);
+                  const sessionDate = new Date(s.createdAt);
                   return sessionDate >= weekStart && sessionDate <= weekEnd;
                 })
                 .reduce((sum, s) => sum + s.duration / 3600, 0)

@@ -262,6 +262,10 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
     return colorClasses[project?.color as keyof typeof colorClasses] || 'bg-gray-500';
   };
 
+  // Define selectedActivity before any early returns so it's available in all code paths
+  const selectedActivity = allActivities.find(a => a.id === selectedActivityId) || timerState.currentProject;
+  const needsActivity = allActivities.length === 0 && !timerState.currentProject;
+
   // When completing a session, show ONLY the completion UI
   if (showFinishModal) {
     return (
@@ -555,11 +559,6 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
   }
 
   // Main timer UI - only show when not completing a session
-  const selectedActivity = allActivities.find(a => a.id === selectedActivityId) || timerState.currentProject;
-
-  // Check if user needs to create an activity
-  const needsActivity = allActivities.length === 0 && !timerState.currentProject;
-
   return (
     <div className="min-h-screen bg-white flex flex-col">
       {/* No Activities Banner - Show prominent message when no activities exist */}

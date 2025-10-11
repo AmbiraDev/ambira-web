@@ -30,9 +30,9 @@ export default function SessionsPage() {
           
           {/* Use Feed component with user filter */}
           {user && (
-            <Feed 
-              filters={{ type: 'user', userId: user.id }} 
-              initialLimit={20}
+            <Feed
+              filters={{ type: 'user', userId: user.id }}
+              initialLimit={10}
               showEndMessage={true}
             />
           )}

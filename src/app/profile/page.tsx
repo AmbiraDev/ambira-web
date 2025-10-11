@@ -10,7 +10,7 @@ import { useUserSessions, useUserStats, useUserProfile, useUserFollowers, useUse
 import Link from 'next/link';
 import Image from 'next/image';
 import { User as UserIcon, Users, Settings, Clock, Target, Calendar, Heart, ChevronDown, MoreVertical, Edit, Trash2, MessageCircle, Share2, LogOut } from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip, Area, ComposedChart } from 'recharts';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { Session } from '@/types';
 import { ImageGallery } from '@/components/ImageGallery';
@@ -422,194 +422,79 @@ export default function ProfilePage() {
               <div className="mt-6">
                 {activeTab === 'progress' && (
                   <div className="max-w-4xl mx-auto space-y-6">
-                    {/* Last 4 Weeks Summary */}
-                    <div className="bg-white rounded-lg border border-gray-200 p-6">
+                    {/* Stats Overview */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover:shadow-md transition-shadow">
+                        <div className="flex items-center gap-2 mb-3">
+                          <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center">
+                            <Clock className="w-4 h-4 text-[#007AFF]" />
+                          </div>
+                        </div>
+                        <div className="text-2xl font-bold text-gray-900">
+                          {stats?.totalHours?.toFixed(1) || 0}h
+                        </div>
+                        <p className="text-xs text-gray-500 mt-1">Total Time</p>
+                      </div>
+
+                      <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover:shadow-md transition-shadow">
+                        <div className="flex items-center gap-2 mb-3">
+                          <div className="w-8 h-8 bg-green-50 rounded-lg flex items-center justify-center">
+                            <Calendar className="w-4 h-4 text-green-600" />
+                          </div>
+                        </div>
+                        <div className="text-2xl font-bold text-gray-900">
+                          {sessions.length}
+                        </div>
+                        <p className="text-xs text-gray-500 mt-1">Total Sessions</p>
+                      </div>
+
+                      <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover:shadow-md transition-shadow">
+                        <div className="flex items-center gap-2 mb-3">
+                          <div className="w-8 h-8 bg-purple-50 rounded-lg flex items-center justify-center">
+                            <Target className="w-4 h-4 text-purple-600" />
+                          </div>
+                        </div>
+                        <div className="text-2xl font-bold text-gray-900">
+                          {sessions.length > 0 ? Math.round(sessions.reduce((sum, s) => sum + s.duration, 0) / sessions.length / 60) : 0}
+                        </div>
+                        <p className="text-xs text-gray-500 mt-1">Avg Session (min)</p>
+                      </div>
+
+                      <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover:shadow-md transition-shadow">
+                        <div className="flex items-center gap-2 mb-3">
+                          <div className="w-8 h-8 bg-orange-50 rounded-lg flex items-center justify-center">
+                            <Heart className="w-4 h-4 text-[#FC4C02]" />
+                          </div>
+                        </div>
+                        <div className="text-2xl font-bold text-gray-900">
+                          {stats?.longestStreak || 0}
+                        </div>
+                        <p className="text-xs text-gray-500 mt-1">Longest Streak</p>
+                      </div>
+                    </div>
+
+                    {/* Activity Chart */}
+                    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
                       <div className="flex items-center justify-between mb-6">
-                        <h2 className="text-lg font-semibold text-gray-900">Last 4 Weeks</h2>
-                      </div>
-
-                      {/* Main Stats Grid */}
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                         <div>
-                          <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Total Time</div>
-                          <div className="text-2xl font-bold text-gray-900">
-                            {stats?.totalHours?.toFixed(1) || 0}h
-                          </div>
+                          <h3 className="text-xl font-bold text-gray-900">Activity Overview</h3>
+                          <p className="text-sm text-gray-500 mt-1">
+                            {timePeriod === 'day' && 'Last 24 hours'}
+                            {timePeriod === 'week' && 'Last 7 days'}
+                            {timePeriod === 'month' && 'Last 4 weeks'}
+                            {timePeriod === 'year' && 'Last 12 months'}
+                          </p>
                         </div>
-                        <div>
-                          <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Sessions</div>
-                          <div className="text-2xl font-bold text-gray-900">
-                            {sessions.length}
-                          </div>
-                        </div>
-                        <div>
-                          <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Avg/Week</div>
-                          <div className="text-2xl font-bold text-gray-900">
-                            {stats?.weeklyHours?.toFixed(1) || 0}h
-                          </div>
-                        </div>
-                        <div>
-                          <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Avg/Day</div>
-                          <div className="text-2xl font-bold text-gray-900">
-                            {stats?.totalHours ? (stats.totalHours / 28).toFixed(1) : 0}h
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Weekly Breakdown Chart */}
-                      <div className="h-48">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <LineChart
-                            data={chartData}
-                            margin={{ top: 10, right: 15, left: 0, bottom: 5 }}
-                          >
-                            <XAxis
-                              dataKey="name"
-                              tick={{ fontSize: 12, fill: '#6b7280' }}
-                              axisLine={{ stroke: '#e5e7eb' }}
-                              tickLine={false}
-                            />
-                            <YAxis
-                              tick={{ fontSize: 12, fill: '#6b7280' }}
-                              axisLine={{ stroke: '#e5e7eb' }}
-                              tickLine={false}
-                              width={40}
-                            />
-                            <Tooltip
-                              contentStyle={{
-                                backgroundColor: '#fff',
-                                border: '1px solid #e5e7eb',
-                                borderRadius: '8px',
-                                fontSize: '12px'
-                              }}
-                              formatter={(value: number) => [`${value}h`, 'Hours']}
-                            />
-                            <Line
-                              type="monotone"
-                              dataKey="hours"
-                              stroke="#FC4C02"
-                              strokeWidth={2}
-                              isAnimationActive={false}
-                              dot={(props: any) => {
-                                const { cx, cy, index, payload } = props;
-                                const isToday = index === chartData.length - 1;
-                                return (
-                                  <circle
-                                    key={`dot-${index}-${payload.name}`}
-                                    cx={cx}
-                                    cy={cy}
-                                    r={isToday ? 5 : 0}
-                                    fill="#FC4C02"
-                                    stroke="none"
-                                  />
-                                );
-                              }}
-                            />
-                          </LineChart>
-                        </ResponsiveContainer>
-                      </div>
-                    </div>
-
-                    {/* Year Stats and Additional Metrics */}
-                    <div className="grid md:grid-cols-2 gap-6">
-                      {/* This Year Section */}
-                      <div className="bg-white rounded-lg border border-gray-200 p-6">
-                        <div className="flex items-center justify-between mb-4">
-                          <h3 className="font-semibold text-gray-900">
-                            {new Date().getFullYear()}
-                          </h3>
-                          <button
-                            onClick={() => setTimePeriod('year')}
-                            className="text-xs text-gray-500 hover:text-gray-700"
-                          >
-                            View chart
-                          </button>
-                        </div>
-                        <div className="space-y-3">
-                          <div className="flex justify-between items-center pb-3 border-b border-gray-100">
-                            <span className="text-sm text-gray-600">Total Time</span>
-                            <span className="font-semibold text-gray-900">
-                              {stats?.totalHours?.toFixed(1) || 0}h
-                            </span>
-                          </div>
-                          <div className="flex justify-between items-center pb-3 border-b border-gray-100">
-                            <span className="text-sm text-gray-600">Sessions</span>
-                            <span className="font-semibold text-gray-900">
-                              {sessions.length}
-                            </span>
-                          </div>
-                          <div className="flex justify-between items-center pb-3 border-b border-gray-100">
-                            <span className="text-sm text-gray-600">Longest Session</span>
-                            <span className="font-semibold text-gray-900">
-                              {sessions.length > 0
-                                ? formatTime(Math.max(...sessions.map(s => s.duration)))
-                                : '0m'}
-                            </span>
-                          </div>
-                          <div className="flex justify-between items-center">
-                            <span className="text-sm text-gray-600">Current Streak</span>
-                            <span className="font-semibold text-gray-900">
-                              {stats?.currentStreak || 0} days
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* All-Time Section */}
-                      <div className="bg-white rounded-lg border border-gray-200 p-6">
-                        <div className="flex items-center justify-between mb-4">
-                          <h3 className="font-semibold text-gray-900">All-Time</h3>
-                        </div>
-                        <div className="space-y-3">
-                          <div className="flex justify-between items-center pb-3 border-b border-gray-100">
-                            <span className="text-sm text-gray-600">Total Sessions</span>
-                            <span className="font-semibold text-gray-900">
-                              {sessions.length}
-                            </span>
-                          </div>
-                          <div className="flex justify-between items-center pb-3 border-b border-gray-100">
-                            <span className="text-sm text-gray-600">Total Time</span>
-                            <span className="font-semibold text-gray-900">
-                              {stats?.totalHours?.toFixed(1) || 0}h
-                            </span>
-                          </div>
-                          <div className="flex justify-between items-center pb-3 border-b border-gray-100">
-                            <span className="text-sm text-gray-600">Longest Streak</span>
-                            <span className="font-semibold text-gray-900">
-                              {stats?.longestStreak || stats?.currentStreak || 0} days
-                            </span>
-                          </div>
-                          <div className="flex justify-between items-center">
-                            <span className="text-sm text-gray-600">Avg Session</span>
-                            <span className="font-semibold text-gray-900">
-                              {sessions.length > 0
-                                ? formatTime(sessions.reduce((sum, s) => sum + s.duration, 0) / sessions.length)
-                                : '0m'}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Detailed Time Period Chart */}
-                    <div className="bg-white rounded-lg border border-gray-200 p-6">
-                      <div className="flex items-center justify-between mb-4">
-                        <h3 className="font-semibold text-gray-900">
-                          {timePeriod === 'day' && 'Last 24 Hours'}
-                          {timePeriod === 'week' && 'Last 7 Days'}
-                          {timePeriod === 'month' && 'Last 4 Weeks'}
-                          {timePeriod === 'year' && 'Last 12 Months'}
-                        </h3>
                         <div className="relative">
                           <button
                             onClick={() => setShowTimePeriodDropdown(!showTimePeriodDropdown)}
-                            className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200"
+                            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-gray-50 border border-gray-200 rounded-xl hover:bg-gray-100 transition-colors"
                           >
                             {timePeriod.charAt(0).toUpperCase() + timePeriod.slice(1)}
-                            <ChevronDown className="w-4 h-4" />
+                            <ChevronDown className={`w-4 h-4 transition-transform ${showTimePeriodDropdown ? 'rotate-180' : ''}`} />
                           </button>
                           {showTimePeriodDropdown && (
-                            <div className="absolute right-0 mt-2 w-32 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+                            <div className="absolute right-0 mt-2 w-40 bg-white rounded-xl shadow-lg border border-gray-200 py-2 z-50">
                               {(['day', 'week', 'month', 'year'] as TimePeriod[]).map((period) => (
                                 <button
                                   key={period}
@@ -617,8 +502,8 @@ export default function ProfilePage() {
                                     setTimePeriod(period);
                                     setShowTimePeriodDropdown(false);
                                   }}
-                                  className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 ${
-                                    timePeriod === period ? 'text-[#FC4C02] font-medium' : 'text-gray-700'
+                                  className={`w-full text-left px-4 py-2.5 text-sm hover:bg-gray-50 transition-colors ${
+                                    timePeriod === period ? 'text-[#007AFF] font-semibold bg-blue-50' : 'text-gray-700'
                                   }`}
                                 >
                                   {period.charAt(0).toUpperCase() + period.slice(1)}
@@ -629,90 +514,195 @@ export default function ProfilePage() {
                         </div>
                       </div>
                       <div className="h-64">
-                        <ResponsiveContainer width="100%" height="100%">
-                          <LineChart
-                            data={chartData}
-                            margin={{ top: 10, right: 15, left: 0, bottom: 5 }}
-                          >
-                            <XAxis
-                              dataKey="name"
-                              tick={{ fontSize: 12, fill: '#6b7280' }}
-                              axisLine={{ stroke: '#e5e7eb' }}
-                              tickLine={false}
-                            />
-                            <YAxis
-                              tick={{ fontSize: 12, fill: '#6b7280' }}
-                              axisLine={{ stroke: '#e5e7eb' }}
-                              tickLine={false}
-                              width={40}
-                              label={{ value: 'Hours', angle: -90, position: 'insideLeft', style: { fontSize: 12, fill: '#6b7280' } }}
-                            />
-                            <Tooltip
-                              contentStyle={{
-                                backgroundColor: '#fff',
-                                border: '1px solid #e5e7eb',
-                                borderRadius: '8px',
-                                fontSize: '12px',
-                                padding: '8px 12px'
-                              }}
-                              formatter={(value: number) => [`${value}h`, 'Hours']}
-                            />
-                            <Line
-                              type="monotone"
-                              dataKey="hours"
-                              stroke="#FC4C02"
-                              strokeWidth={2}
-                              isAnimationActive={false}
-                              dot={false}
-                              activeDot={{ r: 4, fill: '#FC4C02' }}
-                            />
-                          </LineChart>
-                        </ResponsiveContainer>
+                        {isLoading ? (
+                          <div className="h-full bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl animate-pulse flex items-center justify-center">
+                            <p className="text-gray-400 text-sm">Loading...</p>
+                          </div>
+                        ) : (
+                          <ResponsiveContainer width="100%" height="100%">
+                            <ComposedChart
+                              data={chartData}
+                              margin={{ top: 10, right: 10, left: -20, bottom: 5 }}
+                            >
+                              <defs>
+                                <linearGradient id="colorHours" x1="0" y1="0" x2="0" y2="1">
+                                  <stop offset="5%" stopColor="#007AFF" stopOpacity={0.15}/>
+                                  <stop offset="95%" stopColor="#007AFF" stopOpacity={0}/>
+                                </linearGradient>
+                              </defs>
+                              <XAxis
+                                dataKey="name"
+                                tick={{ fontSize: 12, fill: '#6b7280', fontWeight: 500 }}
+                                axisLine={false}
+                                tickLine={false}
+                                dy={8}
+                              />
+                              <YAxis
+                                tick={{ fontSize: 12, fill: '#9ca3af' }}
+                                axisLine={false}
+                                tickLine={false}
+                                width={40}
+                                domain={[0, 'dataMax + 0.5']}
+                                tickFormatter={(value) => `${value}h`}
+                              />
+                              <Tooltip
+                                contentStyle={{
+                                  backgroundColor: 'rgba(0, 0, 0, 0.9)',
+                                  border: 'none',
+                                  borderRadius: '12px',
+                                  padding: '12px 16px',
+                                  fontSize: '13px',
+                                  color: 'white',
+                                  boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
+                                }}
+                                labelStyle={{ color: 'white', marginBottom: '4px', fontWeight: 600 }}
+                                formatter={(value: number) => [`${value.toFixed(1)} hours`, 'Focus Time']}
+                                cursor={{ stroke: '#e5e7eb', strokeWidth: 1, strokeDasharray: '3 3' }}
+                              />
+                              <Area
+                                type="monotone"
+                                dataKey="hours"
+                                stroke="none"
+                                fill="url(#colorHours)"
+                              />
+                              <Line
+                                type="monotone"
+                                dataKey="hours"
+                                stroke="#007AFF"
+                                strokeWidth={3}
+                                dot={(props: any) => {
+                                  const { cx, cy, index } = props;
+                                  const isLast = index === chartData.length - 1;
+                                  return (
+                                    <circle
+                                      key={`dot-${index}`}
+                                      cx={cx}
+                                      cy={cy}
+                                      r={isLast ? 6 : 4}
+                                      fill={isLast ? '#007AFF' : '#fff'}
+                                      stroke="#007AFF"
+                                      strokeWidth={2.5}
+                                    />
+                                  );
+                                }}
+                                activeDot={{
+                                  r: 8,
+                                  fill: '#007AFF',
+                                  stroke: 'white',
+                                  strokeWidth: 3
+                                }}
+                              />
+                            </ComposedChart>
+                          </ResponsiveContainer>
+                        )}
                       </div>
                     </div>
 
-                    {/* Recent Sessions Summary */}
-                    <div className="bg-white rounded-lg border border-gray-200 p-6">
-                      <div className="flex items-center justify-between mb-4">
-                        <h3 className="font-semibold text-gray-900">Recent Activity</h3>
-                        <button
-                          onClick={() => {
-                            setActiveTab('sessions');
-                            router.push('/profile?tab=sessions');
-                          }}
-                          className="text-sm text-[#FC4C02] hover:text-[#E04402] font-medium"
-                        >
-                          View all
-                        </button>
-                      </div>
-                      {sessions.length > 0 ? (
-                        <div className="space-y-3">
-                          {sessions.slice(0, 5).map((session) => (
-                            <div key={session.id} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
-                              <div className="flex-1">
-                                <div className="font-medium text-gray-900 text-sm">
-                                  {session.title || 'Focus Session'}
-                                </div>
-                                <div className="text-xs text-gray-500">
-                                  {formatDate(new Date(session.createdAt))}
-                                </div>
-                              </div>
-                              <div className="text-right">
-                                <div className="font-semibold text-gray-900 text-sm">
-                                  {formatTime(session.duration)}
-                                </div>
-                                <div className="text-xs text-gray-500">
-                                  {session.tasks?.length || 0} tasks
-                                </div>
-                              </div>
+                    {/* Insights Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {/* Weekly Comparison */}
+                      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+                        <h3 className="text-lg font-bold text-gray-900 mb-4">Weekly Comparison</h3>
+                        <div className="space-y-4">
+                          <div>
+                            <div className="flex items-center justify-between text-sm mb-2">
+                              <span className="text-gray-600">This Week</span>
+                              <span className="font-semibold text-gray-900">
+                                {chartData.slice(-7).reduce((sum, d) => sum + d.hours, 0).toFixed(1)}h
+                              </span>
                             </div>
-                          ))}
+                            <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
+                              <div
+                                className="bg-gradient-to-r from-[#007AFF] to-[#0051D5] h-3 rounded-full transition-all duration-500"
+                                style={{ width: `${Math.min(100, (chartData.slice(-7).reduce((sum, d) => sum + d.hours, 0) / 40) * 100)}%` }}
+                              ></div>
+                            </div>
+                          </div>
+                          <div>
+                            <div className="flex items-center justify-between text-sm mb-2">
+                              <span className="text-gray-600">Last Week</span>
+                              <span className="font-semibold text-gray-900">
+                                {chartData.slice(-14, -7).reduce((sum, d) => sum + d.hours, 0).toFixed(1)}h
+                              </span>
+                            </div>
+                            <div className="w-full bg-gray-100 rounded-full h-3 overflow-hidden">
+                              <div
+                                className="bg-gray-300 h-3 rounded-full transition-all duration-500"
+                                style={{ width: `${Math.min(100, (chartData.slice(-14, -7).reduce((sum, d) => sum + d.hours, 0) / 40) * 100)}%` }}
+                              ></div>
+                            </div>
+                          </div>
+                          <div className="pt-2 border-t border-gray-100">
+                            <div className="flex items-center gap-2">
+                              {chartData.slice(-7).reduce((sum, d) => sum + d.hours, 0) >= chartData.slice(-14, -7).reduce((sum, d) => sum + d.hours, 0) ? (
+                                <>
+                                  <div className="w-8 h-8 bg-green-50 rounded-lg flex items-center justify-center">
+                                    <span className="text-green-600 text-lg">↑</span>
+                                  </div>
+                                  <div>
+                                    <p className="text-sm font-semibold text-gray-900">Great progress!</p>
+                                    <p className="text-xs text-gray-500">You're trending upward</p>
+                                  </div>
+                                </>
+                              ) : (
+                                <>
+                                  <div className="w-8 h-8 bg-orange-50 rounded-lg flex items-center justify-center">
+                                    <span className="text-orange-600 text-lg">↓</span>
+                                  </div>
+                                  <div>
+                                    <p className="text-sm font-semibold text-gray-900">Keep pushing!</p>
+                                    <p className="text-xs text-gray-500">You can do better</p>
+                                  </div>
+                                </>
+                              )}
+                            </div>
+                          </div>
                         </div>
-                      ) : (
-                        <div className="text-center py-8 text-gray-400">
-                          No sessions yet
+                      </div>
+
+                      {/* Productivity Insights */}
+                      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+                        <h3 className="text-lg font-bold text-gray-900 mb-4">Productivity Insights</h3>
+                        <div className="space-y-4">
+                          <div className="flex items-start gap-3">
+                            <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center flex-shrink-0">
+                              <Clock className="w-5 h-5 text-[#007AFF]" />
+                            </div>
+                            <div className="flex-1">
+                              <p className="text-sm font-semibold text-gray-900">Most Productive Day</p>
+                              <p className="text-xs text-gray-500 mt-0.5">
+                                {chartData.length > 0
+                                  ? chartData.reduce((max, d) => d.hours > max.hours ? d : max, chartData[0]).name
+                                  : 'N/A'}
+                                {chartData.length > 0 && ` - ${chartData.reduce((max, d) => d.hours > max.hours ? d : max, chartData[0]).hours}h`}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-start gap-3">
+                            <div className="w-10 h-10 bg-orange-50 rounded-xl flex items-center justify-center flex-shrink-0">
+                              <Target className="w-5 h-5 text-[#FC4C02]" />
+                            </div>
+                            <div className="flex-1">
+                              <p className="text-sm font-semibold text-gray-900">Weekly Goal Progress</p>
+                              <p className="text-xs text-gray-500 mt-0.5">
+                                {chartData.slice(-7).reduce((sum, d) => sum + d.hours, 0).toFixed(1)}h / 40h
+                                ({Math.round((chartData.slice(-7).reduce((sum, d) => sum + d.hours, 0) / 40) * 100)}%)
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-start gap-3">
+                            <div className="w-10 h-10 bg-green-50 rounded-xl flex items-center justify-center flex-shrink-0">
+                              <Calendar className="w-5 h-5 text-green-600" />
+                            </div>
+                            <div className="flex-1">
+                              <p className="text-sm font-semibold text-gray-900">Active Days This Week</p>
+                              <p className="text-xs text-gray-500 mt-0.5">
+                                {chartData.slice(-7).filter(d => d.hours > 0).length} out of 7 days
+                              </p>
+                            </div>
+                          </div>
                         </div>
-                      )}
+                      </div>
                     </div>
                   </div>
                 )}

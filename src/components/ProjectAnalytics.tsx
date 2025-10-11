@@ -70,7 +70,7 @@ export const ProjectAnalytics: React.FC<ProjectAnalyticsProps> = ({
       let cumulativeTotal = 0;
       
       sessions.forEach(session => {
-        const sessionDate = new Date(session.startTime);
+        const sessionDate = new Date(session.createdAt);
         const dateKey = sessionDate.toISOString().split('T')[0];
         dailyHours[dateKey] = (dailyHours[dateKey] || 0) + (session.duration / 3600);
       });
@@ -93,7 +93,7 @@ export const ProjectAnalytics: React.FC<ProjectAnalyticsProps> = ({
       // Generate session frequency data (weekly)
       const weeklyData: Record<string, number> = {};
       sessions.forEach(session => {
-        const sessionDate = new Date(session.startTime);
+        const sessionDate = new Date(session.createdAt);
         const weekStart = new Date(sessionDate);
         weekStart.setDate(sessionDate.getDate() - sessionDate.getDay());
         const weekKey = weekStart.toISOString().split('T')[0];

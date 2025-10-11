@@ -99,7 +99,7 @@ export const UserCard: React.FC<UserCardProps> = ({
               className="rounded-full object-cover border border-border"
             />
           ) : (
-            <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold">
+            <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center text-gray-600 font-semibold">
               {user.name.charAt(0).toUpperCase()}
             </div>
           )}
@@ -242,7 +242,7 @@ export const UserCardCompact: React.FC<UserCardProps> = ({
             className="rounded-full object-cover border border-border"
           />
         ) : (
-          <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-semibold">
+          <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-600 text-sm font-semibold">
             {user.name.charAt(0).toUpperCase()}
           </div>
         )}

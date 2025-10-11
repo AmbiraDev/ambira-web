@@ -315,8 +315,8 @@ export default function Header() {
                         />
                       </div>
                     ) : (
-                      <div className="w-9 h-9 bg-[#FC4C02] rounded-full flex items-center justify-center flex-shrink-0 ring-2 ring-gray-200 transition-all">
-                        <span className="text-sm font-medium text-white">
+                      <div className="w-9 h-9 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0 ring-2 ring-gray-200 transition-all">
+                        <span className="text-sm font-medium text-gray-600">
                           {user.name.charAt(0).toUpperCase()}
                         </span>
                       </div>
