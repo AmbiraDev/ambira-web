@@ -4160,7 +4160,7 @@ const firebaseGroupApi = {
       let q = query(
         collection(db, 'groups'),
         ...baseConstraints,
-        orderBy('createdAt', 'desc'),
+        orderBy('memberCount', 'desc'),
         limit(limitCount)
       );
 

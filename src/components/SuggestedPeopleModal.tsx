@@ -11,7 +11,7 @@ interface SuggestedPeopleModalProps {
   onClose: () => void;
 }
 
-const USERS_PER_PAGE = 15;
+const USERS_PER_PAGE = 10;
 const TOTAL_USERS_TO_FETCH = 100;
 
 export default function SuggestedPeopleModal({ isOpen, onClose }: SuggestedPeopleModalProps) {
@@ -132,38 +132,27 @@ export default function SuggestedPeopleModal({ isOpen, onClose }: SuggestedPeopl
 
         {/* Pagination Controls */}
         {!isLoading && allSuggestedUsers.length > USERS_PER_PAGE && (
-          <div className="border-t border-gray-200 px-4 py-3 flex items-center justify-between bg-gray-50">
+          <div className="border-t border-gray-100 px-4 py-3 flex items-center justify-between">
             <button
               onClick={goToPreviousPage}
               disabled={currentPage === 0}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
-                currentPage === 0
-                  ? 'text-gray-400 cursor-not-allowed'
-                  : 'text-gray-700 hover:bg-gray-200'
-              }`}
+              className="p-2 rounded-lg hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              aria-label="Previous page"
             >
-              <ChevronLeft className="w-5 h-5" />
-              Previous
+              <ChevronLeft className="w-5 h-5 text-gray-700" />
             </button>
 
-            <div className="text-sm text-gray-600">
+            <span className="text-sm text-gray-600 font-medium">
               Page {currentPage + 1} of {totalPages}
-              <span className="text-gray-400 ml-2">
-                ({allSuggestedUsers.length} total)
-              </span>
-            </div>
+            </span>
 
             <button
               onClick={goToNextPage}
               disabled={currentPage >= totalPages - 1}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
-                currentPage >= totalPages - 1
-                  ? 'text-gray-400 cursor-not-allowed'
-                  : 'text-gray-700 hover:bg-gray-200'
-              }`}
+              className="p-2 rounded-lg hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              aria-label="Next page"
             >
-              Next
-              <ChevronRight className="w-5 h-5" />
+              <ChevronRight className="w-5 h-5 text-gray-700" />
             </button>
           </div>
         )}

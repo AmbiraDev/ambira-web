@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X, Users, MapPin } from 'lucide-react';
+import { X, Users, ChevronLeft, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import { firebaseApi } from '@/lib/firebaseApi';
 import { useAuth } from '@/contexts/AuthContext';
@@ -12,11 +12,15 @@ interface SuggestedGroupsModalProps {
   onClose: () => void;
 }
 
+const GROUPS_PER_PAGE = 10;
+const TOTAL_GROUPS_TO_FETCH = 100;
+
 export default function SuggestedGroupsModal({ isOpen, onClose }: SuggestedGroupsModalProps) {
   const { user } = useAuth();
-  const [suggestedGroups, setSuggestedGroups] = useState<any[]>([]);
+  const [allSuggestedGroups, setAllSuggestedGroups] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [joiningGroups, setJoiningGroups] = useState<Set<string>>(new Set());
+  const [currentPage, setCurrentPage] = useState(0);
 
   useEffect(() => {
     if (isOpen && user) {
@@ -29,13 +33,32 @@ export default function SuggestedGroupsModal({ isOpen, onClose }: SuggestedGroup
 
     try {
       setIsLoading(true);
-      const groups = await firebaseApi.group.searchGroups({}, 50);
-      setSuggestedGroups(groups);
+      setCurrentPage(0);
+      const groups = await firebaseApi.group.searchGroups({}, TOTAL_GROUPS_TO_FETCH);
+      setAllSuggestedGroups(groups);
     } catch (error) {
       console.error('Error loading groups:', error);
-      setSuggestedGroups([]);
+      setAllSuggestedGroups([]);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // Calculate paginated groups
+  const totalPages = Math.ceil(allSuggestedGroups.length / GROUPS_PER_PAGE);
+  const startIndex = currentPage * GROUPS_PER_PAGE;
+  const endIndex = startIndex + GROUPS_PER_PAGE;
+  const paginatedGroups = allSuggestedGroups.slice(startIndex, endIndex);
+
+  const goToNextPage = () => {
+    if (currentPage < totalPages - 1) {
+      setCurrentPage(prev => prev + 1);
+    }
+  };
+
+  const goToPreviousPage = () => {
+    if (currentPage > 0) {
+      setCurrentPage(prev => prev - 1);
     }
   };
 
@@ -49,7 +72,7 @@ export default function SuggestedGroupsModal({ isOpen, onClose }: SuggestedGroup
     try {
       await firebaseApi.group.joinGroup(groupId, user.id);
       // Remove from suggestions after joining
-      setSuggestedGroups(prev => prev.filter(g => g.id !== groupId));
+      setAllSuggestedGroups(prev => prev.filter(g => g.id !== groupId));
     } catch (error) {
       console.error('Failed to join group:', error);
     } finally {
@@ -90,7 +113,7 @@ export default function SuggestedGroupsModal({ isOpen, onClose }: SuggestedGroup
               <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#007AFF]"></div>
               <p className="text-gray-600 mt-4">Loading groups...</p>
             </div>
-          ) : suggestedGroups.length === 0 ? (
+          ) : allSuggestedGroups.length === 0 ? (
             <div className="p-12 text-center">
               <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Users className="w-8 h-8 text-green-600" />
@@ -100,7 +123,7 @@ export default function SuggestedGroupsModal({ isOpen, onClose }: SuggestedGroup
             </div>
           ) : (
             <div className="divide-y divide-gray-100">
-              {suggestedGroups.map(group => {
+              {paginatedGroups.map(group => {
                 const isJoining = joiningGroups.has(group.id);
                 return (
                   <div
@@ -160,6 +183,33 @@ export default function SuggestedGroupsModal({ isOpen, onClose }: SuggestedGroup
             </div>
           )}
         </div>
+
+        {/* Pagination Controls */}
+        {!isLoading && allSuggestedGroups.length > GROUPS_PER_PAGE && (
+          <div className="border-t border-gray-100 px-4 py-3 flex items-center justify-between">
+            <button
+              onClick={goToPreviousPage}
+              disabled={currentPage === 0}
+              className="p-2 rounded-lg hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              aria-label="Previous page"
+            >
+              <ChevronLeft className="w-5 h-5 text-gray-700" />
+            </button>
+
+            <span className="text-sm text-gray-600 font-medium">
+              Page {currentPage + 1} of {totalPages}
+            </span>
+
+            <button
+              onClick={goToNextPage}
+              disabled={currentPage >= totalPages - 1}
+              className="p-2 rounded-lg hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              aria-label="Next page"
+            >
+              <ChevronRight className="w-5 h-5 text-gray-700" />
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

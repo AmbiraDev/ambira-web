@@ -343,35 +343,63 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
 
                     {/* Dropdown content */}
                     <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-20 max-h-60 overflow-y-auto">
-                      {allActivities.map((activity) => (
-                        <button
-                          key={activity.id}
-                          onClick={() => {
-                            setSelectedActivityId(activity.id);
-                            setShowActivityPicker(false);
-                          }}
-                          className={`w-full flex items-center gap-3 p-3 hover:bg-gray-50 transition-colors ${
-                            selectedActivityId === activity.id ? 'bg-blue-50' : ''
-                          }`}
-                        >
-                          <div
-                            className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-                            style={{ backgroundColor: `${activity.color}20` }}
+                      {allActivities.length === 0 ? (
+                        <div className="p-4 text-center">
+                          <p className="text-sm text-gray-600 mb-3">No activities yet</p>
+                          <Link
+                            href="/projects/new?redirect=/timer"
+                            className="inline-flex items-center gap-2 px-4 py-2 bg-[#007AFF] text-white rounded-lg hover:bg-[#0051D5] transition-colors text-sm font-medium"
                           >
-                            <IconRenderer
-                              iconName={activity.icon}
-                              className="w-4 h-4"
-                              style={{ color: activity.color }}
-                            />
-                          </div>
-                          <div className="flex-1 text-left min-w-0">
-                            <div className="text-sm font-medium text-gray-900">{activity.name}</div>
-                          </div>
-                          {selectedActivityId === activity.id && (
-                            <Check className="w-4 h-4 text-blue-500 flex-shrink-0" />
-                          )}
-                        </button>
-                      ))}
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                            </svg>
+                            Create Activity
+                          </Link>
+                        </div>
+                      ) : (
+                        <>
+                          {allActivities.map((activity) => (
+                            <button
+                              key={activity.id}
+                              onClick={() => {
+                                setSelectedActivityId(activity.id);
+                                setShowActivityPicker(false);
+                              }}
+                              className={`w-full flex items-center gap-3 p-3 hover:bg-gray-50 transition-colors ${
+                                selectedActivityId === activity.id ? 'bg-blue-50' : ''
+                              }`}
+                            >
+                              <div
+                                className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                                style={{ backgroundColor: `${activity.color}20` }}
+                              >
+                                <IconRenderer
+                                  iconName={activity.icon}
+                                  className="w-4 h-4"
+                                  style={{ color: activity.color }}
+                                />
+                              </div>
+                              <div className="flex-1 text-left min-w-0">
+                                <div className="text-sm font-medium text-gray-900">{activity.name}</div>
+                              </div>
+                              {selectedActivityId === activity.id && (
+                                <Check className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                              )}
+                            </button>
+                          ))}
+                          <Link
+                            href="/projects/new?redirect=/timer"
+                            className="w-full flex items-center gap-3 p-3 border-t border-gray-200 hover:bg-gray-50 transition-colors text-[#007AFF] font-medium"
+                          >
+                            <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 bg-blue-100">
+                              <svg className="w-4 h-4 text-[#007AFF]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                              </svg>
+                            </div>
+                            <span className="text-sm">Create New Activity</span>
+                          </Link>
+                        </>
+                      )}
                     </div>
                   </>
                 )}
@@ -529,53 +557,39 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
   // Main timer UI - only show when not completing a session
   const selectedActivity = allActivities.find(a => a.id === selectedActivityId) || timerState.currentProject;
 
-  // Show "Create Activity First" prompt if no activities exist
-  if (allActivities.length === 0 && !timerState.currentProject) {
-    return (
-      <div className="min-h-screen bg-white flex flex-col items-center justify-center p-6">
-        <div className="max-w-md w-full text-center space-y-6">
-          {/* Icon */}
-          <div className="flex justify-center">
-            <div className="w-20 h-20 rounded-full bg-blue-100 flex items-center justify-center">
-              <svg className="w-10 h-10 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-              </svg>
-            </div>
-          </div>
-
-          {/* Message */}
-          <div className="space-y-2">
-            <h2 className="text-2xl font-bold text-gray-900">Create an activity first!</h2>
-            <p className="text-gray-600">
-              You need to create at least one activity before you can start tracking your time.
-            </p>
-          </div>
-
-          {/* Action Button */}
-          <Link
-            href="/projects/new?redirect=/timer"
-            className="inline-flex items-center gap-2 px-6 py-3 bg-[#007AFF] text-white rounded-lg hover:bg-[#0051D5] transition-colors font-medium shadow-lg"
-          >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-            </svg>
-            Create Your First Activity
-          </Link>
-
-          {/* Back Link */}
-          <button
-            onClick={() => window.history.back()}
-            className="text-sm text-gray-600 hover:text-gray-900 transition-colors"
-          >
-            ← Go back
-          </button>
-        </div>
-      </div>
-    );
-  }
+  // Check if user needs to create an activity
+  const needsActivity = allActivities.length === 0 && !timerState.currentProject;
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
+      {/* No Activities Banner - Show prominent message when no activities exist */}
+      {needsActivity && (
+        <div className="bg-blue-50 border-b border-blue-200 px-4 py-3 md:py-4">
+          <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-start md:items-center gap-3 md:gap-4">
+            <div className="flex items-start gap-3 flex-1">
+              <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 mt-0.5 md:mt-0">
+                <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-sm md:text-base font-semibold text-blue-900 mb-1">Create your first activity to get started</h3>
+                <p className="text-xs md:text-sm text-blue-700">Activities help you organize your work sessions. You'll need at least one activity before you can start tracking time.</p>
+              </div>
+            </div>
+            <Link
+              href="/projects/new?redirect=/timer"
+              className="w-full md:w-auto flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm whitespace-nowrap shadow-sm"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+              Create Activity
+            </Link>
+          </div>
+        </div>
+      )}
+
       {/* Mobile: Full-screen centered layout */}
       <div className="md:hidden flex flex-col h-screen fixed inset-0 overflow-hidden">
         {/* Floating Back Button */}
@@ -817,35 +831,63 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
 
                 {/* Dropdown content */}
                 <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-20 max-h-80 overflow-y-auto">
-                  {allActivities.map((activity) => (
-                    <button
-                      key={activity.id}
-                      onClick={() => {
-                        setSelectedActivityId(activity.id);
-                        setShowActivityPicker(false);
-                      }}
-                      className={`w-full flex items-center gap-3 p-3 hover:bg-gray-50 transition-colors ${
-                        selectedActivityId === activity.id ? 'bg-blue-50' : ''
-                      }`}
-                    >
-                      <div
-                        className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-                        style={{ backgroundColor: `${activity.color}20` }}
+                  {allActivities.length === 0 ? (
+                    <div className="p-4 text-center">
+                      <p className="text-sm text-gray-600 mb-3">No activities yet</p>
+                      <Link
+                        href="/projects/new?redirect=/timer"
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-[#007AFF] text-white rounded-lg hover:bg-[#0051D5] transition-colors text-sm font-medium"
                       >
-                        <IconRenderer
-                          iconName={activity.icon}
-                          className="w-4 h-4"
-                          style={{ color: activity.color }}
-                        />
-                      </div>
-                      <div className="flex-1 text-left min-w-0">
-                        <div className="text-sm font-medium text-gray-900">{activity.name}</div>
-                      </div>
-                      {selectedActivityId === activity.id && (
-                        <Check className="w-4 h-4 text-blue-500 flex-shrink-0" />
-                      )}
-                    </button>
-                  ))}
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                        </svg>
+                        Create Activity
+                      </Link>
+                    </div>
+                  ) : (
+                    <>
+                      {allActivities.map((activity) => (
+                        <button
+                          key={activity.id}
+                          onClick={() => {
+                            setSelectedActivityId(activity.id);
+                            setShowActivityPicker(false);
+                          }}
+                          className={`w-full flex items-center gap-3 p-3 hover:bg-gray-50 transition-colors ${
+                            selectedActivityId === activity.id ? 'bg-blue-50' : ''
+                          }`}
+                        >
+                          <div
+                            className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                            style={{ backgroundColor: `${activity.color}20` }}
+                          >
+                            <IconRenderer
+                              iconName={activity.icon}
+                              className="w-4 h-4"
+                              style={{ color: activity.color }}
+                            />
+                          </div>
+                          <div className="flex-1 text-left min-w-0">
+                            <div className="text-sm font-medium text-gray-900">{activity.name}</div>
+                          </div>
+                          {selectedActivityId === activity.id && (
+                            <Check className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                          )}
+                        </button>
+                      ))}
+                      <Link
+                        href="/projects/new?redirect=/timer"
+                        className="w-full flex items-center gap-3 p-3 border-t border-gray-200 hover:bg-gray-50 transition-colors text-[#007AFF] font-medium"
+                      >
+                        <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 bg-blue-100">
+                          <svg className="w-4 h-4 text-[#007AFF]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                          </svg>
+                        </div>
+                        <span className="text-sm">Create New Activity</span>
+                      </Link>
+                    </>
+                  )}
                 </div>
               </>
             )}
@@ -928,35 +970,63 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
 
                     {/* Dropdown content */}
                     <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-20 max-h-60 overflow-y-auto">
-                      {allActivities.map((activity) => (
-                        <button
-                          key={activity.id}
-                          onClick={() => {
-                            setSelectedActivityId(activity.id);
-                            setShowActivityPicker(false);
-                          }}
-                          className={`w-full flex items-center gap-3 p-3 hover:bg-gray-50 transition-colors ${
-                            selectedActivityId === activity.id ? 'bg-blue-50' : ''
-                          }`}
-                        >
-                          <div
-                            className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-                            style={{ backgroundColor: `${activity.color}20` }}
+                      {allActivities.length === 0 ? (
+                        <div className="p-4 text-center">
+                          <p className="text-sm text-gray-600 mb-3">No activities yet</p>
+                          <Link
+                            href="/projects/new?redirect=/timer"
+                            className="inline-flex items-center gap-2 px-4 py-2 bg-[#007AFF] text-white rounded-lg hover:bg-[#0051D5] transition-colors text-sm font-medium"
                           >
-                            <IconRenderer
-                              iconName={activity.icon}
-                              className="w-4 h-4"
-                              style={{ color: activity.color }}
-                            />
-                          </div>
-                          <div className="flex-1 text-left min-w-0">
-                            <div className="text-sm font-medium text-gray-900">{activity.name}</div>
-                          </div>
-                          {selectedActivityId === activity.id && (
-                            <Check className="w-4 h-4 text-blue-500 flex-shrink-0" />
-                          )}
-                        </button>
-                      ))}
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                            </svg>
+                            Create Activity
+                          </Link>
+                        </div>
+                      ) : (
+                        <>
+                          {allActivities.map((activity) => (
+                            <button
+                              key={activity.id}
+                              onClick={() => {
+                                setSelectedActivityId(activity.id);
+                                setShowActivityPicker(false);
+                              }}
+                              className={`w-full flex items-center gap-3 p-3 hover:bg-gray-50 transition-colors ${
+                                selectedActivityId === activity.id ? 'bg-blue-50' : ''
+                              }`}
+                            >
+                              <div
+                                className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                                style={{ backgroundColor: `${activity.color}20` }}
+                              >
+                                <IconRenderer
+                                  iconName={activity.icon}
+                                  className="w-4 h-4"
+                                  style={{ color: activity.color }}
+                                />
+                              </div>
+                              <div className="flex-1 text-left min-w-0">
+                                <div className="text-sm font-medium text-gray-900">{activity.name}</div>
+                              </div>
+                              {selectedActivityId === activity.id && (
+                                <Check className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                              )}
+                            </button>
+                          ))}
+                          <Link
+                            href="/projects/new?redirect=/timer"
+                            className="w-full flex items-center gap-3 p-3 border-t border-gray-200 hover:bg-gray-50 transition-colors text-[#007AFF] font-medium"
+                          >
+                            <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 bg-blue-100">
+                              <svg className="w-4 h-4 text-[#007AFF]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                              </svg>
+                            </div>
+                            <span className="text-sm">Create New Activity</span>
+                          </Link>
+                        </>
+                      )}
                     </div>
                   </>
                 )}
@@ -1092,40 +1162,68 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
               </button>
             </div>
             <div className="space-y-3">
-              {allActivities.map((activity) => (
-                <button
-                  key={activity.id}
-                  onClick={() => {
-                    setSelectedActivityId(activity.id);
-                    setShowActivityPicker(false);
-                  }}
-                  className={`w-full flex items-center gap-3 p-4 rounded-xl transition-all ${
-                    selectedActivityId === activity.id
-                      ? 'bg-blue-100 border-2 border-blue-500'
-                      : 'bg-gray-50 border-2 border-transparent hover:bg-gray-100'
-                  }`}
-                >
-                  <div
-                    className="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0"
-                    style={{ backgroundColor: `${activity.color}20` }}
+              {allActivities.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-gray-600 mb-4">No activities yet</p>
+                  <Link
+                    href="/projects/new?redirect=/timer"
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-[#007AFF] text-white rounded-xl hover:bg-[#0051D5] transition-colors font-medium shadow-lg"
                   >
-                    <IconRenderer
-                      iconName={activity.icon}
-                      className="w-6 h-6"
-                      style={{ color: activity.color }}
-                    />
-                  </div>
-                  <div className="flex-1 text-left min-w-0">
-                    <div className="font-semibold text-gray-900">{activity.name}</div>
-                    {activity.description && (
-                      <div className="text-sm text-gray-500 truncate">{activity.description}</div>
-                    )}
-                  </div>
-                  {selectedActivityId === activity.id && (
-                    <Check className="w-5 h-5 text-blue-500 flex-shrink-0" />
-                  )}
-                </button>
-              ))}
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                    </svg>
+                    Create Activity
+                  </Link>
+                </div>
+              ) : (
+                <>
+                  {allActivities.map((activity) => (
+                    <button
+                      key={activity.id}
+                      onClick={() => {
+                        setSelectedActivityId(activity.id);
+                        setShowActivityPicker(false);
+                      }}
+                      className={`w-full flex items-center gap-3 p-4 rounded-xl transition-all ${
+                        selectedActivityId === activity.id
+                          ? 'bg-blue-100 border-2 border-blue-500'
+                          : 'bg-gray-50 border-2 border-transparent hover:bg-gray-100'
+                      }`}
+                    >
+                      <div
+                        className="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0"
+                        style={{ backgroundColor: `${activity.color}20` }}
+                      >
+                        <IconRenderer
+                          iconName={activity.icon}
+                          className="w-6 h-6"
+                          style={{ color: activity.color }}
+                        />
+                      </div>
+                      <div className="flex-1 text-left min-w-0">
+                        <div className="font-semibold text-gray-900">{activity.name}</div>
+                        {activity.description && (
+                          <div className="text-sm text-gray-500 truncate">{activity.description}</div>
+                        )}
+                      </div>
+                      {selectedActivityId === activity.id && (
+                        <Check className="w-5 h-5 text-blue-500 flex-shrink-0" />
+                      )}
+                    </button>
+                  ))}
+                  <Link
+                    href="/projects/new?redirect=/timer"
+                    className="w-full flex items-center gap-3 p-4 rounded-xl bg-gray-50 border-2 border-transparent hover:bg-gray-100 transition-all text-[#007AFF] font-medium"
+                  >
+                    <div className="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0 bg-blue-100">
+                      <svg className="w-6 h-6 text-[#007AFF]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                      </svg>
+                    </div>
+                    <span>Create New Activity</span>
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </div>

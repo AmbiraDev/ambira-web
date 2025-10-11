@@ -8,6 +8,7 @@ import { TasksProvider } from "@/contexts/TasksContext";
 import { QueryProvider } from "@/providers/QueryProvider";
 import { ToastProvider } from "@/contexts/ToastContext";
 import PWAInstaller from "@/components/PWAInstaller";
+import { Analytics } from "@vercel/analytics/react";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -86,6 +87,7 @@ export default function RootLayout({
             </ToastProvider>
           </AuthProvider>
         </QueryProvider>
+        <Analytics />
       </body>
     </html>
   );

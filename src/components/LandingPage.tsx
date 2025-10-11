@@ -672,12 +672,12 @@ export const LandingPage: React.FC = () => {
           {/* Signup Form Header - Show when signup form is active */}
           {showSignup && (
             <div className="text-center mb-8">
-              <div className="w-32 h-32 flex items-center justify-center mx-auto mb-6">
+              <div className="w-48 h-48 flex items-center justify-center mx-auto mb-6">
                 <Image
                   src="/logo.svg"
                   alt="Ambira Logo"
-                  width={128}
-                  height={128}
+                  width={192}
+                  height={192}
                   priority
                 />
               </div>
@@ -991,7 +991,7 @@ export const LandingPage: React.FC = () => {
                     height={32}
                   />
                 </div>
-                <span className="text-xl font-bold text-gray-900">Ambira</span>
+                <span className="text-xl font-bold text-[#007AFF]">Ambira</span>
               </div>
               <p className="text-sm text-gray-600 max-w-xs">
                 Track focus sessions, hit goals, and share progress with friends.

@@ -108,9 +108,54 @@ function DailyGoals() {
     return `${current.toFixed(1)} / ${goal.toFixed(1)} hrs`;
   };
 
-  // Don't render if no goals
+  // Show empty state if no goals
   if (goals.length === 0 && !isLoading) {
-    return null;
+    return (
+      <div className="bg-gradient-to-br from-[#007AFF] to-[#0056D6] rounded-xl p-6 shadow-sm text-white">
+        <div className="text-center">
+          <div className="mb-4">
+            <svg
+              className="w-12 h-12 mx-auto text-white opacity-90"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          </div>
+          <h3 className="text-lg font-semibold mb-2">
+            Set Your Goals
+          </h3>
+          <p className="text-sm text-white/90 mb-4 leading-relaxed">
+            Track your daily progress by setting weekly targets for your activities
+          </p>
+          <a
+            href="/projects"
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-white text-[#007AFF] rounded-lg font-semibold text-sm hover:bg-gray-50 transition-colors shadow-sm"
+          >
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2.5}
+                d="M12 4v16m8-8H4"
+              />
+            </svg>
+            Manage Activities
+          </a>
+        </div>
+      </div>
+    );
   }
 
   return (

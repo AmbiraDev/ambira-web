@@ -33,25 +33,30 @@ export const UserCard: React.FC<UserCardProps> = ({
     // Prevent navigation when clicking follow button
     e?.preventDefault();
     e?.stopPropagation();
-    
+
     if (!canFollow) return;
+
+    const newFollowingState = !isFollowing;
+
+    // Optimistic update - update UI immediately
+    setIsFollowing(newFollowingState);
+    onFollowChange?.(user.id, newFollowingState);
 
     try {
       setIsLoading(true);
-      
+
       if (isFollowing) {
         await firebaseUserApi.unfollowUser(user.id);
-        setIsFollowing(false);
         toast.success(`Unfollowed ${user.name}`);
       } else {
         await firebaseUserApi.followUser(user.id);
-        setIsFollowing(true);
         toast.success(`Following ${user.name}`);
       }
-
-      onFollowChange?.(user.id, !isFollowing);
     } catch (error) {
       console.error('Follow/unfollow error:', error);
+      // Revert on error
+      setIsFollowing(!newFollowingState);
+      onFollowChange?.(user.id, !newFollowingState);
       toast.error('Failed to update follow status');
     } finally {
       setIsLoading(false);
@@ -194,25 +199,30 @@ export const UserCardCompact: React.FC<UserCardProps> = ({
     // Prevent navigation when clicking follow button
     e?.preventDefault();
     e?.stopPropagation();
-    
+
     if (!canFollow) return;
+
+    const newFollowingState = !isFollowing;
+
+    // Optimistic update - update UI immediately
+    setIsFollowing(newFollowingState);
+    onFollowChange?.(user.id, newFollowingState);
 
     try {
       setIsLoading(true);
-      
+
       if (isFollowing) {
         await firebaseUserApi.unfollowUser(user.id);
-        setIsFollowing(false);
         toast.success(`Unfollowed ${user.name}`);
       } else {
         await firebaseUserApi.followUser(user.id);
-        setIsFollowing(true);
         toast.success(`Following ${user.name}`);
       }
-
-      onFollowChange?.(user.id, !isFollowing);
     } catch (error) {
       console.error('Follow/unfollow error:', error);
+      // Revert on error
+      setIsFollowing(!newFollowingState);
+      onFollowChange?.(user.id, !newFollowingState);
       toast.error('Failed to update follow status');
     } finally {
       setIsLoading(false);

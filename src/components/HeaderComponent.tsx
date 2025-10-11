@@ -92,7 +92,7 @@ export default function Header() {
                 height={32}
                 className="w-8 h-8"
               />
-              <span className="text-xl font-bold text-gray-900 hidden sm:inline">Ambira</span>
+              <span className="text-xl font-bold text-[#007AFF] hidden sm:inline">Ambira</span>
             </Link>
 
             {/* Search Area */}
