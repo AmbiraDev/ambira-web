@@ -216,10 +216,11 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
       }
 
       const now = new Date();
-      
+
       // Get project details
       const projects = await firebaseProjectApi.getProjects();
       const project = projects.find(p => p.id === projectId);
+
       if (!project) {
         throw new Error('Project not found');
       }
@@ -227,25 +228,25 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
       // Get task details for selected tasks
       const selectedTasks = [];
       try {
-        // Get all tasks for the project
-        const projectTasks = await firebaseTaskApi.getProjectTasks(projectId);
+        // Get all tasks for the project (use actual project.id)
+        const projectTasks = await firebaseTaskApi.getProjectTasks(project.id);
         const selectedTaskObjects = projectTasks.filter(task => taskIds.includes(task.id));
         selectedTasks.push(...selectedTaskObjects);
       } catch (error) {
         console.warn('Failed to load project tasks:', error);
       }
 
-      // Save active session to Firebase
+      // Save active session to Firebase (use actual project.id)
       await firebaseSessionApi.saveActiveSession({
         startTime: now,
-        projectId,
+        projectId: project.id,
         selectedTaskIds: taskIds,
         pausedDuration: 0,
         isPaused: false
       });
 
       const timerId = `timer_${Date.now()}_${user.uid}`;
-      
+
       setTimerState({
         isRunning: true,
         startTime: now,

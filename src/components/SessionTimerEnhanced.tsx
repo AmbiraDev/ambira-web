@@ -4,14 +4,14 @@ import React, { useState, useEffect } from 'react';
 import { useTimer } from '@/contexts/TimerContext';
 import { useProjects } from '@/contexts/ProjectsContext';
 import { useTasks } from '@/contexts/TasksContext';
-import { Play, Pause, Square, X, ChevronDown, Check, Flag, Image as ImageIcon, XCircle, Edit3 } from 'lucide-react';
+import { Play, Pause, Square, X, ChevronDown, Check, Flag, Image as ImageIcon, XCircle, Edit3, CheckSquare } from 'lucide-react';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
-import { GlobalTasks } from './GlobalTasks';
+import { SessionTasks } from './SessionTasks';
 import { uploadImages, compressImage } from '@/lib/imageUpload';
 import { ImageUpload } from '@/components/ImageUpload';
 import Link from 'next/link';
-import { DEFAULT_ACTIVITIES, Activity } from '@/types';
+import { Activity } from '@/types';
 import { IconRenderer } from '@/components/IconRenderer';
 
 interface SessionTimerEnhancedProps {
@@ -53,23 +53,10 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
   const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
   const [isUploadingImages, setIsUploadingImages] = useState(false);
+  const [showTasks, setShowTasks] = useState(true);
 
-  // Combine default activities with custom activities
-  const allActivities: Activity[] = [
-    ...DEFAULT_ACTIVITIES.map(def => ({
-      id: def.id,
-      userId: '',
-      name: def.name,
-      icon: def.icon,
-      color: def.color,
-      description: '',
-      status: 'active' as const,
-      isDefault: true,
-      createdAt: new Date(),
-      updatedAt: new Date()
-    })),
-    ...projects
-  ];
+  // Only show user's custom activities
+  const allActivities: Activity[] = projects;
 
   // Load last used activity from local storage on mount
   useEffect(() => {
@@ -329,33 +316,64 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
               />
 
               {/* Activity Selection */}
-              <div>
+              <div className="relative">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Activity
                 </label>
-                {projects.length === 0 ? (
-                  <div className="text-sm text-gray-600">
-                    <Link
-                      href="/projects"
-                      className="text-[#007AFF] hover:underline font-medium"
-                    >
-                      Create your first activity
-                    </Link>
-                  </div>
-                ) : (
-                  <select
-                    value={selectedActivityId}
-                    onChange={(e) => setSelectedActivityId(e.target.value)}
-                    className="w-full pl-3 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] bg-white text-sm appearance-none"
-                    style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 12 12\'%3E%3Cpath fill=\'%23666\' d=\'M6 9L1 4h10z\'/%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.75rem center' }}
-                  >
-                    <option value="">Unassigned</option>
-                    {allActivities.map((activity) => (
-                      <option key={activity.id} value={activity.id}>
-                        {activity.icon} {activity.name}
-                      </option>
-                    ))}
-                  </select>
+                <button
+                  onClick={() => setShowActivityPicker(!showActivityPicker)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] bg-white cursor-pointer text-sm flex items-center gap-2 hover:border-gray-400 transition-colors min-h-[44px]"
+                >
+                  {selectedActivity ? (
+                    <>
+                      <IconRenderer iconName={selectedActivity.icon} className="w-5 h-5 flex-shrink-0" style={{ color: selectedActivity.color }} />
+                      <span className="flex-1 text-left">{selectedActivity.name}</span>
+                    </>
+                  ) : (
+                    <span className="flex-1 text-left text-gray-500">Select an activity</span>
+                  )}
+                  <ChevronDown className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                </button>
+
+                {/* Dropdown Menu */}
+                {showActivityPicker && (
+                  <>
+                    {/* Backdrop for closing */}
+                    <div className="fixed inset-0 z-10" onClick={() => setShowActivityPicker(false)} />
+
+                    {/* Dropdown content */}
+                    <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-20 max-h-60 overflow-y-auto">
+                      {allActivities.map((activity) => (
+                        <button
+                          key={activity.id}
+                          onClick={() => {
+                            setSelectedActivityId(activity.id);
+                            setShowActivityPicker(false);
+                          }}
+                          className={`w-full flex items-center gap-3 p-3 hover:bg-gray-50 transition-colors ${
+                            selectedActivityId === activity.id ? 'bg-blue-50' : ''
+                          }`}
+                        >
+                          <div
+                            className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                            style={{ backgroundColor: `${activity.color}20` }}
+                          >
+                            <IconRenderer
+                              iconName={activity.icon}
+                              className="w-4 h-4"
+                              style={{ color: activity.color }}
+                            />
+                          </div>
+                          <div className="flex-1 text-left min-w-0">
+                            <div className="text-sm font-medium text-gray-900">{activity.name}</div>
+                          </div>
+                          {selectedActivityId === activity.id && (
+                            <Check className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  </>
                 )}
               </div>
 
@@ -511,6 +529,51 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
   // Main timer UI - only show when not completing a session
   const selectedActivity = allActivities.find(a => a.id === selectedActivityId) || timerState.currentProject;
 
+  // Show "Create Activity First" prompt if no activities exist
+  if (allActivities.length === 0 && !timerState.currentProject) {
+    return (
+      <div className="min-h-screen bg-white flex flex-col items-center justify-center p-6">
+        <div className="max-w-md w-full text-center space-y-6">
+          {/* Icon */}
+          <div className="flex justify-center">
+            <div className="w-20 h-20 rounded-full bg-blue-100 flex items-center justify-center">
+              <svg className="w-10 h-10 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+            </div>
+          </div>
+
+          {/* Message */}
+          <div className="space-y-2">
+            <h2 className="text-2xl font-bold text-gray-900">Create an activity first!</h2>
+            <p className="text-gray-600">
+              You need to create at least one activity before you can start tracking your time.
+            </p>
+          </div>
+
+          {/* Action Button */}
+          <Link
+            href="/projects/new?redirect=/timer"
+            className="inline-flex items-center gap-2 px-6 py-3 bg-[#007AFF] text-white rounded-lg hover:bg-[#0051D5] transition-colors font-medium shadow-lg"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
+            Create Your First Activity
+          </Link>
+
+          {/* Back Link */}
+          <button
+            onClick={() => window.history.back()}
+            className="text-sm text-gray-600 hover:text-gray-900 transition-colors"
+          >
+            ← Go back
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-white flex flex-col">
       {/* Mobile: Full-screen centered layout */}
@@ -537,11 +600,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
         {/* Scrollable Task List Container */}
         <div className="flex-1 overflow-y-auto px-4 pb-65">
           <div className="w-full max-w-md mx-auto">
-            <GlobalTasks
-              selectedTaskIds={selectedTaskIds}
-              onToggleTaskSelection={handleTaskToggle}
-              showSelection={true}
-            />
+            <SessionTasks />
           </div>
         </div>
 
@@ -576,9 +635,9 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                 <button
                   onClick={handleStartTimer}
                   disabled={!selectedActivityId}
-                  className={`w-24 h-24 rounded-full flex items-center justify-center transition-all shadow-xl ${
+                  className={`w-24 h-24 rounded-2xl flex items-center justify-center transition-all shadow-xl ${
                     selectedActivityId
-                      ? 'bg-[#22C55E] hover:bg-[#16A34A] active:scale-95'
+                      ? 'bg-[#34C759] hover:bg-[#2FB84D] active:scale-95'
                       : 'bg-gray-300 cursor-not-allowed'
                   }`}
                 >
@@ -595,7 +654,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
               <div className="flex flex-col items-center gap-1">
                 <Link
                   href="/record-manual"
-                  className="w-16 h-16 rounded-full bg-[#3B82F6] hover:bg-[#2563EB] active:scale-95 flex items-center justify-center transition-all shadow-lg"
+                  className="w-16 h-16 rounded-xl bg-[#007AFF] hover:bg-[#0051D5] active:scale-95 flex items-center justify-center transition-all shadow-lg"
                 >
                   <Edit3 className="w-6 h-6 text-white" />
                 </Link>
@@ -608,7 +667,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
               <div className="flex flex-col items-center gap-1">
                 <button
                   onClick={handlePauseTimer}
-                  className="w-24 h-24 rounded-full bg-gray-900 hover:bg-gray-800 active:scale-95 flex items-center justify-center transition-all shadow-xl"
+                  className="w-24 h-24 rounded-2xl bg-[#FC4C02] hover:bg-[#E04502] active:scale-95 flex items-center justify-center transition-all shadow-xl"
                 >
                   <svg className="w-9 h-9 text-white" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
@@ -624,7 +683,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                 <div className="flex flex-col items-center gap-1">
                   <button
                     onClick={handleResumeTimer}
-                    className="w-20 h-20 rounded-full bg-green-600 hover:bg-green-700 active:scale-95 flex items-center justify-center transition-all shadow-xl"
+                    className="w-20 h-20 rounded-xl bg-[#34C759] hover:bg-[#2FB84D] active:scale-95 flex items-center justify-center transition-all shadow-xl"
                   >
                     <svg className="w-8 h-8 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M8 5v14l11-7z" />
@@ -635,7 +694,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                 <div className="flex flex-col items-center gap-1">
                   <button
                     onClick={() => setShowFinishModal(true)}
-                    className="w-20 h-20 rounded-full bg-[#FC4C02] hover:bg-[#E04502] active:scale-95 flex items-center justify-center transition-all shadow-xl"
+                    className="w-20 h-20 rounded-xl bg-[#FC4C02] hover:bg-[#E04502] active:scale-95 flex items-center justify-center transition-all shadow-xl"
                   >
                     <Flag className="w-7 h-7 text-white" />
                   </button>
@@ -646,93 +705,39 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
           </div>
         </div>
 
-        {/* Activity Picker Modal - Slide up with timer visible */}
-        {showActivityPicker && (
-          <div
-            className="fixed inset-0 z-50 flex items-end"
-            onClick={(e) => {
-              if (e.target === e.currentTarget) setShowActivityPicker(false);
-            }}
-          >
-            <div className="bg-white w-full rounded-t-3xl p-6 max-h-[60vh] overflow-y-auto shadow-2xl animate-slide-up">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-gray-900">Select Activity</h2>
-                <button
-                  onClick={() => setShowActivityPicker(false)}
-                  className="p-2 text-gray-500 hover:text-gray-900"
-                >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-              <div className="space-y-3">
-                {/* Activity List - Shows default activities + custom activities */}
-                {allActivities.map((activity) => (
-                  <button
-                    key={activity.id}
-                    onClick={() => {
-                      setSelectedActivityId(activity.id);
-                      setShowActivityPicker(false);
-                    }}
-                    className={`w-full flex items-center gap-3 p-4 rounded-xl transition-all ${
-                      selectedActivityId === activity.id
-                        ? 'bg-blue-100 border-2 border-blue-500'
-                        : 'bg-gray-50 border-2 border-transparent hover:bg-gray-100'
-                    }`}
-                  >
-                    <div
-                      className="w-12 h-12 rounded-lg flex items-center justify-center"
-                      style={{ backgroundColor: `${activity.color}20` }}
-                    >
-                      <IconRenderer
-                        iconName={activity.icon}
-                        className="w-6 h-6"
-                        style={{ color: activity.color }}
-                      />
-                    </div>
-                    <div className="flex-1 text-left">
-                      <div className="font-semibold text-gray-900">{activity.name}</div>
-                      {activity.description && (
-                        <div className="text-sm text-gray-500">{activity.description}</div>
-                      )}
-                      {activity.isDefault && (
-                        <div className="text-xs text-blue-600 mt-0.5">Default</div>
-                      )}
-                    </div>
-                    {selectedActivityId === activity.id && (
-                      <svg className="w-6 h-6 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                      </svg>
-                    )}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Desktop: Two-column layout */}
-      <div className="hidden md:grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-12 pb-4 px-4 max-w-7xl mx-auto">
+      <div className={`hidden md:grid ${showTasks ? 'grid-cols-1 lg:grid-cols-2' : 'grid-cols-1'} gap-6 lg:gap-12 pb-4 px-4 max-w-7xl mx-auto transition-all duration-500 ease-in-out`}>
         {/* Left Column - Timer & Controls */}
-        <div className="flex flex-col items-center justify-start space-y-3 lg:space-y-8 lg:sticky lg:top-24 pt-8">
+        <div className={`flex flex-col items-center ${showTasks ? 'justify-start' : 'justify-center mx-auto'} space-y-3 lg:space-y-8 lg:sticky lg:top-24 pt-8 transition-all duration-500 ease-in-out`}>
           {/* Large Timer Display */}
           <div className="text-center w-full">
             <div className="text-6xl md:text-7xl lg:text-9xl font-mono font-bold text-gray-900 mb-4 lg:mb-8" aria-label={`Timer: ${Math.floor(displayTime / 3600)} hours, ${Math.floor((displayTime % 3600) / 60)} minutes, ${displayTime % 60} seconds`}>
               {getFormattedTime(displayTime)}
             </div>
 
-            {/* Timer Controls - Pill Buttons with Text */}
+            {/* Tasks Toggle Button */}
+            <div className="flex justify-center mb-4">
+              <button
+                onClick={() => setShowTasks(!showTasks)}
+                className="p-3 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 transition-all duration-200"
+                aria-label={showTasks ? "Hide tasks" : "Show tasks"}
+              >
+                <CheckSquare className="w-6 h-6" />
+              </button>
+            </div>
+
+            {/* Timer Controls - Square Rounded Buttons with Text */}
             <div className="flex items-center justify-center gap-2 md:gap-3 flex-wrap">
               {!timerState.isRunning && !timerState.startTime && (
                 <>
                   <button
                     onClick={handleStartTimer}
                     disabled={!selectedActivityId}
-                    className={`px-8 md:px-12 py-3 md:py-5 rounded-full flex items-center gap-2 md:gap-3 transition-all text-base md:text-xl font-semibold ${
+                    className={`px-8 md:px-12 py-3 md:py-5 rounded-xl flex items-center gap-2 md:gap-3 transition-all text-base md:text-xl font-semibold ${
                       selectedActivityId
-                        ? 'bg-[#22C55E] hover:bg-[#16A34A] text-white shadow-lg hover:shadow-xl'
+                        ? 'bg-[#34C759] hover:bg-[#2FB84D] text-white shadow-lg hover:shadow-xl'
                         : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                     }`}
                   >
@@ -741,10 +746,10 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                     </svg>
                     <span>Start</span>
                   </button>
-                  
+
                   <Link
                     href="/record-manual"
-                    className="px-6 md:px-8 py-2.5 md:py-4 rounded-full bg-[#3B82F6] hover:bg-[#2563EB] text-white flex items-center gap-2 transition-all shadow-lg hover:shadow-xl text-sm md:text-lg font-semibold"
+                    className="px-6 md:px-8 py-2.5 md:py-4 rounded-xl bg-[#007AFF] hover:bg-[#0051D5] text-white flex items-center gap-2 transition-all shadow-lg hover:shadow-xl text-sm md:text-lg font-semibold"
                   >
                     <Edit3 className="w-5 h-5 md:w-6 md:h-6" />
                     <span>Manual</span>
@@ -755,7 +760,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
               {timerState.isRunning && (
                 <button
                   onClick={handlePauseTimer}
-                  className="px-8 md:px-12 py-3 md:py-5 rounded-full bg-red-600 hover:bg-red-700 text-white flex items-center gap-2 md:gap-3 transition-all shadow-lg hover:shadow-xl text-base md:text-xl font-semibold"
+                  className="px-8 md:px-12 py-3 md:py-5 rounded-xl bg-[#FC4C02] hover:bg-[#E04502] text-white flex items-center gap-2 md:gap-3 transition-all shadow-lg hover:shadow-xl text-base md:text-xl font-semibold"
                 >
                   <svg className="w-6 h-6 md:w-8 md:h-8 text-white" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
@@ -768,7 +773,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                 <>
                   <button
                     onClick={handleResumeTimer}
-                    className="px-6 md:px-10 py-3 md:py-4 rounded-full bg-green-600 hover:bg-green-700 text-white flex items-center gap-2 transition-all shadow-lg hover:shadow-xl text-base md:text-lg font-semibold"
+                    className="px-6 md:px-10 py-3 md:py-4 rounded-xl bg-[#34C759] hover:bg-[#2FB84D] text-white flex items-center gap-2 transition-all shadow-lg hover:shadow-xl text-base md:text-lg font-semibold"
                   >
                     <svg className="w-5 h-5 md:w-6 md:h-6 text-white" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M8 5v14l11-7z" />
@@ -777,7 +782,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                   </button>
                   <button
                     onClick={() => setShowFinishModal(true)}
-                    className="px-6 md:px-10 py-3 md:py-4 rounded-full bg-gray-900 hover:bg-gray-800 text-white flex items-center gap-2 transition-all shadow-lg hover:shadow-xl text-base md:text-lg font-semibold"
+                    className="px-6 md:px-10 py-3 md:py-4 rounded-xl bg-gray-900 hover:bg-gray-800 text-white flex items-center gap-2 transition-all shadow-lg hover:shadow-xl text-base md:text-lg font-semibold"
                   >
                     <Flag className="w-5 h-5 md:w-6 md:h-6 text-white" />
                     <span>Finish</span>
@@ -787,40 +792,74 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
             </div>
           </div>
 
-          {/* Activity Dropdown */}
-          <div className="w-full max-w-xl">
-            <div className="relative">
-              <select
-                value={selectedActivityId}
-                onChange={(e) => setSelectedActivityId(e.target.value)}
-                className="w-full px-3 md:px-4 py-2 md:py-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] bg-white appearance-none cursor-pointer text-sm md:text-base"
-              >
-                <option value="">Unassigned</option>
-                {allActivities.map((activity) => (
-                  <option key={activity.id} value={activity.id}>
-                    {activity.icon} {activity.name}
-                  </option>
-                ))}
-              </select>
-              <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                <svg className="w-4 h-4 md:w-5 md:h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </div>
-            </div>
+          {/* Activity Dropdown - Custom with icon support */}
+          <div className="w-full max-w-xl relative">
+            <button
+              onClick={() => setShowActivityPicker(!showActivityPicker)}
+              className="w-full px-3 md:px-4 py-2 md:py-3 pr-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] bg-white cursor-pointer text-sm md:text-base flex items-center gap-2 hover:border-gray-400 transition-colors"
+            >
+              {selectedActivity ? (
+                <>
+                  <IconRenderer iconName={selectedActivity.icon} className="w-5 h-5 flex-shrink-0" style={{ color: selectedActivity.color }} />
+                  <span className="flex-1 text-left">{selectedActivity.name}</span>
+                </>
+              ) : (
+                <span className="flex-1 text-left text-gray-500">Select an activity</span>
+              )}
+              <ChevronDown className="w-4 h-4 md:w-5 md:h-5 text-gray-400 flex-shrink-0" />
+            </button>
+
+            {/* Dropdown Menu */}
+            {showActivityPicker && (
+              <>
+                {/* Backdrop for closing */}
+                <div className="fixed inset-0 z-10" onClick={() => setShowActivityPicker(false)} />
+
+                {/* Dropdown content */}
+                <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-20 max-h-80 overflow-y-auto">
+                  {allActivities.map((activity) => (
+                    <button
+                      key={activity.id}
+                      onClick={() => {
+                        setSelectedActivityId(activity.id);
+                        setShowActivityPicker(false);
+                      }}
+                      className={`w-full flex items-center gap-3 p-3 hover:bg-gray-50 transition-colors ${
+                        selectedActivityId === activity.id ? 'bg-blue-50' : ''
+                      }`}
+                    >
+                      <div
+                        className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                        style={{ backgroundColor: `${activity.color}20` }}
+                      >
+                        <IconRenderer
+                          iconName={activity.icon}
+                          className="w-4 h-4"
+                          style={{ color: activity.color }}
+                        />
+                      </div>
+                      <div className="flex-1 text-left min-w-0">
+                        <div className="text-sm font-medium text-gray-900">{activity.name}</div>
+                      </div>
+                      {selectedActivityId === activity.id && (
+                        <Check className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         </div>
 
         {/* Right Column - Tasks */}
-        <div className="flex items-start justify-center w-full">
-          <div className="w-full max-w-2xl max-h-[60vh] overflow-y-auto pb-8">
-            <GlobalTasks
-              selectedTaskIds={selectedTaskIds}
-              onToggleTaskSelection={handleTaskToggle}
-              showSelection={true}
-            />
+        {showTasks && (
+          <div className="flex items-start justify-center w-full transition-all duration-500 ease-in-out">
+            <div className="w-full max-w-2xl pb-8">
+              <SessionTasks />
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Session Completion Page-like container (not modal) */}
@@ -861,24 +900,66 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                 />
               </div>
 
-              {/* Activity Selection */}
-              <div>
+              {/* Activity Selection - Custom button */}
+              <div className="relative">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Activity
                 </label>
-                <select
-                  value={selectedActivityId}
-                  onChange={(e) => setSelectedActivityId(e.target.value)}
-                  className="w-full pl-3 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] bg-white appearance-none"
-                  style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'12\' height=\'12\' viewBox=\'0 0 12 12\'%3E%3Cpath fill=\'%23666\' d=\'M6 9L1 4h10z\'/%3E%3C/svg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.75rem center' }}
+                <button
+                  onClick={() => setShowActivityPicker(!showActivityPicker)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] bg-white cursor-pointer text-sm flex items-center gap-2 hover:border-gray-400 transition-colors"
                 >
-                  <option value="">Unassigned</option>
-                  {allActivities.map((activity) => (
-                    <option key={activity.id} value={activity.id}>
-                      {activity.icon} {activity.name}
-                    </option>
-                  ))}
-                </select>
+                  {selectedActivity ? (
+                    <>
+                      <IconRenderer iconName={selectedActivity.icon} className="w-5 h-5 flex-shrink-0" style={{ color: selectedActivity.color }} />
+                      <span className="flex-1 text-left">{selectedActivity.name}</span>
+                    </>
+                  ) : (
+                    <span className="flex-1 text-left text-gray-500">Select an activity</span>
+                  )}
+                  <ChevronDown className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                </button>
+
+                {/* Dropdown Menu */}
+                {showActivityPicker && (
+                  <>
+                    {/* Backdrop for closing */}
+                    <div className="fixed inset-0 z-10" onClick={() => setShowActivityPicker(false)} />
+
+                    {/* Dropdown content */}
+                    <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-20 max-h-60 overflow-y-auto">
+                      {allActivities.map((activity) => (
+                        <button
+                          key={activity.id}
+                          onClick={() => {
+                            setSelectedActivityId(activity.id);
+                            setShowActivityPicker(false);
+                          }}
+                          className={`w-full flex items-center gap-3 p-3 hover:bg-gray-50 transition-colors ${
+                            selectedActivityId === activity.id ? 'bg-blue-50' : ''
+                          }`}
+                        >
+                          <div
+                            className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
+                            style={{ backgroundColor: `${activity.color}20` }}
+                          >
+                            <IconRenderer
+                              iconName={activity.icon}
+                              className="w-4 h-4"
+                              style={{ color: activity.color }}
+                            />
+                          </div>
+                          <div className="flex-1 text-left min-w-0">
+                            <div className="text-sm font-medium text-gray-900">{activity.name}</div>
+                          </div>
+                          {selectedActivityId === activity.id && (
+                            <Check className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
               </div>
 
               {/* How did it feel */}
@@ -986,6 +1067,65 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                   {isUploadingImages ? 'Uploading...' : 'Save'}
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Mobile Activity Picker Modal - for the circular button */}
+      {showActivityPicker && (
+        <div className="md:hidden fixed inset-0 z-50 flex items-end">
+          {/* Backdrop */}
+          <div className="absolute inset-0 bg-black/50" onClick={() => setShowActivityPicker(false)} />
+
+          {/* Modal content */}
+          <div className="relative bg-white w-full rounded-t-3xl p-6 max-h-[70vh] overflow-y-auto shadow-2xl animate-slide-up">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-gray-900">Select Activity</h2>
+              <button
+                onClick={() => setShowActivityPicker(false)}
+                className="p-2 text-gray-500 hover:text-gray-900 transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="space-y-3">
+              {allActivities.map((activity) => (
+                <button
+                  key={activity.id}
+                  onClick={() => {
+                    setSelectedActivityId(activity.id);
+                    setShowActivityPicker(false);
+                  }}
+                  className={`w-full flex items-center gap-3 p-4 rounded-xl transition-all ${
+                    selectedActivityId === activity.id
+                      ? 'bg-blue-100 border-2 border-blue-500'
+                      : 'bg-gray-50 border-2 border-transparent hover:bg-gray-100'
+                  }`}
+                >
+                  <div
+                    className="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0"
+                    style={{ backgroundColor: `${activity.color}20` }}
+                  >
+                    <IconRenderer
+                      iconName={activity.icon}
+                      className="w-6 h-6"
+                      style={{ color: activity.color }}
+                    />
+                  </div>
+                  <div className="flex-1 text-left min-w-0">
+                    <div className="font-semibold text-gray-900">{activity.name}</div>
+                    {activity.description && (
+                      <div className="text-sm text-gray-500 truncate">{activity.description}</div>
+                    )}
+                  </div>
+                  {selectedActivityId === activity.id && (
+                    <Check className="w-5 h-5 text-blue-500 flex-shrink-0" />
+                  )}
+                </button>
+              ))}
             </div>
           </div>
         </div>

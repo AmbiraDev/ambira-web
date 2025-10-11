@@ -174,6 +174,34 @@ export default function TermsOfServicePage() {
                 </p>
               </div>
               <div>
+                <h3 className={`${staticPageStyles.typography.subsectionHeading} mb-2`}>Third-Party Design Attributions</h3>
+                <p className={`${staticPageStyles.typography.bodyText} mb-2`}>
+                  The Ambira logo is based on design elements from the "Strava Application Redesign" Figma Community
+                  file, created by oré ˖ ࣪⊹ (Figma username: @aurelienlouvel). This design work is licensed under
+                  the Creative Commons Attribution 4.0 International License (CC BY 4.0).
+                </p>
+                <p className={`${staticPageStyles.typography.bodyText} mb-2`}>
+                  To view a copy of this license, visit:{' '}
+                  <a
+                    href="https://creativecommons.org/licenses/by/4.0/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[#007AFF] underline hover:text-[#0056D6] transition-colors"
+                  >
+                    https://creativecommons.org/licenses/by/4.0/
+                  </a>
+                </p>
+                <p className={staticPageStyles.typography.bodyText}>
+                  For questions about the original design work, contact:{' '}
+                  <a
+                    href="mailto:louvel.aurelien.pro@gmail.com"
+                    className="text-[#007AFF] underline hover:text-[#0056D6] transition-colors"
+                  >
+                    louvel.aurelien.pro@gmail.com
+                  </a>
+                </p>
+              </div>
+              <div>
                 <h3 className={`${staticPageStyles.typography.subsectionHeading} mb-2`}>Content Moderation</h3>
                 <p className={staticPageStyles.typography.bodyText}>
                   Ambira reserves the right to remove or modify any content that violates these Terms or that we

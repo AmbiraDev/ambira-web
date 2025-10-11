@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Task, UpdateTaskData } from '@/types';
 import { Edit, Archive, Trash2, MoreVertical, Circle, CheckCircle2, Check, XCircle } from 'lucide-react';
 
@@ -33,6 +34,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({
   onSaveEdit,
   availableProjects = [],
 }) => {
+  const router = useRouter();
   const [editName, setEditName] = useState(task.name);
   const [isUpdating, setIsUpdating] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
@@ -138,6 +140,24 @@ export const TaskItem: React.FC<TaskItemProps> = ({
     onCancelEdit?.();
   };
 
+  const handleCardClick = (e: React.MouseEvent) => {
+    // Don't navigate if clicking on buttons or interactive elements
+    const target = e.target as HTMLElement;
+    if (
+      target.closest('button') ||
+      target.closest('input') ||
+      target.closest('form')
+    ) {
+      return;
+    }
+
+    // Navigate to project detail page if projectId exists
+    const taskProjectId = projectId || task.projectId;
+    if (taskProjectId) {
+      router.push(`/activities/${taskProjectId}`);
+    }
+  };
+
   const getStatusColor = () => {
     switch (task.status) {
       case 'completed':
@@ -181,12 +201,16 @@ export const TaskItem: React.FC<TaskItemProps> = ({
     );
   }
 
+  const taskProjectId = projectId || task.projectId;
+  const isClickable = !!taskProjectId;
+
   return (
     <div
       data-task-id={task.id}
+      onClick={isClickable ? handleCardClick : undefined}
       className={`flex items-center gap-3 p-3 bg-white border border-gray-300 rounded-lg transition-colors ${
         isSelected ? 'bg-blue-50 border-[#007AFF]' : 'hover:bg-gray-50'
-      }`}
+      } ${isClickable ? 'cursor-pointer' : ''}`}
     >
       {/* Status button - circle */}
       <button

@@ -83,14 +83,26 @@ export default function GroupCard({
 
   return (
     <Link href={`/groups/${group.id}`}>
-      <Card className="group hover:shadow-sm transition-all duration-200 border border-gray-200/60 hover:border-[#007AFF]/30 aspect-square p-6 flex flex-col items-center justify-center text-center">
+      <Card className="group hover:shadow-sm transition-all duration-200 border border-gray-200/60 hover:border-[#007AFF]/30 aspect-square p-3 flex flex-col items-center justify-center text-center">
         {/* Group Avatar */}
-        <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0 group-hover:bg-[#007AFF]/5 transition-colors mb-4">
-          <Users className="w-10 h-10 text-gray-600 group-hover:text-[#007AFF] transition-colors" />
-        </div>
+        {group.imageUrl ? (
+          <div className="w-12 h-12 rounded-full overflow-hidden flex-shrink-0 mb-2">
+            <Image
+              src={group.imageUrl}
+              alt={group.name}
+              width={48}
+              height={48}
+              className="w-full h-full object-cover"
+            />
+          </div>
+        ) : (
+          <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0 group-hover:bg-[#007AFF]/5 transition-colors mb-2">
+            <Users className="w-6 h-6 text-gray-600 group-hover:text-[#007AFF] transition-colors" />
+          </div>
+        )}
 
         {/* Group Name */}
-        <h3 className="font-semibold text-gray-900 group-hover:text-[#007AFF] transition-colors line-clamp-2">
+        <h3 className="text-xs font-semibold text-gray-900 group-hover:text-[#007AFF] transition-colors line-clamp-2">
           {group.name}
         </h3>
       </Card>

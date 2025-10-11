@@ -87,33 +87,6 @@ export const CommentList: React.FC<CommentListProps> = ({
     }
   };
 
-  const handleReply = async (parentId: string, content: string) => {
-    try {
-      const newReply = await firebaseCommentApi.createComment({
-        sessionId,
-        content,
-        parentId
-      });
-
-      // Update the comments list to add the reply
-      setComments(prevComments => 
-        prevComments.map(comment => {
-          if (comment.id === parentId) {
-            return {
-              ...comment,
-              replyCount: comment.replyCount + 1,
-              replies: [...(comment.replies || []), newReply]
-            };
-          }
-          return comment;
-        })
-      );
-    } catch (err: any) {
-      console.error('Failed to reply to comment:', err);
-      throw err;
-    }
-  };
-
   const handleEdit = async (commentId: string, content: string) => {
     try {
       await firebaseCommentApi.updateComment(commentId, { content });
@@ -162,75 +135,6 @@ export const CommentList: React.FC<CommentListProps> = ({
       }
     } catch (err: any) {
       console.error('Failed to delete comment:', err);
-      throw err;
-    }
-  };
-
-  const handleLike = async (commentId: string) => {
-    try {
-      // Optimistic update
-      const updateLike = (items: CommentWithDetails[]): CommentWithDetails[] => {
-        return items.map(comment => {
-          if (comment.id === commentId) {
-            return { ...comment, isLiked: true, likeCount: comment.likeCount + 1 };
-          }
-          if (comment.replies) {
-            return { ...comment, replies: updateLike(comment.replies) };
-          }
-          return comment;
-        });
-      };
-      
-      setComments(updateLike(comments));
-      await firebaseCommentApi.likeComment(commentId);
-    } catch (err: any) {
-      console.error('Failed to like comment:', err);
-      // Revert optimistic update
-      loadComments();
-      throw err;
-    }
-  };
-
-  const handleUnlike = async (commentId: string) => {
-    try {
-      // Optimistic update
-      const updateLike = (items: CommentWithDetails[]): CommentWithDetails[] => {
-        return items.map(comment => {
-          if (comment.id === commentId) {
-            return { ...comment, isLiked: false, likeCount: Math.max(0, comment.likeCount - 1) };
-          }
-          if (comment.replies) {
-            return { ...comment, replies: updateLike(comment.replies) };
-          }
-          return comment;
-        });
-      };
-      
-      setComments(updateLike(comments));
-      await firebaseCommentApi.unlikeComment(commentId);
-    } catch (err: any) {
-      console.error('Failed to unlike comment:', err);
-      // Revert optimistic update
-      loadComments();
-      throw err;
-    }
-  };
-
-  const handleLoadReplies = async (commentId: string) => {
-    try {
-      const replies = await firebaseCommentApi.getReplies(commentId);
-      
-      // Update the comment with loaded replies
-      setComments(prevComments =>
-        prevComments.map(comment => {
-          if (comment.id === commentId) {
-            return { ...comment, replies };
-          }
-          return comment;
-        })
-      );
-    } catch (err: any) {
-      console.error('Failed to load replies:', err);
       throw err;
     }
   };
@@ -284,12 +188,8 @@ export const CommentList: React.FC<CommentListProps> = ({
             <CommentItem
               key={comment.id}
               comment={comment}
-              onReply={handleReply}
               onEdit={handleEdit}
               onDelete={handleDelete}
-              onLike={handleLike}
-              onUnlike={handleUnlike}
-              onLoadReplies={handleLoadReplies}
               currentUserId={user?.id}
             />
           ))}

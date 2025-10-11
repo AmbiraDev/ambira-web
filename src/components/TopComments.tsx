@@ -104,37 +104,6 @@ export const TopComments: React.FC<TopCommentsProps> = ({
     }
   };
 
-  const handleReply = async (parentId: string, content: string) => {
-    try {
-      const newReply = await firebaseCommentApi.createComment({
-        sessionId,
-        content,
-        parentId
-      });
-
-      const updateComments = (items: CommentWithDetails[]): CommentWithDetails[] => {
-        return items.map(comment => {
-          if (comment.id === parentId) {
-            return {
-              ...comment,
-              replyCount: comment.replyCount + 1,
-              replies: [...(comment.replies || []), newReply]
-            };
-          }
-          return comment;
-        });
-      };
-
-      setComments(updateComments(comments));
-      if (isExpanded) {
-        setAllComments(updateComments(allComments));
-      }
-    } catch (err: any) {
-      console.error('Failed to reply to comment:', err);
-      throw err;
-    }
-  };
-
   const handleEdit = async (commentId: string, content: string) => {
     try {
       await firebaseCommentApi.updateComment(commentId, { content });
@@ -189,79 +158,6 @@ export const TopComments: React.FC<TopCommentsProps> = ({
     }
   };
 
-  const handleLike = async (commentId: string) => {
-    try {
-      const updateLike = (items: CommentWithDetails[]): CommentWithDetails[] => {
-        return items.map(comment => {
-          if (comment.id === commentId) {
-            return { ...comment, isLiked: true, likeCount: comment.likeCount + 1 };
-          }
-          if (comment.replies) {
-            return { ...comment, replies: updateLike(comment.replies) };
-          }
-          return comment;
-        });
-      };
-
-      setComments(updateLike(comments));
-      if (isExpanded) {
-        setAllComments(updateLike(allComments));
-      }
-      await firebaseCommentApi.likeComment(commentId);
-    } catch (err: any) {
-      console.error('Failed to like comment:', err);
-      isExpanded ? loadAllComments() : loadTopComments();
-    }
-  };
-
-  const handleUnlike = async (commentId: string) => {
-    try {
-      const updateLike = (items: CommentWithDetails[]): CommentWithDetails[] => {
-        return items.map(comment => {
-          if (comment.id === commentId) {
-            return { ...comment, isLiked: false, likeCount: Math.max(0, comment.likeCount - 1) };
-          }
-          if (comment.replies) {
-            return { ...comment, replies: updateLike(comment.replies) };
-          }
-          return comment;
-        });
-      };
-
-      setComments(updateLike(comments));
-      if (isExpanded) {
-        setAllComments(updateLike(allComments));
-      }
-      await firebaseCommentApi.unlikeComment(commentId);
-    } catch (err: any) {
-      console.error('Failed to unlike comment:', err);
-      isExpanded ? loadAllComments() : loadTopComments();
-    }
-  };
-
-  const handleLoadReplies = async (commentId: string) => {
-    try {
-      const replies = await firebaseCommentApi.getReplies(commentId);
-
-      const updateReplies = (items: CommentWithDetails[]): CommentWithDetails[] => {
-        return items.map(comment => {
-          if (comment.id === commentId) {
-            return { ...comment, replies };
-          }
-          return comment;
-        });
-      };
-
-      setComments(updateReplies(comments));
-      if (isExpanded) {
-        setAllComments(updateReplies(allComments));
-      }
-    } catch (err: any) {
-      console.error('Failed to load replies:', err);
-      throw err;
-    }
-  };
-
   if (isLoading && !isExpanded) {
     return (
       <div className="border-t border-gray-100 px-4 py-3 space-y-3">
@@ -283,7 +179,7 @@ export const TopComments: React.FC<TopCommentsProps> = ({
   }
 
   return (
-    <div className={isExpanded ? 'border-t border-gray-100' : ''}>
+    <div className={(isExpanded || (comments.length > 0 && !isExpanded)) ? 'border-t border-gray-100' : ''}>
       <div className="px-4 py-2 space-y-2">
         {/* Comments List - Only show in collapsed view if there are comments */}
         {!isExpanded && comments.length > 0 && (
@@ -292,17 +188,22 @@ export const TopComments: React.FC<TopCommentsProps> = ({
               <CommentItem
                 key={comment.id}
                 comment={comment}
-                onReply={handleReply}
                 onEdit={undefined}
                 onDelete={undefined}
-                onLike={handleLike}
-                onUnlike={handleUnlike}
-                onLoadReplies={handleLoadReplies}
                 currentUserId={user?.id}
                 compact={true}
-                showReplies={false}
               />
             ))}
+
+            {/* See all comments link */}
+            {totalCommentCount > 2 && (
+              <button
+                onClick={() => setIsExpanded(true)}
+                className="text-sm text-gray-500 hover:text-gray-900 font-medium py-2 transition-colors"
+              >
+                See all {totalCommentCount} comments
+              </button>
+            )}
           </>
         )}
 
@@ -314,15 +215,10 @@ export const TopComments: React.FC<TopCommentsProps> = ({
               <CommentItem
                 key={comment.id}
                 comment={comment}
-                onReply={handleReply}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
-                onLike={handleLike}
-                onUnlike={handleUnlike}
-                onLoadReplies={handleLoadReplies}
                 currentUserId={user?.id}
                 compact={false}
-                showReplies={true}
               />
             ))}
           </>

@@ -169,6 +169,11 @@ service cloud.firestore {
       // Update: only comment owner can modify their own comment
       allow update: if isAuthenticated() && resource.data.userId == request.auth.uid;
 
+      // Allow authenticated users to update replyCount when deleting replies
+      allow update: if isAuthenticated() &&
+        request.resource.data.keys().hasAny(['replyCount', 'updatedAt']) &&
+        !request.resource.data.diff(resource.data).affectedKeys().hasAny(['userId', 'sessionId', 'content', 'parentId', 'createdAt']);
+
       // Delete: only comment owner can delete their own comment
       allow delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
     }

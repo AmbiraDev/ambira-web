@@ -1,48 +1,49 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { CommentWithDetails } from '@/types';
 import CommentInput from './CommentInput';
 import Link from 'next/link';
-import { Heart, MessageCircle, ChevronDown, MoreVertical, Edit2, Trash2 } from 'lucide-react';
+import { MoreVertical, Edit2, Trash2 } from 'lucide-react';
 
 interface CommentItemProps {
   comment: CommentWithDetails;
-  onReply?: (commentId: string, content: string) => Promise<void>;
   onEdit?: (commentId: string, content: string) => Promise<void>;
   onDelete?: (commentId: string) => Promise<void>;
-  onLike: (commentId: string) => Promise<void>;
-  onUnlike: (commentId: string) => Promise<void>;
-  onLoadReplies?: (commentId: string) => Promise<void>;
   currentUserId?: string;
-  depth?: number;
-  maxDepth?: number;
   compact?: boolean;
-  showReplies?: boolean;
 }
 
 export const CommentItem: React.FC<CommentItemProps> = ({
   comment,
-  onReply,
   onEdit,
   onDelete,
-  onLike,
-  onUnlike,
-  onLoadReplies,
   currentUserId,
-  depth = 0,
-  maxDepth = 3,
-  compact = false,
-  showReplies: showRepliesProp = true
+  compact = false
 }) => {
-  const [showReplyInput, setShowReplyInput] = useState(false);
   const [showEditInput, setShowEditInput] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
-  const [showReplies, setShowReplies] = useState(showRepliesProp);
   const [isDeleting, setIsDeleting] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   const isOwner = currentUserId === comment.userId;
-  const canReply = depth < maxDepth;
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setShowMenu(false);
+      }
+    };
+
+    if (showMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showMenu]);
 
   const formatTimeAgo = (date: Date): string => {
     const now = new Date();
@@ -98,16 +99,6 @@ export const CommentItem: React.FC<CommentItemProps> = ({
     });
   };
 
-  const handleReplySubmit = async (content: string) => {
-    if (!onReply) return;
-    await onReply(comment.id, content);
-    setShowReplyInput(false);
-    if (!showReplies && comment.replyCount > 0 && onLoadReplies) {
-      setShowReplies(true);
-      await onLoadReplies(comment.id);
-    }
-  };
-
   const handleEditSubmit = async (content: string) => {
     if (!onEdit) return;
     await onEdit(comment.id, content);
@@ -127,21 +118,6 @@ export const CommentItem: React.FC<CommentItemProps> = ({
     }
   };
 
-  const handleLikeToggle = async () => {
-    if (comment.isLiked) {
-      await onUnlike(comment.id);
-    } else {
-      await onLike(comment.id);
-    }
-  };
-
-  const handleToggleReplies = async () => {
-    if (!showReplies && comment.replies && comment.replies.length === 0 && onLoadReplies) {
-      await onLoadReplies(comment.id);
-    }
-    setShowReplies(!showReplies);
-  };
-
   if (isDeleting) {
     return (
       <div className="flex gap-3 opacity-50">
@@ -155,7 +131,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({
   }
 
   return (
-    <div className={`${depth > 0 ? 'ml-8' : ''}`}>
+    <div>
       <div className="flex gap-3">
         {/* User Avatar */}
         {comment.user.profilePicture ? (
@@ -189,7 +165,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({
             
             {/* Menu Button */}
             {isOwner && !showEditInput && (
-              <div className="relative ml-auto">
+              <div className="relative ml-auto" ref={menuRef}>
                 <button
                   onClick={() => setShowMenu(!showMenu)}
                   className="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 transition-colors"
@@ -242,77 +218,6 @@ export const CommentItem: React.FC<CommentItemProps> = ({
             </p>
           )}
 
-          {/* Actions */}
-          {!showEditInput && (
-            <div className="flex items-center gap-4 text-xs">
-              <button
-                onClick={handleLikeToggle}
-                className={`flex items-center gap-1 font-medium transition-colors ${
-                  comment.isLiked
-                    ? 'text-red-500 hover:text-red-600'
-                    : 'text-gray-500 hover:text-gray-700'
-                }`}
-              >
-                <Heart className={`w-4 h-4 ${comment.isLiked ? 'fill-current' : ''}`} />
-                {comment.likeCount > 0 && <span>{comment.likeCount}</span>}
-              </button>
-
-              {canReply && (
-                <button
-                  onClick={() => setShowReplyInput(!showReplyInput)}
-                  className="font-medium text-gray-500 hover:text-[#007AFF] transition-colors flex items-center gap-1"
-                >
-                  <MessageCircle className="w-4 h-4" />
-                  Reply
-                </button>
-              )}
-
-              {comment.replyCount > 0 && (
-                <button
-                  onClick={handleToggleReplies}
-                  className="font-medium text-gray-500 hover:text-[#007AFF] transition-colors flex items-center gap-1"
-                >
-                  <ChevronDown className={`w-3 h-3 transition-transform ${showReplies ? 'rotate-180' : ''}`} />
-                  {comment.replyCount} {comment.replyCount === 1 ? 'reply' : 'replies'}
-                </button>
-              )}
-            </div>
-          )}
-
-          {/* Reply Input */}
-          {showReplyInput && canReply && (
-            <div className="mt-3">
-              <CommentInput
-                sessionId={comment.sessionId}
-                parentId={comment.id}
-                placeholder={`Reply to ${comment.user.name}...`}
-                autoFocus
-                onSubmit={handleReplySubmit}
-                onCancel={() => setShowReplyInput(false)}
-              />
-            </div>
-          )}
-
-          {/* Nested Replies */}
-          {showReplies && comment.replies && comment.replies.length > 0 && (
-            <div className="mt-3 space-y-3">
-              {comment.replies.map((reply) => (
-                <CommentItem
-                  key={reply.id}
-                  comment={reply}
-                  onReply={onReply}
-                  onEdit={onEdit}
-                  onDelete={onDelete}
-                  onLike={onLike}
-                  onUnlike={onUnlike}
-                  onLoadReplies={onLoadReplies}
-                  currentUserId={currentUserId}
-                  depth={depth + 1}
-                  maxDepth={maxDepth}
-                />
-              ))}
-            </div>
-          )}
         </div>
       </div>
     </div>

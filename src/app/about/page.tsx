@@ -209,6 +209,31 @@ export default function AboutPage() {
           </div>
         </div>
 
+        {/* Design Attribution */}
+        <div className={`${staticPageStyles.containers.card} ${staticPageStyles.spacing.sectionMargin}`}>
+          <h2 className={`${staticPageStyles.typography.sectionHeading} mb-4`}>Design Attribution</h2>
+          <p className={`${staticPageStyles.typography.bodyText} mb-3`}>
+            The Ambira logo is based on design elements from the "Strava Application Redesign" Figma Community
+            file, created by{' '}
+            <strong>oré ˖ ࣪⊹</strong> (Figma username: @aurelienlouvel).
+          </p>
+          <p className={`${staticPageStyles.typography.bodyText} mb-3`}>
+            This design work is licensed under the{' '}
+            <a
+              href="https://creativecommons.org/licenses/by/4.0/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[#007AFF] underline hover:text-[#0056D6] transition-colors font-medium"
+            >
+              Creative Commons Attribution 4.0 International License (CC BY 4.0)
+            </a>
+            .
+          </p>
+          <p className={staticPageStyles.typography.bodyText}>
+            We are grateful to oré ˖ ࣪⊹ for creating and sharing this beautiful design with the community.
+          </p>
+        </div>
+
         {/* CTA */}
         <div className={`${staticPageStyles.gradientCta} text-center shadow-lg`}>
           <h2 className={`${staticPageStyles.typography.sectionHeading} text-white mb-4`}>Ready to Get Started?</h2>

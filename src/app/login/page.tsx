@@ -4,6 +4,7 @@ import { LoginForm } from '@/components/LoginForm';
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useState, Suspense } from 'react';
+import Image from 'next/image';
 
 function LoginContent() {
   const { login } = useAuth();
@@ -33,8 +34,14 @@ function LoginContent() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-8">
       <div className="max-w-md w-full space-y-8">
         <div className="text-center">
-          <div className="w-16 h-16 bg-[#007AFF] rounded-lg flex items-center justify-center mx-auto mb-4">
-            <span className="text-white font-bold text-2xl">A</span>
+          <div className="w-16 h-16 mx-auto mb-4">
+            <Image
+              src="/logo.svg"
+              alt="Ambira"
+              width={64}
+              height={64}
+              className="w-16 h-16"
+            />
           </div>
           <h2 className="text-3xl font-bold text-gray-900">
             Sign in to Ambira

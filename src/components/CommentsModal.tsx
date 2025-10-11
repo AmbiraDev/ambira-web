@@ -85,35 +85,6 @@ export const CommentsModal: React.FC<CommentsModalProps> = ({
     }
   };
 
-  const handleReply = async (parentId: string, content: string) => {
-    try {
-      const newReply = await firebaseCommentApi.createComment({
-        sessionId,
-        content,
-        parentId
-      });
-
-      const updateComments = (items: CommentWithDetails[]): CommentWithDetails[] => {
-        return items.map(comment => {
-          if (comment.id === parentId) {
-            return {
-              ...comment,
-              replyCount: comment.replyCount + 1,
-              replies: [...(comment.replies || []), newReply]
-            };
-          }
-          return comment;
-        });
-      };
-
-      setComments(updateComments(comments));
-      setAllComments(updateComments(allComments));
-    } catch (err: any) {
-      console.error('Failed to reply to comment:', err);
-      throw err;
-    }
-  };
-
   const handleEdit = async (commentId: string, content: string) => {
     try {
       await firebaseCommentApi.updateComment(commentId, { content });
@@ -160,73 +131,6 @@ export const CommentsModal: React.FC<CommentsModalProps> = ({
       }
     } catch (err: any) {
       console.error('Failed to delete comment:', err);
-      throw err;
-    }
-  };
-
-  const handleLike = async (commentId: string) => {
-    try {
-      const updateLike = (items: CommentWithDetails[]): CommentWithDetails[] => {
-        return items.map(comment => {
-          if (comment.id === commentId) {
-            return { ...comment, isLiked: true, likeCount: comment.likeCount + 1 };
-          }
-          if (comment.replies) {
-            return { ...comment, replies: updateLike(comment.replies) };
-          }
-          return comment;
-        });
-      };
-
-      setComments(updateLike(comments));
-      setAllComments(updateLike(allComments));
-      await firebaseCommentApi.likeComment(commentId);
-    } catch (err: any) {
-      console.error('Failed to like comment:', err);
-      loadAllComments();
-    }
-  };
-
-  const handleUnlike = async (commentId: string) => {
-    try {
-      const updateLike = (items: CommentWithDetails[]): CommentWithDetails[] => {
-        return items.map(comment => {
-          if (comment.id === commentId) {
-            return { ...comment, isLiked: false, likeCount: Math.max(0, comment.likeCount - 1) };
-          }
-          if (comment.replies) {
-            return { ...comment, replies: updateLike(comment.replies) };
-          }
-          return comment;
-        });
-      };
-
-      setComments(updateLike(comments));
-      setAllComments(updateLike(allComments));
-      await firebaseCommentApi.unlikeComment(commentId);
-    } catch (err: any) {
-      console.error('Failed to unlike comment:', err);
-      loadAllComments();
-    }
-  };
-
-  const handleLoadReplies = async (commentId: string) => {
-    try {
-      const replies = await firebaseCommentApi.getReplies(commentId);
-
-      const updateReplies = (items: CommentWithDetails[]): CommentWithDetails[] => {
-        return items.map(comment => {
-          if (comment.id === commentId) {
-            return { ...comment, replies };
-          }
-          return comment;
-        });
-      };
-
-      setComments(updateReplies(comments));
-      setAllComments(updateReplies(allComments));
-    } catch (err: any) {
-      console.error('Failed to load replies:', err);
       throw err;
     }
   };
@@ -278,15 +182,10 @@ export const CommentsModal: React.FC<CommentsModalProps> = ({
                 <CommentItem
                   key={comment.id}
                   comment={comment}
-                  onReply={handleReply}
                   onEdit={handleEdit}
                   onDelete={handleDelete}
-                  onLike={handleLike}
-                  onUnlike={handleUnlike}
-                  onLoadReplies={handleLoadReplies}
                   currentUserId={user?.id}
                   compact={false}
-                  showReplies={true}
                 />
               ))}
             </div>

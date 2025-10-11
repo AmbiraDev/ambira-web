@@ -85,9 +85,13 @@ export default function Header() {
           <div className="flex items-center space-x-4">
             {/* Logo */}
             <Link href="/" className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-[#007AFF] rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-lg">A</span>
-              </div>
+              <Image
+                src="/logo.svg"
+                alt="Ambira"
+                width={32}
+                height={32}
+                className="w-8 h-8"
+              />
               <span className="text-xl font-bold text-gray-900 hidden sm:inline">Ambira</span>
             </Link>
 

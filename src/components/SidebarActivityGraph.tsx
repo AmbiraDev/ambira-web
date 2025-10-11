@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { ChevronDown } from 'lucide-react';
-import { LineChart, Line, ResponsiveContainer, XAxis, YAxis } from 'recharts';
+import { LineChart, Line, ResponsiveContainer, XAxis, YAxis, Tooltip, Area, ComposedChart } from 'recharts';
 import { useAuth } from '@/contexts/AuthContext';
 import { firebaseSessionApi } from '@/lib/firebaseApi';
 import { Session } from '@/types';
@@ -110,29 +110,29 @@ function SidebarActivityGraph() {
   };
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+    <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow">
       {/* Header with dropdown */}
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-semibold text-gray-900">
+        <h3 className="text-xl font-bold text-gray-900">
           {timePeriod === 'week' ? 'This Week' : 'This Month'}
         </h3>
         <div className="relative">
           <button
             onClick={() => setShowDropdown(!showDropdown)}
-            className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-gray-600 bg-gray-50 rounded-md hover:bg-gray-100 transition-colors"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-700 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors border border-gray-200"
           >
             {timePeriod === 'week' ? 'Week' : 'Month'}
-            <ChevronDown className="w-3 h-3" />
+            <ChevronDown className={`w-4 h-4 transition-transform ${showDropdown ? 'rotate-180' : ''}`} />
           </button>
           {showDropdown && (
-            <div className="absolute right-0 mt-1 w-24 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+            <div className="absolute right-0 mt-2 w-28 bg-white rounded-xl shadow-lg border border-gray-200 py-1 z-50">
               <button
                 onClick={() => {
                   setTimePeriod('week');
                   setShowDropdown(false);
                 }}
-                className={`w-full text-left px-3 py-1.5 text-xs hover:bg-gray-50 ${
-                  timePeriod === 'week' ? 'text-[#007AFF] font-medium' : 'text-gray-700'
+                className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors ${
+                  timePeriod === 'week' ? 'text-[#007AFF] font-semibold bg-blue-50' : 'text-gray-700'
                 }`}
               >
                 Week
@@ -142,8 +142,8 @@ function SidebarActivityGraph() {
                   setTimePeriod('month');
                   setShowDropdown(false);
                 }}
-                className={`w-full text-left px-3 py-1.5 text-xs hover:bg-gray-50 ${
-                  timePeriod === 'month' ? 'text-[#007AFF] font-medium' : 'text-gray-700'
+                className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors ${
+                  timePeriod === 'month' ? 'text-[#007AFF] font-semibold bg-blue-50' : 'text-gray-700'
                 }`}
               >
                 Month
@@ -155,48 +155,90 @@ function SidebarActivityGraph() {
 
       {/* Chart */}
       {isLoading ? (
-        <div className="h-48 bg-gray-100 rounded animate-pulse"></div>
+        <div className="h-52 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl animate-pulse"></div>
       ) : (
-        <div className="h-48">
+        <div className="h-52">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={chartData} margin={{ top: 10, right: 10, left: 5, bottom: 5 }}>
+            <ComposedChart data={chartData} margin={{ top: 10, right: 10, left: -10, bottom: 5 }}>
+              <defs>
+                <linearGradient id="colorHours" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#007AFF" stopOpacity={0.1}/>
+                  <stop offset="95%" stopColor="#007AFF" stopOpacity={0}/>
+                </linearGradient>
+              </defs>
               <XAxis
                 dataKey="name"
-                tick={{ fontSize: 11, fill: '#6b7280' }}
+                tick={{ fontSize: 12, fill: '#6b7280', fontWeight: 500 }}
                 axisLine={false}
                 tickLine={false}
+                dy={8}
               />
               <YAxis
-                tick={{ fontSize: 11, fill: '#6b7280' }}
+                tick={{ fontSize: 12, fill: '#9ca3af' }}
                 axisLine={false}
                 tickLine={false}
-                width={25}
-                domain={[0, 'dataMax']}
+                width={35}
+                domain={[0, 'dataMax + 0.5']}
+                tickFormatter={(value) => value.toFixed(1)}
+              />
+              <Tooltip
+                contentStyle={{
+                  backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                  border: 'none',
+                  borderRadius: '8px',
+                  padding: '8px 12px',
+                  fontSize: '12px',
+                  color: 'white'
+                }}
+                labelStyle={{ color: 'white', marginBottom: '4px' }}
+                formatter={(value: any) => [`${value.toFixed(1)} hrs`, 'Time']}
+                cursor={{ stroke: '#e5e7eb', strokeWidth: 1, strokeDasharray: '3 3' }}
+              />
+              <Area
+                type="monotone"
+                dataKey="hours"
+                stroke="none"
+                fill="url(#colorHours)"
               />
               <Line
                 type="monotone"
                 dataKey="hours"
                 stroke="#007AFF"
-                strokeWidth={2.5}
+                strokeWidth={3}
                 dot={(props: any) => {
                   const { cx, cy, payload, index } = props;
                   const isToday = payload.isToday;
-                  const radius = isToday ? 7 : 5;
+                  const radius = isToday ? 8 : 6;
 
                   return (
-                    <circle
-                      key={`dot-${index}`}
-                      cx={cx}
-                      cy={cy}
-                      r={radius}
-                      fill={isToday ? "#007AFF" : "white"}
-                      stroke="#007AFF"
-                      strokeWidth={isToday ? 2.5 : 2}
-                    />
+                    <g key={`dot-${index}`}>
+                      <circle
+                        cx={cx}
+                        cy={cy}
+                        r={radius}
+                        fill="white"
+                        stroke="#007AFF"
+                        strokeWidth={isToday ? 3 : 2.5}
+                      />
+                      {isToday && (
+                        <circle
+                          cx={cx}
+                          cy={cy}
+                          r={4}
+                          fill="#007AFF"
+                        />
+                      )}
+                    </g>
                   );
                 }}
+                activeDot={{
+                  r: 8,
+                  fill: '#007AFF',
+                  stroke: 'white',
+                  strokeWidth: 3
+                }}
               />
-            </LineChart>
+            </ComposedChart>
           </ResponsiveContainer>
         </div>
       )}

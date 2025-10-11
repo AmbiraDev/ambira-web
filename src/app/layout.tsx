@@ -20,7 +20,17 @@ export const metadata: Metadata = {
   title: "Ambira - Social Productivity Tracker",
   description: "Track your productivity, build streaks, and stay motivated with friends. The social way to achieve your goals.",
   keywords: ["productivity", "tracking", "social", "goals", "habits", "studying", "work"],
-  manifest: "/manifest.json",
+  manifest: "/site.webmanifest",
+  icons: {
+    icon: [
+      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon.ico", sizes: "any" },
+    ],
+    apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
@@ -36,7 +46,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  themeColor: "#FFFFFF",
+  themeColor: "#007AFF",
 };
 
 export default function RootLayout({
@@ -51,9 +61,9 @@ export default function RootLayout({
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
 
         {/* PWA Meta Tags */}
-        <link rel="manifest" href="/manifest.json" />
-        <link rel="apple-touch-icon" href="/icon-192x192.png" />
-        <meta name="theme-color" content="#FFFFFF" />
+        <link rel="manifest" href="/site.webmanifest" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <meta name="theme-color" content="#007AFF" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="Ambira" />

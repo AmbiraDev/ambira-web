@@ -11,7 +11,7 @@ interface ProjectListProps {
   onEditProject?: (project: Project) => void;
 }
 
-const STORAGE_KEY = 'projectViewMode';
+// const STORAGE_KEY = 'projectViewMode';
 
 export const ProjectList: React.FC<ProjectListProps> = ({
   onCreateProject,
@@ -19,22 +19,23 @@ export const ProjectList: React.FC<ProjectListProps> = ({
 }) => {
   const router = useRouter();
   const { projects, isLoading, error, deleteProject, archiveProject } = useProjects();
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  // const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const viewMode = 'grid'; // Always use grid view
   const [deleteConfirm, setDeleteConfirm] = useState<Project | null>(null);
 
-  // Load view mode from localStorage on mount
-  useEffect(() => {
-    const savedViewMode = localStorage.getItem(STORAGE_KEY);
-    if (savedViewMode === 'grid' || savedViewMode === 'list') {
-      setViewMode(savedViewMode);
-    }
-  }, []);
+  // // Load view mode from localStorage on mount
+  // useEffect(() => {
+  //   const savedViewMode = localStorage.getItem(STORAGE_KEY);
+  //   if (savedViewMode === 'grid' || savedViewMode === 'list') {
+  //     setViewMode(savedViewMode);
+  //   }
+  // }, []);
 
-  // Save view mode to localStorage whenever it changes
-  const handleViewModeChange = (mode: 'grid' | 'list') => {
-    setViewMode(mode);
-    localStorage.setItem(STORAGE_KEY, mode);
-  };
+  // // Save view mode to localStorage whenever it changes
+  // const handleViewModeChange = (mode: 'grid' | 'list') => {
+  //   setViewMode(mode);
+  //   localStorage.setItem(STORAGE_KEY, mode);
+  // };
 
   // Show all projects
   const filteredProjects = projects;
@@ -152,24 +153,7 @@ export const ProjectList: React.FC<ProjectListProps> = ({
               </svg>
               New Activity
             </button>
-            <div className="flex border border-gray-200 rounded-lg overflow-hidden shadow-sm">
-              <button
-                onClick={() => handleViewModeChange('grid')}
-                className={`p-2.5 ${viewMode === 'grid' ? 'bg-[#007AFF] text-white' : 'bg-white text-gray-600 hover:bg-gray-50'} transition-colors`}
-              >
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-                </svg>
-              </button>
-              <button
-                onClick={() => handleViewModeChange('list')}
-                className={`p-2.5 ${viewMode === 'list' ? 'bg-[#007AFF] text-white' : 'bg-white text-gray-600 hover:bg-gray-50'} transition-colors`}
-              >
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clipRule="evenodd" />
-                </svg>
-              </button>
-            </div>
+            {/* View mode toggle removed - grid view only */}
           </div>
         </div>
       </div>
@@ -223,8 +207,15 @@ export const ProjectList: React.FC<ProjectListProps> = ({
 
       {/* Delete Confirmation Modal */}
       {deleteConfirm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl p-6 max-w-md w-full shadow-xl">
+        <div
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-200"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setDeleteConfirm(null);
+            }
+          }}
+        >
+          <div className="bg-white rounded-xl p-6 max-w-md w-full shadow-xl animate-in zoom-in-95 duration-200">
             <h3 className="text-xl font-bold text-gray-900 mb-3">Delete Activity</h3>
             <p className="text-gray-600 mb-6 leading-relaxed">
               Are you sure you want to delete <span className="font-semibold text-gray-900">"{deleteConfirm.name}"</span>? This action cannot be undone.

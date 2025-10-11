@@ -5,7 +5,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import Header from '@/components/HeaderComponent';
 import MobileHeader from '@/components/MobileHeader';
 import BottomNavigation from '@/components/BottomNavigation';
-import CreateGroupModal from '@/components/CreateGroupModal';
+import GroupCard from '@/components/GroupCard';
+// import CreateGroupModal from '@/components/CreateGroupModal';
 import { Group } from '@/types';
 import { firebaseApi } from '@/lib/firebaseApi';
 import { Users, Search } from 'lucide-react';
@@ -26,7 +27,7 @@ export default function GroupsPage() {
   const [searchResults, setSearchResults] = useState<Group[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSearching, setIsSearching] = useState(false);
-  const [showCreateModal, setShowCreateModal] = useState(false);
+  // const [showCreateModal, setShowCreateModal] = useState(false);
 
   // Search filters
   const [searchFilters, setSearchFilters] = useState({
@@ -97,21 +98,21 @@ export default function GroupsPage() {
     }
   };
 
-  const handleCreateGroup = async (data: any) => {
-    if (!user) return;
+  // const handleCreateGroup = async (data: any) => {
+  //   if (!user) return;
 
-    try {
-      await firebaseApi.group.createGroup({
-        ...data,
-        creatorId: user.id,
-      });
-      await loadData();
-      setShowCreateModal(false);
-    } catch (error) {
-      console.error('Error creating group:', error);
-      throw error;
-    }
-  };
+  //   try {
+  //     await firebaseApi.group.createGroup({
+  //       ...data,
+  //       creatorId: user.id,
+  //     });
+  //     await loadData();
+  //     setShowCreateModal(false);
+  //   } catch (error) {
+  //     console.error('Error creating group:', error);
+  //     throw error;
+  //   }
+  // };
 
   if (!user) {
     return (
@@ -137,12 +138,12 @@ export default function GroupsPage() {
           <div>
             <h1 className="text-3xl font-bold text-gray-900">Groups</h1>
           </div>
-          <button
-            onClick={() => setShowCreateModal(true)}
-            className="px-4 py-2 md:px-6 md:py-2.5 bg-[#007AFF] text-white text-sm font-semibold rounded-lg hover:bg-[#0056D6] transition-colors"
+          <Link
+            href="/groups/new"
+            className="px-4 py-2 md:px-6 md:py-2.5 bg-[#007AFF] text-white text-sm font-semibold rounded-lg hover:bg-[#0056D6] transition-colors inline-flex items-center justify-center"
           >
             Create a Group
-          </button>
+          </Link>
         </div>
 
         {/* My Groups Section */}
@@ -152,20 +153,14 @@ export default function GroupsPage() {
           </div>
         ) : userGroups.length > 0 ? (
           <div className="mb-8">
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3">
               {userGroups.map((group) => (
-                <Link
+                <GroupCard
                   key={group.id}
-                  href={`/groups/${group.id}`}
-                  className="group bg-white rounded-xl border border-gray-200/60 hover:border-[#007AFF]/30 hover:shadow-sm transition-all duration-200 aspect-square p-6 flex flex-col items-center justify-center text-center"
-                >
-                  <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0 group-hover:bg-[#007AFF]/5 transition-colors mb-4">
-                    <Users className="w-10 h-10 text-gray-600 group-hover:text-[#007AFF] transition-colors" />
-                  </div>
-                  <h3 className="font-semibold text-gray-900 group-hover:text-[#007AFF] transition-colors line-clamp-2">
-                    {group.name}
-                  </h3>
-                </Link>
+                  group={group}
+                  currentUserId={user?.id}
+                  isJoined={true}
+                />
               ))}
             </div>
           </div>
@@ -214,20 +209,14 @@ export default function GroupsPage() {
         {searchResults.length > 0 ? (
           <div>
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Search Results</h2>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3">
               {searchResults.map(group => (
-                <Link
+                <GroupCard
                   key={group.id}
-                  href={`/groups/${group.id}`}
-                  className="group bg-white rounded-xl border border-gray-200/60 hover:border-[#007AFF]/30 hover:shadow-sm transition-all duration-200 aspect-square p-6 flex flex-col items-center justify-center text-center"
-                >
-                  <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0 group-hover:bg-[#007AFF]/5 transition-colors mb-4">
-                    <Users className="w-10 h-10 text-gray-600 group-hover:text-[#007AFF] transition-colors" />
-                  </div>
-                  <h3 className="font-semibold text-gray-900 group-hover:text-[#007AFF] transition-colors line-clamp-2">
-                    {group.name}
-                  </h3>
-                </Link>
+                  group={group}
+                  currentUserId={user?.id}
+                  isJoined={false}
+                />
               ))}
             </div>
           </div>
@@ -250,11 +239,11 @@ export default function GroupsPage() {
       <BottomNavigation />
 
       {/* Create Group Modal */}
-      <CreateGroupModal
+      {/* <CreateGroupModal
         isOpen={showCreateModal}
         onClose={() => setShowCreateModal(false)}
         onSubmit={handleCreateGroup}
-      />
+      /> */}
     </div>
   );
 }

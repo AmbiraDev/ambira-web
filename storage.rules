@@ -40,15 +40,16 @@ service firebase.storage {
     }
     
     // Group images
-    match /group-images/{groupId}/{fileName} {
+    match /group-images/{userId}/{fileName} {
       // Allow read access to all authenticated users
       allow read: if isAuthenticated();
-      
-      // Allow write only to group admins (checked via Firestore)
-      // Note: For full validation, you'd need to check Firestore group membership
+
+      // Allow write to authenticated users with valid images
+      // Uploaded by the user creating/updating the group
       allow write: if isAuthenticated() && isValidImage();
-      
-      allow delete: if isAuthenticated();
+
+      // Allow delete to the uploader
+      allow delete: if isOwner(userId);
     }
     
     // Session attachments (if needed in future)

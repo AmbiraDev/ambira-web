@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { Project, ProjectStats } from '@/types';
 import { useProjects } from '@/contexts/ProjectsContext';
@@ -25,6 +25,24 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
   const [isLoadingStats, setIsLoadingStats] = useState(false);
   const [projectStats, setProjectStats] = useState<ProjectStats | undefined>(stats);
   const { getProjectStats } = useProjects();
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setShowMenu(false);
+      }
+    };
+
+    if (showMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showMenu]);
 
   // Load stats if not provided
   React.useEffect(() => {
@@ -158,7 +176,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
 
       {/* Dropdown menu */}
       {showMenu && (
-        <div className="absolute top-16 right-4 bg-white border border-gray-200 rounded-xl shadow-lg py-2 z-10 min-w-[150px]">
+        <div ref={menuRef} className="absolute top-16 right-4 bg-white border border-gray-200 rounded-xl shadow-lg py-2 z-10 min-w-[150px]">
           <button
             onClick={(e) => handleAction(e, () => onEdit?.(project))}
             className="w-full px-4 py-2 text-left text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"

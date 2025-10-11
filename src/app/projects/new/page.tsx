@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Header from '@/components/HeaderComponent';
 import { CreateProjectData } from '@/types';
 import { useProjects } from '@/contexts/ProjectsContext';
@@ -133,6 +133,8 @@ const AVAILABLE_COLORS = [
 
 function CreateProjectContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectPath = searchParams.get('redirect');
   const { createProject } = useProjects();
   const [formData, setFormData] = useState<CreateProjectData>({
     name: '',
@@ -205,7 +207,8 @@ function CreateProjectContent() {
       resetForm();
 
       setTimeout(() => {
-        router.push('/projects');
+        // Redirect to the specified path or default to /projects
+        router.push(redirectPath || '/projects');
       }, 1500);
     } catch (error) {
       console.error('Failed to create activity:', error);
@@ -242,7 +245,11 @@ function CreateProjectContent() {
           {/* Header */}
           <div className="mb-6">
             <h1 className="text-3xl font-bold text-gray-900">Create New Activity</h1>
-            <p className="text-gray-600 mt-2">Set up a new activity to track your productivity</p>
+            <p className="text-gray-600 mt-2">
+              {redirectPath
+                ? 'Create your first activity to start tracking your time'
+                : 'Set up a new activity to track your productivity'}
+            </p>
           </div>
 
           {/* Success Message */}
@@ -400,7 +407,7 @@ function CreateProjectContent() {
             <div className="flex flex-col sm:flex-row gap-3 pt-6 border-t border-gray-200">
               <button
                 type="button"
-                onClick={() => router.push('/projects')}
+                onClick={() => router.push(redirectPath || '/projects')}
                 className="flex-1 px-6 py-3 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium"
                 disabled={isSubmitting}
               >

@@ -78,14 +78,6 @@ export const SessionInteractions: React.FC<SessionInteractionsProps> = ({
               {supportCount} {supportCount === 1 ? 'like' : 'likes'}
             </button>
           )}
-          {commentCount > 0 && (
-            <button
-              onClick={onViewAllCommentsClick}
-              className="hover:text-gray-900 hover:underline transition-colors font-medium"
-            >
-              {commentCount} {commentCount === 1 ? 'comment' : 'comments'}
-            </button>
-          )}
         </div>
       </div>
 

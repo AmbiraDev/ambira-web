@@ -6,8 +6,7 @@ import {
   ActivityStats,
   CreateActivityData,
   UpdateActivityData,
-  ActivitiesContextType,
-  DEFAULT_ACTIVITIES
+  ActivitiesContextType
 } from '@/types';
 import { firebaseActivityApi } from '@/lib/firebaseApi';
 import { useAuth } from './AuthContext';
@@ -43,7 +42,6 @@ interface ActivitiesProviderProps {
 
 export const ActivitiesProvider: React.FC<ActivitiesProviderProps> = ({ children }) => {
   const [customActivities, setCustomActivities] = useState<Activity[]>([]);
-  const [activityStats, setActivityStats] = useState<Map<string, ActivityStats>>(new Map());
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { user, isAuthenticated } = useAuth();
@@ -52,101 +50,15 @@ export const ActivitiesProvider: React.FC<ActivitiesProviderProps> = ({ children
   useEffect(() => {
     if (isAuthenticated && user) {
       fetchActivities();
-      loadActivityStats();
     } else {
       setCustomActivities([]);
-      setActivityStats(new Map());
       setError(null);
     }
   }, [isAuthenticated, user]);
 
-  // Load stats for all activities (to filter out defaults with 0 hours)
-  const loadActivityStats = async () => {
-    if (!user) return;
-
-    try {
-      const { db } = await import('@/lib/firebase');
-      const { collection, getDocs, query, where } = await import('firebase/firestore');
-
-      const q = query(collection(db, 'sessions'), where('userId', '==', user.id));
-      const snapshot = await getDocs(q);
-
-      const statsMap = new Map<string, ActivityStats>();
-
-      // Initialize all default activities with 0 stats
-      DEFAULT_ACTIVITIES.forEach(activity => {
-        statsMap.set(activity.id, {
-          totalHours: 0,
-          weeklyHours: 0,
-          sessionCount: 0,
-          currentStreak: 0,
-          weeklyProgressPercentage: 0,
-          totalProgressPercentage: 0,
-          averageSessionDuration: 0
-        });
-      });
-
-      const now = new Date();
-      const weekStart = new Date(now);
-      weekStart.setDate(now.getDate() - now.getDay());
-      weekStart.setHours(0, 0, 0, 0);
-
-      snapshot.forEach((doc) => {
-        const data: any = doc.data();
-        const activityId = data.activityId || data.projectId;
-        if (!activityId) return;
-
-        const duration = Number(data.duration) || 0;
-        const start = data.startTime?.toDate ? data.startTime.toDate() : new Date(data.startTime);
-
-        const currentStats = statsMap.get(activityId) || {
-          totalHours: 0,
-          weeklyHours: 0,
-          sessionCount: 0,
-          currentStreak: 0,
-          weeklyProgressPercentage: 0,
-          totalProgressPercentage: 0,
-          averageSessionDuration: 0
-        };
-
-        currentStats.totalHours += duration / 3600;
-        currentStats.sessionCount += 1;
-        if (start >= weekStart) {
-          currentStats.weeklyHours += duration / 3600;
-        }
-
-        statsMap.set(activityId, currentStats);
-      });
-
-      setActivityStats(statsMap);
-    } catch (err) {
-      console.error('Error loading activity stats:', err);
-    }
-  };
-
-  // Get all activities (default + custom, filtered by stats)
+  // Get all activities (only custom activities)
   const getAllActivities = (): Activity[] => {
-    const defaults: Activity[] = DEFAULT_ACTIVITIES.map(defaultActivity => {
-      const stats = activityStats.get(defaultActivity.id);
-      return {
-        id: defaultActivity.id,
-        userId: user?.id || '',
-        name: defaultActivity.name,
-        icon: defaultActivity.icon,
-        color: defaultActivity.color,
-        description: '',
-        status: 'active' as const,
-        isDefault: true,
-        createdAt: new Date(),
-        updatedAt: new Date()
-      };
-    }).filter(activity => {
-      // Only show default activities with hours > 0
-      const stats = activityStats.get(activity.id);
-      return stats && stats.totalHours > 0;
-    });
-
-    return [...defaults, ...customActivities];
+    return customActivities;
   };
 
   // Icon migration map from old Lucide names to new Iconify format
@@ -285,12 +197,6 @@ export const ActivitiesProvider: React.FC<ActivitiesProviderProps> = ({ children
     try {
       setError(null);
 
-      // Return cached stats if available
-      const cached = activityStats.get(id);
-      if (cached) {
-        return cached;
-      }
-
       // Compute stats from sessions tied to this activity
       const userId = user?.id;
       if (!userId) {
@@ -307,15 +213,17 @@ export const ActivitiesProvider: React.FC<ActivitiesProviderProps> = ({ children
 
       // Import on-demand to avoid circular deps
       const { db } = await import('@/lib/firebase');
-      const { collection, getDocs, query, where, or } = await import('firebase/firestore');
+      const { collection, getDocs, query, where, or, and } = await import('firebase/firestore');
 
       // Query for both activityId and projectId (backwards compatibility)
       const q = query(
         collection(db, 'sessions'),
-        where('userId', '==', userId),
-        or(
-          where('activityId', '==', id),
-          where('projectId', '==', id)
+        and(
+          where('userId', '==', userId),
+          or(
+            where('activityId', '==', id),
+            where('projectId', '==', id)
+          )
         )
       );
       const snapshot = await getDocs(q);
@@ -352,9 +260,6 @@ export const ActivitiesProvider: React.FC<ActivitiesProviderProps> = ({ children
         totalProgressPercentage: 0,
         averageSessionDuration: sessionCount > 0 ? totalSeconds / sessionCount : 0
       };
-
-      // Cache the stats
-      setActivityStats(prev => new Map(prev).set(id, stats));
 
       return stats;
     } catch (err) {
