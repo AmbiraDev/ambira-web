@@ -421,63 +421,189 @@ export default function ProfilePage() {
               {/* Tab Content */}
               <div className="mt-6">
                 {activeTab === 'progress' && (
-                  <div className="max-w-4xl mx-auto">
-                    {/* Stats Cards */}
-                    <div className="grid grid-cols-2 gap-4 mb-6">
-                      <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Clock className="w-5 h-5 text-blue-600" />
-                          <span className="text-sm text-gray-600">Total Time</span>
+                  <div className="max-w-4xl mx-auto space-y-6">
+                    {/* Last 4 Weeks Summary */}
+                    <div className="bg-white rounded-lg border border-gray-200 p-6">
+                      <div className="flex items-center justify-between mb-6">
+                        <h2 className="text-lg font-semibold text-gray-900">Last 4 Weeks</h2>
+                      </div>
+
+                      {/* Main Stats Grid */}
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                        <div>
+                          <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Total Time</div>
+                          <div className="text-2xl font-bold text-gray-900">
+                            {stats?.totalHours?.toFixed(1) || 0}h
+                          </div>
                         </div>
-                        <div className="text-2xl font-bold text-gray-900">
-                          {stats?.totalHours?.toFixed(1) || 0}h
+                        <div>
+                          <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Sessions</div>
+                          <div className="text-2xl font-bold text-gray-900">
+                            {sessions.length}
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Avg/Week</div>
+                          <div className="text-2xl font-bold text-gray-900">
+                            {stats?.weeklyHours?.toFixed(1) || 0}h
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Avg/Day</div>
+                          <div className="text-2xl font-bold text-gray-900">
+                            {stats?.totalHours ? (stats.totalHours / 28).toFixed(1) : 0}h
+                          </div>
                         </div>
                       </div>
 
-                      <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-4">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Target className="w-5 h-5 text-orange-600" />
-                          <span className="text-sm text-gray-600">Streak</span>
+                      {/* Weekly Breakdown Chart */}
+                      <div className="h-48">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <LineChart
+                            data={chartData}
+                            margin={{ top: 10, right: 15, left: 0, bottom: 5 }}
+                          >
+                            <XAxis
+                              dataKey="name"
+                              tick={{ fontSize: 12, fill: '#6b7280' }}
+                              axisLine={{ stroke: '#e5e7eb' }}
+                              tickLine={false}
+                            />
+                            <YAxis
+                              tick={{ fontSize: 12, fill: '#6b7280' }}
+                              axisLine={{ stroke: '#e5e7eb' }}
+                              tickLine={false}
+                              width={40}
+                            />
+                            <Tooltip
+                              contentStyle={{
+                                backgroundColor: '#fff',
+                                border: '1px solid #e5e7eb',
+                                borderRadius: '8px',
+                                fontSize: '12px'
+                              }}
+                              formatter={(value: number) => [`${value}h`, 'Hours']}
+                            />
+                            <Line
+                              type="monotone"
+                              dataKey="hours"
+                              stroke="#FC4C02"
+                              strokeWidth={2}
+                              isAnimationActive={false}
+                              dot={(props: any) => {
+                                const { cx, cy, index, payload } = props;
+                                const isToday = index === chartData.length - 1;
+                                return (
+                                  <circle
+                                    key={`dot-${index}-${payload.name}`}
+                                    cx={cx}
+                                    cy={cy}
+                                    r={isToday ? 5 : 0}
+                                    fill="#FC4C02"
+                                    stroke="none"
+                                  />
+                                );
+                              }}
+                            />
+                          </LineChart>
+                        </ResponsiveContainer>
+                      </div>
+                    </div>
+
+                    {/* Year Stats and Additional Metrics */}
+                    <div className="grid md:grid-cols-2 gap-6">
+                      {/* This Year Section */}
+                      <div className="bg-white rounded-lg border border-gray-200 p-6">
+                        <div className="flex items-center justify-between mb-4">
+                          <h3 className="font-semibold text-gray-900">
+                            {new Date().getFullYear()}
+                          </h3>
+                          <button
+                            onClick={() => setTimePeriod('year')}
+                            className="text-xs text-gray-500 hover:text-gray-700"
+                          >
+                            View chart
+                          </button>
                         </div>
-                        <div className="text-2xl font-bold text-gray-900">
-                          {stats?.currentStreak || 0} days
+                        <div className="space-y-3">
+                          <div className="flex justify-between items-center pb-3 border-b border-gray-100">
+                            <span className="text-sm text-gray-600">Total Time</span>
+                            <span className="font-semibold text-gray-900">
+                              {stats?.totalHours?.toFixed(1) || 0}h
+                            </span>
+                          </div>
+                          <div className="flex justify-between items-center pb-3 border-b border-gray-100">
+                            <span className="text-sm text-gray-600">Sessions</span>
+                            <span className="font-semibold text-gray-900">
+                              {sessions.length}
+                            </span>
+                          </div>
+                          <div className="flex justify-between items-center pb-3 border-b border-gray-100">
+                            <span className="text-sm text-gray-600">Longest Session</span>
+                            <span className="font-semibold text-gray-900">
+                              {sessions.length > 0
+                                ? formatTime(Math.max(...sessions.map(s => s.duration)))
+                                : '0m'}
+                            </span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-gray-600">Current Streak</span>
+                            <span className="font-semibold text-gray-900">
+                              {stats?.currentStreak || 0} days
+                            </span>
+                          </div>
                         </div>
                       </div>
 
-                      <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-4">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Calendar className="w-5 h-5 text-green-600" />
-                          <span className="text-sm text-gray-600">Sessions</span>
+                      {/* All-Time Section */}
+                      <div className="bg-white rounded-lg border border-gray-200 p-6">
+                        <div className="flex items-center justify-between mb-4">
+                          <h3 className="font-semibold text-gray-900">All-Time</h3>
                         </div>
-                        <div className="text-2xl font-bold text-gray-900">
-                          {sessions.length}
-                        </div>
-                      </div>
-
-                      <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-4">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Heart className="w-5 h-5 text-purple-600" />
-                          <span className="text-sm text-gray-600">Avg/Day</span>
-                        </div>
-                        <div className="text-2xl font-bold text-gray-900">
-                          {stats?.totalHours ? (stats.totalHours / 30).toFixed(1) : 0}h
+                        <div className="space-y-3">
+                          <div className="flex justify-between items-center pb-3 border-b border-gray-100">
+                            <span className="text-sm text-gray-600">Total Sessions</span>
+                            <span className="font-semibold text-gray-900">
+                              {sessions.length}
+                            </span>
+                          </div>
+                          <div className="flex justify-between items-center pb-3 border-b border-gray-100">
+                            <span className="text-sm text-gray-600">Total Time</span>
+                            <span className="font-semibold text-gray-900">
+                              {stats?.totalHours?.toFixed(1) || 0}h
+                            </span>
+                          </div>
+                          <div className="flex justify-between items-center pb-3 border-b border-gray-100">
+                            <span className="text-sm text-gray-600">Longest Streak</span>
+                            <span className="font-semibold text-gray-900">
+                              {stats?.longestStreak || stats?.currentStreak || 0} days
+                            </span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-gray-600">Avg Session</span>
+                            <span className="font-semibold text-gray-900">
+                              {sessions.length > 0
+                                ? formatTime(sessions.reduce((sum, s) => sum + s.duration, 0) / sessions.length)
+                                : '0m'}
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </div>
 
-                    {/* Chart with Time Period Dropdown */}
-                    <div className="bg-white rounded-xl border border-gray-200 p-4 mb-6">
+                    {/* Detailed Time Period Chart */}
+                    <div className="bg-white rounded-lg border border-gray-200 p-6">
                       <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-lg font-bold">
-                          {timePeriod === 'day' && 'Today'}
-                          {timePeriod === 'week' && 'This Week'}
-                          {timePeriod === 'month' && 'This Month'}
-                          {timePeriod === 'year' && 'This Year'}
+                        <h3 className="font-semibold text-gray-900">
+                          {timePeriod === 'day' && 'Last 24 Hours'}
+                          {timePeriod === 'week' && 'Last 7 Days'}
+                          {timePeriod === 'month' && 'Last 4 Weeks'}
+                          {timePeriod === 'year' && 'Last 12 Months'}
                         </h3>
                         <div className="relative">
                           <button
                             onClick={() => setShowTimePeriodDropdown(!showTimePeriodDropdown)}
-                            className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                            className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200"
                           >
                             {timePeriod.charAt(0).toUpperCase() + timePeriod.slice(1)}
                             <ChevronDown className="w-4 h-4" />
@@ -492,7 +618,7 @@ export default function ProfilePage() {
                                     setShowTimePeriodDropdown(false);
                                   }}
                                   className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 ${
-                                    timePeriod === period ? 'text-[#007AFF] font-medium' : 'text-gray-700'
+                                    timePeriod === period ? 'text-[#FC4C02] font-medium' : 'text-gray-700'
                                   }`}
                                 >
                                   {period.charAt(0).toUpperCase() + period.slice(1)}
@@ -502,7 +628,7 @@ export default function ProfilePage() {
                           )}
                         </div>
                       </div>
-                      <div className="h-48">
+                      <div className="h-64">
                         <ResponsiveContainer width="100%" height="100%">
                           <LineChart
                             data={chartData}
@@ -511,78 +637,80 @@ export default function ProfilePage() {
                             <XAxis
                               dataKey="name"
                               tick={{ fontSize: 12, fill: '#6b7280' }}
-                              axisLine={false}
+                              axisLine={{ stroke: '#e5e7eb' }}
                               tickLine={false}
                             />
                             <YAxis
                               tick={{ fontSize: 12, fill: '#6b7280' }}
-                              axisLine={false}
+                              axisLine={{ stroke: '#e5e7eb' }}
                               tickLine={false}
-                              width={30}
+                              width={40}
+                              label={{ value: 'Hours', angle: -90, position: 'insideLeft', style: { fontSize: 12, fill: '#6b7280' } }}
                             />
                             <Tooltip
                               contentStyle={{
                                 backgroundColor: '#fff',
                                 border: '1px solid #e5e7eb',
                                 borderRadius: '8px',
-                                fontSize: '12px'
+                                fontSize: '12px',
+                                padding: '8px 12px'
                               }}
                               formatter={(value: number) => [`${value}h`, 'Hours']}
                             />
                             <Line
                               type="monotone"
                               dataKey="hours"
-                              stroke="#007AFF"
+                              stroke="#FC4C02"
                               strokeWidth={2}
                               isAnimationActive={false}
-                              dot={(props: any) => {
-                                const { cx, cy, index, payload } = props;
-                                const isLast = index === chartData.length - 1;
-                                return (
-                                  <circle
-                                    key={`dot-${index}-${payload.name}`}
-                                    cx={cx}
-                                    cy={cy}
-                                    r={isLast ? 6 : 4}
-                                    fill={isLast ? '#007AFF' : '#fff'}
-                                    stroke="#007AFF"
-                                    strokeWidth={2}
-                                  />
-                                );
-                              }}
-                              activeDot={{ r: 6 }}
+                              dot={false}
+                              activeDot={{ r: 4, fill: '#FC4C02' }}
                             />
                           </LineChart>
                         </ResponsiveContainer>
                       </div>
                     </div>
 
-                    {/* Activity Breakdown */}
-                    <div className="bg-white rounded-xl border border-gray-200 p-4">
-                      <h3 className="text-lg font-bold mb-4">Activity Breakdown</h3>
-                      {categoryStats.length > 0 ? (
+                    {/* Recent Sessions Summary */}
+                    <div className="bg-white rounded-lg border border-gray-200 p-6">
+                      <div className="flex items-center justify-between mb-4">
+                        <h3 className="font-semibold text-gray-900">Recent Activity</h3>
+                        <button
+                          onClick={() => {
+                            setActiveTab('sessions');
+                            router.push('/profile?tab=sessions');
+                          }}
+                          className="text-sm text-[#FC4C02] hover:text-[#E04402] font-medium"
+                        >
+                          View all
+                        </button>
+                      </div>
+                      {sessions.length > 0 ? (
                         <div className="space-y-3">
-                          {categoryStats.map((stat) => (
-                            <div key={stat.category} className="flex items-center justify-between">
-                              <div className="flex items-center gap-3">
-                                <div className={`w-10 h-10 ${stat.color} rounded-lg flex items-center justify-center text-lg`}>
-                                  {stat.icon}
+                          {sessions.slice(0, 5).map((session) => (
+                            <div key={session.id} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
+                              <div className="flex-1">
+                                <div className="font-medium text-gray-900 text-sm">
+                                  {session.title || 'Focus Session'}
                                 </div>
-                                <div>
-                                  <div className="font-medium">{stat.category}</div>
-                                  <div className="text-sm text-gray-500">{stat.sessions} sessions</div>
+                                <div className="text-xs text-gray-500">
+                                  {formatDate(new Date(session.createdAt))}
                                 </div>
                               </div>
                               <div className="text-right">
-                                <div className="font-bold">{stat.hours}h</div>
-                                <div className="text-sm text-gray-500">{stat.percentage}%</div>
+                                <div className="font-semibold text-gray-900 text-sm">
+                                  {formatTime(session.duration)}
+                                </div>
+                                <div className="text-xs text-gray-500">
+                                  {session.tasks?.length || 0} tasks
+                                </div>
                               </div>
                             </div>
                           ))}
                         </div>
                       ) : (
                         <div className="text-center py-8 text-gray-400">
-                          No activity data yet
+                          No sessions yet
                         </div>
                       )}
                     </div>

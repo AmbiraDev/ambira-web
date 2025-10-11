@@ -41,7 +41,7 @@ export const ProfilePicture: React.FC<ProfilePictureProps> = ({
 
   if (user.profilePicture && !imageError) {
     return (
-      <div className={`${sizeClass} relative ${borderClass} ${className} rounded-full overflow-hidden`}>
+      <div className={`${sizeClass} relative ${borderClass} ${className} rounded-full overflow-hidden bg-white`}>
         <Image
           src={user.profilePicture}
           alt={`${user.name}'s profile picture`}

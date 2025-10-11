@@ -465,23 +465,35 @@ export const firebaseAuthApi = {
       provider.addScope('profile');
       provider.addScope('email');
 
+      // Detect if user is on mobile device
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
       let userCredential;
-      try {
-        // Try popup first (preferred for desktop)
-        userCredential = await signInWithPopup(auth, provider);
-      } catch (popupError: any) {
-        // If popup was blocked or failed, provide helpful error
-        if (popupError.code === 'auth/popup-blocked') {
-          throw new Error('Popup was blocked. Please allow popups for this site and try again.');
-        } else if (popupError.code === 'auth/popup-closed-by-user') {
-          throw new Error('Sign-in was cancelled.');
-        } else if (popupError.code === 'auth/configuration-not-found') {
-          throw new Error('Google Sign-in is not configured. Please enable Google authentication in Firebase Console.');
-        } else if (popupError.code === 'auth/unauthorized-domain') {
-          throw new Error('This domain is not authorized for Google Sign-in. Please add it to authorized domains in Firebase Console.');
+
+      if (isMobile) {
+        // Use redirect for mobile devices (more reliable)
+        await signInWithRedirect(auth, provider);
+        // Redirect happens here - the user will be redirected to Google
+        // The result will be handled by getRedirectResult in AuthContext
+        return { user: null as any, token: '' }; // This won't be reached, but TypeScript needs it
+      } else {
+        // Use popup for desktop (better UX)
+        try {
+          userCredential = await signInWithPopup(auth, provider);
+        } catch (popupError: any) {
+          // If popup was blocked or failed, provide helpful error
+          if (popupError.code === 'auth/popup-blocked') {
+            throw new Error('Popup was blocked. Please allow popups for this site and try again.');
+          } else if (popupError.code === 'auth/popup-closed-by-user') {
+            throw new Error('Sign-in was cancelled.');
+          } else if (popupError.code === 'auth/configuration-not-found') {
+            throw new Error('Google Sign-in is not configured. Please enable Google authentication in Firebase Console.');
+          } else if (popupError.code === 'auth/unauthorized-domain') {
+            throw new Error('This domain is not authorized for Google Sign-in. Please add it to authorized domains in Firebase Console.');
+          }
+          // Re-throw if it's a different error
+          throw popupError;
         }
-        // Re-throw if it's a different error
-        throw popupError;
       }
 
       const firebaseUser = userCredential.user;
@@ -631,6 +643,86 @@ export const firebaseAuthApi = {
   },
 
   // Auth state listener
+  // Handle Google redirect result (for mobile)
+  handleGoogleRedirectResult: async (): Promise<AuthResponse | null> => {
+    try {
+      const result = await getRedirectResult(auth);
+
+      if (!result) {
+        // No redirect result (user didn't come from redirect flow)
+        return null;
+      }
+
+      const firebaseUser = result.user;
+
+      // Check if user profile exists
+      const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
+      let userData = userDoc.data();
+
+      // If user profile doesn't exist, create it
+      if (!userData) {
+        // Generate username from email
+        const baseUsername = firebaseUser.email!.split('@')[0];
+        let username = baseUsername;
+        let counter = 1;
+
+        // Check if username exists, if so append number
+        while (true) {
+          const usernameQuery = query(collection(db, 'users'), where('username', '==', username));
+          const usernameSnapshot = await getDocs(usernameQuery);
+          if (usernameSnapshot.empty) break;
+          username = `${baseUsername}${counter}`;
+          counter++;
+        }
+
+        userData = {
+          email: firebaseUser.email!,
+          name: firebaseUser.displayName || 'New User',
+          username: username,
+          bio: '',
+          location: '',
+          profilePicture: firebaseUser.photoURL || null,
+          followersCount: 0,
+          followingCount: 0,
+          totalHours: 0,
+          inboundFriendshipCount: 0,
+          outboundFriendshipCount: 0,
+          mutualFriendshipCount: 0,
+          profileVisibility: 'everyone',
+          activityVisibility: 'everyone',
+          projectVisibility: 'everyone',
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp()
+        };
+
+        await setDoc(doc(db, 'users', firebaseUser.uid), userData);
+      }
+
+      const user: AuthUser = {
+        id: firebaseUser.uid,
+        email: firebaseUser.email!,
+        name: userData.name,
+        username: userData.username,
+        bio: userData.bio,
+        location: userData.location,
+        profilePicture: userData.profilePicture,
+        createdAt: convertTimestamp(userData.createdAt),
+        updatedAt: convertTimestamp(userData.updatedAt)
+      };
+
+      const token = await firebaseUser.getIdToken();
+
+      return { user, token };
+    } catch (error: any) {
+      console.error('Google redirect result error:', error);
+
+      const apiError = handleError(error, 'Google sign-in redirect', {
+        defaultMessage: 'Google sign-in failed. Please try again.'
+      });
+      throw new Error(apiError.userMessage);
+    }
+  },
+
   onAuthStateChanged: (callback: (user: FirebaseUser | null) => void) => {
     return onAuthStateChanged(auth, callback);
   }
@@ -1433,44 +1525,51 @@ export const firebaseUserApi = {
         return [];
       }
 
-      // Get users with public profiles, ordered by followers
+      // Get users with public profiles - fetch more to account for filtering
       const usersQuery = query(
         collection(db, 'users'),
         where('profileVisibility', '==', 'everyone'),
-        orderBy('followersCount', 'desc'),
-        limit(limitCount * 2) // Get more to filter out current user and following
+        limit(limitCount * 3) // Get more to filter out current user and following
       );
-      
+
       const querySnapshot = await getDocs(usersQuery);
-      const suggestions: SuggestedUser[] = [];
-      
+      const allUsers: Array<{ id: string; data: any; followersCount: number }> = [];
+
       // Get list of users we're already following
       const followingList = await firebaseUserApi.getFollowing(auth.currentUser.uid);
       const followingIds = new Set(followingList.map(u => u.id));
-      
-      querySnapshot.forEach((doc, index) => {
+
+      // Collect all eligible users
+      querySnapshot.forEach((doc) => {
         const userData = doc.data();
-        
+
         // Skip current user and users we're already following
         if (doc.id === auth.currentUser?.uid || followingIds.has(doc.id)) {
           return;
         }
-        
-        // Only add up to the limit
-        if (suggestions.length < limitCount) {
-          suggestions.push({
-            id: doc.id,
-            username: userData.username,
-            name: userData.name,
-            bio: userData.bio,
-            profilePicture: userData.profilePicture,
-            followersCount: userData.followersCount || 0,
-            reason: index < 3 ? 'popular_user' : 'similar_interests',
-            isFollowing: false
-          });
-        }
+
+        allUsers.push({
+          id: doc.id,
+          data: userData,
+          followersCount: userData.followersCount || 0
+        });
       });
-      
+
+      // Sort by followers count (popular users first) but include everyone
+      allUsers.sort((a, b) => b.followersCount - a.followersCount);
+
+      // Take only the limit we need
+      const suggestions: SuggestedUser[] = allUsers.slice(0, limitCount).map((user, index) => ({
+        id: user.id,
+        username: user.data.username,
+        name: user.data.name,
+        bio: user.data.bio,
+        profilePicture: user.data.profilePicture,
+        followersCount: user.followersCount,
+        reason: user.followersCount > 10 ? 'popular_user' : 'similar_interests',
+        isFollowing: false
+      }));
+
       return suggestions;
     } catch (error) {
       handleError(error, 'getting suggested users', { severity: ErrorSeverity.ERROR });

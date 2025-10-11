@@ -1,5 +1,5 @@
 // Service Worker for Ambira PWA
-const CACHE_NAME = 'ambira-v3'; // Bumped version to clear old cache
+const CACHE_NAME = 'ambira-v4'; // Bumped version to clear old cache
 const urlsToCache = [
   '/',
   '/manifest.json',
@@ -36,6 +36,13 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   // Skip caching for POST, PUT, DELETE, PATCH requests
   if (event.request.method !== 'GET') {
+    event.respondWith(fetch(event.request));
+    return;
+  }
+
+  // Only handle http and https requests (skip chrome-extension://, etc.)
+  const url = new URL(event.request.url);
+  if (url.protocol !== 'http:' && url.protocol !== 'https:') {
     event.respondWith(fetch(event.request));
     return;
   }

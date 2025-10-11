@@ -32,6 +32,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // Initialize auth state on mount
   useEffect(() => {
+    // Check for Google redirect result (mobile sign-in)
+    const checkRedirectResult = async () => {
+      try {
+        const redirectResult = await firebaseAuthApi.handleGoogleRedirectResult();
+        if (redirectResult) {
+          console.log('Google redirect sign-in successful:', redirectResult.user);
+          setUser(redirectResult.user);
+          router.push('/');
+        }
+      } catch (error) {
+        console.error('Google redirect result error:', error);
+        // Continue with normal auth flow even if redirect check fails
+      }
+    };
+
+    checkRedirectResult();
+
     const unsubscribe = firebaseAuthApi.onAuthStateChanged(async (firebaseUser) => {
       try {
         if (firebaseUser) {
@@ -52,7 +69,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     });
 
     return () => unsubscribe();
-  }, []);
+  }, [router]);
 
   // Login function
   const login = async (credentials: LoginCredentials): Promise<void> => {

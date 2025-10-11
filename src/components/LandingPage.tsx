@@ -1052,8 +1052,8 @@ export const LandingPage: React.FC = () => {
         </div>
       </footer>
 
-      {/* PWA Install Prompt */}
-      <PWAInstallPrompt />
+      {/* PWA Install Prompt - Always show on mobile when in login/signup mode */}
+      <PWAInstallPrompt alwaysShowOnMobile={showLogin || showSignup} />
     </div>
   );
 };

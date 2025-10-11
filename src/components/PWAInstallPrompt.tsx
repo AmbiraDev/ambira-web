@@ -5,22 +5,32 @@ import { X, Share, Plus, MoreVertical, Square } from 'lucide-react';
 
 type Platform = 'ios' | 'android' | 'unknown';
 
-export const PWAInstallPrompt: React.FC = () => {
+interface PWAInstallPromptProps {
+  /**
+   * If true, always show the prompt on mobile browsers, ignoring localStorage dismissal
+   * Useful for sign in/sign up pages where we want to encourage PWA installation
+   */
+  alwaysShowOnMobile?: boolean;
+}
+
+export const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ alwaysShowOnMobile = false }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [platform, setPlatform] = useState<Platform>('unknown');
   const [activeTab, setActiveTab] = useState<'ios' | 'android'>('ios');
 
   useEffect(() => {
-    // Check if user has already dismissed the prompt
-    const hasSeenPrompt = localStorage.getItem('pwa-install-prompt-dismissed');
-    if (hasSeenPrompt === 'true') {
-      return;
-    }
-
     // Check if already installed as PWA
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches;
     if (isStandalone) {
       return;
+    }
+
+    // Check if user has already dismissed the prompt (only if not forcing always show)
+    if (!alwaysShowOnMobile) {
+      const hasSeenPrompt = localStorage.getItem('pwa-install-prompt-dismissed');
+      if (hasSeenPrompt === 'true') {
+        return;
+      }
     }
 
     // Detect platform
@@ -41,11 +51,14 @@ export const PWAInstallPrompt: React.FC = () => {
 
     // Show prompt immediately
     setIsVisible(true);
-  }, []);
+  }, [alwaysShowOnMobile]);
 
   const handleDismiss = () => {
     setIsVisible(false);
-    localStorage.setItem('pwa-install-prompt-dismissed', 'true');
+    // Only save dismissal state if not forcing always show
+    if (!alwaysShowOnMobile) {
+      localStorage.setItem('pwa-install-prompt-dismissed', 'true');
+    }
   };
 
   if (!isVisible || platform === 'unknown') {

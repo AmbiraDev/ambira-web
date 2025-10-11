@@ -301,11 +301,13 @@ export default function GroupDetailPage() {
                                 className="flex items-center gap-3 flex-1 hover:opacity-80 transition-opacity"
                               >
                                 {admin.profilePicture ? (
-                                  <img
-                                    src={admin.profilePicture}
-                                    alt={admin.name}
-                                    className="w-14 h-14 rounded-full object-cover"
-                                  />
+                                  <div className="w-14 h-14 rounded-full overflow-hidden bg-white">
+                                    <img
+                                      src={admin.profilePicture}
+                                      alt={admin.name}
+                                      className="w-full h-full object-cover"
+                                    />
+                                  </div>
                                 ) : (
                                   <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#FC4C02] to-[#FC4C02]/80 flex items-center justify-center">
                                     <span className="text-white font-semibold">
@@ -347,11 +349,13 @@ export default function GroupDetailPage() {
                               className="flex items-center gap-3 pb-4 border-b border-gray-200 last:border-0 hover:opacity-80 transition-opacity"
                             >
                               {member.profilePicture ? (
-                                <img
-                                  src={member.profilePicture}
-                                  alt={member.name}
-                                  className="w-14 h-14 rounded-full object-cover"
-                                />
+                                <div className="w-14 h-14 rounded-full overflow-hidden bg-white">
+                                  <img
+                                    src={member.profilePicture}
+                                    alt={member.name}
+                                    className="w-full h-full object-cover"
+                                  />
+                                </div>
                               ) : (
                                 <div className="w-14 h-14 rounded-full bg-gradient-to-br from-[#FC4C02] to-[#FC4C02]/80 flex items-center justify-center">
                                   <span className="text-white font-semibold">
@@ -393,9 +397,9 @@ export default function GroupDetailPage() {
           {/* Right Sidebar */}
           <div className="hidden lg:block w-80 flex-shrink-0">
             {/* Member Count */}
-            <button
+            <div
               onClick={() => setActiveTab('members')}
-              className="w-full bg-white rounded-lg border border-gray-200 p-6 mb-6 text-left hover:bg-gray-50 transition-colors"
+              className="w-full bg-white rounded-lg border border-gray-200 p-6 mb-6 cursor-pointer hover:bg-gray-50 transition-colors"
             >
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-bold text-gray-900">
@@ -420,7 +424,7 @@ export default function GroupDetailPage() {
                   {members.slice(0, 4).map((member) => (
                     <div
                       key={member.id}
-                      className="w-12 h-12 rounded-full border-2 border-white overflow-hidden"
+                      className="w-12 h-12 rounded-full border-2 border-white overflow-hidden bg-white"
                     >
                       {member.profilePicture ? (
                         <img
@@ -445,7 +449,7 @@ export default function GroupDetailPage() {
                   </span>
                 )}
               </div>
-            </button>
+            </div>
 
             {/* Invite People Section */}
             <div className="bg-white rounded-lg border border-gray-200 p-6">
