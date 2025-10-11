@@ -138,10 +138,10 @@ export const CommentItem: React.FC<CommentItemProps> = ({
           <img
             src={comment.user.profilePicture}
             alt={comment.user.name}
-            className="w-8 h-8 min-w-[2rem] aspect-square rounded-full object-cover flex-shrink-0"
+            className="w-8 h-8 min-w-[2rem] min-h-[2rem] rounded-full object-cover shrink-0"
           />
         ) : (
-          <div className={`w-8 h-8 min-w-[2rem] aspect-square ${getUserColor(comment.user.id)} rounded-full flex items-center justify-center flex-shrink-0`}>
+          <div className={`w-8 h-8 min-w-[2rem] min-h-[2rem] ${getUserColor(comment.user.id)} rounded-full flex items-center justify-center shrink-0`}>
             <span className="text-xs font-semibold text-white">
               {getUserInitials(comment.user.name)}
             </span>
