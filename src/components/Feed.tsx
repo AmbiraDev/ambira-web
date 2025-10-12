@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { SessionWithDetails, FeedFilters } from '@/types';
 import { firebaseApi } from '@/lib/firebaseApi';
 import SessionCard from './SessionCard';
@@ -23,6 +23,7 @@ export const Feed: React.FC<FeedProps> = ({
   showEndMessage = true
 }) => {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user } = useAuth();
   const [nextCursor, setNextCursor] = useState<string | undefined>();
   const [hasNewSessions, setHasNewSessions] = useState(false);
@@ -89,6 +90,26 @@ export const Feed: React.FC<FeedProps> = ({
     }
   }, [data, filters]);
 
+  // Refresh sessions
+  const refreshSessions = useCallback(() => {
+    setAllSessions([]);
+    setNextCursor(undefined);
+    setHasNewSessions(false);
+    setNewSessionsCount(0);
+    refetch();
+  }, [refetch]);
+
+  // Auto-refresh feed when coming from session creation
+  useEffect(() => {
+    const shouldRefresh = searchParams?.get('refresh');
+    if (shouldRefresh === 'true') {
+      // Clear the URL parameter
+      router.replace('/', { scroll: false });
+      // Trigger immediate refresh
+      refreshSessions();
+    }
+  }, [searchParams, router, refreshSessions]);
+
   const loadSessions = useCallback(async (cursor?: string, append = false) => {
     try {
       if (append) {
@@ -118,15 +139,6 @@ export const Feed: React.FC<FeedProps> = ({
       loadSessions(nextCursor, true);
     }
   }, [isLoadingMore, hasMore, nextCursor, loadSessions]);
-
-  // Refresh sessions
-  const refreshSessions = useCallback(() => {
-    setAllSessions([]);
-    setNextCursor(undefined);
-    setHasNewSessions(false);
-    setNewSessionsCount(0);
-    refetch();
-  }, [refetch]);
 
   // Check for new sessions periodically
   useEffect(() => {
@@ -386,7 +398,7 @@ export const Feed: React.FC<FeedProps> = ({
         <div className="mb-4 sticky top-0 z-10">
           <button
             onClick={refreshSessions}
-            className="w-full py-3 px-3 sm:px-4 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-lg shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200 flex items-center justify-center gap-2 font-medium text-sm sm:text-base"
+            className="w-full py-3 px-3 sm:px-4 bg-gradient-to-r from-[#007AFF] to-[#0051D5] text-white rounded-lg shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200 flex items-center justify-center gap-2 font-medium text-sm sm:text-base"
             aria-label={`${newSessionsCount} new sessions available, click to refresh`}
           >
             <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">

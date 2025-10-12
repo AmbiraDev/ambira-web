@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X, Users, ChevronLeft, ChevronRight } from 'lucide-react';
+import { X, Users, ChevronLeft, ChevronRight, MapPin } from 'lucide-react';
 import Link from 'next/link';
 import { firebaseApi } from '@/lib/firebaseApi';
 import { useAuth } from '@/contexts/AuthContext';
@@ -27,6 +27,23 @@ export default function SuggestedGroupsModal({ isOpen, onClose }: SuggestedGroup
       loadGroups();
     }
   }, [isOpen, user]);
+
+  // Handle ESC key to close modal
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscape);
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [isOpen, onClose]);
 
   const loadGroups = async () => {
     if (!user) return;

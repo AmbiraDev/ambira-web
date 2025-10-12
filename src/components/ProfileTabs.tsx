@@ -358,7 +358,7 @@ export const FollowListContent: React.FC<FollowListContentProps> = ({ userId, ty
           href={`/profile/${user.username}`}
           className="flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors"
         >
-          <div className="w-12 h-12 bg-[#007AFF]/10 rounded-full flex items-center justify-center text-[#007AFF] font-semibold text-lg flex-shrink-0">
+          <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center text-gray-600 font-semibold text-lg flex-shrink-0">
             {user.name.charAt(0).toUpperCase()}
           </div>
           <div className="flex-1 min-w-0">

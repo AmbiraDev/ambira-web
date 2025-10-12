@@ -45,6 +45,23 @@ export const CommentsModal: React.FC<CommentsModalProps> = ({
     }
   }, [currentPage, allComments]);
 
+  // Handle ESC key to close modal
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscape);
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [isOpen, onClose]);
+
   const loadAllComments = async () => {
     try {
       setIsLoading(true);

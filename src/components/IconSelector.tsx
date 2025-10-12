@@ -53,21 +53,23 @@ export function IconSelector({ icons, value, onChange, className = '' }: IconSel
   };
 
   return (
-    <div className={`relative ${className}`} ref={containerRef}>
+    <div className={`relative max-w-sm ${className}`} ref={containerRef}>
       {/* Selected Icon Display */}
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="inline-flex items-center gap-3 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none bg-white cursor-pointer hover:bg-gray-50 transition-colors"
+        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none bg-white cursor-pointer hover:bg-gray-50 transition-colors flex items-center justify-between"
       >
-        <Icon icon={selectedIcon.icon} width={48} height={48} />
-        <span className="text-gray-900">{selectedIcon.label}</span>
+        <div className="flex items-center gap-3">
+          <Icon icon={selectedIcon.icon} width={32} height={32} />
+          <span className="text-gray-900">{selectedIcon.label}</span>
+        </div>
         <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {/* Dropdown with Search and Icon Grid */}
       {isOpen && (
-        <div className="absolute z-50 w-[480px] mt-2 bg-white border border-gray-300 rounded-lg shadow-lg overflow-hidden left-0">
+        <div className="absolute z-50 w-full mt-2 bg-white border border-gray-300 rounded-lg shadow-lg overflow-hidden left-0">
           {/* Search Input */}
           <div className="p-2 border-b border-gray-200">
             <div className="relative">

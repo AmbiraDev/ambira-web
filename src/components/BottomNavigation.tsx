@@ -14,7 +14,7 @@ export default function BottomNavigation() {
   const isActive = (path: string) => {
     if (path === '/') return pathname === '/';
     if (path === '/search') return pathname.startsWith('/search');
-    if (path === '/projects') return pathname.startsWith('/projects');
+    if (path === '/activities') return pathname.startsWith('/activities');
     if (path === '/groups') return pathname.startsWith('/groups');
     if (path === '/you') return pathname.startsWith('/you');
     return pathname === path;

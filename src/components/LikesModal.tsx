@@ -38,6 +38,23 @@ export const LikesModal: React.FC<LikesModalProps> = ({
     }
   }, [isOpen, userIds.join(',')]); // Use join to properly detect array changes
 
+  // Handle ESC key to close modal
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscape);
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [isOpen, onClose]);
+
   const loadUsers = async () => {
     setIsLoading(true);
     try {

@@ -51,6 +51,23 @@ export default function CreateGroupModal({
 
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // Handle ESC key to close modal
+  React.useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen && !isLoading) {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscape);
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [isOpen, isLoading, onClose]);
+
   const handleInputChange = (field: keyof CreateGroupData, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     if (errors[field]) {

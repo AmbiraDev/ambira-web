@@ -151,7 +151,7 @@ export const TaskItem: React.FC<TaskItemProps> = ({
       return;
     }
 
-    // Navigate to project detail page if projectId exists
+    // Navigate to activity detail page if projectId exists
     const taskProjectId = projectId || task.projectId;
     if (taskProjectId) {
       router.push(`/activities/${taskProjectId}`);

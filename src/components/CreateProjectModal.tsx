@@ -29,6 +29,23 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Partial<CreateProjectData>>({});
 
+  // Handle ESC key to close modal
+  React.useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscape);
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [isOpen, onClose]);
+
   // Preset icons
   const availableIcons = [
     '💻', '⚛️', '💪', '📚', '🎨', '🏃', '🎵', '🔬', '📝', '🚀'

@@ -45,7 +45,7 @@ export function ColorSelector({ colors, value, onChange, className = '' }: Color
   };
 
   return (
-    <div className={`relative ${className}`} ref={containerRef}>
+    <div className={`relative max-w-sm ${className}`} ref={containerRef}>
       {/* Selected Color Display */}
       <button
         type="button"

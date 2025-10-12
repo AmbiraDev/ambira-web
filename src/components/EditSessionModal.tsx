@@ -67,6 +67,20 @@ export const EditSessionModal: React.FC<EditSessionModalProps> = ({
     setImagePreviewUrls([]);
   }, [session.id]);
 
+  // Handle ESC key to close modal
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [onClose]);
+
   const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     console.log('📸 Files selected in edit modal:', files.length);

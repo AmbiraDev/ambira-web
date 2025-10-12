@@ -28,6 +28,11 @@ export const useActivity = (id: string): { activity: Activity | null; isLoading:
   const { activities, isLoading } = useActivities();
   const activity = activities.find(a => a.id === id) || null;
 
+  console.log('[useActivity] Looking for activity with ID:', id);
+  console.log('[useActivity] All activities:', activities.map(a => ({ id: a.id, name: a.name })));
+  console.log('[useActivity] Found activity:', activity);
+  console.log('[useActivity] isLoading:', isLoading);
+
   return {
     activity,
     isLoading,

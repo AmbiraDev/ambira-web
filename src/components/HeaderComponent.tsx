@@ -220,15 +220,15 @@ export default function Header() {
                   )}
                 </Link>
                 <Link
-                  href="/projects"
+                  href="/activities"
                   className={`text-base font-medium transition-colors h-full relative flex items-center ${
-                    isActive('/projects') || isActive('/activities')
+                    isActive('/activities')
                       ? 'text-gray-900'
                       : 'text-gray-600 hover:text-gray-900'
                   }`}
                 >
                   Activities
-                  {(isActive('/projects') || isActive('/activities')) && (
+                  {isActive('/activities') && (
                     <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#007AFF]"></div>
                   )}
                 </Link>
@@ -404,9 +404,9 @@ export default function Header() {
                 Groups
               </Link>
               <Link
-                href="/projects"
+                href="/activities"
                 className={`block px-4 py-2 transition-colors ${
-                  isActive('/projects') || isActive('/activities')
+                  isActive('/activities')
                     ? 'text-[#007AFF] bg-blue-50'
                     : 'text-gray-600 hover:text-[#007AFF]'
                 }`}

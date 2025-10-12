@@ -836,7 +836,7 @@ export default function ProfilePage() {
                   {sessions.length > 0 ? (
                     <div className="space-y-3">
                       {sessions.slice(0, 5).map((session) => (
-                        <div key={session.id} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
+                        <Link key={session.id} href={`/sessions/${session.id}`} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0 hover:bg-gray-50 -mx-2 px-2 rounded transition-colors cursor-pointer">
                           <div className="flex-1">
                             <div className="font-medium text-gray-900 text-sm">
                               {session.title || 'Focus Session'}
@@ -853,7 +853,7 @@ export default function ProfilePage() {
                               {session.tasks?.length || 0} tasks
                             </div>
                           </div>
-                        </div>
+                        </Link>
                       ))}
                     </div>
                   ) : (
@@ -907,8 +907,8 @@ export default function ProfilePage() {
                       </div>
 
                       {/* Session Title and Description */}
-                      <div className="px-4 pb-3">
-                        <h3 className="text-2xl font-bold text-gray-900 mb-1">
+                      <Link href={`/sessions/${session.id}`} className="px-4 pb-3 block cursor-pointer">
+                        <h3 className="text-2xl font-bold text-gray-900 mb-1 hover:text-[#007AFF] transition-colors">
                           {session.title || 'Focus Session'}
                         </h3>
                         {session.description && (
@@ -916,10 +916,10 @@ export default function ProfilePage() {
                             {session.description}
                           </p>
                         )}
-                      </div>
+                      </Link>
 
                       {/* Session Stats - Strava style */}
-                      <div className="px-4 pb-4">
+                      <Link href={`/sessions/${session.id}`} className="px-4 pb-4 block cursor-pointer hover:bg-gray-50/50 transition-colors">
                         <div className="grid grid-cols-3 gap-4">
                           <div>
                             <div className="text-xs text-gray-500 uppercase tracking-wide mb-0.5">Time</div>
@@ -940,23 +940,23 @@ export default function ProfilePage() {
                             </div>
                           </div>
                         </div>
-                      </div>
+                      </Link>
 
                       {/* Action Buttons */}
                       <div className="flex items-center border-t border-gray-100 px-2">
-                        <button className="flex-1 flex items-center justify-center gap-2 py-3 text-gray-600 hover:bg-gray-50 transition-colors rounded-lg">
+                        <Link href={`/sessions/${session.id}`} className="flex-1 flex items-center justify-center gap-2 py-3 text-gray-600 hover:bg-gray-50 transition-colors rounded-lg">
                           <Heart className="w-6 h-6" />
                           <span className="text-sm font-medium">
                             {session.supportCount || 0}
                           </span>
-                        </button>
+                        </Link>
                         <div className="w-px h-6 bg-gray-200"></div>
-                        <button className="flex-1 flex items-center justify-center gap-2 py-3 text-gray-600 hover:bg-gray-50 transition-colors rounded-lg">
+                        <Link href={`/sessions/${session.id}`} className="flex-1 flex items-center justify-center gap-2 py-3 text-gray-600 hover:bg-gray-50 transition-colors rounded-lg">
                           <MessageCircle className="w-6 h-6" />
                           <span className="text-sm font-medium">
                             {session.commentCount || 0}
                           </span>
-                        </button>
+                        </Link>
                         <div className="w-px h-6 bg-gray-200"></div>
                         <button className="flex-1 flex items-center justify-center gap-2 py-3 text-gray-600 hover:bg-gray-50 transition-colors rounded-lg">
                           <Share2 className="w-6 h-6" />

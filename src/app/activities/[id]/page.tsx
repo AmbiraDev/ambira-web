@@ -2,7 +2,6 @@
 
 import React from 'react';
 import { ProjectDetailPage } from '@/components/ProjectDetailPage';
-import { useAuth } from '@/contexts/AuthContext';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import Header from '@/components/HeaderComponent';
 

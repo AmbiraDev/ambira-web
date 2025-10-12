@@ -2466,27 +2466,39 @@ export const firebaseSessionApi = {
       }
 
       const userId = auth.currentUser.uid;
-      
+
+      // First check if session was already marked as inactive (cancelled/completed)
+      // This prevents race conditions with auto-save
+      const activeSessionRef = doc(db, 'users', userId, 'activeSession', 'current');
+      const existingDoc = await getDoc(activeSessionRef);
+
+      if (existingDoc.exists()) {
+        const data = existingDoc.data();
+        if (data?.status === 'inactive') {
+          console.log('Active session was already marked as inactive, skipping save');
+          return;
+        }
+      }
+
       // Ensure user document exists first (Firestore requires parent docs for subcollections)
       const userRef = doc(db, 'users', userId);
       await setDoc(userRef, {
         uid: userId,
         updatedAt: serverTimestamp()
       }, { merge: true });
-      
-      // Now save the active session
-      const activeSessionRef = doc(db, 'users', userId, 'activeSession', 'current');
-      
+
+      // Now save the active session with status 'active'
       await setDoc(activeSessionRef, {
         startTime: timerData.startTime,
         projectId: timerData.projectId,
         selectedTaskIds: timerData.selectedTaskIds,
         pausedDuration: timerData.pausedDuration || 0,
         isPaused: !!timerData.isPaused,
+        status: 'active',
         lastUpdated: serverTimestamp(),
         createdAt: serverTimestamp()
       });
-      
+
       console.log('Active session saved successfully');
     } catch (error) {
       const apiError = handleError(error, 'Save active session');
@@ -2510,19 +2522,25 @@ export const firebaseSessionApi = {
       const userId = auth.currentUser.uid;
       const activeSessionRef = doc(db, 'users', userId, 'activeSession', 'current');
       const activeSessionDoc = await getDoc(activeSessionRef);
-      
+
       if (!activeSessionDoc.exists()) {
         return null;
       }
 
       const data = activeSessionDoc.data();
-      
+
+      // Check if session was marked as inactive (cancelled/completed)
+      if (data?.status === 'inactive') {
+        console.log('Active session is marked as inactive, ignoring');
+        return null;
+      }
+
       // Validate data exists and has required fields
       if (!data || !data.startTime || !data.projectId) {
         handleError(new Error('Active session data is incomplete'), 'Get active session', { severity: ErrorSeverity.WARNING });
         return null;
       }
-      
+
       return {
         startTime: data.startTime.toDate(),
         projectId: data.projectId,
@@ -2549,6 +2567,15 @@ export const firebaseSessionApi = {
 
       const userId = auth.currentUser.uid;
       const activeSessionRef = doc(db, 'users', userId, 'activeSession', 'current');
+
+      // First mark as inactive to prevent race conditions with auto-save
+      // This ensures any in-flight auto-save operations won't restore the session
+      await setDoc(activeSessionRef, {
+        status: 'inactive',
+        clearedAt: serverTimestamp()
+      }, { merge: true });
+
+      // Then delete the document
       await deleteDoc(activeSessionRef);
       console.log('Active session cleared successfully');
     } catch (error) {

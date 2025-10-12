@@ -145,7 +145,7 @@ export const ProjectList: React.FC<ProjectListProps> = ({
           </div>
           <div className="flex gap-2">
             <button
-              onClick={() => router.push('/projects/new')}
+              onClick={() => router.push('/activities/new')}
               className="bg-[#007AFF] text-white px-5 py-2.5 rounded-lg hover:bg-[#0056D6] transition-colors flex items-center gap-2 font-medium shadow-sm hover:shadow-md"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -174,7 +174,7 @@ export const ProjectList: React.FC<ProjectListProps> = ({
               Activities help you organize your work sessions and track progress over time. Create your first activity to get started!
             </p>
             <button
-              onClick={() => router.push('/projects/new')}
+              onClick={() => router.push('/activities/new')}
               className="inline-flex items-center gap-2 bg-[#007AFF] text-white px-6 py-3 rounded-xl hover:bg-[#0056D6] transition-colors font-medium shadow-sm mb-4"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

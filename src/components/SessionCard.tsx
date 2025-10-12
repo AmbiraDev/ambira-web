@@ -201,8 +201,8 @@ export const SessionCard: React.FC<SessionCardProps> = ({
       </div>
 
       {/* Title and Description */}
-      <div className="px-4 pb-3">
-        <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 mb-1 leading-tight">
+      <Link href={`/sessions/${session.id}`} className="px-4 pb-3 block cursor-pointer">
+        <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 mb-1 leading-tight hover:text-[#007AFF] transition-colors">
           {session.title || 'Focus Session'}
         </h3>
         {session.description && (
@@ -212,7 +212,10 @@ export const SessionCard: React.FC<SessionCardProps> = ({
             </p>
             {session.description.length > 280 && (
               <button
-                onClick={() => setIsExpanded(!isExpanded)}
+                onClick={(e) => {
+                  e.preventDefault();
+                  setIsExpanded(!isExpanded);
+                }}
                 className="text-[#007AFF] text-sm font-semibold mt-1 hover:underline min-h-[44px] flex items-center"
                 aria-expanded={isExpanded}
                 aria-label={isExpanded ? 'Show less description' : 'Show more description'}
@@ -222,17 +225,17 @@ export const SessionCard: React.FC<SessionCardProps> = ({
             )}
           </div>
         )}
-      </div>
+      </Link>
 
       {/* Image Gallery */}
       {session.images && session.images.length > 0 && (
-        <div className="px-4 pb-4">
+        <Link href={`/sessions/${session.id}`} className="px-4 pb-4 block cursor-pointer">
           <ImageGallery images={session.images} />
-        </div>
+        </Link>
       )}
 
       {/* Stats - Strava style */}
-      <div className="px-4 pb-2">
+      <Link href={`/sessions/${session.id}`} className="px-4 pb-2 block cursor-pointer hover:bg-gray-50/50 transition-colors">
         <div className="grid grid-cols-2 gap-4">
           <div>
             <div className="text-xs text-gray-500 mb-1">Time</div>
@@ -243,7 +246,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({
             <div className="text-base font-semibold text-gray-900 truncate">{session.project?.name || 'N/A'}</div>
           </div>
         </div>
-      </div>
+      </Link>
 
       {/* Interactions */}
       <SessionInteractions

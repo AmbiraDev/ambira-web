@@ -44,6 +44,23 @@ export default function SuggestedPeopleModal({ isOpen, onClose }: SuggestedPeopl
     }
   }, [isOpen, user, loadUsers]);
 
+  // Handle ESC key to close modal
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscape);
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [isOpen, onClose]);
+
   // Calculate paginated users
   const totalPages = Math.ceil(allSuggestedUsers.length / USERS_PER_PAGE);
   const startIndex = currentPage * USERS_PER_PAGE;

@@ -85,6 +85,23 @@ export default function CreateChallengeModal({
   const [newReward, setNewReward] = useState('');
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // Handle ESC key to close modal
+  React.useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscape);
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   const validateForm = (): boolean => {

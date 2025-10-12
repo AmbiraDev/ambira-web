@@ -38,6 +38,30 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
     profile.profilePicture ? [profile.profilePicture] : []
   );
 
+  // Handle ESC key to close modal
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen && !isLoading) {
+        // Reset form data to original values
+        setFormData({
+          name: profile.name,
+          bio: profile.bio || '',
+          location: profile.location || '',
+          profilePicture: profile.profilePicture || '',
+        });
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscape);
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [isOpen, isLoading, onClose, profile]);
+
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };

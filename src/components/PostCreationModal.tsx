@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Session, Project } from '@/types';
 
 interface PostCreationModalProps {
@@ -23,6 +23,23 @@ export const PostCreationModal: React.FC<PostCreationModalProps> = ({
   const [description, setDescription] = useState('');
   const [visibility, setVisibility] = useState<'everyone' | 'followers' | 'private'>('everyone');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Handle ESC key to close modal
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        onCancel();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscape);
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [isOpen, onCancel]);
 
   if (!isOpen) return null;
 

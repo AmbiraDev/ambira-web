@@ -229,8 +229,8 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
       // Wait a moment to ensure state is cleared, then navigate
       await new Promise(resolve => setTimeout(resolve, 100));
 
-      // Navigate to analytics page after saving
-      window.location.href = '/you?tab=sessions';
+      // Navigate to home feed with refresh parameter to trigger immediate refresh
+      window.location.href = '/?refresh=true';
     } catch (error) {
       console.error('Failed to finish timer:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to save session. Please try again.';

@@ -19,7 +19,7 @@ type TabType = 'progress' | 'tasks' | 'sessions' | 'profile';
 
 export const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({ projectId }) => {
   const router = useRouter();
-  const { project, isLoading } = useProject(projectId);
+  const { activity: project, isLoading } = useProject(projectId);
   const { getProjectStats, updateProject, deleteProject, archiveProject } = useProjects();
   const { tasks, createTask, updateTask, deleteTask, bulkUpdateTasks, loadProjectTasks } = useTasks();
   const [activeTab, setActiveTab] = useState<TabType>('progress');
@@ -28,12 +28,20 @@ export const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({ projectId 
   const [showEditModal, setShowEditModal] = useState(false);
   const [selectedTaskIds, setSelectedTaskIds] = useState<string[]>([]);
 
+  // Debug logging
+  console.log('[ProjectDetailPage] Rendering with projectId:', projectId);
+  console.log('[ProjectDetailPage] isLoading:', isLoading);
+  console.log('[ProjectDetailPage] project:', project);
+
   // Load project stats and tasks
   useEffect(() => {
+    console.log('[ProjectDetailPage] useEffect triggered - project:', project, 'projectId:', projectId);
     if (project) {
-      console.log('Loading tasks for project:', projectId, project.name);
+      console.log('[ProjectDetailPage] Loading tasks and stats for activity:', projectId, project.name);
       loadStats();
       loadProjectTasks(projectId);
+    } else {
+      console.log('[ProjectDetailPage] No project found for ID:', projectId);
     }
   }, [project, projectId, loadProjectTasks]);
 
@@ -55,24 +63,24 @@ export const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({ projectId 
 
   const handleArchive = async () => {
     if (!project) return;
-    
+
     try {
       await archiveProject(project.id);
-      router.push('/projects');
+      router.push('/activities');
     } catch (error) {
-      console.error('Failed to archive project:', error);
+      console.error('Failed to archive activity:', error);
     }
   };
 
   const handleDelete = async () => {
     if (!project) return;
-    
+
     if (confirm(`Are you sure you want to delete "${project.name}"? This action cannot be undone.`)) {
       try {
         await deleteProject(project.id);
-        router.push('/projects');
+        router.push('/activities');
       } catch (error) {
-        console.error('Failed to delete project:', error);
+        console.error('Failed to delete activity:', error);
       }
     }
   };
@@ -116,19 +124,20 @@ export const ProjectDetailPage: React.FC<ProjectDetailPageProps> = ({ projectId 
   }
 
   if (!project) {
+    console.log('[ProjectDetailPage] Rendering "not found" state');
     return (
       <div className="max-w-4xl mx-auto p-6">
         <div className="text-center py-12">
           <div className="flex justify-center mb-4">
             <IconRenderer iconName="flat-color-icons:folder" size={80} />
           </div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">Project not found</h3>
-          <p className="text-gray-600 mb-4">The project you're looking for doesn't exist or you don't have access to it.</p>
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">Activity not found</h3>
+          <p className="text-gray-600 mb-4">The activity you're looking for doesn't exist or you don't have access to it.</p>
           <button
-            onClick={() => router.push('/projects')}
+            onClick={() => router.push('/activities')}
             className="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors"
           >
-            Back to Projects
+            Back to Activities
           </button>
         </div>
       </div>
