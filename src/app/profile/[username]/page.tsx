@@ -20,7 +20,7 @@ import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'rec
 import { useUserFollowers, useUserFollowing } from '@/hooks/useCache';
 import { UnifiedProfileCard } from '@/components/UnifiedProfileCard';
 
-type YouTab = 'progress' | 'sessions' | 'profile';
+type YouTab = 'progress' | 'sessions';
 type TimePeriod = 'day' | 'week' | 'month' | 'year';
 
 interface ChartDataPoint {
@@ -49,7 +49,7 @@ export default function ProfilePage() {
   const [stats, setStats] = useState<UserStats | null>(null);
   const [postsCount, setPostsCount] = useState<number>(0);
   const [activeTab, setActiveTab] = useState<YouTab>(
-    tabParam === 'sessions' ? 'sessions' : tabParam === 'profile' ? 'profile' : 'progress'
+    tabParam === 'sessions' ? 'sessions' : 'progress'
   );
   const [timePeriod, setTimePeriod] = useState<TimePeriod>('week');
   const [showTimePeriodDropdown, setShowTimePeriodDropdown] = useState(false);
@@ -71,7 +71,7 @@ export default function ProfilePage() {
 
   // Update tab when URL changes
   useEffect(() => {
-    if (tabParam === 'sessions' || tabParam === 'progress' || tabParam === 'profile') {
+    if (tabParam === 'sessions' || tabParam === 'progress') {
       setActiveTab(tabParam);
     }
   }, [tabParam]);
@@ -547,19 +547,6 @@ export default function ProfilePage() {
                 >
                   Sessions
                 </button>
-                <button
-                  onClick={() => {
-                    setActiveTab('profile');
-                    router.push(`/profile/${username}?tab=profile`);
-                  }}
-                  className={`flex-1 md:flex-initial py-3 md:py-4 px-1 text-sm md:text-base font-medium border-b-2 transition-colors ${
-                    activeTab === 'profile'
-                      ? 'border-[#007AFF] text-[#007AFF] md:text-gray-900'
-                      : 'border-transparent text-gray-500 md:text-gray-600 hover:text-gray-700 md:hover:text-gray-900'
-                  }`}
-                >
-                  Profile
-                </button>
               </div>
             </div>
           </div>
@@ -862,6 +849,109 @@ export default function ProfilePage() {
                     </div>
                   )}
                 </div>
+
+                {/* Followers and Following Section - Mobile Friendly */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                  {/* Followers Section */}
+                  <div className="bg-white rounded-lg border border-gray-200 p-4 md:p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-base md:text-lg font-semibold text-gray-900">Followers ({followers.length})</h3>
+                    </div>
+                    {followers.length > 0 ? (
+                      <div className="space-y-2 md:space-y-3">
+                        {followers.slice(0, 5).map((follower) => (
+                          <Link
+                            key={follower.id}
+                            href={`/profile/${follower.username}`}
+                            className="flex items-center gap-2 md:gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors"
+                          >
+                            {follower.profilePicture ? (
+                              <div className="w-8 h-8 md:w-10 md:h-10 rounded-full overflow-hidden ring-2 ring-white flex-shrink-0">
+                                <img
+                                  src={follower.profilePicture}
+                                  alt={follower.name}
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+                            ) : (
+                              <div className="w-8 h-8 md:w-10 md:h-10 bg-[#FC4C02] rounded-full flex items-center justify-center flex-shrink-0">
+                                <span className="text-white font-semibold text-xs md:text-sm">
+                                  {follower.name.charAt(0).toUpperCase()}
+                                </span>
+                              </div>
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <div className="font-medium text-sm md:text-base text-gray-900 truncate">{follower.name}</div>
+                              <div className="text-xs md:text-sm text-gray-500 truncate">@{follower.username}</div>
+                            </div>
+                          </Link>
+                        ))}
+                        {followers.length > 5 && (
+                          <div className="text-center pt-2">
+                            <button className="text-[#007AFF] text-xs md:text-sm font-medium">
+                              View all {followers.length} followers
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="text-center py-6 md:py-8 text-gray-400">
+                        <Users className="w-10 h-10 md:w-12 md:h-12 mx-auto mb-2 opacity-50" />
+                        <p className="text-sm md:text-base">No followers yet</p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Following Section */}
+                  <div className="bg-white rounded-lg border border-gray-200 p-4 md:p-6">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="text-base md:text-lg font-semibold text-gray-900">Following ({following.length})</h3>
+                    </div>
+                    {following.length > 0 ? (
+                      <div className="space-y-2 md:space-y-3">
+                        {following.slice(0, 5).map((followedUser) => (
+                          <Link
+                            key={followedUser.id}
+                            href={`/profile/${followedUser.username}`}
+                            className="flex items-center gap-2 md:gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors"
+                          >
+                            {followedUser.profilePicture ? (
+                              <div className="w-8 h-8 md:w-10 md:h-10 rounded-full overflow-hidden ring-2 ring-white flex-shrink-0">
+                                <img
+                                  src={followedUser.profilePicture}
+                                  alt={followedUser.name}
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+                            ) : (
+                              <div className="w-8 h-8 md:w-10 md:h-10 bg-[#FC4C02] rounded-full flex items-center justify-center flex-shrink-0">
+                                <span className="text-white font-semibold text-xs md:text-sm">
+                                  {followedUser.name.charAt(0).toUpperCase()}
+                                </span>
+                              </div>
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <div className="font-medium text-sm md:text-base text-gray-900 truncate">{followedUser.name}</div>
+                              <div className="text-xs md:text-sm text-gray-500 truncate">@{followedUser.username}</div>
+                            </div>
+                          </Link>
+                        ))}
+                        {following.length > 5 && (
+                          <div className="text-center pt-2">
+                            <button className="text-[#007AFF] text-xs md:text-sm font-medium">
+                              View all {following.length} following
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="text-center py-6 md:py-8 text-gray-400">
+                        <UserIcon className="w-10 h-10 md:w-12 md:h-12 mx-auto mb-2 opacity-50" />
+                        <p className="text-sm md:text-base">Not following anyone yet</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
             )}
 
@@ -877,7 +967,7 @@ export default function ProfilePage() {
                       {/* Session Header */}
                       <div className="flex items-center justify-between p-4 pb-3">
                         <div className="flex items-center gap-3">
-                          <Link href={`/profile/${username}?tab=profile`}>
+                          <Link href={`/profile/${username}`}>
                             {profile.profilePicture ? (
                               <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-white bg-white">
                                 <img
@@ -965,139 +1055,6 @@ export default function ProfilePage() {
                     </div>
                   ))
                 )}
-              </div>
-            )}
-
-            {activeTab === 'profile' && (
-              <div className="max-w-4xl mx-auto">
-                {/* Profile Header - Only show for own profile */}
-                {isOwnProfile && (
-                  <UnifiedProfileCard
-                    name={profile.name}
-                    username={profile.username}
-                    profilePicture={profile.profilePicture}
-                    bio={profile.bio}
-                    tagline={profile.tagline}
-                    pronouns={profile.pronouns}
-                    location={profile.location}
-                    website={profile.website}
-                    socialLinks={profile.socialLinks}
-                    followersCount={followers.length}
-                    followingCount={following.length}
-                    isOwnProfile={true}
-                    editButtonHref="/settings"
-                    className="mb-6"
-                  />
-                )}
-
-                {/* This Week Section */}
-                <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
-                  <div className="flex items-center gap-2 mb-4">
-                    <div className="w-6 h-6 text-[#FC4C02]">📊</div>
-                    <h2 className="text-lg font-bold">This week</h2>
-                  </div>
-
-                  <div className="flex gap-6 mb-4">
-                    <div>
-                      <div className="text-sm text-gray-600">Time</div>
-                      <div className="text-xl font-bold">
-                        {stats?.weeklyHours?.toFixed(1) || 0}h
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-sm text-gray-600">Sessions</div>
-                      <div className="text-xl font-bold">
-                        {stats?.sessionsThisWeek || 0}
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-sm text-gray-600">Streak</div>
-                      <div className="text-xl font-bold">
-                        {stats?.currentStreak || 0} days
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Followers Section */}
-                <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-bold">Followers ({followers.length})</h3>
-                  </div>
-                  {followers.length > 0 ? (
-                    <div className="space-y-3">
-                      {followers.slice(0, 5).map((follower) => (
-                        <Link
-                          key={follower.id}
-                          href={`/profile/${follower.username}`}
-                          className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors"
-                        >
-                          <div className="w-10 h-10 bg-[#FC4C02] rounded-full flex items-center justify-center">
-                            <span className="text-white font-semibold text-sm">
-                              {follower.name.charAt(0).toUpperCase()}
-                            </span>
-                          </div>
-                          <div className="flex-1">
-                            <div className="font-medium">{follower.name}</div>
-                            <div className="text-sm text-gray-500">@{follower.username}</div>
-                          </div>
-                        </Link>
-                      ))}
-                      {followers.length > 5 && (
-                        <div className="text-center pt-2">
-                          <button className="text-[#007AFF] text-sm font-medium">
-                            View all {followers.length} followers
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="text-center py-8 text-gray-400">
-                      <Users className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                      <p>No followers yet</p>
-                    </div>
-                  )}
-                </div>
-
-                {/* Following Section */}
-                <div className="bg-white rounded-xl border border-gray-200 p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-bold">Following ({following.length})</h3>
-                  </div>
-                  {following.length > 0 ? (
-                    <div className="space-y-3">
-                      {following.slice(0, 5).map((followedUser) => (
-                        <Link
-                          key={followedUser.id}
-                          href={`/profile/${followedUser.username}`}
-                          className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors"
-                        >
-                          <div className="w-10 h-10 bg-[#FC4C02] rounded-full flex items-center justify-center">
-                            <span className="text-white font-semibold text-sm">
-                              {followedUser.name.charAt(0).toUpperCase()}
-                            </span>
-                          </div>
-                          <div className="flex-1">
-                            <div className="font-medium">{followedUser.name}</div>
-                            <div className="text-sm text-gray-500">@{followedUser.username}</div>
-                          </div>
-                        </Link>
-                      ))}
-                      {following.length > 5 && (
-                        <div className="text-center pt-2">
-                          <button className="text-[#007AFF] text-sm font-medium">
-                            View all {following.length} following
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="text-center py-8 text-gray-400">
-                      <UserIcon className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                      <p>Not following anyone yet</p>
-                    </div>
-                  )}
-                </div>
               </div>
             )}
           </div>

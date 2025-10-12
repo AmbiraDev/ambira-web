@@ -11,7 +11,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { UserCardCompact } from '@/components/UserCard';
 import { collection, query as firestoreQuery, orderBy, limit, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { Users, MapPin, Calendar, Check } from 'lucide-react';
+import { Users, MapPin } from 'lucide-react';
 
 // Mock data for search results
 const mockUsers = [
@@ -28,30 +28,21 @@ const mockGroups = [
   { id: '4', name: 'Productivity Nerds', description: 'Optimizing every minute of the day', members: 2345, category: 'Fun', location: 'Global', image: '⚡' },
 ];
 
-const mockChallenges = [
-  { id: '1', name: '30 Day Study Streak', description: 'Study every day for 30 days straight', participants: 456, endDate: '2025-11-01', group: 'CS Study Group', image: '🔥' },
-  { id: '2', name: '100 Hours in October', description: 'Log 100 hours of focused work this month', participants: 234, endDate: '2025-10-31', group: 'Productivity Nerds', image: '💯' },
-  { id: '3', name: 'Most Productive Week', description: 'Who can log the most hours this week?', participants: 123, endDate: '2025-10-08', group: 'Early Morning Grinders', image: '🏆' },
-];
 
 function SearchContent() {
   const searchParams = useSearchParams();
   const initialQuery = searchParams.get('q') || '';
-  const type = (searchParams.get('type') || 'suggested') as 'suggested' | 'people' | 'groups' | 'challenges';
+  const type = (searchParams.get('type') || 'suggested') as 'suggested' | 'people' | 'groups';
 
   const [query, setQuery] = useState(initialQuery);
   const [isLoading, setIsLoading] = useState(false);
   const [results, setResults] = useState<any[]>([]);
   const [suggestedUsers, setSuggestedUsers] = useState<any[]>([]);
   const [suggestedGroups, setSuggestedGroups] = useState<any[]>([]);
-  const [suggestedChallenges, setSuggestedChallenges] = useState<any[]>([]);
   const [showAllPeople, setShowAllPeople] = useState(false);
   const [showAllGroups, setShowAllGroups] = useState(false);
-  const [showAllChallenges, setShowAllChallenges] = useState(false);
   const [joinedGroups, setJoinedGroups] = useState<Set<string>>(new Set());
-  const [joinedChallenges, setJoinedChallenges] = useState<Set<string>>(new Set());
   const [joiningGroup, setJoiningGroup] = useState<string | null>(null);
-  const [joiningChallenge, setJoiningChallenge] = useState<string | null>(null);
   const { user } = useAuth();
 
   // Load suggested content on mount
@@ -102,26 +93,6 @@ function SearchContent() {
           if (isMounted) setSuggestedGroups([]);
         }
 
-        // Load challenges - get active challenges sorted by participant count
-        try {
-          const challenges = await firebaseApi.challenge.getChallenges({ status: 'active' });
-          const sortedChallenges = challenges
-            .sort((a, b) => (b.participantCount || 0) - (a.participantCount || 0))
-            .slice(0, 20)
-            .map(c => ({
-              id: c.id,
-              name: c.name,
-              description: c.description,
-              participants: c.participantCount || 0,
-              endDate: c.endDate.toISOString().split('T')[0],
-              group: c.groupId || 'Global',
-              image: '🎯'
-            }));
-          if (isMounted) setSuggestedChallenges(sortedChallenges);
-        } catch (error) {
-          console.error('Error loading challenges:', error);
-          if (isMounted) setSuggestedChallenges([]);
-        }
       } finally {
         if (isMounted) setIsLoading(false);
       }
@@ -210,34 +181,6 @@ function SearchContent() {
     }
   };
 
-  const handleJoinChallenge = async (challengeId: string, e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    if (!user) return;
-    
-    const isJoined = joinedChallenges.has(challengeId);
-    
-    try {
-      setJoiningChallenge(challengeId);
-      
-      if (isJoined) {
-        await firebaseApi.challenge.leaveChallenge(challengeId);
-        setJoinedChallenges(prev => {
-          const newSet = new Set(prev);
-          newSet.delete(challengeId);
-          return newSet;
-        });
-      } else {
-        await firebaseApi.challenge.joinChallenge(challengeId);
-        setJoinedChallenges(prev => new Set(prev).add(challengeId));
-      }
-    } catch (error) {
-      console.error('Failed to join/leave challenge:', error);
-    } finally {
-      setJoiningChallenge(null);
-    }
-  };
 
   const renderUserResult = (user: any) => {
     if (user.isSelf) {
@@ -341,65 +284,6 @@ function SearchContent() {
     );
   };
 
-  const renderChallengeResult = (challenge: any) => {
-    const isJoined = joinedChallenges.has(challenge.id);
-    const isLoading = joiningChallenge === challenge.id;
-    
-    return (
-      <Link
-        key={challenge.id}
-        href={`/challenges/${challenge.id}`}
-        className="block p-4 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-0"
-      >
-        <div className="flex items-start gap-3">
-          {/* Challenge Icon */}
-          <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-red-600 rounded-xl flex items-center justify-center text-2xl flex-shrink-0">
-            {challenge.image}
-          </div>
-          
-          {/* Challenge Info */}
-          <div className="flex-1 min-w-0">
-            <h3 className="font-semibold text-gray-900 text-base truncate">{challenge.name}</h3>
-            <p className="text-sm text-gray-600 mt-0.5 line-clamp-2">{challenge.description}</p>
-            
-            {/* Meta Info */}
-            <div className="flex items-center gap-3 mt-2 text-xs text-gray-500">
-              <span className="flex items-center gap-1">
-                <Users className="w-3.5 h-3.5" />
-                {challenge.participants}
-              </span>
-              <span className="flex items-center gap-1">
-                <Calendar className="w-3.5 h-3.5" />
-                {new Date(challenge.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-              </span>
-            </div>
-          </div>
-          
-          {/* Join Button */}
-          <button 
-            onClick={(e) => handleJoinChallenge(challenge.id, e)}
-            disabled={isLoading}
-            className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors flex-shrink-0 flex items-center gap-1.5 ${
-              isJoined
-                ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                : 'bg-[#007AFF] text-white hover:bg-[#0056D6]'
-            } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
-          >
-            {isLoading ? (
-              <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-            ) : isJoined ? (
-              <>
-                <Check className="w-4 h-4" />
-                <span className="hidden sm:inline">Joined</span>
-              </>
-            ) : (
-              <span>Join</span>
-            )}
-          </button>
-        </div>
-      </Link>
-    );
-  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -436,12 +320,12 @@ function SearchContent() {
           <form onSubmit={(e) => { e.preventDefault(); if (query.trim()) window.location.href = `/search?q=${encodeURIComponent(query.trim())}&type=${type}`; }}>
             <div className="space-y-4">
               {/* Filter Tabs */}
-              <div className="flex bg-gray-100 rounded-lg p-1 overflow-x-auto">
+              <div className="flex bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
                 <button
                   type="button"
                   onClick={() => window.location.href = `/search?type=suggested`}
-                  className={`flex-1 py-2 px-3 text-sm font-medium rounded-md transition-colors ${
-                    type === 'suggested' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600'
+                  className={`flex-1 py-3 px-4 text-sm font-medium transition-all border-r border-gray-200 last:border-r-0 ${
+                    type === 'suggested' ? 'bg-[#007AFF] text-white' : 'text-gray-700 hover:bg-gray-50'
                   }`}
                 >
                   Suggested
@@ -449,8 +333,8 @@ function SearchContent() {
                 <button
                   type="button"
                   onClick={() => window.location.href = `/search?q=${encodeURIComponent(initialQuery)}&type=people`}
-                  className={`flex-1 py-2 px-3 text-sm font-medium rounded-md transition-colors ${
-                    type === 'people' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600'
+                  className={`flex-1 py-3 px-4 text-sm font-medium transition-all border-r border-gray-200 last:border-r-0 ${
+                    type === 'people' ? 'bg-[#007AFF] text-white' : 'text-gray-700 hover:bg-gray-50'
                   }`}
                 >
                   People
@@ -458,20 +342,11 @@ function SearchContent() {
                 <button
                   type="button"
                   onClick={() => window.location.href = `/search?q=${encodeURIComponent(initialQuery)}&type=groups`}
-                  className={`flex-1 py-2 px-3 text-sm font-medium rounded-md transition-colors ${
-                    type === 'groups' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600'
+                  className={`flex-1 py-3 px-4 text-sm font-medium transition-all ${
+                    type === 'groups' ? 'bg-[#007AFF] text-white' : 'text-gray-700 hover:bg-gray-50'
                   }`}
                 >
                   Groups
-                </button>
-                <button
-                  type="button"
-                  onClick={() => window.location.href = `/search?q=${encodeURIComponent(initialQuery)}&type=challenges`}
-                  className={`flex-1 py-2 px-3 text-sm font-medium rounded-md transition-colors ${
-                    type === 'challenges' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-600'
-                  }`}
-                >
-                  Challenges
                 </button>
               </div>
 
@@ -563,28 +438,6 @@ function SearchContent() {
                   </div>
                 )}
 
-                {/* Suggested Challenges */}
-                {suggestedChallenges.length > 0 && (
-                  <div>
-                    <div className="px-4 py-4 bg-gradient-to-r from-orange-50 to-amber-50 rounded-t-lg border-b border-orange-100">
-                      <h3 className="text-lg font-bold text-gray-900">Suggested Challenges</h3>
-                      <p className="text-sm text-gray-600 mt-0.5">Join these challenges</p>
-                    </div>
-                    <div className="bg-white rounded-b-lg border border-gray-200 border-t-0 overflow-hidden">
-                      {(showAllChallenges ? suggestedChallenges : suggestedChallenges.slice(0, 3)).map(renderChallengeResult)}
-                      {suggestedChallenges.length > 3 && (
-                        <div className="px-4 py-3 bg-gray-50 border-t border-gray-200">
-                          <button
-                            onClick={() => setShowAllChallenges(!showAllChallenges)}
-                            className="w-full text-center text-[#007AFF] font-semibold text-sm py-2.5 hover:text-[#0056D6] transition-colors"
-                          >
-                            {showAllChallenges ? 'Show Less' : `Show All ${suggestedChallenges.length} Challenges`}
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
               </div>
             )
           ) : !initialQuery.trim() ? (
@@ -625,7 +478,6 @@ function SearchContent() {
               <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
                 {type === 'people' && results.map(renderUserResult)}
                 {type === 'groups' && results.map(renderGroupResult)}
-                {type === 'challenges' && results.map(renderChallengeResult)}
               </div>
             </div>
           )}

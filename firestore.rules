@@ -452,6 +452,16 @@ service cloud.firestore {
     }
 
     // Social Graph for friendships
+    // Allow listing inbound/outbound collections
+    match /social_graph/{userId}/{direction=**} {
+      // Allow users to read their own connections
+      allow read: if request.auth != null && request.auth.uid == userId;
+
+      // Allow any authenticated user to read other users' public connections
+      allow read: if request.auth != null;
+    }
+
+    // Allow managing individual friendship documents
     match /social_graph/{userId}/{direction}/{friendId} {
       // Users can manage their own outbound friendships (following)
       allow read, create, update, delete: if request.auth != null && request.auth.uid == userId;

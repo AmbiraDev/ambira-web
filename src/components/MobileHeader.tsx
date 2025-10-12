@@ -16,11 +16,11 @@ export default function MobileHeader({ title }: MobileHeaderProps) {
 
   return (
     <div className="md:hidden bg-white border-b border-gray-200 px-4 py-2 sticky top-0 z-40">
-      <div className="flex items-center justify-center h-8 relative">
+      <div className="flex items-center justify-center h-10 relative">
         {/* Profile Picture - Smaller and on left */}
-        <Link href="/you?tab=profile" className="absolute left-0 top-3/4 -translate-y-1/2">
+        <Link href="/you?tab=profile" className="absolute left-0 top-1/2 -translate-y-1/2">
           {user.profilePicture ? (
-            <div className="w-8 h-8 rounded-full overflow-hidden flex-shrink-0">
+            <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0">
               <Image
                 src={user.profilePicture}
                 alt={user.name}
@@ -31,8 +31,8 @@ export default function MobileHeader({ title }: MobileHeaderProps) {
               />
             </div>
           ) : (
-            <div className="w-8 h-8 bg-[#FC4C02] rounded-full flex items-center justify-center flex-shrink-0">
-              <span className="text-white font-semibold text-xs">
+            <div className="w-10 h-10 bg-[#FC4C02] rounded-full flex items-center justify-center flex-shrink-0">
+              <span className="text-white font-semibold text-sm">
                 {user.name.charAt(0).toUpperCase()}
               </span>
             </div>
@@ -40,7 +40,7 @@ export default function MobileHeader({ title }: MobileHeaderProps) {
         </Link>
 
         {/* Page Title - Centered */}
-        <h1 className="text-base font-bold text-gray-900">
+        <h1 className="text-lg font-bold text-gray-900">
           {title}
         </h1>
       </div>

@@ -3,7 +3,7 @@
 import React from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-// Redirect /you to /analytics for backwards compatibility
+// Redirect /you to /profile
 export default function YouRedirect() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -12,9 +12,9 @@ export default function YouRedirect() {
     // Preserve any query parameters when redirecting
     const tab = searchParams?.get('tab');
     if (tab) {
-      router.replace(`/analytics?tab=${tab}`);
+      router.replace(`/profile?tab=${tab}`);
     } else {
-      router.replace('/analytics');
+      router.replace('/profile');
     }
   }, [router, searchParams]);
 

@@ -141,6 +141,73 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
     return () => window.removeEventListener('focus', handleFocus);
   }, [timerState.isRunning, timerState.activeTimerId]);
 
+  // Listen for cross-tab session cancellation events
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      // Only process timer-event changes
+      if (e.key !== 'timer-event') return;
+
+      try {
+        // The value will be null because we immediately remove it after setting
+        // So we need to check if this event just happened (within last 1 second)
+        const now = Date.now();
+
+        // Check if we have an active timer that needs to be cancelled
+        if (timerState.activeTimerId) {
+          console.log('Received session cancellation event from another tab');
+
+          // Reset local timer state immediately
+          setTimerState({
+            isRunning: false,
+            startTime: null,
+            pausedDuration: 0,
+            currentProject: null,
+            selectedTasks: [],
+            activeTimerId: null,
+            isConnected: true,
+            lastAutoSave: null,
+          });
+        }
+      } catch (error) {
+        console.warn('Failed to process cross-tab event:', error);
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, [timerState.activeTimerId]);
+
+  // Periodically check if session is still active (in case another tab cancelled it)
+  useEffect(() => {
+    if (!timerState.isRunning || !timerState.activeTimerId) return;
+
+    const checkInterval = setInterval(async () => {
+      try {
+        // Check if the active session is still marked as active
+        const activeSession = await firebaseSessionApi.getActiveSession();
+
+        // If no active session found (it was cancelled or completed), reset local state
+        if (!activeSession) {
+          console.log('Active session no longer exists, resetting local timer');
+          setTimerState({
+            isRunning: false,
+            startTime: null,
+            pausedDuration: 0,
+            currentProject: null,
+            selectedTasks: [],
+            activeTimerId: null,
+            isConnected: true,
+            lastAutoSave: null,
+          });
+        }
+      } catch (error) {
+        console.warn('Failed to check session status:', error);
+      }
+    }, 10000); // Check every 10 seconds
+
+    return () => clearInterval(checkInterval);
+  }, [timerState.isRunning, timerState.activeTimerId]);
+
   // Calculate elapsed time in seconds
   const getElapsedTime = useCallback((): number => {
     if (!timerState.startTime) return 0;

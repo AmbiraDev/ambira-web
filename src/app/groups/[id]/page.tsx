@@ -7,9 +7,17 @@ import Header from '@/components/HeaderComponent';
 import { Group, User, GroupStats } from '@/types';
 import { firebaseApi } from '@/lib/firebaseApi';
 import Link from 'next/link';
-import { Users, Settings, Activity } from 'lucide-react';
+import { Users, Settings, Activity, ChevronDown, Trophy } from 'lucide-react';
 
 type GroupTab = 'leaderboard' | 'recent-activity' | 'members' | 'posts';
+type TimePeriod = 'today' | 'week' | 'month' | 'year';
+
+interface LeaderboardEntry {
+  user: User;
+  totalHours: number;
+  sessionCount: number;
+  rank: number;
+}
 
 export default function GroupDetailPage() {
   const params = useParams();
@@ -20,6 +28,10 @@ export default function GroupDetailPage() {
   const [members, setMembers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<GroupTab>('leaderboard');
+  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+  const [timePeriod, setTimePeriod] = useState<TimePeriod>('week');
+  const [isLoadingLeaderboard, setIsLoadingLeaderboard] = useState(false);
+  const [showPeriodDropdown, setShowPeriodDropdown] = useState(false);
 
   const groupId = params.id as string;
 
@@ -28,6 +40,12 @@ export default function GroupDetailPage() {
       loadGroupData();
     }
   }, [groupId, user]);
+
+  useEffect(() => {
+    if (groupId && user && activeTab === 'leaderboard') {
+      loadLeaderboard();
+    }
+  }, [groupId, user, timePeriod, activeTab]);
 
   const loadGroupData = async () => {
     try {
@@ -53,6 +71,18 @@ export default function GroupDetailPage() {
     }
   };
 
+  const loadLeaderboard = async () => {
+    try {
+      setIsLoadingLeaderboard(true);
+      const leaderboardData = await firebaseApi.group.getGroupLeaderboard(groupId, timePeriod);
+      setLeaderboard(leaderboardData);
+    } catch (error) {
+      console.error('Error loading leaderboard:', error);
+    } finally {
+      setIsLoadingLeaderboard(false);
+    }
+  };
+
   const handleJoinGroup = async () => {
     if (!user || !group) return;
 
@@ -72,6 +102,41 @@ export default function GroupDetailPage() {
       router.push('/groups');
     } catch (error) {
       console.error('Error leaving group:', error);
+    }
+  };
+
+  const getMedalOutline = (rank: number): string => {
+    switch (rank) {
+      case 1:
+        return 'ring-4 ring-yellow-400'; // Gold
+      case 2:
+        return 'ring-4 ring-gray-400'; // Silver
+      case 3:
+        return 'ring-4 ring-amber-600'; // Bronze
+      default:
+        return '';
+    }
+  };
+
+  const formatHours = (hours: number): string => {
+    if (hours < 1) {
+      return `${Math.round(hours * 60)}m`;
+    }
+    return `${hours.toFixed(1)}h`;
+  };
+
+  const getPeriodLabel = (period: TimePeriod): string => {
+    switch (period) {
+      case 'today':
+        return 'Today';
+      case 'week':
+        return 'This Week';
+      case 'month':
+        return 'This Month';
+      case 'year':
+        return 'This Year';
+      default:
+        return 'This Week';
     }
   };
 
@@ -255,21 +320,171 @@ export default function GroupDetailPage() {
             </div>
 
             {/* Tab Content */}
-            <div className="bg-white rounded-lg border border-gray-200 p-6">
+            <div>
               {activeTab === 'leaderboard' && (
                 <div>
-                  <h2 className="text-xl font-bold text-gray-900 mb-4">Group Leaderboard</h2>
-                  <p className="text-gray-600 mb-6">
-                    Compare your training with other Group members and stay motivated throughout the week.
-                  </p>
-                  <div className="text-center py-12">
-                    <p className="text-gray-500">
-                      <Link href="#" className="text-[#007AFF] hover:underline">
-                        Invite people to your group
-                      </Link>{' '}
-                      and see how you measure up.
-                    </p>
+                  <div className="flex items-center justify-between mb-6">
+                    <h2 className="text-xl font-bold text-gray-900">Group Leaderboard</h2>
+
+                    {/* Time Period Dropdown */}
+                    <div className="relative">
+                      <button
+                        onClick={() => setShowPeriodDropdown(!showPeriodDropdown)}
+                        className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                      >
+                        <span className="text-sm font-medium text-gray-700">{getPeriodLabel(timePeriod)}</span>
+                        <ChevronDown className="w-4 h-4 text-gray-600" />
+                      </button>
+
+                      {showPeriodDropdown && (
+                        <>
+                          <div
+                            className="fixed inset-0 z-10"
+                            onClick={() => setShowPeriodDropdown(false)}
+                          />
+                          <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg z-20">
+                            {(['today', 'week', 'month', 'year'] as TimePeriod[]).map((period) => (
+                              <button
+                                key={period}
+                                onClick={() => {
+                                  setTimePeriod(period);
+                                  setShowPeriodDropdown(false);
+                                }}
+                                className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 first:rounded-t-lg last:rounded-b-lg transition-colors ${
+                                  timePeriod === period ? 'bg-gray-100 font-medium' : ''
+                                }`}
+                              >
+                                {getPeriodLabel(period)}
+                              </button>
+                            ))}
+                          </div>
+                        </>
+                      )}
+                    </div>
                   </div>
+
+                  {isLoadingLeaderboard ? (
+                    <div className="flex items-center justify-center py-12">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#007AFF]"></div>
+                    </div>
+                  ) : leaderboard.length === 0 ? (
+                    <div className="text-center py-12">
+                      <p className="text-gray-500">
+                        <Link href="#" className="text-[#007AFF] hover:underline">
+                          Invite people to your group
+                        </Link>{' '}
+                        and see how you measure up.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                      {/* Table Header */}
+                      <div className="grid grid-cols-[60px_1fr_100px_100px_110px_110px] gap-4 px-6 py-4 bg-gray-50 border-b border-gray-200">
+                        <div className="text-xs font-semibold text-gray-600 uppercase">Rank</div>
+                        <div className="text-xs font-semibold text-gray-600 uppercase">User</div>
+                        <div className="text-xs font-semibold text-gray-600 uppercase text-right">Time</div>
+                        <div className="text-xs font-semibold text-gray-600 uppercase text-right">Sessions</div>
+                        <div className="text-xs font-semibold text-gray-600 uppercase text-right">Longest</div>
+                        <div className="text-xs font-semibold text-gray-600 uppercase text-right">Avg. Time</div>
+                      </div>
+
+                      {/* Table Body */}
+                      <div className="divide-y divide-gray-200">
+                        {leaderboard.map((entry) => {
+                          const avgSessionHours = entry.sessionCount > 0 ? entry.totalHours / entry.sessionCount : 0;
+                          const longestSession = entry.totalHours; // Placeholder - would need actual data from backend
+
+                          return (
+                            <Link
+                              key={entry.user.id}
+                              href={`/profile/${entry.user.username}`}
+                              className="grid grid-cols-[60px_1fr_100px_100px_110px_110px] gap-4 px-6 py-4 hover:bg-gray-50 transition-colors items-center"
+                            >
+                              {/* Rank */}
+                              <div className="flex items-center justify-center">
+                                {entry.rank <= 3 ? (
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-lg font-bold text-gray-900">{entry.rank}</span>
+                                    <Trophy
+                                      className={`w-5 h-5 ${
+                                        entry.rank === 1 ? 'text-yellow-400' :
+                                        entry.rank === 2 ? 'text-gray-400' :
+                                        'text-amber-600'
+                                      }`}
+                                    />
+                                  </div>
+                                ) : (
+                                  <span className="text-base font-semibold text-gray-900">{entry.rank}</span>
+                                )}
+                              </div>
+
+                              {/* User Info */}
+                              <div className="flex items-center gap-3 min-w-0">
+                                {/* Profile Picture with Medal Outline */}
+                                <div className={`flex-shrink-0 rounded-full ${getMedalOutline(entry.rank)}`}>
+                                  {entry.user.profilePicture ? (
+                                    <div className="w-12 h-12 rounded-full overflow-hidden bg-white">
+                                      <img
+                                        src={entry.user.profilePicture}
+                                        alt={entry.user.name}
+                                        className="w-full h-full object-cover"
+                                      />
+                                    </div>
+                                  ) : (
+                                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#FC4C02] to-[#FC4C02]/80 flex items-center justify-center">
+                                      <span className="text-white font-semibold">
+                                        {entry.user.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                                      </span>
+                                    </div>
+                                  )}
+                                </div>
+
+                                {/* User Name and Location */}
+                                <div className="flex-1 min-w-0">
+                                  <div className="font-semibold text-gray-900 truncate">
+                                    {entry.user.name}
+                                  </div>
+                                  {entry.user.location && (
+                                    <div className="text-sm text-gray-500 truncate">
+                                      {entry.user.location}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* Total Time */}
+                              <div className="text-right">
+                                <div className="text-base font-bold text-gray-900">
+                                  {formatHours(entry.totalHours)}
+                                </div>
+                              </div>
+
+                              {/* Sessions */}
+                              <div className="text-right">
+                                <div className="text-base font-bold text-gray-900">
+                                  {entry.sessionCount}
+                                </div>
+                              </div>
+
+                              {/* Longest Session */}
+                              <div className="text-right">
+                                <div className="text-base font-bold text-gray-900">
+                                  {formatHours(longestSession * 0.6)}
+                                </div>
+                              </div>
+
+                              {/* Average Time */}
+                              <div className="text-right">
+                                <div className="text-base font-bold text-gray-900">
+                                  {formatHours(avgSessionHours)}
+                                </div>
+                              </div>
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 

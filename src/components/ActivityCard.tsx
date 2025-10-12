@@ -2,20 +2,20 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
-import { Project, ProjectStats } from '@/types';
+import { Activity, ActivityStats } from '@/types';
 import { useProjects } from '@/contexts/ProjectsContext';
 import { IconRenderer } from '@/components/IconRenderer';
 
-interface ProjectCardProps {
-  project: Project;
-  stats?: ProjectStats;
-  onEdit?: (project: Project) => void;
-  onDelete?: (project: Project) => void;
-  onArchive?: (project: Project) => void;
+interface ActivityCardProps {
+  activity: Activity;
+  stats?: ActivityStats;
+  onEdit?: (activity: Activity) => void;
+  onDelete?: (activity: Activity) => void;
+  onArchive?: (activity: Activity) => void;
 }
 
-export const ProjectCard: React.FC<ProjectCardProps> = ({
-  project,
+export const ActivityCard: React.FC<ActivityCardProps> = ({
+  activity,
   stats,
   onEdit,
   onDelete,
@@ -23,7 +23,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
 }) => {
   const [showMenu, setShowMenu] = useState(false);
   const [isLoadingStats, setIsLoadingStats] = useState(false);
-  const [projectStats, setProjectStats] = useState<ProjectStats | undefined>(stats);
+  const [activityStats, setActivityStats] = useState<ActivityStats | undefined>(stats);
   const { getProjectStats } = useProjects();
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -46,26 +46,26 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
 
   // Load stats if not provided
   React.useEffect(() => {
-    if (!stats && !projectStats) {
+    if (!stats && !activityStats) {
       loadStats();
     }
-  }, [project.id]);
+  }, [activity.id]);
 
   const loadStats = async () => {
     try {
       setIsLoadingStats(true);
-      const fetchedStats = await getProjectStats(project.id);
-      setProjectStats(fetchedStats);
+      const fetchedStats = await getProjectStats(activity.id);
+      setActivityStats(fetchedStats);
     } catch (error) {
-      console.error('Failed to load project stats:', error);
+      console.error('Failed to load activity stats:', error);
     } finally {
       setIsLoadingStats(false);
     }
   };
 
-  const currentStats = stats || projectStats;
+  const currentStats = stats || activityStats;
 
-  // Color mapping for project colors
+  // Color mapping for activity colors
   const colorClasses = {
     orange: 'bg-orange-500',
     blue: 'bg-blue-500',
@@ -77,11 +77,11 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
     indigo: 'bg-indigo-500',
   };
 
-  const colorClass = colorClasses[project.color as keyof typeof colorClasses] || 'bg-gray-500';
+  const colorClass = colorClasses[activity.color as keyof typeof colorClasses] || 'bg-gray-500';
 
   // Calculate progress percentage
-  const weeklyProgress = project.weeklyTarget ? ((currentStats?.weeklyHours || 0) / project.weeklyTarget) * 100 : 0;
-  const totalProgress = project.totalTarget ? ((currentStats?.totalHours || 0) / project.totalTarget) * 100 : 0;
+  const weeklyProgress = activity.weeklyTarget ? ((currentStats?.weeklyHours || 0) / activity.weeklyTarget) * 100 : 0;
+  const totalProgress = activity.totalTarget ? ((currentStats?.totalHours || 0) / activity.totalTarget) * 100 : 0;
 
   const handleMenuToggle = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -98,14 +98,14 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 hover:shadow-lg hover:border-gray-300 transition-all duration-200 relative group">
-      <Link href={`/projects/${project.id}`} className="block p-6">
+      <Link href={`/activities/${activity.id}`} className="block p-6">
         {/* Header with icon and menu */}
         <div className="flex items-start justify-between mb-5">
           <div
             className="w-14 h-14 rounded-xl flex items-center justify-center p-2 shadow-sm"
-            style={{ backgroundColor: project.color }}
+            style={{ backgroundColor: activity.color }}
           >
-            <IconRenderer iconName={project.icon} size={40} />
+            <IconRenderer iconName={activity.icon} size={40} />
           </div>
           <button
             onClick={handleMenuToggle}
@@ -117,10 +117,10 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
           </button>
         </div>
 
-        {/* Project info */}
+        {/* Activity info */}
         <div className="mb-5">
-          <h3 className="text-xl font-bold text-gray-900 mb-2">{project.name}</h3>
-          <p className="text-gray-600 text-sm line-clamp-2 leading-relaxed">{project.description}</p>
+          <h3 className="text-xl font-bold text-gray-900 mb-2">{activity.name}</h3>
+          <p className="text-gray-600 text-sm line-clamp-2 leading-relaxed">{activity.description}</p>
         </div>
 
         {/* Progress indicators */}
@@ -136,11 +136,11 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
         ) : currentStats ? (
           <div className="space-y-4">
             {/* Weekly progress */}
-            {project.weeklyTarget && (
+            {activity.weeklyTarget && (
               <div>
                 <div className="flex justify-between text-xs font-medium text-gray-700 mb-2">
                   <span>This week</span>
-                  <span className="text-gray-900">{(currentStats.weeklyHours || 0).toFixed(1)}h / {project.weeklyTarget}h</span>
+                  <span className="text-gray-900">{(currentStats.weeklyHours || 0).toFixed(1)}h / {activity.weeklyTarget}h</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
                   <div
@@ -152,11 +152,11 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
             )}
 
             {/* Total progress */}
-            {project.totalTarget && (
+            {activity.totalTarget && (
               <div>
                 <div className="flex justify-between text-xs font-medium text-gray-700 mb-2">
                   <span>Total</span>
-                  <span className="text-gray-900">{(currentStats.totalHours || 0).toFixed(1)}h / {project.totalTarget}h</span>
+                  <span className="text-gray-900">{(currentStats.totalHours || 0).toFixed(1)}h / {activity.totalTarget}h</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
                   <div
@@ -178,21 +178,21 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
       {showMenu && (
         <div ref={menuRef} className="absolute top-16 right-4 bg-white border border-gray-200 rounded-xl shadow-lg py-2 z-10 min-w-[150px]">
           <button
-            onClick={(e) => handleAction(e, () => onEdit?.(project))}
+            onClick={(e) => handleAction(e, () => onEdit?.(activity))}
             className="w-full px-4 py-2 text-left text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
           >
             Edit
           </button>
-          {project.status === 'active' ? (
+          {activity.status === 'active' ? (
             <button
-              onClick={(e) => handleAction(e, () => onArchive?.(project))}
+              onClick={(e) => handleAction(e, () => onArchive?.(activity))}
               className="w-full px-4 py-2 text-left text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
             >
               Archive
             </button>
           ) : (
             <button
-              onClick={(e) => handleAction(e, () => onArchive?.(project))}
+              onClick={(e) => handleAction(e, () => onArchive?.(activity))}
               className="w-full px-4 py-2 text-left text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
             >
               Restore
@@ -200,7 +200,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
           )}
           <div className="my-1 border-t border-gray-100"></div>
           <button
-            onClick={(e) => handleAction(e, () => onDelete?.(project))}
+            onClick={(e) => handleAction(e, () => onDelete?.(activity))}
             className="w-full px-4 py-2 text-left text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
           >
             Delete

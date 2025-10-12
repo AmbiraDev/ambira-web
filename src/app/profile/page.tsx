@@ -575,14 +575,9 @@ export default function ProfilePage() {
                         <h3 className="text-sm md:text-base font-medium text-gray-900 mb-3 md:mb-4">Productivity trends</h3>
                         <div className="space-y-3">
                           <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                            <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                                <Clock className="w-5 h-5 text-[#007AFF]" />
-                              </div>
-                              <div>
-                                <div className="text-sm font-medium text-gray-900">Total hours</div>
-                                <div className="text-xs text-gray-500">All time</div>
-                              </div>
+                            <div>
+                              <div className="text-sm font-medium text-gray-900">Total hours</div>
+                              <div className="text-xs text-gray-500">All time</div>
                             </div>
                             <div className="text-right">
                               <div className="text-lg font-bold text-gray-900">{stats?.totalHours?.toFixed(1) || 0}h</div>
@@ -591,14 +586,9 @@ export default function ProfilePage() {
                           </div>
 
                           <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                            <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                                <Target className="w-5 h-5 text-green-600" />
-                              </div>
-                              <div>
-                                <div className="text-sm font-medium text-gray-900">Avg session</div>
-                                <div className="text-xs text-gray-500">Per session</div>
-                              </div>
+                            <div>
+                              <div className="text-sm font-medium text-gray-900">Avg session</div>
+                              <div className="text-xs text-gray-500">Per session</div>
                             </div>
                             <div className="text-right">
                               <div className="text-lg font-bold text-gray-900">
@@ -609,14 +599,9 @@ export default function ProfilePage() {
                           </div>
 
                           <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                            <div className="flex items-center gap-3">
-                              <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
-                                <Heart className="w-5 h-5 text-[#FC4C02]" />
-                              </div>
-                              <div>
-                                <div className="text-sm font-medium text-gray-900">Current streak</div>
-                                <div className="text-xs text-gray-500">Consecutive days</div>
-                              </div>
+                            <div>
+                              <div className="text-sm font-medium text-gray-900">Current streak</div>
+                              <div className="text-xs text-gray-500">Consecutive days</div>
                             </div>
                             <div className="text-right">
                               <div className="text-lg font-bold text-gray-900">{stats?.currentStreak || 0}</div>

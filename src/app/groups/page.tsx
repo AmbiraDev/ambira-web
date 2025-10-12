@@ -102,10 +102,7 @@ export default function GroupsPage() {
         filtered = filtered.filter(g => g.location?.toLowerCase().includes(locationLower));
       }
 
-      // Exclude groups user is already in
-      const userGroupIds = new Set(userGroups.map(g => g.id));
-      filtered = filtered.filter(g => !userGroupIds.has(g.id));
-
+      // Don't exclude groups user is already in - we'll show "Joined" instead
       setSearchResults(filtered);
     } catch (error) {
       console.error('Error searching groups:', error);
@@ -269,6 +266,7 @@ export default function GroupsPage() {
             <div className="space-y-4">
               {searchResults.map((group) => {
                 const isJoining = joiningGroups.has(group.id);
+                const isJoined = userGroups.some(g => g.id === group.id);
                 return (
                   <div
                     key={group.id}
@@ -308,18 +306,24 @@ export default function GroupsPage() {
                         </div>
                       </div>
 
-                      {/* Join Button */}
-                      <button
-                        onClick={(e) => handleJoinGroup(group.id, e)}
-                        disabled={isJoining}
-                        className={`text-sm font-semibold transition-colors flex-shrink-0 ${
-                          isJoining
-                            ? 'text-gray-400 cursor-not-allowed'
-                            : 'text-[#007AFF] hover:text-[#0051D5]'
-                        }`}
-                      >
-                        {isJoining ? 'Joining...' : 'Join'}
-                      </button>
+                      {/* Join Button or Joined Indicator */}
+                      {isJoined ? (
+                        <span className="text-sm font-semibold text-gray-500 flex-shrink-0">
+                          Joined
+                        </span>
+                      ) : (
+                        <button
+                          onClick={(e) => handleJoinGroup(group.id, e)}
+                          disabled={isJoining}
+                          className={`text-sm font-semibold transition-colors flex-shrink-0 ${
+                            isJoining
+                              ? 'text-gray-400 cursor-not-allowed'
+                              : 'text-[#007AFF] hover:text-[#0051D5]'
+                          }`}
+                        >
+                          {isJoining ? 'Joining...' : 'Join'}
+                        </button>
+                      )}
                     </div>
                   </div>
                 );

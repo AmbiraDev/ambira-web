@@ -2467,19 +2467,6 @@ export const firebaseSessionApi = {
 
       const userId = auth.currentUser.uid;
 
-      // First check if session was already marked as inactive (cancelled/completed)
-      // This prevents race conditions with auto-save
-      const activeSessionRef = doc(db, 'users', userId, 'activeSession', 'current');
-      const existingDoc = await getDoc(activeSessionRef);
-
-      if (existingDoc.exists()) {
-        const data = existingDoc.data();
-        if (data?.status === 'inactive') {
-          console.log('Active session was already marked as inactive, skipping save');
-          return;
-        }
-      }
-
       // Ensure user document exists first (Firestore requires parent docs for subcollections)
       const userRef = doc(db, 'users', userId);
       await setDoc(userRef, {
@@ -2487,14 +2474,14 @@ export const firebaseSessionApi = {
         updatedAt: serverTimestamp()
       }, { merge: true });
 
-      // Now save the active session with status 'active'
+      // Save the active session
+      const activeSessionRef = doc(db, 'users', userId, 'activeSession', 'current');
       await setDoc(activeSessionRef, {
-        startTime: timerData.startTime,
+        startTime: Timestamp.fromDate(timerData.startTime),
         projectId: timerData.projectId,
         selectedTaskIds: timerData.selectedTaskIds,
         pausedDuration: timerData.pausedDuration || 0,
         isPaused: !!timerData.isPaused,
-        status: 'active',
         lastUpdated: serverTimestamp(),
         createdAt: serverTimestamp()
       });
@@ -2529,12 +2516,6 @@ export const firebaseSessionApi = {
 
       const data = activeSessionDoc.data();
 
-      // Check if session was marked as inactive (cancelled/completed)
-      if (data?.status === 'inactive') {
-        console.log('Active session is marked as inactive, ignoring');
-        return null;
-      }
-
       // Validate data exists and has required fields
       if (!data || !data.startTime || !data.projectId) {
         handleError(new Error('Active session data is incomplete'), 'Get active session', { severity: ErrorSeverity.WARNING });
@@ -2568,16 +2549,26 @@ export const firebaseSessionApi = {
       const userId = auth.currentUser.uid;
       const activeSessionRef = doc(db, 'users', userId, 'activeSession', 'current');
 
-      // First mark as inactive to prevent race conditions with auto-save
-      // This ensures any in-flight auto-save operations won't restore the session
-      await setDoc(activeSessionRef, {
-        status: 'inactive',
-        clearedAt: serverTimestamp()
-      }, { merge: true });
-
-      // Then delete the document
+      // Delete the document immediately to prevent race conditions
+      // This is atomic and prevents any in-flight auto-save from restoring the session
       await deleteDoc(activeSessionRef);
-      console.log('Active session cleared successfully');
+
+      console.log('Active session deleted successfully');
+
+      // Broadcast cancellation to other tabs using localStorage event
+      try {
+        const event = {
+          type: 'session-cancelled',
+          timestamp: Date.now(),
+          userId: userId
+        };
+        localStorage.setItem('timer-event', JSON.stringify(event));
+        // Remove immediately to trigger the event
+        localStorage.removeItem('timer-event');
+      } catch (storageError) {
+        // Ignore storage errors (e.g., in private browsing mode)
+        console.warn('Failed to broadcast session cancellation:', storageError);
+      }
     } catch (error) {
       const apiError = handleError(error, 'Clear active session', { defaultMessage: 'Failed to clear active session' });
       throw new Error(apiError.userMessage);
@@ -3013,7 +3004,12 @@ export const firebaseSessionApi = {
         }
       };
     } catch (error) {
-      const apiError = handleError(error, 'Get session with details', { defaultMessage: 'Failed to get session with details' });
+      // Don't log permission errors - these are expected for private/restricted sessions
+      const silent = isPermissionError(error);
+      const apiError = handleError(error, 'Get session with details', {
+        defaultMessage: 'Failed to get session with details',
+        silent
+      });
       throw new Error(apiError.userMessage);
     }
   }
@@ -4175,13 +4171,14 @@ export const firebaseCommentApi = {
     } catch (error) {
       // Handle permission errors gracefully - return empty comments
       if (isPermissionError(error)) {
+        // Don't log permission errors - they're expected for restricted sessions
         return {
           comments: [],
           hasMore: false
         };
       }
 
-      // For other errors, throw with appropriate message
+      // For other errors, log and throw with appropriate message
       const apiError = handleError(error, 'Get session comments', { defaultMessage: 'Failed to get session comments' });
       throw new Error(apiError.userMessage);
     }
@@ -4959,6 +4956,117 @@ const firebaseGroupApi = {
       };
     } catch (error) {
       const apiError = handleError(error, 'Get group analytics', { defaultMessage: 'Failed to get group analytics' });
+      throw new Error(apiError.userMessage);
+    }
+  },
+
+  // Get group leaderboard
+  getGroupLeaderboard: async (
+    groupId: string,
+    timePeriod: 'today' | 'week' | 'month' | 'year' = 'week'
+  ): Promise<Array<{ user: User; totalHours: number; sessionCount: number; rank: number }>> => {
+    try {
+      const group = await firebaseGroupApi.getGroup(groupId);
+      if (!group) {
+        throw new Error('Group not found');
+      }
+
+      // Calculate date range based on time period
+      const now = new Date();
+      let startDate: Date;
+
+      switch (timePeriod) {
+        case 'today':
+          startDate = new Date(now);
+          startDate.setHours(0, 0, 0, 0);
+          break;
+        case 'week':
+          startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+          break;
+        case 'month':
+          startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+          break;
+        case 'year':
+          startDate = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
+          break;
+        default:
+          startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      }
+
+      // Firestore 'in' queries are limited to 10 items, so we need to batch
+      const memberIds = group.memberIds || [];
+      if (memberIds.length === 0) {
+        return [];
+      }
+
+      const userHoursMap = new Map<string, { totalHours: number; sessionCount: number }>();
+
+      // Process members in batches of 10
+      for (let i = 0; i < memberIds.length; i += 10) {
+        const batch = memberIds.slice(i, Math.min(i + 10, memberIds.length));
+
+        const sessionsQuery = query(
+          collection(db, 'sessions'),
+          where('userId', 'in', batch),
+          where('startTime', '>=', Timestamp.fromDate(startDate))
+        );
+
+        const sessionsSnapshot = await getDocs(sessionsQuery);
+
+        sessionsSnapshot.forEach(doc => {
+          const data = doc.data();
+          const userId = data.userId;
+          const hours = (data.duration || 0) / 3600; // Convert seconds to hours
+
+          const current = userHoursMap.get(userId) || { totalHours: 0, sessionCount: 0 };
+          userHoursMap.set(userId, {
+            totalHours: current.totalHours + hours,
+            sessionCount: current.sessionCount + 1
+          });
+        });
+      }
+
+      // Get user details and create leaderboard entries
+      const leaderboardPromises = memberIds.map(async (userId) => {
+        const userDoc = await getDoc(doc(db, 'users', userId));
+        if (!userDoc.exists()) {
+          return null;
+        }
+
+        const userData = userDoc.data();
+        const user: User = {
+          id: userDoc.id,
+          email: userData.email || '',
+          name: userData.name || 'Unknown User',
+          username: userData.username || 'unknown',
+          bio: userData.bio,
+          location: userData.location,
+          profilePicture: userData.profilePicture,
+          createdAt: convertTimestamp(userData.createdAt) || new Date(),
+          updatedAt: convertTimestamp(userData.updatedAt) || new Date()
+        };
+
+        const stats = userHoursMap.get(userId) || { totalHours: 0, sessionCount: 0 };
+
+        return {
+          user,
+          totalHours: stats.totalHours,
+          sessionCount: stats.sessionCount,
+          rank: 0 // Will be set after sorting
+        };
+      });
+
+      const leaderboard = (await Promise.all(leaderboardPromises))
+        .filter((entry): entry is NonNullable<typeof entry> => entry !== null)
+        .sort((a, b) => b.totalHours - a.totalHours)
+        .map((entry, index) => ({
+          ...entry,
+          rank: index + 1
+        }));
+
+      return leaderboard;
+    } catch (error) {
+      const apiError = handleError(error, 'Get group leaderboard', { defaultMessage: 'Failed to get group leaderboard' });
       throw new Error(apiError.userMessage);
     }
   }

@@ -65,7 +65,7 @@ export const AnalyticsWidget: React.FC<AnalyticsWidgetProps> = ({ userId }) => {
           <p className="text-sm text-gray-600">Your productivity at a glance</p>
         </div>
         <Link
-          href="/analytics"
+          href="/profile"
           className="flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors"
         >
           View All
