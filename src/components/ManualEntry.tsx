@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { SessionFormData, Project, Task } from '@/types';
+import { parseLocalDateTime } from '@/lib/utils';
 
 interface ManualEntryProps {
   onSave: (data: SessionFormData) => Promise<void>;
@@ -103,7 +104,8 @@ export const ManualEntry: React.FC<ManualEntryProps> = ({
 
   // Update start time when date/time inputs change
   useEffect(() => {
-    const dateTime = new Date(`${startDate}T${startTime}`);
+    // Parse date and time in local timezone to avoid UTC interpretation issues
+    const dateTime = parseLocalDateTime(startDate, startTime);
     setFormData(prev => ({ ...prev, startTime: dateTime }));
   }, [startDate, startTime]);
 

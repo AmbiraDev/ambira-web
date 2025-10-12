@@ -11,6 +11,7 @@ import { ArrowLeft, Check, Image as ImageIcon, XCircle } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { uploadImages, compressImage } from '@/lib/imageUpload';
+import { parseLocalDateTime } from '@/lib/utils';
 
 const PRIVACY_OPTIONS = [
   { value: 'everyone', label: 'Everyone', description: 'Visible to all users' },
@@ -205,10 +206,11 @@ export default function ManualSessionRecorder() {
 
     try {
       const duration = calculateDuration();
-      
-      // Parse the session date and start time
-      const sessionDateTime = new Date(`${sessionDate}T${startTime}`);
-      
+
+      // Parse the session date and start time in local timezone
+      // NOTE: Using parseLocalDateTime to avoid UTC interpretation issues
+      const sessionDateTime = parseLocalDateTime(sessionDate, startTime);
+
       // Upload images first if any
       let imageUrls: string[] = [];
       if (selectedImages.length > 0) {
