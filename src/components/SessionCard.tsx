@@ -229,9 +229,9 @@ export const SessionCard: React.FC<SessionCardProps> = ({
 
       {/* Image Gallery */}
       {session.images && session.images.length > 0 && (
-        <Link href={`/sessions/${session.id}`} className="px-4 pb-4 block cursor-pointer">
+        <div className="px-4 pb-4">
           <ImageGallery images={session.images} />
-        </Link>
+        </div>
       )}
 
       {/* Stats - Strava style */}
