@@ -136,7 +136,7 @@ function DailyGoals() {
   }
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
+    <div className="p-5">
       <h3 className="text-base font-semibold text-gray-900 mb-4">
         Today's Goals
       </h3>
@@ -171,7 +171,7 @@ function DailyGoals() {
                       cy="30"
                       r={radius}
                       fill="none"
-                      stroke="#F3F4F6"
+                      stroke="#D1D5DB"
                       strokeWidth="4.5"
                     />
                     {/* Progress circle */}
@@ -180,7 +180,7 @@ function DailyGoals() {
                       cy="30"
                       r={radius}
                       fill="none"
-                      stroke={goal.activity.color || '#007AFF'}
+                      stroke="#007AFF"
                       strokeWidth="4.5"
                       strokeDasharray={circumference}
                       strokeDashoffset={strokeDashoffset}

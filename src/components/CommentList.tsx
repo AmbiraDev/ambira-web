@@ -87,30 +87,6 @@ export const CommentList: React.FC<CommentListProps> = ({
     }
   };
 
-  const handleEdit = async (commentId: string, content: string) => {
-    try {
-      await firebaseCommentApi.updateComment(commentId, { content });
-      
-      // Update the comment in the list
-      const updateComment = (items: CommentWithDetails[]): CommentWithDetails[] => {
-        return items.map(comment => {
-          if (comment.id === commentId) {
-            return { ...comment, content, isEdited: true, updatedAt: new Date() };
-          }
-          if (comment.replies) {
-            return { ...comment, replies: updateComment(comment.replies) };
-          }
-          return comment;
-        });
-      };
-      
-      setComments(updateComment(comments));
-    } catch (err: any) {
-      console.error('Failed to edit comment:', err);
-      throw err;
-    }
-  };
-
   const handleDelete = async (commentId: string) => {
     try {
       await firebaseCommentApi.deleteComment(commentId);
@@ -188,7 +164,6 @@ export const CommentList: React.FC<CommentListProps> = ({
             <CommentItem
               key={comment.id}
               comment={comment}
-              onEdit={handleEdit}
               onDelete={handleDelete}
               currentUserId={user?.id}
             />

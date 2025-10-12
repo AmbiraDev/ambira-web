@@ -59,8 +59,14 @@ function RightSidebar() {
 
       // Load suggested groups (top 3)
       try {
-        const groups = await firebaseApi.group.searchGroups({}, 10);
-        setSuggestedGroups(groups.slice(0, 3));
+        // Get user's current groups to exclude them from suggestions
+        const userGroups = await firebaseApi.group.getUserGroups(user.id);
+        const userGroupIds = new Set(userGroups.map(g => g.id));
+
+        // Get all groups and filter out ones user is already in
+        const allGroups = await firebaseApi.group.searchGroups({}, 10);
+        const filteredGroups = allGroups.filter(group => !userGroupIds.has(group.id));
+        setSuggestedGroups(filteredGroups.slice(0, 3));
       } catch (error) {
         console.error('Failed to load suggested groups:', error);
       }

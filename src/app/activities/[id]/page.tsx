@@ -6,11 +6,12 @@ import { ProtectedRoute } from '@/components/ProtectedRoute';
 import Header from '@/components/HeaderComponent';
 import { IconRenderer } from '@/components/IconRenderer';
 import { useProjects } from '@/contexts/ProjectsContext';
-import { useTasks } from '@/contexts/TasksContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { firebaseApi } from '@/lib/firebaseApi';
-import { Project, ProjectStats, Task, Session, SessionWithDetails } from '@/types';
+import { Project, ProjectStats, SessionWithDetails } from '@/types';
 import Link from 'next/link';
-import { ArrowLeft, Clock, Calendar, Target, TrendingUp, CheckCircle2, Circle, Plus, Edit, Trash2 } from 'lucide-react';
+import { ArrowLeft, Clock, Calendar, TrendingUp, Settings, ChevronDown, Play } from 'lucide-react';
+import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
 
 interface ProjectDetailPageProps {
   params: Promise<{
@@ -18,24 +19,37 @@ interface ProjectDetailPageProps {
   }>;
 }
 
+type ActivityTab = 'overview' | 'sessions' | 'analytics';
+type TimePeriod = 'day' | 'week' | 'month' | 'year';
+
+interface ChartDataPoint {
+  name: string;
+  hours: number;
+}
+
 function ProjectDetailContent({ projectId }: { projectId: string }) {
   const router = useRouter();
-  const { projects, getProjectStats, updateProject, deleteProject } = useProjects();
-  const { tasks: allTasks, loadProjectTasks, createTask, updateTask, deleteTask } = useTasks();
+  const { user } = useAuth();
+  const { projects, getProjectStats } = useProjects();
 
   const [project, setProject] = useState<Project | null>(null);
   const [stats, setStats] = useState<ProjectStats | null>(null);
-  const [tasks, setTasks] = useState<Task[]>([]);
   const [sessions, setSessions] = useState<SessionWithDetails[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingStats, setIsLoadingStats] = useState(true);
   const [isLoadingSessions, setIsLoadingSessions] = useState(true);
-  const [newTaskName, setNewTaskName] = useState('');
-  const [isCreatingTask, setIsCreatingTask] = useState(false);
+  const [activeTab, setActiveTab] = useState<ActivityTab>('overview');
+  const [timePeriod, setTimePeriod] = useState<TimePeriod>('week');
+  const [showTimePeriodDropdown, setShowTimePeriodDropdown] = useState(false);
+  const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
 
   useEffect(() => {
     loadProjectData();
   }, [projectId, projects]);
+
+  useEffect(() => {
+    processChartData();
+  }, [sessions, timePeriod]);
 
   const loadProjectData = async () => {
     try {
@@ -58,28 +72,21 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
         setIsLoadingStats(false);
       }
 
-      // Load tasks
-      try {
-        await loadProjectTasks(projectId);
-        const projectTasks = allTasks.filter(t => t.activityId === projectId || t.projectId === projectId);
-        setTasks(projectTasks);
-      } catch (error) {
-        console.error('Error loading tasks:', error);
-      }
-
       // Load sessions
       setIsLoadingSessions(true);
       try {
-        const userSessions = await firebaseApi.session.getUserSessions(
-          firebaseApi.auth.getCurrentUserId(),
-          50,
-          true
-        );
-        // Filter sessions for this project
-        const projectSessions = userSessions.filter(s =>
-          s.activityId === projectId || s.projectId === projectId
-        );
-        setSessions(projectSessions.slice(0, 10)); // Show latest 10
+        if (user?.id) {
+          const userSessions = await firebaseApi.session.getUserSessions(
+            user.id,
+            50,
+            true
+          );
+          // Filter sessions for this project
+          const projectSessions = userSessions.filter(s =>
+            s.activityId === projectId || s.projectId === projectId
+          );
+          setSessions(projectSessions);
+        }
       } catch (error) {
         console.error('Error loading sessions:', error);
       } finally {
@@ -92,48 +99,82 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
     }
   };
 
-  const handleCreateTask = async () => {
-    if (!newTaskName.trim() || isCreatingTask) return;
+  const processChartData = () => {
+    const now = new Date();
+    const data: ChartDataPoint[] = [];
 
-    try {
-      setIsCreatingTask(true);
-      await createTask({
-        name: newTaskName.trim(),
-        activityId: projectId,
-      });
-      setNewTaskName('');
-      await loadProjectTasks(projectId);
-      const projectTasks = allTasks.filter(t => t.activityId === projectId || t.projectId === projectId);
-      setTasks(projectTasks);
-    } catch (error) {
-      console.error('Error creating task:', error);
-    } finally {
-      setIsCreatingTask(false);
+    if (timePeriod === 'day') {
+      for (let i = 23; i >= 0; i--) {
+        const hour = new Date(now);
+        hour.setHours(hour.getHours() - i);
+        const hourLabel = hour.getHours().toString().padStart(2, '0');
+
+        const hoursWorked = sessions.length > 0 ? sessions
+          .filter(s => {
+            const sessionDate = new Date(s.createdAt);
+            return sessionDate.getHours() === hour.getHours() &&
+                   sessionDate.toDateString() === hour.toDateString();
+          })
+          .reduce((sum, s) => sum + s.duration / 3600, 0) : 0;
+
+        data.push({ name: hourLabel, hours: Number(hoursWorked.toFixed(2)) });
+      }
+    } else if (timePeriod === 'week') {
+      const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      for (let i = 6; i >= 0; i--) {
+        const day = new Date(now);
+        day.setDate(day.getDate() - i);
+
+        const hoursWorked = sessions.length > 0 ? sessions
+          .filter(s => new Date(s.createdAt).toDateString() === day.toDateString())
+          .reduce((sum, s) => sum + s.duration / 3600, 0) : 0;
+
+        data.push({
+          name: dayNames[day.getDay()],
+          hours: Number(hoursWorked.toFixed(2))
+        });
+      }
+    } else if (timePeriod === 'month') {
+      for (let i = 3; i >= 0; i--) {
+        const weekStart = new Date(now);
+        weekStart.setDate(weekStart.getDate() - (i * 7 + 6));
+        const weekEnd = new Date(now);
+        weekEnd.setDate(weekEnd.getDate() - (i * 7));
+
+        const hoursWorked = sessions.length > 0 ? sessions
+          .filter(s => {
+            const sessionDate = new Date(s.createdAt);
+            return sessionDate >= weekStart && sessionDate <= weekEnd;
+          })
+          .reduce((sum, s) => sum + s.duration / 3600, 0) : 0;
+
+        data.push({
+          name: `Week ${4 - i}`,
+          hours: Number(hoursWorked.toFixed(2))
+        });
+      }
+    } else if (timePeriod === 'year') {
+      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      for (let i = 11; i >= 0; i--) {
+        const month = new Date(now);
+        month.setMonth(month.getMonth() - i);
+
+        const hoursWorked = sessions.length > 0 ? sessions
+          .filter(s => {
+            const sessionDate = new Date(s.createdAt);
+            return sessionDate.getMonth() === month.getMonth() &&
+                   sessionDate.getFullYear() === month.getFullYear();
+          })
+          .reduce((sum, s) => sum + s.duration / 3600, 0) : 0;
+
+        data.push({
+          name: monthNames[month.getMonth()],
+          hours: Number(hoursWorked.toFixed(2))
+        });
+      }
     }
-  };
 
-  const handleToggleTask = async (task: Task) => {
-    try {
-      await updateTask(task.id, {
-        status: task.status === 'completed' ? 'active' : 'completed',
-      }, projectId);
-      await loadProjectTasks(projectId);
-      const projectTasks = allTasks.filter(t => t.activityId === projectId || t.projectId === projectId);
-      setTasks(projectTasks);
-    } catch (error) {
-      console.error('Error updating task:', error);
-    }
-  };
-
-  const handleDeleteTask = async (taskId: string) => {
-    if (!confirm('Are you sure you want to delete this task?')) return;
-
-    try {
-      await deleteTask(taskId);
-      setTasks(tasks.filter(t => t.id !== taskId));
-    } catch (error) {
-      console.error('Error deleting task:', error);
-    }
+    setChartData(data);
   };
 
   const formatTime = (seconds: number): string => {
@@ -146,11 +187,32 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
   };
 
   const formatDate = (date: Date): string => {
-    return new Date(date).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-    });
+    const today = new Date();
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    if (date.toDateString() === today.toDateString()) {
+      return `Today at ${date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`;
+    } else if (date.toDateString() === yesterday.toDateString()) {
+      return `Yesterday at ${date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`;
+    } else {
+      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+    }
+  };
+
+  const getPeriodLabel = (period: TimePeriod): string => {
+    switch (period) {
+      case 'day':
+        return 'Last 24 Hours';
+      case 'week':
+        return 'Last 7 Days';
+      case 'month':
+        return 'Last 4 Weeks';
+      case 'year':
+        return 'Last 12 Months';
+      default:
+        return 'Last 7 Days';
+    }
   };
 
   if (isLoading || !project) {
@@ -160,20 +222,14 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
         <div className="max-w-7xl mx-auto px-4 py-6">
           <div className="animate-pulse">
             <div className="h-32 bg-gray-200 rounded-lg mb-6"></div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-              <div className="h-24 bg-gray-200 rounded-lg"></div>
-              <div className="h-24 bg-gray-200 rounded-lg"></div>
-              <div className="h-24 bg-gray-200 rounded-lg"></div>
-            </div>
-            <div className="h-96 bg-gray-200 rounded-lg"></div>
+            <div className="h-12 bg-gray-200 rounded mb-6"></div>
+            <div className="h-96 bg-gray-200 rounded"></div>
           </div>
         </div>
       </div>
     );
   }
 
-  const activeTasks = tasks.filter(t => t.status === 'active');
-  const completedTasks = tasks.filter(t => t.status === 'completed');
   const weeklyProgress = project.weeklyTarget && stats
     ? (stats.weeklyHours / project.weeklyTarget) * 100
     : 0;
@@ -195,290 +251,95 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
           <span>Back to Activities</span>
         </button>
 
-        {/* Project Header */}
-        <div className="bg-white rounded-xl border border-gray-200 p-8 mb-6">
-          <div className="flex items-start gap-6">
-            <div
-              className="w-20 h-20 rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm"
-              style={{ backgroundColor: project.color }}
-            >
-              <IconRenderer iconName={project.icon} size={48} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">{project.name}</h1>
-              <p className="text-gray-600 text-lg mb-4">{project.description}</p>
-              <div className="flex items-center gap-4">
-                <button
-                  onClick={() => router.push('/timer')}
-                  className="bg-[#007AFF] text-white px-6 py-2.5 rounded-lg hover:bg-[#0051D5] transition-colors font-medium"
+        {/* Main Content */}
+        <div className="flex-1">
+            {/* Activity Header */}
+            <div className="mb-6">
+              <div className="flex items-start gap-4">
+                {/* Activity Icon */}
+                <div
+                  className="w-32 h-32 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-md bg-gray-100"
                 >
-                  Start Timer
+                  <IconRenderer iconName={project.icon} size={64} />
+                </div>
+
+                <div className="flex-1 min-w-0">
+                  {/* Activity Name and Settings Icon */}
+                  <div className="flex items-center gap-3 mb-2">
+                    <h1 className="text-3xl font-bold text-gray-900">{project.name}</h1>
+                    <button
+                      onClick={() => router.push(`/activities/${projectId}/edit`)}
+                      className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                      aria-label="Edit activity"
+                    >
+                      <Settings className="w-5 h-5 text-gray-600" />
+                    </button>
+                  </div>
+
+                  {/* Description */}
+                  {project.description && (
+                    <p className="text-gray-700 mb-4 whitespace-pre-line max-h-24 overflow-y-auto">{project.description}</p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Tabs */}
+            <div className="border-b border-gray-200 mb-6">
+              <nav className="flex gap-8" aria-label="Activity tabs">
+                <button
+                  onClick={() => setActiveTab('overview')}
+                  className={`pb-3 px-1 text-sm font-medium border-b-2 transition-colors ${
+                    activeTab === 'overview'
+                      ? 'border-gray-900 text-gray-900'
+                      : 'border-transparent text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  Overview
                 </button>
                 <button
-                  onClick={() => {
-                    // TODO: Implement edit functionality
-                    alert('Edit functionality coming soon');
-                  }}
-                  className="flex items-center gap-2 px-4 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-gray-700"
+                  onClick={() => setActiveTab('sessions')}
+                  className={`pb-3 px-1 text-sm font-medium border-b-2 transition-colors ${
+                    activeTab === 'sessions'
+                      ? 'border-gray-900 text-gray-900'
+                      : 'border-transparent text-gray-600 hover:text-gray-900'
+                  }`}
                 >
-                  <Edit className="w-4 h-4" />
-                  Edit
+                  Sessions
                 </button>
-              </div>
+                <button
+                  onClick={() => setActiveTab('analytics')}
+                  className={`pb-3 px-1 text-sm font-medium border-b-2 transition-colors ${
+                    activeTab === 'analytics'
+                      ? 'border-gray-900 text-gray-900'
+                      : 'border-transparent text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  Analytics
+                </button>
+              </nav>
             </div>
-          </div>
-        </div>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 rounded-lg bg-blue-50 flex items-center justify-center">
-                <Clock className="w-5 h-5 text-[#007AFF]" />
-              </div>
-              <div className="text-sm font-medium text-gray-600">Total Hours</div>
-            </div>
-            {isLoadingStats ? (
-              <div className="h-8 bg-gray-200 rounded animate-pulse"></div>
-            ) : (
-              <div className="text-3xl font-bold text-gray-900">
-                {(stats?.totalHours || 0).toFixed(1)}h
-              </div>
-            )}
-          </div>
-
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center">
-                <TrendingUp className="w-5 h-5 text-[#34C759]" />
-              </div>
-              <div className="text-sm font-medium text-gray-600">This Week</div>
-            </div>
-            {isLoadingStats ? (
-              <div className="h-8 bg-gray-200 rounded animate-pulse"></div>
-            ) : (
-              <div className="text-3xl font-bold text-gray-900">
-                {(stats?.weeklyHours || 0).toFixed(1)}h
-              </div>
-            )}
-          </div>
-
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 rounded-lg bg-purple-50 flex items-center justify-center">
-                <Calendar className="w-5 h-5 text-purple-600" />
-              </div>
-              <div className="text-sm font-medium text-gray-600">Sessions</div>
-            </div>
-            {isLoadingStats ? (
-              <div className="h-8 bg-gray-200 rounded animate-pulse"></div>
-            ) : (
-              <div className="text-3xl font-bold text-gray-900">
-                {stats?.sessionCount || 0}
-              </div>
-            )}
-          </div>
-
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="w-10 h-10 rounded-lg bg-orange-50 flex items-center justify-center">
-                <CheckCircle2 className="w-5 h-5 text-orange-600" />
-              </div>
-              <div className="text-sm font-medium text-gray-600">Tasks Done</div>
-            </div>
-            <div className="text-3xl font-bold text-gray-900">
-              {completedTasks.length}
-            </div>
-          </div>
-        </div>
-
-        {/* Goals Progress */}
-        {(project.weeklyTarget || project.totalTarget) && (
-          <div className="bg-white rounded-xl border border-gray-200 p-6 mb-8">
-            <h2 className="text-lg font-bold text-gray-900 mb-4">Goals</h2>
-            <div className="space-y-6">
-              {project.weeklyTarget && (
-                <div>
-                  <div className="flex justify-between text-sm font-medium text-gray-700 mb-2">
-                    <span>Weekly Target</span>
-                    <span className="text-gray-900">
-                      {(stats?.weeklyHours || 0).toFixed(1)}h / {project.weeklyTarget}h
-                    </span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
-                    <div
-                      className="h-3 rounded-full transition-all duration-300 shadow-sm"
-                      style={{
-                        width: `${Math.min(100, weeklyProgress)}%`,
-                        backgroundColor: project.color
-                      }}
-                    ></div>
-                  </div>
+            {/* Tab Content */}
+            <div>
+              {activeTab === 'overview' && (
+                <div className="space-y-6">
+                  {/* Overview content */}
                 </div>
               )}
 
-              {project.totalTarget && (
+              {activeTab === 'sessions' && (
                 <div>
-                  <div className="flex justify-between text-sm font-medium text-gray-700 mb-2">
-                    <span>Total Target</span>
-                    <span className="text-gray-900">
-                      {(stats?.totalHours || 0).toFixed(1)}h / {project.totalTarget}h
-                    </span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
-                    <div
-                      className="h-3 rounded-full transition-all duration-300 shadow-sm"
-                      style={{
-                        width: `${Math.min(100, totalProgress)}%`,
-                        backgroundColor: project.color
-                      }}
-                    ></div>
-                  </div>
+                  {/* Sessions content */}
+                </div>
+              )}
+
+              {activeTab === 'analytics' && (
+                <div className="space-y-6">
+                  {/* Analytics content */}
                 </div>
               )}
             </div>
-          </div>
-        )}
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Tasks Section */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <h2 className="text-lg font-bold text-gray-900 mb-4">Tasks</h2>
-
-            {/* Add Task */}
-            <div className="flex gap-2 mb-4">
-              <input
-                type="text"
-                value={newTaskName}
-                onChange={(e) => setNewTaskName(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleCreateTask()}
-                placeholder="Add a new task..."
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:border-transparent"
-              />
-              <button
-                onClick={handleCreateTask}
-                disabled={!newTaskName.trim() || isCreatingTask}
-                className="bg-[#007AFF] text-white px-4 py-2 rounded-lg hover:bg-[#0051D5] disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                <Plus className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Active Tasks */}
-            {activeTasks.length > 0 && (
-              <div className="space-y-2 mb-4">
-                {activeTasks.map(task => (
-                  <div
-                    key={task.id}
-                    className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors group"
-                  >
-                    <button
-                      onClick={() => handleToggleTask(task)}
-                      className="flex-shrink-0"
-                    >
-                      <Circle className="w-5 h-5 text-gray-400 hover:text-[#007AFF] transition-colors" />
-                    </button>
-                    <span className="flex-1 text-gray-900">{task.name}</span>
-                    <button
-                      onClick={() => handleDeleteTask(task.id)}
-                      className="opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <Trash2 className="w-4 h-4 text-gray-400 hover:text-red-600" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Completed Tasks */}
-            {completedTasks.length > 0 && (
-              <div>
-                <div className="text-sm font-medium text-gray-500 mb-2">
-                  Completed ({completedTasks.length})
-                </div>
-                <div className="space-y-2">
-                  {completedTasks.map(task => (
-                    <div
-                      key={task.id}
-                      className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors group opacity-60"
-                    >
-                      <button
-                        onClick={() => handleToggleTask(task)}
-                        className="flex-shrink-0"
-                      >
-                        <CheckCircle2 className="w-5 h-5 text-[#34C759]" />
-                      </button>
-                      <span className="flex-1 text-gray-600 line-through">{task.name}</span>
-                      <button
-                        onClick={() => handleDeleteTask(task.id)}
-                        className="opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        <Trash2 className="w-4 h-4 text-gray-400 hover:text-red-600" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {tasks.length === 0 && (
-              <div className="text-center py-8 text-gray-400">
-                <Target className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                <p>No tasks yet. Add one to get started!</p>
-              </div>
-            )}
-          </div>
-
-          {/* Recent Sessions Section */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold text-gray-900">Recent Sessions</h2>
-              <Link
-                href={`/activities?project=${projectId}`}
-                className="text-sm text-[#007AFF] hover:text-[#0051D5] font-medium"
-              >
-                View All
-              </Link>
-            </div>
-
-            {isLoadingSessions ? (
-              <div className="space-y-4">
-                {[1, 2, 3].map(i => (
-                  <div key={i} className="animate-pulse">
-                    <div className="h-20 bg-gray-200 rounded-lg"></div>
-                  </div>
-                ))}
-              </div>
-            ) : sessions.length > 0 ? (
-              <div className="space-y-3">
-                {sessions.map(session => (
-                  <Link
-                    key={session.id}
-                    href={`/post/${session.id}`}
-                    className="block p-4 rounded-lg border border-gray-200 hover:border-gray-300 hover:shadow-sm transition-all"
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <h3 className="font-semibold text-gray-900">{session.title}</h3>
-                      <span className="text-sm font-medium text-gray-900">
-                        {formatTime(session.duration)}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between text-sm text-gray-500">
-                      <span>{formatDate(session.startTime)}</span>
-                      {session.tasks && session.tasks.length > 0 && (
-                        <span>{session.tasks.length} tasks</span>
-                      )}
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8 text-gray-400">
-                <Clock className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                <p>No sessions yet. Start a timer to track your work!</p>
-              </div>
-            )}
-          </div>
         </div>
       </div>
     </div>

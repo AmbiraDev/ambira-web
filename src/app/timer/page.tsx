@@ -10,18 +10,15 @@ import { SaveSession } from '@/components/SaveSession';
 export default function TimerPage() {
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-white">
         {/* Header - hidden on mobile */}
         <div className="hidden md:block">
           <Header />
         </div>
 
-        <div className="px-0 md:px-8 md:py-6 md:pt-24">
+        <div className="md:pt-20">
           <SessionTimerEnhanced projectId="" />
         </div>
-
-        {/* Bottom padding for mobile navigation - only on desktop */}
-        <div className="h-20 hidden md:block" />
 
         {/* Bottom Navigation - only on desktop */}
         <div className="hidden md:block">

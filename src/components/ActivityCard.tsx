@@ -65,7 +65,7 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
 
   const currentStats = stats || activityStats;
 
-  // Color mapping for activity colors
+  // Color mapping for activity colors (for backward compatibility)
   const colorClasses = {
     orange: 'bg-orange-500',
     blue: 'bg-blue-500',
@@ -77,7 +77,38 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
     indigo: 'bg-indigo-500',
   };
 
+  const colorHexMap: Record<string, string> = {
+    orange: '#f97316',
+    blue: '#3b82f6',
+    green: '#22c55e',
+    purple: '#a855f7',
+    red: '#ef4444',
+    yellow: '#eab308',
+    pink: '#ec4899',
+    indigo: '#6366f1',
+    teal: '#14b8a6',
+    cyan: '#06b6d4',
+    lime: '#84cc16',
+    amber: '#f59e0b',
+    emerald: '#10b981',
+    violet: '#8b5cf6',
+    fuchsia: '#d946ef',
+    rose: '#f43f5e',
+    sky: '#0ea5e9',
+    slate: '#64748b',
+  };
+
   const colorClass = colorClasses[activity.color as keyof typeof colorClasses] || 'bg-gray-500';
+
+  // Get the actual color value (hex or fallback to name)
+  const getColorValue = (color: string): string => {
+    // If it's already a hex color, return it
+    if (color.startsWith('#')) return color;
+    // Otherwise, try to find the hex value from the map
+    return colorHexMap[color] || color;
+  };
+
+  const colorValue = getColorValue(activity.color);
 
   // Calculate progress percentage
   const weeklyProgress = activity.weeklyTarget ? ((currentStats?.weeklyHours || 0) / activity.weeklyTarget) * 100 : 0;
@@ -97,13 +128,13 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 hover:shadow-lg hover:border-gray-300 transition-all duration-200 relative group">
-      <Link href={`/activities/${activity.id}`} className="block p-6">
+    <div className="bg-transparent rounded-xl border border-gray-200/60 hover:border-gray-300 hover:shadow-sm transition-all duration-200 relative group">
+      <Link href={`/activities/${activity.id}`} className="block p-5">
         {/* Header with icon and menu */}
         <div className="flex items-start justify-between mb-5">
           <div
             className="w-14 h-14 rounded-xl flex items-center justify-center p-2 shadow-sm"
-            style={{ backgroundColor: activity.color }}
+            style={{ backgroundColor: colorValue }}
           >
             <IconRenderer iconName={activity.icon} size={40} />
           </div>
@@ -176,7 +207,7 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
 
       {/* Dropdown menu */}
       {showMenu && (
-        <div ref={menuRef} className="absolute top-16 right-4 bg-white border border-gray-200 rounded-xl shadow-lg py-2 z-10 min-w-[150px]">
+        <div ref={menuRef} className="absolute top-16 right-4 bg-white/95 backdrop-blur-sm border border-gray-200 rounded-lg shadow-lg py-1 z-10 min-w-[150px]">
           <button
             onClick={(e) => handleAction(e, () => onEdit?.(activity))}
             className="w-full px-4 py-2 text-left text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"

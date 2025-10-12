@@ -51,8 +51,15 @@ export default function SuggestedGroupsModal({ isOpen, onClose }: SuggestedGroup
     try {
       setIsLoading(true);
       setCurrentPage(0);
-      const groups = await firebaseApi.group.searchGroups({}, TOTAL_GROUPS_TO_FETCH);
-      setAllSuggestedGroups(groups);
+
+      // Get user's current groups to exclude them from suggestions
+      const userGroups = await firebaseApi.group.getUserGroups(user.id);
+      const userGroupIds = new Set(userGroups.map(g => g.id));
+
+      // Get all groups and filter out ones user is already in
+      const allGroups = await firebaseApi.group.searchGroups({}, TOTAL_GROUPS_TO_FETCH);
+      const filteredGroups = allGroups.filter(group => !userGroupIds.has(group.id));
+      setAllSuggestedGroups(filteredGroups);
     } catch (error) {
       console.error('Error loading groups:', error);
       setAllSuggestedGroups([]);

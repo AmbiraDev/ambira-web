@@ -68,7 +68,7 @@ export const CommentsModal: React.FC<CommentsModalProps> = ({
       const response = await firebaseCommentApi.getSessionComments(sessionId, 100);
       setAllComments(response.comments);
       updateDisplayedComments();
-    } catch (err: any) {
+    } catch {
       // Permission errors are handled gracefully in firebaseApi
       // Real errors will still surface but won't spam console
       setAllComments([]);
@@ -98,30 +98,6 @@ export const CommentsModal: React.FC<CommentsModalProps> = ({
       }
     } catch (err: any) {
       console.error('Failed to create comment:', err);
-      throw err;
-    }
-  };
-
-  const handleEdit = async (commentId: string, content: string) => {
-    try {
-      await firebaseCommentApi.updateComment(commentId, { content });
-
-      const updateComment = (items: CommentWithDetails[]): CommentWithDetails[] => {
-        return items.map(comment => {
-          if (comment.id === commentId) {
-            return { ...comment, content, isEdited: true, updatedAt: new Date() };
-          }
-          if (comment.replies) {
-            return { ...comment, replies: updateComment(comment.replies) };
-          }
-          return comment;
-        });
-      };
-
-      setComments(updateComment(comments));
-      setAllComments(updateComment(allComments));
-    } catch (err: any) {
-      console.error('Failed to edit comment:', err);
       throw err;
     }
   };
@@ -199,7 +175,6 @@ export const CommentsModal: React.FC<CommentsModalProps> = ({
                 <CommentItem
                   key={comment.id}
                   comment={comment}
-                  onEdit={handleEdit}
                   onDelete={handleDelete}
                   currentUserId={user?.id}
                   compact={false}

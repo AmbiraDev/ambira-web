@@ -291,15 +291,17 @@ export default function SettingsPage() {
 
             {/* Main Content */}
             <div className="flex-1">
-              <div className="bg-white md:rounded-lg md:shadow-sm p-4 md:p-8">
+              <div className="p-4 md:p-0">
                 {activeTab === 'profile' && (
                   <form onSubmit={handleSubmit}>
-                    <div className="space-y-6">
-                      <h2 className="text-2xl font-bold text-gray-900 mb-2 flex items-center gap-2">
-                        <User className="w-6 h-6 text-[#007AFF]" />
-                        My Profile
-                      </h2>
-                      <p className="text-gray-600 text-sm mb-8">Update your personal information and profile settings</p>
+                    <div className="bg-gray-50 rounded-xl border border-gray-200 p-4 md:p-6 space-y-6">
+                      <div>
+                        <h2 className="text-2xl font-bold text-gray-900 mb-2 flex items-center gap-2">
+                          <User className="w-6 h-6 text-[#007AFF]" />
+                          My Profile
+                        </h2>
+                        <p className="text-gray-600 text-sm">Update your personal information and profile settings</p>
+                      </div>
 
                       {/* Profile Picture */}
                       <div>
@@ -580,12 +582,14 @@ export default function SettingsPage() {
                 )}
 
                 {activeTab === 'privacy' && (
-                  <div className="space-y-6">
-                    <h2 className="text-2xl font-bold text-gray-900 mb-2 flex items-center gap-2">
-                      <Shield className="w-6 h-6 text-[#007AFF]" />
-                      Privacy Controls
-                    </h2>
-                    <p className="text-gray-600 text-sm mb-8">Control who can see your profile and content</p>
+                  <div className="bg-gray-50 rounded-xl border border-gray-200 p-4 md:p-6 space-y-6">
+                    <div>
+                      <h2 className="text-2xl font-bold text-gray-900 mb-2 flex items-center gap-2">
+                        <Shield className="w-6 h-6 text-[#007AFF]" />
+                        Privacy Controls
+                      </h2>
+                      <p className="text-gray-600 text-sm">Control who can see your profile and content</p>
+                    </div>
 
                     <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
                       <div className="px-6 py-4 border-b border-gray-200">
@@ -649,12 +653,14 @@ export default function SettingsPage() {
                 )}
 
                 {activeTab === 'display' && (
-                  <div className="space-y-6">
-                    <h2 className="text-2xl font-bold text-gray-900 mb-2 flex items-center gap-2">
-                      <Globe className="w-6 h-6 text-[#007AFF]" />
-                      Display Preferences
-                    </h2>
-                    <p className="text-gray-600 text-sm">Customize how the app looks and feels.</p>
+                  <div className="bg-gray-50 rounded-xl border border-gray-200 p-4 md:p-6 space-y-6">
+                    <div>
+                      <h2 className="text-2xl font-bold text-gray-900 mb-2 flex items-center gap-2">
+                        <Globe className="w-6 h-6 text-[#007AFF]" />
+                        Display Preferences
+                      </h2>
+                      <p className="text-gray-600 text-sm">Customize how the app looks and feels.</p>
+                    </div>
 
                     <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
                       <div className="px-6 py-8 text-center">
@@ -670,7 +676,7 @@ export default function SettingsPage() {
               </div>
 
               {/* Danger Zone */}
-              <div className="mt-6 space-y-4">
+              <div className="mt-6 bg-gray-50 rounded-xl border border-gray-200 p-4 md:p-6 space-y-4">
                 {/* Logout Button */}
                 <button
                   onClick={handleLogout}

@@ -211,12 +211,37 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
   // Calculate elapsed time in seconds
   const getElapsedTime = useCallback((): number => {
     if (!timerState.startTime) return 0;
+
     // When paused, the pausedDuration represents total elapsed so far
     if (!timerState.isRunning) {
-      return timerState.pausedDuration || 0;
+      const pausedDuration = timerState.pausedDuration || 0;
+      // Ensure pausedDuration is never negative
+      return Math.max(0, pausedDuration);
     }
+
+    // When running, calculate elapsed time from start
     const now = new Date();
     const elapsed = Math.floor((now.getTime() - timerState.startTime.getTime()) / 1000);
+
+    // Defensive check: if elapsed is negative or unreasonably large, log a warning
+    if (elapsed < 0) {
+      console.warn('Timer calculation error: negative elapsed time', {
+        now: now.toISOString(),
+        startTime: timerState.startTime.toISOString(),
+        elapsed
+      });
+      return 0;
+    }
+
+    // Warn if session exceeds 24 hours (unusual but not invalid)
+    const TWENTY_FOUR_HOURS = 24 * 60 * 60;
+    if (elapsed > TWENTY_FOUR_HOURS) {
+      console.warn('Timer session exceeds 24 hours', {
+        elapsedHours: Math.floor(elapsed / 3600),
+        startTime: timerState.startTime.toISOString()
+      });
+    }
+
     return Math.max(0, elapsed);
   }, [timerState.startTime, timerState.pausedDuration, timerState.isRunning]);
 
@@ -236,6 +261,30 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
 
       const activeSession = await firebaseSessionApi.getActiveSession();
       if (!activeSession) return;
+
+      // Validate that the session start time is reasonable
+      // If a session started more than 24 hours ago, it's likely stale data
+      const MAX_SESSION_AGE_MS = 24 * 60 * 60 * 1000; // 24 hours
+      const now = new Date();
+      const sessionAge = now.getTime() - activeSession.startTime.getTime();
+
+      if (sessionAge > MAX_SESSION_AGE_MS) {
+        console.warn(
+          `Active session is too old (${Math.floor(sessionAge / (60 * 60 * 1000))} hours). ` +
+          `Clearing stale session data.`
+        );
+        await firebaseSessionApi.clearActiveSession();
+        return;
+      }
+
+      // Additional validation: if sessionAge is negative, the startTime is in the future (clock issue)
+      if (sessionAge < 0) {
+        console.warn(
+          `Active session has start time in the future (clock drift?). Clearing invalid session.`
+        );
+        await firebaseSessionApi.clearActiveSession();
+        return;
+      }
 
       // Get project and task details
       const projects = await firebaseProjectApi.getProjects();
@@ -288,7 +337,20 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
         lastAutoSave: null,
       });
 
-      console.log('Active timer loaded successfully');
+      // Log session details for debugging
+      const currentElapsed = activeSession.isPaused
+        ? activeSession.pausedDuration
+        : Math.floor((now.getTime() - activeSession.startTime.getTime()) / 1000);
+
+      console.log('Active timer loaded successfully', {
+        projectName: project.name,
+        isPaused: activeSession.isPaused,
+        startTime: activeSession.startTime.toISOString(),
+        sessionAge: `${Math.floor(sessionAge / 1000 / 60)} minutes`,
+        pausedDuration: `${activeSession.pausedDuration} seconds`,
+        currentElapsed: `${Math.floor(currentElapsed / 60)} minutes ${currentElapsed % 60} seconds`,
+        taskCount: selectedTasks.length
+      });
     } catch (error) {
       console.error('Failed to load active timer:', error);
     }

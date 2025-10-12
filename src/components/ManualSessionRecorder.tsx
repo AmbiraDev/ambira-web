@@ -12,6 +12,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { uploadImages, compressImage } from '@/lib/imageUpload';
 import { parseLocalDateTime } from '@/lib/utils';
+import Header from '@/components/HeaderComponent';
 
 const PRIVACY_OPTIONS = [
   { value: 'everyone', label: 'Everyone', description: 'Visible to all users' },
@@ -270,24 +271,19 @@ export default function ManualSessionRecorder() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="max-w-3xl mx-auto px-4 py-4">
-          <div className="flex items-center gap-4">
-            <Link href="/" className="text-gray-600 hover:text-gray-900">
-              <ArrowLeft className="w-6 h-6" />
-            </Link>
-            <h1 className="text-2xl font-bold text-gray-900">Manual</h1>
-          </div>
-          <p className="text-sm text-gray-600 mt-2">
-            Log a session that you completed earlier
-          </p>
+      {/* Main Header */}
+      <Header />
+
+      {/* Page Title */}
+      <div className="bg-gray-50">
+        <div className="max-w-3xl mx-auto px-4 pt-6 pb-3">
+          <h1 className="text-2xl font-bold text-gray-900">Log Manual Session</h1>
         </div>
       </div>
 
       {/* Form */}
-      <div className="max-w-3xl mx-auto px-4 py-6 sm:py-8">
-        <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-6 space-y-4 sm:space-y-6">
+      <div className="max-w-3xl mx-auto px-4 py-4">
+        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
           
           {/* Project Selection */}
           <div>
@@ -543,11 +539,11 @@ export default function ManualSessionRecorder() {
           )}
 
           {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row gap-3 pt-4 sticky bottom-0 bg-white -mx-4 sm:mx-0 -mb-4 sm:mb-0 px-4 sm:px-0 py-4 sm:py-0 border-t sm:border-t-0 border-gray-200 sm:border-0 sm:static">
+          <div className="flex flex-col sm:flex-row gap-3 pt-6">
             <button
               type="button"
               onClick={() => router.back()}
-              className="flex-1 px-4 py-3 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors disabled:opacity-50 min-h-[48px]"
+              className="flex-1 px-4 py-3 border border-gray-300 rounded-lg text-gray-700 bg-white font-medium hover:bg-gray-50 transition-colors disabled:opacity-50 min-h-[48px]"
               disabled={isLoading}
             >
               Cancel

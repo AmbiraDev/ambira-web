@@ -9,7 +9,6 @@ import { ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import DailyGoals from './DailyGoals';
-import SidebarActivityGraph from './SidebarActivityGraph';
 
 function LeftSidebar() {
   const { user } = useAuth();
@@ -68,9 +67,6 @@ function LeftSidebar() {
   return (
     <aside className="hidden lg:block w-[340px] flex-shrink-0" aria-label="User sidebar">
       <div className="space-y-4 h-full overflow-y-auto scrollbar-hide pt-12 pb-6">
-        {/* Activity Graph */}
-        <SidebarActivityGraph />
-
         {/* Daily Goals */}
         <DailyGoals />
       </div>

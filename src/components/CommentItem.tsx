@@ -1,49 +1,25 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState } from 'react';
 import { CommentWithDetails } from '@/types';
-import CommentInput from './CommentInput';
 import Link from 'next/link';
-import { MoreVertical, Edit2, Trash2 } from 'lucide-react';
+import { Trash2 } from 'lucide-react';
 
 interface CommentItemProps {
   comment: CommentWithDetails;
-  onEdit?: (commentId: string, content: string) => Promise<void>;
   onDelete?: (commentId: string) => Promise<void>;
   currentUserId?: string;
-  compact?: boolean;
 }
 
 export const CommentItem: React.FC<CommentItemProps> = ({
   comment,
-  onEdit,
   onDelete,
-  currentUserId,
-  compact = false
+  currentUserId
 }) => {
-  const [showEditInput, setShowEditInput] = useState(false);
-  const [showMenu, setShowMenu] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
 
   const isOwner = currentUserId === comment.userId;
-
-  // Close menu when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setShowMenu(false);
-      }
-    };
-
-    if (showMenu) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [showMenu]);
+  const canDelete = isOwner && !!onDelete;
 
   const formatTimeAgo = (date: Date): string => {
     const now = new Date();
@@ -66,19 +42,6 @@ export const CommentItem: React.FC<CommentItemProps> = ({
       .slice(0, 2);
   };
 
-  const getUserColor = (userId: string): string => {
-    const colors = [
-      'bg-gradient-to-br from-orange-400 to-orange-600',
-      'bg-gradient-to-br from-blue-400 to-blue-600',
-      'bg-gradient-to-br from-green-400 to-green-600',
-      'bg-gradient-to-br from-purple-400 to-purple-600',
-      'bg-gradient-to-br from-pink-400 to-pink-600',
-      'bg-gradient-to-br from-indigo-400 to-indigo-600',
-    ];
-    const hash = userId.split('').reduce((a, b) => a + b.charCodeAt(0), 0);
-    return colors[hash % colors.length];
-  };
-
   const renderContent = (text: string) => {
     // Highlight mentions
     const parts = text.split(/(@\w+)/g);
@@ -97,12 +60,6 @@ export const CommentItem: React.FC<CommentItemProps> = ({
       }
       return <span key={index}>{part}</span>;
     });
-  };
-
-  const handleEditSubmit = async (content: string) => {
-    if (!onEdit) return;
-    await onEdit(comment.id, content);
-    setShowEditInput(false);
   };
 
   const handleDelete = async () => {
@@ -161,65 +118,23 @@ export const CommentItem: React.FC<CommentItemProps> = ({
             <span className="text-xs text-gray-500">
               {formatTimeAgo(comment.createdAt)}
             </span>
-            {comment.isEdited && (
-              <span className="text-xs text-gray-400">(edited)</span>
-            )}
-            
-            {/* Menu Button */}
-            {isOwner && !showEditInput && (
-              <div className="relative ml-auto" ref={menuRef}>
-                <button
-                  onClick={() => setShowMenu(!showMenu)}
-                  className="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 transition-colors"
-                >
-                  <MoreVertical className="w-4 h-4" />
-                </button>
-                {showMenu && (
-                  <div className="absolute right-0 mt-1 w-36 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
-                    <button
-                      onClick={() => {
-                        setShowEditInput(true);
-                        setShowMenu(false);
-                      }}
-                      className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2"
-                    >
-                      <Edit2 className="w-4 h-4" />
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => {
-                        handleDelete();
-                        setShowMenu(false);
-                      }}
-                      className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-gray-50 flex items-center gap-2"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                      Delete
-                    </button>
-                  </div>
-                )}
-              </div>
+
+            {/* Delete Button */}
+            {canDelete && (
+              <button
+                onClick={handleDelete}
+                className="ml-auto text-gray-400 hover:text-red-600 p-1 rounded-full hover:bg-gray-100 transition-colors"
+                title="Delete comment"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
             )}
           </div>
 
-          {/* Comment Text or Edit Input */}
-          {showEditInput ? (
-            <div className="mb-2">
-              <CommentInput
-                sessionId={comment.sessionId}
-                initialValue={comment.content}
-                placeholder="Edit your comment..."
-                autoFocus
-                onSubmit={handleEditSubmit}
-                onCancel={() => setShowEditInput(false)}
-              />
-            </div>
-          ) : (
-            <p className="text-sm text-gray-900 mb-2 whitespace-pre-wrap break-words">
-              {renderContent(comment.content)}
-            </p>
-          )}
-
+          {/* Comment Text */}
+          <p className="text-sm text-gray-900 mb-2 whitespace-pre-wrap break-words">
+            {renderContent(comment.content)}
+          </p>
         </div>
       </div>
     </div>

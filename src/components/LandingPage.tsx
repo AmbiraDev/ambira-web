@@ -631,7 +631,7 @@ export const LandingPage: React.FC = () => {
                 </div>
                 <h1 className="text-4xl font-bold text-gray-900 mb-2">Welcome to Ambira</h1>
                 <p className="text-lg text-gray-600">
-                  Your productivity tracking companion
+                  Study, work, and build with your friends.
                 </p>
               </div>
 

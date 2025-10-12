@@ -93,21 +93,21 @@ export const ActivityList: React.FC<ActivityListProps> = ({
         </div>
 
         {/* Loading skeleton for activity cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {[1, 2, 3, 4, 5, 6].map(i => (
             <div key={i} className="animate-pulse">
-              <div className="bg-white rounded-lg border border-gray-200 p-6">
+              <div className="bg-transparent rounded-xl border border-gray-200/60 p-5">
                 <div className="flex items-start justify-between mb-4">
-                  <div className="w-12 h-12 bg-gray-200 rounded-lg"></div>
-                  <div className="w-5 h-5 bg-gray-200 rounded"></div>
+                  <div className="w-14 h-14 bg-gray-200/80 rounded-xl"></div>
+                  <div className="w-5 h-5 bg-gray-200/80 rounded"></div>
                 </div>
                 <div className="mb-4">
-                  <div className="h-6 bg-gray-200 rounded w-3/4 mb-2"></div>
-                  <div className="h-4 bg-gray-200 rounded w-full"></div>
+                  <div className="h-6 bg-gray-200/80 rounded w-3/4 mb-2"></div>
+                  <div className="h-4 bg-gray-200/80 rounded w-full"></div>
                 </div>
                 <div className="space-y-3">
-                  <div className="h-2 bg-gray-200 rounded w-full"></div>
-                  <div className="h-2 bg-gray-200 rounded w-2/3"></div>
+                  <div className="h-2.5 bg-gray-200/80 rounded-full w-full"></div>
+                  <div className="h-2.5 bg-gray-200/80 rounded-full w-2/3"></div>
                 </div>
               </div>
             </div>
@@ -160,7 +160,7 @@ export const ActivityList: React.FC<ActivityListProps> = ({
 
       {/* Activities Grid/List */}
       {filteredActivities.length === 0 ? (
-        <div className="bg-white rounded-xl border border-gray-200 p-8 md:p-12">
+        <div className="bg-transparent rounded-xl border border-gray-200/60 p-8 md:p-12">
           <div className="max-w-md mx-auto text-center">
             <div className="w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-[#007AFF] to-[#0051D5] rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm">
               <svg className="w-8 h-8 md:w-10 md:h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -190,8 +190,8 @@ export const ActivityList: React.FC<ActivityListProps> = ({
       ) : (
         <div className={
           viewMode === 'grid'
-            ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'
-            : 'max-w-3xl mx-auto space-y-5'
+            ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'
+            : 'max-w-3xl mx-auto space-y-4'
         }>
           {filteredActivities.map((activity) => (
             <ActivityCard
@@ -215,7 +215,7 @@ export const ActivityList: React.FC<ActivityListProps> = ({
             }
           }}
         >
-          <div className="bg-white rounded-xl p-6 max-w-md w-full shadow-xl animate-in zoom-in-95 duration-200">
+          <div className="bg-white/95 backdrop-blur-sm rounded-xl p-6 max-w-md w-full shadow-xl animate-in zoom-in-95 duration-200 border border-gray-200">
             <h3 className="text-xl font-bold text-gray-900 mb-3">Delete Activity</h3>
             <p className="text-gray-600 mb-6 leading-relaxed">
               Are you sure you want to delete <span className="font-semibold text-gray-900">"{deleteConfirm.name}"</span>? This action cannot be undone.

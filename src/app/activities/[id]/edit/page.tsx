@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Header from '@/components/HeaderComponent';
-import { CreateProjectData } from '@/types';
+import { UpdateActivityData } from '@/types';
 import { useProjects } from '@/contexts/ProjectsContext';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { IconSelector } from '@/components/IconSelector';
@@ -129,12 +129,17 @@ const AVAILABLE_COLORS = [
   { name: 'slate', hex: '#64748b', label: 'Slate' },
 ];
 
-function CreateProjectContent() {
+interface EditActivityPageProps {
+  params: Promise<{
+    id: string;
+  }>;
+}
+
+function EditActivityContent({ activityId }: { activityId: string }) {
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const redirectPath = searchParams.get('redirect');
-  const { createProject } = useProjects();
-  const [formData, setFormData] = useState<CreateProjectData>({
+  const { projects, updateProject } = useProjects();
+  const [isLoading, setIsLoading] = useState(true);
+  const [formData, setFormData] = useState<UpdateActivityData>({
     name: '',
     description: '',
     icon: 'briefcase',
@@ -143,19 +148,38 @@ function CreateProjectContent() {
     totalTarget: undefined,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errors, setErrors] = useState<Partial<CreateProjectData>>({});
+  const [errors, setErrors] = useState<Partial<UpdateActivityData>>({});
   const [successMessage, setSuccessMessage] = useState('');
 
-  const validateForm = (): boolean => {
-    const newErrors: Partial<CreateProjectData> = {};
+  // Load activity data
+  useEffect(() => {
+    const activity = projects.find(p => p.id === activityId);
+    if (activity) {
+      setFormData({
+        name: activity.name,
+        description: activity.description || '',
+        icon: activity.icon,
+        color: activity.color,
+        weeklyTarget: activity.weeklyTarget,
+        totalTarget: activity.totalTarget,
+      });
+      setIsLoading(false);
+    } else if (!isLoading) {
+      // If activity not found and projects are loaded, redirect
+      router.push('/activities');
+    }
+  }, [activityId, projects]);
 
-    if (!formData.name.trim()) {
+  const validateForm = (): boolean => {
+    const newErrors: Partial<UpdateActivityData> = {};
+
+    if (!formData.name?.trim()) {
       newErrors.name = 'Activity name is required';
     } else if (formData.name.length > 50) {
       newErrors.name = 'Activity name must be less than 50 characters';
     }
 
-    if (formData.description.trim() && formData.description.length > 200) {
+    if (formData.description && formData.description.length > 200) {
       newErrors.description = 'Description must be less than 200 characters';
     }
 
@@ -169,18 +193,6 @@ function CreateProjectContent() {
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  };
-
-  const resetForm = () => {
-    setFormData({
-      name: '',
-      description: '',
-      icon: 'briefcase',
-      color: 'orange',
-      weeklyTarget: undefined,
-      totalTarget: undefined,
-    });
-    setErrors({});
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -198,26 +210,24 @@ function CreateProjectContent() {
       const selectedIcon = AVAILABLE_ICONS.find(i => i.name === formData.icon);
       const selectedColor = AVAILABLE_COLORS.find(c => c.name === formData.color);
 
-      const project = await createProject({
+      await updateProject(activityId, {
         ...formData,
-        name: formData.name.trim(),
-        description: formData.description.trim(),
-        icon: selectedIcon?.icon || 'flat-color-icons:briefcase',
-        color: selectedColor?.hex || '#f97316',
+        name: formData.name?.trim(),
+        description: formData.description?.trim(),
+        icon: selectedIcon?.icon || formData.icon,
+        color: selectedColor?.hex || formData.color,
         weeklyTarget: formData.weeklyTarget || undefined,
         totalTarget: formData.totalTarget || undefined,
       });
 
-      setSuccessMessage('Activity created successfully!');
-      resetForm();
+      setSuccessMessage('Activity updated successfully!');
 
       setTimeout(() => {
-        // Redirect to the specified path or default to /projects
-        router.push(redirectPath || '/projects');
+        router.push(`/activities/${activityId}`);
       }, 1500);
     } catch (error) {
-      console.error('Failed to create activity:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to create activity. Please try again.';
+      console.error('Failed to update activity:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to update activity. Please try again.';
       setErrors({ name: errorMessage });
       setSuccessMessage('');
     } finally {
@@ -225,7 +235,7 @@ function CreateProjectContent() {
     }
   };
 
-  const handleInputChange = (field: keyof CreateProjectData, value: any) => {
+  const handleInputChange = (field: keyof UpdateActivityData, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: undefined }));
@@ -236,10 +246,35 @@ function CreateProjectContent() {
   };
 
   // Get current icon string
-  const selectedIconData = AVAILABLE_ICONS.find(i => i.name === formData.icon) || AVAILABLE_ICONS[0];
+  const selectedIconData = AVAILABLE_ICONS.find(i => i.icon === formData.icon) ||
+                          AVAILABLE_ICONS.find(i => i.name === formData.icon) ||
+                          AVAILABLE_ICONS[0];
 
   // Get current color
-  const selectedColorData = AVAILABLE_COLORS.find(c => c.name === formData.color) || AVAILABLE_COLORS[0];
+  const selectedColorData = AVAILABLE_COLORS.find(c => c.name === formData.color || c.hex === formData.color) ||
+                            AVAILABLE_COLORS[0];
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <div className="max-w-2xl mx-auto px-4 py-8">
+          <div className="bg-white rounded-lg shadow-md p-6 md:p-8">
+            <div className="animate-pulse space-y-6">
+              <div className="h-8 bg-gray-200 rounded w-1/3"></div>
+              <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+              <div className="h-24 bg-gray-200 rounded"></div>
+              <div className="space-y-4">
+                <div className="h-12 bg-gray-200 rounded"></div>
+                <div className="h-12 bg-gray-200 rounded"></div>
+                <div className="h-12 bg-gray-200 rounded"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -249,11 +284,9 @@ function CreateProjectContent() {
         <div className="bg-white rounded-lg shadow-md p-6 md:p-8">
           {/* Header */}
           <div className="mb-6">
-            <h1 className="text-3xl font-bold text-gray-900">Create New Activity</h1>
+            <h1 className="text-3xl font-bold text-gray-900">Edit Activity</h1>
             <p className="text-gray-600 mt-2">
-              {redirectPath
-                ? 'Create your first activity to start tracking your time'
-                : 'Set up a new activity to track your productivity'}
+              Update your activity settings and goals
             </p>
           </div>
 
@@ -330,7 +363,7 @@ function CreateProjectContent() {
                 <p className="mt-1 text-sm text-red-600">{errors.description}</p>
               )}
               <p className="mt-1 text-xs text-gray-500">
-                {formData.description.length}/200 characters
+                {(formData.description || '').length}/200 characters
               </p>
             </div>
 
@@ -412,7 +445,7 @@ function CreateProjectContent() {
             <div className="flex flex-col sm:flex-row gap-3 pt-6 border-t border-gray-200">
               <button
                 type="button"
-                onClick={() => router.push(redirectPath || '/projects')}
+                onClick={() => router.push(`/activities/${activityId}`)}
                 className="flex-1 px-6 py-3 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium"
                 disabled={isSubmitting}
               >
@@ -423,7 +456,7 @@ function CreateProjectContent() {
                 disabled={isSubmitting}
                 className="flex-1 px-6 py-3 bg-[#007AFF] text-white rounded-lg hover:bg-[#0056D6] transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-md"
               >
-                {isSubmitting ? 'Creating...' : 'Create Activity'}
+                {isSubmitting ? 'Saving...' : 'Save Changes'}
               </button>
             </div>
           </form>
@@ -433,10 +466,30 @@ function CreateProjectContent() {
   );
 }
 
-export default function CreateProjectPage() {
+export default function EditActivityPageWrapper({ params }: EditActivityPageProps) {
+  const [activityId, setActivityId] = React.useState<string>('');
+
+  React.useEffect(() => {
+    params.then(({ id }) => setActivityId(id));
+  }, [params]);
+
   return (
     <ProtectedRoute>
-      <CreateProjectContent />
+      {!activityId ? (
+        <div className="min-h-screen bg-gray-50">
+          <Header />
+          <div className="max-w-2xl mx-auto px-4 py-8">
+            <div className="bg-white rounded-lg shadow-md p-6 md:p-8">
+              <div className="animate-pulse space-y-6">
+                <div className="h-8 bg-gray-200 rounded w-1/3"></div>
+                <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <EditActivityContent activityId={activityId} />
+      )}
     </ProtectedRoute>
   );
 }

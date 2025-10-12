@@ -110,7 +110,7 @@ function SidebarActivityGraph() {
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm hover:shadow-md transition-shadow">
+    <div className="p-6">
       {/* Header with dropdown */}
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-xl font-bold text-gray-900">
@@ -119,7 +119,7 @@ function SidebarActivityGraph() {
         <div className="relative">
           <button
             onClick={() => setShowDropdown(!showDropdown)}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-700 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors border border-gray-200"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-700 bg-white rounded-lg hover:bg-gray-100 transition-colors border border-gray-200"
           >
             {timePeriod === 'week' ? 'Week' : 'Month'}
             <ChevronDown className={`w-4 h-4 transition-transform ${showDropdown ? 'rotate-180' : ''}`} />
@@ -205,32 +205,7 @@ function SidebarActivityGraph() {
                 dataKey="hours"
                 stroke="#007AFF"
                 strokeWidth={3}
-                dot={(props: any) => {
-                  const { cx, cy, payload, index } = props;
-                  const isToday = payload.isToday;
-                  const radius = isToday ? 8 : 6;
-
-                  return (
-                    <g key={`dot-${index}`}>
-                      <circle
-                        cx={cx}
-                        cy={cy}
-                        r={radius}
-                        fill="white"
-                        stroke="#007AFF"
-                        strokeWidth={isToday ? 3 : 2.5}
-                      />
-                      {isToday && (
-                        <circle
-                          cx={cx}
-                          cy={cy}
-                          r={4}
-                          fill="#007AFF"
-                        />
-                      )}
-                    </g>
-                  );
-                }}
+                dot={false}
                 activeDot={{
                   r: 8,
                   fill: '#007AFF',

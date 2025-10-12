@@ -104,32 +104,6 @@ export const TopComments: React.FC<TopCommentsProps> = ({
     }
   };
 
-  const handleEdit = async (commentId: string, content: string) => {
-    try {
-      await firebaseCommentApi.updateComment(commentId, { content });
-
-      const updateComment = (items: CommentWithDetails[]): CommentWithDetails[] => {
-        return items.map(comment => {
-          if (comment.id === commentId) {
-            return { ...comment, content, isEdited: true, updatedAt: new Date() };
-          }
-          if (comment.replies) {
-            return { ...comment, replies: updateComment(comment.replies) };
-          }
-          return comment;
-        });
-      };
-
-      setComments(updateComment(comments));
-      if (isExpanded) {
-        setAllComments(updateComment(allComments));
-      }
-    } catch (err: any) {
-      console.error('Failed to edit comment:', err);
-      throw err;
-    }
-  };
-
   const handleDelete = async (commentId: string) => {
     try {
       await firebaseCommentApi.deleteComment(commentId);
@@ -188,8 +162,7 @@ export const TopComments: React.FC<TopCommentsProps> = ({
               <CommentItem
                 key={comment.id}
                 comment={comment}
-                onEdit={undefined}
-                onDelete={undefined}
+                onDelete={handleDelete}
                 currentUserId={user?.id}
                 compact={true}
               />
@@ -215,7 +188,6 @@ export const TopComments: React.FC<TopCommentsProps> = ({
               <CommentItem
                 key={comment.id}
                 comment={comment}
-                onEdit={handleEdit}
                 onDelete={handleDelete}
                 currentUserId={user?.id}
                 compact={false}

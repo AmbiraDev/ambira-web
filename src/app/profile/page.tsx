@@ -9,13 +9,14 @@ import Header from '@/components/HeaderComponent';
 import { useUserSessions, useUserStats, useUserProfile, useUserFollowers, useUserFollowing } from '@/hooks/useCache';
 import Link from 'next/link';
 import Image from 'next/image';
-import { User as UserIcon, Users, Settings, Clock, Target, Calendar, Heart, LogOut, Edit, TrendingUp } from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip, Area, ComposedChart } from 'recharts';
+import { User as UserIcon, Users, Settings, Clock, Target, Calendar, Heart, LogOut, Edit, TrendingUp, BarChart3, ChevronDown } from 'lucide-react';
+import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip, Area, ComposedChart, BarChart, Bar } from 'recharts';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Feed from '@/components/Feed';
 
 type ProfileTab = 'progress' | 'sessions' | 'followers' | 'following';
 type TimePeriod = '7D' | '2W' | '4W' | '3M' | '1Y';
+type ChartType = 'bar' | 'line';
 
 interface ChartDataPoint {
   name: string;
@@ -44,6 +45,8 @@ export default function ProfilePage() {
   );
   const [timePeriod, setTimePeriod] = useState<TimePeriod>('7D');
   const [showSettingsMenu, setShowSettingsMenu] = useState(false);
+  const [chartType, setChartType] = useState<ChartType>('line');
+  const [showChartTypeDropdown, setShowChartTypeDropdown] = useState(false);
 
   // Use React Query hooks for data with automatic caching
   const { data: sessions = [], isLoading: sessionsLoading } = useUserSessions(user?.id || '', 50, {
@@ -207,7 +210,7 @@ export default function ProfilePage() {
           <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-6">
             <div className="max-w-4xl mx-auto">
               {/* Profile Card with This Week Stats */}
-              <div className="bg-white rounded-xl border border-gray-200 p-4 md:p-6 mb-6 relative">
+              <div className="bg-gray-50 rounded-xl border border-gray-200 p-4 md:p-6 mb-6 relative">
                 {/* Settings Icon */}
                 <div className="absolute top-4 right-4 z-10">
                   <div className="relative">
@@ -410,11 +413,11 @@ export default function ProfilePage() {
               <div className="mt-6">
                 {activeTab === 'progress' && (
                   <div className="max-w-4xl mx-auto space-y-6">
-                    {/* Header with Time Period Selector */}
-                    <div className="bg-white rounded-xl border border-gray-200 p-6">
-                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                        <h2 className="text-xl font-bold text-gray-900">Account overview</h2>
-                        <div className="flex items-center gap-2 overflow-x-auto pb-1">
+                    {/* Header with Time Period Selector and Chart Type */}
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 py-2">
+                      <h2 className="text-xl font-bold text-gray-900">Account overview</h2>
+                      <div className="flex items-center gap-2">
+                        <div className="overflow-x-auto pb-1 flex items-center gap-2">
                           {(['7D', '2W', '4W', '3M', '1Y'] as TimePeriod[]).map((period) => (
                             <button
                               key={period}
@@ -429,26 +432,68 @@ export default function ProfilePage() {
                             </button>
                           ))}
                         </div>
+
+                        {/* Chart Type Selector - Outside overflow container */}
+                        <div className="relative flex-shrink-0">
+                          <button
+                            onClick={() => setShowChartTypeDropdown(!showChartTypeDropdown)}
+                            className="flex items-center gap-1 px-3 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-full hover:bg-gray-50 transition-colors whitespace-nowrap"
+                          >
+                            {chartType === 'bar' ? (
+                              <BarChart3 className="w-4 h-4" />
+                            ) : (
+                              <TrendingUp className="w-4 h-4" />
+                            )}
+                            <span className="capitalize">{chartType}</span>
+                            <ChevronDown className="w-3 h-3" />
+                          </button>
+
+                          {/* Chart Type Dropdown */}
+                          {showChartTypeDropdown && (
+                            <div className="absolute right-0 mt-2 w-32 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
+                              <button
+                                onClick={() => {
+                                  setChartType('bar');
+                                  setShowChartTypeDropdown(false);
+                                }}
+                                className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors flex items-center gap-2 ${
+                                  chartType === 'bar' ? 'text-[#007AFF] font-medium' : 'text-gray-700'
+                                }`}
+                              >
+                                {chartType === 'bar' && <span className="text-[#007AFF]">✓</span>}
+                                <BarChart3 className="w-4 h-4" />
+                                Bar
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setChartType('line');
+                                  setShowChartTypeDropdown(false);
+                                }}
+                                className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors flex items-center gap-2 ${
+                                  chartType === 'line' ? 'text-[#007AFF] font-medium' : 'text-gray-700'
+                                }`}
+                              >
+                                {chartType === 'line' && <span className="text-[#007AFF]">✓</span>}
+                                <TrendingUp className="w-4 h-4" />
+                                Line
+                              </button>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
 
                     {/* Activity Chart */}
-                    <div className="bg-white rounded-xl border border-gray-200 p-4 md:p-6">
-                      <div className="mb-4 md:mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                        <div>
-                          <h3 className="text-base font-medium text-gray-900">Hours Tracked</h3>
-                          <p className="text-xs md:text-sm text-gray-500 mt-0.5">
-                            {timePeriod === '7D' && 'Daily'}
-                            {timePeriod === '2W' && 'Daily'}
-                            {timePeriod === '4W' && 'Weekly'}
-                            {timePeriod === '3M' && 'Monthly'}
-                            {timePeriod === '1Y' && 'Monthly'}
-                          </p>
-                        </div>
-                        <div className="text-xs md:text-sm text-gray-500 flex items-center gap-1">
-                          <TrendingUp className="w-4 h-4 md:w-5 md:h-5" />
-                          <span className="hidden sm:inline">Line</span>
-                        </div>
+                    <div className="bg-gray-50 rounded-xl border border-gray-200 p-4 md:p-6">
+                      <div className="mb-4 md:mb-6">
+                        <h3 className="text-base font-medium text-gray-900">Hours Tracked</h3>
+                        <p className="text-xs md:text-sm text-gray-500 mt-0.5">
+                          {timePeriod === '7D' && 'Daily'}
+                          {timePeriod === '2W' && 'Daily'}
+                          {timePeriod === '4W' && 'Weekly'}
+                          {timePeriod === '3M' && 'Monthly'}
+                          {timePeriod === '1Y' && 'Monthly'}
+                        </p>
                       </div>
                       <div className="h-64 md:h-72">
                         {isLoading ? (
@@ -457,63 +502,103 @@ export default function ProfilePage() {
                           </div>
                         ) : (
                           <ResponsiveContainer width="100%" height="100%">
-                            <ComposedChart
-                              data={chartData}
-                              margin={{ top: 10, right: 10, left: -15, bottom: 5 }}
-                            >
-                              <defs>
-                                <linearGradient id="colorHours" x1="0" y1="0" x2="0" y2="1">
-                                  <stop offset="5%" stopColor="#007AFF" stopOpacity={0.1}/>
-                                  <stop offset="95%" stopColor="#007AFF" stopOpacity={0}/>
-                                </linearGradient>
-                              </defs>
-                              <XAxis
-                                dataKey="name"
-                                tick={{ fontSize: 11, fill: '#9ca3af' }}
-                                axisLine={{ stroke: '#e5e7eb' }}
-                                tickLine={false}
-                                dy={8}
-                              />
-                              <YAxis
-                                tick={{ fontSize: 11, fill: '#9ca3af' }}
-                                axisLine={{ stroke: '#e5e7eb' }}
-                                tickLine={false}
-                                width={35}
-                                domain={[0, 'dataMax + 0.5']}
-                                tickFormatter={(value) => `${value}`}
-                              />
-                              <Tooltip
-                                contentStyle={{
-                                  backgroundColor: 'rgba(0, 0, 0, 0.85)',
-                                  border: 'none',
-                                  borderRadius: '8px',
-                                  padding: '8px 12px',
-                                  fontSize: '12px',
-                                  color: 'white',
-                                }}
-                                formatter={(value: number) => [`${value.toFixed(1)}h`, 'Hours']}
-                                cursor={{ stroke: '#e5e7eb', strokeWidth: 1 }}
-                              />
-                              <Area
-                                type="monotone"
-                                dataKey="hours"
-                                stroke="none"
-                                fill="url(#colorHours)"
-                              />
-                              <Line
-                                type="monotone"
-                                dataKey="hours"
-                                stroke="#007AFF"
-                                strokeWidth={2}
-                                dot={false}
-                                activeDot={{
-                                  r: 4,
-                                  fill: '#007AFF',
-                                  stroke: 'white',
-                                  strokeWidth: 2
-                                }}
-                              />
-                            </ComposedChart>
+                            {chartType === 'bar' ? (
+                              <BarChart
+                                data={chartData}
+                                margin={{ top: 10, right: 10, left: -15, bottom: 5 }}
+                              >
+                                <XAxis
+                                  dataKey="name"
+                                  tick={{ fontSize: 11, fill: '#9ca3af' }}
+                                  axisLine={{ stroke: '#e5e7eb' }}
+                                  tickLine={false}
+                                  dy={8}
+                                />
+                                <YAxis
+                                  tick={{ fontSize: 11, fill: '#9ca3af' }}
+                                  axisLine={{ stroke: '#e5e7eb' }}
+                                  tickLine={false}
+                                  width={35}
+                                  domain={[0, 'dataMax + 0.5']}
+                                  tickFormatter={(value) => `${value}`}
+                                />
+                                <Tooltip
+                                  contentStyle={{
+                                    backgroundColor: 'rgba(0, 0, 0, 0.85)',
+                                    border: 'none',
+                                    borderRadius: '8px',
+                                    padding: '8px 12px',
+                                    fontSize: '12px',
+                                    color: 'white',
+                                  }}
+                                  formatter={(value: number) => [`${value.toFixed(1)}h`, 'Hours']}
+                                  cursor={{ fill: 'rgba(0, 0, 0, 0.05)' }}
+                                />
+                                <Bar
+                                  dataKey="hours"
+                                  fill="#007AFF"
+                                  radius={[4, 4, 0, 0]}
+                                />
+                              </BarChart>
+                            ) : (
+                              <ComposedChart
+                                data={chartData}
+                                margin={{ top: 10, right: 10, left: -15, bottom: 5 }}
+                              >
+                                <defs>
+                                  <linearGradient id="colorHours" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="5%" stopColor="#007AFF" stopOpacity={0.1}/>
+                                    <stop offset="95%" stopColor="#007AFF" stopOpacity={0}/>
+                                  </linearGradient>
+                                </defs>
+                                <XAxis
+                                  dataKey="name"
+                                  tick={{ fontSize: 11, fill: '#9ca3af' }}
+                                  axisLine={{ stroke: '#e5e7eb' }}
+                                  tickLine={false}
+                                  dy={8}
+                                />
+                                <YAxis
+                                  tick={{ fontSize: 11, fill: '#9ca3af' }}
+                                  axisLine={{ stroke: '#e5e7eb' }}
+                                  tickLine={false}
+                                  width={35}
+                                  domain={[0, 'dataMax + 0.5']}
+                                  tickFormatter={(value) => `${value}`}
+                                />
+                                <Tooltip
+                                  contentStyle={{
+                                    backgroundColor: 'rgba(0, 0, 0, 0.85)',
+                                    border: 'none',
+                                    borderRadius: '8px',
+                                    padding: '8px 12px',
+                                    fontSize: '12px',
+                                    color: 'white',
+                                  }}
+                                  formatter={(value: number) => [`${value.toFixed(1)}h`, 'Hours']}
+                                  cursor={{ stroke: '#e5e7eb', strokeWidth: 1 }}
+                                />
+                                <Area
+                                  type="monotone"
+                                  dataKey="hours"
+                                  stroke="none"
+                                  fill="url(#colorHours)"
+                                />
+                                <Line
+                                  type="monotone"
+                                  dataKey="hours"
+                                  stroke="#007AFF"
+                                  strokeWidth={2}
+                                  dot={false}
+                                  activeDot={{
+                                    r: 4,
+                                    fill: '#007AFF',
+                                    stroke: 'white',
+                                    strokeWidth: 2
+                                  }}
+                                />
+                              </ComposedChart>
+                            )}
                           </ResponsiveContainer>
                         )}
                       </div>
@@ -522,59 +607,100 @@ export default function ProfilePage() {
                     {/* Secondary Charts */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                       {/* Sessions over time */}
-                      <div className="bg-white rounded-xl border border-gray-200 p-4 md:p-6">
+                      <div className="bg-gray-50 rounded-xl border border-gray-200 p-4 md:p-6">
                         <h3 className="text-sm md:text-base font-medium text-gray-900 mb-3 md:mb-4">Sessions over time</h3>
                         <div className="h-40 md:h-48">
                           <ResponsiveContainer width="100%" height="100%">
-                            <ComposedChart
-                              data={chartData}
-                              margin={{ top: 10, right: 10, left: -20, bottom: 5 }}
-                            >
-                              <XAxis
-                                dataKey="name"
-                                tick={{ fontSize: 11, fill: '#6b7280' }}
-                                axisLine={false}
-                                tickLine={false}
-                              />
-                              <YAxis
-                                tick={{ fontSize: 11, fill: '#9ca3af' }}
-                                axisLine={false}
-                                tickLine={false}
-                                width={30}
-                              />
-                              <Tooltip
-                                contentStyle={{
-                                  backgroundColor: 'rgba(0, 0, 0, 0.9)',
-                                  border: 'none',
-                                  borderRadius: '8px',
-                                  padding: '8px 12px',
-                                  fontSize: '12px',
-                                  color: 'white',
-                                }}
-                              />
-                              <defs>
-                                <linearGradient id="colorSessions" x1="0" y1="0" x2="0" y2="1">
-                                  <stop offset="5%" stopColor="#007AFF" stopOpacity={0.3}/>
-                                  <stop offset="95%" stopColor="#007AFF" stopOpacity={0}/>
-                                </linearGradient>
-                              </defs>
-                              <Area
-                                type="monotone"
-                                dataKey="hours"
-                                stroke="#007AFF"
-                                strokeWidth={2}
-                                fill="url(#colorSessions)"
-                              />
-                            </ComposedChart>
+                            {chartType === 'bar' ? (
+                              <BarChart
+                                data={chartData}
+                                margin={{ top: 10, right: 10, left: 0, bottom: 5 }}
+                              >
+                                <XAxis
+                                  dataKey="name"
+                                  tick={{ fontSize: 11, fill: '#6b7280' }}
+                                  axisLine={false}
+                                  tickLine={false}
+                                />
+                                <YAxis
+                                  tick={{ fontSize: 11, fill: '#9ca3af' }}
+                                  axisLine={false}
+                                  tickLine={false}
+                                  width={35}
+                                  domain={[0, 'dataMax + 0.5']}
+                                  tickFormatter={(value) => `${value}`}
+                                />
+                                <Tooltip
+                                  contentStyle={{
+                                    backgroundColor: 'rgba(0, 0, 0, 0.9)',
+                                    border: 'none',
+                                    borderRadius: '8px',
+                                    padding: '8px 12px',
+                                    fontSize: '12px',
+                                    color: 'white',
+                                  }}
+                                  formatter={(value: number) => [`${value.toFixed(1)}h`, 'Hours']}
+                                />
+                                <Bar
+                                  dataKey="hours"
+                                  fill="#007AFF"
+                                  radius={[4, 4, 0, 0]}
+                                />
+                              </BarChart>
+                            ) : (
+                              <ComposedChart
+                                data={chartData}
+                                margin={{ top: 10, right: 10, left: 0, bottom: 5 }}
+                              >
+                                <defs>
+                                  <linearGradient id="colorSessions" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="5%" stopColor="#007AFF" stopOpacity={0.3}/>
+                                    <stop offset="95%" stopColor="#007AFF" stopOpacity={0}/>
+                                  </linearGradient>
+                                </defs>
+                                <XAxis
+                                  dataKey="name"
+                                  tick={{ fontSize: 11, fill: '#6b7280' }}
+                                  axisLine={false}
+                                  tickLine={false}
+                                />
+                                <YAxis
+                                  tick={{ fontSize: 11, fill: '#9ca3af' }}
+                                  axisLine={false}
+                                  tickLine={false}
+                                  width={35}
+                                  domain={[0, 'dataMax + 0.5']}
+                                  tickFormatter={(value) => `${value}`}
+                                />
+                                <Tooltip
+                                  contentStyle={{
+                                    backgroundColor: 'rgba(0, 0, 0, 0.9)',
+                                    border: 'none',
+                                    borderRadius: '8px',
+                                    padding: '8px 12px',
+                                    fontSize: '12px',
+                                    color: 'white',
+                                  }}
+                                  formatter={(value: number) => [`${value.toFixed(1)}h`, 'Hours']}
+                                />
+                                <Area
+                                  type="monotone"
+                                  dataKey="hours"
+                                  stroke="#007AFF"
+                                  strokeWidth={2}
+                                  fill="url(#colorSessions)"
+                                />
+                              </ComposedChart>
+                            )}
                           </ResponsiveContainer>
                         </div>
                       </div>
 
                       {/* Productivity trends */}
-                      <div className="bg-white rounded-xl border border-gray-200 p-4 md:p-6">
+                      <div className="bg-gray-50 rounded-xl border border-gray-200 p-4 md:p-6">
                         <h3 className="text-sm md:text-base font-medium text-gray-900 mb-3 md:mb-4">Productivity trends</h3>
                         <div className="space-y-3">
-                          <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                          <div className="flex items-center justify-between p-3 bg-white rounded-lg">
                             <div>
                               <div className="text-sm font-medium text-gray-900">Total hours</div>
                               <div className="text-xs text-gray-500">All time</div>
@@ -585,7 +711,7 @@ export default function ProfilePage() {
                             </div>
                           </div>
 
-                          <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                          <div className="flex items-center justify-between p-3 bg-white rounded-lg">
                             <div>
                               <div className="text-sm font-medium text-gray-900">Avg session</div>
                               <div className="text-xs text-gray-500">Per session</div>
@@ -598,7 +724,7 @@ export default function ProfilePage() {
                             </div>
                           </div>
 
-                          <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                          <div className="flex items-center justify-between p-3 bg-white rounded-lg">
                             <div>
                               <div className="text-sm font-medium text-gray-900">Current streak</div>
                               <div className="text-xs text-gray-500">Consecutive days</div>
@@ -615,7 +741,7 @@ export default function ProfilePage() {
                     {/* Metrics Grid */}
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4">
                       {/* Total Hours */}
-                      <div className="bg-white rounded-xl border border-gray-200 p-3 md:p-4">
+                      <div className="bg-gray-50 rounded-xl border border-gray-200 p-3 md:p-4">
                         <div className="text-xs md:text-sm text-gray-600 mb-1">Total hours</div>
                         <div className="text-xl md:text-2xl font-bold text-gray-900">
                           {stats?.totalHours?.toFixed(1) || '0'}
@@ -627,7 +753,7 @@ export default function ProfilePage() {
                       </div>
 
                       {/* Sessions */}
-                      <div className="bg-white rounded-xl border border-gray-200 p-3 md:p-4">
+                      <div className="bg-gray-50 rounded-xl border border-gray-200 p-3 md:p-4">
                         <div className="text-xs md:text-sm text-gray-600 mb-1">Sessions</div>
                         <div className="text-xl md:text-2xl font-bold text-gray-900">
                           {sessions.length}
@@ -639,7 +765,7 @@ export default function ProfilePage() {
                       </div>
 
                       {/* Avg Duration */}
-                      <div className="bg-white rounded-xl border border-gray-200 p-3 md:p-4">
+                      <div className="bg-gray-50 rounded-xl border border-gray-200 p-3 md:p-4">
                         <div className="text-xs md:text-sm text-gray-600 mb-1">Avg duration</div>
                         <div className="text-xl md:text-2xl font-bold text-gray-900">
                           {sessions.length > 0 ? Math.round(sessions.reduce((sum, s) => sum + s.duration, 0) / sessions.length / 60) : 0}m
@@ -651,7 +777,7 @@ export default function ProfilePage() {
                       </div>
 
                       {/* Current Streak */}
-                      <div className="bg-white rounded-xl border border-gray-200 p-3 md:p-4">
+                      <div className="bg-gray-50 rounded-xl border border-gray-200 p-3 md:p-4">
                         <div className="text-xs md:text-sm text-gray-600 mb-1">Current streak</div>
                         <div className="text-xl md:text-2xl font-bold text-gray-900">
                           {stats?.currentStreak || 0}
@@ -663,7 +789,7 @@ export default function ProfilePage() {
                       </div>
 
                       {/* Longest Streak */}
-                      <div className="bg-white rounded-xl border border-gray-200 p-3 md:p-4">
+                      <div className="bg-gray-50 rounded-xl border border-gray-200 p-3 md:p-4">
                         <div className="text-xs md:text-sm text-gray-600 mb-1">Longest streak</div>
                         <div className="text-xl md:text-2xl font-bold text-gray-900">
                           {stats?.longestStreak || 0}
@@ -678,7 +804,7 @@ export default function ProfilePage() {
                     {/* Secondary Metrics Grid */}
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4">
                       {/* Weekly Hours */}
-                      <div className="bg-white rounded-xl border border-gray-200 p-3 md:p-4">
+                      <div className="bg-gray-50 rounded-xl border border-gray-200 p-3 md:p-4">
                         <div className="text-xs md:text-sm text-gray-600 mb-1">This week</div>
                         <div className="text-xl md:text-2xl font-bold text-gray-900">
                           {stats?.weeklyHours?.toFixed(1) || '0'}h
@@ -690,7 +816,7 @@ export default function ProfilePage() {
                       </div>
 
                       {/* Weekly Sessions */}
-                      <div className="bg-white rounded-xl border border-gray-200 p-3 md:p-4">
+                      <div className="bg-gray-50 rounded-xl border border-gray-200 p-3 md:p-4">
                         <div className="text-xs md:text-sm text-gray-600 mb-1">Weekly sessions</div>
                         <div className="text-xl md:text-2xl font-bold text-gray-900">
                           {stats?.sessionsThisWeek || 0}
@@ -702,7 +828,7 @@ export default function ProfilePage() {
                       </div>
 
                       {/* Active Days */}
-                      <div className="bg-white rounded-xl border border-gray-200 p-3 md:p-4">
+                      <div className="bg-gray-50 rounded-xl border border-gray-200 p-3 md:p-4">
                         <div className="text-xs md:text-sm text-gray-600 mb-1">Active days</div>
                         <div className="text-xl md:text-2xl font-bold text-gray-900">
                           {chartData.slice(-7).filter(d => d.hours > 0).length}
@@ -713,7 +839,7 @@ export default function ProfilePage() {
                       </div>
 
                       {/* Total Projects */}
-                      <div className="bg-white rounded-xl border border-gray-200 p-3 md:p-4">
+                      <div className="bg-gray-50 rounded-xl border border-gray-200 p-3 md:p-4">
                         <div className="text-xs md:text-sm text-gray-600 mb-1">Projects</div>
                         <div className="text-xl md:text-2xl font-bold text-gray-900">
                           {/* Will be populated when we have project count */}
@@ -725,7 +851,7 @@ export default function ProfilePage() {
                       </div>
 
                       {/* Followers */}
-                      <div className="bg-white rounded-xl border border-gray-200 p-3 md:p-4">
+                      <div className="bg-gray-50 rounded-xl border border-gray-200 p-3 md:p-4">
                         <div className="text-xs md:text-sm text-gray-600 mb-1">Followers</div>
                         <div className="text-xl md:text-2xl font-bold text-gray-900">
                           {followers.length}
@@ -749,7 +875,7 @@ export default function ProfilePage() {
                 )}
 
                 {activeTab === 'followers' && (
-                  <div className="bg-white rounded-xl border border-gray-200 p-4 md:p-6">
+                  <div className="bg-gray-50 rounded-xl border border-gray-200 p-4 md:p-6">
                     <h3 className="text-base md:text-lg font-bold mb-4">Followers ({followers.length})</h3>
                     {followers.length > 0 ? (
                       <div className="space-y-3">
@@ -793,7 +919,7 @@ export default function ProfilePage() {
                 )}
 
                 {activeTab === 'following' && (
-                  <div className="bg-white rounded-xl border border-gray-200 p-4 md:p-6">
+                  <div className="bg-gray-50 rounded-xl border border-gray-200 p-4 md:p-6">
                     <h3 className="text-base md:text-lg font-bold mb-4">Following ({following.length})</h3>
                     {following.length > 0 ? (
                       <div className="space-y-3">

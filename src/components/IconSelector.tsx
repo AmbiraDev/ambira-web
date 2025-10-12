@@ -22,7 +22,8 @@ export function IconSelector({ icons, value, onChange, className = '' }: IconSel
   const [searchQuery, setSearchQuery] = useState('');
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const selectedIcon = icons.find(i => i.name === value) || icons[0];
+  // Support both name and full icon string
+  const selectedIcon = icons.find(i => i.name === value || i.icon === value) || icons[0];
 
   // Filter icons based on search query
   const filteredIcons = icons.filter(icon =>

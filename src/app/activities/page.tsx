@@ -1,12 +1,14 @@
 'use client';
 
 import React, { Suspense } from 'react';
+import { useRouter } from 'next/navigation';
 import { ActivityList } from '@/components/ActivityList';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import Header from '@/components/HeaderComponent';
 import MobileHeader from '@/components/MobileHeader';
 import BottomNavigation from '@/components/BottomNavigation';
 import { useAuth } from '@/contexts/AuthContext';
+import { Activity } from '@/types';
 
 function LoadingState() {
   return (
@@ -27,8 +29,13 @@ function LoadingState() {
 
 function ProjectsContent() {
   const { user } = useAuth();
+  const router = useRouter();
 
   if (!user) return null;
+
+  const handleEditActivity = (activity: Activity) => {
+    router.push(`/activities/${activity.id}/edit`);
+  };
 
   return (
     <div className="min-h-screen bg-white md:bg-gray-50">
@@ -46,7 +53,7 @@ function ProjectsContent() {
       <div className="pb-32 md:pb-8">
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-6 md:py-8">
           <Suspense fallback={<LoadingState />}>
-            <ActivityList />
+            <ActivityList onEditActivity={handleEditActivity} />
           </Suspense>
         </div>
       </div>

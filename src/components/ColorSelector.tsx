@@ -20,7 +20,8 @@ export function ColorSelector({ colors, value, onChange, className = '' }: Color
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const selectedColor = colors.find(c => c.name === value) || colors[0];
+  // Support both name and hex value
+  const selectedColor = colors.find(c => c.name === value || c.hex === value) || colors[0];
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -67,7 +68,7 @@ export function ColorSelector({ colors, value, onChange, className = '' }: Color
         <div className="absolute z-50 w-full mt-2 bg-white border border-gray-300 rounded-lg shadow-lg p-4">
           <div className="grid grid-cols-6 sm:grid-cols-9 gap-2">
             {colors.map((colorData) => {
-              const isSelected = colorData.name === value;
+              const isSelected = colorData.name === value || colorData.hex === value;
 
               return (
                 <button
