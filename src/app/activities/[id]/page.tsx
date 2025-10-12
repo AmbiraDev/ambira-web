@@ -12,7 +12,7 @@ import Image from 'next/image';
 import { Clock, Calendar, Heart, MessageCircle, TrendingUp, Target, Flame, Activity as ActivityIcon, ArrowLeft, Award, Zap, CheckCircle } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip, Area, ComposedChart, BarChart, Bar } from 'recharts';
 
-type ActivityTab = 'overview' | 'statistics' | 'comments';
+type ActivityTab = 'statistics' | 'comments';
 type TimePeriod = '7D' | '2W' | '4W' | '3M' | '1Y';
 
 interface ChartDataPoint {
@@ -33,7 +33,7 @@ function ActivityDetailContent({ activityId }: { activityId: string }) {
   const [session, setSession] = useState<SessionWithDetails | null>(null);
   const [comments, setComments] = useState<CommentWithDetails[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<ActivityTab>('overview');
+  const [activeTab, setActiveTab] = useState<ActivityTab>('statistics');
   const [timePeriod, setTimePeriod] = useState<TimePeriod>('7D');
   const [isSupporting, setIsSupporting] = useState(false);
   const [newComment, setNewComment] = useState('');
@@ -308,15 +308,6 @@ function ActivityDetailContent({ activityId }: { activityId: string }) {
       <Header />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Back Button */}
-        <button
-          onClick={() => router.back()}
-          className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 transition-colors"
-        >
-          <ArrowLeft className="w-5 h-5" />
-          <span>Back</span>
-        </button>
-
         <div className="flex gap-8">
           {/* Main Content */}
           <div className="flex-1">
@@ -325,19 +316,19 @@ function ActivityDetailContent({ activityId }: { activityId: string }) {
               <div className="flex items-start gap-6">
                 {/* Session Icon/Avatar */}
                 <div
-                  className="w-32 h-32 rounded-2xl flex items-center justify-center flex-shrink-0 shadow-lg"
-                  style={{ backgroundColor: session.activity.color || '#007AFF' }}
+                  className="w-32 h-32 rounded-full bg-gradient-to-br shadow-lg flex items-center justify-center flex-shrink-0"
+                  style={{
+                    background: `linear-gradient(135deg, ${session.activity.color || '#007AFF'} 0%, ${session.activity.color || '#007AFF'}dd 100%)`
+                  }}
                 >
                   <span className="text-6xl">{session.activity.icon || '📊'}</span>
                 </div>
 
                 <div className="flex-1 min-w-0">
-                  {/* Session Title and User Info */}
-                  <div className="flex items-center gap-3 mb-2">
-                    <h1 className="text-3xl font-bold text-gray-900">{session.title}</h1>
-                  </div>
+                  {/* Session Title */}
+                  <h1 className="text-3xl font-bold text-gray-900 mb-2">{session.title}</h1>
 
-                  {/* Activity Type */}
+                  {/* Activity Badge and User */}
                   <div className="flex items-center gap-3 mb-3">
                     <Link
                       href={`/projects/${session.activityId}`}
@@ -347,64 +338,21 @@ function ActivityDetailContent({ activityId }: { activityId: string }) {
                         {session.activity.name}
                       </span>
                     </Link>
-                  </div>
-
-                  {/* User Info */}
-                  <Link
-                    href={`/profile/${session.user.username}`}
-                    className="flex items-center gap-2 mb-3 hover:opacity-80 transition-opacity w-fit"
-                  >
-                    {session.user.profilePicture ? (
-                      <div className="w-8 h-8 rounded-full overflow-hidden ring-2 ring-white">
-                        <Image
-                          src={session.user.profilePicture}
-                          alt={session.user.name}
-                          width={32}
-                          height={32}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    ) : (
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#FC4C02] to-[#FC4C02]/80 flex items-center justify-center">
-                        <span className="text-white font-semibold text-sm">
-                          {session.user.name.charAt(0).toUpperCase()}
-                        </span>
-                      </div>
-                    )}
-                    <span className="font-medium text-gray-900">{session.user.name}</span>
-                    <span className="text-gray-500">•</span>
+                    <span className="text-gray-400">•</span>
+                    <Link
+                      href={`/profile/${session.user.username}`}
+                      className="text-sm text-gray-600 hover:text-[#007AFF] transition-colors"
+                    >
+                      {session.user.name}
+                    </Link>
+                    <span className="text-gray-400">•</span>
                     <span className="text-sm text-gray-500">{formatTimeAgo(session.createdAt)}</span>
-                  </Link>
+                  </div>
 
                   {/* Description */}
                   {session.description && (
-                    <p className="text-gray-700 mb-4 whitespace-pre-line max-h-24 overflow-y-auto">
-                      {session.description}
-                    </p>
+                    <p className="text-gray-700 mb-4 whitespace-pre-line">{session.description}</p>
                   )}
-
-                  {/* Engagement Actions */}
-                  <div className="flex items-center gap-4">
-                    <button
-                      onClick={handleSupport}
-                      disabled={isSupporting}
-                      className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors font-medium ${
-                        session.isSupported
-                          ? 'bg-red-50 text-red-600 hover:bg-red-100'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                      }`}
-                    >
-                      <Heart className={`w-5 h-5 ${session.isSupported ? 'fill-current' : ''}`} />
-                      <span>{session.supportCount}</span>
-                    </button>
-                    <button
-                      onClick={() => setActiveTab('comments')}
-                      className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-lg transition-colors font-medium"
-                    >
-                      <MessageCircle className="w-5 h-5" />
-                      <span>{session.commentCount}</span>
-                    </button>
-                  </div>
                 </div>
               </div>
             </div>
@@ -412,16 +360,6 @@ function ActivityDetailContent({ activityId }: { activityId: string }) {
             {/* Tabs */}
             <div className="border-b border-gray-200 mb-6">
               <nav className="flex gap-8" aria-label="Activity tabs">
-                <button
-                  onClick={() => setActiveTab('overview')}
-                  className={`pb-3 px-1 text-sm font-medium border-b-2 transition-colors ${
-                    activeTab === 'overview'
-                      ? 'border-gray-900 text-gray-900'
-                      : 'border-transparent text-gray-600 hover:text-gray-900'
-                  }`}
-                >
-                  Overview
-                </button>
                 <button
                   onClick={() => setActiveTab('statistics')}
                   className={`pb-3 px-1 text-sm font-medium border-b-2 transition-colors ${
@@ -447,118 +385,12 @@ function ActivityDetailContent({ activityId }: { activityId: string }) {
 
             {/* Tab Content */}
             <div>
-              {activeTab === 'overview' && (
-                <div className="space-y-6">
-                  {/* Session Details Card */}
-                  <div className="bg-white rounded-xl border border-gray-200 p-6">
-                    <h3 className="text-lg font-bold text-gray-900 mb-4">Session Details</h3>
-
-                    {/* Tasks */}
-                    {session.tasks && session.tasks.length > 0 && !session.hideTaskNames && (
-                      <div className="mb-4">
-                        <p className="text-sm font-medium text-gray-700 mb-2">Tasks completed:</p>
-                        <div className="space-y-2">
-                          {session.tasks.map((task) => (
-                            <div key={task.id} className="flex items-center gap-2 text-sm text-gray-600 p-2 bg-green-50 rounded-lg">
-                              <CheckCircle className="w-4 h-4 text-green-600" />
-                              <span>{task.name}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Images */}
-                    {session.images && session.images.length > 0 && (
-                      <div className="grid grid-cols-3 gap-3 mb-4">
-                        {session.images.map((image, idx) => (
-                          <div key={idx} className="aspect-square rounded-lg overflow-hidden">
-                            <Image
-                              src={image}
-                              alt={`Session image ${idx + 1}`}
-                              width={300}
-                              height={300}
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                        ))}
-                      </div>
-                    )}
-
-                    {/* How they felt */}
-                    {session.howFelt && (
-                      <div className="mt-4 pt-4 border-t border-gray-200">
-                        <p className="text-sm font-medium text-gray-700 mb-2">How they felt:</p>
-                        <div className="flex items-center gap-2">
-                          {[1, 2, 3, 4, 5].map((rating) => (
-                            <span
-                              key={rating}
-                              className={`text-2xl ${
-                                rating <= session.howFelt! ? 'opacity-100' : 'opacity-20'
-                              }`}
-                            >
-                              ⭐
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Quick Stats Grid */}
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div className="bg-white rounded-xl border border-gray-200 p-4">
-                      <div className="flex items-center gap-2 text-gray-600 mb-2">
-                        <Clock className="w-5 h-5 text-[#007AFF]" />
-                        <span className="text-sm font-medium">Duration</span>
-                      </div>
-                      <div className="text-2xl font-bold text-gray-900">
-                        {formatTime(session.duration)}
-                      </div>
-                    </div>
-
-                    <div className="bg-white rounded-xl border border-gray-200 p-4">
-                      <div className="flex items-center gap-2 text-gray-600 mb-2">
-                        <CheckCircle className="w-5 h-5 text-[#34C759]" />
-                        <span className="text-sm font-medium">Tasks</span>
-                      </div>
-                      <div className="text-2xl font-bold text-gray-900">
-                        {session.tasks?.length || 0}
-                      </div>
-                    </div>
-
-                    <div className="bg-white rounded-xl border border-gray-200 p-4">
-                      <div className="flex items-center gap-2 text-gray-600 mb-2">
-                        <Heart className="w-5 h-5 text-red-500" />
-                        <span className="text-sm font-medium">Supports</span>
-                      </div>
-                      <div className="text-2xl font-bold text-gray-900">
-                        {session.supportCount}
-                      </div>
-                    </div>
-
-                    <div className="bg-white rounded-xl border border-gray-200 p-4">
-                      <div className="flex items-center gap-2 text-gray-600 mb-2">
-                        <MessageCircle className="w-5 h-5 text-[#007AFF]" />
-                        <span className="text-sm font-medium">Comments</span>
-                      </div>
-                      <div className="text-2xl font-bold text-gray-900">
-                        {session.commentCount}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
               {activeTab === 'statistics' && (
                 <div className="space-y-6">
-                  {/* Time Period Selector */}
+                  {/* Header with Time Period Selector */}
                   <div className="bg-white rounded-xl border border-gray-200 p-6">
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                      <div>
-                        <h2 className="text-xl font-bold text-gray-900">Activity Overview</h2>
-                        <p className="text-sm text-gray-500 mt-1">Track progress for this activity over time</p>
-                      </div>
+                      <h2 className="text-xl font-bold text-gray-900">Session Analytics</h2>
                       <div className="flex items-center gap-2 overflow-x-auto pb-1">
                         {(['7D', '2W', '4W', '3M', '1Y'] as TimePeriod[]).map((period) => (
                           <button
@@ -876,64 +708,73 @@ function ActivityDetailContent({ activityId }: { activityId: string }) {
             </div>
           </div>
 
-          {/* Right Sidebar - Info */}
+          {/* Right Sidebar */}
           <div className="hidden lg:block w-80 flex-shrink-0">
-            {/* Session Info Card */}
+            {/* Session Details Card */}
             <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
-              <h3 className="text-lg font-bold text-gray-900 mb-4">Session Info</h3>
+              <h3 className="text-lg font-bold text-gray-900 mb-4">Session Details</h3>
 
               <div className="space-y-4">
-                <div>
-                  <div className="text-xs text-gray-500 mb-1">Duration</div>
-                  <div className="font-bold text-gray-900 text-lg">{formatTime(session.duration)}</div>
+                <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+                  <span className="text-sm text-gray-600">Duration</span>
+                  <span className="font-semibold text-gray-900">{formatTime(session.duration)}</span>
                 </div>
 
-                <div>
-                  <div className="text-xs text-gray-500 mb-1">Date</div>
-                  <div className="text-sm text-gray-900">
-                    {formatDate(session.startTime)}
-                  </div>
+                <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+                  <span className="text-sm text-gray-600">Date</span>
+                  <span className="text-sm text-gray-900">{formatDate(session.startTime)}</span>
                 </div>
 
                 {session.showStartTime && (
-                  <div>
-                    <div className="text-xs text-gray-500 mb-1">Started at</div>
-                    <div className="text-sm text-gray-900">
+                  <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+                    <span className="text-sm text-gray-600">Started</span>
+                    <span className="text-sm text-gray-900">
                       {new Date(session.startTime).toLocaleTimeString('en-US', {
                         hour: 'numeric',
                         minute: '2-digit',
                       })}
-                    </div>
+                    </span>
                   </div>
                 )}
 
-                <div>
-                  <div className="text-xs text-gray-500 mb-1">Tasks completed</div>
-                  <div className="font-bold text-gray-900 text-lg">{session.tasks?.length || 0}</div>
+                <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+                  <span className="text-sm text-gray-600">Supports</span>
+                  <div className="flex items-center gap-2">
+                    <Heart className="w-4 h-4 text-red-500" />
+                    <span className="font-semibold text-gray-900">{session.supportCount}</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-600">Comments</span>
+                  <div className="flex items-center gap-2">
+                    <MessageCircle className="w-4 h-4 text-[#007AFF]" />
+                    <span className="font-semibold text-gray-900">{session.commentCount}</span>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Engagement Card */}
-            <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
-              <h3 className="text-lg font-bold text-gray-900 mb-4">Engagement</h3>
-
-              <div className="space-y-3">
-                <div className="flex items-center justify-between p-3 bg-red-50 rounded-lg">
-                  <div className="flex items-center gap-2">
-                    <Heart className="w-5 h-5 text-red-600" />
-                    <span className="text-sm font-medium text-gray-900">Supports</span>
-                  </div>
-                  <span className="font-bold text-gray-900">{session.supportCount}</span>
-                </div>
-
-                <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
-                  <div className="flex items-center gap-2">
-                    <MessageCircle className="w-5 h-5 text-[#007AFF]" />
-                    <span className="text-sm font-medium text-gray-900">Comments</span>
-                  </div>
-                  <span className="font-bold text-gray-900">{session.commentCount}</span>
-                </div>
+              {/* Engagement Buttons */}
+              <div className="mt-6 pt-6 border-t border-gray-200 space-y-3">
+                <button
+                  onClick={handleSupport}
+                  disabled={isSupporting}
+                  className={`w-full flex items-center justify-center gap-2 px-4 py-3 rounded-lg transition-colors font-medium ${
+                    session.isSupported
+                      ? 'bg-red-50 text-red-600 hover:bg-red-100'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  <Heart className={`w-5 h-5 ${session.isSupported ? 'fill-current' : ''}`} />
+                  <span>{session.isSupported ? 'Supported' : 'Support'}</span>
+                </button>
+                <button
+                  onClick={() => setActiveTab('comments')}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#007AFF] text-white rounded-lg hover:bg-[#0051D5] transition-colors font-medium"
+                >
+                  <MessageCircle className="w-5 h-5" />
+                  <span>View Comments</span>
+                </button>
               </div>
             </div>
 
@@ -942,25 +783,58 @@ function ActivityDetailContent({ activityId }: { activityId: string }) {
               <h3 className="text-lg font-bold text-gray-900 mb-4">Activity</h3>
               <Link
                 href={`/projects/${session.activityId}`}
-                className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors"
+                className="block"
               >
-                <div
-                  className="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0"
-                  style={{ backgroundColor: session.activity.color || '#007AFF' }}
-                >
-                  <span className="text-white text-2xl">{session.activity.icon || '📊'}</span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="font-semibold text-gray-900 truncate">
-                    {session.activity.name}
+                <div className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                  <div
+                    className="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0"
+                    style={{ backgroundColor: session.activity.color || '#007AFF' }}
+                  >
+                    <span className="text-white text-2xl">{session.activity.icon || '📊'}</span>
                   </div>
-                  {session.activity.description && (
-                    <div className="text-sm text-gray-600 truncate">
-                      {session.activity.description}
+                  <div className="flex-1 min-w-0">
+                    <div className="font-semibold text-gray-900 truncate">
+                      {session.activity.name}
                     </div>
-                  )}
+                    {session.activity.description && (
+                      <div className="text-sm text-gray-600 truncate mt-0.5">
+                        {session.activity.description}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </Link>
+
+              {/* User Info */}
+              <div className="mt-4 pt-4 border-t border-gray-200">
+                <div className="text-xs text-gray-500 mb-2">Posted by</div>
+                <Link
+                  href={`/profile/${session.user.username}`}
+                  className="flex items-center gap-2 hover:opacity-80 transition-opacity"
+                >
+                  {session.user.profilePicture ? (
+                    <div className="w-10 h-10 rounded-full overflow-hidden ring-2 ring-gray-100">
+                      <Image
+                        src={session.user.profilePicture}
+                        alt={session.user.name}
+                        width={40}
+                        height={40}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  ) : (
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#FC4C02] to-[#FC4C02]/80 flex items-center justify-center">
+                      <span className="text-white font-semibold text-sm">
+                        {session.user.name.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium text-gray-900 truncate">{session.user.name}</div>
+                    <div className="text-xs text-gray-500 truncate">@{session.user.username}</div>
+                  </div>
+                </Link>
+              </div>
             </div>
           </div>
         </div>
