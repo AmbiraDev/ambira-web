@@ -32,7 +32,7 @@ const mockGroups = [
 function SearchContent() {
   const searchParams = useSearchParams();
   const initialQuery = searchParams.get('q') || '';
-  const type = (searchParams.get('type') || 'suggested') as 'suggested' | 'people' | 'groups';
+  const type = (searchParams.get('type') || 'people') as 'people' | 'groups';
 
   const [query, setQuery] = useState(initialQuery);
   const [isLoading, setIsLoading] = useState(false);
@@ -42,55 +42,85 @@ function SearchContent() {
   const [showAllPeople, setShowAllPeople] = useState(false);
   const [showAllGroups, setShowAllGroups] = useState(false);
   const [joinedGroups, setJoinedGroups] = useState<Set<string>>(new Set());
+  const [followingUsers, setFollowingUsers] = useState<Set<string>>(new Set());
   const [joiningGroup, setJoiningGroup] = useState<string | null>(null);
   const { user } = useAuth();
 
-  // Load suggested content on mount
+  // Load user's groups and following on mount
   useEffect(() => {
-    if (type !== 'suggested') return;
-    if (!user) return; // Wait for user to be authenticated
+    if (!user) return;
+
+    const loadUserData = async () => {
+      try {
+        // Load user's groups
+        const userGroups = await firebaseApi.group.getUserGroups(user.id);
+        setJoinedGroups(new Set(userGroups.map(g => g.id)));
+
+        // Load user's following
+        const following = await firebaseUserApi.getFollowing(user.id);
+        setFollowingUsers(new Set(following.map(u => u.id)));
+      } catch (error) {
+        console.error('Error loading user data:', error);
+      }
+    };
+
+    loadUserData();
+  }, [user?.id]);
+
+  // Load suggested content based on current tab (only when no search query)
+  useEffect(() => {
+    // Only load suggestions when there's no search query
+    if (initialQuery.trim()) return;
+    if (!user) {
+      setIsLoading(false);
+      return;
+    }
 
     let isMounted = true;
     setIsLoading(true);
 
     const run = async () => {
       try {
-        // Load users - sorted by follower count
-        try {
-          const { users } = await firebaseUserApi.searchUsers('', 1, 50);
-          if (!isMounted) return;
-          const filtered = users
-            .filter(u => u.id !== user?.id)
-            .sort((a, b) => (b.followersCount || 0) - (a.followersCount || 0));
-          setSuggestedUsers(filtered);
-        } catch (error) {
-          console.error('Error loading users:', error);
-          if (isMounted) setSuggestedUsers([]);
+        // Load users for People tab
+        if (type === 'people') {
+          try {
+            const { users } = await firebaseUserApi.searchUsers('', 1, 50);
+            if (!isMounted) return;
+            const filtered = users
+              .filter(u => u.id !== user?.id)
+              .sort((a, b) => (b.followersCount || 0) - (a.followersCount || 0));
+            setSuggestedUsers(filtered);
+          } catch (error) {
+            console.error('Error loading users:', error);
+            if (isMounted) setSuggestedUsers([]);
+          }
         }
 
-        // Load groups - get all public groups by querying directly
-        try {
-          const allGroupsSnapshot = await getDocs(
-            firestoreQuery(collection(db, 'groups'), orderBy('memberCount', 'desc'), limit(20))
-          );
-          const groups = allGroupsSnapshot.docs.map(doc => {
-            const data = doc.data();
-            return {
-              id: doc.id,
-              name: data.name,
-              description: data.description,
-              imageUrl: data.imageUrl,
-              location: data.location,
-              category: data.category,
-              memberCount: data.memberCount,
-              members: data.memberCount,
-              image: data.imageUrl || '📁'
-            };
-          });
-          if (isMounted) setSuggestedGroups(groups);
-        } catch (error) {
-          console.error('Error loading groups:', error);
-          if (isMounted) setSuggestedGroups([]);
+        // Load groups for Groups tab
+        if (type === 'groups') {
+          try {
+            const allGroupsSnapshot = await getDocs(
+              firestoreQuery(collection(db, 'groups'), orderBy('memberCount', 'desc'), limit(20))
+            );
+            const groups = allGroupsSnapshot.docs.map(doc => {
+              const data = doc.data();
+              return {
+                id: doc.id,
+                name: data.name,
+                description: data.description,
+                imageUrl: data.imageUrl,
+                location: data.location,
+                category: data.category,
+                memberCount: data.memberCount,
+                members: data.memberCount,
+                image: data.imageUrl || '📁'
+              };
+            });
+            if (isMounted) setSuggestedGroups(groups);
+          } catch (error) {
+            console.error('Error loading groups:', error);
+            if (isMounted) setSuggestedGroups([]);
+          }
         }
 
       } finally {
@@ -100,7 +130,7 @@ function SearchContent() {
     run();
 
     return () => { isMounted = false; };
-  }, [type, user?.id]);
+  }, [type, user?.id, initialQuery]);
 
   useEffect(() => {
     // Only search if there's a query
@@ -121,6 +151,29 @@ function SearchContent() {
           const enhanced = users.map(u => ({ ...u, isSelf: user && u.id === user.id }));
           enhanced.sort((a, b) => (b.isSelf ? 1 : 0) - (a.isSelf ? 1 : 0));
           setResults(enhanced);
+        } else if (type === 'groups') {
+          // Search groups
+          const groupsSnapshot = await getDocs(
+            firestoreQuery(collection(db, 'groups'), orderBy('memberCount', 'desc'), limit(50))
+          );
+          const allGroups = groupsSnapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+              id: doc.id,
+              name: data.name,
+              description: data.description,
+              imageUrl: data.imageUrl,
+              memberCount: data.memberCount,
+              members: data.memberCount,
+            };
+          });
+          // Filter by search query
+          const filtered = allGroups.filter(group =>
+            group.name.toLowerCase().includes(initialQuery.toLowerCase()) ||
+            group.description?.toLowerCase().includes(initialQuery.toLowerCase())
+          );
+          if (!isMounted) return;
+          setResults(filtered);
         } else {
           setResults([]);
         }
@@ -136,6 +189,18 @@ function SearchContent() {
   }, [initialQuery, type]);
 
   const handleFollowChange = (userId: string, isFollowing: boolean) => {
+    // Update following state
+    setFollowingUsers(prev => {
+      const newSet = new Set(prev);
+      if (isFollowing) {
+        newSet.add(userId);
+      } else {
+        newSet.delete(userId);
+      }
+      return newSet;
+    });
+
+    // Update results
     setResults(prev =>
       prev.map(user =>
         user.id === userId
@@ -143,6 +208,8 @@ function SearchContent() {
           : user
       )
     );
+
+    // Update suggested users
     setSuggestedUsers(prev =>
       prev.map(user =>
         user.id === userId
@@ -310,15 +377,6 @@ function SearchContent() {
               <div className="flex bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
                 <button
                   type="button"
-                  onClick={() => window.location.href = `/search?type=suggested`}
-                  className={`flex-1 py-3 px-4 text-sm font-medium transition-all border-r border-gray-200 last:border-r-0 ${
-                    type === 'suggested' ? 'bg-[#007AFF] text-white' : 'text-gray-700 hover:bg-gray-50'
-                  }`}
-                >
-                  Suggested
-                </button>
-                <button
-                  type="button"
                   onClick={() => window.location.href = `/search?q=${encodeURIComponent(initialQuery)}&type=people`}
                   className={`flex-1 py-3 px-4 text-sm font-medium transition-all border-r border-gray-200 last:border-r-0 ${
                     type === 'people' ? 'bg-[#007AFF] text-white' : 'text-gray-700 hover:bg-gray-50'
@@ -337,33 +395,31 @@ function SearchContent() {
                 </button>
               </div>
 
-              {/* Search Input - hide for suggested tab */}
-              {type !== 'suggested' && (
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
-                    placeholder={`Search ${type}...`}
-                    className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FC4C02] focus:border-transparent text-base"
-                  />
-                  <button
-                    type="submit"
-                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-gray-400 hover:text-[#FC4C02] transition-colors"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
-                  </button>
-                </div>
-              )}
+              {/* Search Input */}
+              <div className="relative">
+                <input
+                  type="text"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder={`Search ${type}...`}
+                  className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FC4C02] focus:border-transparent text-base"
+                />
+                <button
+                  type="submit"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-gray-400 hover:text-[#FC4C02] transition-colors"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </button>
+              </div>
             </div>
           </form>
         </div>
 
         {/* Results */}
         <div>
-          {type === 'suggested' ? (
+          {!initialQuery.trim() ? (
             isLoading ? (
               <div className="p-8 text-center">
                 <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#007AFF]"></div>
@@ -371,89 +427,110 @@ function SearchContent() {
               </div>
             ) : (
               <div className="space-y-6">
-                {/* Suggested People */}
-                {suggestedUsers.length > 0 && (
-                  <div>
-                    <div className="flex items-center justify-between mb-3 px-1">
-                      <h3 className="text-lg font-semibold text-gray-900">Suggested for you</h3>
-                      {suggestedUsers.length > 5 && !showAllPeople && (
-                        <button
-                          onClick={() => setShowAllPeople(true)}
-                          className="text-xs text-[#007AFF] hover:text-[#0056D6] font-semibold"
-                        >
-                          See all
-                        </button>
-                      )}
-                    </div>
-                    <div className="space-y-1">
-                      {(showAllPeople ? suggestedUsers : suggestedUsers.slice(0, 5)).map((suggestedUser) => (
-                        <div key={suggestedUser.id} className="bg-white rounded-lg overflow-hidden">
-                          <UserCardCompact
-                            user={suggestedUser}
-                            variant="search"
-                            onFollowChange={handleFollowChange}
-                          />
+                {/* Suggested People - only show on People tab */}
+                {type === 'people' && (
+                  <>
+                    {suggestedUsers.length > 0 ? (
+                      <div>
+                        <div className="flex items-center justify-between mb-3 px-1">
+                          <h3 className="text-lg font-semibold text-gray-900">Suggested for you</h3>
+                          {suggestedUsers.length > 5 && !showAllPeople && (
+                            <button
+                              onClick={() => setShowAllPeople(true)}
+                              className="text-xs text-[#007AFF] hover:text-[#0056D6] font-semibold"
+                            >
+                              See all
+                            </button>
+                          )}
                         </div>
-                      ))}
-                    </div>
-                    {suggestedUsers.length > 5 && showAllPeople && (
-                      <button
-                        onClick={() => setShowAllPeople(false)}
-                        className="w-full text-center text-[#007AFF] font-semibold text-sm py-3 hover:text-[#0056D6] transition-colors mt-2"
-                      >
-                        Show Less
-                      </button>
+                        <div className="space-y-1">
+                          {(showAllPeople ? suggestedUsers : suggestedUsers.slice(0, 5)).map((suggestedUser) => {
+                            const isFollowing = followingUsers.has(suggestedUser.id);
+                            return (
+                              <div key={suggestedUser.id} className="bg-white rounded-lg overflow-hidden">
+                                <UserCardCompact
+                                  user={{ ...suggestedUser, isFollowing }}
+                                  variant="search"
+                                  onFollowChange={handleFollowChange}
+                                />
+                              </div>
+                            );
+                          })}
+                        </div>
+                        {suggestedUsers.length > 5 && showAllPeople && (
+                          <button
+                            onClick={() => setShowAllPeople(false)}
+                            className="w-full text-center text-[#007AFF] font-semibold text-sm py-3 hover:text-[#0056D6] transition-colors mt-2"
+                          >
+                            Show Less
+                          </button>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="p-12 text-center">
+                        <div className="w-16 h-16 mx-auto bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                          <Users className="w-8 h-8 text-gray-400" />
+                        </div>
+                        <h3 className="text-lg font-medium text-gray-900 mb-2">No people to suggest</h3>
+                        <p className="text-gray-600 text-sm">
+                          There are no people available at the moment. Check back later!
+                        </p>
+                      </div>
                     )}
-                  </div>
+                  </>
                 )}
 
-                {/* Suggested Groups */}
-                {suggestedGroups.length > 0 && (
-                  <div>
-                    <div className="flex items-center justify-between mb-3 px-1">
-                      <h3 className="text-lg font-semibold text-gray-900">Groups to join</h3>
-                      {suggestedGroups.length > 3 && !showAllGroups && (
-                        <button
-                          onClick={() => setShowAllGroups(true)}
-                          className="text-xs text-[#007AFF] hover:text-[#0056D6] font-semibold"
-                        >
-                          See all
-                        </button>
-                      )}
-                    </div>
-                    <div className="space-y-1">
-                      {(showAllGroups ? suggestedGroups : suggestedGroups.slice(0, 3)).map((group) => (
-                        <div
-                          key={group.id}
-                          className="bg-white rounded-lg overflow-hidden hover:bg-gray-50 transition-colors"
-                        >
-                          {renderGroupResult(group)}
+                {/* Suggested Groups - only show on Groups tab */}
+                {type === 'groups' && (
+                  <>
+                    {suggestedGroups.length > 0 ? (
+                      <div>
+                        <div className="flex items-center justify-between mb-3 px-1">
+                          <h3 className="text-lg font-semibold text-gray-900">Groups to join</h3>
+                          {suggestedGroups.length > 3 && !showAllGroups && (
+                            <button
+                              onClick={() => setShowAllGroups(true)}
+                              className="text-xs text-[#007AFF] hover:text-[#0056D6] font-semibold"
+                            >
+                              See all
+                            </button>
+                          )}
                         </div>
-                      ))}
-                    </div>
-                    {suggestedGroups.length > 3 && showAllGroups && (
-                      <button
-                        onClick={() => setShowAllGroups(false)}
-                        className="w-full text-center text-[#007AFF] font-semibold text-sm py-3 hover:text-[#0056D6] transition-colors mt-2"
-                      >
-                        Show Less
-                      </button>
+                        <div className="space-y-1">
+                          {(showAllGroups ? suggestedGroups : suggestedGroups.slice(0, 3)).map((group) => (
+                            <div
+                              key={group.id}
+                              className="bg-white rounded-lg overflow-hidden hover:bg-gray-50 transition-colors"
+                            >
+                              {renderGroupResult(group)}
+                            </div>
+                          ))}
+                        </div>
+                        {suggestedGroups.length > 3 && showAllGroups && (
+                          <button
+                            onClick={() => setShowAllGroups(false)}
+                            className="w-full text-center text-[#007AFF] font-semibold text-sm py-3 hover:text-[#0056D6] transition-colors mt-2"
+                          >
+                            Show Less
+                          </button>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="p-12 text-center">
+                        <div className="w-16 h-16 mx-auto bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                          <Users className="w-8 h-8 text-gray-400" />
+                        </div>
+                        <h3 className="text-lg font-medium text-gray-900 mb-2">No groups to suggest</h3>
+                        <p className="text-gray-600 text-sm">
+                          There are no groups available at the moment. Check back later!
+                        </p>
+                      </div>
                     )}
-                  </div>
+                  </>
                 )}
 
               </div>
             )
-          ) : !initialQuery.trim() ? (
-            <div className="bg-white rounded-lg border border-gray-200 p-8 md:p-12 text-center">
-              <svg className="w-16 h-16 md:w-20 md:h-20 mx-auto text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-              <h3 className="mt-4 text-lg font-medium text-gray-900">Start searching</h3>
-              <p className="text-gray-600 mt-2">
-                Enter a search query to find {type}
-              </p>
-            </div>
           ) : isLoading ? (
             <div className="bg-white rounded-lg border border-gray-200 p-8 text-center">
               <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#007AFF]"></div>
@@ -480,7 +557,10 @@ function SearchContent() {
                 </p>
               </div>
               <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-                {type === 'people' && results.map(renderUserResult)}
+                {type === 'people' && results.map((userResult) => {
+                  const isFollowing = followingUsers.has(userResult.id);
+                  return renderUserResult({ ...userResult, isFollowing });
+                })}
                 {type === 'groups' && results.map(renderGroupResult)}
               </div>
             </div>

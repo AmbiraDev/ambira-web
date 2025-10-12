@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useTimer } from '@/contexts/TimerContext';
 import { useProjects } from '@/contexts/ProjectsContext';
 import { useTasks } from '@/contexts/TasksContext';
-import { Play, Pause, Square, X, ChevronDown, Check, Flag, Image as ImageIcon, XCircle, Edit3 } from 'lucide-react';
+import { Play, Pause, Square, X, ChevronDown, Check, Flag, Image as ImageIcon, XCircle, Edit3, ArrowLeft } from 'lucide-react';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
 import { uploadImages, compressImage } from '@/lib/imageUpload';
@@ -572,6 +572,15 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
   // Main timer UI - only show when not completing a session
   return (
     <div className="min-h-screen bg-white flex items-start justify-center pt-20">
+      {/* Back Button - Top Left */}
+      <Link
+        href="/"
+        className="fixed top-4 left-4 z-50 flex items-center justify-center w-10 h-10 hover:opacity-70 transition-opacity"
+        aria-label="Go back to home"
+      >
+        <ArrowLeft className="w-6 h-6 text-gray-700" />
+      </Link>
+
       {/* No Activities Banner - Show prominent message when no activities exist */}
       {needsActivity && (
         <div className="absolute top-0 left-0 right-0 bg-blue-50 border-b border-blue-200 px-4 py-3 md:py-4">

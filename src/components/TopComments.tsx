@@ -153,9 +153,9 @@ export const TopComments: React.FC<TopCommentsProps> = ({
   }
 
   return (
-    <div className={(isExpanded || (comments.length > 0 && !isExpanded)) ? 'border-t border-gray-100' : ''}>
+    <div className={(isExpanded || (comments.length > 0 && !isExpanded)) ? 'hidden md:block md:border-t md:border-gray-100' : ''}>
       <div className="px-4 py-2 space-y-2">
-        {/* Comments List - Only show in collapsed view if there are comments */}
+        {/* Comments List - Only show in collapsed view if there are comments (hidden on mobile) */}
         {!isExpanded && comments.length > 0 && (
           <>
             {comments.map((comment) => (

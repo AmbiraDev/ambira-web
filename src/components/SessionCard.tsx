@@ -116,7 +116,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({
   };
 
   return (
-    <article className={`bg-white md:rounded-lg md:border md:border-gray-200 md:shadow-sm mb-0 md:mb-4 border-b border-gray-200 md:border-b-0 ${className}`}>
+    <article className={`bg-white md:rounded-lg md:border md:border-gray-200 md:shadow-sm mb-0 md:mb-4 border-b-[6px] border-gray-200 md:border-b-0 ${className}`}>
       {/* Session Header */}
       <div className="flex items-center justify-between px-4 pt-4 pb-3">
         <Link href={`/profile/${session.user.username}`} className="flex items-center gap-2 md:gap-3 min-w-0 flex-1">
