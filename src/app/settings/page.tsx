@@ -675,35 +675,28 @@ export default function SettingsPage() {
                 )}
               </div>
 
-              {/* Danger Zone */}
-              <div className="mt-6 bg-gray-50 rounded-xl border border-gray-200 p-4 md:p-6 space-y-4">
-                {/* Logout Button */}
-                <button
-                  onClick={handleLogout}
-                  className="flex items-center gap-2 px-6 py-3 md:py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                >
-                  <LogOut className="w-4 h-4" />
-                  Log Out
-                </button>
+              {/* Danger Zone - Only show on My Profile tab */}
+              {activeTab === 'profile' && (
+                <div className="mt-6 bg-gray-50 rounded-xl border border-gray-200 p-4 md:p-6 space-y-4">
+                  {/* Logout Button */}
+                  <button
+                    onClick={handleLogout}
+                    className="flex items-center gap-2 px-6 py-3 md:py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Log Out
+                  </button>
 
-                {/* Delete Account Section */}
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                  <h3 className="text-sm font-semibold text-red-900 mb-1 flex items-center gap-2">
-                    <Trash2 className="w-4 h-4" />
-                    Delete Account
-                  </h3>
-                  <p className="text-xs text-red-700 mb-3">
-                    Permanently delete your account and all associated data. This action cannot be undone.
-                  </p>
+                  {/* Delete Account Button */}
                   <button
                     onClick={() => setShowDeleteConfirm(true)}
-                    className="text-sm px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2"
+                    className="flex items-center gap-2 px-6 py-3 md:py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
                   >
                     <Trash2 className="w-4 h-4" />
                     Delete Account
                   </button>
                 </div>
-              </div>
+              )}
             </div>
           </div>
         </div>

@@ -223,13 +223,10 @@ function SearchContent() {
   const renderGroupResult = (group: any) => {
     const isJoined = joinedGroups.has(group.id);
     const isLoading = joiningGroup === group.id;
-    
+
     return (
-      <div
-        key={group.id}
-        className="p-4 hover:bg-gray-50 transition-colors border-b border-gray-100 last:border-0"
-      >
-        <div className="flex items-start gap-3">
+      <div className="p-3 transition-colors">
+        <div className="flex items-center gap-3">
           {/* Group Icon */}
           <Link href={`/groups/${group.id}`}>
             <GroupAvatar
@@ -238,34 +235,24 @@ function SearchContent() {
               size="md"
             />
           </Link>
-          
+
           {/* Group Info */}
           <div className="flex-1 min-w-0">
             <Link href={`/groups/${group.id}`}>
-              <h3 className="font-semibold text-gray-900 text-base truncate hover:text-[#007AFF] transition-colors">{group.name}</h3>
+              <p className="font-semibold text-sm text-gray-900 hover:text-[#007AFF] truncate mb-0.5 transition-colors">
+                {group.name}
+              </p>
             </Link>
-            <p className="text-sm text-gray-600 mt-0.5 line-clamp-2">{group.description}</p>
-            
-            {/* Meta Info */}
-            <div className="flex items-center gap-3 mt-2 text-xs text-gray-500">
-              <span className="flex items-center gap-1">
-                <Users className="w-3.5 h-3.5" />
-                {group.members.toLocaleString()}
-              </span>
-              {group.location && (
-                <span className="flex items-center gap-1">
-                  <MapPin className="w-3.5 h-3.5" />
-                  {group.location}
-                </span>
-              )}
+            <div className="text-xs text-gray-500">
+              {group.memberCount || group.members || 0} {(group.memberCount || group.members) === 1 ? 'member' : 'members'}
             </div>
           </div>
-          
-          {/* Join Link */}
-          <button 
+
+          {/* Join Button */}
+          <button
             onClick={(e) => handleJoinGroup(group.id, e)}
             disabled={isLoading}
-            className={`text-sm font-semibold transition-colors flex-shrink-0 ${
+            className={`text-sm font-semibold transition-colors whitespace-nowrap flex-shrink-0 ${
               isJoined
                 ? 'text-gray-600 hover:text-gray-900'
                 : 'text-[#007AFF] hover:text-[#0051D5]'
@@ -383,17 +370,24 @@ function SearchContent() {
                 <p className="text-gray-600 mt-4">Loading suggestions...</p>
               </div>
             ) : (
-              <div className="space-y-8">
+              <div className="space-y-6">
                 {/* Suggested People */}
                 {suggestedUsers.length > 0 && (
                   <div>
-                    <div className="px-4 py-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-t-lg border-b border-blue-100">
-                      <h3 className="text-lg font-bold text-gray-900">Suggested People</h3>
-                      <p className="text-sm text-gray-600 mt-0.5">People you might know</p>
+                    <div className="flex items-center justify-between mb-3 px-1">
+                      <h3 className="text-lg font-semibold text-gray-900">Suggested for you</h3>
+                      {suggestedUsers.length > 5 && !showAllPeople && (
+                        <button
+                          onClick={() => setShowAllPeople(true)}
+                          className="text-xs text-[#007AFF] hover:text-[#0056D6] font-semibold"
+                        >
+                          See all
+                        </button>
+                      )}
                     </div>
-                    <div className="bg-white rounded-b-lg border border-gray-200 border-t-0 overflow-hidden">
+                    <div className="space-y-1">
                       {(showAllPeople ? suggestedUsers : suggestedUsers.slice(0, 5)).map((suggestedUser) => (
-                        <div key={suggestedUser.id} className="border-b border-gray-100 last:border-0">
+                        <div key={suggestedUser.id} className="bg-white rounded-lg overflow-hidden">
                           <UserCardCompact
                             user={suggestedUser}
                             variant="search"
@@ -401,40 +395,50 @@ function SearchContent() {
                           />
                         </div>
                       ))}
-                      {suggestedUsers.length > 5 && (
-                        <div className="px-4 py-3 bg-gray-50 border-t border-gray-200">
-                          <button
-                            onClick={() => setShowAllPeople(!showAllPeople)}
-                            className="w-full text-center text-[#007AFF] font-semibold text-sm py-2.5 hover:text-[#0056D6] transition-colors"
-                          >
-                            {showAllPeople ? 'Show Less' : `Show All ${suggestedUsers.length} People`}
-                          </button>
-                        </div>
-                      )}
                     </div>
+                    {suggestedUsers.length > 5 && showAllPeople && (
+                      <button
+                        onClick={() => setShowAllPeople(false)}
+                        className="w-full text-center text-[#007AFF] font-semibold text-sm py-3 hover:text-[#0056D6] transition-colors mt-2"
+                      >
+                        Show Less
+                      </button>
+                    )}
                   </div>
                 )}
 
                 {/* Suggested Groups */}
                 {suggestedGroups.length > 0 && (
                   <div>
-                    <div className="px-4 py-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-t-lg border-b border-green-100">
-                      <h3 className="text-lg font-bold text-gray-900">Suggested Groups</h3>
-                      <p className="text-sm text-gray-600 mt-0.5">Groups you might be interested in</p>
-                    </div>
-                    <div className="bg-white rounded-b-lg border border-gray-200 border-t-0 overflow-hidden">
-                      {(showAllGroups ? suggestedGroups : suggestedGroups.slice(0, 3)).map(renderGroupResult)}
-                      {suggestedGroups.length > 3 && (
-                        <div className="px-4 py-3 bg-gray-50 border-t border-gray-200">
-                          <button
-                            onClick={() => setShowAllGroups(!showAllGroups)}
-                            className="w-full text-center text-[#007AFF] font-semibold text-sm py-2.5 hover:text-[#0056D6] transition-colors"
-                          >
-                            {showAllGroups ? 'Show Less' : `Show All ${suggestedGroups.length} Groups`}
-                          </button>
-                        </div>
+                    <div className="flex items-center justify-between mb-3 px-1">
+                      <h3 className="text-lg font-semibold text-gray-900">Groups to join</h3>
+                      {suggestedGroups.length > 3 && !showAllGroups && (
+                        <button
+                          onClick={() => setShowAllGroups(true)}
+                          className="text-xs text-[#007AFF] hover:text-[#0056D6] font-semibold"
+                        >
+                          See all
+                        </button>
                       )}
                     </div>
+                    <div className="space-y-1">
+                      {(showAllGroups ? suggestedGroups : suggestedGroups.slice(0, 3)).map((group) => (
+                        <div
+                          key={group.id}
+                          className="bg-white rounded-lg overflow-hidden hover:bg-gray-50 transition-colors"
+                        >
+                          {renderGroupResult(group)}
+                        </div>
+                      ))}
+                    </div>
+                    {suggestedGroups.length > 3 && showAllGroups && (
+                      <button
+                        onClick={() => setShowAllGroups(false)}
+                        className="w-full text-center text-[#007AFF] font-semibold text-sm py-3 hover:text-[#0056D6] transition-colors mt-2"
+                      >
+                        Show Less
+                      </button>
+                    )}
                   </div>
                 )}
 

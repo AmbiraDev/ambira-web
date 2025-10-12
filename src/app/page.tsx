@@ -42,7 +42,7 @@ function HomeContent() {
             </div>
 
             {/* Main Feed - Scrollable Container */}
-            <main className="flex-1 min-w-0 max-w-[600px] h-full overflow-y-auto scrollbar-hide">
+            <main className="flex-1 min-w-0 max-w-[600px] mx-auto h-full overflow-y-auto scrollbar-hide">
               {/* Filter Dropdown */}
               <div className="px-4 md:px-0 pt-3 pb-2 sticky top-0 z-10 bg-gray-50">
                 <FeedFilterDropdown
