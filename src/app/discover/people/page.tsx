@@ -25,15 +25,10 @@ export default function DiscoverPeoplePage() {
 
       try {
         setIsLoading(true);
-        // Load users with search
-        const { users } = await firebaseUserApi.searchUsers('', 1, 50);
+        // Load suggested users (filters by profileVisibility and excludes following)
+        const suggestions = await firebaseUserApi.getSuggestedUsers(50);
 
-        // Filter out current user and sort by followers
-        const filtered = users
-          .filter(u => u.id !== user.id)
-          .sort((a, b) => (b.followersCount || 0) - (a.followersCount || 0));
-
-        setSuggestedUsers(filtered);
+        setSuggestedUsers(suggestions);
       } catch (error) {
         console.error('Error loading users:', error);
         setSuggestedUsers([]);

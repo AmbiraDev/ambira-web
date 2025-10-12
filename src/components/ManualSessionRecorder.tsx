@@ -271,11 +271,25 @@ export default function ManualSessionRecorder() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Main Header */}
-      <Header />
+      {/* Main Header - hidden on mobile */}
+      <div className="hidden md:block">
+        <Header />
+      </div>
 
-      {/* Page Title */}
-      <div className="bg-gray-50">
+      {/* Mobile Back Button with Title */}
+      <div className="md:hidden pt-4 px-4 flex items-center gap-3">
+        <button
+          onClick={() => router.back()}
+          className="p-2 -ml-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+          disabled={isLoading}
+        >
+          <ArrowLeft className="w-6 h-6" />
+        </button>
+        <h1 className="text-xl font-bold text-gray-900">Log Manual Session</h1>
+      </div>
+
+      {/* Desktop Page Title */}
+      <div className="hidden md:block bg-gray-50">
         <div className="max-w-3xl mx-auto px-4 pt-6 pb-3">
           <h1 className="text-2xl font-bold text-gray-900">Log Manual Session</h1>
         </div>

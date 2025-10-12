@@ -210,15 +210,15 @@ export default function ProfilePage() {
           <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-6">
             <div className="max-w-4xl mx-auto">
               {/* Profile Card with This Week Stats */}
-              <div className="bg-gray-50 rounded-xl border border-gray-200 p-4 md:p-6 mb-6 relative">
+              <div className="bg-gray-50 md:rounded-xl md:border border-gray-200 p-3 md:p-6 mb-4 md:mb-6 relative">
                 {/* Settings Icon */}
-                <div className="absolute top-4 right-4 z-10">
+                <div className="absolute top-3 md:top-4 right-3 md:right-4 z-10">
                   <div className="relative">
                     <button
                       onClick={() => setShowSettingsMenu(!showSettingsMenu)}
-                      className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
+                      className="p-1.5 md:p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
                     >
-                      <Settings className="w-5 h-5" />
+                      <Settings className="w-4 h-4 md:w-5 md:h-5" />
                     </button>
 
                     {/* Settings Dropdown */}
@@ -226,7 +226,7 @@ export default function ProfilePage() {
                       <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-10">
                         <Link
                           href="/settings"
-                          className="block px-4 py-2 text-gray-900 hover:bg-gray-50 transition-colors"
+                          className="block px-4 py-2 text-sm text-gray-900 hover:bg-gray-50 transition-colors"
                           onClick={() => setShowSettingsMenu(false)}
                         >
                           Settings
@@ -237,7 +237,7 @@ export default function ProfilePage() {
                             setShowSettingsMenu(false);
                             logout();
                           }}
-                          className="w-full text-left px-4 py-2 text-red-600 hover:bg-red-50 transition-colors flex items-center gap-2"
+                          className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors flex items-center gap-2"
                         >
                           <LogOut className="w-4 h-4" />
                           Log Out
@@ -253,7 +253,7 @@ export default function ProfilePage() {
                   <div className="flex-1">
                     {/* Profile Picture */}
                     {user.profilePicture || userProfile?.profilePicture ? (
-                      <div className="w-24 h-24 md:w-32 md:h-32 rounded-full overflow-hidden ring-4 ring-white shadow-md mb-4">
+                      <div className="w-20 h-20 md:w-32 md:h-32 rounded-full overflow-hidden ring-4 ring-white shadow-md mb-3 md:mb-4">
                         <Image
                           src={userProfile?.profilePicture || user.profilePicture || ''}
                           alt={user.name}
@@ -263,38 +263,38 @@ export default function ProfilePage() {
                         />
                       </div>
                     ) : (
-                      <div className="w-24 h-24 md:w-32 md:h-32 bg-[#FC4C02] rounded-full flex items-center justify-center ring-4 ring-white shadow-md mb-4">
-                        <span className="text-white font-bold text-3xl md:text-4xl">
+                      <div className="w-20 h-20 md:w-32 md:h-32 bg-[#FC4C02] rounded-full flex items-center justify-center ring-4 ring-white shadow-md mb-3 md:mb-4">
+                        <span className="text-white font-bold text-2xl md:text-4xl">
                           {user.name.charAt(0).toUpperCase()}
                         </span>
                       </div>
                     )}
 
                     {/* Name and Username */}
-                    <h1 className="text-xl md:text-2xl font-bold text-gray-900">{user.name}</h1>
-                    <p className="text-gray-600 mb-3">@{user.username}</p>
+                    <h1 className="text-lg md:text-2xl font-bold text-gray-900">{user.name}</h1>
+                    <p className="text-gray-600 text-sm md:text-base mb-2 md:mb-3">@{user.username}</p>
 
                     {/* Bio */}
                     {(userProfile?.bio || user.bio) && (
-                      <p className="text-gray-700 mb-3 text-sm md:text-base">{userProfile?.bio || user.bio}</p>
+                      <p className="text-gray-700 mb-2 md:mb-3 text-sm md:text-base leading-snug">{userProfile?.bio || user.bio}</p>
                     )}
 
                     {/* Location */}
                     {(userProfile?.location || user.location) && (
-                      <p className="text-gray-500 text-sm mb-4">📍 {userProfile?.location || user.location}</p>
+                      <p className="text-gray-500 text-xs md:text-sm mb-3 md:mb-4">📍 {userProfile?.location || user.location}</p>
                     )}
 
                     {/* Edit Profile Button */}
                     <Link
                       href="/settings"
-                      className="inline-flex items-center gap-2 mb-4 px-4 py-2.5 bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-lg transition-colors font-semibold text-sm"
+                      className="inline-flex items-center gap-2 mb-3 md:mb-4 px-3 md:px-4 py-2 md:py-2.5 bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-lg transition-colors font-semibold text-xs md:text-sm"
                     >
-                      <Edit className="w-4 h-4" />
+                      <Edit className="w-3.5 h-3.5 md:w-4 md:h-4" />
                       Edit Profile
                     </Link>
 
                     {/* Follower/Following Counts */}
-                    <div className="flex gap-6 mb-6 md:mb-0">
+                    <div className="flex gap-4 md:gap-6 mb-4 md:mb-0">
                       <button
                         onClick={() => {
                           setActiveTab('followers');
@@ -302,8 +302,8 @@ export default function ProfilePage() {
                         }}
                         className="hover:underline"
                       >
-                        <span className="font-bold text-gray-900">{followers.length}</span>{' '}
-                        <span className="text-gray-600">Followers</span>
+                        <span className="font-bold text-gray-900 text-sm md:text-base">{followers.length}</span>{' '}
+                        <span className="text-gray-600 text-xs md:text-sm">Followers</span>
                       </button>
                       <button
                         onClick={() => {
@@ -312,36 +312,36 @@ export default function ProfilePage() {
                         }}
                         className="hover:underline"
                       >
-                        <span className="font-bold text-gray-900">{following.length}</span>{' '}
-                        <span className="text-gray-600">Following</span>
+                        <span className="font-bold text-gray-900 text-sm md:text-base">{following.length}</span>{' '}
+                        <span className="text-gray-600 text-xs md:text-sm">Following</span>
                       </button>
                     </div>
                   </div>
 
                   {/* Right Column - This Week Stats */}
-                  <div className="md:w-64 border-t md:border-t-0 md:border-l border-gray-200 pt-6 md:pt-0 md:pl-8">
-                    <div className="flex items-center gap-2 mb-4">
-                      <div className="w-5 h-5 text-[#FC4C02]">📊</div>
-                      <h2 className="text-base font-bold">This week</h2>
+                  <div className="md:w-64 border-t md:border-t-0 md:border-l border-gray-200 pt-4 md:pt-0 md:pl-8">
+                    <div className="flex items-center gap-2 mb-3 md:mb-4">
+                      <div className="w-4 h-4 md:w-5 md:h-5 text-[#FC4C02]">📊</div>
+                      <h2 className="text-sm md:text-base font-bold">This week</h2>
                     </div>
 
-                    <div className="grid grid-cols-3 md:grid-cols-1 gap-4 md:space-y-0">
+                    <div className="grid grid-cols-3 md:grid-cols-1 gap-3 md:gap-4 md:space-y-0">
                       <div>
-                        <div className="text-xs text-gray-600">Time</div>
-                        <div className="text-xl md:text-2xl font-bold">
+                        <div className="text-[10px] md:text-xs text-gray-600 uppercase tracking-wide">Time</div>
+                        <div className="text-lg md:text-2xl font-bold">
                           {stats?.weeklyHours?.toFixed(1) || 0}h
                         </div>
                       </div>
                       <div>
-                        <div className="text-xs text-gray-600">Sessions</div>
-                        <div className="text-xl md:text-2xl font-bold">
+                        <div className="text-[10px] md:text-xs text-gray-600 uppercase tracking-wide">Sessions</div>
+                        <div className="text-lg md:text-2xl font-bold">
                           {stats?.sessionsThisWeek || 0}
                         </div>
                       </div>
                       <div>
-                        <div className="text-xs text-gray-600">Streak</div>
-                        <div className="text-xl md:text-2xl font-bold">
-                          {stats?.currentStreak || 0} days
+                        <div className="text-[10px] md:text-xs text-gray-600 uppercase tracking-wide">Streak</div>
+                        <div className="text-lg md:text-2xl font-bold">
+                          {stats?.currentStreak || 0} <span className="text-sm md:text-base">days</span>
                         </div>
                       </div>
                     </div>
@@ -412,17 +412,17 @@ export default function ProfilePage() {
               {/* Tab Content */}
               <div className="mt-6">
                 {activeTab === 'progress' && (
-                  <div className="max-w-4xl mx-auto space-y-6">
+                  <div className="max-w-4xl mx-auto space-y-4 md:space-y-6">
                     {/* Header with Time Period Selector and Chart Type */}
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 py-2">
-                      <h2 className="text-xl font-bold text-gray-900">Account overview</h2>
-                      <div className="flex items-center gap-2">
-                        <div className="overflow-x-auto pb-1 flex items-center gap-2">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 md:gap-4 py-2">
+                      <h2 className="text-lg md:text-xl font-bold text-gray-900">Account overview</h2>
+                      <div className="flex items-center gap-2 -mx-4 md:mx-0 px-4 md:px-0">
+                        <div className="overflow-x-auto pb-1 flex items-center gap-1.5 md:gap-2 flex-1 md:flex-initial">
                           {(['7D', '2W', '4W', '3M', '1Y'] as TimePeriod[]).map((period) => (
                             <button
                               key={period}
                               onClick={() => setTimePeriod(period)}
-                              className={`px-4 py-2 text-sm font-medium rounded-full transition-colors whitespace-nowrap ${
+                              className={`px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-medium rounded-full transition-colors whitespace-nowrap flex-shrink-0 ${
                                 timePeriod === period
                                   ? 'bg-gray-900 text-white'
                                   : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
@@ -437,14 +437,14 @@ export default function ProfilePage() {
                         <div className="relative flex-shrink-0">
                           <button
                             onClick={() => setShowChartTypeDropdown(!showChartTypeDropdown)}
-                            className="flex items-center gap-1 px-3 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-full hover:bg-gray-50 transition-colors whitespace-nowrap"
+                            className="flex items-center gap-1 px-2 md:px-3 py-1.5 md:py-2 text-xs md:text-sm text-gray-700 bg-white border border-gray-300 rounded-full hover:bg-gray-50 transition-colors whitespace-nowrap"
                           >
                             {chartType === 'bar' ? (
-                              <BarChart3 className="w-4 h-4" />
+                              <BarChart3 className="w-3.5 h-3.5 md:w-4 md:h-4" />
                             ) : (
-                              <TrendingUp className="w-4 h-4" />
+                              <TrendingUp className="w-3.5 h-3.5 md:w-4 md:h-4" />
                             )}
-                            <span className="capitalize">{chartType}</span>
+                            <span className="capitalize hidden sm:inline">{chartType}</span>
                             <ChevronDown className="w-3 h-3" />
                           </button>
 
@@ -484,10 +484,10 @@ export default function ProfilePage() {
                     </div>
 
                     {/* Activity Chart */}
-                    <div className="bg-gray-50 rounded-xl border border-gray-200 p-4 md:p-6">
-                      <div className="mb-4 md:mb-6">
-                        <h3 className="text-base font-medium text-gray-900">Hours Tracked</h3>
-                        <p className="text-xs md:text-sm text-gray-500 mt-0.5">
+                    <div className="bg-gray-50 rounded-lg md:rounded-xl border border-gray-200 p-3 md:p-6">
+                      <div className="mb-3 md:mb-6">
+                        <h3 className="text-sm md:text-base font-medium text-gray-900">Hours Tracked</h3>
+                        <p className="text-[10px] md:text-sm text-gray-500 mt-0.5">
                           {timePeriod === '7D' && 'Daily'}
                           {timePeriod === '2W' && 'Daily'}
                           {timePeriod === '4W' && 'Weekly'}
@@ -495,7 +495,7 @@ export default function ProfilePage() {
                           {timePeriod === '1Y' && 'Monthly'}
                         </p>
                       </div>
-                      <div className="h-64 md:h-72">
+                      <div className="h-48 md:h-72">
                         {isLoading ? (
                           <div className="h-full bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl animate-pulse flex items-center justify-center">
                             <p className="text-gray-400 text-sm">Loading...</p>
@@ -605,11 +605,11 @@ export default function ProfilePage() {
                     </div>
 
                     {/* Secondary Charts */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-6">
                       {/* Sessions over time */}
-                      <div className="bg-gray-50 rounded-xl border border-gray-200 p-4 md:p-6">
-                        <h3 className="text-sm md:text-base font-medium text-gray-900 mb-3 md:mb-4">Sessions over time</h3>
-                        <div className="h-40 md:h-48">
+                      <div className="bg-gray-50 rounded-lg md:rounded-xl border border-gray-200 p-3 md:p-6">
+                        <h3 className="text-xs md:text-base font-medium text-gray-900 mb-2 md:mb-4">Sessions over time</h3>
+                        <div className="h-32 md:h-48">
                           <ResponsiveContainer width="100%" height="100%">
                             {chartType === 'bar' ? (
                               <BarChart
@@ -697,41 +697,41 @@ export default function ProfilePage() {
                       </div>
 
                       {/* Productivity trends */}
-                      <div className="bg-gray-50 rounded-xl border border-gray-200 p-4 md:p-6">
-                        <h3 className="text-sm md:text-base font-medium text-gray-900 mb-3 md:mb-4">Productivity trends</h3>
-                        <div className="space-y-3">
-                          <div className="flex items-center justify-between p-3 bg-white rounded-lg">
+                      <div className="bg-gray-50 rounded-lg md:rounded-xl border border-gray-200 p-3 md:p-6">
+                        <h3 className="text-xs md:text-base font-medium text-gray-900 mb-2 md:mb-4">Productivity trends</h3>
+                        <div className="space-y-2 md:space-y-3">
+                          <div className="flex items-center justify-between p-2 md:p-3 bg-white rounded-lg">
                             <div>
-                              <div className="text-sm font-medium text-gray-900">Total hours</div>
-                              <div className="text-xs text-gray-500">All time</div>
+                              <div className="text-xs md:text-sm font-medium text-gray-900">Total hours</div>
+                              <div className="text-[10px] md:text-xs text-gray-500">All time</div>
                             </div>
                             <div className="text-right">
-                              <div className="text-lg font-bold text-gray-900">{stats?.totalHours?.toFixed(1) || 0}h</div>
-                              <div className="text-xs text-green-600">↑ 100%</div>
+                              <div className="text-base md:text-lg font-bold text-gray-900">{stats?.totalHours?.toFixed(1) || 0}h</div>
+                              <div className="text-[10px] md:text-xs text-green-600">↑ 100%</div>
                             </div>
                           </div>
 
-                          <div className="flex items-center justify-between p-3 bg-white rounded-lg">
+                          <div className="flex items-center justify-between p-2 md:p-3 bg-white rounded-lg">
                             <div>
-                              <div className="text-sm font-medium text-gray-900">Avg session</div>
-                              <div className="text-xs text-gray-500">Per session</div>
+                              <div className="text-xs md:text-sm font-medium text-gray-900">Avg session</div>
+                              <div className="text-[10px] md:text-xs text-gray-500">Per session</div>
                             </div>
                             <div className="text-right">
-                              <div className="text-lg font-bold text-gray-900">
+                              <div className="text-base md:text-lg font-bold text-gray-900">
                                 {sessions.length > 0 ? Math.round(sessions.reduce((sum, s) => sum + s.duration, 0) / sessions.length / 60) : 0}m
                               </div>
-                              <div className="text-xs text-green-600">↑ 100%</div>
+                              <div className="text-[10px] md:text-xs text-green-600">↑ 100%</div>
                             </div>
                           </div>
 
-                          <div className="flex items-center justify-between p-3 bg-white rounded-lg">
+                          <div className="flex items-center justify-between p-2 md:p-3 bg-white rounded-lg">
                             <div>
-                              <div className="text-sm font-medium text-gray-900">Current streak</div>
-                              <div className="text-xs text-gray-500">Consecutive days</div>
+                              <div className="text-xs md:text-sm font-medium text-gray-900">Current streak</div>
+                              <div className="text-[10px] md:text-xs text-gray-500">Consecutive days</div>
                             </div>
                             <div className="text-right">
-                              <div className="text-lg font-bold text-gray-900">{stats?.currentStreak || 0}</div>
-                              <div className="text-xs text-green-600">↑ 100%</div>
+                              <div className="text-base md:text-lg font-bold text-gray-900">{stats?.currentStreak || 0}</div>
+                              <div className="text-[10px] md:text-xs text-green-600">↑ 100%</div>
                             </div>
                           </div>
                         </div>
@@ -739,62 +739,62 @@ export default function ProfilePage() {
                     </div>
 
                     {/* Metrics Grid */}
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4">
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 md:gap-4">
                       {/* Total Hours */}
-                      <div className="bg-gray-50 rounded-xl border border-gray-200 p-3 md:p-4">
-                        <div className="text-xs md:text-sm text-gray-600 mb-1">Total hours</div>
-                        <div className="text-xl md:text-2xl font-bold text-gray-900">
+                      <div className="bg-gray-50 rounded-lg md:rounded-xl border border-gray-200 p-2.5 md:p-4">
+                        <div className="text-[10px] md:text-sm text-gray-600 mb-0.5 md:mb-1 uppercase tracking-wide">Total hours</div>
+                        <div className="text-lg md:text-2xl font-bold text-gray-900">
                           {stats?.totalHours?.toFixed(1) || '0'}
                         </div>
-                        <div className="text-xs text-green-600 mt-1 flex items-center gap-1">
+                        <div className="text-[10px] md:text-xs text-green-600 mt-0.5 md:mt-1 flex items-center gap-1">
                           <span>↑</span>
                           <span>100%</span>
                         </div>
                       </div>
 
                       {/* Sessions */}
-                      <div className="bg-gray-50 rounded-xl border border-gray-200 p-3 md:p-4">
-                        <div className="text-xs md:text-sm text-gray-600 mb-1">Sessions</div>
-                        <div className="text-xl md:text-2xl font-bold text-gray-900">
+                      <div className="bg-gray-50 rounded-lg md:rounded-xl border border-gray-200 p-2.5 md:p-4">
+                        <div className="text-[10px] md:text-sm text-gray-600 mb-0.5 md:mb-1 uppercase tracking-wide">Sessions</div>
+                        <div className="text-lg md:text-2xl font-bold text-gray-900">
                           {sessions.length}
                         </div>
-                        <div className="text-xs text-green-600 mt-1 flex items-center gap-1">
+                        <div className="text-[10px] md:text-xs text-green-600 mt-0.5 md:mt-1 flex items-center gap-1">
                           <span>↑</span>
                           <span>100%</span>
                         </div>
                       </div>
 
                       {/* Avg Duration */}
-                      <div className="bg-gray-50 rounded-xl border border-gray-200 p-3 md:p-4">
-                        <div className="text-xs md:text-sm text-gray-600 mb-1">Avg duration</div>
-                        <div className="text-xl md:text-2xl font-bold text-gray-900">
+                      <div className="bg-gray-50 rounded-lg md:rounded-xl border border-gray-200 p-2.5 md:p-4">
+                        <div className="text-[10px] md:text-sm text-gray-600 mb-0.5 md:mb-1 uppercase tracking-wide">Avg duration</div>
+                        <div className="text-lg md:text-2xl font-bold text-gray-900">
                           {sessions.length > 0 ? Math.round(sessions.reduce((sum, s) => sum + s.duration, 0) / sessions.length / 60) : 0}m
                         </div>
-                        <div className="text-xs text-green-600 mt-1 flex items-center gap-1">
+                        <div className="text-[10px] md:text-xs text-green-600 mt-0.5 md:mt-1 flex items-center gap-1">
                           <span>↑</span>
                           <span>100%</span>
                         </div>
                       </div>
 
                       {/* Current Streak */}
-                      <div className="bg-gray-50 rounded-xl border border-gray-200 p-3 md:p-4">
-                        <div className="text-xs md:text-sm text-gray-600 mb-1">Current streak</div>
-                        <div className="text-xl md:text-2xl font-bold text-gray-900">
+                      <div className="bg-gray-50 rounded-lg md:rounded-xl border border-gray-200 p-2.5 md:p-4">
+                        <div className="text-[10px] md:text-sm text-gray-600 mb-0.5 md:mb-1 uppercase tracking-wide">Current streak</div>
+                        <div className="text-lg md:text-2xl font-bold text-gray-900">
                           {stats?.currentStreak || 0}
                         </div>
-                        <div className="text-xs text-green-600 mt-1 flex items-center gap-1">
+                        <div className="text-[10px] md:text-xs text-green-600 mt-0.5 md:mt-1 flex items-center gap-1">
                           <span>↑</span>
                           <span>100%</span>
                         </div>
                       </div>
 
                       {/* Longest Streak */}
-                      <div className="bg-gray-50 rounded-xl border border-gray-200 p-3 md:p-4">
-                        <div className="text-xs md:text-sm text-gray-600 mb-1">Longest streak</div>
-                        <div className="text-xl md:text-2xl font-bold text-gray-900">
+                      <div className="bg-gray-50 rounded-lg md:rounded-xl border border-gray-200 p-2.5 md:p-4">
+                        <div className="text-[10px] md:text-sm text-gray-600 mb-0.5 md:mb-1 uppercase tracking-wide">Longest streak</div>
+                        <div className="text-lg md:text-2xl font-bold text-gray-900">
                           {stats?.longestStreak || 0}
                         </div>
-                        <div className="text-xs text-green-600 mt-1 flex items-center gap-1">
+                        <div className="text-[10px] md:text-xs text-green-600 mt-0.5 md:mt-1 flex items-center gap-1">
                           <span>↑</span>
                           <span>100%</span>
                         </div>
@@ -802,61 +802,61 @@ export default function ProfilePage() {
                     </div>
 
                     {/* Secondary Metrics Grid */}
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4">
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 md:gap-4">
                       {/* Weekly Hours */}
-                      <div className="bg-gray-50 rounded-xl border border-gray-200 p-3 md:p-4">
-                        <div className="text-xs md:text-sm text-gray-600 mb-1">This week</div>
-                        <div className="text-xl md:text-2xl font-bold text-gray-900">
+                      <div className="bg-gray-50 rounded-lg md:rounded-xl border border-gray-200 p-2.5 md:p-4">
+                        <div className="text-[10px] md:text-sm text-gray-600 mb-0.5 md:mb-1 uppercase tracking-wide">This week</div>
+                        <div className="text-lg md:text-2xl font-bold text-gray-900">
                           {stats?.weeklyHours?.toFixed(1) || '0'}h
                         </div>
-                        <div className="text-xs text-green-600 mt-1 flex items-center gap-1">
+                        <div className="text-[10px] md:text-xs text-green-600 mt-0.5 md:mt-1 flex items-center gap-1">
                           <span>↑</span>
                           <span>100%</span>
                         </div>
                       </div>
 
                       {/* Weekly Sessions */}
-                      <div className="bg-gray-50 rounded-xl border border-gray-200 p-3 md:p-4">
-                        <div className="text-xs md:text-sm text-gray-600 mb-1">Weekly sessions</div>
-                        <div className="text-xl md:text-2xl font-bold text-gray-900">
+                      <div className="bg-gray-50 rounded-lg md:rounded-xl border border-gray-200 p-2.5 md:p-4">
+                        <div className="text-[10px] md:text-sm text-gray-600 mb-0.5 md:mb-1 uppercase tracking-wide">Weekly sessions</div>
+                        <div className="text-lg md:text-2xl font-bold text-gray-900">
                           {stats?.sessionsThisWeek || 0}
                         </div>
-                        <div className="text-xs text-green-600 mt-1 flex items-center gap-1">
+                        <div className="text-[10px] md:text-xs text-green-600 mt-0.5 md:mt-1 flex items-center gap-1">
                           <span>↑</span>
                           <span>100%</span>
                         </div>
                       </div>
 
                       {/* Active Days */}
-                      <div className="bg-gray-50 rounded-xl border border-gray-200 p-3 md:p-4">
-                        <div className="text-xs md:text-sm text-gray-600 mb-1">Active days</div>
-                        <div className="text-xl md:text-2xl font-bold text-gray-900">
+                      <div className="bg-gray-50 rounded-lg md:rounded-xl border border-gray-200 p-2.5 md:p-4">
+                        <div className="text-[10px] md:text-sm text-gray-600 mb-0.5 md:mb-1 uppercase tracking-wide">Active days</div>
+                        <div className="text-lg md:text-2xl font-bold text-gray-900">
                           {chartData.slice(-7).filter(d => d.hours > 0).length}
                         </div>
-                        <div className="text-xs text-gray-600 mt-1">
+                        <div className="text-[10px] md:text-xs text-gray-600 mt-0.5 md:mt-1">
                           This week
                         </div>
                       </div>
 
                       {/* Total Projects */}
-                      <div className="bg-gray-50 rounded-xl border border-gray-200 p-3 md:p-4">
-                        <div className="text-xs md:text-sm text-gray-600 mb-1">Projects</div>
-                        <div className="text-xl md:text-2xl font-bold text-gray-900">
+                      <div className="bg-gray-50 rounded-lg md:rounded-xl border border-gray-200 p-2.5 md:p-4">
+                        <div className="text-[10px] md:text-sm text-gray-600 mb-0.5 md:mb-1 uppercase tracking-wide">Projects</div>
+                        <div className="text-lg md:text-2xl font-bold text-gray-900">
                           {/* Will be populated when we have project count */}
                           0
                         </div>
-                        <div className="text-xs text-gray-600 mt-1">
+                        <div className="text-[10px] md:text-xs text-gray-600 mt-0.5 md:mt-1">
                           All time
                         </div>
                       </div>
 
                       {/* Followers */}
-                      <div className="bg-gray-50 rounded-xl border border-gray-200 p-3 md:p-4">
-                        <div className="text-xs md:text-sm text-gray-600 mb-1">Followers</div>
-                        <div className="text-xl md:text-2xl font-bold text-gray-900">
+                      <div className="bg-gray-50 rounded-lg md:rounded-xl border border-gray-200 p-2.5 md:p-4">
+                        <div className="text-[10px] md:text-sm text-gray-600 mb-0.5 md:mb-1 uppercase tracking-wide">Followers</div>
+                        <div className="text-lg md:text-2xl font-bold text-gray-900">
                           {followers.length}
                         </div>
-                        <div className="text-xs text-green-600 mt-1 flex items-center gap-1">
+                        <div className="text-[10px] md:text-xs text-green-600 mt-0.5 md:mt-1 flex items-center gap-1">
                           <span>↑</span>
                           <span>100%</span>
                         </div>
