@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { ThumbsUp, MessageSquare, Share2, Image as ImageIcon, Link as LinkIcon } from 'lucide-react';
+import { ThumbsUp, MessageSquare, Share2, Image as ImageIcon, Link as LinkIcon, Copy } from 'lucide-react';
 
 interface SessionInteractionsProps {
   sessionId: string;
@@ -74,6 +74,17 @@ export const SessionInteractions: React.FC<SessionInteractionsProps> = ({
     if (onShareImage) {
       onShareImage();
       setShowShareMenu(false);
+    }
+  };
+
+  const handleCopyLink = async () => {
+    try {
+      const sessionUrl = `${window.location.origin}/sessions/${sessionId}`;
+      await navigator.clipboard.writeText(sessionUrl);
+      setShowShareMenu(false);
+      // Optional: Show a toast notification here
+    } catch (error) {
+      console.error('Failed to copy link:', error);
     }
   };
 
@@ -201,6 +212,15 @@ export const SessionInteractions: React.FC<SessionInteractionsProps> = ({
                     <LinkIcon className="w-5 h-5 text-[#007AFF]" />
                     Share link
                   </button>
+                  <div className="border-t border-gray-200 my-1"></div>
+                  <button
+                    onClick={handleCopyLink}
+                    className="w-full px-4 py-2.5 text-left text-sm font-medium text-gray-900 hover:bg-blue-50 flex items-center gap-3"
+                    role="menuitem"
+                  >
+                    <Copy className="w-5 h-5 text-[#007AFF]" />
+                    Copy to clipboard
+                  </button>
                 </div>
               )}
             </div>
@@ -299,6 +319,15 @@ export const SessionInteractions: React.FC<SessionInteractionsProps> = ({
                   >
                     <LinkIcon className="w-5 h-5 text-[#007AFF]" />
                     Share link
+                  </button>
+                  <div className="border-t border-gray-200 my-1"></div>
+                  <button
+                    onClick={handleCopyLink}
+                    className="w-full px-4 py-3 text-left text-base font-medium text-gray-900 hover:bg-blue-50 flex items-center gap-3"
+                    role="menuitem"
+                  >
+                    <Copy className="w-5 h-5 text-[#007AFF]" />
+                    Copy to clipboard
                   </button>
                 </div>
               )}

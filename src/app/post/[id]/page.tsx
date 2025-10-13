@@ -125,13 +125,37 @@ function ActivityDetailContent({ activityId }: { activityId: string }) {
 
   const formatTimeAgo = (date: Date): string => {
     const now = new Date();
-    const diffInSeconds = Math.floor((now.getTime() - new Date(date).getTime()) / 1000);
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
 
-    if (diffInSeconds < 60) return 'just now';
-    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
-    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
-    if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)}d ago`;
-    return formatDate(date);
+    const activityDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+
+    // Format time as "h:mm am/pm"
+    const timeStr = new Date(date).toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    });
+
+    // Check if today
+    if (activityDate.getTime() === today.getTime()) {
+      return `Today at ${timeStr}`;
+    }
+
+    // Check if yesterday
+    if (activityDate.getTime() === yesterday.getTime()) {
+      return `Yesterday at ${timeStr}`;
+    }
+
+    // Otherwise show full date: "Month Day, Year at h:mm am/pm"
+    const dateStr = new Date(date).toLocaleDateString('en-US', {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric'
+    });
+
+    return `${dateStr} at ${timeStr}`;
   };
 
   // Calculate engagement metrics (X-like analytics)

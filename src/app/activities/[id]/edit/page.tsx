@@ -109,24 +109,47 @@ const AVAILABLE_ICONS = [
 
 // Color options
 const AVAILABLE_COLORS = [
-  { name: 'orange', hex: '#f97316', label: 'Orange' },
-  { name: 'blue', hex: '#3b82f6', label: 'Blue' },
-  { name: 'green', hex: '#22c55e', label: 'Green' },
-  { name: 'purple', hex: '#a855f7', label: 'Purple' },
+  // Warm Colors
   { name: 'red', hex: '#ef4444', label: 'Red' },
-  { name: 'yellow', hex: '#eab308', label: 'Yellow' },
+  { name: 'rose', hex: '#f43f5e', label: 'Rose' },
   { name: 'pink', hex: '#ec4899', label: 'Pink' },
-  { name: 'indigo', hex: '#6366f1', label: 'Indigo' },
+  { name: 'fuchsia', hex: '#d946ef', label: 'Fuchsia' },
+  { name: 'orange', hex: '#f97316', label: 'Orange' },
+  { name: 'amber', hex: '#f59e0b', label: 'Amber' },
+  { name: 'yellow', hex: '#eab308', label: 'Yellow' },
+  { name: 'lime', hex: '#84cc16', label: 'Lime' },
+
+  // Cool Colors
+  { name: 'green', hex: '#22c55e', label: 'Green' },
+  { name: 'emerald', hex: '#10b981', label: 'Emerald' },
   { name: 'teal', hex: '#14b8a6', label: 'Teal' },
   { name: 'cyan', hex: '#06b6d4', label: 'Cyan' },
-  { name: 'lime', hex: '#84cc16', label: 'Lime' },
-  { name: 'amber', hex: '#f59e0b', label: 'Amber' },
-  { name: 'emerald', hex: '#10b981', label: 'Emerald' },
-  { name: 'violet', hex: '#8b5cf6', label: 'Violet' },
-  { name: 'fuchsia', hex: '#d946ef', label: 'Fuchsia' },
-  { name: 'rose', hex: '#f43f5e', label: 'Rose' },
   { name: 'sky', hex: '#0ea5e9', label: 'Sky' },
+  { name: 'blue', hex: '#3b82f6', label: 'Blue' },
+  { name: 'indigo', hex: '#6366f1', label: 'Indigo' },
+  { name: 'violet', hex: '#8b5cf6', label: 'Violet' },
+  { name: 'purple', hex: '#a855f7', label: 'Purple' },
+
+  // Neutrals
   { name: 'slate', hex: '#64748b', label: 'Slate' },
+  { name: 'gray', hex: '#6b7280', label: 'Gray' },
+  { name: 'zinc', hex: '#71717a', label: 'Zinc' },
+  { name: 'neutral', hex: '#737373', label: 'Neutral' },
+  { name: 'stone', hex: '#78716c', label: 'Stone' },
+
+  // Additional vibrant colors
+  { name: 'coral', hex: '#ff6b6b', label: 'Coral' },
+  { name: 'peach', hex: '#ffb088', label: 'Peach' },
+  { name: 'mint', hex: '#7bed9f', label: 'Mint' },
+  { name: 'lavender', hex: '#c29dff', label: 'Lavender' },
+  { name: 'turquoise', hex: '#06d6a0', label: 'Turquoise' },
+  { name: 'navy', hex: '#1e3a8a', label: 'Navy' },
+  { name: 'burgundy', hex: '#9f1239', label: 'Burgundy' },
+  { name: 'olive', hex: '#84a98c', label: 'Olive' },
+  { name: 'mustard', hex: '#d4a373', label: 'Mustard' },
+  { name: 'salmon', hex: '#fa8072', label: 'Salmon' },
+  { name: 'crimson', hex: '#dc143c', label: 'Crimson' },
+  { name: 'forest', hex: '#2d6a4f', label: 'Forest' },
 ];
 
 interface EditActivityPageProps {

@@ -51,7 +51,7 @@ function ProjectsContent() {
 
       {/* Content */}
       <div className="pb-32 md:pb-8">
-        <div className="max-w-[1400px] mx-auto px-4 sm:px-6 py-6 md:py-8">
+        <div className="max-w-5xl mx-auto px-4 md:px-6 py-4">
           <Suspense fallback={<LoadingState />}>
             <ActivityList onEditActivity={handleEditActivity} />
           </Suspense>

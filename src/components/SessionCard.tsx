@@ -9,7 +9,7 @@ import TopComments from './TopComments';
 import { ImageGallery } from './ImageGallery';
 import LikesModal from './LikesModal';
 import CommentsModal from './CommentsModal';
-import ShareSessionImage from './ShareSessionImage';
+import { useRouter } from 'next/navigation';
 import { MoreVertical, Heart, MessageCircle, Share2, Clock, ListTodo, Tag } from 'lucide-react';
 import Link from 'next/link';
 
@@ -34,13 +34,13 @@ export const SessionCard: React.FC<SessionCardProps> = ({
   className = '',
   showComments = false
 }) => {
+  const router = useRouter();
   const [showMenu, setShowMenu] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [localCommentCount, setLocalCommentCount] = useState(session.commentCount || 0);
   const [showCommentInput, setShowCommentInput] = useState(false);
   const [showLikesModal, setShowLikesModal] = useState(false);
   const [showCommentsModal, setShowCommentsModal] = useState(false);
-  const [showShareImageModal, setShowShareImageModal] = useState(false);
   const [expandComments, setExpandComments] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const commentSectionRef = useRef<HTMLDivElement>(null);
@@ -72,14 +72,37 @@ export const SessionCard: React.FC<SessionCardProps> = ({
 
   const formatTimeAgo = (date: Date): string => {
     const now = new Date();
-    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
 
-    if (diffInSeconds < 60) return 'Just now';
-    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
-    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
-    if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)}d ago`;
+    const sessionDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
 
-    return date.toLocaleDateString();
+    // Format time as "h:mm am/pm"
+    const timeStr = date.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    });
+
+    // Check if today
+    if (sessionDate.getTime() === today.getTime()) {
+      return `Today at ${timeStr}`;
+    }
+
+    // Check if yesterday
+    if (sessionDate.getTime() === yesterday.getTime()) {
+      return `Yesterday at ${timeStr}`;
+    }
+
+    // Otherwise show full date: "Month Day, Year at h:mm am/pm"
+    const dateStr = date.toLocaleDateString('en-US', {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric'
+    });
+
+    return `${dateStr} at ${timeStr}`;
   };
 
   const getUserInitials = (user: User): string => {
@@ -191,12 +214,6 @@ export const SessionCard: React.FC<SessionCardProps> = ({
                   Delete session
                 </button>
               )}
-              <button
-                className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-gray-50"
-                role="menuitem"
-              >
-                Report session
-              </button>
             </div>
           )}
         </div>
@@ -260,7 +277,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({
         onSupport={onSupport}
         onRemoveSupport={onRemoveSupport}
         onShare={onShare}
-        onShareImage={() => setShowShareImageModal(true)}
+        onShareImage={() => router.push(`/sessions/${session.id}/share`)}
         onCommentClick={() => setShowCommentsModal(true)}
         onLikesClick={() => setShowLikesModal(true)}
         onViewAllCommentsClick={() => setShowCommentsModal(true)}
@@ -292,13 +309,6 @@ export const SessionCard: React.FC<SessionCardProps> = ({
         sessionId={session.id}
         totalCommentCount={localCommentCount}
         onCommentCountChange={setLocalCommentCount}
-      />
-
-      {/* Share as Image Modal */}
-      <ShareSessionImage
-        session={session}
-        isOpen={showShareImageModal}
-        onClose={() => setShowShareImageModal(false)}
       />
 
     </article>

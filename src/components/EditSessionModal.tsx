@@ -18,27 +18,21 @@ interface EditSessionModalProps {
     visibility?: 'everyone' | 'followers' | 'private';
     images?: string[];
   }) => Promise<void>;
+  isPage?: boolean;
 }
 
-const TAG_CONFIGS = [
-  { name: 'Study', color: '#3B82F6', bgColor: '#DBEAFE' },
-  { name: 'Work', color: '#8B5CF6', bgColor: '#EDE9FE' },
-  { name: 'Side Project', color: '#F59E0B', bgColor: '#FEF3C7' },
-  { name: 'Reading', color: '#10B981', bgColor: '#D1FAE5' },
-  { name: 'Learning', color: '#EC4899', bgColor: '#FCE7F3' },
-];
 
 export const EditSessionModal: React.FC<EditSessionModalProps> = ({
   session,
   onClose,
-  onSave
+  onSave,
+  isPage = false
 }) => {
   const { projects } = useProjects();
 
   const [title, setTitle] = useState(session.title || '');
   const [description, setDescription] = useState(session.description || '');
   const [selectedProjectId, setSelectedProjectId] = useState(session.projectId || '');
-  const [sessionTags, setSessionTags] = useState<string[]>(session.tags || []);
   const [visibility, setVisibility] = useState<'everyone' | 'followers' | 'private'>(
     session.visibility || 'everyone'
   );
@@ -60,7 +54,6 @@ export const EditSessionModal: React.FC<EditSessionModalProps> = ({
     setTitle(session.title || '');
     setDescription(session.description || '');
     setSelectedProjectId(session.projectId || '');
-    setSessionTags(session.tags || []);
     setVisibility(session.visibility || 'everyone');
     setExistingImages(session.images || []);
     setSelectedImages([]);
@@ -176,7 +169,6 @@ export const EditSessionModal: React.FC<EditSessionModalProps> = ({
         title,
         description: description || undefined,
         projectId: selectedProjectId || undefined,
-        tags: sessionTags.length > 0 ? sessionTags : undefined,
         visibility,
         images: allImages.length > 0 ? allImages : undefined,
       });
@@ -199,10 +191,10 @@ export const EditSessionModal: React.FC<EditSessionModalProps> = ({
 
   const totalImages = existingImages.length + selectedImages.length;
 
-  return (
-    <div className="fixed inset-0 bg-black/50 z-[9999] flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        {/* Header */}
+  const formContent = (
+    <>
+      {/* Header */}
+      {!isPage && (
         <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
           <h2 className="text-xl font-bold text-gray-900">Edit Session</h2>
           <button
@@ -212,9 +204,15 @@ export const EditSessionModal: React.FC<EditSessionModalProps> = ({
             <X className="w-6 h-6" />
           </button>
         </div>
+      )}
+      {isPage && (
+        <div className="px-4 md:px-0 py-4">
+          <h2 className="text-2xl font-bold text-gray-900">Edit Session</h2>
+        </div>
+      )}
 
         {/* Content */}
-        <div className="p-6 space-y-6">
+        <div className={`${isPage ? '' : ''} px-4 md:px-0 space-y-6`}>
           {/* Title */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -270,9 +268,9 @@ export const EditSessionModal: React.FC<EditSessionModalProps> = ({
                       <button
                         type="button"
                         onClick={() => handleRemoveExistingImage(index)}
-                        className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                        className="absolute top-2 right-2 w-6 h-6 flex items-center justify-center bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors shadow-md"
                       >
-                        <XCircle className="w-4 h-4" />
+                        <X className="w-4 h-4 flex-shrink-0" />
                       </button>
                     </div>
                   ))}
@@ -291,9 +289,9 @@ export const EditSessionModal: React.FC<EditSessionModalProps> = ({
                       <button
                         type="button"
                         onClick={() => handleRemoveNewImage(index)}
-                        className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                        className="absolute top-2 right-2 w-6 h-6 flex items-center justify-center bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors shadow-md"
                       >
-                        <XCircle className="w-4 h-4" />
+                        <X className="w-4 h-4 flex-shrink-0" />
                       </button>
                     </div>
                   ))}
@@ -322,45 +320,23 @@ export const EditSessionModal: React.FC<EditSessionModalProps> = ({
             </div>
           </div>
 
-          {/* Project and Tags */}
-          <div className="grid grid-cols-2 gap-3">
-            {/* Project Selection */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Project
-              </label>
-              <select
-                value={selectedProjectId}
-                onChange={(e) => setSelectedProjectId(e.target.value)}
-                className="w-full pl-3 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] bg-white text-sm appearance-none"
-              >
-                <option value="">Unassigned</option>
-                {projects.map((project) => (
-                  <option key={project.id} value={project.id}>
-                    {project.icon} {project.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Tags Selection */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Tag
-              </label>
-              <select
-                value={sessionTags[0] || ''}
-                onChange={(e) => setSessionTags(e.target.value ? [e.target.value] : [])}
-                className="w-full pl-3 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] bg-white text-sm appearance-none"
-              >
-                <option value="">Select Tag</option>
-                {TAG_CONFIGS.map((tagConfig) => (
-                  <option key={tagConfig.name} value={tagConfig.name}>
-                    {tagConfig.name}
-                  </option>
-                ))}
-              </select>
-            </div>
+          {/* Project Selection */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Project
+            </label>
+            <select
+              value={selectedProjectId}
+              onChange={(e) => setSelectedProjectId(e.target.value)}
+              className="w-full pl-3 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] bg-white text-sm appearance-none"
+            >
+              <option value="">Unassigned</option>
+              {projects.map((project) => (
+                <option key={project.id} value={project.id}>
+                  {project.name}
+                </option>
+              ))}
+            </select>
           </div>
 
           {/* Visibility */}
@@ -380,23 +356,38 @@ export const EditSessionModal: React.FC<EditSessionModalProps> = ({
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="sticky bottom-0 bg-white border-t border-gray-200 px-6 py-4 flex gap-3">
-          <button
-            onClick={onClose}
-            disabled={isSaving || isUploading}
-            className="flex-1 px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors disabled:opacity-50"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleSave}
-            disabled={!title.trim() || isSaving || isUploading}
-            className="flex-1 px-4 py-2 bg-[#007AFF] text-white rounded-lg hover:bg-[#0056D6] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isUploading ? 'Uploading Images...' : isSaving ? 'Saving...' : 'Save Changes'}
-          </button>
-        </div>
+      {/* Footer */}
+      <div className={`${isPage ? 'px-4 md:px-0 py-6' : 'sticky bottom-0 bg-white border-t border-gray-200 px-6 py-4'} flex gap-3`}>
+        <button
+          onClick={onClose}
+          disabled={isSaving || isUploading}
+          className="flex-1 px-4 py-2 text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors disabled:opacity-50"
+        >
+          Cancel
+        </button>
+        <button
+          onClick={handleSave}
+          disabled={!title.trim() || isSaving || isUploading}
+          className="flex-1 px-4 py-2 bg-[#007AFF] text-white rounded-lg hover:bg-[#0056D6] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isUploading ? 'Uploading Images...' : isSaving ? 'Saving...' : 'Save Changes'}
+        </button>
+      </div>
+    </>
+  );
+
+  if (isPage) {
+    return (
+      <>
+        {formContent}
+      </>
+    );
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black/50 z-[9999] flex items-center justify-center p-4">
+      <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        {formContent}
       </div>
     </div>
   );

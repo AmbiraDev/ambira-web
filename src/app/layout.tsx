@@ -18,7 +18,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Ambira - Social Productivity Tracker",
+  title: "Ambira",
   description: "Track your productivity, build streaks, and stay motivated with friends. The social way to achieve your goals.",
   keywords: ["productivity", "tracking", "social", "goals", "habits", "studying", "work"],
   manifest: "/site.webmanifest",

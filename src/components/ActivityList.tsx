@@ -138,7 +138,7 @@ export const ActivityList: React.FC<ActivityListProps> = ({
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-2">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-1">Activities</h1>
+            <h1 className="text-xl md:text-2xl font-bold text-gray-900 mb-1">Activities</h1>
             <p className="text-gray-600 text-sm">
               {filteredActivities.length} activit{filteredActivities.length !== 1 ? 'ies' : 'y'}
             </p>

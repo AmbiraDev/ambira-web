@@ -10,12 +10,14 @@ interface ShareSessionImageProps {
   session: SessionWithDetails;
   isOpen: boolean;
   onClose: () => void;
+  isPage?: boolean;
 }
 
 export const ShareSessionImage: React.FC<ShareSessionImageProps> = ({
   session,
   isOpen,
-  onClose
+  onClose,
+  isPage = false
 }) => {
   const imageRef = useRef<HTMLDivElement>(null);
   const [isExporting, setIsExporting] = useState(false);
@@ -116,10 +118,10 @@ export const ShareSessionImage: React.FC<ShareSessionImageProps> = ({
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        {/* Header */}
+  const content = (
+    <>
+      {/* Header - Only show for modal */}
+      {!isPage && (
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
           <h2 className="text-xl font-bold text-gray-900">Share Session</h2>
           <button
@@ -130,18 +132,26 @@ export const ShareSessionImage: React.FC<ShareSessionImageProps> = ({
             <X className="w-5 h-5" />
           </button>
         </div>
+      )}
+      {isPage && (
+        <div className="px-4 md:px-0 py-4">
+          <h2 className="text-2xl font-bold text-gray-900">Share Session</h2>
+        </div>
+      )}
 
         {/* Preview */}
-        <div className="p-6 bg-gray-50">
-          <div className="mb-4 text-sm text-gray-600 text-center">
-            Preview of your session share image
-          </div>
+        <div className={`${isPage ? 'px-4 md:px-0 py-4' : 'p-6 bg-gray-50'}`}>
+          {!isPage && (
+            <div className="mb-4 text-sm text-gray-600 text-center">
+              Preview of your session share image
+            </div>
+          )}
 
           {/* Image to Export */}
           <div
             ref={imageRef}
-            className="bg-white rounded-lg shadow-lg overflow-hidden"
-            style={{ width: '600px', margin: '0 auto' }}
+            className="bg-white rounded-lg shadow-lg overflow-hidden mx-auto"
+            style={{ maxWidth: '600px' }}
           >
             {/* Ambira Header with Brand Color */}
             <div className="bg-gradient-to-r from-[#007AFF] to-[#00C6FF] px-8 py-6">
@@ -191,26 +201,43 @@ export const ShareSessionImage: React.FC<ShareSessionImageProps> = ({
 
             {/* Session Content */}
             <div className="px-8 py-6">
-              <h3 className="text-3xl font-bold text-gray-900 mb-3 leading-tight">
+              <h3 className="text-2xl font-bold text-gray-900 mb-3 leading-tight">
                 {session.title || 'Focus Session'}
               </h3>
               {session.description && (
-                <p className="text-gray-600 text-lg mb-6 line-clamp-3">
+                <p className="text-gray-600 text-base mb-4 line-clamp-3">
                   {session.description}
                 </p>
               )}
 
+              {/* Images - Show if session has images */}
+              {session.images && session.images.length > 0 && (
+                <div className={`mb-4 ${session.images.length === 1 ? '' : session.images.length === 2 ? 'grid grid-cols-2 gap-2' : 'grid grid-cols-3 gap-2'}`}>
+                  {session.images.slice(0, 3).map((imageUrl, index) => (
+                    <div key={index} className="relative aspect-square rounded-lg overflow-hidden bg-gray-100">
+                      <Image
+                        src={imageUrl}
+                        alt={`Session image ${index + 1}`}
+                        width={200}
+                        height={200}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+
               {/* Stats Grid - Strava Style */}
-              <div className="grid grid-cols-2 gap-6 bg-gray-50 rounded-lg p-6 mb-6">
+              <div className="grid grid-cols-2 gap-4 bg-gray-50 rounded-lg p-4 mb-4">
                 <div>
-                  <div className="text-sm text-gray-500 mb-2">Duration</div>
-                  <div className="text-3xl font-bold text-[#007AFF]">
+                  <div className="text-xs text-gray-500 mb-1">Duration</div>
+                  <div className="text-2xl font-bold text-[#007AFF]">
                     {formatTime(session.duration)}
                   </div>
                 </div>
                 <div>
-                  <div className="text-sm text-gray-500 mb-2">Activity</div>
-                  <div className="text-3xl font-bold text-gray-900 truncate">
+                  <div className="text-xs text-gray-500 mb-1">Activity</div>
+                  <div className="text-lg font-bold text-gray-900 truncate">
                     {session.project?.name || session.activity?.name || 'Work'}
                   </div>
                 </div>
@@ -258,13 +285,13 @@ export const ShareSessionImage: React.FC<ShareSessionImageProps> = ({
 
         {/* Error Message */}
         {exportError && (
-          <div className="mx-6 mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+          <div className={`${isPage ? 'px-4 md:px-0' : 'mx-6'} mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm`}>
             {exportError}
           </div>
         )}
 
         {/* Actions */}
-        <div className="flex items-center justify-end gap-3 p-4 border-t border-gray-200">
+        <div className={`flex items-center justify-end gap-3 ${isPage ? 'px-4 md:px-0 py-6' : 'p-4 border-t border-gray-200'}`}>
           <button
             onClick={onClose}
             className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
@@ -289,6 +316,17 @@ export const ShareSessionImage: React.FC<ShareSessionImageProps> = ({
             {isExporting ? 'Processing...' : 'Download'}
           </button>
         </div>
+      </>
+  );
+
+  if (isPage) {
+    return content;
+  }
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 p-4">
+      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        {content}
       </div>
     </div>
   );

@@ -59,11 +59,9 @@ export default function GroupsPage() {
       const userGroupsData = await firebaseApi.group.getUserGroups(user.id);
       setUserGroups(userGroupsData);
 
-      // Load suggested groups (exclude groups user is already in)
+      // Load suggested groups (include all groups, we'll show "Joined" for user's groups)
       const suggestedGroups = await firebaseApi.group.searchGroups({}, TOTAL_GROUPS_TO_FETCH);
-      const userGroupIds = new Set(userGroupsData.map(g => g.id));
-      const filteredSuggested = suggestedGroups.filter(g => !userGroupIds.has(g.id));
-      setAllSuggestedGroups(filteredSuggested);
+      setAllSuggestedGroups(suggestedGroups);
     } catch (error) {
       console.error('Error loading data:', error);
     } finally {
@@ -138,8 +136,7 @@ export default function GroupsPage() {
     setJoiningGroups(prev => new Set(prev).add(groupId));
     try {
       await firebaseApi.group.joinGroup(groupId, user.id);
-      // Remove from suggestions after joining and add to user groups
-      setAllSuggestedGroups(prev => prev.filter(g => g.id !== groupId));
+      // Reload data to update user groups
       await loadData();
     } catch (error) {
       console.error('Failed to join group:', error);
@@ -186,11 +183,11 @@ export default function GroupsPage() {
       </div>
       <MobileHeader title="Groups" />
 
-      <div className="max-w-6xl mx-auto px-4 md:px-6 lg:px-8 py-6">
+      <div className="max-w-5xl mx-auto px-4 md:px-6 py-4">
         {/* Page Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Groups</h1>
+            <h1 className="text-xl md:text-2xl font-bold text-gray-900">Groups</h1>
           </div>
           <Link
             href="/groups/new"
@@ -336,12 +333,14 @@ export default function GroupsPage() {
             <h2 className="text-xl font-semibold text-gray-900 mb-2">No groups found</h2>
             <p className="text-gray-600">Try adjusting your search filters</p>
           </div>
-        ) : !hasSearched && allSuggestedGroups.length > 0 ? (
+        ) : !hasSearched ? (
+          allSuggestedGroups.length > 0 ? (
           <div>
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Suggested Groups</h2>
             <div className="space-y-4">
               {paginatedGroups.map((group) => {
                 const isJoining = joiningGroups.has(group.id);
+                const isJoined = userGroups.some(g => g.id === group.id);
                 return (
                   <div
                     key={group.id}
@@ -381,18 +380,24 @@ export default function GroupsPage() {
                         </div>
                       </div>
 
-                      {/* Join Button */}
-                      <button
-                        onClick={(e) => handleJoinGroup(group.id, e)}
-                        disabled={isJoining}
-                        className={`text-sm font-semibold transition-colors flex-shrink-0 ${
-                          isJoining
-                            ? 'text-gray-400 cursor-not-allowed'
-                            : 'text-[#007AFF] hover:text-[#0051D5]'
-                        }`}
-                      >
-                        {isJoining ? 'Joining...' : 'Join'}
-                      </button>
+                      {/* Join Button or Joined Indicator */}
+                      {isJoined ? (
+                        <span className="text-sm font-semibold text-gray-500 flex-shrink-0">
+                          Joined
+                        </span>
+                      ) : (
+                        <button
+                          onClick={(e) => handleJoinGroup(group.id, e)}
+                          disabled={isJoining}
+                          className={`text-sm font-semibold transition-colors flex-shrink-0 ${
+                            isJoining
+                              ? 'text-gray-400 cursor-not-allowed'
+                              : 'text-[#007AFF] hover:text-[#0051D5]'
+                          }`}
+                        >
+                          {isJoining ? 'Joining...' : 'Join'}
+                        </button>
+                      )}
                     </div>
                   </div>
                 );
@@ -426,6 +431,13 @@ export default function GroupsPage() {
               </div>
             )}
           </div>
+          ) : (
+            <div className="text-center py-12">
+              <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+              <h2 className="text-xl font-semibold text-gray-900 mb-2">No groups available</h2>
+              <p className="text-gray-600">Be the first to create a group!</p>
+            </div>
+          )
         ) : null}
       </div>
 

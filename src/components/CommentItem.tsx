@@ -23,14 +23,37 @@ export const CommentItem: React.FC<CommentItemProps> = ({
 
   const formatTimeAgo = (date: Date): string => {
     const now = new Date();
-    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-    
-    if (diffInSeconds < 60) return 'just now';
-    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`;
-    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`;
-    if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)}d ago`;
-    
-    return date.toLocaleDateString();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    const commentDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+
+    // Format time as "h:mm am/pm"
+    const timeStr = date.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    });
+
+    // Check if today
+    if (commentDate.getTime() === today.getTime()) {
+      return `Today at ${timeStr}`;
+    }
+
+    // Check if yesterday
+    if (commentDate.getTime() === yesterday.getTime()) {
+      return `Yesterday at ${timeStr}`;
+    }
+
+    // Otherwise show full date: "Month Day, Year at h:mm am/pm"
+    const dateStr = date.toLocaleDateString('en-US', {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric'
+    });
+
+    return `${dateStr} at ${timeStr}`;
   };
 
   const getUserInitials = (name: string): string => {
