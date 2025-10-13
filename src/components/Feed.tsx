@@ -8,6 +8,7 @@ import SessionCard from './SessionCard';
 import { useFeedSessions } from '@/hooks/useCache';
 import { useAuth } from '@/contexts/AuthContext';
 import ConfirmDialog from './ConfirmDialog';
+import { useSupportMutation, useDeleteSessionMutation } from '@/hooks/useMutations';
 
 interface FeedProps {
   filters?: FeedFilters;
@@ -39,6 +40,10 @@ export const Feed: React.FC<FeedProps> = ({
 
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
+
+  // Optimistic mutations
+  const supportMutation = useSupportMutation(user?.id);
+  const deleteSessionMutation = useDeleteSessionMutation();
 
   // Update sessions when data changes
   useEffect(() => {
@@ -165,49 +170,15 @@ export const Feed: React.FC<FeedProps> = ({
     return () => clearInterval(interval);
   }, [allSessions, filters]);
 
-  // Handle support
+  // Handle support with optimistic updates via React Query
   const handleSupport = useCallback(async (sessionId: string) => {
-    try {
-      await firebaseApi.post.supportSession(sessionId);
+    supportMutation.mutate({ sessionId, action: 'support' });
+  }, [supportMutation]);
 
-      // Optimistic update
-      setAllSessions(prev => prev.map(session =>
-        session.id === sessionId
-          ? {
-              ...session,
-              isSupported: true,
-              supportCount: session.supportCount + 1,
-              supportedBy: [...(session.supportedBy || []), user?.id || ''].filter(Boolean)
-            }
-          : session
-      ));
-    } catch (err: any) {
-      console.error('Failed to support session:', err);
-      // Could show error toast here
-    }
-  }, [user]);
-
-  // Handle remove support
+  // Handle remove support with optimistic updates via React Query
   const handleRemoveSupport = useCallback(async (sessionId: string) => {
-    try {
-      await firebaseApi.post.removeSupportFromSession(sessionId);
-
-      // Optimistic update
-      setAllSessions(prev => prev.map(session =>
-        session.id === sessionId
-          ? {
-              ...session,
-              isSupported: false,
-              supportCount: Math.max(0, session.supportCount - 1),
-              supportedBy: (session.supportedBy || []).filter(id => id !== user?.id)
-            }
-          : session
-      ));
-    } catch (err: any) {
-      console.error('Failed to remove support:', err);
-      // Could show error toast here
-    }
-  }, [user]);
+    supportMutation.mutate({ sessionId, action: 'unsupport' });
+  }, [supportMutation]);
 
   // Handle share
   const handleShare = useCallback(async (sessionId: string) => {
@@ -247,23 +218,24 @@ export const Feed: React.FC<FeedProps> = ({
 
     try {
       setIsDeleting(true);
-      await firebaseApi.session.deleteSession(deleteConfirmSession);
-
-      // Remove from local state
-      setAllSessions(prev => prev.filter(session => session.id !== deleteConfirmSession));
+      await deleteSessionMutation.mutateAsync(deleteConfirmSession);
       setDeleteConfirmSession(null);
     } catch (err: any) {
       console.error('Failed to delete session:', err);
     } finally {
       setIsDeleting(false);
     }
-  }, [deleteConfirmSession]);
+  }, [deleteConfirmSession, deleteSessionMutation]);
 
-  // Real-time updates for support counts
+  // Real-time updates for support counts (throttled to reduce reads)
+  // Only listen to the first 10 sessions to reduce overhead
   useEffect(() => {
     if (allSessions.length === 0) return;
 
-    const sessionIds = allSessions.map(session => session.id);
+    // Only listen to first 10 sessions to reduce Firestore reads
+    const MAX_LISTENERS = 10;
+    const sessionIds = allSessions.slice(0, MAX_LISTENERS).map(session => session.id);
+
     const unsubscribe = firebaseApi.post.listenToSessionUpdates(sessionIds, (updates) => {
       setAllSessions(prev => prev.map(session => {
         const update = updates[session.id];
@@ -279,7 +251,7 @@ export const Feed: React.FC<FeedProps> = ({
     });
 
     return unsubscribe;
-  }, [allSessions.map(s => s.id).join(',')]); // Re-run when session IDs change
+  }, [allSessions.slice(0, 10).map(s => s.id).join(',')]); // Only re-run when top 10 IDs change
 
   // Infinite scroll effect
   useEffect(() => {

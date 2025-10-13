@@ -158,8 +158,14 @@ export const ShareSessionImage: React.FC<ShareSessionImageProps> = ({
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   {/* Logo/Icon */}
-                  <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center">
-                    <span className="text-2xl font-bold text-[#007AFF]">A</span>
+                  <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center p-2">
+                    <Image
+                      src="/logo.svg"
+                      alt="Ambira"
+                      width={48}
+                      height={48}
+                      className="w-full h-full"
+                    />
                   </div>
                   <div>
                     <h1 className="text-2xl font-bold text-white">Ambira</h1>

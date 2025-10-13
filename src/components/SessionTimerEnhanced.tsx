@@ -647,7 +647,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
             {timerState.isRunning && (
               <button
                 onClick={handlePauseTimer}
-                className="px-10 py-4 rounded-lg bg-[#FC4C02] hover:bg-[#E04502] text-white flex items-center gap-3 transition-all text-lg font-semibold"
+                className="px-10 py-4 rounded-lg bg-gray-900 hover:bg-gray-800 text-white flex items-center gap-3 transition-all text-lg font-semibold"
               >
                 <Pause className="w-6 h-6" />
                 <span>Pause</span>
