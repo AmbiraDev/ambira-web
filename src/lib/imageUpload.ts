@@ -1,6 +1,12 @@
 import { storage } from './firebase';
-import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
+import {
+  ref,
+  uploadBytes,
+  getDownloadURL,
+  deleteObject,
+} from 'firebase/storage';
 import { auth } from './firebase';
+import { checkRateLimit } from './rateLimit';
 
 export interface ImageUploadResult {
   url: string;
@@ -21,9 +27,11 @@ async function isActuallyHeic(file: File): Promise<boolean> {
     // Bytes 4-11 should contain "ftypheic", "ftypheix", "ftyphevc", etc.
     const signature = String.fromCharCode(...bytes.slice(4, 12));
 
-    return signature.startsWith('ftyphei') ||
-           signature.startsWith('ftyphev') ||
-           signature.startsWith('ftypmif1'); // mif1 is also used for HEIF
+    return (
+      signature.startsWith('ftyphei') ||
+      signature.startsWith('ftyphev') ||
+      signature.startsWith('ftypmif1')
+    ); // mif1 is also used for HEIF
   } catch (error) {
     console.error('Error checking file signature:', error);
     return false;
@@ -35,8 +43,9 @@ async function isActuallyHeic(file: File): Promise<boolean> {
  */
 async function convertHeicToJpeg(file: File): Promise<File> {
   // Check if it's a HEIC/HEIF file by extension or type
-  const hasHeicExtension = file.name.toLowerCase().endsWith('.heic') ||
-                           file.name.toLowerCase().endsWith('.heif');
+  const hasHeicExtension =
+    file.name.toLowerCase().endsWith('.heic') ||
+    file.name.toLowerCase().endsWith('.heif');
   const hasHeicType = file.type === 'image/heic' || file.type === 'image/heif';
 
   // Also check the actual file content (magic bytes)
@@ -52,7 +61,7 @@ async function convertHeicToJpeg(file: File): Promise<File> {
     extension: hasHeicExtension,
     mimeType: hasHeicType,
     magicBytes: isActualHeic,
-    fileName: file.name
+    fileName: file.name,
   });
 
   try {
@@ -62,11 +71,13 @@ async function convertHeicToJpeg(file: File): Promise<File> {
     const convertedBlob = await heic2any({
       blob: file,
       toType: 'image/jpeg',
-      quality: 0.9
+      quality: 0.9,
     });
 
     // heic2any can return Blob or Blob[]
-    const blob = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob;
+    const blob = Array.isArray(convertedBlob)
+      ? convertedBlob[0]
+      : convertedBlob;
 
     // Create a new File from the converted blob
     const convertedFile = new File(
@@ -79,7 +90,9 @@ async function convertHeicToJpeg(file: File): Promise<File> {
     return convertedFile;
   } catch (error) {
     console.error('❌ Failed to convert HEIC:', error);
-    throw new Error('Failed to convert HEIC image. Please use JPG or PNG format.');
+    throw new Error(
+      'Failed to convert HEIC image. Please use JPG or PNG format.'
+    );
   }
 }
 
@@ -89,10 +102,16 @@ async function convertHeicToJpeg(file: File): Promise<File> {
  * @param folder - The storage folder (e.g., 'session-images')
  * @returns The download URL and storage path
  */
-export async function uploadImage(file: File, folder: string = 'session-images'): Promise<ImageUploadResult> {
+export async function uploadImage(
+  file: File,
+  folder: string = 'session-images'
+): Promise<ImageUploadResult> {
   if (!auth.currentUser) {
     throw new Error('User must be authenticated to upload images');
   }
+
+  // Rate limit file uploads
+  checkRateLimit(auth.currentUser.uid, 'FILE_UPLOAD');
 
   // Convert HEIC to JPEG if needed
   let processedFile = file;
@@ -107,7 +126,9 @@ export async function uploadImage(file: File, folder: string = 'session-images')
     throw new Error('File must be an image (JPG, PNG, GIF, WebP)');
   }
 
-  console.log(`📦 Processing file: ${processedFile.name} (${(processedFile.size / 1024 / 1024).toFixed(2)}MB)`);
+  console.log(
+    `📦 Processing file: ${processedFile.name} (${(processedFile.size / 1024 / 1024).toFixed(2)}MB)`
+  );
 
   // Compress if file is larger than 5MB
   const maxSize = 5 * 1024 * 1024; // 5MB
@@ -129,14 +150,19 @@ export async function uploadImage(file: File, folder: string = 'session-images')
   const filename = `${timestamp}_${randomString}.${extension}`;
 
   // Create storage reference
-  const storageRef = ref(storage, `${folder}/${auth.currentUser.uid}/${filename}`);
+  const storageRef = ref(
+    storage,
+    `${folder}/${auth.currentUser.uid}/${filename}`
+  );
 
   try {
     console.log(`📤 Uploading to: ${storageRef.fullPath}`);
 
     // Upload the processed file (not the original)
     const snapshot = await uploadBytes(storageRef, processedFile);
-    console.log(`✅ Upload complete. Bytes transferred: ${snapshot.metadata.size}`);
+    console.log(
+      `✅ Upload complete. Bytes transferred: ${snapshot.metadata.size}`
+    );
 
     // Get download URL
     const url = await getDownloadURL(storageRef);
@@ -144,7 +170,7 @@ export async function uploadImage(file: File, folder: string = 'session-images')
 
     return {
       url,
-      path: storageRef.fullPath
+      path: storageRef.fullPath,
     };
   } catch (error: any) {
     console.error('❌ Error uploading image:', error);
@@ -161,7 +187,10 @@ export async function uploadImage(file: File, folder: string = 'session-images')
  * @param folder - The storage folder
  * @returns Array of download URLs and storage paths
  */
-export async function uploadImages(files: File[], folder: string = 'session-images'): Promise<ImageUploadResult[]> {
+export async function uploadImages(
+  files: File[],
+  folder: string = 'session-images'
+): Promise<ImageUploadResult[]> {
   if (files.length > 3) {
     throw new Error('Maximum 3 images allowed');
   }
@@ -214,7 +243,7 @@ export async function compressImage(
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
 
-    reader.onload = (e) => {
+    reader.onload = e => {
       const img = new Image();
 
       img.onload = () => {
@@ -252,7 +281,7 @@ export async function compressImage(
 
           // Convert to blob
           canvas.toBlob(
-            (blob) => {
+            blob => {
               if (!blob) {
                 reject(new Error('Failed to compress image'));
                 return;
@@ -265,7 +294,9 @@ export async function compressImage(
                 { type: 'image/jpeg' }
               );
 
-              console.log(`✅ Compressed: ${(file.size / 1024 / 1024).toFixed(2)}MB → ${(compressedFile.size / 1024 / 1024).toFixed(2)}MB`);
+              console.log(
+                `✅ Compressed: ${(file.size / 1024 / 1024).toFixed(2)}MB → ${(compressedFile.size / 1024 / 1024).toFixed(2)}MB`
+              );
               resolve(compressedFile);
             },
             'image/jpeg',
@@ -297,7 +328,10 @@ export async function compressImage(
  * @param maxSizeMB - Maximum size in megabytes
  * @returns Compressed image file
  */
-async function compressToSize(file: File, maxSizeMB: number = 5): Promise<File> {
+async function compressToSize(
+  file: File,
+  maxSizeMB: number = 5
+): Promise<File> {
   const maxSizeBytes = maxSizeMB * 1024 * 1024;
 
   // If file is already under the limit, return it
@@ -305,7 +339,9 @@ async function compressToSize(file: File, maxSizeMB: number = 5): Promise<File> 
     return file;
   }
 
-  console.log(`📉 File is ${(file.size / 1024 / 1024).toFixed(2)}MB, compressing to under ${maxSizeMB}MB...`);
+  console.log(
+    `📉 File is ${(file.size / 1024 / 1024).toFixed(2)}MB, compressing to under ${maxSizeMB}MB...`
+  );
 
   // Start with aggressive compression settings
   let quality = 0.8;
@@ -329,12 +365,16 @@ async function compressToSize(file: File, maxSizeMB: number = 5): Promise<File> 
     );
 
     if (compressedFile.size <= maxSizeBytes) {
-      console.log(`✅ Compression successful at quality ${attempt.quality}, ${attempt.maxDimension}px`);
+      console.log(
+        `✅ Compression successful at quality ${attempt.quality}, ${attempt.maxDimension}px`
+      );
       return compressedFile;
     }
   }
 
   // If still too large after all attempts, return the smallest version
-  console.warn(`⚠️ Could not compress to under ${maxSizeMB}MB, using smallest version (${(compressedFile.size / 1024 / 1024).toFixed(2)}MB)`);
+  console.warn(
+    `⚠️ Could not compress to under ${maxSizeMB}MB, using smallest version (${(compressedFile.size / 1024 / 1024).toFixed(2)}MB)`
+  );
   return compressedFile;
 }

@@ -1,10 +1,24 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
-import { TimerContextType, TimerState, ActiveTimer, Project, Task, Session, CreateSessionData } from '@/types';
-import { timerApi, taskApi, projectApi, authApi } from '@/lib/api';
-import { mockTimerApi, mockTaskApi, mockProjectApi } from '@/lib/mockApi';
-import { firebaseProjectApi, firebaseTaskApi, firebaseSessionApi } from '@/lib/firebaseApi';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+  useCallback,
+} from 'react';
+import {
+  TimerContextType,
+  TimerState,
+  ActiveTimer,
+  Project,
+  Session,
+  CreateSessionData,
+} from '@/types';
+import { timerApi, projectApi, authApi } from '@/lib/api';
+import { mockTimerApi, mockProjectApi } from '@/lib/mockApi';
+import { firebaseProjectApi, firebaseSessionApi } from '@/lib/firebaseApi';
 import { auth } from '@/lib/firebase';
 import { useAuth } from './AuthContext';
 
@@ -27,19 +41,19 @@ interface TimerProviderProps {
 
 export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
   const { user } = useAuth();
-  
+
   // Helper function to get auth token
   const getAuthToken = async (): Promise<string> => {
     if (!user) {
       throw new Error('No authenticated user found');
     }
-    
+
     // Get Firebase auth token
     const firebaseUser = auth.currentUser;
     if (!firebaseUser) {
       throw new Error('No Firebase user found');
     }
-    
+
     try {
       const token = await firebaseUser.getIdToken();
       return token;
@@ -53,7 +67,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
     startTime: null,
     pausedDuration: 0,
     currentProject: null,
-    selectedTasks: [],
     activeTimerId: null,
     isConnected: true,
     lastAutoSave: null,
@@ -83,7 +96,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
 
   // Also react to raw Firebase auth state changes (covers cross-origin reloads)
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((firebaseUser) => {
+    const unsubscribe = auth.onAuthStateChanged(firebaseUser => {
       if (firebaseUser) {
         loadActiveTimer();
       } else {
@@ -93,7 +106,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
           startTime: null,
           pausedDuration: 0,
           currentProject: null,
-          selectedTasks: [],
           activeTimerId: null,
           isConnected: true,
           lastAutoSave: null,
@@ -115,7 +127,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
           await firebaseSessionApi.saveActiveSession({
             startTime: timerState.startTime || new Date(),
             projectId: timerState.currentProject.id,
-            selectedTaskIds: timerState.selectedTasks.map(t => t.id),
+            selectedTaskIds: [],
             pausedDuration: 0,
             isPaused: false,
           });
@@ -127,7 +139,11 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
     }, 30000); // 30 seconds
 
     return () => clearInterval(interval);
-  }, [timerState.isRunning, timerState.activeTimerId, timerState.pausedDuration, timerState.selectedTasks]);
+  }, [
+    timerState.isRunning,
+    timerState.activeTimerId,
+    timerState.pausedDuration,
+  ]);
 
   // Refresh active timer when window regains focus (handles switching origins/ports)
   useEffect(() => {
@@ -162,7 +178,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
             startTime: null,
             pausedDuration: 0,
             currentProject: null,
-            selectedTasks: [],
             activeTimerId: null,
             isConnected: true,
             lastAutoSave: null,
@@ -194,7 +209,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
             startTime: null,
             pausedDuration: 0,
             currentProject: null,
-            selectedTasks: [],
             activeTimerId: null,
             isConnected: true,
             lastAutoSave: null,
@@ -221,14 +235,16 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
 
     // When running, calculate elapsed time from start
     const now = new Date();
-    const elapsed = Math.floor((now.getTime() - timerState.startTime.getTime()) / 1000);
+    const elapsed = Math.floor(
+      (now.getTime() - timerState.startTime.getTime()) / 1000
+    );
 
     // Defensive check: if elapsed is negative or unreasonably large, log a warning
     if (elapsed < 0) {
       console.warn('Timer calculation error: negative elapsed time', {
         now: now.toISOString(),
         startTime: timerState.startTime.toISOString(),
-        elapsed
+        elapsed,
       });
       return 0;
     }
@@ -238,7 +254,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
     if (elapsed > TWENTY_FOUR_HOURS) {
       console.warn('Timer session exceeds 24 hours', {
         elapsedHours: Math.floor(elapsed / 3600),
-        startTime: timerState.startTime.toISOString()
+        startTime: timerState.startTime.toISOString(),
       });
     }
 
@@ -250,7 +266,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
     const secs = seconds % 60;
-    
+
     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   }, []);
 
@@ -271,7 +287,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
       if (sessionAge > MAX_SESSION_AGE_MS) {
         console.warn(
           `Active session is too old (${Math.floor(sessionAge / (60 * 60 * 1000))} hours). ` +
-          `Clearing stale session data.`
+            `Clearing stale session data.`
         );
         await firebaseSessionApi.clearActiveSession();
         return;
@@ -302,7 +318,9 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
 
         // Otherwise, assign to the first project
         project = projects[0];
-        console.log(`Reassigning active session to first project: ${project.name}`);
+        console.log(
+          `Reassigning active session to first project: ${project.name}`
+        );
 
         // Update the active session with the new project
         await firebaseSessionApi.saveActiveSession({
@@ -314,24 +332,12 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
         });
       }
 
-      // Get task details
-      const selectedTasks = [];
-      try {
-        const projectTasks = await firebaseTaskApi.getProjectTasks(project.id);
-        selectedTasks.push(...projectTasks.filter(task =>
-          activeSession.selectedTaskIds.includes(task.id)
-        ));
-      } catch (error) {
-        console.error('Failed to load tasks for active session:', error);
-      }
-
       // Set timer state
       setTimerState({
         isRunning: !activeSession.isPaused,
         startTime: activeSession.startTime,
         pausedDuration: activeSession.pausedDuration,
         currentProject: project,
-        selectedTasks,
         activeTimerId: `active_${Date.now()}`,
         isConnected: true,
         lastAutoSave: null,
@@ -340,7 +346,9 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
       // Log session details for debugging
       const currentElapsed = activeSession.isPaused
         ? activeSession.pausedDuration
-        : Math.floor((now.getTime() - activeSession.startTime.getTime()) / 1000);
+        : Math.floor(
+            (now.getTime() - activeSession.startTime.getTime()) / 1000
+          );
 
       console.log('Active timer loaded successfully', {
         projectName: project.name,
@@ -349,7 +357,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
         sessionAge: `${Math.floor(sessionAge / 1000 / 60)} minutes`,
         pausedDuration: `${activeSession.pausedDuration} seconds`,
         currentElapsed: `${Math.floor(currentElapsed / 60)} minutes ${currentElapsed % 60} seconds`,
-        taskCount: selectedTasks.length
       });
     } catch (error) {
       console.error('Failed to load active timer:', error);
@@ -357,7 +364,10 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
   };
 
   // Start timer
-  const startTimer = async (projectId: string, taskIds: string[] = []): Promise<void> => {
+  const startTimer = async (
+    projectId: string,
+    taskIds: string[] = []
+  ): Promise<void> => {
     try {
       if (!user) {
         throw new Error('User must be authenticated to start timer');
@@ -373,24 +383,13 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
         throw new Error('Project not found');
       }
 
-      // Get task details for selected tasks
-      const selectedTasks = [];
-      try {
-        // Get all tasks for the project (use actual project.id)
-        const projectTasks = await firebaseTaskApi.getProjectTasks(project.id);
-        const selectedTaskObjects = projectTasks.filter(task => taskIds.includes(task.id));
-        selectedTasks.push(...selectedTaskObjects);
-      } catch (error) {
-        console.warn('Failed to load project tasks:', error);
-      }
-
       // Save active session to Firebase (use actual project.id)
       await firebaseSessionApi.saveActiveSession({
         startTime: now,
         projectId: project.id,
-        selectedTaskIds: taskIds,
+        selectedTaskIds: [],
         pausedDuration: 0,
-        isPaused: false
+        isPaused: false,
       });
 
       const timerId = `timer_${Date.now()}_${user.uid}`;
@@ -400,7 +399,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
         startTime: now,
         pausedDuration: 0,
         currentProject: project,
-        selectedTasks,
         activeTimerId: timerId,
         isConnected: true,
         lastAutoSave: now,
@@ -419,18 +417,18 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
 
     try {
       const currentElapsed = getElapsedTime();
-      
+
       // Save paused state to Firebase
       if (timerState.currentProject) {
         await firebaseSessionApi.saveActiveSession({
           startTime: timerState.startTime!,
           projectId: timerState.currentProject.id,
-          selectedTaskIds: timerState.selectedTasks.map(t => t.id),
+          selectedTaskIds: [],
           pausedDuration: currentElapsed,
-          isPaused: true
+          isPaused: true,
         });
       }
-      
+
       setTimerState(prev => ({
         ...prev,
         isRunning: false,
@@ -451,19 +449,21 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
     try {
       // Calculate the new start time to account for paused duration
       const now = new Date();
-      const adjustedStartTime = new Date(now.getTime() - (timerState.pausedDuration * 1000));
-      
+      const adjustedStartTime = new Date(
+        now.getTime() - timerState.pausedDuration * 1000
+      );
+
       // Save resumed state to Firebase
       if (timerState.currentProject) {
         await firebaseSessionApi.saveActiveSession({
           startTime: adjustedStartTime,
           projectId: timerState.currentProject.id,
-          selectedTaskIds: timerState.selectedTasks.map(t => t.id),
+          selectedTaskIds: [],
           pausedDuration: 0,
-          isPaused: false
+          isPaused: false,
         });
       }
-      
+
       setTimerState(prev => ({
         ...prev,
         isRunning: true,
@@ -485,7 +485,14 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
     tags?: string[],
     howFelt?: number,
     privateNotes?: string,
-    options?: { visibility?: 'everyone' | 'followers' | 'private'; showStartTime?: boolean; hideTaskNames?: boolean; publishToFeeds?: boolean; customDuration?: number; images?: string[] }
+    options?: {
+      visibility?: 'everyone' | 'followers' | 'private';
+      showStartTime?: boolean;
+      hideTaskNames?: boolean;
+      publishToFeeds?: boolean;
+      customDuration?: number;
+      images?: string[];
+    }
   ): Promise<Session> => {
     if (!timerState.activeTimerId || !timerState.currentProject) {
       throw new Error('No active timer to finish');
@@ -499,7 +506,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
         description,
         duration: finalDuration,
         startTime: timerState.startTime!,
-        taskIds: timerState.selectedTasks.map(task => task.id),
+        taskIds: [],
         tags,
         visibility: options?.visibility,
         showStartTime: options?.showStartTime,
@@ -520,9 +527,8 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
         duration: `${Math.floor(finalDuration / 3600)}h ${Math.floor((finalDuration % 3600) / 60)}m`,
         visibility: options?.visibility || 'private',
         projectName: timerState.currentProject.name,
-        tasksCompleted: timerState.selectedTasks.length,
         tags,
-        sessionData
+        sessionData,
       });
 
       if (options?.visibility && options.visibility !== 'private') {
@@ -543,7 +549,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
           commentCount: session.commentCount,
           postId: post?.id,
           fullSession: session,
-          fullPost: post
+          fullPost: post,
         });
       } else {
         // Create private session only
@@ -555,7 +561,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
           visibility: session.visibility,
           supportCount: session.supportCount,
           commentCount: session.commentCount,
-          fullSession: session
+          fullSession: session,
         });
       }
 
@@ -563,7 +569,9 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
       await firebaseSessionApi.clearActiveSession();
       console.log('🧹 Active session cleared from Firebase');
 
-      console.log('🧹 Session saved to Firebase and active session cleared successfully');
+      console.log(
+        '🧹 Session saved to Firebase and active session cleared successfully'
+      );
 
       // Reset timer state immediately
       setTimerState({
@@ -612,25 +620,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
     }
   };
 
-  // Update selected tasks
-  const updateSelectedTasks = async (taskIds: string[]): Promise<void> => {
-    if (!timerState.activeTimerId || !timerState.currentProject) return;
-
-    try {
-      // TODO: Implement Firebase task loading and timer update
-      console.log('Tasks loaded and timer updated locally');
-      
-      // For now, just update the local state
-      setTimerState(prev => ({ 
-        ...prev, 
-        selectedTasks: taskIds.map(id => ({ id, name: `Task ${id}`, status: 'active' } as any)) // Mock task objects
-      }));
-    } catch (error) {
-      console.error('Failed to update selected tasks:', error);
-      throw error;
-    }
-  };
-
   const value: TimerContextType = {
     timerState,
     startTimer,
@@ -638,15 +627,12 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
     resumeTimer,
     finishTimer,
     resetTimer,
-    updateSelectedTasks,
     loadActiveTimer,
     getElapsedTime,
     getFormattedTime,
   };
 
   return (
-    <TimerContext.Provider value={value}>
-      {children}
-    </TimerContext.Provider>
+    <TimerContext.Provider value={value}>{children}</TimerContext.Provider>
   );
 };

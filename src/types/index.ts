@@ -67,70 +67,55 @@ export type ProjectStats = ActivityStats;
 
 // Default activities available to all users
 export const DEFAULT_ACTIVITIES = [
-  { id: 'work', name: 'Work', icon: 'flat-color-icons:briefcase', color: '#007AFF' },
-  { id: 'study', name: 'Study', icon: 'flat-color-icons:reading', color: '#34C759' },
-  { id: 'side-project', name: 'Side Project', icon: 'flat-color-icons:electronics', color: '#FF9500' },
-  { id: 'reading', name: 'Reading', icon: 'flat-color-icons:book', color: '#FF2D55' },
-  { id: 'writing', name: 'Writing', icon: 'flat-color-icons:document', color: '#AF52DE' },
-  { id: 'creative', name: 'Creative', icon: 'flat-color-icons:gallery', color: '#FF6482' },
-  { id: 'exercise', name: 'Exercise', icon: 'flat-color-icons:sports-mode', color: '#32ADE6' },
-  { id: 'learning', name: 'Learning', icon: 'flat-color-icons:graduation-cap', color: '#FFD60A' },
+  {
+    id: 'work',
+    name: 'Work',
+    icon: 'flat-color-icons:briefcase',
+    color: '#007AFF',
+  },
+  {
+    id: 'study',
+    name: 'Study',
+    icon: 'flat-color-icons:reading',
+    color: '#34C759',
+  },
+  {
+    id: 'side-project',
+    name: 'Side Project',
+    icon: 'flat-color-icons:electronics',
+    color: '#FF9500',
+  },
+  {
+    id: 'reading',
+    name: 'Reading',
+    icon: 'flat-color-icons:book',
+    color: '#FF2D55',
+  },
+  {
+    id: 'writing',
+    name: 'Writing',
+    icon: 'flat-color-icons:document',
+    color: '#AF52DE',
+  },
+  {
+    id: 'creative',
+    name: 'Creative',
+    icon: 'flat-color-icons:gallery',
+    color: '#FF6482',
+  },
+  {
+    id: 'exercise',
+    name: 'Exercise',
+    icon: 'flat-color-icons:sports-mode',
+    color: '#32ADE6',
+  },
+  {
+    id: 'learning',
+    name: 'Learning',
+    icon: 'flat-color-icons:graduation-cap',
+    color: '#FFD60A',
+  },
 ] as const;
-
-export interface Task {
-  id: string;
-  activityId: string; // Changed from projectId
-  projectId?: string; // Backwards compatibility
-  name: string;
-  status: 'active' | 'completed' | 'archived';
-  createdAt: Date;
-  completedAt?: Date;
-  order?: number; // For drag and drop ordering
-}
-
-// Task management interfaces
-export interface CreateTaskData {
-  name: string;
-  activityId: string; // Changed from projectId
-  projectId?: string; // Backwards compatibility
-}
-
-export interface UpdateTaskData {
-  name?: string;
-  status?: 'active' | 'completed' | 'archived';
-  order?: number;
-}
-
-export interface BulkTaskUpdate {
-  taskIds: string[];
-  status: 'active' | 'completed' | 'archived';
-}
-
-export interface TaskStats {
-  totalTasks: number;
-  activeTasks: number;
-  completedTasks: number;
-  archivedTasks: number;
-  tasksCompletedToday: number;
-  tasksCompletedThisWeek: number;
-  averageTasksPerSession: number;
-  mostProductiveHour: number;
-}
-
-export interface TaskContextType {
-  tasks: Task[];
-  isLoading: boolean;
-  error: string | null;
-  createTask: (data: CreateTaskData) => Promise<Task>;
-  updateTask: (id: string, data: UpdateTaskData, projectId?: string) => Promise<Task>;
-  deleteTask: (id: string) => Promise<void>;
-  bulkUpdateTasks: (update: BulkTaskUpdate) => Promise<void>;
-  getProjectTasks: (projectId: string) => Promise<Task[]>;
-  getTaskStats: (projectId: string) => Promise<TaskStats>;
-  loadProjectTasks: (projectId: string) => Promise<void>;
-  loadProjectTasksAndAdd: (projectId: string) => Promise<void>;
-  getAllTasks: () => Promise<void>;
-}
 
 export interface Session {
   id: string;
@@ -141,7 +126,6 @@ export interface Session {
   description?: string;
   duration: number; // seconds
   startTime: Date;
-  tasks: Task[];
   tags?: string[]; // Deprecated but kept for backwards compatibility
   visibility: 'everyone' | 'followers' | 'private';
   showStartTime?: boolean;
@@ -219,7 +203,8 @@ export interface GroupMembership {
   status: 'active' | 'pending' | 'left' | 'removed';
 }
 
-export interface GroupPost extends Post {
+// GroupPost extends Session since sessions are the primary content type
+export interface GroupPost extends Session {
   groupId: string;
   groupVisibility: 'group-only' | 'public';
 }
@@ -430,18 +415,18 @@ export interface Achievement {
   isShared?: boolean; // Whether user shared to feed
 }
 
-export type AchievementType = 
-  | 'streak-7' 
-  | 'streak-30' 
-  | 'streak-100' 
+export type AchievementType =
+  | 'streak-7'
+  | 'streak-30'
+  | 'streak-100'
   | 'streak-365'
-  | 'hours-10' 
-  | 'hours-50' 
-  | 'hours-100' 
+  | 'hours-10'
+  | 'hours-50'
+  | 'hours-100'
   | 'hours-500'
   | 'hours-1000'
-  | 'tasks-50' 
-  | 'tasks-100' 
+  | 'tasks-50'
+  | 'tasks-100'
   | 'tasks-500'
   | 'tasks-1000'
   | 'challenge-complete'
@@ -535,7 +520,16 @@ export interface CommentsResponse {
 export interface Notification {
   id: string;
   userId: string;
-  type: 'follow' | 'support' | 'comment' | 'mention' | 'reply' | 'achievement' | 'streak' | 'group' | 'challenge';
+  type:
+    | 'follow'
+    | 'support'
+    | 'comment'
+    | 'mention'
+    | 'reply'
+    | 'achievement'
+    | 'streak'
+    | 'group'
+    | 'challenge';
   title: string;
   message: string;
   linkUrl?: string;
@@ -791,7 +785,6 @@ export interface TimerState {
   startTime: Date | null;
   pausedDuration: number;
   currentProject: Project | null;
-  selectedTasks: Task[];
   activeTimerId: string | null;
   isConnected: boolean;
   lastAutoSave: Date | null;
@@ -802,9 +795,14 @@ export interface TimerContextType {
   startTimer: (projectId: string, taskIds?: string[]) => Promise<void>;
   pauseTimer: () => Promise<void>;
   resumeTimer: () => Promise<void>;
-  finishTimer: (title: string, description?: string, tags?: string[], howFelt?: number, privateNotes?: string) => Promise<Session>;
+  finishTimer: (
+    title: string,
+    description?: string,
+    tags?: string[],
+    howFelt?: number,
+    privateNotes?: string
+  ) => Promise<Session>;
   resetTimer: () => Promise<void>;
-  updateSelectedTasks: (taskIds: string[]) => Promise<void>;
   loadActiveTimer: () => Promise<void>;
   getElapsedTime: () => number;
   getFormattedTime: (seconds: number) => string;

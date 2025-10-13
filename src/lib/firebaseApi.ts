@@ -20,7 +20,7 @@ import {
   QuerySnapshot,
   DocumentData,
   increment,
-  runTransaction
+  runTransaction,
 } from 'firebase/firestore';
 import {
   signInWithEmailAndPassword,
@@ -33,9 +33,14 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
   signInWithRedirect,
-  getRedirectResult
+  getRedirectResult,
 } from 'firebase/auth';
-import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
+import {
+  ref,
+  uploadBytes,
+  getDownloadURL,
+  deleteObject,
+} from 'firebase/storage';
 import { db, auth, storage } from './firebase';
 import {
   handleError,
@@ -43,12 +48,16 @@ import {
   withNullOnError,
   isPermissionError,
   isNotFoundError,
-  ErrorSeverity
+  ErrorSeverity,
 } from './errorHandler';
+import { checkRateLimit, RateLimitError } from './rateLimit';
 
 // Legacy helper for backwards compatibility - now wraps handleError
 const getErrorMessage = (error: any, defaultMessage: string): string => {
-  const apiError = handleError(error, 'Operation', { defaultMessage, silent: true });
+  const apiError = handleError(error, 'Operation', {
+    defaultMessage,
+    silent: true,
+  });
   return apiError.userMessage;
 };
 
@@ -111,7 +120,7 @@ import {
   ChallengeProgress,
   ChallengeLeaderboard,
   ChallengeLeaderboardEntry,
-  ChallengeStats
+  ChallengeStats,
 } from '@/types';
 
 // Helper function to convert Firestore timestamp to Date
@@ -129,21 +138,41 @@ const convertTimestamp = (timestamp: any): Date => {
 const convertToTimestamp = (date: Date) => Timestamp.fromDate(date);
 
 // Helper function to manage social graph and friendship counts transactionally
-const updateSocialGraph = async (currentUserId: string, targetUserId: string, action: 'follow' | 'unfollow') => {
+const updateSocialGraph = async (
+  currentUserId: string,
+  targetUserId: string,
+  action: 'follow' | 'unfollow'
+) => {
   const currentUserRef = doc(db, 'users', currentUserId);
   const targetUserRef = doc(db, 'users', targetUserId);
 
-  const currentUserSocialGraphRef = doc(db, `social_graph/${currentUserId}/outbound`, targetUserId);
-  const targetUserSocialGraphRef = doc(db, `social_graph/${targetUserId}/inbound`, currentUserId);
+  const currentUserSocialGraphRef = doc(
+    db,
+    `social_graph/${currentUserId}/outbound`,
+    targetUserId
+  );
+  const targetUserSocialGraphRef = doc(
+    db,
+    `social_graph/${targetUserId}/inbound`,
+    currentUserId
+  );
 
   try {
-    await runTransaction(db, async (transaction) => {
+    await runTransaction(db, async transaction => {
       // ALL READS MUST HAPPEN FIRST before any writes
       const currentUserDoc = await transaction.get(currentUserRef);
       const targetUserDoc = await transaction.get(targetUserRef);
-      const isFollowing = (await transaction.get(currentUserSocialGraphRef)).exists();
-      const mutualCheckRef = doc(db, `social_graph/${targetUserId}/outbound`, currentUserId);
-      const isMutualOrWasMutual = (await transaction.get(mutualCheckRef)).exists();
+      const isFollowing = (
+        await transaction.get(currentUserSocialGraphRef)
+      ).exists();
+      const mutualCheckRef = doc(
+        db,
+        `social_graph/${targetUserId}/outbound`,
+        currentUserId
+      );
+      const isMutualOrWasMutual = (
+        await transaction.get(mutualCheckRef)
+      ).exists();
 
       if (!currentUserDoc.exists() || !targetUserDoc.exists()) {
         throw new Error('One or both users not found.');
@@ -161,8 +190,18 @@ const updateSocialGraph = async (currentUserId: string, targetUserId: string, ac
 
       // NOW DO ALL WRITES
       if (action === 'follow') {
-        transaction.set(currentUserSocialGraphRef, { id: targetUserId, type: 'outbound', user: targetUserData, createdAt: now });
-        transaction.set(targetUserSocialGraphRef, { id: currentUserId, type: 'inbound', user: currentUserData, createdAt: now });
+        transaction.set(currentUserSocialGraphRef, {
+          id: targetUserId,
+          type: 'outbound',
+          user: targetUserData,
+          createdAt: now,
+        });
+        transaction.set(targetUserSocialGraphRef, {
+          id: currentUserId,
+          type: 'inbound',
+          user: currentUserData,
+          createdAt: now,
+        });
 
         currentUserUpdate.outboundFriendshipCount = increment(1);
         currentUserUpdate.followingCount = increment(1);
@@ -174,7 +213,8 @@ const updateSocialGraph = async (currentUserId: string, targetUserId: string, ac
           currentUserUpdate.mutualFriendshipCount = increment(1);
           targetUserUpdate.mutualFriendshipCount = increment(1);
         }
-      } else { // unfollow
+      } else {
+        // unfollow
         transaction.delete(currentUserSocialGraphRef);
         transaction.delete(targetUserSocialGraphRef);
 
@@ -194,7 +234,10 @@ const updateSocialGraph = async (currentUserId: string, targetUserId: string, ac
       transaction.update(targetUserRef, targetUserUpdate);
     });
   } catch (error) {
-    const apiError = handleError(error, `${action.charAt(0).toUpperCase() + action.slice(1)} user`);
+    const apiError = handleError(
+      error,
+      `${action.charAt(0).toUpperCase() + action.slice(1)} user`
+    );
     throw new Error(apiError.userMessage);
   }
 };
@@ -202,7 +245,9 @@ const updateSocialGraph = async (currentUserId: string, targetUserId: string, ac
 const PRIVATE_USER_FALLBACK_NAME = 'Private User';
 const PRIVATE_USER_USERNAME_PREFIX = 'private';
 
-const fetchUserDataForSocialContext = async (userId: string): Promise<DocumentData | null> => {
+const fetchUserDataForSocialContext = async (
+  userId: string
+): Promise<DocumentData | null> => {
   try {
     const userDoc = await getDoc(doc(db, 'users', userId));
     if (!userDoc.exists()) {
@@ -218,10 +263,17 @@ const fetchUserDataForSocialContext = async (userId: string): Promise<DocumentDa
   }
 };
 
-const buildCommentUserDetails = (userId: string, userData: DocumentData | null): User => {
+const buildCommentUserDetails = (
+  userId: string,
+  userData: DocumentData | null
+): User => {
   const fallbackUsername = `${PRIVATE_USER_USERNAME_PREFIX}-${userId.slice(0, 6)}`;
-  const createdAt = userData?.createdAt ? convertTimestamp(userData.createdAt) : new Date();
-  const updatedAt = userData?.updatedAt ? convertTimestamp(userData.updatedAt) : new Date();
+  const createdAt = userData?.createdAt
+    ? convertTimestamp(userData.createdAt)
+    : new Date();
+  const updatedAt = userData?.updatedAt
+    ? convertTimestamp(userData.updatedAt)
+    : new Date();
 
   return {
     id: userId,
@@ -232,24 +284,28 @@ const buildCommentUserDetails = (userId: string, userData: DocumentData | null):
     location: userData?.location,
     profilePicture: userData?.profilePicture,
     createdAt,
-    updatedAt
+    updatedAt,
   };
 };
 
 // Remove keys with undefined values. Firestore does not accept undefined in documents
 const removeUndefinedFields = <T extends Record<string, any>>(input: T): T => {
-  const entries = Object.entries(input).filter(([, value]) => value !== undefined);
+  const entries = Object.entries(input).filter(
+    ([, value]) => value !== undefined
+  );
   return Object.fromEntries(entries) as T;
 };
 
 // Helper function to populate sessions with user and project data
-const populateSessionsWithDetails = async (sessionDocs: any[]): Promise<SessionWithDetails[]> => {
+const populateSessionsWithDetails = async (
+  sessionDocs: any[]
+): Promise<SessionWithDetails[]> => {
   const sessions: SessionWithDetails[] = [];
   const batchSize = 10;
 
   for (let i = 0; i < sessionDocs.length; i += batchSize) {
     const batch = sessionDocs.slice(i, i + batchSize);
-    const batchPromises = batch.map(async (sessionDoc) => {
+    const batchPromises = batch.map(async sessionDoc => {
       const sessionData = sessionDoc.data();
 
       // Get user data - skip session if user has been deleted or is inaccessible
@@ -259,7 +315,9 @@ const populateSessionsWithDetails = async (sessionDocs: any[]): Promise<SessionW
       } catch (error) {
         // Handle permission errors for deleted users
         if (isPermissionError(error) || isNotFoundError(error)) {
-          console.warn(`Skipping session ${sessionDoc.id} - user ${sessionData.userId} is inaccessible or deleted`);
+          console.warn(
+            `Skipping session ${sessionDoc.id} - user ${sessionData.userId} is inaccessible or deleted`
+          );
           return null;
         }
         // Re-throw other errors
@@ -267,7 +325,9 @@ const populateSessionsWithDetails = async (sessionDocs: any[]): Promise<SessionW
       }
 
       if (!userDoc.exists()) {
-        console.warn(`Skipping session ${sessionDoc.id} - user ${sessionData.userId} no longer exists`);
+        console.warn(
+          `Skipping session ${sessionDoc.id} - user ${sessionData.userId} no longer exists`
+        );
         return null;
       }
       const userData = userDoc.data();
@@ -277,12 +337,16 @@ const populateSessionsWithDetails = async (sessionDocs: any[]): Promise<SessionW
       const projectId = sessionData.projectId;
       if (projectId) {
         try {
-          const projectDoc = await getDoc(doc(db, 'projects', sessionData.userId, 'userProjects', projectId));
+          const projectDoc = await getDoc(
+            doc(db, 'projects', sessionData.userId, 'userProjects', projectId)
+          );
           if (projectDoc.exists()) {
             projectData = projectDoc.data();
           }
         } catch (error) {
-          handleError(error, `Fetch project ${projectId}`, { severity: ErrorSeverity.WARNING });
+          handleError(error, `Fetch project ${projectId}`, {
+            severity: ErrorSeverity.WARNING,
+          });
         }
       }
 
@@ -323,31 +387,33 @@ const populateSessionsWithDetails = async (sessionDocs: any[]): Promise<SessionW
           location: userData?.location,
           profilePicture: userData?.profilePicture,
           createdAt: convertTimestamp(userData?.createdAt) || new Date(),
-          updatedAt: convertTimestamp(userData?.updatedAt) || new Date()
+          updatedAt: convertTimestamp(userData?.updatedAt) || new Date(),
         },
-        project: projectData ? {
-          id: projectId!,
-          userId: sessionData.userId,
-          name: projectData.name || 'Unknown Project',
-          description: projectData.description || '',
-          icon: projectData.icon || '📁',
-          color: projectData.color || '#64748B',
-          weeklyTarget: projectData.weeklyTarget,
-          totalTarget: projectData.totalTarget,
-          status: projectData.status || 'active',
-          createdAt: convertTimestamp(projectData.createdAt) || new Date(),
-          updatedAt: convertTimestamp(projectData.updatedAt) || new Date()
-        } : {
-          id: projectId || 'unknown',
-          userId: sessionData.userId,
-          name: 'Unknown Project',
-          description: '',
-          icon: '📁',
-          color: '#64748B',
-          status: 'active',
-          createdAt: new Date(),
-          updatedAt: new Date()
-        } as Project
+        project: projectData
+          ? {
+              id: projectId!,
+              userId: sessionData.userId,
+              name: projectData.name || 'Unknown Project',
+              description: projectData.description || '',
+              icon: projectData.icon || '📁',
+              color: projectData.color || '#64748B',
+              weeklyTarget: projectData.weeklyTarget,
+              totalTarget: projectData.totalTarget,
+              status: projectData.status || 'active',
+              createdAt: convertTimestamp(projectData.createdAt) || new Date(),
+              updatedAt: convertTimestamp(projectData.updatedAt) || new Date(),
+            }
+          : ({
+              id: projectId || 'unknown',
+              userId: sessionData.userId,
+              name: 'Unknown Project',
+              description: '',
+              icon: '📁',
+              color: '#64748B',
+              status: 'active',
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            } as Project),
       };
 
       return session;
@@ -355,7 +421,9 @@ const populateSessionsWithDetails = async (sessionDocs: any[]): Promise<SessionW
 
     const batchResults = await Promise.all(batchPromises);
     // Filter out null values (sessions from deleted users)
-    const validSessions = batchResults.filter((session): session is SessionWithDetails => session !== null);
+    const validSessions = batchResults.filter(
+      (session): session is SessionWithDetails => session !== null
+    );
     sessions.push(...validSessions);
   }
 
@@ -375,7 +443,7 @@ const checkUsernameExists = async (username: string): Promise<boolean> => {
     return !snapshot.empty;
   } catch (error) {
     const apiError = handleError(error, 'Check username availability', {
-      severity: ErrorSeverity.WARNING
+      severity: ErrorSeverity.WARNING,
     });
     // If there's an error checking, allow the signup to proceed
     // Firebase Auth will handle duplicate emails
@@ -398,7 +466,7 @@ const checkEmailExistsInFirestore = async (email: string): Promise<boolean> => {
     return !snapshot.empty;
   } catch (error) {
     const apiError = handleError(error, 'Check email availability', {
-      severity: ErrorSeverity.WARNING
+      severity: ErrorSeverity.WARNING,
     });
     // If there's an error checking, allow the signup to proceed
     // Firebase Auth will handle duplicate emails
@@ -408,7 +476,10 @@ const checkEmailExistsInFirestore = async (email: string): Promise<boolean> => {
 };
 
 // Helper function to generate a unique username from an email
-const generateUniqueUsername = async (email: string, displayName?: string): Promise<string> => {
+const generateUniqueUsername = async (
+  email: string,
+  displayName?: string
+): Promise<string> => {
   // Try using display name first if provided
   if (displayName) {
     const baseUsername = displayName
@@ -433,7 +504,8 @@ const generateUniqueUsername = async (email: string, displayName?: string): Prom
   }
 
   // Fall back to email-based username
-  const baseUsername = email.split('@')[0]
+  const baseUsername = email
+    .split('@')[0]
     .toLowerCase()
     .replace(/[^a-z0-9]/g, '')
     .substring(0, 20);
@@ -461,21 +533,36 @@ export const firebaseAuthApi = {
   // Login
   login: async (credentials: LoginCredentials): Promise<AuthResponse> => {
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, credentials.email, credentials.password);
+      // Rate limit login attempts by email
+      checkRateLimit(credentials.email, 'AUTH_LOGIN');
+
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        credentials.email,
+        credentials.password
+      );
       const firebaseUser = userCredential.user;
-      
+
       // Get user profile from Firestore
       const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
       let userData = userDoc.data();
-      
+
       // If user profile doesn't exist (for demo user), create it
       if (!userData) {
         const demoUserData = {
           email: credentials.email,
-          name: credentials.email === 'demo@ambira.com' ? 'Demo User' : 'New User',
-          username: credentials.email === 'demo@ambira.com' ? 'demo' : credentials.email.split('@')[0],
-          bio: credentials.email === 'demo@ambira.com' ? 'Welcome to Ambira! This is a demo account to explore the app.' : '',
-          location: credentials.email === 'demo@ambira.com' ? 'San Francisco, CA' : '',
+          name:
+            credentials.email === 'demo@ambira.com' ? 'Demo User' : 'New User',
+          username:
+            credentials.email === 'demo@ambira.com'
+              ? 'demo'
+              : credentials.email.split('@')[0],
+          bio:
+            credentials.email === 'demo@ambira.com'
+              ? 'Welcome to Ambira! This is a demo account to explore the app.'
+              : '',
+          location:
+            credentials.email === 'demo@ambira.com' ? 'San Francisco, CA' : '',
           profilePicture: null,
           followersCount: credentials.email === 'demo@ambira.com' ? 42 : 0,
           followingCount: credentials.email === 'demo@ambira.com' ? 28 : 0,
@@ -484,13 +571,13 @@ export const firebaseAuthApi = {
           activityVisibility: 'everyone',
           projectVisibility: 'everyone',
           createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp()
+          updatedAt: serverTimestamp(),
         };
-        
+
         await setDoc(doc(db, 'users', firebaseUser.uid), demoUserData);
         userData = demoUserData;
       }
-      
+
       const user: AuthUser = {
         id: firebaseUser.uid,
         email: firebaseUser.email!,
@@ -500,14 +587,20 @@ export const firebaseAuthApi = {
         location: userData.location,
         profilePicture: userData.profilePicture,
         createdAt: convertTimestamp(userData.createdAt),
-        updatedAt: convertTimestamp(userData.updatedAt)
+        updatedAt: convertTimestamp(userData.updatedAt),
       };
-      
+
       const token = await firebaseUser.getIdToken();
-      
+
       return { user, token };
     } catch (error) {
-      const apiError = handleError(error, 'Login', { defaultMessage: 'Login failed' });
+      // Re-throw rate limit errors as-is
+      if (error instanceof RateLimitError) {
+        throw error;
+      }
+      const apiError = handleError(error, 'Login', {
+        defaultMessage: 'Login failed',
+      });
       throw new Error(apiError.userMessage);
     }
   },
@@ -515,14 +608,23 @@ export const firebaseAuthApi = {
   // Signup
   signup: async (credentials: SignupCredentials): Promise<AuthResponse> => {
     try {
+      // Rate limit signup attempts by email
+      checkRateLimit(credentials.email, 'AUTH_SIGNUP');
+
       // Validate username uniqueness BEFORE creating Firebase Auth user
       const usernameExists = await checkUsernameExists(credentials.username);
       if (usernameExists) {
-        throw new Error('This username is already taken. Please choose a different username.');
+        throw new Error(
+          'This username is already taken. Please choose a different username.'
+        );
       }
 
       // Create Firebase Auth user (this will throw if email already exists)
-      const userCredential = await createUserWithEmailAndPassword(auth, credentials.email, credentials.password);
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        credentials.email,
+        credentials.password
+      );
       const firebaseUser = userCredential.user;
 
       // Create user profile in Firestore
@@ -545,16 +647,16 @@ export const firebaseAuthApi = {
         activityVisibility: 'everyone',
         projectVisibility: 'everyone',
         createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
+        updatedAt: serverTimestamp(),
       };
 
       await setDoc(doc(db, 'users', firebaseUser.uid), userData);
-      
+
       // Update Firebase Auth profile
       await updateProfile(firebaseUser, {
-        displayName: credentials.name
+        displayName: credentials.name,
       });
-      
+
       const user: AuthUser = {
         id: firebaseUser.uid,
         email: credentials.email,
@@ -564,14 +666,20 @@ export const firebaseAuthApi = {
         location: '',
         profilePicture: undefined,
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
       };
-      
+
       const token = await firebaseUser.getIdToken();
-      
+
       return { user, token };
     } catch (error) {
-      const apiError = handleError(error, 'Signup', { defaultMessage: 'Signup failed' });
+      // Re-throw rate limit errors as-is
+      if (error instanceof RateLimitError) {
+        throw error;
+      }
+      const apiError = handleError(error, 'Signup', {
+        defaultMessage: 'Signup failed',
+      });
       throw new Error(apiError.userMessage);
     }
   },
@@ -585,7 +693,10 @@ export const firebaseAuthApi = {
       provider.addScope('email');
 
       // Detect if user is on mobile device
-      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      const isMobile =
+        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+          navigator.userAgent
+        );
 
       let userCredential;
 
@@ -602,13 +713,19 @@ export const firebaseAuthApi = {
         } catch (popupError: any) {
           // If popup was blocked or failed, provide helpful error
           if (popupError.code === 'auth/popup-blocked') {
-            throw new Error('Popup was blocked. Please allow popups for this site and try again.');
+            throw new Error(
+              'Popup was blocked. Please allow popups for this site and try again.'
+            );
           } else if (popupError.code === 'auth/popup-closed-by-user') {
             throw new Error('Sign-in was cancelled.');
           } else if (popupError.code === 'auth/configuration-not-found') {
-            throw new Error('Google Sign-in is not configured. Please enable Google authentication in Firebase Console.');
+            throw new Error(
+              'Google Sign-in is not configured. Please enable Google authentication in Firebase Console.'
+            );
           } else if (popupError.code === 'auth/unauthorized-domain') {
-            throw new Error('This domain is not authorized for Google Sign-in. Please add it to authorized domains in Firebase Console.');
+            throw new Error(
+              'This domain is not authorized for Google Sign-in. Please add it to authorized domains in Firebase Console.'
+            );
           }
           // Re-throw if it's a different error
           throw popupError;
@@ -648,7 +765,7 @@ export const firebaseAuthApi = {
           activityVisibility: 'everyone',
           projectVisibility: 'everyone',
           createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp()
+          updatedAt: serverTimestamp(),
         };
 
         await setDoc(doc(db, 'users', firebaseUser.uid), userData);
@@ -663,7 +780,7 @@ export const firebaseAuthApi = {
         location: userData.location,
         profilePicture: userData.profilePicture,
         createdAt: convertTimestamp(userData.createdAt),
-        updatedAt: convertTimestamp(userData.updatedAt)
+        updatedAt: convertTimestamp(userData.updatedAt),
       };
 
       const token = await firebaseUser.getIdToken();
@@ -678,7 +795,8 @@ export const firebaseAuthApi = {
       }
 
       const apiError = handleError(error, 'Google sign-in', {
-        defaultMessage: 'Google sign-in failed. Please check that Google authentication is enabled in Firebase Console.'
+        defaultMessage:
+          'Google sign-in failed. Please check that Google authentication is enabled in Firebase Console.',
       });
       throw new Error(apiError.userMessage);
     }
@@ -689,7 +807,9 @@ export const firebaseAuthApi = {
     try {
       await signOut(auth);
     } catch (error) {
-      const apiError = handleError(error, 'Logout', { defaultMessage: 'Logout failed' });
+      const apiError = handleError(error, 'Logout', {
+        defaultMessage: 'Logout failed',
+      });
       throw new Error(apiError.userMessage);
     }
   },
@@ -700,10 +820,10 @@ export const firebaseAuthApi = {
       if (!auth.currentUser) {
         throw new Error('No authenticated user');
       }
-      
+
       const userDoc = await getDoc(doc(db, 'users', auth.currentUser.uid));
       let userData = userDoc.data();
-      
+
       // If user profile doesn't exist, create a basic one
       if (!userData) {
         const basicUserData = {
@@ -720,13 +840,13 @@ export const firebaseAuthApi = {
           activityVisibility: 'everyone',
           projectVisibility: 'everyone',
           createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp()
+          updatedAt: serverTimestamp(),
         };
-        
+
         await setDoc(doc(db, 'users', auth.currentUser.uid), basicUserData);
         userData = basicUserData;
       }
-      
+
       return {
         id: auth.currentUser.uid,
         email: auth.currentUser.email!,
@@ -736,10 +856,12 @@ export const firebaseAuthApi = {
         location: userData.location,
         profilePicture: userData.profilePicture,
         createdAt: convertTimestamp(userData.createdAt),
-        updatedAt: convertTimestamp(userData.updatedAt)
+        updatedAt: convertTimestamp(userData.updatedAt),
       };
     } catch (error) {
-      const apiError = handleError(error, 'Get current user', { defaultMessage: 'Failed to get current user' });
+      const apiError = handleError(error, 'Get current user', {
+        defaultMessage: 'Failed to get current user',
+      });
       throw new Error(apiError.userMessage);
     }
   },
@@ -799,7 +921,7 @@ export const firebaseAuthApi = {
           activityVisibility: 'everyone',
           projectVisibility: 'everyone',
           createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp()
+          updatedAt: serverTimestamp(),
         };
 
         await setDoc(doc(db, 'users', firebaseUser.uid), userData);
@@ -814,7 +936,7 @@ export const firebaseAuthApi = {
         location: userData.location,
         profilePicture: userData.profilePicture,
         createdAt: convertTimestamp(userData.createdAt),
-        updatedAt: convertTimestamp(userData.updatedAt)
+        updatedAt: convertTimestamp(userData.updatedAt),
       };
 
       const token = await firebaseUser.getIdToken();
@@ -824,7 +946,7 @@ export const firebaseAuthApi = {
       console.error('Google redirect result error:', error);
 
       const apiError = handleError(error, 'Google sign-in redirect', {
-        defaultMessage: 'Google sign-in failed. Please try again.'
+        defaultMessage: 'Google sign-in failed. Please try again.',
       });
       throw new Error(apiError.userMessage);
     }
@@ -838,7 +960,7 @@ export const firebaseAuthApi = {
   checkUsernameAvailability: async (username: string): Promise<boolean> => {
     const exists = await checkUsernameExists(username);
     return !exists; // Return true if available (username does not exist)
-  }
+  },
 };
 
 // User API methods
@@ -846,7 +968,10 @@ export const firebaseUserApi = {
   // Get user profile by username
   getUserProfile: async (username: string): Promise<UserProfile> => {
     try {
-      const usersQuery = query(collection(db, 'users'), where('username', '==', username));
+      const usersQuery = query(
+        collection(db, 'users'),
+        where('username', '==', username)
+      );
       const querySnapshot = await getDocs(usersQuery);
 
       if (querySnapshot.empty) {
@@ -869,7 +994,9 @@ export const firebaseUserApi = {
       // Check if current user is following this user
       let isFollowing = false;
       if (auth.currentUser && !isOwnProfile) {
-        const socialGraphDoc = await getDoc(doc(db, `social_graph/${auth.currentUser.uid}/outbound`, userDoc.id));
+        const socialGraphDoc = await getDoc(
+          doc(db, `social_graph/${auth.currentUser.uid}/outbound`, userDoc.id)
+        );
         isFollowing = socialGraphDoc.exists();
       }
 
@@ -884,31 +1011,46 @@ export const firebaseUserApi = {
       let followersCount = userData.followersCount || 0;
       let followingCount = userData.followingCount || 0;
 
-      const shouldRecalculate = isOwnProfile || userData.followersCount === undefined || userData.followingCount === undefined;
+      const shouldRecalculate =
+        isOwnProfile ||
+        userData.followersCount === undefined ||
+        userData.followingCount === undefined;
       if (shouldRecalculate) {
         try {
           // Count followers (people who follow this user) using social_graph
-          const inboundRef = collection(db, `social_graph/${userDoc.id}/inbound`);
+          const inboundRef = collection(
+            db,
+            `social_graph/${userDoc.id}/inbound`
+          );
           const inboundSnapshot = await getDocs(inboundRef);
           followersCount = inboundSnapshot.size;
 
           // Count following (people this user follows) using social_graph
-          const outboundRef = collection(db, `social_graph/${userDoc.id}/outbound`);
+          const outboundRef = collection(
+            db,
+            `social_graph/${userDoc.id}/outbound`
+          );
           const outboundSnapshot = await getDocs(outboundRef);
           followingCount = outboundSnapshot.size;
 
           // Update the user document with correct counts
           // For own profile, always update to keep counts fresh
           // For others, update if they were missing
-          if (isOwnProfile || userData.followersCount === undefined || userData.followingCount === undefined) {
+          if (
+            isOwnProfile ||
+            userData.followersCount === undefined ||
+            userData.followingCount === undefined
+          ) {
             await updateDoc(doc(db, 'users', userDoc.id), {
               followersCount,
               followingCount,
-              updatedAt: serverTimestamp()
+              updatedAt: serverTimestamp(),
             });
           }
         } catch (error) {
-          handleError(error, 'Recalculate follower counts', { severity: ErrorSeverity.WARNING });
+          handleError(error, 'Recalculate follower counts', {
+            severity: ErrorSeverity.WARNING,
+          });
           // Keep the default values if recalculation fails
         }
       }
@@ -926,17 +1068,21 @@ export const firebaseUserApi = {
         isFollowing,
         isPrivate: profileVisibility === 'private',
         createdAt: convertTimestamp(userData.createdAt),
-        updatedAt: convertTimestamp(userData.updatedAt)
+        updatedAt: convertTimestamp(userData.updatedAt),
       };
     } catch (error) {
       // Don't log "not found" and privacy errors - these are expected user flows
-      const errorMessage = error instanceof Error ? error.message : 'Failed to get user profile';
-      const isExpectedError = errorMessage === 'User not found' ||
-                              errorMessage === 'This profile is private' ||
-                              errorMessage === 'This profile is only visible to followers';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Failed to get user profile';
+      const isExpectedError =
+        errorMessage === 'User not found' ||
+        errorMessage === 'This profile is private' ||
+        errorMessage === 'This profile is only visible to followers';
 
       if (!isExpectedError) {
-        handleError(error, 'Get user profile', { defaultMessage: 'Failed to get user profile' });
+        handleError(error, 'Get user profile', {
+          defaultMessage: 'Failed to get user profile',
+        });
       }
 
       throw error;
@@ -963,20 +1109,25 @@ export const firebaseUserApi = {
         location: userData.location,
         profilePicture: userData.profilePicture,
         createdAt: convertTimestamp(userData.createdAt),
-        updatedAt: convertTimestamp(userData.updatedAt)
+        updatedAt: convertTimestamp(userData.updatedAt),
       };
     } catch (error) {
       // Handle permission errors for deleted users gracefully
       if (isPermissionError(error)) {
         throw new Error('User not found');
       }
-      const apiError = handleError(error, 'Get user by ID', { defaultMessage: 'Failed to get user' });
+      const apiError = handleError(error, 'Get user by ID', {
+        defaultMessage: 'Failed to get user',
+      });
       throw new Error(apiError.userMessage);
     }
   },
 
   // Get daily activity for a given year (hours and sessions per day)
-  getUserDailyActivity: async (userId: string, year: number): Promise<ActivityData[]> => {
+  getUserDailyActivity: async (
+    userId: string,
+    year: number
+  ): Promise<ActivityData[]> => {
     try {
       const startOfYear = new Date(year, 0, 1, 0, 0, 0, 0);
       const endOfYear = new Date(year, 11, 31, 23, 59, 59, 999);
@@ -990,9 +1141,10 @@ export const firebaseUserApi = {
 
       const snapshot = await getDocs(sessionsQuery);
 
-      const dayToTotals: Record<string, { seconds: number; sessions: number }> = {};
+      const dayToTotals: Record<string, { seconds: number; sessions: number }> =
+        {};
 
-      snapshot.forEach((docSnap) => {
+      snapshot.forEach(docSnap => {
         const data = docSnap.data();
         const start: Date = convertTimestamp(data.startTime);
         const dateStr = start.toISOString().substring(0, 10);
@@ -1007,7 +1159,11 @@ export const firebaseUserApi = {
 
       // Generate full year range with zeros where no data
       const results: ActivityData[] = [];
-      for (let d = new Date(startOfYear); d <= endOfYear; d.setDate(d.getDate() + 1)) {
+      for (
+        let d = new Date(startOfYear);
+        d <= endOfYear;
+        d.setDate(d.getDate() + 1)
+      ) {
         const dateStr = d.toISOString().substring(0, 10);
         const item = dayToTotals[dateStr];
         results.push({
@@ -1019,13 +1175,18 @@ export const firebaseUserApi = {
 
       return results;
     } catch (error) {
-      const apiError = handleError(error, 'Get daily activity', { defaultMessage: 'Failed to get daily activity' });
+      const apiError = handleError(error, 'Get daily activity', {
+        defaultMessage: 'Failed to get daily activity',
+      });
       throw new Error(apiError.userMessage);
     }
   },
 
   // Get weekly activity for past N weeks (default 12)
-  getUserWeeklyActivity: async (userId: string, numberOfWeeks: number = 12): Promise<WeeklyActivity[]> => {
+  getUserWeeklyActivity: async (
+    userId: string,
+    numberOfWeeks: number = 12
+  ): Promise<WeeklyActivity[]> => {
     try {
       const end = new Date();
       const start = new Date();
@@ -1041,18 +1202,25 @@ export const firebaseUserApi = {
       const snapshot = await getDocs(sessionsQuery);
 
       // Buckets keyed by ISO week number within the range
-      const weekToTotals: Record<string, { seconds: number; sessions: number }> = {};
+      const weekToTotals: Record<
+        string,
+        { seconds: number; sessions: number }
+      > = {};
 
       const getWeekKey = (date: Date): string => {
-        const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+        const d = new Date(
+          Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
+        );
         const dayNum = d.getUTCDay() || 7;
         d.setUTCDate(d.getUTCDate() + 4 - dayNum);
         const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-        const weekNo = Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+        const weekNo = Math.ceil(
+          ((d.getTime() - yearStart.getTime()) / 86400000 + 1) / 7
+        );
         return `${d.getUTCFullYear()}-W${weekNo}`;
       };
 
-      snapshot.forEach((docSnap) => {
+      snapshot.forEach(docSnap => {
         const data = docSnap.data();
         const startTime: Date = convertTimestamp(data.startTime);
         const key = getWeekKey(startTime);
@@ -1078,13 +1246,18 @@ export const firebaseUserApi = {
 
       return results;
     } catch (error) {
-      const apiError = handleError(error, 'Get weekly activity', { defaultMessage: 'Failed to get weekly activity' });
+      const apiError = handleError(error, 'Get weekly activity', {
+        defaultMessage: 'Failed to get weekly activity',
+      });
       throw new Error(apiError.userMessage);
     }
   },
 
   // Get project breakdown (hours per project) for a given year
-  getUserProjectBreakdown: async (userId: string, year?: number): Promise<ProjectBreakdown[]> => {
+  getUserProjectBreakdown: async (
+    userId: string,
+    year?: number
+  ): Promise<ProjectBreakdown[]> => {
     try {
       let sessionsQueryBase = query(
         collection(db, 'sessions'),
@@ -1106,14 +1279,16 @@ export const firebaseUserApi = {
 
       // Aggregate seconds per projectId
       const projectToSeconds: Record<string, number> = {};
-      snapshot.forEach((docSnap) => {
+      snapshot.forEach(docSnap => {
         const data = docSnap.data();
         const projectId = data.projectId || 'unknown';
         const durationSeconds = Number(data.duration) || 0;
-        projectToSeconds[projectId] = (projectToSeconds[projectId] || 0) + durationSeconds;
+        projectToSeconds[projectId] =
+          (projectToSeconds[projectId] || 0) + durationSeconds;
       });
 
-      const totalSeconds = Object.values(projectToSeconds).reduce((a, b) => a + b, 0) || 1;
+      const totalSeconds =
+        Object.values(projectToSeconds).reduce((a, b) => a + b, 0) || 1;
 
       const results: ProjectBreakdown[] = [];
       // For each project, fetch project details for name/color
@@ -1121,7 +1296,9 @@ export const firebaseUserApi = {
         let name = 'Unknown Project';
         let color = '#64748B';
         try {
-          const projectDoc = await getDoc(doc(db, 'projects', userId, 'userProjects', projectId));
+          const projectDoc = await getDoc(
+            doc(db, 'projects', userId, 'userProjects', projectId)
+          );
           const proj = projectDoc.data();
           if (proj) {
             name = proj.name || name;
@@ -1131,14 +1308,22 @@ export const firebaseUserApi = {
 
         const hours = seconds / 3600;
         const percentage = (seconds / totalSeconds) * 100;
-        results.push({ projectId, projectName: name, hours, percentage, color });
+        results.push({
+          projectId,
+          projectName: name,
+          hours,
+          percentage,
+          color,
+        });
       }
 
       // Sort by hours desc
       results.sort((a, b) => b.hours - a.hours);
       return results;
     } catch (error) {
-      const apiError = handleError(error, 'Get project breakdown', { defaultMessage: 'Failed to get project breakdown' });
+      const apiError = handleError(error, 'Get project breakdown', {
+        defaultMessage: 'Failed to get project breakdown',
+      });
       throw new Error(apiError.userMessage);
     }
   },
@@ -1153,7 +1338,9 @@ export const firebaseUserApi = {
       // Validate file type
       const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
       if (!validTypes.includes(file.type)) {
-        throw new Error('Invalid file type. Please upload a JPEG, PNG, GIF, or WebP image.');
+        throw new Error(
+          'Invalid file type. Please upload a JPEG, PNG, GIF, or WebP image.'
+        );
       }
 
       // Validate file size (5MB max)
@@ -1166,25 +1353,30 @@ export const firebaseUserApi = {
       const timestamp = Date.now();
       const fileExtension = file.name.split('.').pop() || 'jpg';
       const fileName = `profile_${timestamp}.${fileExtension}`;
-      
+
       // Create storage reference
-      const storageRef = ref(storage, `profile-pictures/${auth.currentUser.uid}/${fileName}`);
-      
+      const storageRef = ref(
+        storage,
+        `profile-pictures/${auth.currentUser.uid}/${fileName}`
+      );
+
       // Upload file
       const snapshot = await uploadBytes(storageRef, file, {
         contentType: file.type,
         customMetadata: {
           uploadedBy: auth.currentUser.uid,
-          uploadedAt: new Date().toISOString()
-        }
+          uploadedAt: new Date().toISOString(),
+        },
       });
-      
+
       // Get download URL
       const downloadURL = await getDownloadURL(snapshot.ref);
-      
+
       return downloadURL;
     } catch (error) {
-      const apiError = handleError(error, 'Upload profile picture', { defaultMessage: 'Failed to upload profile picture' });
+      const apiError = handleError(error, 'Upload profile picture', {
+        defaultMessage: 'Failed to upload profile picture',
+      });
       throw new Error(apiError.userMessage);
     }
   },
@@ -1203,40 +1395,46 @@ export const firebaseUserApi = {
 
       // Extract the storage path from the URL
       const storageRef = ref(storage, profilePictureUrl);
-      
+
       // Delete the file (will fail silently if file doesn't exist)
       try {
         await deleteObject(storageRef);
       } catch (error) {
         // Ignore errors if file doesn't exist
         if (!isNotFoundError(error)) {
-          handleError(error, 'Delete old profile picture', { severity: ErrorSeverity.WARNING });
+          handleError(error, 'Delete old profile picture', {
+            severity: ErrorSeverity.WARNING,
+          });
         }
       }
     } catch (error) {
-      handleError(error, 'in deleteProfilePicture', { severity: ErrorSeverity.WARNING });
+      handleError(error, 'in deleteProfilePicture', {
+        severity: ErrorSeverity.WARNING,
+      });
       // Don't throw error - this is a cleanup operation
     }
   },
 
   // Update user profile
-  updateProfile: async (data: Partial<{
-    name: string;
-    bio: string;
-    tagline: string;
-    pronouns: string;
-    location: string;
-    website: string;
-    profilePicture: string;
-    socialLinks: {
-      twitter?: string;
-      github?: string;
-      linkedin?: string;
-    };
-    profileVisibility: 'everyone' | 'followers' | 'private';
-    activityVisibility: 'everyone' | 'followers' | 'private';
-    projectVisibility: 'everyone' | 'followers' | 'private';
-  }>): Promise<UserProfile> => {
+  updateProfile: async (
+    data: Partial<{
+      name: string;
+      bio: string;
+      tagline: string;
+      pronouns: string;
+      location: string;
+      website: string;
+      profilePicture: string;
+      socialLinks: {
+        twitter?: string;
+        github?: string;
+        linkedin?: string;
+      };
+      profileVisibility: 'everyone' | 'followers' | 'private';
+      activityVisibility: 'everyone' | 'followers' | 'private';
+      projectVisibility: 'everyone' | 'followers' | 'private';
+    }>
+  ): Promise<UserProfile> => {
     try {
       if (!auth.currentUser) {
         throw new Error('User not authenticated');
@@ -1257,15 +1455,15 @@ export const firebaseUserApi = {
 
       const updateData = {
         ...cleanData,
-        updatedAt: serverTimestamp()
+        updatedAt: serverTimestamp(),
       };
 
       await updateDoc(doc(db, 'users', auth.currentUser.uid), updateData);
-      
+
       // Get updated profile
       const userDoc = await getDoc(doc(db, 'users', auth.currentUser.uid));
       const userData = userDoc.data()!;
-      
+
       return {
         id: auth.currentUser.uid,
         username: userData.username,
@@ -1279,10 +1477,12 @@ export const firebaseUserApi = {
         isFollowing: false,
         isPrivate: userData.profileVisibility === 'private',
         createdAt: convertTimestamp(userData.createdAt),
-        updatedAt: convertTimestamp(userData.updatedAt)
+        updatedAt: convertTimestamp(userData.updatedAt),
       };
     } catch (error) {
-      const apiError = handleError(error, 'Update profile', { defaultMessage: 'Failed to update profile' });
+      const apiError = handleError(error, 'Update profile', {
+        defaultMessage: 'Failed to update profile',
+      });
       throw new Error(apiError.userMessage);
     }
   },
@@ -1312,7 +1512,7 @@ export const firebaseUserApi = {
 
       const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
-      sessionsSnapshot.forEach((docSnap) => {
+      sessionsSnapshot.forEach(docSnap => {
         const data = docSnap.data();
         const duration = Number(data.duration) || 0; // seconds
         const start = convertTimestamp(data.startTime);
@@ -1336,7 +1536,7 @@ export const firebaseUserApi = {
       // Streaks: simple placeholder based on recent days with activity
       // Count consecutive days from today with at least one session
       const daysWithActivity = new Set<string>();
-      sessionsSnapshot.forEach((docSnap) => {
+      sessionsSnapshot.forEach(docSnap => {
         const start = convertTimestamp(docSnap.data().startTime);
         daysWithActivity.add(start.toISOString().substring(0, 10));
       });
@@ -1351,7 +1551,11 @@ export const firebaseUserApi = {
 
       // Average session duration (in minutes)
       const averageSessionDuration = sessionDurations.length
-        ? Math.round((sessionDurations.reduce((a, b) => a + b, 0) / sessionDurations.length) / 60)
+        ? Math.round(
+            sessionDurations.reduce((a, b) => a + b, 0) /
+              sessionDurations.length /
+              60
+          )
         : 0;
 
       // Most productive hour (0-23)
@@ -1394,7 +1598,7 @@ export const firebaseUserApi = {
         mostProductiveDay: 'Monday',
         totalSessions: 0,
         completedTasks: 0,
-        activeProjects: 0
+        activeProjects: 0,
       };
     }
   },
@@ -1404,6 +1608,8 @@ export const firebaseUserApi = {
     if (!auth.currentUser) {
       throw new Error('User not authenticated');
     }
+    // Rate limit follow actions
+    checkRateLimit(auth.currentUser.uid, 'FOLLOW');
     await updateSocialGraph(auth.currentUser.uid, userId, 'follow');
   },
 
@@ -1412,16 +1618,25 @@ export const firebaseUserApi = {
     if (!auth.currentUser) {
       throw new Error('User not authenticated');
     }
+    // Rate limit unfollow actions (uses same limit as follow)
+    checkRateLimit(auth.currentUser.uid, 'FOLLOW');
     await updateSocialGraph(auth.currentUser.uid, userId, 'unfollow');
   },
 
   // Check if current user is following another user
-  isFollowing: async (currentUserId: string, targetUserId: string): Promise<boolean> => {
+  isFollowing: async (
+    currentUserId: string,
+    targetUserId: string
+  ): Promise<boolean> => {
     try {
-      const socialGraphDoc = await getDoc(doc(db, `social_graph/${currentUserId}/outbound`, targetUserId));
+      const socialGraphDoc = await getDoc(
+        doc(db, `social_graph/${currentUserId}/outbound`, targetUserId)
+      );
       return socialGraphDoc.exists();
     } catch (error) {
-      handleError(error, 'checking follow status', { severity: ErrorSeverity.ERROR });
+      handleError(error, 'checking follow status', {
+        severity: ErrorSeverity.ERROR,
+      });
       return false;
     }
   },
@@ -1462,8 +1677,12 @@ export const firebaseUserApi = {
 
       return followers;
     } catch (error) {
-      handleError(error, 'fetching followers', { severity: ErrorSeverity.ERROR });
-      const apiError = handleError(error, 'Fetch followers', { defaultMessage: 'Failed to fetch followers' });
+      handleError(error, 'fetching followers', {
+        severity: ErrorSeverity.ERROR,
+      });
+      const apiError = handleError(error, 'Fetch followers', {
+        defaultMessage: 'Failed to fetch followers',
+      });
       throw new Error(apiError.userMessage);
     }
   },
@@ -1504,14 +1723,20 @@ export const firebaseUserApi = {
 
       return following;
     } catch (error) {
-      handleError(error, 'fetching following', { severity: ErrorSeverity.ERROR });
-      const apiError = handleError(error, 'Fetch following', { defaultMessage: 'Failed to fetch following' });
+      handleError(error, 'fetching following', {
+        severity: ErrorSeverity.ERROR,
+      });
+      const apiError = handleError(error, 'Fetch following', {
+        defaultMessage: 'Failed to fetch following',
+      });
       throw new Error(apiError.userMessage);
     }
   },
 
   // Sync follower counts for a user (recalculate from follows collection)
-  syncFollowerCounts: async (userId: string): Promise<{ followersCount: number; followingCount: number }> => {
+  syncFollowerCounts: async (
+    userId: string
+  ): Promise<{ followersCount: number; followingCount: number }> => {
     try {
       // Count followers (people who follow this user)
       const followersQuery = query(
@@ -1520,7 +1745,7 @@ export const firebaseUserApi = {
       );
       const followersSnapshot = await getDocs(followersQuery);
       const followersCount = followersSnapshot.size;
-      
+
       // Count following (people this user follows)
       const followingQuery = query(
         collection(db, 'follows'),
@@ -1528,28 +1753,39 @@ export const firebaseUserApi = {
       );
       const followingSnapshot = await getDocs(followingQuery);
       const followingCount = followingSnapshot.size;
-      
+
       // Update the user document with correct counts
       await updateDoc(doc(db, 'users', userId), {
         followersCount,
         followingCount,
-        updatedAt: serverTimestamp()
+        updatedAt: serverTimestamp(),
       });
-      
+
       return { followersCount, followingCount };
     } catch (error) {
-      const apiError = handleError(error, 'Sync follower counts', { defaultMessage: 'Failed to sync follower counts' });
+      const apiError = handleError(error, 'Sync follower counts', {
+        defaultMessage: 'Failed to sync follower counts',
+      });
       throw new Error(apiError.userMessage);
     }
   },
 
   // Search users by username and name (case-insensitive, prefix match)
-  searchUsers: async (searchTerm: string, page: number = 1, limitCount: number = 20): Promise<{
+  searchUsers: async (
+    searchTerm: string,
+    page: number = 1,
+    limitCount: number = 20
+  ): Promise<{
     users: UserSearchResult[];
     totalCount: number;
     hasMore: boolean;
   }> => {
     try {
+      // Rate limit search operations
+      if (auth.currentUser) {
+        checkRateLimit(auth.currentUser.uid, 'SEARCH');
+      }
+
       const term = (searchTerm || '').trim();
       if (!term) {
         return { users: [], totalCount: 0, hasMore: false };
@@ -1591,52 +1827,67 @@ export const firebaseUserApi = {
           name: userData.name,
           bio: userData.bio,
           profilePicture: userData.profilePicture,
-          followersCount: userData.inboundFriendshipCount || userData.followersCount || 0,
+          followersCount:
+            userData.inboundFriendshipCount || userData.followersCount || 0,
           isFollowing: false,
         } as UserSearchResult;
       };
 
       usernameSnap.forEach(pushDoc);
-      nameSnap.forEach((d) => {
+      nameSnap.forEach(d => {
         if (!byId[d.id]) pushDoc(d);
       });
 
       // Convert to array and apply a basic relevance sort: exact prefix on username > name > others
-      let users = Object.values(byId).sort((a, b) => {
-        const t = term.toLowerCase();
-        const aUser = a.username?.toLowerCase() || '';
-        const bUser = b.username?.toLowerCase() || '';
-        const aName = a.name?.toLowerCase() || '';
-        const bName = b.name?.toLowerCase() || '';
+      let users = Object.values(byId)
+        .sort((a, b) => {
+          const t = term.toLowerCase();
+          const aUser = a.username?.toLowerCase() || '';
+          const bUser = b.username?.toLowerCase() || '';
+          const aName = a.name?.toLowerCase() || '';
+          const bName = b.name?.toLowerCase() || '';
 
-        const aScore = (aUser.startsWith(t) ? 2 : 0) + (aName.startsWith(t) ? 1 : 0);
-        const bScore = (bUser.startsWith(t) ? 2 : 0) + (bName.startsWith(t) ? 1 : 0);
-        return bScore - aScore;
-      }).slice(0, limitCount);
+          const aScore =
+            (aUser.startsWith(t) ? 2 : 0) + (aName.startsWith(t) ? 1 : 0);
+          const bScore =
+            (bUser.startsWith(t) ? 2 : 0) + (bName.startsWith(t) ? 1 : 0);
+          return bScore - aScore;
+        })
+        .slice(0, limitCount);
 
       // Check if current user is following each user
       if (auth.currentUser) {
         const followingChecks = await Promise.all(
-          users.map(async (user) => {
+          users.map(async user => {
             if (user.id === auth.currentUser!.uid) {
               return { ...user, isFollowing: false }; // Don't check for own profile
             }
-            const socialGraphDoc = await getDoc(doc(db, `social_graph/${auth.currentUser!.uid}/outbound`, user.id));
+            const socialGraphDoc = await getDoc(
+              doc(db, `social_graph/${auth.currentUser!.uid}/outbound`, user.id)
+            );
             return { ...user, isFollowing: socialGraphDoc.exists() };
           })
         );
         users = followingChecks;
       }
 
-      return { users, totalCount: users.length, hasMore: users.length === limitCount };
+      return {
+        users,
+        totalCount: users.length,
+        hasMore: users.length === limitCount,
+      };
     } catch (error) {
-      const apiError = handleError(error, 'Search users', { defaultMessage: 'Failed to search users' });
+      const apiError = handleError(error, 'Search users', {
+        defaultMessage: 'Failed to search users',
+      });
       throw new Error(apiError.userMessage);
     }
   },
 
   // Get suggested users
-  getSuggestedUsers: async (limitCount: number = 10): Promise<SuggestedUser[]> => {
+  getSuggestedUsers: async (
+    limitCount: number = 10
+  ): Promise<SuggestedUser[]> => {
     try {
       if (!auth.currentUser) {
         return [];
@@ -1650,14 +1901,17 @@ export const firebaseUserApi = {
       );
 
       const querySnapshot = await getDocs(usersQuery);
-      const allUsers: Array<{ id: string; data: any; followersCount: number }> = [];
+      const allUsers: Array<{ id: string; data: any; followersCount: number }> =
+        [];
 
       // Get list of users we're already following
-      const followingList = await firebaseUserApi.getFollowing(auth.currentUser.uid);
+      const followingList = await firebaseUserApi.getFollowing(
+        auth.currentUser.uid
+      );
       const followingIds = new Set(followingList.map(u => u.id));
 
       // Collect all eligible users
-      querySnapshot.forEach((doc) => {
+      querySnapshot.forEach(doc => {
         const userData = doc.data();
 
         // Skip current user and users we're already following
@@ -1668,7 +1922,7 @@ export const firebaseUserApi = {
         allUsers.push({
           id: doc.id,
           data: userData,
-          followersCount: userData.followersCount || 0
+          followersCount: userData.followersCount || 0,
         });
       });
 
@@ -1676,21 +1930,28 @@ export const firebaseUserApi = {
       allUsers.sort((a, b) => b.followersCount - a.followersCount);
 
       // Take only the limit we need
-      const suggestions: SuggestedUser[] = allUsers.slice(0, limitCount).map((user, index) => ({
-        id: user.id,
-        username: user.data.username,
-        name: user.data.name,
-        bio: user.data.bio,
-        profilePicture: user.data.profilePicture,
-        followersCount: user.followersCount,
-        reason: user.followersCount > 10 ? 'popular_user' : 'similar_interests',
-        isFollowing: false
-      }));
+      const suggestions: SuggestedUser[] = allUsers
+        .slice(0, limitCount)
+        .map((user, index) => ({
+          id: user.id,
+          username: user.data.username,
+          name: user.data.name,
+          bio: user.data.bio,
+          profilePicture: user.data.profilePicture,
+          followersCount: user.followersCount,
+          reason:
+            user.followersCount > 10 ? 'popular_user' : 'similar_interests',
+          isFollowing: false,
+        }));
 
       return suggestions;
     } catch (error) {
-      handleError(error, 'getting suggested users', { severity: ErrorSeverity.ERROR });
-      const apiError = handleError(error, 'Get suggested users', { defaultMessage: 'Failed to get suggested users' });
+      handleError(error, 'getting suggested users', {
+        severity: ErrorSeverity.ERROR,
+      });
+      const apiError = handleError(error, 'Get suggested users', {
+        defaultMessage: 'Failed to get suggested users',
+      });
       throw new Error(apiError.userMessage);
     }
   },
@@ -1701,44 +1962,50 @@ export const firebaseUserApi = {
       if (!auth.currentUser) {
         throw new Error('User not authenticated');
       }
-      
+
       const userDoc = await getDoc(doc(db, 'users', auth.currentUser.uid));
       const userData = userDoc.data();
-      
+
       return {
         profileVisibility: userData?.profileVisibility || 'everyone',
         activityVisibility: userData?.activityVisibility || 'everyone',
         projectVisibility: userData?.projectVisibility || 'everyone',
-        blockedUsers: userData?.blockedUsers || []
+        blockedUsers: userData?.blockedUsers || [],
       };
     } catch (error) {
-      const apiError = handleError(error, 'Get privacy settings', { defaultMessage: 'Failed to get privacy settings' });
+      const apiError = handleError(error, 'Get privacy settings', {
+        defaultMessage: 'Failed to get privacy settings',
+      });
       throw new Error(apiError.userMessage);
     }
   },
 
   // Update privacy settings
-  updatePrivacySettings: async (settings: Partial<PrivacySettings>): Promise<PrivacySettings> => {
+  updatePrivacySettings: async (
+    settings: Partial<PrivacySettings>
+  ): Promise<PrivacySettings> => {
     try {
       if (!auth.currentUser) {
         throw new Error('User not authenticated');
       }
-      
+
       const updateData = {
         ...settings,
-        updatedAt: serverTimestamp()
+        updatedAt: serverTimestamp(),
       };
-      
+
       await updateDoc(doc(db, 'users', auth.currentUser.uid), updateData);
-      
+
       return {
         profileVisibility: settings.profileVisibility || 'everyone',
         activityVisibility: settings.activityVisibility || 'everyone',
         projectVisibility: settings.projectVisibility || 'everyone',
-        blockedUsers: settings.blockedUsers || []
+        blockedUsers: settings.blockedUsers || [],
       };
     } catch (error) {
-      const apiError = handleError(error, 'Update privacy settings', { defaultMessage: 'Failed to update privacy settings' });
+      const apiError = handleError(error, 'Update privacy settings', {
+        defaultMessage: 'Failed to update privacy settings',
+      });
       throw new Error(apiError.userMessage);
     }
   },
@@ -1756,18 +2023,27 @@ export const firebaseUserApi = {
     } catch (error) {
       // Handle Firebase permission errors gracefully
       if (isPermissionError(error)) {
-        handleError(error, 'Check username availability', { severity: ErrorSeverity.WARNING });
+        handleError(error, 'Check username availability', {
+          severity: ErrorSeverity.WARNING,
+        });
         // In case of permission error, assume username is available to allow registration to proceed
         // The actual uniqueness will be enforced by Firebase Auth and server-side validation
         return true;
       }
       const apiError = handleError(error, 'Check username availability');
-      throw new Error(apiError.userMessage || 'Unable to verify username availability. Please try again.');
+      throw new Error(
+        apiError.userMessage ||
+          'Unable to verify username availability. Please try again.'
+      );
     }
   },
 
   // Migration: Add lowercase fields to existing users
-  migrateUsersToLowercase: async (): Promise<{ success: number; failed: number; total: number }> => {
+  migrateUsersToLowercase: async (): Promise<{
+    success: number;
+    failed: number;
+    total: number;
+  }> => {
     try {
       if (!auth.currentUser) {
         throw new Error('User not authenticated');
@@ -1811,7 +2087,9 @@ export const firebaseUserApi = {
       console.log('Migration complete:', result);
       return result;
     } catch (error) {
-      const apiError = handleError(error, 'Migrate users to lowercase', { defaultMessage: 'Failed to migrate users' });
+      const apiError = handleError(error, 'Migrate users to lowercase', {
+        defaultMessage: 'Failed to migrate users',
+      });
       throw new Error(apiError.userMessage);
     }
   },
@@ -1828,34 +2106,53 @@ export const firebaseUserApi = {
 
       // 1. Delete all user's sessions
       console.log('Deleting sessions...');
-      const sessionsQuery = query(collection(db, 'sessions'), where('userId', '==', userId));
+      const sessionsQuery = query(
+        collection(db, 'sessions'),
+        where('userId', '==', userId)
+      );
       const sessionsSnapshot = await getDocs(sessionsQuery);
-      const sessionDeletes = sessionsSnapshot.docs.map(doc => deleteDoc(doc.ref));
+      const sessionDeletes = sessionsSnapshot.docs.map(doc =>
+        deleteDoc(doc.ref)
+      );
       await Promise.all(sessionDeletes);
       console.log(`Deleted ${sessionsSnapshot.size} sessions`);
 
       // 2. Delete all user's comments
       console.log('Deleting comments...');
-      const commentsQuery = query(collection(db, 'comments'), where('userId', '==', userId));
+      const commentsQuery = query(
+        collection(db, 'comments'),
+        where('userId', '==', userId)
+      );
       const commentsSnapshot = await getDocs(commentsQuery);
-      const commentDeletes = commentsSnapshot.docs.map(doc => deleteDoc(doc.ref));
+      const commentDeletes = commentsSnapshot.docs.map(doc =>
+        deleteDoc(doc.ref)
+      );
       await Promise.all(commentDeletes);
       console.log(`Deleted ${commentsSnapshot.size} comments`);
 
       // 3. Delete all follow relationships where user is follower or following
       console.log('Deleting follow relationships...');
-      const followsAsFollowerQuery = query(collection(db, 'follows'), where('followerId', '==', userId));
-      const followsAsFollowingQuery = query(collection(db, 'follows'), where('followingId', '==', userId));
-      const [followsAsFollowerSnapshot, followsAsFollowingSnapshot] = await Promise.all([
-        getDocs(followsAsFollowerQuery),
-        getDocs(followsAsFollowingQuery)
-      ]);
+      const followsAsFollowerQuery = query(
+        collection(db, 'follows'),
+        where('followerId', '==', userId)
+      );
+      const followsAsFollowingQuery = query(
+        collection(db, 'follows'),
+        where('followingId', '==', userId)
+      );
+      const [followsAsFollowerSnapshot, followsAsFollowingSnapshot] =
+        await Promise.all([
+          getDocs(followsAsFollowerQuery),
+          getDocs(followsAsFollowingQuery),
+        ]);
       const followDeletes = [
         ...followsAsFollowerSnapshot.docs.map(doc => deleteDoc(doc.ref)),
-        ...followsAsFollowingSnapshot.docs.map(doc => deleteDoc(doc.ref))
+        ...followsAsFollowingSnapshot.docs.map(doc => deleteDoc(doc.ref)),
       ];
       await Promise.all(followDeletes);
-      console.log(`Deleted ${followsAsFollowerSnapshot.size + followsAsFollowingSnapshot.size} follow relationships`);
+      console.log(
+        `Deleted ${followsAsFollowerSnapshot.size + followsAsFollowingSnapshot.size} follow relationships`
+      );
 
       // 4. Delete user's projects and their tasks
       console.log('Deleting projects and tasks...');
@@ -1864,7 +2161,14 @@ export const firebaseUserApi = {
 
       for (const projectDoc of projectsSnapshot.docs) {
         // Delete tasks in each project
-        const tasksRef = collection(db, 'projects', userId, 'userProjects', projectDoc.id, 'tasks');
+        const tasksRef = collection(
+          db,
+          'projects',
+          userId,
+          'userProjects',
+          projectDoc.id,
+          'tasks'
+        );
         const tasksSnapshot = await getDocs(tasksRef);
         const taskDeletes = tasksSnapshot.docs.map(doc => deleteDoc(doc.ref));
         await Promise.all(taskDeletes);
@@ -1887,7 +2191,13 @@ export const firebaseUserApi = {
       // 6. Delete user's active session data
       console.log('Deleting active session data...');
       try {
-        const activeSessionRef = doc(db, 'users', userId, 'activeSession', 'current');
+        const activeSessionRef = doc(
+          db,
+          'users',
+          userId,
+          'activeSession',
+          'current'
+        );
         await deleteDoc(activeSessionRef);
         console.log('Deleted active session data');
       } catch (error) {
@@ -1917,14 +2227,14 @@ export const firebaseUserApi = {
       console.log('Deleting Firebase Auth user...');
       await auth.currentUser.delete();
       console.log('Account deletion complete');
-
     } catch (error) {
       const apiError = handleError(error, 'Delete account', {
-        defaultMessage: 'Failed to delete account. Please try logging out and back in, then try again.'
+        defaultMessage:
+          'Failed to delete account. Please try logging out and back in, then try again.',
       });
       throw new Error(apiError.userMessage);
     }
-  }
+  },
 };
 
 // Project API methods
@@ -1935,15 +2245,15 @@ export const firebaseProjectApi = {
       if (!auth.currentUser) {
         throw new Error('User not authenticated');
       }
-      
+
       const projectsQuery = query(
         collection(db, 'projects', auth.currentUser.uid, 'userProjects'),
         orderBy('createdAt', 'desc')
       );
-      
+
       const querySnapshot = await getDocs(projectsQuery);
       const projects: Project[] = [];
-      
+
       querySnapshot.forEach(doc => {
         const data = doc.data();
         projects.push({
@@ -1957,13 +2267,15 @@ export const firebaseProjectApi = {
           totalTarget: data.totalTarget,
           status: data.status || 'active',
           createdAt: convertTimestamp(data.createdAt),
-          updatedAt: convertTimestamp(data.updatedAt)
+          updatedAt: convertTimestamp(data.updatedAt),
         });
       });
-      
+
       return projects;
     } catch (error) {
-      const apiError = handleError(error, 'Get projects', { defaultMessage: 'Failed to get projects' });
+      const apiError = handleError(error, 'Get projects', {
+        defaultMessage: 'Failed to get projects',
+      });
       throw new Error(apiError.userMessage);
     }
   },
@@ -1974,16 +2286,22 @@ export const firebaseProjectApi = {
       if (!auth.currentUser) {
         throw new Error('User not authenticated');
       }
-      
+
+      // Rate limit project creation
+      checkRateLimit(auth.currentUser.uid, 'PROJECT_CREATE');
+
       const projectData = removeUndefinedFields({
         ...data,
         status: 'active',
         createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
+        updatedAt: serverTimestamp(),
       });
-      
-      const docRef = await addDoc(collection(db, 'projects', auth.currentUser.uid, 'userProjects'), projectData);
-      
+
+      const docRef = await addDoc(
+        collection(db, 'projects', auth.currentUser.uid, 'userProjects'),
+        projectData
+      );
+
       return {
         id: docRef.id,
         userId: auth.currentUser.uid,
@@ -1995,32 +2313,42 @@ export const firebaseProjectApi = {
         totalTarget: data.totalTarget,
         status: 'active',
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
       };
     } catch (error) {
-      const apiError = handleError(error, 'Create project', { defaultMessage: 'Failed to create project' });
+      const apiError = handleError(error, 'Create project', {
+        defaultMessage: 'Failed to create project',
+      });
       throw new Error(apiError.userMessage);
     }
   },
 
   // Update project
-  updateProject: async (id: string, data: UpdateProjectData): Promise<Project> => {
+  updateProject: async (
+    id: string,
+    data: UpdateProjectData
+  ): Promise<Project> => {
     try {
       if (!auth.currentUser) {
         throw new Error('User not authenticated');
       }
-      
+
       const updateData = removeUndefinedFields({
         ...data,
-        updatedAt: serverTimestamp()
+        updatedAt: serverTimestamp(),
       });
-      
-      await updateDoc(doc(db, 'projects', auth.currentUser.uid, 'userProjects', id), updateData);
-      
+
+      await updateDoc(
+        doc(db, 'projects', auth.currentUser.uid, 'userProjects', id),
+        updateData
+      );
+
       // Get updated project
-      const projectDoc = await getDoc(doc(db, 'projects', auth.currentUser.uid, 'userProjects', id));
+      const projectDoc = await getDoc(
+        doc(db, 'projects', auth.currentUser.uid, 'userProjects', id)
+      );
       const projectData = projectDoc.data()!;
-      
+
       return {
         id,
         userId: auth.currentUser.uid,
@@ -2032,10 +2360,12 @@ export const firebaseProjectApi = {
         totalTarget: projectData.totalTarget,
         status: projectData.status || 'active',
         createdAt: convertTimestamp(projectData.createdAt),
-        updatedAt: convertTimestamp(projectData.updatedAt)
+        updatedAt: convertTimestamp(projectData.updatedAt),
       };
     } catch (error) {
-      const apiError = handleError(error, 'Update project', { defaultMessage: 'Failed to update project' });
+      const apiError = handleError(error, 'Update project', {
+        defaultMessage: 'Failed to update project',
+      });
       throw new Error(apiError.userMessage);
     }
   },
@@ -2046,13 +2376,17 @@ export const firebaseProjectApi = {
       if (!auth.currentUser) {
         throw new Error('User not authenticated');
       }
-      
-      await deleteDoc(doc(db, 'projects', auth.currentUser.uid, 'userProjects', id));
+
+      await deleteDoc(
+        doc(db, 'projects', auth.currentUser.uid, 'userProjects', id)
+      );
     } catch (error) {
-      const apiError = handleError(error, 'Delete project', { defaultMessage: 'Failed to delete project' });
+      const apiError = handleError(error, 'Delete project', {
+        defaultMessage: 'Failed to delete project',
+      });
       throw new Error(apiError.userMessage);
     }
-  }
+  },
 };
 
 // Firebase Task API
@@ -2063,29 +2397,47 @@ export const firebaseTaskApi = {
       if (!auth.currentUser) {
         throw new Error('User not authenticated');
       }
-      
-      console.log('Firebase API: Getting tasks for project:', projectId, 'User:', auth.currentUser.uid);
+
+      console.log(
+        'Firebase API: Getting tasks for project:',
+        projectId,
+        'User:',
+        auth.currentUser.uid
+      );
       const tasksQuery = query(
-        collection(db, 'projects', auth.currentUser.uid, 'userProjects', projectId, 'tasks'),
+        collection(
+          db,
+          'projects',
+          auth.currentUser.uid,
+          'userProjects',
+          projectId,
+          'tasks'
+        ),
         orderBy('createdAt', 'desc')
       );
-      
+
       const tasksSnapshot = await getDocs(tasksQuery);
       console.log('Firebase API: Found tasks:', tasksSnapshot.docs.length);
-      
+
       const tasks = tasksSnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data(),
         createdAt: convertTimestamp(doc.data().createdAt),
         updatedAt: convertTimestamp(doc.data().updatedAt),
-        completedAt: doc.data().completedAt ? convertTimestamp(doc.data().completedAt) : undefined,
+        completedAt: doc.data().completedAt
+          ? convertTimestamp(doc.data().completedAt)
+          : undefined,
       })) as Task[];
-      
+
       console.log('Firebase API: Processed tasks:', tasks);
       return tasks;
     } catch (error) {
-      handleError(error, 'Firebase API: getting project tasks', { severity: ErrorSeverity.ERROR });
-      const apiError = handleError(error, 'Get project tasks', { defaultMessage: 'Failed to get project tasks' });
+      handleError(error, 'Firebase API: getting project tasks', {
+        severity: ErrorSeverity.ERROR,
+      });
+      const apiError = handleError(error, 'Get project tasks', {
+        defaultMessage: 'Failed to get project tasks',
+      });
       throw new Error(apiError.userMessage);
     }
   },
@@ -2096,13 +2448,13 @@ export const firebaseTaskApi = {
       if (!auth.currentUser) {
         throw new Error('User not authenticated');
       }
-      
+
       // Get unassigned tasks
       const unassignedQuery = query(
         collection(db, 'users', auth.currentUser.uid, 'tasks'),
         orderBy('createdAt', 'desc')
       );
-      
+
       const unassignedSnapshot = await getDocs(unassignedQuery);
       const unassignedTasks = unassignedSnapshot.docs.map(doc => ({
         id: doc.id,
@@ -2110,16 +2462,20 @@ export const firebaseTaskApi = {
         projectId: null, // Mark as unassigned
         createdAt: convertTimestamp(doc.data().createdAt),
         updatedAt: convertTimestamp(doc.data().updatedAt),
-        completedAt: doc.data().completedAt ? convertTimestamp(doc.data().completedAt) : undefined,
+        completedAt: doc.data().completedAt
+          ? convertTimestamp(doc.data().completedAt)
+          : undefined,
       })) as Task[];
-      
+
       // TODO: Also load project tasks
       // For now, just return unassigned tasks
       // In the future, we should also load tasks from all projects
-      
+
       return unassignedTasks;
     } catch (error) {
-      const apiError = handleError(error, 'Get all tasks', { defaultMessage: 'Failed to get all tasks' });
+      const apiError = handleError(error, 'Get all tasks', {
+        defaultMessage: 'Failed to get all tasks',
+      });
       throw new Error(apiError.userMessage);
     }
   },
@@ -2130,7 +2486,7 @@ export const firebaseTaskApi = {
       if (!auth.currentUser) {
         throw new Error('User not authenticated');
       }
-      
+
       const taskData = {
         ...data,
         status: 'active',
@@ -2138,13 +2494,20 @@ export const firebaseTaskApi = {
         updatedAt: serverTimestamp(),
         userId: auth.currentUser.uid,
       };
-      
+
       let docRef;
-      
+
       if (data.projectId) {
         // Create task in project subcollection
         docRef = await addDoc(
-          collection(db, 'projects', auth.currentUser.uid, 'userProjects', data.projectId, 'tasks'),
+          collection(
+            db,
+            'projects',
+            auth.currentUser.uid,
+            'userProjects',
+            data.projectId,
+            'tasks'
+          ),
           taskData
         );
       } else {
@@ -2154,7 +2517,7 @@ export const firebaseTaskApi = {
           taskData
         );
       }
-      
+
       return {
         id: docRef.id,
         ...taskData,
@@ -2162,35 +2525,49 @@ export const firebaseTaskApi = {
         updatedAt: new Date(),
       } as Task;
     } catch (error) {
-      const apiError = handleError(error, 'Create task', { defaultMessage: 'Failed to create task' });
+      const apiError = handleError(error, 'Create task', {
+        defaultMessage: 'Failed to create task',
+      });
       throw new Error(apiError.userMessage);
     }
   },
 
   // Update a task
-  updateTask: async (id: string, data: UpdateTaskData, projectId?: string): Promise<Task> => {
+  updateTask: async (
+    id: string,
+    data: UpdateTaskData,
+    projectId?: string
+  ): Promise<Task> => {
     try {
       if (!auth.currentUser) {
         throw new Error('User not authenticated');
       }
-      
+
       const updateData = {
         ...data,
         updatedAt: serverTimestamp(),
         completedAt: data.status === 'completed' ? serverTimestamp() : null,
       };
-      
+
       let docRef;
       if (projectId) {
         // Update task in project subcollection
-        docRef = doc(db, 'projects', auth.currentUser.uid, 'userProjects', projectId, 'tasks', id);
+        docRef = doc(
+          db,
+          'projects',
+          auth.currentUser.uid,
+          'userProjects',
+          projectId,
+          'tasks',
+          id
+        );
       } else {
         // Update unassigned task
         docRef = doc(db, 'users', auth.currentUser.uid, 'tasks', id);
       }
-      
+
       await updateDoc(docRef, updateData);
-      
+
       // Return updated task (would need to fetch from DB for complete data)
       return {
         id,
@@ -2199,7 +2576,9 @@ export const firebaseTaskApi = {
         completedAt: data.status === 'completed' ? new Date() : undefined,
       } as Task;
     } catch (error) {
-      const apiError = handleError(error, 'Update task', { defaultMessage: 'Failed to update task' });
+      const apiError = handleError(error, 'Update task', {
+        defaultMessage: 'Failed to update task',
+      });
       throw new Error(apiError.userMessage);
     }
   },
@@ -2210,38 +2589,63 @@ export const firebaseTaskApi = {
       if (!auth.currentUser) {
         throw new Error('User not authenticated');
       }
-      
+
       await deleteDoc(
-        doc(db, 'projects', auth.currentUser.uid, 'userProjects', projectId, 'tasks', id)
+        doc(
+          db,
+          'projects',
+          auth.currentUser.uid,
+          'userProjects',
+          projectId,
+          'tasks',
+          id
+        )
       );
     } catch (error) {
-      const apiError = handleError(error, 'Delete task', { defaultMessage: 'Failed to delete task' });
+      const apiError = handleError(error, 'Delete task', {
+        defaultMessage: 'Failed to delete task',
+      });
       throw new Error(apiError.userMessage);
     }
   },
 
   // Bulk update tasks
-  bulkUpdateTasks: async (update: BulkTaskUpdate, projectId: string): Promise<void> => {
+  bulkUpdateTasks: async (
+    update: BulkTaskUpdate,
+    projectId: string
+  ): Promise<void> => {
     try {
       if (!auth.currentUser) {
         throw new Error('User not authenticated');
       }
-      
+
       const batch = writeBatch(db);
-      
+
       update.taskIds.forEach(taskId => {
-        const taskRef = doc(db, 'projects', auth.currentUser.uid, 'userProjects', projectId, 'tasks', taskId);
+        const taskRef = doc(
+          db,
+          'projects',
+          auth.currentUser.uid,
+          'userProjects',
+          projectId,
+          'tasks',
+          taskId
+        );
         batch.update(taskRef, {
           status: update.status,
           updatedAt: serverTimestamp(),
           completedAt: update.status === 'completed' ? serverTimestamp() : null,
         });
       });
-      
+
       await batch.commit();
     } catch (error) {
-      handleError(error, 'Bulk update tasks error', { severity: ErrorSeverity.ERROR });
-      const apiError = handleError(error, 'Bulk update tasks', { defaultMessage: 'Failed to bulk update tasks' });
+      handleError(error, 'Bulk update tasks error', {
+        severity: ErrorSeverity.ERROR,
+      });
+      const apiError = handleError(error, 'Bulk update tasks', {
+        defaultMessage: 'Failed to bulk update tasks',
+      });
       throw new Error(apiError.userMessage);
     }
   },
@@ -2252,7 +2656,7 @@ export const firebaseTaskApi = {
       if (!auth.currentUser) {
         throw new Error('User not authenticated');
       }
-      
+
       // TODO: Implement proper task stats calculation
       // For now, return default stats
       return {
@@ -2264,7 +2668,9 @@ export const firebaseTaskApi = {
         averageCompletionTime: 0,
       };
     } catch (error) {
-      const apiError = handleError(error, 'Get task stats', { defaultMessage: 'Failed to get task stats' });
+      const apiError = handleError(error, 'Get task stats', {
+        defaultMessage: 'Failed to get task stats',
+      });
       throw new Error(apiError.userMessage);
     }
   },
@@ -2279,6 +2685,9 @@ export const firebaseSessionApi = {
         throw new Error('User not authenticated');
       }
 
+      // Rate limit session creation
+      checkRateLimit(auth.currentUser.uid, 'SESSION_CREATE');
+
       // Get selected tasks
       const selectedTasks = [];
       if (data.taskIds && data.taskIds.length > 0) {
@@ -2290,10 +2699,20 @@ export const firebaseSessionApi = {
               collection(db, 'projects', auth.currentUser.uid, 'userProjects')
             );
             const projectsSnapshot = await getDocs(projectsQuery);
-            
+
             let taskFound = false;
             for (const projectDoc of projectsSnapshot.docs) {
-              const taskDoc = await getDoc(doc(db, 'projects', auth.currentUser.uid, 'userProjects', projectDoc.id, 'tasks', taskId));
+              const taskDoc = await getDoc(
+                doc(
+                  db,
+                  'projects',
+                  auth.currentUser.uid,
+                  'userProjects',
+                  projectDoc.id,
+                  'tasks',
+                  taskId
+                )
+              );
               if (taskDoc.exists()) {
                 const taskData = taskDoc.data();
                 selectedTasks.push({
@@ -2303,16 +2722,20 @@ export const firebaseSessionApi = {
                   status: taskData.status || 'active',
                   createdAt: convertTimestamp(taskData.createdAt),
                   updatedAt: convertTimestamp(taskData.updatedAt),
-                  completedAt: taskData.completedAt ? convertTimestamp(taskData.completedAt) : undefined
+                  completedAt: taskData.completedAt
+                    ? convertTimestamp(taskData.completedAt)
+                    : undefined,
                 });
                 taskFound = true;
                 break;
               }
             }
-            
+
             // If not found in projects, try unassigned tasks
             if (!taskFound) {
-              const taskDoc = await getDoc(doc(db, 'users', auth.currentUser.uid, 'tasks', taskId));
+              const taskDoc = await getDoc(
+                doc(db, 'users', auth.currentUser.uid, 'tasks', taskId)
+              );
               if (taskDoc.exists()) {
                 const taskData = taskDoc.data();
                 selectedTasks.push({
@@ -2322,12 +2745,16 @@ export const firebaseSessionApi = {
                   status: taskData.status || 'active',
                   createdAt: convertTimestamp(taskData.createdAt),
                   updatedAt: convertTimestamp(taskData.updatedAt),
-                  completedAt: taskData.completedAt ? convertTimestamp(taskData.completedAt) : undefined
+                  completedAt: taskData.completedAt
+                    ? convertTimestamp(taskData.completedAt)
+                    : undefined,
                 });
               }
             }
           } catch (error) {
-            handleError(error, `Fetch task ${taskId}`, { severity: ErrorSeverity.WARNING });
+            handleError(error, `Fetch task ${taskId}`, {
+              severity: ErrorSeverity.WARNING,
+            });
           }
         }
       }
@@ -2356,7 +2783,7 @@ export const firebaseSessionApi = {
         supportedBy: [], // Initialize empty array for user IDs who support this session
         commentCount: 0,
         createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
+        updatedAt: serverTimestamp(),
       };
 
       // Only add howFelt if it's defined (Firestore doesn't allow undefined values)
@@ -2368,14 +2795,19 @@ export const firebaseSessionApi = {
 
       // Update challenge progress for this session
       try {
-        await firebaseChallengeApi.updateChallengeProgress(auth.currentUser.uid, {
-          ...sessionData,
-          id: docRef.id,
-          startTime: data.startTime,
-          tasks: selectedTasks
-        });
+        await firebaseChallengeApi.updateChallengeProgress(
+          auth.currentUser.uid,
+          {
+            ...sessionData,
+            id: docRef.id,
+            startTime: data.startTime,
+            tasks: selectedTasks,
+          }
+        );
       } catch (error) {
-        handleError(error, 'update challenge progress', { severity: ErrorSeverity.WARNING });
+        handleError(error, 'update challenge progress', {
+          severity: ErrorSeverity.WARNING,
+        });
         // Don't fail session creation if challenge update fails
       }
 
@@ -2403,13 +2835,15 @@ export const firebaseSessionApi = {
         supportCount: 0,
         commentCount: 0,
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
       };
 
       console.log('Session created successfully:', newSession);
       return newSession;
     } catch (error) {
-      const apiError = handleError(error, 'Create session', { defaultMessage: 'Failed to create session' });
+      const apiError = handleError(error, 'Create session', {
+        defaultMessage: 'Failed to create session',
+      });
       throw new Error(apiError.userMessage);
     }
   },
@@ -2421,33 +2855,41 @@ export const firebaseSessionApi = {
     visibility: 'everyone' | 'followers' | 'private'
   ): Promise<{ session: Session; post?: Post }> => {
     try {
-      console.log('Creating session with post:', { sessionData, postContent, visibility });
-      
+      console.log('Creating session with post:', {
+        sessionData,
+        postContent,
+        visibility,
+      });
+
       // Create session first with the correct visibility
       const session = await firebaseSessionApi.createSession({
         ...sessionData,
-        visibility
+        visibility,
       });
-      
+
       console.log('Session created:', session);
 
       let post: Post | undefined;
-      
+
       // Create post if not private
       if (visibility !== 'private') {
         console.log('Creating post for session:', session.id);
         post = await firebasePostApi.createPost({
           sessionId: session.id,
           content: postContent,
-          visibility
+          visibility,
         });
         console.log('Post created:', post);
       }
 
       return { session, post };
     } catch (error) {
-      handleError(error, 'in createSessionWithPost', { severity: ErrorSeverity.ERROR });
-      const apiError = handleError(error, 'Create session with post', { defaultMessage: 'Failed to create session with post' });
+      handleError(error, 'in createSessionWithPost', {
+        severity: ErrorSeverity.ERROR,
+      });
+      const apiError = handleError(error, 'Create session with post', {
+        defaultMessage: 'Failed to create session with post',
+      });
       throw new Error(apiError.userMessage);
     }
   },
@@ -2469,13 +2911,23 @@ export const firebaseSessionApi = {
 
       // Ensure user document exists first (Firestore requires parent docs for subcollections)
       const userRef = doc(db, 'users', userId);
-      await setDoc(userRef, {
-        uid: userId,
-        updatedAt: serverTimestamp()
-      }, { merge: true });
+      await setDoc(
+        userRef,
+        {
+          uid: userId,
+          updatedAt: serverTimestamp(),
+        },
+        { merge: true }
+      );
 
       // Save the active session
-      const activeSessionRef = doc(db, 'users', userId, 'activeSession', 'current');
+      const activeSessionRef = doc(
+        db,
+        'users',
+        userId,
+        'activeSession',
+        'current'
+      );
       await setDoc(activeSessionRef, {
         startTime: Timestamp.fromDate(timerData.startTime),
         projectId: timerData.projectId,
@@ -2483,7 +2935,7 @@ export const firebaseSessionApi = {
         pausedDuration: timerData.pausedDuration || 0,
         isPaused: !!timerData.isPaused,
         lastUpdated: serverTimestamp(),
-        createdAt: serverTimestamp()
+        createdAt: serverTimestamp(),
       });
 
       console.log('Active session saved successfully');
@@ -2507,7 +2959,13 @@ export const firebaseSessionApi = {
       }
 
       const userId = auth.currentUser.uid;
-      const activeSessionRef = doc(db, 'users', userId, 'activeSession', 'current');
+      const activeSessionRef = doc(
+        db,
+        'users',
+        userId,
+        'activeSession',
+        'current'
+      );
       const activeSessionDoc = await getDoc(activeSessionRef);
 
       if (!activeSessionDoc.exists()) {
@@ -2518,7 +2976,11 @@ export const firebaseSessionApi = {
 
       // Validate data exists and has required fields
       if (!data || !data.startTime || !data.projectId) {
-        handleError(new Error('Active session data is incomplete'), 'Get active session', { severity: ErrorSeverity.WARNING });
+        handleError(
+          new Error('Active session data is incomplete'),
+          'Get active session',
+          { severity: ErrorSeverity.WARNING }
+        );
         return null;
       }
 
@@ -2527,14 +2989,16 @@ export const firebaseSessionApi = {
         projectId: data.projectId,
         selectedTaskIds: data.selectedTaskIds || [],
         pausedDuration: data.pausedDuration || 0,
-        isPaused: !!data.isPaused
+        isPaused: !!data.isPaused,
       };
     } catch (error) {
       // If it's a permission error or document doesn't exist, silently return null
       if (isPermissionError(error) || isNotFoundError(error)) {
         return null;
       }
-      handleError(error, 'Get active session', { severity: ErrorSeverity.ERROR });
+      handleError(error, 'Get active session', {
+        severity: ErrorSeverity.ERROR,
+      });
       return null;
     }
   },
@@ -2547,7 +3011,13 @@ export const firebaseSessionApi = {
       }
 
       const userId = auth.currentUser.uid;
-      const activeSessionRef = doc(db, 'users', userId, 'activeSession', 'current');
+      const activeSessionRef = doc(
+        db,
+        'users',
+        userId,
+        'activeSession',
+        'current'
+      );
 
       // Delete the document immediately to prevent race conditions
       // This is atomic and prevents any in-flight auto-save from restoring the session
@@ -2560,7 +3030,7 @@ export const firebaseSessionApi = {
         const event = {
           type: 'session-cancelled',
           timestamp: Date.now(),
-          userId: userId
+          userId: userId,
         };
         localStorage.setItem('timer-event', JSON.stringify(event));
         // Remove immediately to trigger the event
@@ -2570,15 +3040,17 @@ export const firebaseSessionApi = {
         console.warn('Failed to broadcast session cancellation:', storageError);
       }
     } catch (error) {
-      const apiError = handleError(error, 'Clear active session', { defaultMessage: 'Failed to clear active session' });
+      const apiError = handleError(error, 'Clear active session', {
+        defaultMessage: 'Failed to clear active session',
+      });
       throw new Error(apiError.userMessage);
     }
   },
 
   // Get user's sessions with populated data (for display as posts)
   getUserSessions: async (
-    userId: string, 
-    limitCount: number = 20, 
+    userId: string,
+    limitCount: number = 20,
     isOwnProfile: boolean = false
   ): Promise<Array<Session & { user: User; project: Project }>> => {
     try {
@@ -2587,7 +3059,7 @@ export const firebaseSessionApi = {
       }
 
       let sessionsQuery;
-      
+
       if (isOwnProfile) {
         // Show all sessions for own profile
         sessionsQuery = query(
@@ -2622,50 +3094,56 @@ export const firebaseSessionApi = {
         location: userData?.location,
         profilePicture: userData?.profilePicture,
         createdAt: convertTimestamp(userData?.createdAt) || new Date(),
-        updatedAt: convertTimestamp(userData?.updatedAt) || new Date()
+        updatedAt: convertTimestamp(userData?.updatedAt) || new Date(),
       };
 
       // Process each session
       for (const sessionDoc of querySnapshot.docs) {
         const sessionData = sessionDoc.data();
-        
+
         // Get project data
         let projectData = null;
         const projectId = sessionData.projectId;
         if (projectId) {
           try {
-            const projectDoc = await getDoc(doc(db, 'projects', userId, 'userProjects', projectId));
+            const projectDoc = await getDoc(
+              doc(db, 'projects', userId, 'userProjects', projectId)
+            );
             if (projectDoc.exists()) {
               projectData = projectDoc.data();
             }
           } catch (error) {
-            handleError(error, `Fetch project ${projectId}`, { severity: ErrorSeverity.WARNING });
+            handleError(error, `Fetch project ${projectId}`, {
+              severity: ErrorSeverity.WARNING,
+            });
           }
         }
 
-        const project: Project = projectData ? {
-          id: projectId,
-          userId: userId,
-          name: projectData.name || 'Unknown Project',
-          description: projectData.description || '',
-          icon: projectData.icon || '📁',
-          color: projectData.color || '#64748B',
-          weeklyTarget: projectData.weeklyTarget,
-          totalTarget: projectData.totalTarget,
-          status: projectData.status || 'active',
-          createdAt: convertTimestamp(projectData.createdAt) || new Date(),
-          updatedAt: convertTimestamp(projectData.updatedAt) || new Date()
-        } : {
-          id: projectId || 'unknown',
-          userId: userId,
-          name: 'Unknown Project',
-          description: '',
-          icon: '📁',
-          color: '#64748B',
-          status: 'active',
-          createdAt: new Date(),
-          updatedAt: new Date()
-        };
+        const project: Project = projectData
+          ? {
+              id: projectId,
+              userId: userId,
+              name: projectData.name || 'Unknown Project',
+              description: projectData.description || '',
+              icon: projectData.icon || '📁',
+              color: projectData.color || '#64748B',
+              weeklyTarget: projectData.weeklyTarget,
+              totalTarget: projectData.totalTarget,
+              status: projectData.status || 'active',
+              createdAt: convertTimestamp(projectData.createdAt) || new Date(),
+              updatedAt: convertTimestamp(projectData.updatedAt) || new Date(),
+            }
+          : {
+              id: projectId || 'unknown',
+              userId: userId,
+              name: 'Unknown Project',
+              description: '',
+              icon: '📁',
+              color: '#64748B',
+              status: 'active',
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            };
 
         sessions.push({
           id: sessionDoc.id,
@@ -2688,28 +3166,35 @@ export const firebaseSessionApi = {
           createdAt: convertTimestamp(sessionData.createdAt) || new Date(),
           updatedAt: convertTimestamp(sessionData.updatedAt) || new Date(),
           user,
-          project
+          project,
         });
       }
 
       console.log(`Found ${sessions.length} sessions for user ${userId}`);
       return sessions;
     } catch (error) {
-      handleError(error, 'get user sessions', { severity: ErrorSeverity.ERROR });
-      const apiError = handleError(error, 'Get user sessions', { defaultMessage: 'Failed to get user sessions' });
+      handleError(error, 'get user sessions', {
+        severity: ErrorSeverity.ERROR,
+      });
+      const apiError = handleError(error, 'Get user sessions', {
+        defaultMessage: 'Failed to get user sessions',
+      });
       throw new Error(apiError.userMessage);
     }
   },
 
   // Get count of user's sessions (for profile stats)
-  getUserSessionsCount: async (userId: string, isOwnProfile: boolean = false): Promise<number> => {
+  getUserSessionsCount: async (
+    userId: string,
+    isOwnProfile: boolean = false
+  ): Promise<number> => {
     try {
       if (!auth.currentUser) {
         throw new Error('User not authenticated');
       }
 
       let sessionsQuery;
-      
+
       if (isOwnProfile) {
         // Count all sessions for own profile
         sessionsQuery = query(
@@ -2728,7 +3213,9 @@ export const firebaseSessionApi = {
       const querySnapshot = await getDocs(sessionsQuery);
       return querySnapshot.size;
     } catch (error) {
-      handleError(error, 'get user sessions count', { severity: ErrorSeverity.ERROR });
+      handleError(error, 'get user sessions count', {
+        severity: ErrorSeverity.ERROR,
+      });
       return 0;
     }
   },
@@ -2781,23 +3268,28 @@ export const firebaseSessionApi = {
           privateNotes: data.privateNotes,
           isArchived: data.isArchived || false,
           createdAt: convertTimestamp(data.createdAt),
-          updatedAt: convertTimestamp(data.updatedAt)
+          updatedAt: convertTimestamp(data.updatedAt),
         });
       });
 
       return {
         sessions,
         totalCount: sessions.length,
-        hasMore: querySnapshot.docs.length === limitCount
+        hasMore: querySnapshot.docs.length === limitCount,
       };
     } catch (error) {
-      const apiError = handleError(error, 'Get sessions', { defaultMessage: 'Failed to get sessions' });
+      const apiError = handleError(error, 'Get sessions', {
+        defaultMessage: 'Failed to get sessions',
+      });
       throw new Error(apiError.userMessage);
     }
   },
 
   // Update a session
-  updateSession: async (sessionId: string, data: Partial<CreateSessionData>): Promise<void> => {
+  updateSession: async (
+    sessionId: string,
+    data: Partial<CreateSessionData>
+  ): Promise<void> => {
     try {
       if (!auth.currentUser) {
         throw new Error('User not authenticated');
@@ -2806,33 +3298,42 @@ export const firebaseSessionApi = {
       const sessionRef = doc(db, 'sessions', sessionId);
       const sessionDoc = await getDoc(sessionRef);
 
-      if (!sessionDoc.exists() || sessionDoc.data().userId !== auth.currentUser.uid) {
+      if (
+        !sessionDoc.exists() ||
+        sessionDoc.data().userId !== auth.currentUser.uid
+      ) {
         throw new Error('Session not found or permission denied');
       }
 
       // Prepare update data
       const updateData: any = {
-        updatedAt: serverTimestamp()
+        updatedAt: serverTimestamp(),
       };
 
       if (data.title !== undefined) updateData.title = data.title;
-      if (data.description !== undefined) updateData.description = data.description;
+      if (data.description !== undefined)
+        updateData.description = data.description;
       if (data.projectId !== undefined) updateData.projectId = data.projectId;
-      if (data.visibility !== undefined) updateData.visibility = data.visibility;
+      if (data.visibility !== undefined)
+        updateData.visibility = data.visibility;
       if (data.tags !== undefined) updateData.tags = data.tags;
       if (data.howFelt !== undefined) updateData.howFelt = data.howFelt;
-      if (data.privateNotes !== undefined) updateData.privateNotes = data.privateNotes;
+      if (data.privateNotes !== undefined)
+        updateData.privateNotes = data.privateNotes;
       if (data.images !== undefined) updateData.images = data.images;
-      if (data.allowComments !== undefined) updateData.allowComments = data.allowComments;
+      if (data.allowComments !== undefined)
+        updateData.allowComments = data.allowComments;
 
       // Remove undefined values
-      Object.keys(updateData).forEach(key =>
-        updateData[key] === undefined && delete updateData[key]
+      Object.keys(updateData).forEach(
+        key => updateData[key] === undefined && delete updateData[key]
       );
 
       await updateDoc(sessionRef, updateData);
     } catch (error) {
-      const apiError = handleError(error, 'Update session', { defaultMessage: 'Failed to update session' });
+      const apiError = handleError(error, 'Update session', {
+        defaultMessage: 'Failed to update session',
+      });
       throw new Error(apiError.userMessage);
     }
   },
@@ -2847,13 +3348,18 @@ export const firebaseSessionApi = {
       const sessionRef = doc(db, 'sessions', sessionId);
       const sessionDoc = await getDoc(sessionRef);
 
-      if (!sessionDoc.exists() || sessionDoc.data().userId !== auth.currentUser.uid) {
+      if (
+        !sessionDoc.exists() ||
+        sessionDoc.data().userId !== auth.currentUser.uid
+      ) {
         throw new Error('Session not found or permission denied');
       }
 
       await deleteDoc(sessionRef);
     } catch (error) {
-      const apiError = handleError(error, 'Delete session', { defaultMessage: 'Failed to delete session' });
+      const apiError = handleError(error, 'Delete session', {
+        defaultMessage: 'Failed to delete session',
+      });
       throw new Error(apiError.userMessage);
     }
   },
@@ -2897,10 +3403,12 @@ export const firebaseSessionApi = {
         supportCount: data.supportCount || 0,
         commentCount: data.commentCount || 0,
         createdAt: convertTimestamp(data.createdAt),
-        updatedAt: convertTimestamp(data.updatedAt)
+        updatedAt: convertTimestamp(data.updatedAt),
       };
     } catch (error) {
-      const apiError = handleError(error, 'Get session', { defaultMessage: 'Failed to get session' });
+      const apiError = handleError(error, 'Get session', {
+        defaultMessage: 'Failed to get session',
+      });
       throw new Error(apiError.userMessage);
     }
   },
@@ -2927,7 +3435,13 @@ export const firebaseSessionApi = {
       // Get project data
       let project = null;
       if (data.projectId) {
-        const projectRef = doc(db, 'projects', data.userId, 'userProjects', data.projectId);
+        const projectRef = doc(
+          db,
+          'projects',
+          data.userId,
+          'userProjects',
+          data.projectId
+        );
         const projectDoc = await getDoc(projectRef);
         if (projectDoc.exists()) {
           const projectData = projectDoc.data();
@@ -2943,7 +3457,7 @@ export const firebaseSessionApi = {
             sessionCount: projectData.sessionCount || 0,
             isArchived: projectData.isArchived || false,
             createdAt: convertTimestamp(projectData.createdAt),
-            updatedAt: convertTimestamp(projectData.updatedAt)
+            updatedAt: convertTimestamp(projectData.updatedAt),
           };
         }
       }
@@ -2986,7 +3500,7 @@ export const firebaseSessionApi = {
           activityVisibility: userData?.activityVisibility || 'everyone',
           projectVisibility: userData?.projectVisibility || 'everyone',
           createdAt: userData?.createdAt || new Date(),
-          updatedAt: userData?.updatedAt || new Date()
+          updatedAt: userData?.updatedAt || new Date(),
         },
         project: project || {
           id: '',
@@ -3000,19 +3514,19 @@ export const firebaseSessionApi = {
           sessionCount: 0,
           isArchived: false,
           createdAt: new Date(),
-          updatedAt: new Date()
-        }
+          updatedAt: new Date(),
+        },
       };
     } catch (error) {
       // Don't log permission errors - these are expected for private/restricted sessions
       const silent = isPermissionError(error);
       const apiError = handleError(error, 'Get session with details', {
         defaultMessage: 'Failed to get session with details',
-        silent
+        silent,
       });
       throw new Error(apiError.userMessage);
     }
-  }
+  },
 };
 
 // Helper function to process post documents into PostWithDetails
@@ -3022,7 +3536,7 @@ const processPosts = async (postDocs: any[]): Promise<PostWithDetails[]> => {
 
   for (let i = 0; i < postDocs.length; i += batchSize) {
     const batch = postDocs.slice(i, i + batchSize);
-    const batchPromises = batch.map(async (postDoc) => {
+    const batchPromises = batch.map(async postDoc => {
       const postData = postDoc.data();
 
       // Get user data
@@ -3038,17 +3552,25 @@ const processPosts = async (postDocs: any[]): Promise<PostWithDetails[]> => {
       const projectId = sessionData?.projectId;
       if (projectId) {
         try {
-          const projectDoc = await getDoc(doc(db, 'projects', postData.userId, 'userProjects', projectId));
+          const projectDoc = await getDoc(
+            doc(db, 'projects', postData.userId, 'userProjects', projectId)
+          );
           if (projectDoc.exists()) {
             projectData = projectDoc.data();
           }
         } catch (error) {
-          handleError(error, `Fetch project ${projectId}`, { severity: ErrorSeverity.WARNING });
+          handleError(error, `Fetch project ${projectId}`, {
+            severity: ErrorSeverity.WARNING,
+          });
         }
       }
 
       // Check if current user has supported this post
-      const supportDoc = auth.currentUser ? await getDoc(doc(db, 'postSupports', `${auth.currentUser.uid}_${postDoc.id}`)) : null;
+      const supportDoc = auth.currentUser
+        ? await getDoc(
+            doc(db, 'postSupports', `${auth.currentUser.uid}_${postDoc.id}`)
+          )
+        : null;
       const isSupported = supportDoc?.exists() || false;
 
       // Build the post with full details
@@ -3071,65 +3593,69 @@ const processPosts = async (postDocs: any[]): Promise<PostWithDetails[]> => {
           location: userData?.location,
           profilePicture: userData?.profilePicture,
           createdAt: convertTimestamp(userData?.createdAt) || new Date(),
-          updatedAt: convertTimestamp(userData?.updatedAt) || new Date()
+          updatedAt: convertTimestamp(userData?.updatedAt) || new Date(),
         },
-        session: sessionData ? {
-          id: postData.sessionId,
-          userId: postData.userId,
-          projectId: sessionData.projectId || '',
-          title: sessionData.title || 'Untitled Session',
-          description: sessionData.description || '',
-          duration: sessionData.duration || 0,
-          startTime: convertTimestamp(sessionData.startTime) || new Date(),
-          tasks: sessionData.tasks || [],
-          tags: sessionData.tags || [],
-          visibility: sessionData.visibility || 'everyone',
-          showStartTime: sessionData.showStartTime,
-          hideTaskNames: sessionData.hideTaskNames,
-          publishToFeeds: sessionData.publishToFeeds,
-          howFelt: sessionData.howFelt,
-          privateNotes: sessionData.privateNotes,
-          isArchived: sessionData.isArchived || false,
-          createdAt: convertTimestamp(sessionData.createdAt) || new Date(),
-          updatedAt: convertTimestamp(sessionData.updatedAt) || new Date()
-        } : {
-          id: postData.sessionId,
-          userId: postData.userId,
-          projectId: '',
-          title: 'Session Not Found',
-          description: '',
-          duration: 0,
-          startTime: new Date(),
-          tasks: [],
-          tags: [],
-          visibility: 'everyone',
-          isArchived: false,
-          createdAt: new Date(),
-          updatedAt: new Date()
-        } as Session,
-        project: projectData ? {
-          id: projectId!,
-          userId: postData.userId,
-          name: projectData.name || 'Unknown Project',
-          description: projectData.description || '',
-          icon: projectData.icon || '📁',
-          color: projectData.color || '#64748B',
-          weeklyTarget: projectData.weeklyTarget,
-          totalTarget: projectData.totalTarget,
-          status: projectData.status || 'active',
-          createdAt: convertTimestamp(projectData.createdAt) || new Date(),
-          updatedAt: convertTimestamp(projectData.updatedAt) || new Date()
-        } : {
-          id: projectId || 'unknown',
-          userId: postData.userId,
-          name: 'Unknown Project',
-          description: '',
-          icon: '📁',
-          color: '#64748B',
-          status: 'active',
-          createdAt: new Date(),
-          updatedAt: new Date()
-        } as Project
+        session: sessionData
+          ? {
+              id: postData.sessionId,
+              userId: postData.userId,
+              projectId: sessionData.projectId || '',
+              title: sessionData.title || 'Untitled Session',
+              description: sessionData.description || '',
+              duration: sessionData.duration || 0,
+              startTime: convertTimestamp(sessionData.startTime) || new Date(),
+              tasks: sessionData.tasks || [],
+              tags: sessionData.tags || [],
+              visibility: sessionData.visibility || 'everyone',
+              showStartTime: sessionData.showStartTime,
+              hideTaskNames: sessionData.hideTaskNames,
+              publishToFeeds: sessionData.publishToFeeds,
+              howFelt: sessionData.howFelt,
+              privateNotes: sessionData.privateNotes,
+              isArchived: sessionData.isArchived || false,
+              createdAt: convertTimestamp(sessionData.createdAt) || new Date(),
+              updatedAt: convertTimestamp(sessionData.updatedAt) || new Date(),
+            }
+          : ({
+              id: postData.sessionId,
+              userId: postData.userId,
+              projectId: '',
+              title: 'Session Not Found',
+              description: '',
+              duration: 0,
+              startTime: new Date(),
+              tasks: [],
+              tags: [],
+              visibility: 'everyone',
+              isArchived: false,
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            } as Session),
+        project: projectData
+          ? {
+              id: projectId!,
+              userId: postData.userId,
+              name: projectData.name || 'Unknown Project',
+              description: projectData.description || '',
+              icon: projectData.icon || '📁',
+              color: projectData.color || '#64748B',
+              weeklyTarget: projectData.weeklyTarget,
+              totalTarget: projectData.totalTarget,
+              status: projectData.status || 'active',
+              createdAt: convertTimestamp(projectData.createdAt) || new Date(),
+              updatedAt: convertTimestamp(projectData.updatedAt) || new Date(),
+            }
+          : ({
+              id: projectId || 'unknown',
+              userId: postData.userId,
+              name: 'Unknown Project',
+              description: '',
+              icon: '📁',
+              color: '#64748B',
+              status: 'active',
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            } as Project),
       };
 
       return post;
@@ -3157,7 +3683,7 @@ export const firebasePostApi = {
         supportCount: 0,
         commentCount: 0,
         createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
+        updatedAt: serverTimestamp(),
       };
 
       const docRef = await addDoc(collection(db, 'posts'), postData);
@@ -3170,10 +3696,12 @@ export const firebasePostApi = {
         supportCount: 0,
         commentCount: 0,
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
       };
     } catch (error) {
-      const apiError = handleError(error, 'Create post', { defaultMessage: 'Failed to create post' });
+      const apiError = handleError(error, 'Create post', {
+        defaultMessage: 'Failed to create post',
+      });
       throw new Error(apiError.userMessage);
     }
   },
@@ -3201,7 +3729,9 @@ export const firebasePostApi = {
           where('status', '==', 'active')
         );
         const membershipsSnapshot = await getDocs(membershipsQuery);
-        const memberIds = membershipsSnapshot.docs.map(doc => doc.data().userId);
+        const memberIds = membershipsSnapshot.docs.map(
+          doc => doc.data().userId
+        );
 
         if (memberIds.length === 0) {
           return { sessions: [], hasMore: false, nextCursor: undefined };
@@ -3231,16 +3761,19 @@ export const firebasePostApi = {
 
         const querySnapshot = await getDocs(sessionsQuery);
         // Filter to only sessions from group members
-        const filteredDocs = querySnapshot.docs.filter(doc =>
-          memberIds.includes(doc.data().userId)
-        ).slice(0, limitCount + 1);
+        const filteredDocs = querySnapshot.docs
+          .filter(doc => memberIds.includes(doc.data().userId))
+          .slice(0, limitCount + 1);
 
-        const sessions = await populateSessionsWithDetails(filteredDocs.slice(0, limitCount));
+        const sessions = await populateSessionsWithDetails(
+          filteredDocs.slice(0, limitCount)
+        );
         const hasMore = filteredDocs.length > limitCount;
-        const nextCursor = hasMore ? filteredDocs[limitCount - 1]?.id : undefined;
+        const nextCursor = hasMore
+          ? filteredDocs[limitCount - 1]?.id
+          : undefined;
 
         return { sessions, hasMore, nextCursor };
-
       } else if (type === 'following') {
         // Get list of users the current user is following
         const followingQuery = query(
@@ -3248,13 +3781,18 @@ export const firebasePostApi = {
           where('followerId', '==', auth.currentUser.uid)
         );
         const followingSnapshot = await getDocs(followingQuery);
-        const followingIds = followingSnapshot.docs.map(doc => doc.data().followingId);
+        const followingIds = followingSnapshot.docs.map(
+          doc => doc.data().followingId
+        );
 
         // Include current user's sessions too
         followingIds.push(auth.currentUser.uid);
 
         // If not following anyone yet, return empty feed
-        if (followingIds.length === 1 && followingIds[0] === auth.currentUser.uid) {
+        if (
+          followingIds.length === 1 &&
+          followingIds[0] === auth.currentUser.uid
+        ) {
           // Only show current user's sessions
           sessionsQuery = query(
             collection(db, 'sessions'),
@@ -3300,16 +3838,19 @@ export const firebasePostApi = {
 
         const querySnapshot = await getDocs(sessionsQuery);
         // Filter to only sessions from followed users
-        const filteredDocs = querySnapshot.docs.filter(doc =>
-          followingIds.includes(doc.data().userId)
-        ).slice(0, limitCount + 1);
+        const filteredDocs = querySnapshot.docs
+          .filter(doc => followingIds.includes(doc.data().userId))
+          .slice(0, limitCount + 1);
 
-        const sessions = await populateSessionsWithDetails(filteredDocs.slice(0, limitCount));
+        const sessions = await populateSessionsWithDetails(
+          filteredDocs.slice(0, limitCount)
+        );
         const hasMore = filteredDocs.length > limitCount;
-        const nextCursor = hasMore ? filteredDocs[limitCount - 1]?.id : undefined;
+        const nextCursor = hasMore
+          ? filteredDocs[limitCount - 1]?.id
+          : undefined;
 
         return { sessions, hasMore, nextCursor };
-
       } else if (type === 'trending') {
         // Trending: fetch recent public sessions
         const sevenDaysAgo = new Date();
@@ -3336,13 +3877,19 @@ export const firebasePostApi = {
           startIndex = sessionDocs.findIndex(doc => doc.id === cursor) + 1;
         }
 
-        const paginatedDocs = sessionDocs.slice(startIndex, startIndex + limitCount + 1);
-        const sessions = await populateSessionsWithDetails(paginatedDocs.slice(0, limitCount));
+        const paginatedDocs = sessionDocs.slice(
+          startIndex,
+          startIndex + limitCount + 1
+        );
+        const sessions = await populateSessionsWithDetails(
+          paginatedDocs.slice(0, limitCount)
+        );
         const hasMore = paginatedDocs.length > limitCount;
-        const nextCursor = hasMore ? paginatedDocs[limitCount - 1]?.id : undefined;
+        const nextCursor = hasMore
+          ? paginatedDocs[limitCount - 1]?.id
+          : undefined;
 
         return { sessions, hasMore, nextCursor };
-
       } else if (type === 'user') {
         // User: fetch sessions for a specific user
         const targetUserId = userId || auth.currentUser.uid;
@@ -3371,14 +3918,15 @@ export const firebasePostApi = {
         const sessionDocs = querySnapshot.docs.slice(0, limitCount);
         const sessions = await populateSessionsWithDetails(sessionDocs);
         const hasMore = querySnapshot.docs.length > limitCount;
-        const nextCursor = hasMore ? sessionDocs[sessionDocs.length - 1]?.id : undefined;
+        const nextCursor = hasMore
+          ? sessionDocs[sessionDocs.length - 1]?.id
+          : undefined;
 
         return {
           sessions,
           hasMore,
-          nextCursor
+          nextCursor,
         };
-
       } else if (type === 'all') {
         // All: chronological feed of all public sessions (not filtering anyone out)
         sessionsQuery = query(
@@ -3405,14 +3953,15 @@ export const firebasePostApi = {
         const sessionDocs = querySnapshot.docs.slice(0, limitCount);
         const sessions = await populateSessionsWithDetails(sessionDocs);
         const hasMore = querySnapshot.docs.length > limitCount;
-        const nextCursor = hasMore ? sessionDocs[sessionDocs.length - 1]?.id : undefined;
+        const nextCursor = hasMore
+          ? sessionDocs[sessionDocs.length - 1]?.id
+          : undefined;
 
         return {
           sessions,
           hasMore,
-          nextCursor
+          nextCursor,
         };
-
       } else {
         // Recent: default chronological feed of public sessions (excluding followed users)
         // Get list of users the current user is following to exclude them
@@ -3421,7 +3970,9 @@ export const firebasePostApi = {
           where('followerId', '==', auth.currentUser.uid)
         );
         const followingSnapshot = await getDocs(followingQuery);
-        const followingIds = followingSnapshot.docs.map(doc => doc.data().followingId);
+        const followingIds = followingSnapshot.docs.map(
+          doc => doc.data().followingId
+        );
 
         // Also exclude current user's own posts
         followingIds.push(auth.currentUser.uid);
@@ -3450,23 +4001,31 @@ export const firebasePostApi = {
         const querySnapshot = await getDocs(sessionsQuery);
 
         // Filter out sessions from followed users and current user
-        const filteredDocs = querySnapshot.docs.filter(doc =>
-          !followingIds.includes(doc.data().userId)
-        ).slice(0, limitCount + 1);
+        const filteredDocs = querySnapshot.docs
+          .filter(doc => !followingIds.includes(doc.data().userId))
+          .slice(0, limitCount + 1);
 
-        const sessions = await populateSessionsWithDetails(filteredDocs.slice(0, limitCount));
+        const sessions = await populateSessionsWithDetails(
+          filteredDocs.slice(0, limitCount)
+        );
         const hasMore = filteredDocs.length > limitCount;
-        const nextCursor = hasMore ? filteredDocs[limitCount - 1]?.id : undefined;
+        const nextCursor = hasMore
+          ? filteredDocs[limitCount - 1]?.id
+          : undefined;
 
         return {
           sessions,
           hasMore,
-          nextCursor
+          nextCursor,
         };
       }
     } catch (error) {
-      handleError(error, 'in getFeedSessions', { severity: ErrorSeverity.ERROR });
-      const apiError = handleError(error, 'Get feed sessions', { defaultMessage: 'Failed to get feed sessions' });
+      handleError(error, 'in getFeedSessions', {
+        severity: ErrorSeverity.ERROR,
+      });
+      const apiError = handleError(error, 'Get feed sessions', {
+        defaultMessage: 'Failed to get feed sessions',
+      });
       throw new Error(apiError.userMessage);
     }
   },
@@ -3478,10 +4037,13 @@ export const firebasePostApi = {
         throw new Error('User not authenticated');
       }
 
+      // Rate limit support actions
+      checkRateLimit(auth.currentUser.uid, 'SUPPORT');
+
       const sessionRef = doc(db, 'sessions', sessionId);
 
       // Use transaction to safely add user ID to supportedBy array
-      await runTransaction(db, async (transaction) => {
+      await runTransaction(db, async transaction => {
         const sessionDoc = await transaction.get(sessionRef);
 
         if (!sessionDoc.exists()) {
@@ -3500,11 +4062,13 @@ export const firebasePostApi = {
         transaction.update(sessionRef, {
           supportedBy: [...supportedBy, auth.currentUser!.uid],
           supportCount: supportedBy.length + 1,
-          updatedAt: serverTimestamp()
+          updatedAt: serverTimestamp(),
         });
       });
     } catch (error) {
-      const apiError = handleError(error, 'Support session', { defaultMessage: 'Failed to support session' });
+      const apiError = handleError(error, 'Support session', {
+        defaultMessage: 'Failed to support session',
+      });
       throw new Error(apiError.userMessage);
     }
   },
@@ -3519,7 +4083,7 @@ export const firebasePostApi = {
       const sessionRef = doc(db, 'sessions', sessionId);
 
       // Use transaction to safely remove user ID from supportedBy array
-      await runTransaction(db, async (transaction) => {
+      await runTransaction(db, async transaction => {
         const sessionDoc = await transaction.get(sessionRef);
 
         if (!sessionDoc.exists()) {
@@ -3535,15 +4099,19 @@ export const firebasePostApi = {
         }
 
         // Remove user ID from supportedBy array and update supportCount
-        const newSupportedBy = supportedBy.filter((id: string) => id !== auth.currentUser!.uid);
+        const newSupportedBy = supportedBy.filter(
+          (id: string) => id !== auth.currentUser!.uid
+        );
         transaction.update(sessionRef, {
           supportedBy: newSupportedBy,
           supportCount: newSupportedBy.length,
-          updatedAt: serverTimestamp()
+          updatedAt: serverTimestamp(),
         });
       });
     } catch (error) {
-      const apiError = handleError(error, 'Remove support', { defaultMessage: 'Failed to remove support' });
+      const apiError = handleError(error, 'Remove support', {
+        defaultMessage: 'Failed to remove support',
+      });
       throw new Error(apiError.userMessage);
     }
   },
@@ -3557,7 +4125,7 @@ export const firebasePostApi = {
 
       const updateData = {
         ...data,
-        updatedAt: serverTimestamp()
+        updatedAt: serverTimestamp(),
       };
 
       await updateDoc(doc(db, 'posts', postId), updateData);
@@ -3574,10 +4142,12 @@ export const firebasePostApi = {
         supportCount: postData.supportCount || 0,
         commentCount: postData.commentCount || 0,
         createdAt: convertTimestamp(postData.createdAt),
-        updatedAt: convertTimestamp(postData.updatedAt)
+        updatedAt: convertTimestamp(postData.updatedAt),
       };
     } catch (error) {
-      const apiError = handleError(error, 'Update post', { defaultMessage: 'Failed to update post' });
+      const apiError = handleError(error, 'Update post', {
+        defaultMessage: 'Failed to update post',
+      });
       throw new Error(apiError.userMessage);
     }
   },
@@ -3592,20 +4162,27 @@ export const firebasePostApi = {
       // Verify post belongs to user
       const postDoc = await getDoc(doc(db, 'posts', postId));
       const postData = postDoc.data();
-      
+
       if (!postData || postData.userId !== auth.currentUser.uid) {
         throw new Error('Post not found or access denied');
       }
 
       await deleteDoc(doc(db, 'posts', postId));
     } catch (error) {
-      const apiError = handleError(error, 'Delete post', { defaultMessage: 'Failed to delete post' });
+      const apiError = handleError(error, 'Delete post', {
+        defaultMessage: 'Failed to delete post',
+      });
       throw new Error(apiError.userMessage);
     }
   },
 
   // Listen to real-time updates for session support counts
-  listenToSessionUpdates: (sessionIds: string[], callback: (updates: Record<string, { supportCount: number; isSupported: boolean }>) => void) => {
+  listenToSessionUpdates: (
+    sessionIds: string[],
+    callback: (
+      updates: Record<string, { supportCount: number; isSupported: boolean }>
+    ) => void
+  ) => {
     if (!auth.currentUser) return () => {};
 
     const unsubscribers: (() => void)[] = [];
@@ -3615,20 +4192,22 @@ export const firebasePostApi = {
       // Listen to session support count changes and support status
       const sessionUnsubscribe = onSnapshot(
         doc(db, 'sessions', sessionId),
-        (sessionDoc) => {
+        sessionDoc => {
           if (sessionDoc.exists()) {
             const sessionData = sessionDoc.data();
             const supportedBy = sessionData.supportedBy || [];
             callback({
               [sessionId]: {
                 supportCount: sessionData.supportCount || 0,
-                isSupported: supportedBy.includes(currentUserId)
-              }
+                isSupported: supportedBy.includes(currentUserId),
+              },
             });
           }
         },
-        (error) => {
-          handleError(error, `Listen to session ${sessionId}`, { severity: ErrorSeverity.ERROR });
+        error => {
+          handleError(error, `Listen to session ${sessionId}`, {
+            severity: ErrorSeverity.ERROR,
+          });
         }
       );
 
@@ -3642,10 +4221,14 @@ export const firebasePostApi = {
   },
 
   // Get user's posts
-  getUserPosts: async (userId: string, limitCount: number = 20, isOwnProfile: boolean = false): Promise<PostWithDetails[]> => {
+  getUserPosts: async (
+    userId: string,
+    limitCount: number = 20,
+    isOwnProfile: boolean = false
+  ): Promise<PostWithDetails[]> => {
     try {
       let postsQuery;
-      
+
       if (isOwnProfile) {
         // Show all posts for own profile
         postsQuery = query(
@@ -3671,26 +4254,32 @@ export const firebasePostApi = {
       // Process posts to populate data
       for (const postDoc of querySnapshot.docs) {
         const postData = postDoc.data();
-        
+
         // Get user data
         const userDoc = await getDoc(doc(db, 'users', postData.userId));
         const userData = userDoc.data();
-        
+
         // Get session data
-        const sessionDoc = await getDoc(doc(db, 'sessions', postData.sessionId));
+        const sessionDoc = await getDoc(
+          doc(db, 'sessions', postData.sessionId)
+        );
         const sessionData = sessionDoc.data();
-        
+
         // Get project data
         let projectData = null;
         const projectId = sessionData?.projectId;
         if (projectId) {
           try {
-            const projectDoc = await getDoc(doc(db, 'projects', postData.userId, 'userProjects', projectId));
+            const projectDoc = await getDoc(
+              doc(db, 'projects', postData.userId, 'userProjects', projectId)
+            );
             if (projectDoc.exists()) {
               projectData = projectDoc.data();
             }
           } catch (error) {
-            handleError(error, `Fetch project ${projectId}`, { severity: ErrorSeverity.WARNING });
+            handleError(error, `Fetch project ${projectId}`, {
+              severity: ErrorSeverity.WARNING,
+            });
           }
         }
 
@@ -3713,91 +4302,109 @@ export const firebasePostApi = {
             location: userData?.location,
             profilePicture: userData?.profilePicture,
             createdAt: convertTimestamp(userData?.createdAt) || new Date(),
-            updatedAt: convertTimestamp(userData?.updatedAt) || new Date()
+            updatedAt: convertTimestamp(userData?.updatedAt) || new Date(),
           },
-          session: sessionData ? {
-            id: postData.sessionId,
-            userId: postData.userId,
-            projectId: sessionData.projectId || '',
-            title: sessionData.title || 'Untitled Session',
-            description: sessionData.description || '',
-            duration: sessionData.duration || 0,
-            startTime: convertTimestamp(sessionData.startTime) || new Date(),
-            tasks: sessionData.tasks || [],
-            tags: sessionData.tags || [],
-            visibility: sessionData.visibility || 'everyone',
-            showStartTime: sessionData.showStartTime,
-            hideTaskNames: sessionData.hideTaskNames,
-            publishToFeeds: sessionData.publishToFeeds,
-            howFelt: sessionData.howFelt,
-            privateNotes: sessionData.privateNotes,
-            isArchived: sessionData.isArchived || false,
-            createdAt: convertTimestamp(sessionData.createdAt) || new Date(),
-            updatedAt: convertTimestamp(sessionData.updatedAt) || new Date()
-          } : {
-            id: postData.sessionId,
-            userId: postData.userId,
-            projectId: '',
-            title: 'Session Not Found',
-            description: '',
-            duration: 0,
-            startTime: new Date(),
-            tasks: [],
-            tags: [],
-            visibility: 'everyone',
-            isArchived: false,
-            createdAt: new Date(),
-            updatedAt: new Date()
-          } as Session,
-          project: projectData ? {
-            id: projectId!,
-            userId: postData.userId,
-            name: projectData.name || 'Unknown Project',
-            description: projectData.description || '',
-            icon: projectData.icon || '📁',
-            color: projectData.color || '#64748B',
-            weeklyTarget: projectData.weeklyTarget,
-            totalTarget: projectData.totalTarget,
-            status: projectData.status || 'active',
-            createdAt: convertTimestamp(projectData.createdAt) || new Date(),
-            updatedAt: convertTimestamp(projectData.updatedAt) || new Date()
-          } : {
-            id: projectId || 'unknown',
-            userId: postData.userId,
-            name: 'Unknown Project',
-            description: '',
-            icon: '📁',
-            color: '#64748B',
-            status: 'active',
-            createdAt: new Date(),
-            updatedAt: new Date()
-          } as Project
+          session: sessionData
+            ? {
+                id: postData.sessionId,
+                userId: postData.userId,
+                projectId: sessionData.projectId || '',
+                title: sessionData.title || 'Untitled Session',
+                description: sessionData.description || '',
+                duration: sessionData.duration || 0,
+                startTime:
+                  convertTimestamp(sessionData.startTime) || new Date(),
+                tasks: sessionData.tasks || [],
+                tags: sessionData.tags || [],
+                visibility: sessionData.visibility || 'everyone',
+                showStartTime: sessionData.showStartTime,
+                hideTaskNames: sessionData.hideTaskNames,
+                publishToFeeds: sessionData.publishToFeeds,
+                howFelt: sessionData.howFelt,
+                privateNotes: sessionData.privateNotes,
+                isArchived: sessionData.isArchived || false,
+                createdAt:
+                  convertTimestamp(sessionData.createdAt) || new Date(),
+                updatedAt:
+                  convertTimestamp(sessionData.updatedAt) || new Date(),
+              }
+            : ({
+                id: postData.sessionId,
+                userId: postData.userId,
+                projectId: '',
+                title: 'Session Not Found',
+                description: '',
+                duration: 0,
+                startTime: new Date(),
+                tasks: [],
+                tags: [],
+                visibility: 'everyone',
+                isArchived: false,
+                createdAt: new Date(),
+                updatedAt: new Date(),
+              } as Session),
+          project: projectData
+            ? {
+                id: projectId!,
+                userId: postData.userId,
+                name: projectData.name || 'Unknown Project',
+                description: projectData.description || '',
+                icon: projectData.icon || '📁',
+                color: projectData.color || '#64748B',
+                weeklyTarget: projectData.weeklyTarget,
+                totalTarget: projectData.totalTarget,
+                status: projectData.status || 'active',
+                createdAt:
+                  convertTimestamp(projectData.createdAt) || new Date(),
+                updatedAt:
+                  convertTimestamp(projectData.updatedAt) || new Date(),
+              }
+            : ({
+                id: projectId || 'unknown',
+                userId: postData.userId,
+                name: 'Unknown Project',
+                description: '',
+                icon: '📁',
+                color: '#64748B',
+                status: 'active',
+                createdAt: new Date(),
+                updatedAt: new Date(),
+              } as Project),
         });
       }
 
       return posts;
     } catch (error) {
-      const apiError = handleError(error, 'Get user posts', { defaultMessage: 'Failed to get user posts' });
+      const apiError = handleError(error, 'Get user posts', {
+        defaultMessage: 'Failed to get user posts',
+      });
       throw new Error(apiError.userMessage);
     }
-  }
+  },
 };
 
 // Firebase Comment API
 export const firebaseCommentApi = {
   // Create a comment
-  createComment: async (data: CreateCommentData): Promise<CommentWithDetails> => {
+  createComment: async (
+    data: CreateCommentData
+  ): Promise<CommentWithDetails> => {
     try {
       if (!auth.currentUser) {
         throw new Error('User not authenticated');
       }
 
+      // Rate limit comment creation
+      checkRateLimit(auth.currentUser.uid, 'COMMENT');
+
       const userId = auth.currentUser.uid;
-      
+
       // Extract mentions from content
       const mentionRegex = /@(\w+)/g;
-      const mentions = [...data.content.matchAll(mentionRegex)].map(match => match[1]);
-      
+      const mentions = [...data.content.matchAll(mentionRegex)].map(
+        match => match[1]
+      );
+
       const commentData: any = {
         sessionId: data.sessionId,
         userId,
@@ -3819,21 +4426,21 @@ export const firebaseCommentApi = {
       // Increment comment count on session
       const sessionRef = doc(db, 'sessions', data.sessionId);
       await updateDoc(sessionRef, {
-        commentCount: increment(1)
+        commentCount: increment(1),
       });
-      
+
       // If this is a reply, increment reply count on parent comment
       if (data.parentId) {
         const parentCommentRef = doc(db, 'comments', data.parentId);
         await updateDoc(parentCommentRef, {
-          replyCount: increment(1)
+          replyCount: increment(1),
         });
       }
-      
+
       // Get user data
       const userDoc = await getDoc(doc(db, 'users', userId));
       const userData = userDoc.data();
-      
+
       // Create notifications for mentions
       if (mentions.length > 0) {
         // Get users by username
@@ -3843,7 +4450,7 @@ export const firebaseCommentApi = {
         );
         const usersSnapshot = await getDocs(usersQuery);
 
-        const notificationPromises = usersSnapshot.docs.map(async (userDoc) => {
+        const notificationPromises = usersSnapshot.docs.map(async userDoc => {
           const mentionedUserId = userDoc.id;
           if (mentionedUserId !== userId) {
             // Create notification
@@ -3857,7 +4464,7 @@ export const firebaseCommentApi = {
               sessionId: data.sessionId,
               commentId: docRef.id,
               isRead: false,
-              createdAt: serverTimestamp()
+              createdAt: serverTimestamp(),
             });
           }
         });
@@ -3881,12 +4488,14 @@ export const firebaseCommentApi = {
             sessionId: data.sessionId,
             commentId: docRef.id,
             isRead: false,
-            createdAt: serverTimestamp()
+            createdAt: serverTimestamp(),
           });
         }
       } else {
         // Create notification for parent comment owner (if replying to someone else)
-        const parentCommentDoc = await getDoc(doc(db, 'comments', data.parentId));
+        const parentCommentDoc = await getDoc(
+          doc(db, 'comments', data.parentId)
+        );
         const parentCommentData = parentCommentDoc.data();
 
         if (parentCommentData && parentCommentData.userId !== userId) {
@@ -3900,7 +4509,7 @@ export const firebaseCommentApi = {
             sessionId: data.sessionId,
             commentId: docRef.id,
             isRead: false,
-            createdAt: serverTimestamp()
+            createdAt: serverTimestamp(),
           });
         }
       }
@@ -3917,16 +4526,21 @@ export const firebaseCommentApi = {
         isEdited: false,
         createdAt: new Date(),
         updatedAt: new Date(),
-        user: buildCommentUserDetails(userId, userData || null)
+        user: buildCommentUserDetails(userId, userData || null),
       };
     } catch (error) {
-      const apiError = handleError(error, 'Create comment', { defaultMessage: 'Failed to create comment' });
+      const apiError = handleError(error, 'Create comment', {
+        defaultMessage: 'Failed to create comment',
+      });
       throw new Error(apiError.userMessage);
     }
   },
 
   // Update a comment
-  updateComment: async (commentId: string, data: UpdateCommentData): Promise<Comment> => {
+  updateComment: async (
+    commentId: string,
+    data: UpdateCommentData
+  ): Promise<Comment> => {
     try {
       if (!auth.currentUser) {
         throw new Error('User not authenticated');
@@ -3934,33 +4548,35 @@ export const firebaseCommentApi = {
 
       const commentRef = doc(db, 'comments', commentId);
       const commentDoc = await getDoc(commentRef);
-      
+
       if (!commentDoc.exists()) {
         throw new Error('Comment not found');
       }
-      
+
       const commentData = commentDoc.data();
-      
+
       if (commentData.userId !== auth.currentUser.uid) {
         throw new Error('Not authorized to edit this comment');
       }
-      
+
       await updateDoc(commentRef, {
         content: data.content,
         isEdited: true,
-        updatedAt: serverTimestamp()
+        updatedAt: serverTimestamp(),
       });
-      
+
       return {
         id: commentId,
         ...commentData,
         content: data.content,
         isEdited: true,
         createdAt: convertTimestamp(commentData.createdAt),
-        updatedAt: new Date()
+        updatedAt: new Date(),
       } as Comment;
     } catch (error) {
-      const apiError = handleError(error, 'Update comment', { defaultMessage: 'Failed to update comment' });
+      const apiError = handleError(error, 'Update comment', {
+        defaultMessage: 'Failed to update comment',
+      });
       throw new Error(apiError.userMessage);
     }
   },
@@ -3974,49 +4590,51 @@ export const firebaseCommentApi = {
 
       const commentRef = doc(db, 'comments', commentId);
       const commentDoc = await getDoc(commentRef);
-      
+
       if (!commentDoc.exists()) {
         throw new Error('Comment not found');
       }
-      
+
       const commentData = commentDoc.data();
-      
+
       if (commentData.userId !== auth.currentUser.uid) {
         throw new Error('Not authorized to delete this comment');
       }
-      
+
       // Delete all replies to this comment
       const repliesQuery = query(
         collection(db, 'comments'),
         where('parentId', '==', commentId)
       );
       const repliesSnapshot = await getDocs(repliesQuery);
-      
+
       const batch = writeBatch(db);
-      
-      repliesSnapshot.docs.forEach((doc) => {
+
+      repliesSnapshot.docs.forEach(doc => {
         batch.delete(doc.ref);
       });
-      
+
       batch.delete(commentRef);
-      
+
       await batch.commit();
 
       // Decrement comment count on session
       const sessionRef = doc(db, 'sessions', commentData.sessionId);
       await updateDoc(sessionRef, {
-        commentCount: increment(-1 - repliesSnapshot.size) // -1 for the comment itself, and -repliesSnapshot.size for replies
+        commentCount: increment(-1 - repliesSnapshot.size), // -1 for the comment itself, and -repliesSnapshot.size for replies
       });
-      
+
       // If this is a reply, decrement reply count on parent comment
       if (commentData.parentId) {
         const parentCommentRef = doc(db, 'comments', commentData.parentId);
         await updateDoc(parentCommentRef, {
-          replyCount: increment(-1)
+          replyCount: increment(-1),
         });
       }
     } catch (error) {
-      const apiError = handleError(error, 'Delete comment', { defaultMessage: 'Failed to delete comment' });
+      const apiError = handleError(error, 'Delete comment', {
+        defaultMessage: 'Failed to delete comment',
+      });
       throw new Error(apiError.userMessage);
     }
   },
@@ -4031,26 +4649,28 @@ export const firebaseCommentApi = {
       const userId = auth.currentUser.uid;
       const likeId = `${userId}_${commentId}`;
       const likeRef = doc(db, 'commentLikes', likeId);
-      
+
       const likeDoc = await getDoc(likeRef);
-      
+
       if (likeDoc.exists()) {
         throw new Error('Already liked this comment');
       }
-      
+
       await setDoc(likeRef, {
         commentId,
         userId,
-        createdAt: serverTimestamp()
+        createdAt: serverTimestamp(),
       });
-      
+
       // Increment like count on comment
       const commentRef = doc(db, 'comments', commentId);
       await updateDoc(commentRef, {
-        likeCount: increment(1)
+        likeCount: increment(1),
       });
     } catch (error) {
-      const apiError = handleError(error, 'Like comment', { defaultMessage: 'Failed to like comment' });
+      const apiError = handleError(error, 'Like comment', {
+        defaultMessage: 'Failed to like comment',
+      });
       throw new Error(apiError.userMessage);
     }
   },
@@ -4065,22 +4685,24 @@ export const firebaseCommentApi = {
       const userId = auth.currentUser.uid;
       const likeId = `${userId}_${commentId}`;
       const likeRef = doc(db, 'commentLikes', likeId);
-      
+
       const likeDoc = await getDoc(likeRef);
-      
+
       if (!likeDoc.exists()) {
         throw new Error('Comment not liked');
       }
-      
+
       await deleteDoc(likeRef);
-      
+
       // Decrement like count on comment
       const commentRef = doc(db, 'comments', commentId);
       await updateDoc(commentRef, {
-        likeCount: increment(-1)
+        likeCount: increment(-1),
       });
     } catch (error) {
-      const apiError = handleError(error, 'Unlike comment', { defaultMessage: 'Failed to unlike comment' });
+      const apiError = handleError(error, 'Unlike comment', {
+        defaultMessage: 'Failed to unlike comment',
+      });
       throw new Error(apiError.userMessage);
     }
   },
@@ -4137,12 +4759,14 @@ export const firebaseCommentApi = {
           where('commentId', 'in', commentIds)
         );
         const likesSnapshot = await getDocs(likesQuery);
-        likedCommentIds = new Set(likesSnapshot.docs.map(d => d.data().commentId));
+        likedCommentIds = new Set(
+          likesSnapshot.docs.map(d => d.data().commentId)
+        );
       }
 
       // Build comments with user details
       const comments: CommentWithDetails[] = await Promise.all(
-        docs.map(async (docSnapshot) => {
+        docs.map(async docSnapshot => {
           const data = docSnapshot.data();
 
           const userData = await fetchUserDataForSocialContext(data.userId);
@@ -4159,14 +4783,14 @@ export const firebaseCommentApi = {
             isEdited: data.isEdited || false,
             createdAt: convertTimestamp(data.createdAt),
             updatedAt: convertTimestamp(data.updatedAt),
-            user: buildCommentUserDetails(data.userId, userData)
+            user: buildCommentUserDetails(data.userId, userData),
           };
         })
       );
 
       return {
         comments,
-        hasMore
+        hasMore,
       };
     } catch (error) {
       // Handle permission errors gracefully - return empty comments
@@ -4174,12 +4798,14 @@ export const firebaseCommentApi = {
         // Don't log permission errors - they're expected for restricted sessions
         return {
           comments: [],
-          hasMore: false
+          hasMore: false,
         };
       }
 
       // For other errors, log and throw with appropriate message
-      const apiError = handleError(error, 'Get session comments', { defaultMessage: 'Failed to get session comments' });
+      const apiError = handleError(error, 'Get session comments', {
+        defaultMessage: 'Failed to get session comments',
+      });
       throw new Error(apiError.userMessage);
     }
   },
@@ -4216,15 +4842,15 @@ export const firebaseCommentApi = {
           limit(limitCount + 1)
         );
       }
-      
+
       const snapshot = await getDocs(q);
-      
+
       // Filter for top-level comments only (no parentId)
       const topLevelDocs = snapshot.docs.filter(doc => !doc.data().parentId);
-      
+
       const hasMore = topLevelDocs.length > limitCount;
       const docs = hasMore ? topLevelDocs.slice(0, -1) : topLevelDocs;
-      
+
       // Get all comment likes for current user in one query
       const commentIds = docs.map(d => d.id);
       let likedCommentIds = new Set<string>();
@@ -4235,14 +4861,16 @@ export const firebaseCommentApi = {
           where('commentId', 'in', commentIds)
         );
         const likesSnapshot = await getDocs(likesQuery);
-        likedCommentIds = new Set(likesSnapshot.docs.map(d => d.data().commentId));
+        likedCommentIds = new Set(
+          likesSnapshot.docs.map(d => d.data().commentId)
+        );
       }
-      
+
       // Build comments with user details
       const comments: CommentWithDetails[] = await Promise.all(
-        docs.map(async (docSnapshot) => {
+        docs.map(async docSnapshot => {
           const data = docSnapshot.data();
-          
+
           const userData = await fetchUserDataForSocialContext(data.userId);
 
           return {
@@ -4257,18 +4885,20 @@ export const firebaseCommentApi = {
             isEdited: data.isEdited || false,
             createdAt: convertTimestamp(data.createdAt),
             updatedAt: convertTimestamp(data.updatedAt),
-            user: buildCommentUserDetails(data.userId, userData)
+            user: buildCommentUserDetails(data.userId, userData),
           };
         })
       );
-      
+
       return {
         comments,
         hasMore,
-        nextCursor: hasMore ? docs[docs.length - 1].id : undefined
+        nextCursor: hasMore ? docs[docs.length - 1].id : undefined,
       };
     } catch (error) {
-      const apiError = handleError(error, 'Get comments', { defaultMessage: 'Failed to get comments' });
+      const apiError = handleError(error, 'Get comments', {
+        defaultMessage: 'Failed to get comments',
+      });
       throw new Error(apiError.userMessage);
     }
   },
@@ -4281,15 +4911,15 @@ export const firebaseCommentApi = {
       }
 
       const userId = auth.currentUser.uid;
-      
+
       const q = query(
         collection(db, 'comments'),
         where('parentId', '==', commentId),
         orderBy('createdAt', 'asc')
       );
-      
+
       const snapshot = await getDocs(q);
-      
+
       // Get all comment likes for current user in one query
       const commentIds = snapshot.docs.map(d => d.id);
       let likedCommentIds = new Set<string>();
@@ -4300,13 +4930,15 @@ export const firebaseCommentApi = {
           where('commentId', 'in', commentIds)
         );
         const likesSnapshot = await getDocs(likesQuery);
-        likedCommentIds = new Set(likesSnapshot.docs.map(d => d.data().commentId));
+        likedCommentIds = new Set(
+          likesSnapshot.docs.map(d => d.data().commentId)
+        );
       }
-      
+
       const replies: CommentWithDetails[] = await Promise.all(
-        snapshot.docs.map(async (docSnapshot) => {
+        snapshot.docs.map(async docSnapshot => {
           const data = docSnapshot.data();
-          
+
           const userData = await fetchUserDataForSocialContext(data.userId);
 
           return {
@@ -4321,14 +4953,16 @@ export const firebaseCommentApi = {
             isEdited: data.isEdited || false,
             createdAt: convertTimestamp(data.createdAt),
             updatedAt: convertTimestamp(data.updatedAt),
-            user: buildCommentUserDetails(data.userId, userData)
+            user: buildCommentUserDetails(data.userId, userData),
           };
         })
       );
-      
+
       return replies;
     } catch (error) {
-      const apiError = handleError(error, 'Get replies', { defaultMessage: 'Failed to get replies' });
+      const apiError = handleError(error, 'Get replies', {
+        defaultMessage: 'Failed to get replies',
+      });
       throw new Error(apiError.userMessage);
     }
   },
@@ -4368,12 +5002,14 @@ export const firebaseCommentApi = {
           where('commentId', 'in', commentIds)
         );
         const likesSnapshot = await getDocs(likesQuery);
-        likedCommentIds = new Set(likesSnapshot.docs.map(d => d.data().commentId));
+        likedCommentIds = new Set(
+          likesSnapshot.docs.map(d => d.data().commentId)
+        );
       }
 
       // Build comments with user details
       const comments: CommentWithDetails[] = await Promise.all(
-        topLevelDocs.map(async (docSnapshot) => {
+        topLevelDocs.map(async docSnapshot => {
           const data = docSnapshot.data();
 
           const userData = await fetchUserDataForSocialContext(data.userId);
@@ -4390,7 +5026,7 @@ export const firebaseCommentApi = {
             isEdited: data.isEdited || false,
             createdAt: convertTimestamp(data.createdAt),
             updatedAt: convertTimestamp(data.updatedAt),
-            user: buildCommentUserDetails(data.userId, userData)
+            user: buildCommentUserDetails(data.userId, userData),
           };
         })
       );
@@ -4403,17 +5039,22 @@ export const firebaseCommentApi = {
       }
 
       // For other errors, throw with appropriate message
-      const apiError = handleError(error, 'Get top comments', { defaultMessage: 'Failed to get top comments' });
+      const apiError = handleError(error, 'Get top comments', {
+        defaultMessage: 'Failed to get top comments',
+      });
       throw new Error(apiError.userMessage);
     }
-  }
+  },
 };
 
 // ==================== GROUP API ====================
 
 const firebaseGroupApi = {
   // Create a new group
-  createGroup: async (data: CreateGroupData, userId: string): Promise<Group> => {
+  createGroup: async (
+    data: CreateGroupData,
+    userId: string
+  ): Promise<Group> => {
     try {
       const groupData = {
         ...data,
@@ -4422,18 +5063,18 @@ const firebaseGroupApi = {
         memberIds: [userId],
         memberCount: 1,
         createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
+        updatedAt: serverTimestamp(),
       };
 
       const docRef = await addDoc(collection(db, 'groups'), groupData);
-      
+
       // Create membership record
       await addDoc(collection(db, 'groupMemberships'), {
         groupId: docRef.id,
         userId,
         role: 'admin',
         status: 'active',
-        joinedAt: serverTimestamp()
+        joinedAt: serverTimestamp(),
       });
 
       return {
@@ -4444,10 +5085,12 @@ const firebaseGroupApi = {
         memberIds: [userId],
         memberCount: 1,
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
       };
     } catch (error) {
-      const apiError = handleError(error, 'Create group', { defaultMessage: 'Failed to create group' });
+      const apiError = handleError(error, 'Create group', {
+        defaultMessage: 'Failed to create group',
+      });
       throw new Error(apiError.userMessage);
     }
   },
@@ -4457,7 +5100,7 @@ const firebaseGroupApi = {
     try {
       const docRef = doc(db, 'groups', groupId);
       const docSnap = await getDoc(docRef);
-      
+
       if (!docSnap.exists()) {
         return null;
       }
@@ -4478,25 +5121,30 @@ const firebaseGroupApi = {
         memberIds: data.memberIds,
         createdByUserId: data.createdByUserId,
         createdAt: convertTimestamp(data.createdAt),
-        updatedAt: convertTimestamp(data.updatedAt)
+        updatedAt: convertTimestamp(data.updatedAt),
       };
     } catch (error) {
-      const apiError = handleError(error, 'Get group', { defaultMessage: 'Failed to get group' });
+      const apiError = handleError(error, 'Get group', {
+        defaultMessage: 'Failed to get group',
+      });
       throw new Error(apiError.userMessage);
     }
   },
 
   // Update a group
-  updateGroup: async (groupId: string, data: UpdateGroupData): Promise<Group> => {
+  updateGroup: async (
+    groupId: string,
+    data: UpdateGroupData
+  ): Promise<Group> => {
     try {
       const docRef = doc(db, 'groups', groupId);
       const updateData = {
         ...data,
-        updatedAt: serverTimestamp()
+        updatedAt: serverTimestamp(),
       };
 
       await updateDoc(docRef, updateData);
-      
+
       // Get updated group
       const updatedGroup = await firebaseGroupApi.getGroup(groupId);
       if (!updatedGroup) {
@@ -4505,7 +5153,9 @@ const firebaseGroupApi = {
 
       return updatedGroup;
     } catch (error) {
-      const apiError = handleError(error, 'Update group', { defaultMessage: 'Failed to update group' });
+      const apiError = handleError(error, 'Update group', {
+        defaultMessage: 'Failed to update group',
+      });
       throw new Error(apiError.userMessage);
     }
   },
@@ -4519,25 +5169,30 @@ const firebaseGroupApi = {
         where('groupId', '==', groupId)
       );
       const membershipsSnapshot = await getDocs(membershipsQuery);
-      
+
       const batch = writeBatch(db);
-      membershipsSnapshot.forEach((doc) => {
+      membershipsSnapshot.forEach(doc => {
         batch.delete(doc.ref);
       });
-      
+
       // Delete the group
       const groupRef = doc(db, 'groups', groupId);
       batch.delete(groupRef);
-      
+
       await batch.commit();
     } catch (error) {
-      const apiError = handleError(error, 'Delete group', { defaultMessage: 'Failed to delete group' });
+      const apiError = handleError(error, 'Delete group', {
+        defaultMessage: 'Failed to delete group',
+      });
       throw new Error(apiError.userMessage);
     }
   },
 
   // Search groups with filters
-  searchGroups: async (filters: GroupFilters = {}, limitCount: number = 20): Promise<Group[]> => {
+  searchGroups: async (
+    filters: GroupFilters = {},
+    limitCount: number = 20
+  ): Promise<Group[]> => {
     try {
       const baseConstraints = filters.privacySetting
         ? [where('privacySetting', '==', filters.privacySetting)]
@@ -4561,7 +5216,7 @@ const firebaseGroupApi = {
       const querySnapshot = await getDocs(q);
       const groups: Group[] = [];
 
-      querySnapshot.forEach((doc) => {
+      querySnapshot.forEach(doc => {
         const data = doc.data();
         const group: Group = {
           id: doc.id,
@@ -4578,14 +5233,16 @@ const firebaseGroupApi = {
           memberIds: data.memberIds,
           createdByUserId: data.createdByUserId,
           createdAt: convertTimestamp(data.createdAt),
-          updatedAt: convertTimestamp(data.updatedAt)
+          updatedAt: convertTimestamp(data.updatedAt),
         };
 
         // Apply search filter in memory (for text search)
         if (filters.search) {
           const searchLower = filters.search.toLowerCase();
-          if (group.name.toLowerCase().includes(searchLower) || 
-              group.description.toLowerCase().includes(searchLower)) {
+          if (
+            group.name.toLowerCase().includes(searchLower) ||
+            group.description.toLowerCase().includes(searchLower)
+          ) {
             groups.push(group);
           }
         } else {
@@ -4595,7 +5252,9 @@ const firebaseGroupApi = {
 
       return groups;
     } catch (error) {
-      const apiError = handleError(error, 'Search groups', { defaultMessage: 'Failed to search groups' });
+      const apiError = handleError(error, 'Search groups', {
+        defaultMessage: 'Failed to search groups',
+      });
       throw new Error(apiError.userMessage);
     }
   },
@@ -4621,7 +5280,7 @@ const firebaseGroupApi = {
       batch.update(groupRef, {
         memberIds: [...currentMemberIds, userId],
         memberCount: increment(1),
-        updatedAt: serverTimestamp()
+        updatedAt: serverTimestamp(),
       });
 
       // Create membership record
@@ -4630,7 +5289,7 @@ const firebaseGroupApi = {
         userId,
         role: 'member',
         status: group.privacySetting === 'public' ? 'active' : 'pending',
-        joinedAt: serverTimestamp()
+        joinedAt: serverTimestamp(),
       };
 
       const membershipRef = doc(collection(db, 'groupMemberships'));
@@ -4638,7 +5297,9 @@ const firebaseGroupApi = {
 
       await batch.commit();
     } catch (error) {
-      const apiError = handleError(error, 'Join group', { defaultMessage: 'Failed to join group' });
+      const apiError = handleError(error, 'Join group', {
+        defaultMessage: 'Failed to join group',
+      });
       throw new Error(apiError.userMessage);
     }
   },
@@ -4652,8 +5313,13 @@ const firebaseGroupApi = {
       }
 
       // Check if user is an admin
-      if (group.adminUserIds.includes(userId) && group.adminUserIds.length === 1) {
-        throw new Error('Cannot leave group as the only admin. Transfer ownership or delete the group.');
+      if (
+        group.adminUserIds.includes(userId) &&
+        group.adminUserIds.length === 1
+      ) {
+        throw new Error(
+          'Cannot leave group as the only admin. Transfer ownership or delete the group.'
+        );
       }
 
       const batch = writeBatch(db);
@@ -4664,7 +5330,7 @@ const firebaseGroupApi = {
         memberIds: group.memberIds.filter(id => id !== userId),
         adminUserIds: group.adminUserIds.filter(id => id !== userId),
         memberCount: increment(-1),
-        updatedAt: serverTimestamp()
+        updatedAt: serverTimestamp(),
       });
 
       // Update membership status
@@ -4674,14 +5340,16 @@ const firebaseGroupApi = {
         where('userId', '==', userId)
       );
       const membershipsSnapshot = await getDocs(membershipsQuery);
-      
-      membershipsSnapshot.forEach((doc) => {
+
+      membershipsSnapshot.forEach(doc => {
         batch.update(doc.ref, { status: 'left' });
       });
 
       await batch.commit();
     } catch (error) {
-      const apiError = handleError(error, 'Leave group', { defaultMessage: 'Failed to leave group' });
+      const apiError = handleError(error, 'Leave group', {
+        defaultMessage: 'Failed to leave group',
+      });
       throw new Error(apiError.userMessage);
     }
   },
@@ -4695,9 +5363,9 @@ const firebaseGroupApi = {
         where('status', '==', 'active')
       );
       const membershipsSnapshot = await getDocs(membershipsQuery);
-      
+
       const userIds = membershipsSnapshot.docs.map(doc => doc.data().userId);
-      
+
       if (userIds.length === 0) {
         return [];
       }
@@ -4717,14 +5385,16 @@ const firebaseGroupApi = {
             location: userData.location,
             profilePicture: userData.profilePicture,
             createdAt: convertTimestamp(userData.createdAt),
-            updatedAt: convertTimestamp(userData.updatedAt)
+            updatedAt: convertTimestamp(userData.updatedAt),
           });
         }
       }
 
       return users;
     } catch (error) {
-      const apiError = handleError(error, 'Get group members', { defaultMessage: 'Failed to get group members' });
+      const apiError = handleError(error, 'Get group members', {
+        defaultMessage: 'Failed to get group members',
+      });
       throw new Error(apiError.userMessage);
     }
   },
@@ -4738,9 +5408,9 @@ const firebaseGroupApi = {
         where('status', '==', 'active')
       );
       const membershipsSnapshot = await getDocs(membershipsQuery);
-      
+
       const groupIds = membershipsSnapshot.docs.map(doc => doc.data().groupId);
-      
+
       if (groupIds.length === 0) {
         return [];
       }
@@ -4756,7 +5426,9 @@ const firebaseGroupApi = {
 
       return groups;
     } catch (error) {
-      const apiError = handleError(error, 'Get user groups', { defaultMessage: 'Failed to get user groups' });
+      const apiError = handleError(error, 'Get user groups', {
+        defaultMessage: 'Failed to get user groups',
+      });
       throw new Error(apiError.userMessage);
     }
   },
@@ -4777,15 +5449,21 @@ const firebaseGroupApi = {
       // Get all sessions for group members
       const sessionsQuery = query(
         collection(db, 'sessions'),
-        where('userId', 'in', group.memberIds.length > 0 ? group.memberIds.slice(0, 10) : ['dummy'])
+        where(
+          'userId',
+          'in',
+          group.memberIds.length > 0 ? group.memberIds.slice(0, 10) : ['dummy']
+        )
       );
       const sessionsSnapshot = await getDocs(sessionsQuery);
-      
+
       let totalHours = 0;
       let weeklyHours = 0;
       let monthlyHours = 0;
       const totalSessions = sessionsSnapshot.size;
-      const projectHours: { [key: string]: { hours: number; name: string; memberCount: number } } = {};
+      const projectHours: {
+        [key: string]: { hours: number; name: string; memberCount: number };
+      } = {};
       const activeMemberIds = new Set<string>();
 
       sessionsSnapshot.forEach(doc => {
@@ -4808,7 +5486,7 @@ const firebaseGroupApi = {
             projectHours[data.projectId] = {
               hours: 0,
               name: 'Project',
-              memberCount: 0
+              memberCount: 0,
             };
           }
           projectHours[data.projectId].hours += hours;
@@ -4821,7 +5499,7 @@ const firebaseGroupApi = {
           projectId,
           projectName: data.name,
           hours: data.hours,
-          memberCount: 1
+          memberCount: 1,
         }))
         .sort((a, b) => b.hours - a.hours)
         .slice(0, 10);
@@ -4834,16 +5512,21 @@ const firebaseGroupApi = {
         weeklyHours,
         monthlyHours,
         activeMembers: activeMemberIds.size,
-        topProjects
+        topProjects,
       };
     } catch (error) {
-      const apiError = handleError(error, 'Get group stats', { defaultMessage: 'Failed to get group stats' });
+      const apiError = handleError(error, 'Get group stats', {
+        defaultMessage: 'Failed to get group stats',
+      });
       throw new Error(apiError.userMessage);
     }
   },
 
   // Get group analytics data for charts
-  getGroupAnalytics: async (groupId: string, timeRange: 'week' | 'month' | 'year' = 'month') => {
+  getGroupAnalytics: async (
+    groupId: string,
+    timeRange: 'week' | 'month' | 'year' = 'month'
+  ) => {
     try {
       const group = await firebaseGroupApi.getGroup(groupId);
       if (!group) {
@@ -4863,19 +5546,21 @@ const firebaseGroupApi = {
           intervals.push({
             start: new Date(date.setHours(0, 0, 0, 0)),
             end: new Date(date.setHours(23, 59, 59, 999)),
-            label: date.toLocaleDateString('en-US', { weekday: 'short' })
+            label: date.toLocaleDateString('en-US', { weekday: 'short' }),
           });
         }
       } else if (timeRange === 'month') {
         startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
         // Weekly intervals for the month
         for (let i = 3; i >= 0; i--) {
-          const weekStart = new Date(now.getTime() - (i + 1) * 7 * 24 * 60 * 60 * 1000);
+          const weekStart = new Date(
+            now.getTime() - (i + 1) * 7 * 24 * 60 * 60 * 1000
+          );
           const weekEnd = new Date(now.getTime() - i * 7 * 24 * 60 * 60 * 1000);
           intervals.push({
             start: weekStart,
             end: weekEnd,
-            label: `Week ${4 - i}`
+            label: `Week ${4 - i}`,
           });
         }
       } else {
@@ -4888,8 +5573,16 @@ const firebaseGroupApi = {
           monthDate.setDate(1);
           intervals.push({
             start: new Date(monthDate.setHours(0, 0, 0, 0)),
-            end: new Date(monthDate.getFullYear(), monthDate.getMonth() + 1, 0, 23, 59, 59, 999),
-            label: monthDate.toLocaleDateString('en-US', { month: 'short' })
+            end: new Date(
+              monthDate.getFullYear(),
+              monthDate.getMonth() + 1,
+              0,
+              23,
+              59,
+              59,
+              999
+            ),
+            label: monthDate.toLocaleDateString('en-US', { month: 'short' }),
           });
         }
       }
@@ -4897,7 +5590,11 @@ const firebaseGroupApi = {
       // Get sessions for the time range
       const sessionsQuery = query(
         collection(db, 'sessions'),
-        where('userId', 'in', group.memberIds.length > 0 ? group.memberIds.slice(0, 10) : ['dummy']),
+        where(
+          'userId',
+          'in',
+          group.memberIds.length > 0 ? group.memberIds.slice(0, 10) : ['dummy']
+        ),
         where('createdAt', '>=', startDate),
         orderBy('createdAt', 'asc')
       );
@@ -4911,7 +5608,7 @@ const firebaseGroupApi = {
         sessionsSnapshot.forEach(doc => {
           const data = doc.data();
           const sessionDate = data.createdAt?.toDate() || new Date(0);
-          
+
           if (sessionDate >= interval.start && sessionDate <= interval.end) {
             hours += data.duration / 3600;
             members.add(data.userId);
@@ -4921,7 +5618,7 @@ const firebaseGroupApi = {
         return {
           date: interval.label,
           hours: parseFloat(hours.toFixed(1)),
-          members: members.size
+          members: members.size,
         };
       });
 
@@ -4946,16 +5643,18 @@ const firebaseGroupApi = {
 
         return {
           date: interval.label,
-          members: memberCount
+          members: memberCount,
         };
       });
 
       return {
         hoursData,
-        membershipGrowth
+        membershipGrowth,
       };
     } catch (error) {
-      const apiError = handleError(error, 'Get group analytics', { defaultMessage: 'Failed to get group analytics' });
+      const apiError = handleError(error, 'Get group analytics', {
+        defaultMessage: 'Failed to get group analytics',
+      });
       throw new Error(apiError.userMessage);
     }
   },
@@ -4964,7 +5663,14 @@ const firebaseGroupApi = {
   getGroupLeaderboard: async (
     groupId: string,
     timePeriod: 'today' | 'week' | 'month' | 'year' = 'week'
-  ): Promise<Array<{ user: User; totalHours: number; sessionCount: number; rank: number }>> => {
+  ): Promise<
+    Array<{
+      user: User;
+      totalHours: number;
+      sessionCount: number;
+      rank: number;
+    }>
+  > => {
     try {
       const group = await firebaseGroupApi.getGroup(groupId);
       if (!group) {
@@ -4999,7 +5705,10 @@ const firebaseGroupApi = {
         return [];
       }
 
-      const userHoursMap = new Map<string, { totalHours: number; sessionCount: number }>();
+      const userHoursMap = new Map<
+        string,
+        { totalHours: number; sessionCount: number }
+      >();
 
       // Process members in batches of 10
       for (let i = 0; i < memberIds.length; i += 10) {
@@ -5018,16 +5727,19 @@ const firebaseGroupApi = {
           const userId = data.userId;
           const hours = (data.duration || 0) / 3600; // Convert seconds to hours
 
-          const current = userHoursMap.get(userId) || { totalHours: 0, sessionCount: 0 };
+          const current = userHoursMap.get(userId) || {
+            totalHours: 0,
+            sessionCount: 0,
+          };
           userHoursMap.set(userId, {
             totalHours: current.totalHours + hours,
-            sessionCount: current.sessionCount + 1
+            sessionCount: current.sessionCount + 1,
           });
         });
       }
 
       // Get user details and create leaderboard entries
-      const leaderboardPromises = memberIds.map(async (userId) => {
+      const leaderboardPromises = memberIds.map(async userId => {
         const userDoc = await getDoc(doc(db, 'users', userId));
         if (!userDoc.exists()) {
           return null;
@@ -5043,16 +5755,19 @@ const firebaseGroupApi = {
           location: userData.location,
           profilePicture: userData.profilePicture,
           createdAt: convertTimestamp(userData.createdAt) || new Date(),
-          updatedAt: convertTimestamp(userData.updatedAt) || new Date()
+          updatedAt: convertTimestamp(userData.updatedAt) || new Date(),
         };
 
-        const stats = userHoursMap.get(userId) || { totalHours: 0, sessionCount: 0 };
+        const stats = userHoursMap.get(userId) || {
+          totalHours: 0,
+          sessionCount: 0,
+        };
 
         return {
           user,
           totalHours: stats.totalHours,
           sessionCount: stats.sessionCount,
-          rank: 0 // Will be set after sorting
+          rank: 0, // Will be set after sorting
         };
       });
 
@@ -5061,15 +5776,17 @@ const firebaseGroupApi = {
         .sort((a, b) => b.totalHours - a.totalHours)
         .map((entry, index) => ({
           ...entry,
-          rank: index + 1
+          rank: index + 1,
         }));
 
       return leaderboard;
     } catch (error) {
-      const apiError = handleError(error, 'Get group leaderboard', { defaultMessage: 'Failed to get group leaderboard' });
+      const apiError = handleError(error, 'Get group leaderboard', {
+        defaultMessage: 'Failed to get group leaderboard',
+      });
       throw new Error(apiError.userMessage);
     }
-  }
+  },
 };
 
 // Note: increment is imported from firebase/firestore above
@@ -5101,11 +5818,11 @@ export const firebaseChallengeApi = {
         participantCount: 0,
         isActive: true,
         createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
+        updatedAt: serverTimestamp(),
       };
 
       const docRef = await addDoc(collection(db, 'challenges'), challengeData);
-      
+
       return {
         id: docRef.id,
         ...data,
@@ -5113,10 +5830,12 @@ export const firebaseChallengeApi = {
         participantCount: 0,
         isActive: true,
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
       };
     } catch (error) {
-      const apiError = handleError(error, 'Create challenge', { defaultMessage: 'Failed to create challenge' });
+      const apiError = handleError(error, 'Create challenge', {
+        defaultMessage: 'Failed to create challenge',
+      });
       throw new Error(apiError.userMessage);
     }
   },
@@ -5125,7 +5844,7 @@ export const firebaseChallengeApi = {
   getChallenge: async (challengeId: string): Promise<Challenge> => {
     try {
       const challengeDoc = await getDoc(doc(db, 'challenges', challengeId));
-      
+
       if (!challengeDoc.exists()) {
         throw new Error('Challenge not found');
       }
@@ -5147,25 +5866,40 @@ export const firebaseChallengeApi = {
         rules: data.rules,
         projectIds: data.projectIds,
         isActive: data.isActive !== false,
-        rewards: data.rewards
+        rewards: data.rewards,
       };
     } catch (error) {
-      const apiError = handleError(error, 'Get challenge', { defaultMessage: 'Failed to get challenge' });
+      const apiError = handleError(error, 'Get challenge', {
+        defaultMessage: 'Failed to get challenge',
+      });
       throw new Error(apiError.userMessage);
     }
   },
 
   // Get challenges with filters
-  getChallenges: async (filters: ChallengeFilters = {}): Promise<Challenge[]> => {
+  getChallenges: async (
+    filters: ChallengeFilters = {}
+  ): Promise<Challenge[]> => {
     try {
       // Start with a simple query to avoid complex index requirements
-      let challengesQuery = query(collection(db, 'challenges'), orderBy('createdAt', 'desc'));
+      let challengesQuery = query(
+        collection(db, 'challenges'),
+        orderBy('createdAt', 'desc')
+      );
 
       // Apply simple filters first
       if (filters.groupId) {
-        challengesQuery = query(collection(db, 'challenges'), where('groupId', '==', filters.groupId), orderBy('createdAt', 'desc'));
+        challengesQuery = query(
+          collection(db, 'challenges'),
+          where('groupId', '==', filters.groupId),
+          orderBy('createdAt', 'desc')
+        );
       } else if (filters.type) {
-        challengesQuery = query(collection(db, 'challenges'), where('type', '==', filters.type), orderBy('createdAt', 'desc'));
+        challengesQuery = query(
+          collection(db, 'challenges'),
+          where('type', '==', filters.type),
+          orderBy('createdAt', 'desc')
+        );
       }
 
       const snapshot = await getDocs(challengesQuery);
@@ -5174,7 +5908,7 @@ export const firebaseChallengeApi = {
 
       for (const challengeDoc of snapshot.docs) {
         const data = challengeDoc.data();
-        
+
         // Apply client-side filtering for complex conditions
         const startDate = convertTimestamp(data.startDate);
         const endDate = convertTimestamp(data.endDate);
@@ -5204,14 +5938,22 @@ export const firebaseChallengeApi = {
         if (filters.isParticipating && auth.currentUser) {
           try {
             const participantDoc = await getDoc(
-              doc(db, 'challengeParticipants', `${auth.currentUser.uid}_${challengeDoc.id}`)
+              doc(
+                db,
+                'challengeParticipants',
+                `${auth.currentUser.uid}_${challengeDoc.id}`
+              )
             );
             if (!participantDoc.exists()) {
               continue;
             }
           } catch (error) {
             // If we can't check participation, skip this challenge
-            handleError(error, `Check participation for challenge ${challengeDoc.id}`, { severity: ErrorSeverity.WARNING });
+            handleError(
+              error,
+              `Check participation for challenge ${challengeDoc.id}`,
+              { severity: ErrorSeverity.WARNING }
+            );
             continue;
           }
         }
@@ -5232,14 +5974,16 @@ export const firebaseChallengeApi = {
           rules: data.rules,
           projectIds: data.projectIds,
           isActive,
-          rewards: data.rewards
+          rewards: data.rewards,
         });
       }
 
       return challenges;
     } catch (error) {
       handleError(error, 'in getChallenges', { severity: ErrorSeverity.ERROR });
-      const apiError = handleError(error, 'Get challenges', { defaultMessage: 'Failed to get challenges' });
+      const apiError = handleError(error, 'Get challenges', {
+        defaultMessage: 'Failed to get challenges',
+      });
       throw new Error(apiError.userMessage);
     }
   },
@@ -5252,9 +5996,11 @@ export const firebaseChallengeApi = {
       }
 
       const participantId = `${auth.currentUser.uid}_${challengeId}`;
-      
+
       // Check if already participating
-      const existingParticipant = await getDoc(doc(db, 'challengeParticipants', participantId));
+      const existingParticipant = await getDoc(
+        doc(db, 'challengeParticipants', participantId)
+      );
       if (existingParticipant.exists()) {
         throw new Error('Already participating in this challenge');
       }
@@ -5285,18 +6031,20 @@ export const firebaseChallengeApi = {
         userId: auth.currentUser.uid,
         joinedAt: serverTimestamp(),
         progress: 0,
-        isCompleted: false
+        isCompleted: false,
       });
 
       // Update participant count
       batch.update(doc(db, 'challenges', challengeId), {
         participantCount: increment(1),
-        updatedAt: serverTimestamp()
+        updatedAt: serverTimestamp(),
       });
 
       await batch.commit();
     } catch (error) {
-      const apiError = handleError(error, 'Join challenge', { defaultMessage: 'Failed to join challenge' });
+      const apiError = handleError(error, 'Join challenge', {
+        defaultMessage: 'Failed to join challenge',
+      });
       throw new Error(apiError.userMessage);
     }
   },
@@ -5309,9 +6057,11 @@ export const firebaseChallengeApi = {
       }
 
       const participantId = `${auth.currentUser.uid}_${challengeId}`;
-      
+
       // Check if participating
-      const participantDoc = await getDoc(doc(db, 'challengeParticipants', participantId));
+      const participantDoc = await getDoc(
+        doc(db, 'challengeParticipants', participantId)
+      );
       if (!participantDoc.exists()) {
         throw new Error('Not participating in this challenge');
       }
@@ -5324,18 +6074,22 @@ export const firebaseChallengeApi = {
       // Update participant count
       batch.update(doc(db, 'challenges', challengeId), {
         participantCount: increment(-1),
-        updatedAt: serverTimestamp()
+        updatedAt: serverTimestamp(),
       });
 
       await batch.commit();
     } catch (error) {
-      const apiError = handleError(error, 'Leave challenge', { defaultMessage: 'Failed to leave challenge' });
+      const apiError = handleError(error, 'Leave challenge', {
+        defaultMessage: 'Failed to leave challenge',
+      });
       throw new Error(apiError.userMessage);
     }
   },
 
   // Get challenge leaderboard
-  getChallengeLeaderboard: async (challengeId: string): Promise<ChallengeLeaderboard> => {
+  getChallengeLeaderboard: async (
+    challengeId: string
+  ): Promise<ChallengeLeaderboard> => {
     try {
       // Get all participants for this challenge
       const participantsQuery = query(
@@ -5350,12 +6104,14 @@ export const firebaseChallengeApi = {
       let rank = 1;
       for (const participantDoc of participantsSnapshot.docs) {
         const participantData = participantDoc.data();
-        
+
         // Get user data
         try {
-          const userDoc = await getDoc(doc(db, 'users', participantData.userId));
+          const userDoc = await getDoc(
+            doc(db, 'users', participantData.userId)
+          );
           const userData = userDoc.data();
-          
+
           if (userData) {
             entries.push({
               userId: participantData.userId,
@@ -5368,33 +6124,44 @@ export const firebaseChallengeApi = {
                 location: userData.location,
                 profilePicture: userData.profilePicture,
                 createdAt: convertTimestamp(userData.createdAt) || new Date(),
-                updatedAt: convertTimestamp(userData.updatedAt) || new Date()
+                updatedAt: convertTimestamp(userData.updatedAt) || new Date(),
               },
               progress: participantData.progress || 0,
               rank,
               isCompleted: participantData.isCompleted || false,
-              completedAt: participantData.completedAt ? convertTimestamp(participantData.completedAt) : undefined
+              completedAt: participantData.completedAt
+                ? convertTimestamp(participantData.completedAt)
+                : undefined,
             });
             rank++;
           }
         } catch (error) {
-          handleError(error, `Load user data for participant ${participantData.userId}`, { severity: ErrorSeverity.WARNING });
+          handleError(
+            error,
+            `Load user data for participant ${participantData.userId}`,
+            { severity: ErrorSeverity.WARNING }
+          );
         }
       }
 
       return {
         challengeId,
         entries,
-        lastUpdated: new Date()
+        lastUpdated: new Date(),
       };
     } catch (error) {
-      const apiError = handleError(error, 'Get challenge leaderboard', { defaultMessage: 'Failed to get challenge leaderboard' });
+      const apiError = handleError(error, 'Get challenge leaderboard', {
+        defaultMessage: 'Failed to get challenge leaderboard',
+      });
       throw new Error(apiError.userMessage);
     }
   },
 
   // Get user's progress in a challenge
-  getChallengeProgress: async (challengeId: string, userId?: string): Promise<ChallengeProgress | null> => {
+  getChallengeProgress: async (
+    challengeId: string,
+    userId?: string
+  ): Promise<ChallengeProgress | null> => {
     try {
       const targetUserId = userId || auth.currentUser?.uid;
       if (!targetUserId) {
@@ -5402,8 +6169,10 @@ export const firebaseChallengeApi = {
       }
 
       const participantId = `${targetUserId}_${challengeId}`;
-      const participantDoc = await getDoc(doc(db, 'challengeParticipants', participantId));
-      
+      const participantDoc = await getDoc(
+        doc(db, 'challengeParticipants', participantId)
+      );
+
       if (!participantDoc.exists()) {
         return null;
       }
@@ -5415,7 +6184,10 @@ export const firebaseChallengeApi = {
       // Calculate percentage based on challenge type and goal
       let percentage = 0;
       if (challengeData?.goalValue && participantData.progress) {
-        percentage = Math.min((participantData.progress / challengeData.goalValue) * 100, 100);
+        percentage = Math.min(
+          (participantData.progress / challengeData.goalValue) * 100,
+          100
+        );
       }
 
       // Get rank by counting participants with higher progress
@@ -5435,16 +6207,21 @@ export const firebaseChallengeApi = {
         percentage,
         rank,
         isCompleted: participantData.isCompleted || false,
-        lastUpdated: convertTimestamp(participantData.updatedAt) || new Date()
+        lastUpdated: convertTimestamp(participantData.updatedAt) || new Date(),
       };
     } catch (error) {
-      const apiError = handleError(error, 'Get challenge progress', { defaultMessage: 'Failed to get challenge progress' });
+      const apiError = handleError(error, 'Get challenge progress', {
+        defaultMessage: 'Failed to get challenge progress',
+      });
       throw new Error(apiError.userMessage);
     }
   },
 
   // Update challenge progress (called when sessions are logged)
-  updateChallengeProgress: async (userId: string, sessionData: any): Promise<void> => {
+  updateChallengeProgress: async (
+    userId: string,
+    sessionData: any
+  ): Promise<void> => {
     try {
       // Get all active challenges the user is participating in
       const participantsQuery = query(
@@ -5470,7 +6247,11 @@ export const firebaseChallengeApi = {
         const sessionStart = convertTimestamp(sessionData.startTime);
 
         // Skip if challenge is not active or session is outside challenge period
-        if (!challengeData.isActive || sessionStart < startDate || sessionStart > endDate) {
+        if (
+          !challengeData.isActive ||
+          sessionStart < startDate ||
+          sessionStart > endDate
+        ) {
           continue;
         }
 
@@ -5495,7 +6276,8 @@ export const firebaseChallengeApi = {
               const currentRatio = tasksCompleted / hours;
               // Update if this is better than current best
               if (currentRatio > (participantData.progress || 0)) {
-                progressIncrement = currentRatio - (participantData.progress || 0);
+                progressIncrement =
+                  currentRatio - (participantData.progress || 0);
               }
             }
             break;
@@ -5503,7 +6285,8 @@ export const firebaseChallengeApi = {
             // Update if this session is longer than current best
             const sessionHours = sessionData.duration / 3600;
             if (sessionHours > (participantData.progress || 0)) {
-              progressIncrement = sessionHours - (participantData.progress || 0);
+              progressIncrement =
+                sessionHours - (participantData.progress || 0);
             }
             break;
           case 'group-goal':
@@ -5512,12 +6295,15 @@ export const firebaseChallengeApi = {
         }
 
         if (progressIncrement > 0) {
-          const newProgress = (participantData.progress || 0) + progressIncrement;
-          const isCompleted = challengeData.goalValue ? newProgress >= challengeData.goalValue : false;
+          const newProgress =
+            (participantData.progress || 0) + progressIncrement;
+          const isCompleted = challengeData.goalValue
+            ? newProgress >= challengeData.goalValue
+            : false;
 
           const updateData: any = {
             progress: newProgress,
-            updatedAt: serverTimestamp()
+            updatedAt: serverTimestamp(),
           };
 
           if (isCompleted && !participantData.isCompleted) {
@@ -5531,7 +6317,9 @@ export const firebaseChallengeApi = {
 
       await batch.commit();
     } catch (error) {
-      handleError(error, 'update challenge progress', { severity: ErrorSeverity.ERROR });
+      handleError(error, 'update challenge progress', {
+        severity: ErrorSeverity.ERROR,
+      });
       // Don't throw error to avoid breaking session creation
     }
   },
@@ -5561,7 +6349,7 @@ export const firebaseChallengeApi = {
       let completedParticipants = 0;
       let totalProgress = 0;
 
-      participantsSnapshot.forEach((doc) => {
+      participantsSnapshot.forEach(doc => {
         const data = doc.data();
         if (data.isCompleted) {
           completedParticipants++;
@@ -5569,10 +6357,12 @@ export const firebaseChallengeApi = {
         totalProgress += data.progress || 0;
       });
 
-      const averageProgress = totalParticipants > 0 ? totalProgress / totalParticipants : 0;
+      const averageProgress =
+        totalParticipants > 0 ? totalProgress / totalParticipants : 0;
 
       // Get top performers (top 3)
-      const leaderboard = await firebaseChallengeApi.getChallengeLeaderboard(challengeId);
+      const leaderboard =
+        await firebaseChallengeApi.getChallengeLeaderboard(challengeId);
       const topPerformers = leaderboard.entries.slice(0, 3);
 
       return {
@@ -5581,16 +6371,21 @@ export const firebaseChallengeApi = {
         averageProgress,
         topPerformers,
         timeRemaining: Math.floor(timeRemaining / 1000), // Convert to seconds
-        daysRemaining
+        daysRemaining,
       };
     } catch (error) {
-      const apiError = handleError(error, 'Get challenge stats', { defaultMessage: 'Failed to get challenge stats' });
+      const apiError = handleError(error, 'Get challenge stats', {
+        defaultMessage: 'Failed to get challenge stats',
+      });
       throw new Error(apiError.userMessage);
     }
   },
 
   // Update challenge (admin only)
-  updateChallenge: async (challengeId: string, data: UpdateChallengeData): Promise<Challenge> => {
+  updateChallenge: async (
+    challengeId: string,
+    data: UpdateChallengeData
+  ): Promise<Challenge> => {
     try {
       if (!auth.currentUser) {
         throw new Error('User not authenticated');
@@ -5605,7 +6400,7 @@ export const firebaseChallengeApi = {
 
       // Check if user is admin (challenge creator or group admin)
       let isAdmin = challengeData.createdByUserId === auth.currentUser.uid;
-      
+
       if (!isAdmin && challengeData.groupId) {
         const groupDoc = await getDoc(doc(db, 'groups', challengeData.groupId));
         if (groupDoc.exists()) {
@@ -5615,12 +6410,14 @@ export const firebaseChallengeApi = {
       }
 
       if (!isAdmin) {
-        throw new Error('Only challenge creators or group admins can update challenges');
+        throw new Error(
+          'Only challenge creators or group admins can update challenges'
+        );
       }
 
       const updateData = removeUndefinedFields({
         ...data,
-        updatedAt: serverTimestamp()
+        updatedAt: serverTimestamp(),
       });
 
       await updateDoc(doc(db, 'challenges', challengeId), updateData);
@@ -5628,7 +6425,9 @@ export const firebaseChallengeApi = {
       // Return updated challenge
       return await firebaseChallengeApi.getChallenge(challengeId);
     } catch (error) {
-      const apiError = handleError(error, 'Update challenge', { defaultMessage: 'Failed to update challenge' });
+      const apiError = handleError(error, 'Update challenge', {
+        defaultMessage: 'Failed to update challenge',
+      });
       throw new Error(apiError.userMessage);
     }
   },
@@ -5649,7 +6448,7 @@ export const firebaseChallengeApi = {
 
       // Check if user is admin
       let isAdmin = challengeData.createdByUserId === auth.currentUser.uid;
-      
+
       if (!isAdmin && challengeData.groupId) {
         const groupDoc = await getDoc(doc(db, 'groups', challengeData.groupId));
         if (groupDoc.exists()) {
@@ -5659,7 +6458,9 @@ export const firebaseChallengeApi = {
       }
 
       if (!isAdmin) {
-        throw new Error('Only challenge creators or group admins can delete challenges');
+        throw new Error(
+          'Only challenge creators or group admins can delete challenges'
+        );
       }
 
       const batch = writeBatch(db);
@@ -5673,20 +6474,25 @@ export const firebaseChallengeApi = {
         where('challengeId', '==', challengeId)
       );
       const participantsSnapshot = await getDocs(participantsQuery);
-      
-      participantsSnapshot.forEach((participantDoc) => {
+
+      participantsSnapshot.forEach(participantDoc => {
         batch.delete(participantDoc.ref);
       });
 
       await batch.commit();
     } catch (error) {
-      const apiError = handleError(error, 'Delete challenge', { defaultMessage: 'Failed to delete challenge' });
+      const apiError = handleError(error, 'Delete challenge', {
+        defaultMessage: 'Failed to delete challenge',
+      });
       throw new Error(apiError.userMessage);
     }
   },
 
   // Search challenges with filters and limit
-  searchChallenges: async (filters: ChallengeFilters = {}, limitCount: number = 50): Promise<Challenge[]> => {
+  searchChallenges: async (
+    filters: ChallengeFilters = {},
+    limitCount: number = 50
+  ): Promise<Challenge[]> => {
     try {
       // Use getChallenges but apply limit
       let challengesQuery = query(
@@ -5718,7 +6524,7 @@ export const firebaseChallengeApi = {
 
       for (const challengeDoc of snapshot.docs) {
         const data = challengeDoc.data();
-        
+
         // Apply client-side filtering for complex conditions
         const startDate = convertTimestamp(data.startDate);
         const endDate = convertTimestamp(data.endDate);
@@ -5756,14 +6562,18 @@ export const firebaseChallengeApi = {
           projectIds: data.projectIds,
           isActive,
           rewards: data.rewards,
-          category: data.category
+          category: data.category,
         });
       }
 
       return challenges;
     } catch (error) {
-      handleError(error, 'in searchChallenges', { severity: ErrorSeverity.ERROR });
-      const apiError = handleError(error, 'Search challenges', { defaultMessage: 'Failed to search challenges' });
+      handleError(error, 'in searchChallenges', {
+        severity: ErrorSeverity.ERROR,
+      });
+      const apiError = handleError(error, 'Search challenges', {
+        defaultMessage: 'Failed to search challenges',
+      });
       throw new Error(apiError.userMessage);
     }
   },
@@ -5786,10 +6596,13 @@ export const firebaseChallengeApi = {
         const challengeId = participantData.challengeId;
 
         try {
-          const challenge = await firebaseChallengeApi.getChallenge(challengeId);
+          const challenge =
+            await firebaseChallengeApi.getChallenge(challengeId);
           challenges.push(challenge);
         } catch (error) {
-          handleError(error, `Load challenge ${challengeId}`, { severity: ErrorSeverity.WARNING });
+          handleError(error, `Load challenge ${challengeId}`, {
+            severity: ErrorSeverity.WARNING,
+          });
         }
       }
 
@@ -5798,10 +6611,12 @@ export const firebaseChallengeApi = {
 
       return challenges;
     } catch (error) {
-      const apiError = handleError(error, 'Get user challenges', { defaultMessage: 'Failed to get user challenges' });
+      const apiError = handleError(error, 'Get user challenges', {
+        defaultMessage: 'Failed to get user challenges',
+      });
       throw new Error(apiError.userMessage);
     }
-  }
+  },
 };
 
 // Import additional types for streak and achievement
@@ -5812,7 +6627,7 @@ import type {
   Achievement,
   AchievementType,
   UserAchievementData,
-  AchievementProgress
+  AchievementProgress,
 } from '@/types';
 
 // Streak API methods
@@ -5821,7 +6636,7 @@ export const firebaseStreakApi = {
   getStreakData: async (userId: string): Promise<StreakData> => {
     try {
       const streakDoc = await getDoc(doc(db, 'streaks', userId));
-      
+
       if (!streakDoc.exists()) {
         // Initialize streak data if it doesn't exist
         const initialStreak: StreakData = {
@@ -5831,11 +6646,11 @@ export const firebaseStreakApi = {
           lastActivityDate: new Date(0),
           totalStreakDays: 0,
           streakHistory: [],
-          isPublic: true
+          isPublic: true,
         };
         await setDoc(doc(db, 'streaks', userId), {
           ...initialStreak,
-          lastActivityDate: Timestamp.fromDate(initialStreak.lastActivityDate)
+          lastActivityDate: Timestamp.fromDate(initialStreak.lastActivityDate),
         });
         return initialStreak;
       }
@@ -5848,10 +6663,12 @@ export const firebaseStreakApi = {
         lastActivityDate: convertTimestamp(data.lastActivityDate),
         totalStreakDays: data.totalStreakDays || 0,
         streakHistory: data.streakHistory || [],
-        isPublic: data.isPublic !== false
+        isPublic: data.isPublic !== false,
       };
     } catch (error) {
-      const apiError = handleError(error, 'Get streak data', { defaultMessage: 'Failed to get streak data' });
+      const apiError = handleError(error, 'Get streak data', {
+        defaultMessage: 'Failed to get streak data',
+      });
       throw new Error(apiError.userMessage);
     }
   },
@@ -5867,46 +6684,65 @@ export const firebaseStreakApi = {
         streakData.lastActivityDate.getMonth(),
         streakData.lastActivityDate.getDate()
       );
-      
-      const daysSinceActivity = Math.floor((today.getTime() - lastActivity.getTime()) / (1000 * 60 * 60 * 24));
+
+      const daysSinceActivity = Math.floor(
+        (today.getTime() - lastActivity.getTime()) / (1000 * 60 * 60 * 24)
+      );
       const streakAtRisk = daysSinceActivity >= 1;
-      
+
       // Calculate next milestone
       const milestones = [7, 30, 100, 365, 500, 1000];
-      const nextMilestone = milestones.find(m => m > streakData.currentStreak) || milestones[milestones.length - 1];
+      const nextMilestone =
+        milestones.find(m => m > streakData.currentStreak) ||
+        milestones[milestones.length - 1];
 
       return {
         currentStreak: streakData.currentStreak,
         longestStreak: streakData.longestStreak,
         totalStreakDays: streakData.totalStreakDays,
-        lastActivityDate: streakData.lastActivityDate.getTime() === 0 ? null : streakData.lastActivityDate,
+        lastActivityDate:
+          streakData.lastActivityDate.getTime() === 0
+            ? null
+            : streakData.lastActivityDate,
         streakAtRisk,
-        nextMilestone
+        nextMilestone,
       };
     } catch (error) {
-      const apiError = handleError(error, 'Get streak stats', { defaultMessage: 'Failed to get streak stats' });
+      const apiError = handleError(error, 'Get streak stats', {
+        defaultMessage: 'Failed to get streak stats',
+      });
       throw new Error(apiError.userMessage);
     }
   },
 
   // Update streak after session completion
-  updateStreak: async (userId: string, sessionDate: Date): Promise<StreakData> => {
+  updateStreak: async (
+    userId: string,
+    sessionDate: Date
+  ): Promise<StreakData> => {
     try {
       const streakData = await firebaseStreakApi.getStreakData(userId);
-      
-      const sessionDay = new Date(sessionDate.getFullYear(), sessionDate.getMonth(), sessionDate.getDate());
+
+      const sessionDay = new Date(
+        sessionDate.getFullYear(),
+        sessionDate.getMonth(),
+        sessionDate.getDate()
+      );
       const lastActivityDay = new Date(
         streakData.lastActivityDate.getFullYear(),
         streakData.lastActivityDate.getMonth(),
         streakData.lastActivityDate.getDate()
       );
-      
-      const daysDiff = Math.floor((sessionDay.getTime() - lastActivityDay.getTime()) / (1000 * 60 * 60 * 24));
-      
+
+      const daysDiff = Math.floor(
+        (sessionDay.getTime() - lastActivityDay.getTime()) /
+          (1000 * 60 * 60 * 24)
+      );
+
       let newCurrentStreak = streakData.currentStreak;
       let newLongestStreak = streakData.longestStreak;
       let newTotalStreakDays = streakData.totalStreakDays;
-      
+
       if (daysDiff === 0) {
         // Same day, no change to streak
       } else if (daysDiff === 1) {
@@ -5921,11 +6757,13 @@ export const firebaseStreakApi = {
         newCurrentStreak = 1;
         newTotalStreakDays += 1;
       }
-      
+
       // Update streak history (keep last 365 days)
       const dateStr = sessionDay.toISOString().split('T')[0];
-      const existingDayIndex = streakData.streakHistory.findIndex(d => d.date === dateStr);
-      
+      const existingDayIndex = streakData.streakHistory.findIndex(
+        d => d.date === dateStr
+      );
+
       let newHistory = [...streakData.streakHistory];
       if (existingDayIndex >= 0) {
         newHistory[existingDayIndex].sessionCount += 1;
@@ -5934,30 +6772,32 @@ export const firebaseStreakApi = {
           date: dateStr,
           hasActivity: true,
           sessionCount: 1,
-          totalMinutes: 0
+          totalMinutes: 0,
         });
       }
-      
+
       // Keep only last 365 days
       newHistory = newHistory.slice(-365);
-      
+
       const updatedStreak: StreakData = {
         ...streakData,
         currentStreak: newCurrentStreak,
         longestStreak: newLongestStreak,
         lastActivityDate: sessionDate,
         totalStreakDays: newTotalStreakDays,
-        streakHistory: newHistory
+        streakHistory: newHistory,
       };
-      
+
       await setDoc(doc(db, 'streaks', userId), {
         ...updatedStreak,
-        lastActivityDate: Timestamp.fromDate(sessionDate)
+        lastActivityDate: Timestamp.fromDate(sessionDate),
       });
-      
+
       return updatedStreak;
     } catch (error) {
-      const apiError = handleError(error, 'Update streak', { defaultMessage: 'Failed to update streak' });
+      const apiError = handleError(error, 'Update streak', {
+        defaultMessage: 'Failed to update streak',
+      });
       throw new Error(apiError.userMessage);
     }
   },
@@ -5968,17 +6808,19 @@ export const firebaseStreakApi = {
       if (!auth.currentUser || auth.currentUser.uid !== userId) {
         throw new Error('Unauthorized');
       }
-      
+
       const streakData = await firebaseStreakApi.getStreakData(userId);
       const newVisibility = !streakData.isPublic;
-      
+
       await updateDoc(doc(db, 'streaks', userId), {
-        isPublic: newVisibility
+        isPublic: newVisibility,
       });
-      
+
       return newVisibility;
     } catch (error) {
-      const apiError = handleError(error, 'Toggle streak visibility', { defaultMessage: 'Failed to toggle streak visibility' });
+      const apiError = handleError(error, 'Toggle streak visibility', {
+        defaultMessage: 'Failed to toggle streak visibility',
+      });
       throw new Error(apiError.userMessage);
     }
   },
@@ -5989,43 +6831,145 @@ export const firebaseStreakApi = {
       if (!auth.currentUser) {
         throw new Error('Unauthorized');
       }
-      
+
       // TODO: Add admin check
-      
+
       await updateDoc(doc(db, 'streaks', userId), {
         currentStreak: streakValue,
-        lastActivityDate: Timestamp.fromDate(new Date())
+        lastActivityDate: Timestamp.fromDate(new Date()),
       });
     } catch (error) {
-      const apiError = handleError(error, 'Restore streak', { defaultMessage: 'Failed to restore streak' });
+      const apiError = handleError(error, 'Restore streak', {
+        defaultMessage: 'Failed to restore streak',
+      });
       throw new Error(apiError.userMessage);
     }
-  }
+  },
 };
 
 // Achievement definitions
-const ACHIEVEMENT_DEFINITIONS: Record<AchievementType, { name: string; description: string; icon: string; targetValue?: number }> = {
-  'streak-7': { name: '7 Day Streak', description: 'Complete sessions for 7 days in a row', icon: '🔥', targetValue: 7 },
-  'streak-30': { name: '30 Day Streak', description: 'Complete sessions for 30 days in a row', icon: '🔥', targetValue: 30 },
-  'streak-100': { name: '100 Day Streak', description: 'Complete sessions for 100 days in a row', icon: '🔥', targetValue: 100 },
-  'streak-365': { name: 'Year Streak', description: 'Complete sessions for 365 days in a row', icon: '🔥', targetValue: 365 },
-  'hours-10': { name: 'First 10 Hours', description: 'Log 10 hours of work', icon: '⏱️', targetValue: 10 },
-  'hours-50': { name: '50 Hours', description: 'Log 50 hours of work', icon: '⏱️', targetValue: 50 },
-  'hours-100': { name: '100 Hours', description: 'Log 100 hours of work', icon: '⏱️', targetValue: 100 },
-  'hours-500': { name: '500 Hours', description: 'Log 500 hours of work', icon: '⏱️', targetValue: 500 },
-  'hours-1000': { name: '1000 Hours', description: 'Log 1000 hours of work', icon: '⏱️', targetValue: 1000 },
-  'tasks-50': { name: '50 Tasks', description: 'Complete 50 tasks', icon: '✅', targetValue: 50 },
-  'tasks-100': { name: '100 Tasks', description: 'Complete 100 tasks', icon: '✅', targetValue: 100 },
-  'tasks-500': { name: '500 Tasks', description: 'Complete 500 tasks', icon: '✅', targetValue: 500 },
-  'tasks-1000': { name: '1000 Tasks', description: 'Complete 1000 tasks', icon: '✅', targetValue: 1000 },
-  'challenge-complete': { name: 'Challenge Complete', description: 'Complete a challenge', icon: '🏆' },
-  'challenge-winner': { name: 'Challenge Winner', description: 'Win a challenge', icon: '👑' },
-  'personal-record-session': { name: 'Personal Record', description: 'Complete your longest session', icon: '🎯' },
-  'personal-record-day': { name: 'Best Day Ever', description: 'Complete your most productive day', icon: '🌟' },
-  'early-bird': { name: 'Early Bird', description: 'Complete a session before 6 AM', icon: '🌅' },
-  'night-owl': { name: 'Night Owl', description: 'Complete a session after 10 PM', icon: '🦉' },
-  'weekend-warrior': { name: 'Weekend Warrior', description: 'Complete 10 weekend sessions', icon: '💪' },
-  'consistency-king': { name: 'Consistency King', description: 'Complete sessions for 30 consecutive days', icon: '👑' }
+const ACHIEVEMENT_DEFINITIONS: Record<
+  AchievementType,
+  { name: string; description: string; icon: string; targetValue?: number }
+> = {
+  'streak-7': {
+    name: '7 Day Streak',
+    description: 'Complete sessions for 7 days in a row',
+    icon: '🔥',
+    targetValue: 7,
+  },
+  'streak-30': {
+    name: '30 Day Streak',
+    description: 'Complete sessions for 30 days in a row',
+    icon: '🔥',
+    targetValue: 30,
+  },
+  'streak-100': {
+    name: '100 Day Streak',
+    description: 'Complete sessions for 100 days in a row',
+    icon: '🔥',
+    targetValue: 100,
+  },
+  'streak-365': {
+    name: 'Year Streak',
+    description: 'Complete sessions for 365 days in a row',
+    icon: '🔥',
+    targetValue: 365,
+  },
+  'hours-10': {
+    name: 'First 10 Hours',
+    description: 'Log 10 hours of work',
+    icon: '⏱️',
+    targetValue: 10,
+  },
+  'hours-50': {
+    name: '50 Hours',
+    description: 'Log 50 hours of work',
+    icon: '⏱️',
+    targetValue: 50,
+  },
+  'hours-100': {
+    name: '100 Hours',
+    description: 'Log 100 hours of work',
+    icon: '⏱️',
+    targetValue: 100,
+  },
+  'hours-500': {
+    name: '500 Hours',
+    description: 'Log 500 hours of work',
+    icon: '⏱️',
+    targetValue: 500,
+  },
+  'hours-1000': {
+    name: '1000 Hours',
+    description: 'Log 1000 hours of work',
+    icon: '⏱️',
+    targetValue: 1000,
+  },
+  'tasks-50': {
+    name: '50 Tasks',
+    description: 'Complete 50 tasks',
+    icon: '✅',
+    targetValue: 50,
+  },
+  'tasks-100': {
+    name: '100 Tasks',
+    description: 'Complete 100 tasks',
+    icon: '✅',
+    targetValue: 100,
+  },
+  'tasks-500': {
+    name: '500 Tasks',
+    description: 'Complete 500 tasks',
+    icon: '✅',
+    targetValue: 500,
+  },
+  'tasks-1000': {
+    name: '1000 Tasks',
+    description: 'Complete 1000 tasks',
+    icon: '✅',
+    targetValue: 1000,
+  },
+  'challenge-complete': {
+    name: 'Challenge Complete',
+    description: 'Complete a challenge',
+    icon: '🏆',
+  },
+  'challenge-winner': {
+    name: 'Challenge Winner',
+    description: 'Win a challenge',
+    icon: '👑',
+  },
+  'personal-record-session': {
+    name: 'Personal Record',
+    description: 'Complete your longest session',
+    icon: '🎯',
+  },
+  'personal-record-day': {
+    name: 'Best Day Ever',
+    description: 'Complete your most productive day',
+    icon: '🌟',
+  },
+  'early-bird': {
+    name: 'Early Bird',
+    description: 'Complete a session before 6 AM',
+    icon: '🌅',
+  },
+  'night-owl': {
+    name: 'Night Owl',
+    description: 'Complete a session after 10 PM',
+    icon: '🦉',
+  },
+  'weekend-warrior': {
+    name: 'Weekend Warrior',
+    description: 'Complete 10 weekend sessions',
+    icon: '💪',
+  },
+  'consistency-king': {
+    name: 'Consistency King',
+    description: 'Complete sessions for 30 consecutive days',
+    icon: '👑',
+  },
 };
 
 // Achievement API methods
@@ -6038,37 +6982,49 @@ export const firebaseAchievementApi = {
         where('userId', '==', userId),
         orderBy('earnedAt', 'desc')
       );
-      
+
       const snapshot = await getDocs(achievementsQuery);
-      return snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        earnedAt: convertTimestamp(doc.data().earnedAt)
-      } as Achievement));
+      return snapshot.docs.map(
+        doc =>
+          ({
+            id: doc.id,
+            ...doc.data(),
+            earnedAt: convertTimestamp(doc.data().earnedAt),
+          }) as Achievement
+      );
     } catch (error) {
-      const apiError = handleError(error, 'Get achievements', { defaultMessage: 'Failed to get achievements' });
+      const apiError = handleError(error, 'Get achievements', {
+        defaultMessage: 'Failed to get achievements',
+      });
       throw new Error(apiError.userMessage);
     }
   },
 
   // Get achievement progress for all achievement types
-  getAchievementProgress: async (userId: string): Promise<AchievementProgress[]> => {
+  getAchievementProgress: async (
+    userId: string
+  ): Promise<AchievementProgress[]> => {
     try {
       const [achievements, userData] = await Promise.all([
         firebaseAchievementApi.getUserAchievements(userId),
-        firebaseAchievementApi.getUserAchievementData(userId)
+        firebaseAchievementApi.getUserAchievementData(userId),
       ]);
-      
+
       const unlockedTypes = new Set(achievements.map(a => a.type));
       const progress: AchievementProgress[] = [];
-      
+
       // Streak achievements
-      const streakAchievements: AchievementType[] = ['streak-7', 'streak-30', 'streak-100', 'streak-365'];
+      const streakAchievements: AchievementType[] = [
+        'streak-7',
+        'streak-30',
+        'streak-100',
+        'streak-365',
+      ];
       streakAchievements.forEach(type => {
         const def = ACHIEVEMENT_DEFINITIONS[type];
         const isUnlocked = unlockedTypes.has(type);
         const achievement = achievements.find(a => a.type === type);
-        
+
         progress.push({
           type,
           name: def.name,
@@ -6076,19 +7032,28 @@ export const firebaseAchievementApi = {
           icon: def.icon,
           currentValue: userData.currentStreak,
           targetValue: def.targetValue || 0,
-          percentage: Math.min(100, (userData.currentStreak / (def.targetValue || 1)) * 100),
+          percentage: Math.min(
+            100,
+            (userData.currentStreak / (def.targetValue || 1)) * 100
+          ),
           isUnlocked,
-          unlockedAt: achievement?.earnedAt
+          unlockedAt: achievement?.earnedAt,
         });
       });
-      
+
       // Hour achievements
-      const hourAchievements: AchievementType[] = ['hours-10', 'hours-50', 'hours-100', 'hours-500', 'hours-1000'];
+      const hourAchievements: AchievementType[] = [
+        'hours-10',
+        'hours-50',
+        'hours-100',
+        'hours-500',
+        'hours-1000',
+      ];
       hourAchievements.forEach(type => {
         const def = ACHIEVEMENT_DEFINITIONS[type];
         const isUnlocked = unlockedTypes.has(type);
         const achievement = achievements.find(a => a.type === type);
-        
+
         progress.push({
           type,
           name: def.name,
@@ -6096,19 +7061,27 @@ export const firebaseAchievementApi = {
           icon: def.icon,
           currentValue: userData.totalHours,
           targetValue: def.targetValue || 0,
-          percentage: Math.min(100, (userData.totalHours / (def.targetValue || 1)) * 100),
+          percentage: Math.min(
+            100,
+            (userData.totalHours / (def.targetValue || 1)) * 100
+          ),
           isUnlocked,
-          unlockedAt: achievement?.earnedAt
+          unlockedAt: achievement?.earnedAt,
         });
       });
-      
+
       // Task achievements
-      const taskAchievements: AchievementType[] = ['tasks-50', 'tasks-100', 'tasks-500', 'tasks-1000'];
+      const taskAchievements: AchievementType[] = [
+        'tasks-50',
+        'tasks-100',
+        'tasks-500',
+        'tasks-1000',
+      ];
       taskAchievements.forEach(type => {
         const def = ACHIEVEMENT_DEFINITIONS[type];
         const isUnlocked = unlockedTypes.has(type);
         const achievement = achievements.find(a => a.type === type);
-        
+
         progress.push({
           type,
           name: def.name,
@@ -6116,27 +7089,34 @@ export const firebaseAchievementApi = {
           icon: def.icon,
           currentValue: userData.totalTasks,
           targetValue: def.targetValue || 0,
-          percentage: Math.min(100, (userData.totalTasks / (def.targetValue || 1)) * 100),
+          percentage: Math.min(
+            100,
+            (userData.totalTasks / (def.targetValue || 1)) * 100
+          ),
           isUnlocked,
-          unlockedAt: achievement?.earnedAt
+          unlockedAt: achievement?.earnedAt,
         });
       });
-      
+
       return progress;
     } catch (error) {
-      const apiError = handleError(error, 'Get achievement progress', { defaultMessage: 'Failed to get achievement progress' });
+      const apiError = handleError(error, 'Get achievement progress', {
+        defaultMessage: 'Failed to get achievement progress',
+      });
       throw new Error(apiError.userMessage);
     }
   },
 
   // Get user data for achievement checking
-  getUserAchievementData: async (userId: string): Promise<UserAchievementData> => {
+  getUserAchievementData: async (
+    userId: string
+  ): Promise<UserAchievementData> => {
     try {
       const [streakData, userStats] = await Promise.all([
         firebaseStreakApi.getStreakData(userId),
-        firebaseUserApi.getUserStats(userId)
+        firebaseUserApi.getUserStats(userId),
       ]);
-      
+
       // Get task count
       const tasksQuery = query(
         collection(db, 'tasks'),
@@ -6144,7 +7124,7 @@ export const firebaseAchievementApi = {
         where('status', '==', 'completed')
       );
       const tasksSnapshot = await getDocs(tasksQuery);
-      
+
       // Get session stats
       const sessionsQuery = query(
         collection(db, 'sessions'),
@@ -6154,7 +7134,7 @@ export const firebaseAchievementApi = {
       );
       const sessionsSnapshot = await getDocs(sessionsQuery);
       const longestSession = sessionsSnapshot.docs[0]?.data()?.duration || 0;
-      
+
       return {
         userId,
         totalHours: userStats.totalHours,
@@ -6165,92 +7145,193 @@ export const firebaseAchievementApi = {
         longestSession: Math.floor(longestSession / 60),
         mostHoursInDay: 0, // TODO: Calculate from daily stats
         challengesCompleted: 0, // TODO: Get from challenges
-        challengesWon: 0 // TODO: Get from challenges
+        challengesWon: 0, // TODO: Get from challenges
       };
     } catch (error) {
-      const apiError = handleError(error, 'Get user achievement data', { defaultMessage: 'Failed to get user achievement data' });
+      const apiError = handleError(error, 'Get user achievement data', {
+        defaultMessage: 'Failed to get user achievement data',
+      });
       throw new Error(apiError.userMessage);
     }
   },
 
   // Check and award new achievements after session
-  checkAchievements: async (userId: string, sessionId?: string): Promise<Achievement[]> => {
+  checkAchievements: async (
+    userId: string,
+    sessionId?: string
+  ): Promise<Achievement[]> => {
     try {
       const [existingAchievements, userData] = await Promise.all([
         firebaseAchievementApi.getUserAchievements(userId),
-        firebaseAchievementApi.getUserAchievementData(userId)
+        firebaseAchievementApi.getUserAchievementData(userId),
       ]);
-      
+
       const unlockedTypes = new Set(existingAchievements.map(a => a.type));
       const newAchievements: Achievement[] = [];
-      
+
       // Check streak achievements
       if (userData.currentStreak >= 7 && !unlockedTypes.has('streak-7')) {
-        newAchievements.push(await firebaseAchievementApi.awardAchievement(userId, 'streak-7', sessionId));
+        newAchievements.push(
+          await firebaseAchievementApi.awardAchievement(
+            userId,
+            'streak-7',
+            sessionId
+          )
+        );
       }
       if (userData.currentStreak >= 30 && !unlockedTypes.has('streak-30')) {
-        newAchievements.push(await firebaseAchievementApi.awardAchievement(userId, 'streak-30', sessionId));
+        newAchievements.push(
+          await firebaseAchievementApi.awardAchievement(
+            userId,
+            'streak-30',
+            sessionId
+          )
+        );
       }
       if (userData.currentStreak >= 100 && !unlockedTypes.has('streak-100')) {
-        newAchievements.push(await firebaseAchievementApi.awardAchievement(userId, 'streak-100', sessionId));
+        newAchievements.push(
+          await firebaseAchievementApi.awardAchievement(
+            userId,
+            'streak-100',
+            sessionId
+          )
+        );
       }
       if (userData.currentStreak >= 365 && !unlockedTypes.has('streak-365')) {
-        newAchievements.push(await firebaseAchievementApi.awardAchievement(userId, 'streak-365', sessionId));
+        newAchievements.push(
+          await firebaseAchievementApi.awardAchievement(
+            userId,
+            'streak-365',
+            sessionId
+          )
+        );
       }
-      
+
       // Check hour achievements
       if (userData.totalHours >= 10 && !unlockedTypes.has('hours-10')) {
-        newAchievements.push(await firebaseAchievementApi.awardAchievement(userId, 'hours-10', sessionId));
+        newAchievements.push(
+          await firebaseAchievementApi.awardAchievement(
+            userId,
+            'hours-10',
+            sessionId
+          )
+        );
       }
       if (userData.totalHours >= 50 && !unlockedTypes.has('hours-50')) {
-        newAchievements.push(await firebaseAchievementApi.awardAchievement(userId, 'hours-50', sessionId));
+        newAchievements.push(
+          await firebaseAchievementApi.awardAchievement(
+            userId,
+            'hours-50',
+            sessionId
+          )
+        );
       }
       if (userData.totalHours >= 100 && !unlockedTypes.has('hours-100')) {
-        newAchievements.push(await firebaseAchievementApi.awardAchievement(userId, 'hours-100', sessionId));
+        newAchievements.push(
+          await firebaseAchievementApi.awardAchievement(
+            userId,
+            'hours-100',
+            sessionId
+          )
+        );
       }
       if (userData.totalHours >= 500 && !unlockedTypes.has('hours-500')) {
-        newAchievements.push(await firebaseAchievementApi.awardAchievement(userId, 'hours-500', sessionId));
+        newAchievements.push(
+          await firebaseAchievementApi.awardAchievement(
+            userId,
+            'hours-500',
+            sessionId
+          )
+        );
       }
       if (userData.totalHours >= 1000 && !unlockedTypes.has('hours-1000')) {
-        newAchievements.push(await firebaseAchievementApi.awardAchievement(userId, 'hours-1000', sessionId));
+        newAchievements.push(
+          await firebaseAchievementApi.awardAchievement(
+            userId,
+            'hours-1000',
+            sessionId
+          )
+        );
       }
-      
+
       // Check task achievements
       if (userData.totalTasks >= 50 && !unlockedTypes.has('tasks-50')) {
-        newAchievements.push(await firebaseAchievementApi.awardAchievement(userId, 'tasks-50', sessionId));
+        newAchievements.push(
+          await firebaseAchievementApi.awardAchievement(
+            userId,
+            'tasks-50',
+            sessionId
+          )
+        );
       }
       if (userData.totalTasks >= 100 && !unlockedTypes.has('tasks-100')) {
-        newAchievements.push(await firebaseAchievementApi.awardAchievement(userId, 'tasks-100', sessionId));
+        newAchievements.push(
+          await firebaseAchievementApi.awardAchievement(
+            userId,
+            'tasks-100',
+            sessionId
+          )
+        );
       }
       if (userData.totalTasks >= 500 && !unlockedTypes.has('tasks-500')) {
-        newAchievements.push(await firebaseAchievementApi.awardAchievement(userId, 'tasks-500', sessionId));
+        newAchievements.push(
+          await firebaseAchievementApi.awardAchievement(
+            userId,
+            'tasks-500',
+            sessionId
+          )
+        );
       }
       if (userData.totalTasks >= 1000 && !unlockedTypes.has('tasks-1000')) {
-        newAchievements.push(await firebaseAchievementApi.awardAchievement(userId, 'tasks-1000', sessionId));
+        newAchievements.push(
+          await firebaseAchievementApi.awardAchievement(
+            userId,
+            'tasks-1000',
+            sessionId
+          )
+        );
       }
-      
+
       // Check time-based achievements if recent session provided
       if (userData.recentSession) {
         const sessionHour = userData.recentSession.startTime.getHours();
-        
+
         if (sessionHour < 6 && !unlockedTypes.has('early-bird')) {
-          newAchievements.push(await firebaseAchievementApi.awardAchievement(userId, 'early-bird', sessionId));
+          newAchievements.push(
+            await firebaseAchievementApi.awardAchievement(
+              userId,
+              'early-bird',
+              sessionId
+            )
+          );
         }
-        
+
         if (sessionHour >= 22 && !unlockedTypes.has('night-owl')) {
-          newAchievements.push(await firebaseAchievementApi.awardAchievement(userId, 'night-owl', sessionId));
+          newAchievements.push(
+            await firebaseAchievementApi.awardAchievement(
+              userId,
+              'night-owl',
+              sessionId
+            )
+          );
         }
       }
-      
+
       return newAchievements;
     } catch (error) {
-      const apiError = handleError(error, 'Check achievements', { defaultMessage: 'Failed to check achievements' });
+      const apiError = handleError(error, 'Check achievements', {
+        defaultMessage: 'Failed to check achievements',
+      });
       throw new Error(apiError.userMessage);
     }
   },
 
   // Award an achievement
-  awardAchievement: async (userId: string, type: AchievementType, sessionId?: string): Promise<Achievement> => {
+  awardAchievement: async (
+    userId: string,
+    type: AchievementType,
+    sessionId?: string
+  ): Promise<Achievement> => {
     try {
       const def = ACHIEVEMENT_DEFINITIONS[type];
       const achievementData = {
@@ -6261,11 +7342,14 @@ export const firebaseAchievementApi = {
         icon: def.icon,
         earnedAt: serverTimestamp(),
         sessionId: sessionId || null,
-        isShared: false
+        isShared: false,
       };
-      
-      const docRef = await addDoc(collection(db, 'achievements'), achievementData);
-      
+
+      const docRef = await addDoc(
+        collection(db, 'achievements'),
+        achievementData
+      );
+
       // Create notification
       await addDoc(collection(db, 'notifications'), {
         userId,
@@ -6274,16 +7358,18 @@ export const firebaseAchievementApi = {
         message: `You earned the "${def.name}" achievement!`,
         linkUrl: `/profile/${userId}?tab=achievements`,
         isRead: false,
-        createdAt: serverTimestamp()
+        createdAt: serverTimestamp(),
       });
-      
+
       return {
         id: docRef.id,
         ...achievementData,
-        earnedAt: new Date()
+        earnedAt: new Date(),
       } as Achievement;
     } catch (error) {
-      const apiError = handleError(error, 'Award achievement', { defaultMessage: 'Failed to award achievement' });
+      const apiError = handleError(error, 'Award achievement', {
+        defaultMessage: 'Failed to award achievement',
+      });
       throw new Error(apiError.userMessage);
     }
   },
@@ -6294,17 +7380,19 @@ export const firebaseAchievementApi = {
       if (!auth.currentUser) {
         throw new Error('User not authenticated');
       }
-      
-      const achievementDoc = await getDoc(doc(db, 'achievements', achievementId));
+
+      const achievementDoc = await getDoc(
+        doc(db, 'achievements', achievementId)
+      );
       if (!achievementDoc.exists()) {
         throw new Error('Achievement not found');
       }
-      
+
       const achievement = achievementDoc.data() as Achievement;
       if (achievement.userId !== auth.currentUser.uid) {
         throw new Error('Unauthorized');
       }
-      
+
       // Create a post about the achievement
       await addDoc(collection(db, 'posts'), {
         userId: auth.currentUser.uid,
@@ -6315,45 +7403,57 @@ export const firebaseAchievementApi = {
         supportCount: 0,
         commentCount: 0,
         createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
+        updatedAt: serverTimestamp(),
       });
-      
+
       // Mark achievement as shared
       await updateDoc(doc(db, 'achievements', achievementId), {
-        isShared: true
+        isShared: true,
       });
     } catch (error) {
-      const apiError = handleError(error, 'Share achievement', { defaultMessage: 'Failed to share achievement' });
+      const apiError = handleError(error, 'Share achievement', {
+        defaultMessage: 'Failed to share achievement',
+      });
       throw new Error(apiError.userMessage);
     }
-  }
+  },
 };
 
 // Firebase Notification API
 export const firebaseNotificationApi = {
   // Create a notification
-  createNotification: async (notification: Omit<Notification, 'id' | 'createdAt'>): Promise<Notification> => {
+  createNotification: async (
+    notification: Omit<Notification, 'id' | 'createdAt'>
+  ): Promise<Notification> => {
     try {
       const notificationData = {
         ...notification,
-        createdAt: serverTimestamp()
+        createdAt: serverTimestamp(),
       };
 
-      const docRef = await addDoc(collection(db, 'notifications'), notificationData);
-      
+      const docRef = await addDoc(
+        collection(db, 'notifications'),
+        notificationData
+      );
+
       return {
         id: docRef.id,
         ...notification,
-        createdAt: new Date()
+        createdAt: new Date(),
       };
     } catch (error) {
-      const apiError = handleError(error, 'Create notification', { defaultMessage: 'Failed to create notification' });
+      const apiError = handleError(error, 'Create notification', {
+        defaultMessage: 'Failed to create notification',
+      });
       throw new Error(apiError.userMessage);
     }
   },
 
   // Get notifications for a user
-  getUserNotifications: async (userId: string, limit: number = 50): Promise<Notification[]> => {
+  getUserNotifications: async (
+    userId: string,
+    limit: number = 50
+  ): Promise<Notification[]> => {
     try {
       const notificationsQuery = query(
         collection(db, 'notifications'),
@@ -6365,7 +7465,7 @@ export const firebaseNotificationApi = {
       const snapshot = await getDocs(notificationsQuery);
       const notifications: Notification[] = [];
 
-      snapshot.forEach((doc) => {
+      snapshot.forEach(doc => {
         const data = doc.data();
         notifications.push({
           id: doc.id,
@@ -6375,13 +7475,15 @@ export const firebaseNotificationApi = {
           message: data.message,
           data: data.data,
           isRead: data.isRead || false,
-          createdAt: convertTimestamp(data.createdAt)
+          createdAt: convertTimestamp(data.createdAt),
         });
       });
 
       return notifications;
     } catch (error) {
-      const apiError = handleError(error, 'Get notifications', { defaultMessage: 'Failed to get notifications' });
+      const apiError = handleError(error, 'Get notifications', {
+        defaultMessage: 'Failed to get notifications',
+      });
       throw new Error(apiError.userMessage);
     }
   },
@@ -6391,10 +7493,12 @@ export const firebaseNotificationApi = {
     try {
       await updateDoc(doc(db, 'notifications', notificationId), {
         isRead: true,
-        updatedAt: serverTimestamp()
+        updatedAt: serverTimestamp(),
       });
     } catch (error) {
-      const apiError = handleError(error, 'Mark notification as read', { defaultMessage: 'Failed to mark notification as read' });
+      const apiError = handleError(error, 'Mark notification as read', {
+        defaultMessage: 'Failed to mark notification as read',
+      });
       throw new Error(apiError.userMessage);
     }
   },
@@ -6411,16 +7515,18 @@ export const firebaseNotificationApi = {
       const snapshot = await getDocs(notificationsQuery);
       const batch = writeBatch(db);
 
-      snapshot.forEach((doc) => {
+      snapshot.forEach(doc => {
         batch.update(doc.ref, {
           isRead: true,
-          updatedAt: serverTimestamp()
+          updatedAt: serverTimestamp(),
         });
       });
 
       await batch.commit();
     } catch (error) {
-      const apiError = handleError(error, 'Mark all notifications as read', { defaultMessage: 'Failed to mark all notifications as read' });
+      const apiError = handleError(error, 'Mark all notifications as read', {
+        defaultMessage: 'Failed to mark all notifications as read',
+      });
       throw new Error(apiError.userMessage);
     }
   },
@@ -6430,7 +7536,9 @@ export const firebaseNotificationApi = {
     try {
       await deleteDoc(doc(db, 'notifications', notificationId));
     } catch (error) {
-      const apiError = handleError(error, 'Delete notification', { defaultMessage: 'Failed to delete notification' });
+      const apiError = handleError(error, 'Delete notification', {
+        defaultMessage: 'Failed to delete notification',
+      });
       throw new Error(apiError.userMessage);
     }
   },
@@ -6447,16 +7555,23 @@ export const firebaseNotificationApi = {
       const snapshot = await getDocs(notificationsQuery);
       return snapshot.size;
     } catch (error) {
-      const apiError = handleError(error, 'Get unread count', { defaultMessage: 'Failed to get unread count' });
+      const apiError = handleError(error, 'Get unread count', {
+        defaultMessage: 'Failed to get unread count',
+      });
       throw new Error(apiError.userMessage);
     }
-  }
+  },
 };
 
 // Challenge Notification Helper Functions
 export const challengeNotifications = {
   // Notify when a user completes a challenge
-  notifyCompletion: async (challengeId: string, userId: string, challengeName: string, challengeType: string): Promise<void> => {
+  notifyCompletion: async (
+    challengeId: string,
+    userId: string,
+    challengeName: string,
+    challengeType: string
+  ): Promise<void> => {
     try {
       const notification: Omit<Notification, 'id' | 'createdAt'> = {
         userId,
@@ -6466,19 +7581,26 @@ export const challengeNotifications = {
         data: {
           challengeId,
           challengeName,
-          challengeType
+          challengeType,
         } as ChallengeNotificationData,
-        isRead: false
+        isRead: false,
       };
 
       await firebaseNotificationApi.createNotification(notification);
     } catch (error) {
-      handleError(error, 'send completion notification', { severity: ErrorSeverity.ERROR });
+      handleError(error, 'send completion notification', {
+        severity: ErrorSeverity.ERROR,
+      });
     }
   },
 
   // Notify other participants when someone joins a challenge
-  notifyParticipantJoined: async (challengeId: string, newParticipantId: string, newParticipantName: string, challengeName: string): Promise<void> => {
+  notifyParticipantJoined: async (
+    challengeId: string,
+    newParticipantId: string,
+    newParticipantName: string,
+    challengeName: string
+  ): Promise<void> => {
     try {
       // Get all other participants
       const participantsQuery = query(
@@ -6489,9 +7611,9 @@ export const challengeNotifications = {
       const participantsSnapshot = await getDocs(participantsQuery);
       const batch = writeBatch(db);
 
-      participantsSnapshot.forEach((participantDoc) => {
+      participantsSnapshot.forEach(participantDoc => {
         const participantData = participantDoc.data();
-        
+
         // Don't notify the person who just joined
         if (participantData.userId !== newParticipantId) {
           const notificationRef = doc(collection(db, 'notifications'));
@@ -6504,22 +7626,28 @@ export const challengeNotifications = {
               challengeId,
               challengeName,
               participantId: newParticipantId,
-              participantName: newParticipantName
+              participantName: newParticipantName,
             } as ChallengeNotificationData,
             isRead: false,
-            createdAt: serverTimestamp()
+            createdAt: serverTimestamp(),
           });
         }
       });
 
       await batch.commit();
     } catch (error) {
-      handleError(error, 'send participant joined notifications', { severity: ErrorSeverity.ERROR });
+      handleError(error, 'send participant joined notifications', {
+        severity: ErrorSeverity.ERROR,
+      });
     }
   },
 
   // Notify all participants when challenge is ending soon
-  notifyEndingSoon: async (challengeId: string, challengeName: string, daysRemaining: number): Promise<void> => {
+  notifyEndingSoon: async (
+    challengeId: string,
+    challengeName: string,
+    daysRemaining: number
+  ): Promise<void> => {
     try {
       // Get all participants
       const participantsQuery = query(
@@ -6530,9 +7658,9 @@ export const challengeNotifications = {
       const participantsSnapshot = await getDocs(participantsQuery);
       const batch = writeBatch(db);
 
-      participantsSnapshot.forEach((participantDoc) => {
+      participantsSnapshot.forEach(participantDoc => {
         const participantData = participantDoc.data();
-        
+
         const notificationRef = doc(collection(db, 'notifications'));
         batch.set(notificationRef, {
           userId: participantData.userId,
@@ -6542,21 +7670,29 @@ export const challengeNotifications = {
           data: {
             challengeId,
             challengeName,
-            daysRemaining
+            daysRemaining,
           } as ChallengeNotificationData,
           isRead: false,
-          createdAt: serverTimestamp()
+          createdAt: serverTimestamp(),
         });
       });
 
       await batch.commit();
     } catch (error) {
-      handleError(error, 'send ending soon notifications', { severity: ErrorSeverity.ERROR });
+      handleError(error, 'send ending soon notifications', {
+        severity: ErrorSeverity.ERROR,
+      });
     }
   },
 
   // Notify when a new challenge is created in a group
-  notifyNewChallenge: async (challengeId: string, challengeName: string, challengeType: string, groupId: string, creatorName: string): Promise<void> => {
+  notifyNewChallenge: async (
+    challengeId: string,
+    challengeName: string,
+    challengeType: string,
+    groupId: string,
+    creatorName: string
+  ): Promise<void> => {
     try {
       // Get all group members
       const groupDoc = await getDoc(doc(db, 'groups', groupId));
@@ -6580,22 +7716,30 @@ export const challengeNotifications = {
               challengeName,
               challengeType,
               groupId,
-              groupName: groupData.name
+              groupName: groupData.name,
             } as ChallengeNotificationData,
             isRead: false,
-            createdAt: serverTimestamp()
+            createdAt: serverTimestamp(),
           });
         }
       });
 
       await batch.commit();
     } catch (error) {
-      handleError(error, 'send new challenge notifications', { severity: ErrorSeverity.ERROR });
+      handleError(error, 'send new challenge notifications', {
+        severity: ErrorSeverity.ERROR,
+      });
     }
   },
 
   // Notify when rank changes significantly (moved up 3+ positions)
-  notifyRankChange: async (challengeId: string, userId: string, challengeName: string, newRank: number, previousRank: number): Promise<void> => {
+  notifyRankChange: async (
+    challengeId: string,
+    userId: string,
+    challengeName: string,
+    newRank: number,
+    previousRank: number
+  ): Promise<void> => {
     try {
       // Only notify for significant improvements (moved up 3+ positions)
       if (previousRank - newRank >= 3) {
@@ -6608,26 +7752,35 @@ export const challengeNotifications = {
             challengeId,
             challengeName,
             rank: newRank,
-            previousRank
+            previousRank,
           } as ChallengeNotificationData,
-          isRead: false
+          isRead: false,
         };
 
         await firebaseNotificationApi.createNotification(notification);
       }
     } catch (error) {
-      handleError(error, 'send rank change notification', { severity: ErrorSeverity.ERROR });
+      handleError(error, 'send rank change notification', {
+        severity: ErrorSeverity.ERROR,
+      });
     }
   },
 
   // Notify when reaching milestones (25%, 50%, 75%, 90% of goal)
-  notifyMilestone: async (challengeId: string, userId: string, challengeName: string, progress: number, goalValue: number): Promise<void> => {
+  notifyMilestone: async (
+    challengeId: string,
+    userId: string,
+    challengeName: string,
+    progress: number,
+    goalValue: number
+  ): Promise<void> => {
     try {
       const percentage = (progress / goalValue) * 100;
       const milestones = [25, 50, 75, 90];
-      
+
       for (const milestone of milestones) {
-        if (percentage >= milestone && percentage < milestone + 5) { // 5% buffer to avoid duplicate notifications
+        if (percentage >= milestone && percentage < milestone + 5) {
+          // 5% buffer to avoid duplicate notifications
           const notification: Omit<Notification, 'id' | 'createdAt'> = {
             userId,
             type: 'challenge_milestone',
@@ -6637,9 +7790,9 @@ export const challengeNotifications = {
               challengeId,
               challengeName,
               progress,
-              goalValue
+              goalValue,
             } as ChallengeNotificationData,
-            isRead: false
+            isRead: false,
           };
 
           await firebaseNotificationApi.createNotification(notification);
@@ -6647,9 +7800,11 @@ export const challengeNotifications = {
         }
       }
     } catch (error) {
-      handleError(error, 'send milestone notification', { severity: ErrorSeverity.ERROR });
+      handleError(error, 'send milestone notification', {
+        severity: ErrorSeverity.ERROR,
+      });
     }
-  }
+  },
 };
 
 // Activity API (alias for Project API for new naming convention)
@@ -6669,5 +7824,5 @@ export const firebaseApi = {
   streak: firebaseStreakApi,
   achievement: firebaseAchievementApi,
   challenge: firebaseChallengeApi,
-  notification: firebaseNotificationApi
+  notification: firebaseNotificationApi,
 };

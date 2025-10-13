@@ -17,7 +17,12 @@ service firebase.storage {
     // Helper function to validate image file
     function isValidImage() {
       return request.resource.size < 5 * 1024 * 1024 // 5MB max
-        && request.resource.contentType.matches('image/.*');
+        && request.resource.contentType.matches('image/(jpeg|jpg|png|gif|webp)');
+    }
+
+    // Helper function to validate file size for larger files
+    function isValidFileSize(maxSizeMB) {
+      return request.resource.size < maxSizeMB * 1024 * 1024;
     }
     
     // Profile pictures
@@ -55,16 +60,18 @@ service firebase.storage {
     // Session attachments (if needed in future)
     match /session-attachments/{userId}/{sessionId}/{fileName} {
       allow read: if isAuthenticated();
-      allow write: if isOwner(userId) && request.resource.size < 10 * 1024 * 1024; // 10MB max
+      allow write: if isOwner(userId) && isValidFileSize(10); // 10MB max
       allow delete: if isOwner(userId);
     }
 
-    // Session images - allow public read, authenticated write
+    // Session images - restrict based on session visibility
     match /session-images/{userId}/{fileName} {
-      // Allow anyone to read (even unauthenticated) for sharing sessions publicly
-      allow read: if true;
+      // Allow authenticated users to read session images
+      // Note: Session visibility is enforced at the Firestore level
+      // If you have the session image URL, you can access it if authenticated
+      allow read: if isAuthenticated();
 
-      // Allow write only to the owner
+      // Allow write only to the owner with valid image and size constraints
       allow write: if isOwner(userId) && isValidImage();
 
       // Allow delete only to the owner
