@@ -207,6 +207,19 @@ export default function Header() {
                   )}
                 </Link>
                 <Link
+                  href="/analytics"
+                  className={`text-base font-medium transition-colors h-full relative flex items-center ${
+                    isActive('/analytics')
+                      ? 'text-gray-900'
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  Analytics
+                  {isActive('/analytics') && (
+                    <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#007AFF]"></div>
+                  )}
+                </Link>
+                <Link
                   href="/groups"
                   className={`text-base font-medium transition-colors h-full relative flex items-center ${
                     isActive('/groups')
@@ -383,15 +396,25 @@ export default function Header() {
         {isMobileMenuOpen && (
           <div className="md:hidden border-t border-gray-200 bg-white">
             <nav className="py-4 space-y-2">
-              <Link 
-                href="/" 
+              <Link
+                href="/"
                 className={`block px-4 py-2 transition-colors ${
-                  isActive('/') 
-                    ? 'text-[#007AFF] bg-blue-50' 
+                  isActive('/')
+                    ? 'text-[#007AFF] bg-blue-50'
                     : 'text-gray-900 hover:text-[#007AFF]'
                 }`}
               >
                 Dashboard
+              </Link>
+              <Link
+                href="/analytics"
+                className={`block px-4 py-2 transition-colors ${
+                  isActive('/analytics')
+                    ? 'text-[#007AFF] bg-blue-50'
+                    : 'text-gray-600 hover:text-[#007AFF]'
+                }`}
+              >
+                Analytics
               </Link>
               <Link
                 href="/groups"

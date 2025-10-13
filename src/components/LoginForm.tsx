@@ -64,7 +64,29 @@ export const LoginForm: React.FC = () => {
 
     try {
       await login(formData);
-      
+
+      // Check for invite context in sessionStorage
+      const inviteContextStr = typeof window !== 'undefined'
+        ? sessionStorage.getItem('inviteContext')
+        : null;
+
+      if (inviteContextStr) {
+        try {
+          const inviteContext = JSON.parse(inviteContextStr);
+
+          // Clear the invite context
+          sessionStorage.removeItem('inviteContext');
+
+          // Redirect based on invite type
+          if (inviteContext.type === 'group' && inviteContext.groupId) {
+            router.push(`/invite/group/${inviteContext.groupId}`);
+            return;
+          }
+        } catch (err) {
+          console.error('Error parsing invite context:', err);
+        }
+      }
+
       // Get redirect URL from query params
       const redirectTo = searchParams.get('redirect') || '/';
       router.push(redirectTo);

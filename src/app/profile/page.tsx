@@ -5,8 +5,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import MobileHeader from '@/components/MobileHeader';
 import BottomNavigation from '@/components/BottomNavigation';
+import Footer from '@/components/Footer';
 import Header from '@/components/HeaderComponent';
-import { useUserSessions, useUserStats, useUserProfile, useUserFollowers, useUserFollowing } from '@/hooks/useCache';
+import { useUserSessions, useUserStats, useUserProfile, useUserFollowers, useUserFollowing, useProjects } from '@/hooks/useCache';
 import Link from 'next/link';
 import Image from 'next/image';
 import { User as UserIcon, Users, Settings, Clock, Target, Calendar, Heart, LogOut, Edit, TrendingUp, BarChart3, ChevronDown } from 'lucide-react';
@@ -47,6 +48,8 @@ export default function ProfilePage() {
   const [showSettingsMenu, setShowSettingsMenu] = useState(false);
   const [chartType, setChartType] = useState<ChartType>('line');
   const [showChartTypeDropdown, setShowChartTypeDropdown] = useState(false);
+  const [selectedActivityId, setSelectedActivityId] = useState<string>('all');
+  const [showActivityDropdown, setShowActivityDropdown] = useState(false);
 
   // Use React Query hooks for data with automatic caching
   const { data: sessions = [], isLoading: sessionsLoading } = useUserSessions(user?.id || '', 50, {
@@ -64,6 +67,9 @@ export default function ProfilePage() {
   const { data: following = [] } = useUserFollowing(user?.id || '', {
     enabled: !!user?.id,
   });
+  const { data: activities = [] } = useProjects(user?.id || '', {
+    enabled: !!user?.id,
+  });
 
   const isLoading = sessionsLoading || statsLoading;
 
@@ -74,9 +80,15 @@ export default function ProfilePage() {
     }
   }, [tabParam]);
 
+  // Filter sessions based on selected activity
+  const filteredSessions = useMemo(() => {
+    if (selectedActivityId === 'all') return sessions;
+    return sessions.filter(s => s.activityId === selectedActivityId || s.projectId === selectedActivityId);
+  }, [sessions, selectedActivityId]);
+
   // Calculate chart data using useMemo to prevent infinite loop
   const chartData = useMemo(() => {
-    if (!sessions) return [];
+    if (!filteredSessions) return [];
 
     const now = new Date();
     const data: ChartDataPoint[] = [];
@@ -88,7 +100,7 @@ export default function ProfilePage() {
         const day = new Date(now);
         day.setDate(day.getDate() - i);
 
-        const hoursWorked = sessions.length > 0 ? sessions
+        const hoursWorked = filteredSessions.length > 0 ? filteredSessions
           .filter(s => new Date(s.createdAt).toDateString() === day.toDateString())
           .reduce((sum, s) => sum + s.duration / 3600, 0) : 0;
 
@@ -104,7 +116,7 @@ export default function ProfilePage() {
         const day = new Date(now);
         day.setDate(day.getDate() - i);
 
-        const hoursWorked = sessions.length > 0 ? sessions
+        const hoursWorked = filteredSessions.length > 0 ? filteredSessions
           .filter(s => new Date(s.createdAt).toDateString() === day.toDateString())
           .reduce((sum, s) => sum + s.duration / 3600, 0) : 0;
 
@@ -121,7 +133,7 @@ export default function ProfilePage() {
         const weekEnd = new Date(now);
         weekEnd.setDate(weekEnd.getDate() - (i * 7));
 
-        const hoursWorked = sessions.length > 0 ? sessions
+        const hoursWorked = filteredSessions.length > 0 ? filteredSessions
           .filter(s => {
             const sessionDate = new Date(s.createdAt);
             return sessionDate >= weekStart && sessionDate <= weekEnd;
@@ -140,7 +152,7 @@ export default function ProfilePage() {
         const month = new Date(now);
         month.setMonth(month.getMonth() - i);
 
-        const hoursWorked = sessions.length > 0 ? sessions
+        const hoursWorked = filteredSessions.length > 0 ? filteredSessions
           .filter(s => {
             const sessionDate = new Date(s.createdAt);
             return sessionDate.getMonth() === month.getMonth() &&
@@ -160,7 +172,7 @@ export default function ProfilePage() {
         const month = new Date(now);
         month.setMonth(month.getMonth() - i);
 
-        const hoursWorked = sessions.length > 0 ? sessions
+        const hoursWorked = filteredSessions.length > 0 ? filteredSessions
           .filter(s => {
             const sessionDate = new Date(s.createdAt);
             return sessionDate.getMonth() === month.getMonth() &&
@@ -176,7 +188,7 @@ export default function ProfilePage() {
     }
 
     return data;
-  }, [sessions, timePeriod]);
+  }, [filteredSessions, timePeriod]);
 
   // Category stats - empty for now
   const categoryStats: CategoryStats[] = [];
@@ -414,10 +426,69 @@ export default function ProfilePage() {
                 {activeTab === 'progress' && (
                   <div className="max-w-4xl mx-auto space-y-4 md:space-y-6">
                     {/* Header with Time Period Selector and Chart Type */}
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 md:gap-4 py-2">
-                      <h2 className="text-lg md:text-xl font-bold text-gray-900">Account overview</h2>
-                      <div className="flex items-center gap-2 -mx-4 md:mx-0 px-4 md:px-0">
-                        <div className="overflow-x-auto pb-1 flex items-center gap-1.5 md:gap-2 flex-1 md:flex-initial">
+                    <div className="flex items-center justify-between gap-2 py-2 -mx-4 px-4 md:mx-0 md:px-0">
+                      {/* Activity Filter Dropdown */}
+                      <div className="relative flex-shrink-0">
+                        <button
+                          onClick={() => setShowActivityDropdown(!showActivityDropdown)}
+                          className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-700 bg-white border border-gray-300 rounded-full hover:bg-gray-50 transition-colors whitespace-nowrap"
+                        >
+                          <span className="font-medium">
+                            {selectedActivityId === 'all'
+                              ? 'All'
+                              : activities.find(a => a.id === selectedActivityId)?.name || 'All'
+                            }
+                          </span>
+                          <ChevronDown className="w-3.5 h-3.5" />
+                        </button>
+
+                        {/* Activity Dropdown Menu */}
+                        {showActivityDropdown && (
+                          <>
+                            {/* Backdrop to close dropdown */}
+                            <div
+                              className="fixed inset-0 z-40"
+                              onClick={() => setShowActivityDropdown(false)}
+                            />
+                            <div className="absolute left-0 top-full mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50 max-h-64 overflow-y-auto">
+                              <button
+                                onClick={() => {
+                                  setSelectedActivityId('all');
+                                  setShowActivityDropdown(false);
+                                }}
+                                className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors flex items-center gap-2 ${
+                                  selectedActivityId === 'all' ? 'text-[#007AFF] font-medium bg-blue-50' : 'text-gray-700'
+                                }`}
+                              >
+                                {selectedActivityId === 'all' && <span className="text-[#007AFF]">✓</span>}
+                                <span>All Activities</span>
+                              </button>
+                              {activities.map((activity) => (
+                                <button
+                                  key={activity.id}
+                                  onClick={() => {
+                                    setSelectedActivityId(activity.id);
+                                    setShowActivityDropdown(false);
+                                  }}
+                                  className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors flex items-center gap-2 ${
+                                    selectedActivityId === activity.id ? 'text-[#007AFF] font-medium bg-blue-50' : 'text-gray-700'
+                                  }`}
+                                >
+                                  {selectedActivityId === activity.id && <span className="text-[#007AFF]">✓</span>}
+                                  <span className="flex items-center gap-2">
+                                    <span style={{ color: activity.color }}>●</span>
+                                    {activity.name}
+                                  </span>
+                                </button>
+                              ))}
+                            </div>
+                          </>
+                        )}
+                      </div>
+
+                      {/* Time Period Buttons - Scrollable on mobile */}
+                      <div className="flex items-center gap-2 flex-1 min-w-0">
+                        <div className="overflow-x-auto flex items-center gap-1.5 md:gap-2 flex-1 scrollbar-hide">
                           {(['7D', '2W', '4W', '3M', '1Y'] as TimePeriod[]).map((period) => (
                             <button
                               key={period}
@@ -433,7 +504,7 @@ export default function ProfilePage() {
                           ))}
                         </div>
 
-                        {/* Chart Type Selector - Outside overflow container */}
+                        {/* Chart Type Selector */}
                         <div className="relative flex-shrink-0">
                           <button
                             onClick={() => setShowChartTypeDropdown(!showChartTypeDropdown)}
@@ -450,34 +521,41 @@ export default function ProfilePage() {
 
                           {/* Chart Type Dropdown */}
                           {showChartTypeDropdown && (
-                            <div className="absolute right-0 mt-2 w-32 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
-                              <button
-                                onClick={() => {
-                                  setChartType('bar');
-                                  setShowChartTypeDropdown(false);
-                                }}
-                                className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors flex items-center gap-2 ${
-                                  chartType === 'bar' ? 'text-[#007AFF] font-medium' : 'text-gray-700'
-                                }`}
-                              >
-                                {chartType === 'bar' && <span className="text-[#007AFF]">✓</span>}
-                                <BarChart3 className="w-4 h-4" />
-                                Bar
-                              </button>
-                              <button
-                                onClick={() => {
-                                  setChartType('line');
-                                  setShowChartTypeDropdown(false);
-                                }}
-                                className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors flex items-center gap-2 ${
-                                  chartType === 'line' ? 'text-[#007AFF] font-medium' : 'text-gray-700'
-                                }`}
-                              >
-                                {chartType === 'line' && <span className="text-[#007AFF]">✓</span>}
-                                <TrendingUp className="w-4 h-4" />
-                                Line
-                              </button>
-                            </div>
+                            <>
+                              {/* Backdrop to close dropdown */}
+                              <div
+                                className="fixed inset-0 z-40"
+                                onClick={() => setShowChartTypeDropdown(false)}
+                              />
+                              <div className="absolute right-0 mt-2 w-32 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
+                                <button
+                                  onClick={() => {
+                                    setChartType('bar');
+                                    setShowChartTypeDropdown(false);
+                                  }}
+                                  className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors flex items-center gap-2 ${
+                                    chartType === 'bar' ? 'text-[#007AFF] font-medium' : 'text-gray-700'
+                                  }`}
+                                >
+                                  {chartType === 'bar' && <span className="text-[#007AFF]">✓</span>}
+                                  <BarChart3 className="w-4 h-4" />
+                                  Bar
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setChartType('line');
+                                    setShowChartTypeDropdown(false);
+                                  }}
+                                  className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors flex items-center gap-2 ${
+                                    chartType === 'line' ? 'text-[#007AFF] font-medium' : 'text-gray-700'
+                                  }`}
+                                >
+                                  {chartType === 'line' && <span className="text-[#007AFF]">✓</span>}
+                                  <TrendingUp className="w-4 h-4" />
+                                  Line
+                                </button>
+                              </div>
+                            </>
                           )}
                         </div>
                       </div>
@@ -718,7 +796,7 @@ export default function ProfilePage() {
                             </div>
                             <div className="text-right">
                               <div className="text-base md:text-lg font-bold text-gray-900">
-                                {sessions.length > 0 ? Math.round(sessions.reduce((sum, s) => sum + s.duration, 0) / sessions.length / 60) : 0}m
+                                {filteredSessions.length > 0 ? Math.round(filteredSessions.reduce((sum, s) => sum + s.duration, 0) / filteredSessions.length / 60) : 0}m
                               </div>
                               <div className="text-[10px] md:text-xs text-green-600">↑ 100%</div>
                             </div>
@@ -756,7 +834,7 @@ export default function ProfilePage() {
                       <div className="bg-gray-50 rounded-lg md:rounded-xl border border-gray-200 p-2.5 md:p-4">
                         <div className="text-[10px] md:text-sm text-gray-600 mb-0.5 md:mb-1 uppercase tracking-wide">Sessions</div>
                         <div className="text-lg md:text-2xl font-bold text-gray-900">
-                          {sessions.length}
+                          {filteredSessions.length}
                         </div>
                         <div className="text-[10px] md:text-xs text-green-600 mt-0.5 md:mt-1 flex items-center gap-1">
                           <span>↑</span>
@@ -768,7 +846,7 @@ export default function ProfilePage() {
                       <div className="bg-gray-50 rounded-lg md:rounded-xl border border-gray-200 p-2.5 md:p-4">
                         <div className="text-[10px] md:text-sm text-gray-600 mb-0.5 md:mb-1 uppercase tracking-wide">Avg duration</div>
                         <div className="text-lg md:text-2xl font-bold text-gray-900">
-                          {sessions.length > 0 ? Math.round(sessions.reduce((sum, s) => sum + s.duration, 0) / sessions.length / 60) : 0}m
+                          {filteredSessions.length > 0 ? Math.round(filteredSessions.reduce((sum, s) => sum + s.duration, 0) / filteredSessions.length / 60) : 0}m
                         </div>
                         <div className="text-[10px] md:text-xs text-green-600 mt-0.5 md:mt-1 flex items-center gap-1">
                           <span>↑</span>
@@ -970,6 +1048,9 @@ export default function ProfilePage() {
         <div className="md:hidden">
           <BottomNavigation />
         </div>
+
+        {/* Footer - Desktop only */}
+        <Footer />
       </div>
     </ProtectedRoute>
   );

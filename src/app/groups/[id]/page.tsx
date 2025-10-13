@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import Header from '@/components/HeaderComponent';
+import GroupInviteModal from '@/components/GroupInviteModal';
 import { Group, User, GroupStats } from '@/types';
 import { firebaseApi } from '@/lib/firebaseApi';
 import Link from 'next/link';
@@ -32,6 +33,7 @@ export default function GroupDetailPage() {
   const [timePeriod, setTimePeriod] = useState<TimePeriod>('week');
   const [isLoadingLeaderboard, setIsLoadingLeaderboard] = useState(false);
   const [showPeriodDropdown, setShowPeriodDropdown] = useState(false);
+  const [showInviteModal, setShowInviteModal] = useState(false);
 
   const groupId = params.id as string;
 
@@ -370,9 +372,12 @@ export default function GroupDetailPage() {
                   ) : leaderboard.length === 0 ? (
                     <div className="text-center py-12">
                       <p className="text-gray-500">
-                        <Link href="#" className="text-[#007AFF] hover:underline">
+                        <button
+                          onClick={() => setShowInviteModal(true)}
+                          className="text-[#007AFF] hover:underline"
+                        >
                           Invite people to your group
-                        </Link>{' '}
+                        </button>{' '}
                         and see how you measure up.
                       </p>
                     </div>
@@ -671,13 +676,25 @@ export default function GroupDetailPage() {
               <h3 className="text-lg font-bold text-gray-900 mb-4">
                 Invite People to This Group
               </h3>
-              <button className="w-full bg-[#007AFF] text-white font-medium py-2 px-4 rounded hover:bg-[#0051D5] transition-colors">
+              <button
+                onClick={() => setShowInviteModal(true)}
+                className="w-full bg-[#007AFF] text-white font-medium py-2 px-4 rounded hover:bg-[#0051D5] transition-colors"
+              >
                 Invite People
               </button>
             </div>
           </div>
         </div>
       </div>
+
+      {/* Invite Modal */}
+      {group && (
+        <GroupInviteModal
+          group={group}
+          isOpen={showInviteModal}
+          onClose={() => setShowInviteModal(false)}
+        />
+      )}
     </div>
   );
 }

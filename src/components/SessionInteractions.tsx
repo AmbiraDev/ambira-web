@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
-import { ThumbsUp, MessageSquare, Share2 } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { ThumbsUp, MessageSquare, Share2, Image as ImageIcon, Link as LinkIcon } from 'lucide-react';
 
 interface SessionInteractionsProps {
   sessionId: string;
@@ -12,6 +12,7 @@ interface SessionInteractionsProps {
   onSupport: (sessionId: string) => Promise<void>;
   onRemoveSupport: (sessionId: string) => Promise<void>;
   onShare: (sessionId: string) => Promise<void>;
+  onShareImage?: () => void;
   onCommentClick?: () => void;
   onLikesClick?: () => void;
   onViewAllCommentsClick?: () => void;
@@ -27,6 +28,7 @@ export const SessionInteractions: React.FC<SessionInteractionsProps> = ({
   onSupport,
   onRemoveSupport,
   onShare,
+  onShareImage,
   onCommentClick,
   onLikesClick,
   onViewAllCommentsClick,
@@ -34,6 +36,8 @@ export const SessionInteractions: React.FC<SessionInteractionsProps> = ({
 }) => {
   const [isSupporting, setIsSupporting] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
+  const [showShareMenu, setShowShareMenu] = useState(false);
+  const shareMenuRef = useRef<HTMLDivElement>(null);
 
   const handleSupport = async () => {
     if (isSupporting) return;
@@ -62,8 +66,41 @@ export const SessionInteractions: React.FC<SessionInteractionsProps> = ({
       console.error('Failed to share session:', error);
     } finally {
       setIsSharing(false);
+      setShowShareMenu(false);
     }
   };
+
+  const handleShareImage = () => {
+    if (onShareImage) {
+      onShareImage();
+      setShowShareMenu(false);
+    }
+  };
+
+  // Close share menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (shareMenuRef.current && !shareMenuRef.current.contains(event.target as Node)) {
+        setShowShareMenu(false);
+      }
+    };
+
+    const handleEscapeKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setShowShareMenu(false);
+      }
+    };
+
+    if (showShareMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleEscapeKey);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscapeKey);
+    };
+  }, [showShareMenu]);
 
   return (
     <div className={className}>
@@ -84,7 +121,7 @@ export const SessionInteractions: React.FC<SessionInteractionsProps> = ({
         </div>
 
         {/* Action buttons - Strava style (bottom right on desktop) */}
-        <div className="border-t border-gray-200 px-4 py-3">
+        <div className="px-4 py-3">
           <div className="flex items-center justify-end gap-2">
             {/* Like button */}
             <button
@@ -125,20 +162,48 @@ export const SessionInteractions: React.FC<SessionInteractionsProps> = ({
               </span>
             </button>
 
-            {/* Share button */}
-            <button
-              onClick={handleShare}
-              disabled={isSharing}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded hover:bg-gray-100 transition-colors ${
-                isSharing ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
-              }`}
-              title="Share"
-            >
-              <Share2
-                className="w-5 h-5 text-gray-600"
-                strokeWidth={1.5}
-              />
-            </button>
+            {/* Share button with dropdown */}
+            <div className="relative" ref={shareMenuRef}>
+              <button
+                onClick={() => setShowShareMenu(!showShareMenu)}
+                disabled={isSharing}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded hover:bg-gray-100 transition-colors ${
+                  isSharing ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+                }`}
+                title="Share"
+              >
+                <Share2
+                  className="w-5 h-5 text-gray-600"
+                  strokeWidth={1.5}
+                />
+              </button>
+
+              {/* Share dropdown menu */}
+              {showShareMenu && (
+                <div
+                  className="absolute right-0 mt-2 w-52 bg-white rounded-lg shadow-2xl border-2 border-gray-300 py-2 z-50"
+                  role="menu"
+                >
+                  <button
+                    onClick={handleShareImage}
+                    className="w-full px-4 py-2.5 text-left text-sm font-medium text-gray-900 hover:bg-blue-50 flex items-center gap-3"
+                    role="menuitem"
+                  >
+                    <ImageIcon className="w-5 h-5 text-[#007AFF]" />
+                    Share as image
+                  </button>
+                  <div className="border-t border-gray-200 my-1"></div>
+                  <button
+                    onClick={handleShare}
+                    className="w-full px-4 py-2.5 text-left text-sm font-medium text-gray-900 hover:bg-blue-50 flex items-center gap-3"
+                    role="menuitem"
+                  >
+                    <LinkIcon className="w-5 h-5 text-[#007AFF]" />
+                    Share link
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -196,20 +261,48 @@ export const SessionInteractions: React.FC<SessionInteractionsProps> = ({
               />
             </button>
 
-            {/* Share button */}
-            <button
-              onClick={handleShare}
-              disabled={isSharing}
-              className={`flex flex-col items-center justify-center py-2 rounded hover:bg-gray-50 transition-colors ${
-                isSharing ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
-              }`}
-              title="Share"
-            >
-              <Share2
-                className="w-6 h-6 text-gray-600"
-                strokeWidth={1.5}
-              />
-            </button>
+            {/* Share button with dropdown */}
+            <div className="relative">
+              <button
+                onClick={() => setShowShareMenu(!showShareMenu)}
+                disabled={isSharing}
+                className={`flex flex-col items-center justify-center py-2 rounded hover:bg-gray-50 transition-colors w-full ${
+                  isSharing ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+                }`}
+                title="Share"
+              >
+                <Share2
+                  className="w-6 h-6 text-gray-600"
+                  strokeWidth={1.5}
+                />
+              </button>
+
+              {/* Share dropdown menu (mobile) */}
+              {showShareMenu && (
+                <div
+                  className="absolute right-0 bottom-full mb-2 w-56 bg-white rounded-lg shadow-2xl border-2 border-gray-300 py-2 z-50"
+                  role="menu"
+                >
+                  <button
+                    onClick={handleShareImage}
+                    className="w-full px-4 py-3 text-left text-base font-medium text-gray-900 hover:bg-blue-50 flex items-center gap-3"
+                    role="menuitem"
+                  >
+                    <ImageIcon className="w-5 h-5 text-[#007AFF]" />
+                    Share as image
+                  </button>
+                  <div className="border-t border-gray-200 my-1"></div>
+                  <button
+                    onClick={handleShare}
+                    className="w-full px-4 py-3 text-left text-base font-medium text-gray-900 hover:bg-blue-50 flex items-center gap-3"
+                    role="menuitem"
+                  >
+                    <LinkIcon className="w-5 h-5 text-[#007AFF]" />
+                    Share link
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

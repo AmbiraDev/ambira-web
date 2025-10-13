@@ -137,10 +137,34 @@ export const SignupForm: React.FC = () => {
 
     try {
       await signup(formData);
+
+      // Check for invite context in sessionStorage
+      const inviteContextStr = typeof window !== 'undefined'
+        ? sessionStorage.getItem('inviteContext')
+        : null;
+
+      if (inviteContextStr) {
+        try {
+          const inviteContext = JSON.parse(inviteContextStr);
+
+          // Clear the invite context
+          sessionStorage.removeItem('inviteContext');
+
+          // Redirect based on invite type
+          if (inviteContext.type === 'group' && inviteContext.groupId) {
+            router.push(`/invite/group/${inviteContext.groupId}`);
+            return;
+          }
+        } catch (err) {
+          console.error('Error parsing invite context:', err);
+        }
+      }
+
+      // Default redirect to home
       router.push('/');
     } catch (error: any) {
       console.error('Signup error:', error);
-      
+
       // Handle specific Firebase errors with user-friendly messages
       if (error.message?.includes('auth/email-already-in-use')) {
         setSubmitError('This email address is already registered. Please try logging in instead or use a different email.');

@@ -5,6 +5,7 @@ import { ProtectedRoute } from '@/components/ProtectedRoute';
 import Header from '@/components/HeaderComponent';
 import MobileHeader from '@/components/MobileHeader';
 import BottomNavigation from '@/components/BottomNavigation';
+import Footer from '@/components/Footer';
 import NotificationSettings from '@/components/NotificationSettings';
 import {
   User,
@@ -705,6 +706,9 @@ export default function SettingsPage() {
         <div className="md:hidden">
           <BottomNavigation />
         </div>
+
+        {/* Footer - Desktop only */}
+        <Footer />
 
         {/* Delete Account Confirmation Dialog */}
         <ConfirmDialog

@@ -9,6 +9,7 @@ import TopComments from './TopComments';
 import { ImageGallery } from './ImageGallery';
 import LikesModal from './LikesModal';
 import CommentsModal from './CommentsModal';
+import ShareSessionImage from './ShareSessionImage';
 import { MoreVertical, Heart, MessageCircle, Share2, Clock, ListTodo, Tag } from 'lucide-react';
 import Link from 'next/link';
 
@@ -39,6 +40,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({
   const [showCommentInput, setShowCommentInput] = useState(false);
   const [showLikesModal, setShowLikesModal] = useState(false);
   const [showCommentsModal, setShowCommentsModal] = useState(false);
+  const [showShareImageModal, setShowShareImageModal] = useState(false);
   const [expandComments, setExpandComments] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const commentSectionRef = useRef<HTMLDivElement>(null);
@@ -258,6 +260,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({
         onSupport={onSupport}
         onRemoveSupport={onRemoveSupport}
         onShare={onShare}
+        onShareImage={() => setShowShareImageModal(true)}
         onCommentClick={() => setShowCommentsModal(true)}
         onLikesClick={() => setShowLikesModal(true)}
         onViewAllCommentsClick={() => setShowCommentsModal(true)}
@@ -289,6 +292,13 @@ export const SessionCard: React.FC<SessionCardProps> = ({
         sessionId={session.id}
         totalCommentCount={localCommentCount}
         onCommentCountChange={setLocalCommentCount}
+      />
+
+      {/* Share as Image Modal */}
+      <ShareSessionImage
+        session={session}
+        isOpen={showShareImageModal}
+        onClose={() => setShowShareImageModal(false)}
       />
 
     </article>
