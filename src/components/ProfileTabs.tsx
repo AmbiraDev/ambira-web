@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { firebaseSessionApi, firebaseApi, firebaseUserApi } from '@/lib/firebaseApi';
+import { firebaseSessionApi, firebaseApi, firebaseUserApi, firebasePostApi } from '@/lib/firebaseApi';
 import { Session, User, Project, SessionWithDetails } from '@/types';
 import SessionCard from './SessionCard';
 import ConfirmDialog from './ConfirmDialog';
@@ -409,7 +409,12 @@ export const PostsContent: React.FC<PostsContentProps> = ({ userId, isOwnProfile
       try {
         setIsLoadingSessions(true);
         const userSessions = await firebaseSessionApi.getUserSessions(userId, 50);
-        setSessions(userSessions);
+        // Ensure sessions have activity field (backwards compatibility)
+        const sessionsWithActivity = userSessions.map((session: any) => ({
+          ...session,
+          activity: session.activity || session.project,
+        }));
+        setSessions(sessionsWithActivity);
       } catch (err: any) {
         console.error('Failed to load sessions:', err);
         setError(err.message || 'Failed to load posts');
@@ -420,6 +425,44 @@ export const PostsContent: React.FC<PostsContentProps> = ({ userId, isOwnProfile
 
     loadSessions();
   }, [userId]);
+
+  // Handle support
+  const handleSupport = useCallback(async (sessionId: string) => {
+    try {
+      await firebasePostApi.supportSession(sessionId);
+      setSessions(prev => prev.map(s =>
+        s.id === sessionId
+          ? { ...s, supportCount: s.supportCount + 1, isSupported: true }
+          : s
+      ));
+    } catch (err: any) {
+      console.error('Failed to support session:', err);
+    }
+  }, []);
+
+  const handleRemoveSupport = useCallback(async (sessionId: string) => {
+    try {
+      await firebasePostApi.removeSupportFromSession(sessionId);
+      setSessions(prev => prev.map(s =>
+        s.id === sessionId
+          ? { ...s, supportCount: Math.max(0, s.supportCount - 1), isSupported: false }
+          : s
+      ));
+    } catch (err: any) {
+      console.error('Failed to remove support:', err);
+    }
+  }, []);
+
+  const handleShare = useCallback(async (sessionId: string) => {
+    try {
+      // Share functionality - copy link to clipboard
+      const shareUrl = `${window.location.origin}/sessions/${sessionId}`;
+      await navigator.clipboard.writeText(shareUrl);
+      // You could add a toast notification here
+    } catch (err: any) {
+      console.error('Failed to share session:', err);
+    }
+  }, []);
 
   // Handle delete
   const handleDelete = useCallback(async (sessionId: string) => {

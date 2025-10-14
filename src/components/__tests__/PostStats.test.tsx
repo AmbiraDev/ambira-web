@@ -7,21 +7,19 @@ import { Session, Project } from '@/types';
 const mockSession: Session = {
   id: 'session-1',
   userId: 'user-1',
+  activityId: 'project-1',
   projectId: 'project-1',
   title: 'Morning Coding Session',
   description: 'Worked on React components',
   duration: 7200, // 2 hours
   startTime: new Date('2024-01-01T09:00:00Z'),
-  tasks: [
-    { id: 'task-1', projectId: 'project-1', name: 'Create component', status: 'completed', createdAt: new Date(), completedAt: new Date() },
-    { id: 'task-2', projectId: 'project-1', name: 'Write tests', status: 'completed', createdAt: new Date(), completedAt: new Date() },
-    { id: 'task-3', projectId: 'project-1', name: 'Update docs', status: 'active', createdAt: new Date() }
-  ],
   tags: ['coding', 'react', 'frontend'],
   visibility: 'everyone',
   howFelt: 4,
   privateNotes: 'Felt productive',
   isArchived: false,
+  supportCount: 0,
+  commentCount: 0,
   createdAt: new Date(),
   updatedAt: new Date()
 };

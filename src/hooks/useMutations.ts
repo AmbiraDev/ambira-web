@@ -117,7 +117,7 @@ export function useAddCommentMutation() {
 
   return useMutation({
     mutationFn: async ({ sessionId, text }: { sessionId: string; text: string }) => {
-      return await firebaseApi.comment.addComment(sessionId, text);
+      return await firebaseApi.comment.createComment({ sessionId, content: text });
     },
     onSuccess: (data, variables) => {
       // Invalidate comments for this session

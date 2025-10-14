@@ -4,7 +4,6 @@ import { TimerProvider, useTimer } from '../TimerContext';
 import { firebaseSessionApi } from '@/lib/firebaseApi';
 import { useAuth } from '../AuthContext';
 import { useProjects } from '../ProjectsContext';
-import { useTasks } from '../TasksContext';
 
 // Mock dependencies
 jest.mock('@/lib/firebaseApi', () => ({
@@ -24,7 +23,6 @@ jest.mock('@/lib/firebaseApi', () => ({
 }));
 jest.mock('../AuthContext');
 jest.mock('../ProjectsContext');
-jest.mock('../TasksContext');
 jest.mock('@/lib/firebase', () => ({
   auth: {
     currentUser: { uid: 'test-user-id', getIdToken: jest.fn().mockResolvedValue('test-token') },
@@ -90,7 +88,6 @@ describe('TimerContext', () => {
     // Setup default mocks
     (useAuth as jest.Mock).mockReturnValue({ user: mockUser });
     (useProjects as jest.Mock).mockReturnValue({ projects: [mockProject] });
-    (useTasks as jest.Mock).mockReturnValue({ tasks: [mockTask] });
 
     // Mock Firebase API modules
     const { firebaseSessionApi, firebaseProjectApi, firebaseTaskApi } = require('@/lib/firebaseApi');
@@ -134,7 +131,6 @@ describe('TimerContext', () => {
       expect(result.current.timerState.isRunning).toBe(false);
       expect(result.current.timerState.startTime).toBeNull();
       expect(result.current.timerState.currentProject).toBeNull();
-      expect(result.current.timerState.selectedTasks).toEqual([]);
       expect(result.current.timerState.activeTimerId).toBeNull();
       expect(result.current.timerState.pausedDuration).toBe(0);
     });
@@ -236,7 +232,6 @@ describe('TimerContext', () => {
       expect(result.current.timerState.isRunning).toBe(false);
       expect(result.current.timerState.startTime).toBeNull();
       expect(result.current.timerState.currentProject).toBeNull();
-      expect(result.current.timerState.selectedTasks).toEqual([]);
       expect(result.current.timerState.activeTimerId).toBeNull();
 
       // Verify session was returned

@@ -146,22 +146,22 @@ export const UserCard: React.FC<UserCardProps> = ({
                   </div>
 
                   {/* Suggestion reason */}
-                  {'reason' in user && user.reason && (
+                  {('reason' in user && user.reason) ? (
                     <Badge
                       variant={getReasonBadge(user.reason).variant}
                       className="text-xs"
                     >
                       {getReasonBadge(user.reason).label}
                     </Badge>
-                  )}
+                  ) : null}
 
                   {/* Location if available */}
-                  {'location' in user && user.location && (
+                  {('location' in user && user.location) ? (
                     <div className="flex items-center gap-1 text-xs text-muted-foreground">
                       <MapPin className="w-3 h-3" />
-                      <span>{user.location}</span>
+                      <span>{user.location as string}</span>
                     </div>
-                  )}
+                  ) : null}
                 </div>
               )}
             </div>
@@ -297,9 +297,9 @@ export const UserCardCompact: React.FC<UserCardProps> = ({
           {isLoading ? (
             <div className="w-3 h-3 border-2 border-current border-t-transparent rounded-full animate-spin" />
           ) : isFollowing ? (
-            'Following'
+            <>Following</>
           ) : (
-            'Follow'
+            <>Follow</>
           )}
         </Button>
       )}

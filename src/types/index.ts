@@ -22,6 +22,9 @@ export interface User {
   inboundFriendshipCount?: number;
   outboundFriendshipCount?: number;
   mutualFriendshipCount?: number;
+  // Follower counts (optional, may not be populated)
+  followersCount?: number;
+  followingCount?: number;
 }
 
 // Represents a user document inside a social graph subcollection
@@ -64,6 +67,88 @@ export interface ActivityStats {
 
 // Backwards compatibility alias
 export type ProjectStats = ActivityStats;
+
+// Task types (deprecated but kept for backwards compatibility)
+export interface Task {
+  id: string;
+  userId: string;
+  projectId: string;
+  title: string;
+  description?: string;
+  status: 'todo' | 'in_progress' | 'completed';
+  priority?: 'low' | 'medium' | 'high';
+  dueDate?: Date;
+  completedAt?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface CreateTaskData {
+  projectId: string;
+  title: string;
+  description?: string;
+  status?: 'todo' | 'in_progress' | 'completed';
+  priority?: 'low' | 'medium' | 'high';
+  dueDate?: Date;
+}
+
+export interface UpdateTaskData {
+  title?: string;
+  description?: string;
+  status?: 'todo' | 'in_progress' | 'completed';
+  priority?: 'low' | 'medium' | 'high';
+  dueDate?: Date;
+  completedAt?: Date;
+}
+
+export interface BulkTaskUpdate {
+  taskId: string;
+  updates: UpdateTaskData;
+}
+
+export interface TaskStats {
+  totalTasks: number;
+  completedTasks: number;
+  inProgressTasks: number;
+  completionRate: number;
+}
+
+// Post types (deprecated - sessions are now posts)
+export interface Post {
+  id: string;
+  userId: string;
+  sessionId?: string;
+  content: string;
+  visibility: 'everyone' | 'followers' | 'private';
+  supportCount: number;
+  commentCount: number;
+  isSupported?: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface PostWithDetails extends Post {
+  user: User;
+  session?: Session;
+}
+
+export interface CreatePostData {
+  content: string;
+  sessionId?: string;
+  visibility: 'everyone' | 'followers' | 'private';
+}
+
+export interface UpdatePostData {
+  content?: string;
+  visibility?: 'everyone' | 'followers' | 'private';
+}
+
+export interface PostSupport {
+  id: string;
+  postId: string;
+  userId: string;
+  createdAt: Date;
+}
 
 // Default activities available to all users
 export const DEFAULT_ACTIVITIES = [
@@ -803,7 +888,15 @@ export interface TimerContextType {
     description?: string,
     tags?: string[],
     howFelt?: number,
-    privateNotes?: string
+    privateNotes?: string,
+    options?: {
+      visibility?: 'everyone' | 'followers' | 'private';
+      showStartTime?: boolean;
+      hideTaskNames?: boolean;
+      publishToFeeds?: boolean;
+      customDuration?: number;
+      images?: string[];
+    }
   ) => Promise<Session>;
   resetTimer: () => Promise<void>;
   loadActiveTimer: () => Promise<void>;
@@ -823,9 +916,11 @@ export interface CreateSessionData {
   visibility?: 'everyone' | 'followers' | 'private';
   showStartTime?: boolean;
   hideTaskNames?: boolean;
+  publishToFeeds?: boolean; // Whether to publish to home/group feeds
   howFelt?: number;
   privateNotes?: string;
   images?: string[]; // Array of image URLs (max 3)
+  allowComments?: boolean; // Whether comments are allowed (default: true)
 }
 
 // Session management interfaces

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Project } from '@/types';
 import { ProjectCard } from './ProjectCard';
@@ -20,7 +20,6 @@ export const ProjectList: React.FC<ProjectListProps> = ({
   const router = useRouter();
   const { projects, isLoading, error, deleteProject, archiveProject } = useProjects();
   // const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const viewMode = 'grid'; // Always use grid view
   const [deleteConfirm, setDeleteConfirm] = useState<Project | null>(null);
 
   // // Load view mode from localStorage on mount
@@ -38,9 +37,11 @@ export const ProjectList: React.FC<ProjectListProps> = ({
   // };
 
   // Show all projects
-  const filteredProjects = projects;
+  const filteredProjects = projects || [];
 
   const handleDelete = async (project: Project) => {
+    if (!deleteProject) return;
+
     try {
       await deleteProject(project.id);
       setDeleteConfirm(null);
@@ -50,6 +51,8 @@ export const ProjectList: React.FC<ProjectListProps> = ({
   };
 
   const handleArchive = async (project: Project) => {
+    if (!archiveProject) return;
+
     try {
       await archiveProject(project.id);
     } catch (error) {
@@ -58,6 +61,8 @@ export const ProjectList: React.FC<ProjectListProps> = ({
   };
 
   const handleRestore = async (project: Project) => {
+    if (!archiveProject) return;
+
     try {
       await archiveProject(project.id); // This will toggle the status
     } catch (error) {
@@ -134,7 +139,7 @@ export const ProjectList: React.FC<ProjectListProps> = ({
 
   return (
     <div className="space-y-8">
-      <div className={viewMode === 'list' ? 'max-w-3xl mx-auto' : ''}>
+      <div>
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-2">
           <div>
@@ -188,11 +193,7 @@ export const ProjectList: React.FC<ProjectListProps> = ({
           </div>
         </div>
       ) : (
-        <div className={
-          viewMode === 'grid'
-            ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'
-            : 'max-w-3xl mx-auto space-y-5'
-        }>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredProjects.map((project) => (
             <ProjectCard
               key={project.id}

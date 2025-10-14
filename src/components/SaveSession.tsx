@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { SessionFormData, Project, Task } from '@/types';
+import { SessionFormData, Project } from '@/types';
 import { firebaseApi } from '@/lib/firebaseApi';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -28,21 +28,21 @@ export const SaveSession: React.FC<SaveSessionProps> = ({
 }) => {
   const { user } = useAuth();
   const [formData, setFormData] = useState<SessionFormData>({
-    projectId: '',
-    title: '',
-    description: '',
-    duration: 0,
-    startTime: new Date(),
-    taskIds: [],
-    tags: [],
-    visibility: 'everyone',
-    privateNotes: '',
-    ...initialData
+    activityId: (initialData.activityId || initialData.projectId || '') as string,
+    projectId: initialData.projectId || '',
+    title: initialData.title || '',
+    description: initialData.description || '',
+    duration: initialData.duration || 0,
+    startTime: initialData.startTime || new Date(),
+    taskIds: initialData.taskIds || [],
+    tags: initialData.tags || [],
+    visibility: initialData.visibility || 'everyone',
+    privateNotes: initialData.privateNotes || '',
   });
 
   const [projects, setProjects] = useState<Project[]>([]);
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [selectedTasks, setSelectedTasks] = useState<Task[]>([]);
+  const [tasks, setTasks] = useState<any[]>([]);
+  const [selectedTasks, setSelectedTasks] = useState<any[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showPostModal, setShowPostModal] = useState(false);
 
@@ -85,7 +85,7 @@ export const SaveSession: React.FC<SaveSessionProps> = ({
 
       try {
         const taskList = await firebaseApi.task.getProjectTasks(formData.projectId);
-        setTasks(taskList.filter(task => task.status === 'active'));
+        setTasks(taskList.filter(task => task.status !== 'completed'));
         
         // Set selected tasks from initial data
         if (initialData.taskIds && initialData.taskIds.length > 0) {
@@ -131,7 +131,7 @@ export const SaveSession: React.FC<SaveSessionProps> = ({
     if (!task) return;
 
     const isSelected = selectedTasks.some(t => t.id === taskId);
-    let newSelectedTasks: Task[];
+    let newSelectedTasks: any[];
     let newTaskIds: string[];
 
     if (isSelected) {
@@ -147,11 +147,12 @@ export const SaveSession: React.FC<SaveSessionProps> = ({
   };
 
   const handleTagToggle = (tag: string) => {
-    const isSelected = formData.tags.includes(tag);
-    const newTags = isSelected 
-      ? formData.tags.filter(t => t !== tag)
-      : [...formData.tags, tag];
-    
+    const currentTags = formData.tags || [];
+    const isSelected = currentTags.includes(tag);
+    const newTags = isSelected
+      ? currentTags.filter(t => t !== tag)
+      : [...currentTags, tag];
+
     setFormData(prev => ({ ...prev, tags: newTags }));
   };
 
@@ -319,7 +320,7 @@ export const SaveSession: React.FC<SaveSessionProps> = ({
                     type="button"
                     onClick={() => handleTagToggle(tag)}
                     className={`px-3 py-1 rounded-full text-sm transition-colors ${
-                      formData.tags.includes(tag)
+                      (formData.tags || []).includes(tag)
                         ? 'bg-blue-600 text-white'
                         : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                     }`}

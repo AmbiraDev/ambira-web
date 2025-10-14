@@ -52,6 +52,8 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
   }, [project.id]);
 
   const loadStats = async () => {
+    if (!getProjectStats) return;
+
     try {
       setIsLoadingStats(true);
       const fetchedStats = await getProjectStats(project.id);

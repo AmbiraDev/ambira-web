@@ -3,7 +3,6 @@ import { render, screen } from '@testing-library/react';
 import { SessionTimerEnhanced } from '../SessionTimerEnhanced';
 import { useTimer } from '@/contexts/TimerContext';
 import { useProjects } from '@/contexts/ProjectsContext';
-import { useTasks } from '@/contexts/TasksContext';
 
 // Mock Firebase
 jest.mock('@/lib/firebase', () => ({
@@ -15,7 +14,6 @@ jest.mock('@/lib/firebase', () => ({
 // Mock the contexts
 jest.mock('@/contexts/TimerContext');
 jest.mock('@/contexts/ProjectsContext');
-jest.mock('@/contexts/TasksContext');
 jest.mock('@/contexts/ToastContext', () => ({
   useToast: () => ({
     showToast: jest.fn(),
@@ -78,10 +76,6 @@ describe('SessionTimerEnhanced - Timer Display', () => {
 
     (useProjects as jest.Mock).mockReturnValue({
       projects: mockProjects,
-    });
-
-    (useTasks as jest.Mock).mockReturnValue({
-      tasks: mockTasks,
     });
   });
 

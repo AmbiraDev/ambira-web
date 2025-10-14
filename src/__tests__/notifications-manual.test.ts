@@ -3,11 +3,11 @@
  * Run with: npm test -- notifications-manual.test.ts
  */
 
-import { 
-  firebaseNotificationApi, 
-  challengeNotifications 
+import {
+  firebaseNotificationApi,
+  challengeNotifications
 } from '../lib/firebaseApi';
-import { Notification, ChallengeNotificationData } from '../types';
+import { Notification } from '../types';
 
 describe('Notification System Manual Test', () => {
   console.log('🔔 Testing Notification System...');
@@ -19,47 +19,38 @@ describe('Notification System Manual Test', () => {
     const mockNotification: Notification = {
       id: 'test-id',
       userId: 'test-user',
-      type: 'challenge_completed',
+      type: 'challenge',
       title: 'Test Notification',
       message: 'This is a test notification',
-      data: {
-        challengeId: 'test-challenge',
-        challengeName: 'Test Challenge',
-        challengeType: 'hours'
-      } as ChallengeNotificationData,
+      challengeId: 'test-challenge',
       isRead: false,
       createdAt: new Date()
     };
 
-    expect(mockNotification.type).toBe('challenge_completed');
-    expect(mockNotification.data?.challengeId).toBe('test-challenge');
+    expect(mockNotification.type).toBe('challenge');
+    expect(mockNotification.challengeId).toBe('test-challenge');
     
     console.log('✅ Notification types are properly defined');
   });
 
   test('should have challenge notification data structure', () => {
     console.log('2. Testing challenge notification data structure...');
-    
-    const challengeData: ChallengeNotificationData = {
+
+    const notification: Notification = {
+      id: 'notif-1',
+      userId: 'user-1',
+      type: 'challenge',
+      title: 'Challenge Complete!',
+      message: 'You completed the Test Challenge',
       challengeId: 'test-challenge-id',
-      challengeName: 'Test Challenge',
-      challengeType: 'hours',
       groupId: 'test-group',
-      groupName: 'Test Group',
-      participantId: 'test-participant',
-      participantName: 'Test User',
-      rank: 1,
-      previousRank: 3,
-      progress: 75,
-      goalValue: 100,
-      daysRemaining: 2
+      isRead: false,
+      createdAt: new Date()
     };
 
-    expect(challengeData.challengeId).toBe('test-challenge-id');
-    expect(challengeData.challengeName).toBe('Test Challenge');
-    expect(challengeData.rank).toBe(1);
-    expect(challengeData.previousRank).toBe(3);
-    
+    expect(notification.challengeId).toBe('test-challenge-id');
+    expect(notification.groupId).toBe('test-group');
+
     console.log('✅ Challenge notification data structure is correct');
   });
 

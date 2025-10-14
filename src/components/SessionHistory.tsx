@@ -137,7 +137,8 @@ export const SessionHistory: React.FC = () => {
     });
   };
 
-  const getProjectName = (projectId: string): string => {
+  const getProjectName = (projectId: string | undefined): string => {
+    if (!projectId) return 'Unknown Project';
     const project = projects.find(p => p.id === projectId);
     return project ? project.name : 'Unknown Project';
   };
@@ -301,7 +302,7 @@ export const SessionHistory: React.FC = () => {
                       <p className="text-gray-700 text-sm mb-3">{session.description}</p>
                     )}
 
-                    {session.tags.length > 0 && (
+                    {session.tags && session.tags.length > 0 && (
                       <div className="flex flex-wrap gap-1 mb-3">
                         {session.tags.map((tag) => (
                           <span
@@ -311,12 +312,6 @@ export const SessionHistory: React.FC = () => {
                             {tag}
                           </span>
                         ))}
-                      </div>
-                    )}
-
-                    {session.tasks.length > 0 && (
-                      <div className="text-sm text-gray-600">
-                        <span className="font-medium">Tasks:</span> {session.tasks.map(t => t.name).join(', ')}
                       </div>
                     )}
                   </div>

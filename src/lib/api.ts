@@ -265,7 +265,7 @@ export const taskApi = {
 
   // Update task status (legacy method)
   updateTaskStatus: async (taskId: string, status: 'active' | 'completed' | 'archived'): Promise<Task> => {
-    return taskApi.updateTask(taskId, { status });
+    return taskApi.updateTask(taskId, { status: status === 'active' ? 'in_progress' : status as any });
   },
 };
 

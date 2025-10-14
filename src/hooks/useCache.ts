@@ -114,16 +114,7 @@ export function useFeedSessionsPaginated(
 export function useProjects(userId: string, options?: Partial<UseQueryOptions<Project[]>>) {
   return useQuery({
     queryKey: CACHE_KEYS.PROJECTS(userId),
-    queryFn: () => firebaseApi.project.getUserProjects(userId),
-    staleTime: CACHE_TIMES.LONG, // 15 minutes cache
-    ...options,
-  });
-}
-
-export function useProject(projectId: string, options?: Partial<UseQueryOptions<Project | null>>) {
-  return useQuery({
-    queryKey: CACHE_KEYS.PROJECT(projectId),
-    queryFn: () => firebaseApi.project.getProject(projectId),
+    queryFn: () => firebaseApi.project.getProjects(),
     staleTime: CACHE_TIMES.LONG, // 15 minutes cache
     ...options,
   });
@@ -134,7 +125,7 @@ export function useProject(projectId: string, options?: Partial<UseQueryOptions<
 export function useTasks(userId: string, options?: Partial<UseQueryOptions<Task[]>>) {
   return useQuery({
     queryKey: CACHE_KEYS.TASKS(userId),
-    queryFn: () => firebaseApi.task.getUserTasks(userId),
+    queryFn: () => firebaseApi.task.getAllTasks(),
     staleTime: CACHE_TIMES.SHORT, // 1 minute cache for tasks (frequently updated)
     ...options,
   });
@@ -211,7 +202,7 @@ export function useSuggestedGroups(options?: Partial<UseQueryOptions<Group[]>>) 
 export function useStreak(userId: string, options?: Partial<UseQueryOptions<any>>) {
   return useQuery({
     queryKey: CACHE_KEYS.STREAK(userId),
-    queryFn: () => firebaseApi.streak.getCurrentStreak(userId),
+    queryFn: () => firebaseApi.streak.getStreakStats(userId),
     staleTime: CACHE_TIMES.MEDIUM, // 5 minutes cache
     ...options,
   });

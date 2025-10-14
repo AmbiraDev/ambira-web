@@ -131,9 +131,7 @@ describe('Firebase Feed Images Integration', () => {
       (orderBy as jest.Mock).mockReturnValue('mock-orderby');
       (limit as jest.Mock).mockReturnValue('mock-limit');
 
-      const result = await firebaseSessionApi.getFeedSessions(20, undefined, {
-        type: 'trending'
-      });
+      const result = await firebaseSessionApi.getSessions(20, undefined);
 
       // Verify sessions were loaded
       expect(result.sessions).toHaveLength(2);
@@ -141,9 +139,9 @@ describe('Firebase Feed Images Integration', () => {
       // Verify first session has images
       const sessionWithImages = result.sessions[0];
       expect(sessionWithImages.images).toBeDefined();
-      expect(sessionWithImages.images).toHaveLength(2);
-      expect(sessionWithImages.images[0]).toContain('firebasestorage.googleapis.com');
-      expect(sessionWithImages.images[0]).toContain('?alt=media&token=');
+      expect(sessionWithImages.images!).toHaveLength(2);
+      expect(sessionWithImages.images![0]).toContain('firebasestorage.googleapis.com');
+      expect(sessionWithImages.images![0]).toContain('?alt=media&token=');
 
       // Verify second session has no images
       const sessionWithoutImages = result.sessions[1];
@@ -183,7 +181,7 @@ describe('Firebase Feed Images Integration', () => {
 
       (query as jest.Mock).mockReturnValue('mock-query');
 
-      const result = await firebaseSessionApi.getFeedSessions(10);
+      const result = await firebaseSessionApi.getSessions(10);
 
       expect(result.sessions).toHaveLength(1);
       expect(result.sessions[0].images).toEqual([]);
@@ -228,11 +226,11 @@ describe('Firebase Feed Images Integration', () => {
 
       (query as jest.Mock).mockReturnValue('mock-query');
 
-      const result = await firebaseSessionApi.getFeedSessions(10);
+      const result = await firebaseSessionApi.getSessions(10);
 
       expect(result.sessions[0].images).toEqual(orderedImages);
-      expect(result.sessions[0].images[0]).toBe(orderedImages[0]);
-      expect(result.sessions[0].images[2]).toBe(orderedImages[2]);
+      expect(result.sessions[0].images![0]).toBe(orderedImages[0]);
+      expect(result.sessions[0].images![2]).toBe(orderedImages[2]);
     });
   });
 
@@ -280,10 +278,10 @@ describe('Firebase Feed Images Integration', () => {
 
       (query as jest.Mock).mockReturnValue('mock-query');
 
-      const result = await firebaseSessionApi.getFeedSessions(10);
+      const result = await firebaseSessionApi.getSessions(10);
 
-      const withImages = result.sessions.filter(s => s.images && s.images.length > 0);
-      const withoutImages = result.sessions.filter(s => !s.images || s.images.length === 0);
+      const withImages = result.sessions.filter((s: any) => s.images && s.images.length > 0);
+      const withoutImages = result.sessions.filter((s: any) => !s.images || s.images.length === 0);
 
       expect(withImages).toHaveLength(1);
       expect(withoutImages).toHaveLength(1);
@@ -322,9 +320,9 @@ describe('Firebase Feed Images Integration', () => {
 
       (query as jest.Mock).mockReturnValue('mock-query');
 
-      const result = await firebaseSessionApi.getFeedSessions(10);
+      const result = await firebaseSessionApi.getSessions(10);
 
-      const imageUrl = result.sessions[0].images[0];
+      const imageUrl = result.sessions[0].images![0];
 
       // Validate URL format
       expect(imageUrl).toMatch(/^https:\/\/firebasestorage\.googleapis\.com/);
@@ -364,10 +362,10 @@ describe('Firebase Feed Images Integration', () => {
 
       (query as jest.Mock).mockReturnValue('mock-query');
 
-      const result = await firebaseSessionApi.getFeedSessions(10);
+      const result = await firebaseSessionApi.getSessions(10);
 
       expect(result.sessions[0].images).toHaveLength(3);
-      expect(result.sessions[0].images.length).toBeLessThanOrEqual(3);
+      expect(result.sessions[0].images!.length).toBeLessThanOrEqual(3);
     });
   });
 
@@ -437,13 +435,13 @@ describe('Firebase Feed Images Integration', () => {
 
       (query as jest.Mock).mockReturnValue('mock-query');
 
-      const result = await firebaseSessionApi.getFeedSessions(10);
+      const result = await firebaseSessionApi.getSessions(10);
 
       expect(result.sessions).toHaveLength(1);
       expect(result.sessions[0].images).toBeDefined();
-      expect(result.sessions[0].images).toHaveLength(2);
-      expect(result.sessions[0].user).toBeDefined();
-      expect(result.sessions[0].project).toBeDefined();
+      expect(result.sessions[0].images!).toHaveLength(2);
+      expect((result.sessions[0] as any).user).toBeDefined();
+      expect((result.sessions[0] as any).activity || (result.sessions[0] as any).project).toBeDefined();
     });
   });
 
@@ -482,14 +480,14 @@ describe('Firebase Feed Images Integration', () => {
       (query as jest.Mock).mockReturnValue('mock-query');
 
       const startTime = Date.now();
-      const result = await firebaseSessionApi.getFeedSessions(20);
+      const result = await firebaseSessionApi.getSessions(20);
       const endTime = Date.now();
 
       // Verify all sessions loaded
       expect(result.sessions).toHaveLength(20);
 
       // Verify alternating image presence
-      const withImages = result.sessions.filter(s => s.images && s.images.length > 0);
+      const withImages = result.sessions.filter((s: any) => s.images && s.images.length > 0);
       expect(withImages).toHaveLength(10);
 
       // Should complete reasonably fast

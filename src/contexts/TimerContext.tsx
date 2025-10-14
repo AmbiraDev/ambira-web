@@ -17,7 +17,6 @@ import {
   CreateSessionData,
 } from '@/types';
 import { timerApi, projectApi, authApi } from '@/lib/api';
-import { mockTimerApi, mockProjectApi } from '@/lib/mockApi';
 import { firebaseProjectApi, firebaseSessionApi } from '@/lib/firebaseApi';
 import { auth } from '@/lib/firebase';
 import { useAuth } from './AuthContext';
@@ -392,7 +391,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
         isPaused: false,
       });
 
-      const timerId = `timer_${Date.now()}_${user.uid}`;
+      const timerId = `timer_${Date.now()}_${user.id}`;
 
       setTimerState({
         isRunning: true,
@@ -501,6 +500,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
     try {
       const finalDuration = options?.customDuration ?? getElapsedTime();
       const sessionData: CreateSessionData = {
+        activityId: timerState.currentProject.id,
         projectId: timerState.currentProject.id,
         title,
         description,
@@ -586,7 +586,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
         startTime: null,
         pausedDuration: 0,
         currentProject: null,
-        selectedTasks: [],
         activeTimerId: null,
         isConnected: true,
         lastAutoSave: null,
@@ -616,7 +615,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
         startTime: null,
         pausedDuration: 0,
         currentProject: null,
-        selectedTasks: [],
         activeTimerId: null,
         isConnected: true,
         lastAutoSave: null,

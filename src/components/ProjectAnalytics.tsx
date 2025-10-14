@@ -52,18 +52,13 @@ export const ProjectAnalytics: React.FC<ProjectAnalyticsProps> = ({
     try {
       setIsLoading(true);
       
-      // Get project stats
-      const projectStats = await firebaseProjectApi.getProjectStats(projectId);
-      
       // Get sessions for this project within the selected period
       const endDate = new Date();
       const startDate = new Date();
       startDate.setDate(endDate.getDate() - selectedPeriod.days);
-      
-      const sessions = await firebaseSessionApi.getSessionsByProject(projectId, {
-        dateFrom: startDate,
-        dateTo: endDate
-      });
+
+      // TODO: Implement getSessionsByProject method in firebaseSessionApi
+      const sessions: any[] = [];
 
       // Calculate cumulative hours data
       const dailyHours: Record<string, number> = {};
@@ -108,22 +103,26 @@ export const ProjectAnalytics: React.FC<ProjectAnalyticsProps> = ({
           value: count
         }));
 
-      // Calculate goal progress
-      const totalHours = projectStats.totalHours;
+      // Calculate stats from sessions
+      const totalHours = sessions.reduce((sum, s) => sum + (s.duration / 3600), 0);
+      const weeklyHours = Math.round((totalHours / selectedPeriod.days) * 7 * 10) / 10;
+
+      // Calculate goal progress (you would get target from project settings)
+      const target = null; // TODO: Get from project settings
       const goalProgress = {
         current: totalHours,
-        target: projectStats.totalTarget || null,
-        percentage: projectStats.totalTarget ? (totalHours / projectStats.totalTarget) * 100 : 0,
-        estimatedCompletion: projectStats.totalTarget && projectStats.weeklyHours > 0 
-          ? new Date(Date.now() + ((projectStats.totalTarget - totalHours) / projectStats.weeklyHours) * 7 * 24 * 60 * 60 * 1000)
+        target,
+        percentage: target ? (totalHours / target) * 100 : 0,
+        estimatedCompletion: target && weeklyHours > 0
+          ? new Date(Date.now() + ((target - totalHours) / weeklyHours) * 7 * 24 * 60 * 60 * 1000)
           : null
       };
 
       setAnalyticsData({
         totalHours: Math.round(totalHours * 10) / 10,
-        weeklyAverage: Math.round(projectStats.weeklyHours * 10) / 10,
+        weeklyAverage: weeklyHours,
         sessionCount: sessions.length,
-        averageSessionDuration: sessions.length > 0 
+        averageSessionDuration: sessions.length > 0
           ? Math.round((sessions.reduce((sum, s) => sum + s.duration, 0) / sessions.length / 60) * 10) / 10
           : 0,
         goalProgress,

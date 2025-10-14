@@ -3,13 +3,11 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { SessionTimerEnhanced } from '../SessionTimerEnhanced';
 import { useTimer } from '@/contexts/TimerContext';
 import { useProjects } from '@/contexts/ProjectsContext';
-import { useTasks } from '@/contexts/TasksContext';
 import { uploadImages } from '@/lib/imageUpload';
 
 // Mock the contexts
 jest.mock('@/contexts/TimerContext');
 jest.mock('@/contexts/ProjectsContext');
-jest.mock('@/contexts/TasksContext');
 jest.mock('@/lib/imageUpload');
 
 // Mock Next.js Image
@@ -65,10 +63,6 @@ describe('SessionTimerEnhanced - Image Upload', () => {
 
     (useProjects as jest.Mock).mockReturnValue({
       projects: mockProjects
-    });
-
-    (useTasks as jest.Mock).mockReturnValue({
-      tasks: mockTasks
     });
 
     (uploadImages as jest.Mock).mockResolvedValue([

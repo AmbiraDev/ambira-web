@@ -17,12 +17,10 @@ import userEvent from '@testing-library/user-event';
 import { SessionTimerEnhanced } from '../SessionTimerEnhanced';
 import { useTimer } from '@/contexts/TimerContext';
 import { useProjects } from '@/contexts/ProjectsContext';
-import { useTasks } from '@/contexts/TasksContext';
 
 // Mock dependencies
 jest.mock('@/contexts/TimerContext');
 jest.mock('@/contexts/ProjectsContext');
-jest.mock('@/contexts/TasksContext');
 jest.mock('@/lib/imageUpload');
 jest.mock('next/link', () => {
   return ({ children, href }: any) => <a href={href}>{children}</a>;
@@ -139,10 +137,6 @@ describe('SessionTimerEnhanced - Complete and Cancel', () => {
 
     (useProjects as jest.Mock).mockReturnValue({
       projects: [mockProject]
-    });
-
-    (useTasks as jest.Mock).mockReturnValue({
-      tasks: [mockTask]
     });
 
     // Mock alert and console

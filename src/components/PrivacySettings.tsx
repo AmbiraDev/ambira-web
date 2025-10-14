@@ -1,11 +1,10 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { PrivacySettings, UserProfile } from '@/types';
+import { PrivacySettings as PrivacySettingsType, UserProfile } from '@/types';
 import { firebaseUserApi } from '@/lib/firebaseApi';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
   SettingsSection,
   SettingsHeader,
@@ -36,7 +35,7 @@ export const PrivacySettings: React.FC<PrivacySettingsProps> = ({
   onClose, 
   isModal = false 
 }) => {
-  const [settings, setSettings] = useState<PrivacySettings>({
+  const [settings, setSettings] = useState<PrivacySettingsType>({
     profileVisibility: 'everyone',
     activityVisibility: 'everyone',
     projectVisibility: 'everyone',
@@ -75,7 +74,7 @@ export const PrivacySettings: React.FC<PrivacySettingsProps> = ({
     }
   };
 
-  const handleSettingChange = (key: keyof PrivacySettings, value: string) => {
+  const handleSettingChange = (key: keyof PrivacySettingsType, value: string) => {
     setSettings(prev => ({ ...prev, [key]: value }));
   };
 
@@ -185,34 +184,15 @@ export const PrivacySettings: React.FC<PrivacySettingsProps> = ({
         />
         <SettingsCardContent>
           <SettingsField label="Profile Access">
-            <Select
+            <select
               value={settings.profileVisibility}
-              onValueChange={(value: string) => handleSettingChange('profileVisibility', value)}
+              onChange={(e) => handleSettingChange('profileVisibility', e.target.value)}
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              <SelectTrigger className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="everyone">
-                  <div className="flex items-center gap-2">
-                    <Globe className="w-4 h-4" />
-                    <span>Everyone - Anyone can view your profile</span>
-                  </div>
-                </SelectItem>
-                <SelectItem value="followers">
-                  <div className="flex items-center gap-2">
-                    <Users className="w-4 h-4" />
-                    <span>Followers Only - Only people you follow back</span>
-                  </div>
-                </SelectItem>
-                <SelectItem value="private">
-                  <div className="flex items-center gap-2">
-                    <Lock className="w-4 h-4" />
-                    <span>Private - Only you can view your profile</span>
-                  </div>
-                </SelectItem>
-              </SelectContent>
-            </Select>
+              <option value="everyone">Everyone - Anyone can view your profile</option>
+              <option value="followers">Followers Only - Only people you follow back</option>
+              <option value="private">Private - Only you can view your profile</option>
+            </select>
           </SettingsField>
         </SettingsCardContent>
       </SettingsCard>
@@ -226,34 +206,15 @@ export const PrivacySettings: React.FC<PrivacySettingsProps> = ({
         />
         <SettingsCardContent>
           <SettingsField label="Activity Access">
-            <Select
+            <select
               value={settings.activityVisibility}
-              onValueChange={(value: string) => handleSettingChange('activityVisibility', value)}
+              onChange={(e) => handleSettingChange('activityVisibility', e.target.value)}
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              <SelectTrigger className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="everyone">
-                  <div className="flex items-center gap-2">
-                    <Globe className="w-4 h-4" />
-                    <span>Everyone - Your activity is public</span>
-                  </div>
-                </SelectItem>
-                <SelectItem value="followers">
-                  <div className="flex items-center gap-2">
-                    <Users className="w-4 h-4" />
-                    <span>Followers Only - Only your followers can see</span>
-                  </div>
-                </SelectItem>
-                <SelectItem value="private">
-                  <div className="flex items-center gap-2">
-                    <Lock className="w-4 h-4" />
-                    <span>Private - Your activity is completely private</span>
-                  </div>
-                </SelectItem>
-              </SelectContent>
-            </Select>
+              <option value="everyone">Everyone - Your activity is public</option>
+              <option value="followers">Followers Only - Only your followers can see</option>
+              <option value="private">Private - Your activity is completely private</option>
+            </select>
           </SettingsField>
         </SettingsCardContent>
       </SettingsCard>
@@ -267,34 +228,15 @@ export const PrivacySettings: React.FC<PrivacySettingsProps> = ({
         />
         <SettingsCardContent>
           <SettingsField label="Project Access">
-            <Select
+            <select
               value={settings.projectVisibility}
-              onValueChange={(value: string) => handleSettingChange('projectVisibility', value)}
+              onChange={(e) => handleSettingChange('projectVisibility', e.target.value)}
+              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              <SelectTrigger className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="everyone">
-                  <div className="flex items-center gap-2">
-                    <Globe className="w-4 h-4" />
-                    <span>Everyone - Your projects are public</span>
-                  </div>
-                </SelectItem>
-                <SelectItem value="followers">
-                  <div className="flex items-center gap-2">
-                    <Users className="w-4 h-4" />
-                    <span>Followers Only - Only your followers can see</span>
-                  </div>
-                </SelectItem>
-                <SelectItem value="private">
-                  <div className="flex items-center gap-2">
-                    <Lock className="w-4 h-4" />
-                    <span>Private - Your projects are completely private</span>
-                  </div>
-                </SelectItem>
-              </SelectContent>
-            </Select>
+              <option value="everyone">Everyone - Your projects are public</option>
+              <option value="followers">Followers Only - Only your followers can see</option>
+              <option value="private">Private - Your projects are completely private</option>
+            </select>
           </SettingsField>
         </SettingsCardContent>
       </SettingsCard>

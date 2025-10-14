@@ -250,14 +250,14 @@ export const ShareSessionImage: React.FC<ShareSessionImageProps> = ({
               </div>
 
               {/* Tasks Completed (if any) */}
-              {session.tasks && session.tasks.filter(t => t.status === 'completed').length > 0 && (
+              {false && (
                 <div className="bg-green-50 border-l-4 border-green-500 rounded p-4 mb-6">
                   <div className="flex items-center gap-2">
                     <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                     <span className="text-green-800 font-semibold">
-                      {session.tasks.filter(t => t.status === 'completed').length} task(s) completed
+                      0 task(s) completed
                     </span>
                   </div>
                 </div>

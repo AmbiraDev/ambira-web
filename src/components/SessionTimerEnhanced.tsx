@@ -61,7 +61,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
   const [isUploadingImages, setIsUploadingImages] = useState(false);
 
   // Only show user's custom activities
-  const allActivities: Activity[] = projects;
+  const allActivities: Activity[] = projects || [];
 
   // Load last used activity from local storage on mount
   useEffect(() => {
@@ -195,7 +195,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
       const session = await finishTimer(
         sessionTitle,
         sessionDescription,
-        [], // tags removed
+        undefined, // tags
         howFelt,
         privateNotes,
         {
@@ -254,7 +254,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
   };
 
   const getProjectColor = (projectId: string | undefined) => {
-    if (!projectId) return 'bg-gray-500';
+    if (!projectId || !projects) return 'bg-gray-500';
     const project = projects.find(p => p.id === projectId);
     const colorClasses = {
       orange: 'bg-orange-500',

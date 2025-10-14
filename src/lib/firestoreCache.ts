@@ -350,7 +350,7 @@ export function selectFields<T extends Record<string, unknown>>(
  * This prevents errors and reduces storage size
  */
 export function sanitizeData<T extends Record<string, unknown>>(data: T): T {
-  const sanitized = { ...data };
+  const sanitized = { ...data } as Record<string, unknown>;
   Object.keys(sanitized).forEach(key => {
     if (sanitized[key] === undefined) {
       delete sanitized[key];
@@ -362,8 +362,8 @@ export function sanitizeData<T extends Record<string, unknown>>(data: T): T {
       !Array.isArray(sanitized[key]) &&
       !(sanitized[key] instanceof Date)
     ) {
-      sanitized[key] = sanitizeData(sanitized[key] as Record<string, unknown>) as T[keyof T];
+      sanitized[key] = sanitizeData(sanitized[key] as Record<string, unknown>);
     }
   });
-  return sanitized;
+  return sanitized as T;
 }

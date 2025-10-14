@@ -55,25 +55,32 @@ describe('SessionCard - Image Display', () => {
     name: 'Test User',
     username: 'testuser',
     bio: 'Test bio',
-    profilePicture: 'https://example.com/avatar.jpg'
+    profilePicture: 'https://example.com/avatar.jpg',
+    createdAt: new Date('2024-01-01'),
+    updatedAt: new Date('2024-01-01')
   };
 
   const mockProject = {
     id: 'proj1',
+    userId: 'user1',
     name: 'Test Project',
+    description: 'Test description',
     icon: '📝',
-    color: '#007AFF'
+    color: '#007AFF',
+    status: 'active' as const,
+    createdAt: new Date('2024-01-01'),
+    updatedAt: new Date('2024-01-01')
   };
 
   const baseSession: SessionWithDetails = {
     id: 'session1',
     userId: 'user1',
+    activityId: 'proj1',
     projectId: 'proj1',
     title: 'Test Session',
     description: 'Test description',
     duration: 3600,
     startTime: new Date('2024-01-01'),
-    tasks: [],
     tags: ['Work'],
     visibility: 'everyone',
     isArchived: false,
@@ -83,6 +90,7 @@ describe('SessionCard - Image Display', () => {
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date('2024-01-01'),
     user: mockUser,
+    activity: mockProject,
     project: mockProject,
     images: []
   };

@@ -79,10 +79,11 @@ describe('Image Upload Integration Flow', () => {
       expect(uploadResults[0].url).toContain('https://');
 
       // Step 3: Extract image URLs
-      const imageUrls = uploadResults.map(result => result.url);
+      const imageUrls = uploadResults.map((result: any) => result.url);
 
       // Step 4: Create session data with image URLs
       const sessionData: CreateSessionData = {
+        activityId: 'test-project',
         projectId: 'test-project',
         title: 'Morning Work Session',
         description: 'Completed some great work with visual progress',
@@ -109,6 +110,7 @@ describe('Image Upload Integration Flow', () => {
 
     it('should handle session creation with zero images', async () => {
       const sessionData: CreateSessionData = {
+        activityId: 'test-project',
         projectId: 'test-project',
         title: 'Quick Session',
         description: 'No images needed',
@@ -130,6 +132,7 @@ describe('Image Upload Integration Flow', () => {
 
     it('should handle session creation without images field', async () => {
       const sessionData: CreateSessionData = {
+        activityId: 'test-project',
         projectId: 'test-project',
         title: 'Legacy Session',
         description: 'Created before image support',
@@ -237,6 +240,7 @@ describe('Image Upload Integration Flow', () => {
     it('should allow session creation to proceed even if image upload fails', async () => {
       // Simulate partial failure: upload fails but session creation should continue
       const sessionData: CreateSessionData = {
+        activityId: 'test-project',
         projectId: 'test-project',
         title: 'Session Despite Upload Failure',
         description: 'Images failed to upload',
@@ -296,7 +300,7 @@ describe('Image Upload Integration Flow', () => {
       const results = await uploadImages(exactlyThreeImages);
 
       expect(results).toHaveLength(3);
-      expect(results.every(r => r.url && r.path)).toBe(true);
+      expect(results.every((r: any) => r.url && r.path)).toBe(true);
     });
   });
 

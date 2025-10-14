@@ -420,28 +420,56 @@ const populateSessionsWithDetails = async (
           createdAt: convertTimestamp(userData?.createdAt) || new Date(),
           updatedAt: convertTimestamp(userData?.updatedAt) || new Date(),
         },
-        activity: {
-          id: sessionData.activityId || sessionData.projectId || '',
-          userId: sessionData.userId,
-          name: '', // Would need to fetch from activities collection
-          description: '',
-          icon: '',
-          color: '',
-          status: 'active',
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-        project: {
-          id: sessionData.projectId || sessionData.activityId || '',
-          userId: sessionData.userId,
-          name: '', // Would need to fetch from activities collection
-          description: '',
-          icon: '',
-          color: '',
-          status: 'active',
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
+        project: projectData
+          ? {
+              id: projectId!,
+              userId: sessionData.userId,
+              name: projectData.name || 'Unknown Project',
+              description: projectData.description || '',
+              icon: projectData.icon || '📁',
+              color: projectData.color || '#64748B',
+              weeklyTarget: projectData.weeklyTarget,
+              totalTarget: projectData.totalTarget,
+              status: projectData.status || 'active',
+              createdAt: convertTimestamp(projectData.createdAt) || new Date(),
+              updatedAt: convertTimestamp(projectData.updatedAt) || new Date(),
+            }
+          : ({
+              id: projectId || 'unknown',
+              userId: sessionData.userId,
+              name: 'Unknown Project',
+              description: '',
+              icon: '📁',
+              color: '#64748B',
+              status: 'active',
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            } as Project),
+        activity: projectData
+          ? {
+              id: projectId!,
+              userId: sessionData.userId,
+              name: projectData.name || 'Unknown Project',
+              description: projectData.description || '',
+              icon: projectData.icon || '📁',
+              color: projectData.color || '#64748B',
+              weeklyTarget: projectData.weeklyTarget,
+              totalTarget: projectData.totalTarget,
+              status: projectData.status || 'active',
+              createdAt: convertTimestamp(projectData.createdAt) || new Date(),
+              updatedAt: convertTimestamp(projectData.updatedAt) || new Date(),
+            }
+          : ({
+              id: projectId || 'unknown',
+              userId: sessionData.userId,
+              name: 'Unknown Project',
+              description: '',
+              icon: '📁',
+              color: '#64748B',
+              status: 'active',
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            } as Activity),
       };
 
       return session;
@@ -3646,7 +3674,6 @@ const processPosts = async (postDocs: any[]): Promise<PostWithDetails[]> => {
         supportCount: postData.supportCount || 0,
         commentCount: postData.commentCount || 0,
         isSupported,
-        visibility: postData.visibility || 'everyone',
         createdAt: convertTimestamp(postData.createdAt),
         updatedAt: convertTimestamp(postData.updatedAt),
         user: {
@@ -4372,7 +4399,6 @@ export const firebasePostApi = {
           sessionId: postData.sessionId,
           userId: postData.userId,
           content: postData.content,
-          visibility: postData.visibility || 'everyone',
           supportCount: postData.supportCount || 0,
           commentCount: postData.commentCount || 0,
           isSupported: false, // Will be updated based on current user
@@ -4430,7 +4456,34 @@ export const firebasePostApi = {
                 commentCount: 0,
                 createdAt: new Date(),
                 updatedAt: new Date(),
-              } as Session)
+              } as Session),
+          activity: projectData
+            ? {
+                id: projectId!,
+                userId: postData.userId,
+                name: projectData.name || 'Unknown Project',
+                description: projectData.description || '',
+                icon: projectData.icon || '📁',
+                color: projectData.color || '#64748B',
+                weeklyTarget: projectData.weeklyTarget,
+                totalTarget: projectData.totalTarget,
+                status: projectData.status || 'active',
+                createdAt:
+                  convertTimestamp(projectData.createdAt) || new Date(),
+                updatedAt:
+                  convertTimestamp(projectData.updatedAt) || new Date(),
+              }
+            : ({
+                id: projectId || 'unknown',
+                userId: postData.userId,
+                name: 'Unknown Project',
+                description: '',
+                icon: '📁',
+                color: '#64748B',
+                status: 'active',
+                createdAt: new Date(),
+                updatedAt: new Date(),
+              } as Project),
         });
       }
 

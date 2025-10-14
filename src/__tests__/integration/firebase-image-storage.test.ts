@@ -231,9 +231,10 @@ describe('Firebase Image Storage Integration', () => {
       expect(sessionDoc.exists()).toBe(true);
 
       const data = sessionDoc.data();
-      expect(data.images).toBeDefined();
-      expect(data.images).toHaveLength(3);
-      expect(data.images[0]).toContain('firebasestorage.googleapis.com');
+      expect(data).toBeDefined();
+      expect(data!.images).toBeDefined();
+      expect(data!.images).toHaveLength(3);
+      expect(data!.images[0]).toContain('firebasestorage.googleapis.com');
     });
 
     it('should handle legacy sessions without images field in Firestore', async () => {
@@ -256,7 +257,7 @@ describe('Firebase Image Storage Integration', () => {
       const data = sessionDoc.data();
 
       // Should gracefully handle missing images field
-      const images = data.images || [];
+      const images = data?.images || [];
       expect(images).toEqual([]);
     });
   });

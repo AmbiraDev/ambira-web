@@ -237,8 +237,10 @@ export class MemoryCache {
   static set<T>(key: string, data: T, ttlMs: number = 5 * 60 * 1000): void {
     // If cache is too large, remove oldest items
     if (this.cache.size >= this.MAX_SIZE) {
-      const oldestKey = this.cache.keys().next().value;
-      this.cache.delete(oldestKey);
+      const oldestKey = this.cache.keys().next().value as string | undefined;
+      if (oldestKey) {
+        this.cache.delete(oldestKey);
+      }
     }
 
     this.cache.set(key, {
