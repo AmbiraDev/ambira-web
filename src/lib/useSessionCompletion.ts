@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { firebaseApi } from './firebaseApi';
 import { Session, Achievement } from '@/types';
-import { CACHE_KEYS } from './queryClient';
 
 export const useSessionCompletion = () => {
   const [newAchievements, setNewAchievements] = useState<Achievement[]>([]);
@@ -10,6 +9,7 @@ export const useSessionCompletion = () => {
   const queryClient = useQueryClient();
 
   const completeSession = async (
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     sessionData: any,
     userId: string
   ): Promise<{ session: Session; achievements: Achievement[] }> => {

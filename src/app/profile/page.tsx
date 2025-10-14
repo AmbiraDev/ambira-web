@@ -14,8 +14,10 @@ import { User as UserIcon, Users, Settings, Clock, Target, Calendar, Heart, LogO
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip, Area, ComposedChart, BarChart, Bar } from 'recharts';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Feed from '@/components/Feed';
+import { ActivityList } from '@/components/ActivityList';
+import { Activity } from '@/types';
 
-type ProfileTab = 'progress' | 'sessions' | 'followers' | 'following';
+type ProfileTab = 'progress' | 'sessions' | 'followers' | 'following' | 'activities';
 type TimePeriod = '7D' | '2W' | '4W' | '3M' | '1Y';
 type ChartType = 'bar' | 'line';
 
@@ -42,7 +44,8 @@ export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState<ProfileTab>(
     tabParam === 'sessions' ? 'sessions' :
     tabParam === 'followers' ? 'followers' :
-    tabParam === 'following' ? 'following' : 'progress'
+    tabParam === 'following' ? 'following' :
+    tabParam === 'activities' ? 'activities' : 'progress'
   );
   const [timePeriod, setTimePeriod] = useState<TimePeriod>('7D');
   const [showSettingsMenu, setShowSettingsMenu] = useState(false);
@@ -75,7 +78,7 @@ export default function ProfilePage() {
 
   // Update tab when URL changes
   useEffect(() => {
-    if (tabParam === 'sessions' || tabParam === 'progress' || tabParam === 'followers' || tabParam === 'following') {
+    if (tabParam === 'sessions' || tabParam === 'progress' || tabParam === 'followers' || tabParam === 'following' || tabParam === 'activities') {
       setActiveTab(tabParam);
     }
   }, [tabParam]);
@@ -200,6 +203,10 @@ export default function ProfilePage() {
       return `${hours}h ${minutes}m`;
     }
     return `${minutes}m`;
+  };
+
+  const handleEditActivity = (activity: Activity) => {
+    router.push(`/activities/${activity.id}/edit`);
   };
 
   if (!user) return null;
@@ -364,13 +371,13 @@ export default function ProfilePage() {
               {/* Tabs */}
               <div className="sticky top-12 md:top-14 bg-white md:bg-gray-50 z-30 -mx-4 md:mx-0">
                 <div className="bg-white md:bg-gray-50 border-b border-gray-200">
-                  <div className="flex md:gap-8 px-4 md:px-0">
+                  <div className="flex md:gap-8 px-4 md:px-0 overflow-x-auto scrollbar-hide">
                     <button
                       onClick={() => {
                         setActiveTab('progress');
                         router.push('/profile?tab=progress');
                       }}
-                      className={`flex-1 md:flex-initial py-3 md:py-4 px-1 text-sm md:text-base font-medium border-b-2 transition-colors ${
+                      className={`flex-1 md:flex-initial py-3 md:py-4 px-1 text-sm md:text-base font-medium border-b-2 transition-colors whitespace-nowrap ${
                         activeTab === 'progress'
                           ? 'border-[#007AFF] text-[#007AFF]'
                           : 'border-transparent text-gray-500 md:text-gray-600 hover:text-gray-700 md:hover:text-gray-900'
@@ -383,7 +390,7 @@ export default function ProfilePage() {
                         setActiveTab('sessions');
                         router.push('/profile?tab=sessions');
                       }}
-                      className={`flex-1 md:flex-initial py-3 md:py-4 px-1 text-sm md:text-base font-medium border-b-2 transition-colors ${
+                      className={`flex-1 md:flex-initial py-3 md:py-4 px-1 text-sm md:text-base font-medium border-b-2 transition-colors whitespace-nowrap ${
                         activeTab === 'sessions'
                           ? 'border-[#007AFF] text-[#007AFF]'
                           : 'border-transparent text-gray-500 md:text-gray-600 hover:text-gray-700 md:hover:text-gray-900'
@@ -391,12 +398,26 @@ export default function ProfilePage() {
                     >
                       Sessions
                     </button>
+                    {/* Activities tab - Desktop only */}
+                    <button
+                      onClick={() => {
+                        setActiveTab('activities');
+                        router.push('/profile?tab=activities');
+                      }}
+                      className={`hidden md:flex flex-1 md:flex-initial py-3 md:py-4 px-1 text-sm md:text-base font-medium border-b-2 transition-colors whitespace-nowrap ${
+                        activeTab === 'activities'
+                          ? 'border-[#007AFF] text-[#007AFF]'
+                          : 'border-transparent text-gray-500 md:text-gray-600 hover:text-gray-700 md:hover:text-gray-900'
+                      }`}
+                    >
+                      Activities
+                    </button>
                     <button
                       onClick={() => {
                         setActiveTab('followers');
                         router.push('/profile?tab=followers');
                       }}
-                      className={`flex-1 md:flex-initial py-3 md:py-4 px-1 text-sm md:text-base font-medium border-b-2 transition-colors ${
+                      className={`flex-1 md:flex-initial py-3 md:py-4 px-1 text-sm md:text-base font-medium border-b-2 transition-colors whitespace-nowrap ${
                         activeTab === 'followers'
                           ? 'border-[#007AFF] text-[#007AFF]'
                           : 'border-transparent text-gray-500 md:text-gray-600 hover:text-gray-700 md:hover:text-gray-900'
@@ -409,7 +430,7 @@ export default function ProfilePage() {
                         setActiveTab('following');
                         router.push('/profile?tab=following');
                       }}
-                      className={`flex-1 md:flex-initial py-3 md:py-4 px-1 text-sm md:text-base font-medium border-b-2 transition-colors ${
+                      className={`flex-1 md:flex-initial py-3 md:py-4 px-1 text-sm md:text-base font-medium border-b-2 transition-colors whitespace-nowrap ${
                         activeTab === 'following'
                           ? 'border-[#007AFF] text-[#007AFF]'
                           : 'border-transparent text-gray-500 md:text-gray-600 hover:text-gray-700 md:hover:text-gray-900'
@@ -1037,6 +1058,12 @@ export default function ProfilePage() {
                         <p>Not following anyone yet</p>
                       </div>
                     )}
+                  </div>
+                )}
+
+                {activeTab === 'activities' && (
+                  <div className="max-w-4xl mx-auto">
+                    <ActivityList onEditActivity={handleEditActivity} />
                   </div>
                 )}
               </div>

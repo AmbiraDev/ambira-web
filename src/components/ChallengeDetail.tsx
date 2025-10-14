@@ -26,7 +26,7 @@ interface ChallengeDetailProps {
   onJoin: () => Promise<void>;
   onLeave: () => Promise<void>;
   onEdit?: () => void;
-  onDelete?: () => void; // eslint-disable-line @typescript-eslint/no-unused-vars
+  onDelete?: () => void;  
   isLoading: boolean;
 }
 

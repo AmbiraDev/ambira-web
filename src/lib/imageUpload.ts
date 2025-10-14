@@ -344,8 +344,6 @@ async function compressToSize(
   );
 
   // Start with aggressive compression settings
-  let quality = 0.8;
-  let maxDimension = 1920;
   let compressedFile = file;
 
   // Try progressively more aggressive compression

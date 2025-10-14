@@ -299,113 +299,118 @@ export default function AnalyticsPage() {
 
         <div className="pb-20 md:pb-8">
           <div className="max-w-5xl mx-auto px-4 md:px-6 py-4">
-            {/* Header */}
-            <div className="mb-4">
+            {/* Header - Desktop only */}
+            <div className="hidden md:block mb-4">
               <h1 className="text-xl md:text-2xl font-bold text-gray-900">Account overview</h1>
             </div>
 
             {/* Controls */}
-            <div className="flex items-center gap-2 mb-6">
-              {/* Activity Selector */}
-              <div className="relative">
-                <button
-                  onClick={() => setShowProjectDropdown(!showProjectDropdown)}
-                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium border border-gray-300 rounded-lg hover:bg-gray-50 min-w-[140px]"
-                >
-                  <span>{selectedProjectId === 'all' ? 'All activities' : activities.find(p => p.id === selectedProjectId)?.name || 'All activities'}</span>
-                  <ChevronDown className="w-4 h-4" />
-                </button>
-                {showProjectDropdown && (
-                  <>
-                    <div className="fixed inset-0 z-40" onClick={() => setShowProjectDropdown(false)} />
-                    <div className="absolute left-0 top-full mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
-                      <button
-                        onClick={() => { setSelectedProjectId('all'); setShowProjectDropdown(false); }}
-                        className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${selectedProjectId === 'all' ? 'bg-blue-50 text-blue-600' : ''}`}
-                      >
-                        All
-                      </button>
-                      {activities.length === 0 && <div className="px-4 py-2 text-xs text-gray-400">No activities yet</div>}
-                      {activities.map((activity) => (
+            <div className="space-y-3 mb-6">
+              {/* Row 1: Activity Selector & Chart Type */}
+              <div className="flex items-center gap-2">
+                {/* Activity Selector */}
+                <div className="relative flex-shrink-0">
+                  <button
+                    onClick={() => setShowProjectDropdown(!showProjectDropdown)}
+                    className="flex items-center gap-2 px-3 md:px-4 py-2 text-xs md:text-sm font-semibold border border-gray-300 rounded-lg hover:bg-gray-50 min-w-[140px] max-w-[200px]"
+                  >
+                    <span className="truncate">{selectedProjectId === 'all' ? 'All activities' : activities.find(p => p.id === selectedProjectId)?.name || 'All activities'}</span>
+                    <ChevronDown className="w-3.5 h-3.5 md:w-4 md:h-4 flex-shrink-0" />
+                  </button>
+                  {showProjectDropdown && (
+                    <>
+                      <div className="fixed inset-0 z-40" onClick={() => setShowProjectDropdown(false)} />
+                      <div className="absolute left-0 top-full mt-2 w-full max-w-xs bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50 max-h-64 overflow-y-auto">
                         <button
-                          key={activity.id}
-                          onClick={() => { setSelectedProjectId(activity.id); setShowProjectDropdown(false); }}
-                          className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-3 ${selectedProjectId === activity.id ? 'bg-blue-50 text-blue-600' : ''}`}
+                          onClick={() => { setSelectedProjectId('all'); setShowProjectDropdown(false); }}
+                          className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${selectedProjectId === 'all' ? 'bg-blue-50 text-blue-600' : ''}`}
                         >
-                          <div
-                            className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
-                            style={{ backgroundColor: activity.color + '20' }}
-                          >
-                            <IconRenderer iconName={activity.icon} size={18} />
-                          </div>
-                          <span className="truncate">{activity.name}</span>
+                          All
                         </button>
-                      ))}
-                    </div>
-                  </>
-                )}
-              </div>
+                        {activities.length === 0 && <div className="px-4 py-2 text-xs text-gray-400">No activities yet</div>}
+                        {activities.map((activity) => (
+                          <button
+                            key={activity.id}
+                            onClick={() => { setSelectedProjectId(activity.id); setShowProjectDropdown(false); }}
+                            className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-3 ${selectedProjectId === activity.id ? 'bg-blue-50 text-blue-600' : ''}`}
+                          >
+                            <div
+                              className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
+                              style={{ backgroundColor: activity.color + '20' }}
+                            >
+                              <IconRenderer iconName={activity.icon} size={18} />
+                            </div>
+                            <span className="truncate">{activity.name}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
 
-              {/* Time Period Buttons */}
-              {(['7D', '2W', '4W', '3M', '1Y'] as TimePeriod[]).map((period) => (
-                <button
-                  key={period}
-                  onClick={() => setTimePeriod(period)}
-                  className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-                    timePeriod === period ? 'bg-gray-900 text-white' : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
-                  }`}
-                >
-                  {period}
-                </button>
-              ))}
-
-              {/* Chart Type Selector */}
-              <div className="relative">
-                <button
-                  onClick={() => setShowChartTypeDropdown(!showChartTypeDropdown)}
-                  className="flex items-center gap-2 px-3 py-2 text-sm font-medium border border-gray-300 rounded-lg hover:bg-gray-50"
-                >
-                  <svg className="w-4 h-4" viewBox="0 0 16 16" fill="currentColor">
-                    {chartType === 'bar' ? (
-                      <>
-                        <rect x="2" y="8" width="3" height="6" rx="0.5"/>
-                        <rect x="6.5" y="4" width="3" height="10" rx="0.5"/>
-                        <rect x="11" y="6" width="3" height="8" rx="0.5"/>
-                      </>
-                    ) : (
-                      <path d="M2 12 L5 8 L8 10 L11 4 L14 6" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
-                    )}
-                  </svg>
-                  <span className="capitalize">{chartType}</span>
-                  <ChevronDown className="w-4 h-4" />
-                </button>
-                {showChartTypeDropdown && (
-                  <>
-                    <div className="fixed inset-0 z-40" onClick={() => setShowChartTypeDropdown(false)} />
-                    <div className="absolute right-0 top-full mt-2 w-32 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
-                      <button
-                        onClick={() => { setChartType('bar'); setShowChartTypeDropdown(false); }}
-                        className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2 ${chartType === 'bar' ? 'bg-blue-50 text-blue-600' : ''}`}
-                      >
-                        <svg className="w-4 h-4" viewBox="0 0 16 16" fill="currentColor">
+                {/* Chart Type Selector */}
+                <div className="relative flex-shrink-0">
+                  <button
+                    onClick={() => setShowChartTypeDropdown(!showChartTypeDropdown)}
+                    className="flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-2 text-xs md:text-sm font-semibold border border-gray-300 rounded-lg hover:bg-gray-50"
+                  >
+                    <svg className="w-3.5 h-3.5 md:w-4 md:h-4" viewBox="0 0 16 16" fill="currentColor">
+                      {chartType === 'bar' ? (
+                        <>
                           <rect x="2" y="8" width="3" height="6" rx="0.5"/>
                           <rect x="6.5" y="4" width="3" height="10" rx="0.5"/>
                           <rect x="11" y="6" width="3" height="8" rx="0.5"/>
-                        </svg>
-                        Bar
-                      </button>
-                      <button
-                        onClick={() => { setChartType('line'); setShowChartTypeDropdown(false); }}
-                        className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2 ${chartType === 'line' ? 'bg-blue-50 text-blue-600' : ''}`}
-                      >
-                        <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none" stroke="currentColor">
-                          <path d="M2 12 L5 8 L8 10 L11 4 L14 6" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                        </svg>
-                        Line
-                      </button>
-                    </div>
-                  </>
-                )}
+                        </>
+                      ) : (
+                        <path d="M2 12 L5 8 L8 10 L11 4 L14 6" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+                      )}
+                    </svg>
+                    <span className="capitalize">{chartType}</span>
+                    <ChevronDown className="w-3 h-3 md:w-4 md:h-4" />
+                  </button>
+                  {showChartTypeDropdown && (
+                    <>
+                      <div className="fixed inset-0 z-40" onClick={() => setShowChartTypeDropdown(false)} />
+                      <div className="absolute right-0 top-full mt-2 w-32 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
+                        <button
+                          onClick={() => { setChartType('bar'); setShowChartTypeDropdown(false); }}
+                          className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2 ${chartType === 'bar' ? 'bg-blue-50 text-blue-600' : ''}`}
+                        >
+                          <svg className="w-4 h-4" viewBox="0 0 16 16" fill="currentColor">
+                            <rect x="2" y="8" width="3" height="6" rx="0.5"/>
+                            <rect x="6.5" y="4" width="3" height="10" rx="0.5"/>
+                            <rect x="11" y="6" width="3" height="8" rx="0.5"/>
+                          </svg>
+                          Bar
+                        </button>
+                        <button
+                          onClick={() => { setChartType('line'); setShowChartTypeDropdown(false); }}
+                          className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2 ${chartType === 'line' ? 'bg-blue-50 text-blue-600' : ''}`}
+                        >
+                          <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none" stroke="currentColor">
+                            <path d="M2 12 L5 8 L8 10 L11 4 L14 6" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                          Line
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {/* Row 2: Time Period Buttons - Scrollable on mobile */}
+              <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
+                {(['7D', '2W', '4W', '3M', '1Y'] as TimePeriod[]).map((period) => (
+                  <button
+                    key={period}
+                    onClick={() => setTimePeriod(period)}
+                    className={`flex-shrink-0 px-4 md:px-5 py-2 text-xs md:text-sm font-semibold rounded-lg transition-colors ${
+                      timePeriod === period ? 'bg-gray-900 text-white' : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
+                    }`}
+                  >
+                    {period}
+                  </button>
+                ))}
               </div>
             </div>
 

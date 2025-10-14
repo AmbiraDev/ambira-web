@@ -9,17 +9,13 @@
  */
 
 import {
-  collection,
-  doc,
   getDoc,
   getDocs,
-  query,
   writeBatch,
   DocumentSnapshot,
   QuerySnapshot,
   DocumentReference,
   Query,
-  CollectionReference,
 } from 'firebase/firestore';
 import { db } from './firebase';
 import { cachedQuery, invalidateCache, MemoryCache, QueryDeduplicator } from './cache';
@@ -29,7 +25,7 @@ import { cachedQuery, invalidateCache, MemoryCache, QueryDeduplicator } from './
 /**
  * Get a single document with caching
  */
-export async function getCachedDoc<T = any>(
+export async function getCachedDoc(
   docRef: DocumentReference,
   options: {
     memoryTtl?: number;
@@ -56,7 +52,7 @@ export async function getCachedDoc<T = any>(
  * Get multiple documents in a batch with caching
  * This is more efficient than multiple individual reads
  */
-export async function getCachedDocs<T = any>(
+export async function getCachedDocs(
   docRefs: DocumentReference[],
   options: {
     memoryTtl?: number;
@@ -113,7 +109,7 @@ export async function getCachedDocs<T = any>(
 /**
  * Execute a Firestore query with caching
  */
-export async function getCachedQuery<T = any>(
+export async function getCachedQuery<T>(
   query: Query<T>,
   cacheKey: string,
   options: {
@@ -144,7 +140,7 @@ export async function batchWrite(
   operations: Array<{
     type: 'set' | 'update' | 'delete';
     ref: DocumentReference;
-    data?: any;
+    data?: Record<string, unknown>;
   }>
 ): Promise<void> {
   const BATCH_SIZE = 500;
@@ -189,7 +185,7 @@ export async function batchWrite(
  * Updates local state immediately while updating Firestore in background
  */
 export class OptimisticUpdateManager {
-  private static pendingUpdates = new Map<string, any>();
+  private static pendingUpdates = new Map<string, unknown>();
 
   /**
    * Apply an optimistic update
@@ -231,7 +227,7 @@ export class OptimisticUpdateManager {
 export async function prefetchDocs(docRefs: DocumentReference[]): Promise<void> {
   // Use low priority to not interfere with user actions
   if ('requestIdleCallback' in window) {
-    (window as any).requestIdleCallback(() => {
+    (window as Window & { requestIdleCallback: (callback: () => void) => void }).requestIdleCallback(() => {
       getCachedDocs(docRefs, { memoryTtl: 10 * 60 * 1000 });
     });
   } else {
@@ -249,7 +245,7 @@ export async function prefetchQuery<T>(
   cacheKey: string
 ): Promise<void> {
   if ('requestIdleCallback' in window) {
-    (window as any).requestIdleCallback(() => {
+    (window as Window & { requestIdleCallback: (callback: () => void) => void }).requestIdleCallback(() => {
       getCachedQuery(query, cacheKey, { memoryTtl: 10 * 60 * 1000 });
     });
   } else {
@@ -292,7 +288,7 @@ export function invalidateUserCache(userId: string): void {
  */
 export class PaginationCache<T> {
   private pages: Map<string, T[]> = new Map();
-  private cursors: Map<string, any> = new Map();
+  private cursors: Map<string, unknown> = new Map();
 
   constructor(private pageSize: number = 20) {}
 
@@ -304,11 +300,11 @@ export class PaginationCache<T> {
     return this.pages.get(cursor) ?? null;
   }
 
-  setCursor(page: string, cursor: any): void {
+  setCursor(page: string, cursor: unknown): void {
     this.cursors.set(page, cursor);
   }
 
-  getCursor(page: string): any {
+  getCursor(page: string): unknown {
     return this.cursors.get(page);
   }
 
@@ -336,7 +332,7 @@ export class PaginationCache<T> {
  * Note: Firestore charges by document reads, not by data transferred,
  * but reducing payload size improves performance
  */
-export function selectFields<T extends Record<string, any>>(
+export function selectFields<T extends Record<string, unknown>>(
   data: T,
   fields: (keyof T)[]
 ): Partial<T> {
@@ -353,7 +349,7 @@ export function selectFields<T extends Record<string, any>>(
  * Strip undefined values before writing to Firestore
  * This prevents errors and reduces storage size
  */
-export function sanitizeData<T extends Record<string, any>>(data: T): T {
+export function sanitizeData<T extends Record<string, unknown>>(data: T): T {
   const sanitized = { ...data };
   Object.keys(sanitized).forEach(key => {
     if (sanitized[key] === undefined) {
@@ -366,7 +362,7 @@ export function sanitizeData<T extends Record<string, any>>(data: T): T {
       !Array.isArray(sanitized[key]) &&
       !(sanitized[key] instanceof Date)
     ) {
-      sanitized[key] = sanitizeData(sanitized[key]);
+      sanitized[key] = sanitizeData(sanitized[key] as Record<string, unknown>) as T[keyof T];
     }
   });
   return sanitized;

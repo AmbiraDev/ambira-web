@@ -10,7 +10,6 @@ const compat = new FlatCompat({
 });
 
 const eslintConfig = [
-  ...compat.extends('next/core-web-vitals', 'next/typescript', 'prettier'),
   {
     ignores: [
       'node_modules/**',
@@ -24,6 +23,9 @@ const eslintConfig = [
       '**/jest.setup.js',
       '**/jest.config.js',
     ],
+  },
+  ...compat.extends('next/core-web-vitals', 'next/typescript', 'prettier'),
+  {
     rules: {
       'prefer-const': 'warn', // Changed to warn for builds
       'no-unused-vars': 'off',
