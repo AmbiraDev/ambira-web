@@ -35,8 +35,16 @@ export function useUserSessions(userId: string, limit: number = 50, options?: Pa
 export function useUserFollowers(userId: string, options?: Partial<UseQueryOptions<UserType[]>>) {
   return useQuery({
     queryKey: CACHE_KEYS.USER_FOLLOWERS(userId),
-    queryFn: () => firebaseUserApi.getFollowers(userId),
+    queryFn: async () => {
+      try {
+        return await firebaseUserApi.getFollowers(userId);
+      } catch (error) {
+        // Return empty array on permission errors
+        return [];
+      }
+    },
     staleTime: CACHE_TIMES.LONG, // 15 minutes cache
+    retry: false, // Don't retry on permission errors
     ...options,
   });
 }
@@ -44,8 +52,16 @@ export function useUserFollowers(userId: string, options?: Partial<UseQueryOptio
 export function useUserFollowing(userId: string, options?: Partial<UseQueryOptions<UserType[]>>) {
   return useQuery({
     queryKey: CACHE_KEYS.USER_FOLLOWING(userId),
-    queryFn: () => firebaseUserApi.getFollowing(userId),
+    queryFn: async () => {
+      try {
+        return await firebaseUserApi.getFollowing(userId);
+      } catch (error) {
+        // Return empty array on permission errors
+        return [];
+      }
+    },
     staleTime: CACHE_TIMES.LONG, // 15 minutes cache
+    retry: false, // Don't retry on permission errors
     ...options,
   });
 }
@@ -71,6 +87,24 @@ export function useFeedSessions(
     queryKey: CACHE_KEYS.FEED_SESSIONS(limit, cursor, filters),
     queryFn: () => firebaseApi.post.getFeedSessions(limit, cursor, filters),
     staleTime: CACHE_TIMES.SHORT, // 1 minute cache for feed
+    gcTime: CACHE_TIMES.MEDIUM, // Keep in cache for 5 minutes after becoming stale
+    ...options,
+  });
+}
+
+// Hook for loading more sessions with caching
+export function useFeedSessionsPaginated(
+  limit: number = 20,
+  cursor: string | undefined,
+  filters?: any,
+  options?: Partial<UseQueryOptions<{ sessions: any[]; hasMore: boolean; nextCursor?: string }>>
+) {
+  return useQuery({
+    queryKey: CACHE_KEYS.FEED_SESSIONS(limit, cursor, filters),
+    queryFn: () => firebaseApi.post.getFeedSessions(limit, cursor, filters),
+    staleTime: CACHE_TIMES.MEDIUM, // 5 minute cache for paginated results (they don't change as often)
+    gcTime: CACHE_TIMES.LONG, // Keep in cache for 15 minutes
+    enabled: !!cursor, // Only fetch when cursor is provided
     ...options,
   });
 }

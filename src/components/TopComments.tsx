@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { CommentWithDetails } from '@/types';
 import { firebaseCommentApi } from '@/lib/firebaseApi';
 import { useAuth } from '@/contexts/AuthContext';
+import { useCommentLikeMutation } from '@/hooks/useMutations';
 import CommentItem from './CommentItem';
 import CommentInput from './CommentInput';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
@@ -33,6 +34,7 @@ export const TopComments: React.FC<TopCommentsProps> = ({
   const [currentPage, setCurrentPage] = useState(1);
 
   const totalPages = Math.ceil(totalCommentCount / COMMENTS_PER_PAGE);
+  const likeMutation = useCommentLikeMutation(sessionId);
 
   useEffect(() => {
     loadTopComments();
@@ -43,6 +45,15 @@ export const TopComments: React.FC<TopCommentsProps> = ({
       loadAllComments();
     }
   }, [isExpanded, sessionId]);
+
+  // Reload comments when totalCommentCount changes (e.g., from CommentsModal)
+  useEffect(() => {
+    if (isExpanded) {
+      loadAllComments();
+    } else {
+      loadTopComments();
+    }
+  }, [totalCommentCount]);
 
   useEffect(() => {
     if (isExpanded && allComments.length > 0) {
@@ -132,6 +143,10 @@ export const TopComments: React.FC<TopCommentsProps> = ({
     }
   };
 
+  const handleLike = (commentId: string, action: 'like' | 'unlike') => {
+    likeMutation.mutate({ commentId, action });
+  };
+
   if (isLoading && !isExpanded) {
     return (
       <div className="border-t border-gray-100 px-4 py-3 space-y-3">
@@ -162,9 +177,10 @@ export const TopComments: React.FC<TopCommentsProps> = ({
               <CommentItem
                 key={comment.id}
                 comment={comment}
+                sessionId={sessionId}
                 onDelete={handleDelete}
+                onLike={handleLike}
                 currentUserId={user?.id}
-                compact={true}
               />
             ))}
 
@@ -188,9 +204,10 @@ export const TopComments: React.FC<TopCommentsProps> = ({
               <CommentItem
                 key={comment.id}
                 comment={comment}
+                sessionId={sessionId}
                 onDelete={handleDelete}
+                onLike={handleLike}
                 currentUserId={user?.id}
-                compact={false}
               />
             ))}
           </>

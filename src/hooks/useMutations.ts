@@ -204,6 +204,79 @@ export function useDeleteCommentMutation() {
   });
 }
 
+/**
+ * Optimistic comment like/unlike mutations
+ * Updates UI immediately, then syncs with Firestore
+ */
+export function useCommentLikeMutation(sessionId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ commentId, action }: { commentId: string; action: 'like' | 'unlike' }) => {
+      try {
+        if (action === 'like') {
+          await firebaseApi.comment.likeComment(commentId);
+        } else {
+          await firebaseApi.comment.unlikeComment(commentId);
+        }
+      } catch (error: any) {
+        // If already liked/unliked, treat as success (idempotent)
+        const errorMsg = error.message || String(error);
+        if (errorMsg.includes('Already liked') || errorMsg.includes('not liked')) {
+          console.log('Comment like/unlike was idempotent, treating as success');
+          return;
+        }
+        throw error;
+      }
+    },
+    onMutate: async ({ commentId, action }) => {
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries({ queryKey: CACHE_KEYS.COMMENTS(sessionId) });
+
+      // Snapshot the previous value
+      const previousComments = queryClient.getQueryData(CACHE_KEYS.COMMENTS(sessionId));
+
+      // Optimistically update comments
+      queryClient.setQueryData(CACHE_KEYS.COMMENTS(sessionId), (old: any) => {
+        if (!old?.comments) return old;
+
+        return {
+          ...old,
+          comments: old.comments.map((comment: any) => {
+            if (comment.id !== commentId) return comment;
+
+            if (action === 'like') {
+              return {
+                ...comment,
+                isLiked: true,
+                likeCount: comment.likeCount + 1,
+              };
+            } else {
+              return {
+                ...comment,
+                isLiked: false,
+                likeCount: Math.max(0, comment.likeCount - 1),
+              };
+            }
+          }),
+        };
+      });
+
+      return { previousComments };
+    },
+    onError: (err, variables, context) => {
+      // Rollback on error
+      if (context?.previousComments) {
+        queryClient.setQueryData(CACHE_KEYS.COMMENTS(sessionId), context.previousComments);
+      }
+    },
+    onSettled: () => {
+      // Refetch in background to ensure consistency
+      queryClient.invalidateQueries({ queryKey: CACHE_KEYS.COMMENTS(sessionId) });
+    },
+  });
+}
+
 // ==================== FOLLOW MUTATIONS ====================
 
 export function useFollowMutation(currentUserId?: string) {

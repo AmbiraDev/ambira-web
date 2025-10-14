@@ -229,7 +229,7 @@ export default function BottomNavigation() {
             <span className="text-[10px] font-medium">Feed</span>
           </Link>
 
-          {/* Discover */}
+          {/* Discovery */}
           <Link
             href="/search"
             className={`flex flex-col items-center justify-center space-y-0.5 px-3 py-1 transition-colors ${
@@ -240,7 +240,7 @@ export default function BottomNavigation() {
               className="w-6 h-6"
               strokeWidth={isActive('/search') ? 2.5 : 2}
             />
-            <span className="text-[10px] font-medium">Discover</span>
+            <span className="text-[10px] font-medium">Discovery</span>
           </Link>
 
           {/* Record Button */}

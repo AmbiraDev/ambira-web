@@ -7,6 +7,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useTimer } from '@/contexts/TimerContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { Search, X, ChevronDown, Menu, LayoutDashboard, Users, BarChart3, Timer, Edit3 } from 'lucide-react';
+import NotificationIcon from './NotificationIcon';
 
 export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -292,6 +293,11 @@ export default function Header() {
                 <div className="w-2 h-2 rounded-full bg-green-300" />
                 <span>{pathname.startsWith('/timer') ? 'Active' : headerTimer || 'Active'}</span>
               </Link>
+            )}
+
+            {/* Notifications Icon */}
+            {user && (
+              <NotificationIcon className="hidden md:flex p-2 text-gray-600 hover:text-[#007AFF] transition-colors" />
             )}
 
             {/* Profile with Strava-style dropdown - Only show when authenticated */}

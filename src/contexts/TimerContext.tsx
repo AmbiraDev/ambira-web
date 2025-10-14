@@ -565,9 +565,16 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
         });
       }
 
-      // Clear active session from Firebase - this is critical, so throw if it fails
-      await firebaseSessionApi.clearActiveSession();
-      console.log('🧹 Active session cleared from Firebase');
+      // NOTE: Active session is automatically cleared inside createSession/createSessionWithPost
+      // This ensures the timer stops even if the user navigates away before this line executes
+      // The clearActiveSession call is now redundant but kept as a safety net
+      try {
+        await firebaseSessionApi.clearActiveSession();
+        console.log('🧹 Active session cleared from Firebase (safety net)');
+      } catch (error) {
+        // Ignore errors since clearActiveSession is already called in createSession
+        console.log('Active session already cleared by createSession');
+      }
 
       console.log(
         '🧹 Session saved to Firebase and active session cleared successfully'

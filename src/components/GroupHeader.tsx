@@ -20,7 +20,8 @@ import {
   Target,
   ArrowLeft,
   ChevronLeft,
-  MessageSquare
+  MessageSquare,
+  UserPlus
 } from 'lucide-react';
 
 interface GroupHeaderProps {
@@ -31,6 +32,7 @@ interface GroupHeaderProps {
   onJoin?: () => Promise<void>;
   onLeave?: () => Promise<void>;
   onSettings?: () => void;
+  onInvite?: () => void;
   isLoading?: boolean;
 }
 
@@ -57,6 +59,7 @@ export default function GroupHeader({
   onJoin,
   onLeave,
   onSettings,
+  onInvite,
   isLoading = false
 }: GroupHeaderProps) {
   const router = useRouter();
@@ -165,12 +168,23 @@ export default function GroupHeader({
           {/* Action Buttons */}
           <div className="flex items-center gap-2">
             {isAdmin ? (
-              <button
-                disabled
-                className="flex-1 py-3 px-4 bg-gray-100 text-gray-500 rounded-xl font-semibold text-sm"
-              >
-                Admin
-              </button>
+              <>
+                <button
+                  disabled
+                  className="flex-1 py-3 px-4 bg-gray-100 text-gray-500 rounded-xl font-semibold text-sm"
+                >
+                  Admin
+                </button>
+                {onInvite && (
+                  <button
+                    onClick={onInvite}
+                    className="py-3 px-4 bg-[#007AFF] hover:bg-[#0056D6] text-white rounded-xl font-semibold text-sm transition-colors flex items-center gap-2"
+                  >
+                    <UserPlus className="w-4 h-4" />
+                    Invite
+                  </button>
+                )}
+              </>
             ) : canJoin ? (
               <button
                 onClick={handleJoin}
@@ -180,13 +194,24 @@ export default function GroupHeader({
                 {group.privacySetting === 'public' ? 'Join Group' : 'Request to Join'}
               </button>
             ) : canLeave ? (
-              <button
-                onClick={handleLeave}
-                disabled={isLoading}
-                className="flex-1 py-3 px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-semibold text-sm transition-colors disabled:opacity-50"
-              >
-                Leave Group
-              </button>
+              <>
+                <button
+                  onClick={handleLeave}
+                  disabled={isLoading}
+                  className="flex-1 py-3 px-4 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-semibold text-sm transition-colors disabled:opacity-50"
+                >
+                  Leave Group
+                </button>
+                {onInvite && (
+                  <button
+                    onClick={onInvite}
+                    className="py-3 px-4 bg-[#007AFF] hover:bg-[#0056D6] text-white rounded-xl font-semibold text-sm transition-colors flex items-center gap-2"
+                  >
+                    <UserPlus className="w-4 h-4" />
+                    Invite
+                  </button>
+                )}
+              </>
             ) : null}
           </div>
         </div>

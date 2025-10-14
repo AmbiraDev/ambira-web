@@ -3,20 +3,33 @@
 import React, { useState } from 'react';
 import { CommentWithDetails } from '@/types';
 import Link from 'next/link';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Heart } from 'lucide-react';
 
 interface CommentItemProps {
   comment: CommentWithDetails;
+  sessionId: string;
   onDelete?: (commentId: string) => Promise<void>;
+  onLike?: (commentId: string, action: 'like' | 'unlike') => void;
   currentUserId?: string;
 }
 
 export const CommentItem: React.FC<CommentItemProps> = ({
   comment,
+  sessionId,
   onDelete,
+  onLike,
   currentUserId
 }) => {
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isLiking, setIsLiking] = useState(false);
+  const [optimisticLiked, setOptimisticLiked] = useState(comment.isLiked);
+  const [optimisticLikeCount, setOptimisticLikeCount] = useState(comment.likeCount);
+
+  // Update optimistic state when prop changes (from cache invalidation)
+  React.useEffect(() => {
+    setOptimisticLiked(comment.isLiked);
+    setOptimisticLikeCount(comment.likeCount);
+  }, [comment.isLiked, comment.likeCount]);
 
   const isOwner = currentUserId === comment.userId;
   const canDelete = isOwner && !!onDelete;
@@ -98,6 +111,25 @@ export const CommentItem: React.FC<CommentItemProps> = ({
     }
   };
 
+  const handleLike = () => {
+    if (!onLike || !currentUserId || isLiking) return;
+
+    // Optimistic update
+    const action = optimisticLiked ? 'unlike' : 'like';
+    const newLiked = !optimisticLiked;
+    const newCount = newLiked ? optimisticLikeCount + 1 : Math.max(0, optimisticLikeCount - 1);
+
+    setOptimisticLiked(newLiked);
+    setOptimisticLikeCount(newCount);
+    setIsLiking(true);
+
+    // Call the mutation
+    onLike(comment.id, action);
+
+    // Reset loading state after a short delay to prevent rapid clicking
+    setTimeout(() => setIsLiking(false), 500);
+  };
+
   if (isDeleting) {
     return (
       <div className="flex gap-3 opacity-50">
@@ -155,9 +187,31 @@ export const CommentItem: React.FC<CommentItemProps> = ({
           </div>
 
           {/* Comment Text */}
-          <p className="text-sm text-gray-900 mb-2 whitespace-pre-wrap break-words">
+          <p className="text-sm text-gray-900 whitespace-pre-wrap break-words">
             {renderContent(comment.content)}
           </p>
+
+          {/* Like Button */}
+          {currentUserId && (
+            <div className="flex items-center gap-2 mt-2">
+              <button
+                onClick={handleLike}
+                className={`flex items-center gap-1 text-xs transition-colors ${
+                  optimisticLiked
+                    ? 'text-red-600 hover:text-red-700'
+                    : 'text-gray-500 hover:text-red-600'
+                } ${isLiking ? 'opacity-70' : ''}`}
+                disabled={!onLike || isLiking}
+              >
+                <Heart
+                  className={`w-4 h-4 ${optimisticLiked ? 'fill-current' : ''}`}
+                />
+                {optimisticLikeCount > 0 && (
+                  <span className="font-medium">{optimisticLikeCount}</span>
+                )}
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

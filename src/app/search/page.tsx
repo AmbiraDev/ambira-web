@@ -41,10 +41,14 @@ function SearchContent() {
   const [suggestedGroups, setSuggestedGroups] = useState<any[]>([]);
   const [showAllPeople, setShowAllPeople] = useState(false);
   const [showAllGroups, setShowAllGroups] = useState(false);
+  const [peoplePage, setPeoplePage] = useState(1);
+  const [groupsPage, setGroupsPage] = useState(1);
   const [joinedGroups, setJoinedGroups] = useState<Set<string>>(new Set());
   const [followingUsers, setFollowingUsers] = useState<Set<string>>(new Set());
   const [joiningGroup, setJoiningGroup] = useState<string | null>(null);
   const { user } = useAuth();
+
+  const ITEMS_PER_PAGE = 10;
 
   // Load user's groups and following on mount
   useEffect(() => {
@@ -84,12 +88,32 @@ function SearchContent() {
         // Load users for People tab
         if (type === 'people') {
           try {
-            const { users } = await firebaseUserApi.searchUsers('', 1, 50);
+            // Fetch users directly from Firestore sorted by follower count
+            const usersSnapshot = await getDocs(
+              firestoreQuery(
+                collection(db, 'users'),
+                orderBy('followersCount', 'desc'),
+                limit(50)
+              )
+            );
+
+            const usersData = usersSnapshot.docs
+              .map(doc => {
+                const data = doc.data();
+                return {
+                  id: doc.id,
+                  username: data.username,
+                  name: data.name,
+                  bio: data.bio,
+                  profilePicture: data.profilePicture,
+                  followersCount: data.followersCount || 0,
+                  isFollowing: false,
+                };
+              })
+              .filter(u => u.id !== user?.id);
+
             if (!isMounted) return;
-            const filtered = users
-              .filter(u => u.id !== user?.id)
-              .sort((a, b) => (b.followersCount || 0) - (a.followersCount || 0));
-            setSuggestedUsers(filtered);
+            setSuggestedUsers(usersData);
           } catch (error) {
             console.error('Error loading users:', error);
             if (isMounted) setSuggestedUsers([]);
@@ -436,7 +460,10 @@ function SearchContent() {
                           <h3 className="text-lg font-semibold text-gray-900">Suggested for you</h3>
                           {suggestedUsers.length > 5 && !showAllPeople && (
                             <button
-                              onClick={() => setShowAllPeople(true)}
+                              onClick={() => {
+                                setShowAllPeople(true);
+                                setPeoplePage(1);
+                              }}
                               className="text-xs text-[#007AFF] hover:text-[#0056D6] font-semibold"
                             >
                               See all
@@ -444,7 +471,10 @@ function SearchContent() {
                           )}
                         </div>
                         <div className="space-y-1">
-                          {(showAllPeople ? suggestedUsers : suggestedUsers.slice(0, 5)).map((suggestedUser) => {
+                          {(showAllPeople
+                            ? suggestedUsers.slice(0, peoplePage * ITEMS_PER_PAGE)
+                            : suggestedUsers.slice(0, 5)
+                          ).map((suggestedUser) => {
                             const isFollowing = followingUsers.has(suggestedUser.id);
                             return (
                               <div key={suggestedUser.id} className="bg-white rounded-lg overflow-hidden">
@@ -458,12 +488,25 @@ function SearchContent() {
                           })}
                         </div>
                         {suggestedUsers.length > 5 && showAllPeople && (
-                          <button
-                            onClick={() => setShowAllPeople(false)}
-                            className="w-full text-center text-[#007AFF] font-semibold text-sm py-3 hover:text-[#0056D6] transition-colors mt-2"
-                          >
-                            Show Less
-                          </button>
+                          <div className="mt-4 space-y-2">
+                            {peoplePage * ITEMS_PER_PAGE < suggestedUsers.length && (
+                              <button
+                                onClick={() => setPeoplePage(prev => prev + 1)}
+                                className="w-full text-center text-[#007AFF] font-semibold text-sm py-3 hover:text-[#0056D6] transition-colors bg-white rounded-lg border border-gray-200"
+                              >
+                                Load More ({Math.min(ITEMS_PER_PAGE, suggestedUsers.length - peoplePage * ITEMS_PER_PAGE)} more)
+                              </button>
+                            )}
+                            <button
+                              onClick={() => {
+                                setShowAllPeople(false);
+                                setPeoplePage(1);
+                              }}
+                              className="w-full text-center text-gray-600 font-medium text-sm py-3 hover:text-gray-900 transition-colors"
+                            >
+                              Show Less
+                            </button>
+                          </div>
                         )}
                       </div>
                     ) : (
@@ -489,7 +532,10 @@ function SearchContent() {
                           <h3 className="text-lg font-semibold text-gray-900">Groups to join</h3>
                           {suggestedGroups.length > 3 && !showAllGroups && (
                             <button
-                              onClick={() => setShowAllGroups(true)}
+                              onClick={() => {
+                                setShowAllGroups(true);
+                                setGroupsPage(1);
+                              }}
                               className="text-xs text-[#007AFF] hover:text-[#0056D6] font-semibold"
                             >
                               See all
@@ -497,7 +543,10 @@ function SearchContent() {
                           )}
                         </div>
                         <div className="space-y-1">
-                          {(showAllGroups ? suggestedGroups : suggestedGroups.slice(0, 3)).map((group) => (
+                          {(showAllGroups
+                            ? suggestedGroups.slice(0, groupsPage * ITEMS_PER_PAGE)
+                            : suggestedGroups.slice(0, 3)
+                          ).map((group) => (
                             <div
                               key={group.id}
                               className="bg-white rounded-lg overflow-hidden hover:bg-gray-50 transition-colors"
@@ -507,12 +556,25 @@ function SearchContent() {
                           ))}
                         </div>
                         {suggestedGroups.length > 3 && showAllGroups && (
-                          <button
-                            onClick={() => setShowAllGroups(false)}
-                            className="w-full text-center text-[#007AFF] font-semibold text-sm py-3 hover:text-[#0056D6] transition-colors mt-2"
-                          >
-                            Show Less
-                          </button>
+                          <div className="mt-4 space-y-2">
+                            {groupsPage * ITEMS_PER_PAGE < suggestedGroups.length && (
+                              <button
+                                onClick={() => setGroupsPage(prev => prev + 1)}
+                                className="w-full text-center text-[#007AFF] font-semibold text-sm py-3 hover:text-[#0056D6] transition-colors bg-white rounded-lg border border-gray-200"
+                              >
+                                Load More ({Math.min(ITEMS_PER_PAGE, suggestedGroups.length - groupsPage * ITEMS_PER_PAGE)} more)
+                              </button>
+                            )}
+                            <button
+                              onClick={() => {
+                                setShowAllGroups(false);
+                                setGroupsPage(1);
+                              }}
+                              className="w-full text-center text-gray-600 font-medium text-sm py-3 hover:text-gray-900 transition-colors"
+                            >
+                              Show Less
+                            </button>
+                          </div>
                         )}
                       </div>
                     ) : (

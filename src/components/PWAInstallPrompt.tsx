@@ -25,12 +25,11 @@ export const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ alwaysShowOn
       return;
     }
 
-    // Check if user has already dismissed the prompt (only if not forcing always show)
-    if (!alwaysShowOnMobile) {
-      const hasSeenPrompt = localStorage.getItem('pwa-install-prompt-dismissed');
-      if (hasSeenPrompt === 'true') {
-        return;
-      }
+    // Check if user has already dismissed the prompt
+    // Even with alwaysShowOnMobile, we respect user dismissal to avoid annoying them
+    const hasSeenPrompt = localStorage.getItem('pwa-install-prompt-dismissed');
+    if (hasSeenPrompt === 'true') {
+      return;
     }
 
     // Detect platform
@@ -55,10 +54,8 @@ export const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({ alwaysShowOn
 
   const handleDismiss = () => {
     setIsVisible(false);
-    // Only save dismissal state if not forcing always show
-    if (!alwaysShowOnMobile) {
-      localStorage.setItem('pwa-install-prompt-dismissed', 'true');
-    }
+    // Always save dismissal state to respect user preference
+    localStorage.setItem('pwa-install-prompt-dismissed', 'true');
   };
 
   if (!isVisible || platform === 'unknown') {

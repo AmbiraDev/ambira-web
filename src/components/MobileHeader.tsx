@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useAuth } from '@/contexts/AuthContext';
+import NotificationIcon from './NotificationIcon';
 
 interface MobileHeaderProps {
   title: string;
@@ -43,6 +44,11 @@ export default function MobileHeader({ title }: MobileHeaderProps) {
         <h1 className="text-lg font-bold text-gray-900">
           {title}
         </h1>
+
+        {/* Notification Icon - Right */}
+        <div className="absolute right-0 top-1/2 -translate-y-1/2">
+          <NotificationIcon className="text-gray-700" />
+        </div>
       </div>
     </div>
   );

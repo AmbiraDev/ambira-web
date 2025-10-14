@@ -8,7 +8,7 @@ import GroupInviteModal from '@/components/GroupInviteModal';
 import { Group, User, GroupStats } from '@/types';
 import { firebaseApi } from '@/lib/firebaseApi';
 import Link from 'next/link';
-import { Users, Settings, Activity, ChevronDown, Trophy } from 'lucide-react';
+import { Users, Settings, Activity, ChevronDown, Trophy, UserPlus } from 'lucide-react';
 
 type GroupTab = 'leaderboard' | 'recent-activity' | 'members' | 'posts';
 type TimePeriod = 'today' | 'week' | 'month' | 'year';
@@ -232,16 +232,36 @@ export default function GroupDetailPage() {
                 </div>
 
                 <div className="flex-1 min-w-0">
-                  {/* Group Name and Edit Icon */}
+                  {/* Group Name and Action Buttons */}
                   <div className="flex items-center gap-3 mb-2">
                     <h1 className="text-3xl font-bold text-gray-900">{group.name}</h1>
                     {isAdmin && (
+                      <>
+                        <button
+                          onClick={() => router.push(`/groups/${group.id}/settings`)}
+                          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                          aria-label="Edit group"
+                        >
+                          <Settings className="w-5 h-5 text-gray-600" />
+                        </button>
+                        <button
+                          onClick={() => setShowInviteModal(true)}
+                          className="hidden md:flex items-center gap-2 px-4 py-2 bg-[#007AFF] hover:bg-[#0056D6] text-white rounded-lg font-medium text-sm transition-colors"
+                          aria-label="Invite people"
+                        >
+                          <UserPlus className="w-4 h-4" />
+                          Invite
+                        </button>
+                      </>
+                    )}
+                    {isJoined && !isAdmin && (
                       <button
-                        onClick={() => router.push(`/groups/${group.id}/settings`)}
-                        className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                        aria-label="Edit group"
+                        onClick={() => setShowInviteModal(true)}
+                        className="hidden md:flex items-center gap-2 px-4 py-2 bg-[#007AFF] hover:bg-[#0056D6] text-white rounded-lg font-medium text-sm transition-colors"
+                        aria-label="Invite people"
                       >
-                        <Settings className="w-5 h-5 text-gray-600" />
+                        <UserPlus className="w-4 h-4" />
+                        Invite
                       </button>
                     )}
                   </div>

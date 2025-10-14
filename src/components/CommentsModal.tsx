@@ -5,6 +5,7 @@ import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { CommentWithDetails } from '@/types';
 import { firebaseCommentApi } from '@/lib/firebaseApi';
 import { useAuth } from '@/contexts/AuthContext';
+import { useCommentLikeMutation } from '@/hooks/useMutations';
 import CommentItem from './CommentItem';
 import CommentInput from './CommentInput';
 
@@ -32,6 +33,7 @@ export const CommentsModal: React.FC<CommentsModalProps> = ({
   const [currentPage, setCurrentPage] = useState(1);
 
   const totalPages = Math.ceil(totalCommentCount / COMMENTS_PER_PAGE);
+  const likeMutation = useCommentLikeMutation(sessionId);
 
   useEffect(() => {
     if (isOpen) {
@@ -128,6 +130,10 @@ export const CommentsModal: React.FC<CommentsModalProps> = ({
     }
   };
 
+  const handleLike = (commentId: string, action: 'like' | 'unlike') => {
+    likeMutation.mutate({ commentId, action });
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -175,9 +181,10 @@ export const CommentsModal: React.FC<CommentsModalProps> = ({
                 <CommentItem
                   key={comment.id}
                   comment={comment}
+                  sessionId={sessionId}
                   onDelete={handleDelete}
+                  onLike={handleLike}
                   currentUserId={user?.id}
-                  compact={false}
                 />
               ))}
             </div>

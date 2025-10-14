@@ -13,15 +13,16 @@ import Header from '@/components/HeaderComponent';
 import MobileHeader from '@/components/MobileHeader';
 import BottomNavigation from '@/components/BottomNavigation';
 import { Button } from '@/components/ui/button';
-import { UserX, Heart, MessageCircle, Share2, Calendar, Clock, Target, ChevronDown, MoreVertical, Edit, User as UserIcon, Users } from 'lucide-react';
+import { UserX, Heart, MessageCircle, Share2, Calendar, Clock, Target, ChevronDown, MoreVertical, Edit, User as UserIcon, Users, TrendingUp, BarChart3 } from 'lucide-react';
 import { toast } from 'sonner';
 import Link from 'next/link';
-import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip, Area, ComposedChart, BarChart, Bar } from 'recharts';
 import { useUserFollowers, useUserFollowing } from '@/hooks/useCache';
 import { UnifiedProfileCard } from '@/components/UnifiedProfileCard';
 
 type YouTab = 'progress' | 'sessions';
-type TimePeriod = 'day' | 'week' | 'month' | 'year';
+type TimePeriod = '7D' | '2W' | '4W' | '3M' | '1Y';
+type ChartType = 'bar' | 'line';
 
 interface ChartDataPoint {
   name: string;
@@ -51,8 +52,12 @@ export default function ProfilePage() {
   const [activeTab, setActiveTab] = useState<YouTab>(
     tabParam === 'sessions' ? 'sessions' : 'progress'
   );
-  const [timePeriod, setTimePeriod] = useState<TimePeriod>('week');
+  const [timePeriod, setTimePeriod] = useState<TimePeriod>('7D');
+  const [chartType, setChartType] = useState<ChartType>('line');
   const [showTimePeriodDropdown, setShowTimePeriodDropdown] = useState(false);
+  const [showChartTypeDropdown, setShowChartTypeDropdown] = useState(false);
+  const [selectedActivityId, setSelectedActivityId] = useState<string>('all');
+  const [showActivityDropdown, setShowActivityDropdown] = useState(false);
   const [sessions, setSessions] = useState<Session[]>([]);
   const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
   const [categoryStats, setCategoryStats] = useState<CategoryStats[]>([]);

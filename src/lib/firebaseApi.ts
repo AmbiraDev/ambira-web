@@ -233,6 +233,34 @@ const updateSocialGraph = async (
       transaction.update(currentUserRef, currentUserUpdate);
       transaction.update(targetUserRef, targetUserUpdate);
     });
+
+    // Create notification for follow action (outside transaction)
+    if (action === 'follow') {
+      try {
+        const currentUserData = await getDoc(currentUserRef);
+        const userData = currentUserData.data();
+
+        await addDoc(collection(db, 'notifications'), {
+          userId: targetUserId,
+          type: 'follow',
+          title: 'New follower',
+          message: `${userData?.name || 'Someone'} started following you`,
+          linkUrl: `/profile/${userData?.username}`,
+          actorId: currentUserId,
+          actorName: userData?.name,
+          actorUsername: userData?.username,
+          actorProfilePicture: userData?.profilePicture,
+          isRead: false,
+          createdAt: serverTimestamp(),
+        });
+      } catch (notifError) {
+        // Log error but don't fail the follow action
+        handleError(notifError, 'create follow notification', {
+          severity: ErrorSeverity.ERROR,
+          silent: true,
+        });
+      }
+    }
   } catch (error) {
     const apiError = handleError(
       error,
@@ -2793,6 +2821,18 @@ export const firebaseSessionApi = {
 
       const docRef = await addDoc(collection(db, 'sessions'), sessionData);
 
+      // CRITICAL: Clear active session immediately after creating the session
+      // This ensures the timer is stopped even if the user navigates away
+      try {
+        await firebaseSessionApi.clearActiveSession();
+        console.log('✅ Active session cleared after creating session');
+      } catch (error) {
+        handleError(error, 'clear active session', {
+          severity: ErrorSeverity.WARNING,
+        });
+        // Don't fail session creation if clearing active session fails
+      }
+
       // Update challenge progress for this session
       try {
         await firebaseChallengeApi.updateChallengeProgress(
@@ -4065,6 +4105,36 @@ export const firebasePostApi = {
           updatedAt: serverTimestamp(),
         });
       });
+
+      // Create notification for support action (outside transaction)
+      try {
+        const sessionDoc = await getDoc(sessionRef);
+        const sessionData = sessionDoc.data();
+
+        // Only notify if supporting someone else's session
+        if (sessionData && sessionData.userId !== auth.currentUser.uid) {
+          const currentUserDoc = await getDoc(doc(db, 'users', auth.currentUser.uid));
+          const userData = currentUserDoc.data();
+
+          await addDoc(collection(db, 'notifications'), {
+            userId: sessionData.userId,
+            type: 'support',
+            title: 'New support',
+            message: `${userData?.name || 'Someone'} supported your session`,
+            linkUrl: `/sessions/${sessionId}`,
+            actorId: auth.currentUser.uid,
+            sessionId: sessionId,
+            isRead: false,
+            createdAt: serverTimestamp(),
+          });
+        }
+      } catch (notifError) {
+        // Log error but don't fail the support action
+        handleError(notifError, 'create support notification', {
+          severity: ErrorSeverity.ERROR,
+          silent: true,
+        });
+      }
     } catch (error) {
       const apiError = handleError(error, 'Support session', {
         defaultMessage: 'Failed to support session',
@@ -4461,6 +4531,9 @@ export const firebaseCommentApi = {
               message: `${userData?.name} mentioned you in a comment`,
               linkUrl: `/sessions/${data.sessionId}`,
               actorId: userId,
+              actorName: userData?.name,
+              actorUsername: userData?.username,
+              actorProfilePicture: userData?.profilePicture,
               sessionId: data.sessionId,
               commentId: docRef.id,
               isRead: false,
@@ -4485,6 +4558,9 @@ export const firebaseCommentApi = {
             message: `${userData?.name} commented on your session`,
             linkUrl: `/sessions/${data.sessionId}`,
             actorId: userId,
+            actorName: userData?.name,
+            actorUsername: userData?.username,
+            actorProfilePicture: userData?.profilePicture,
             sessionId: data.sessionId,
             commentId: docRef.id,
             isRead: false,
@@ -4506,6 +4582,9 @@ export const firebaseCommentApi = {
             message: `${userData?.name} replied to your comment`,
             linkUrl: `/sessions/${data.sessionId}`,
             actorId: userId,
+            actorName: userData?.name,
+            actorUsername: userData?.username,
+            actorProfilePicture: userData?.profilePicture,
             sessionId: data.sessionId,
             commentId: docRef.id,
             isRead: false,

@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { CommentWithDetails } from '@/types';
 import { firebaseCommentApi } from '@/lib/firebaseApi';
 import { useAuth } from '@/contexts/AuthContext';
+import { useCommentLikeMutation } from '@/hooks/useMutations';
 import CommentInput from './CommentInput';
 import CommentItem from './CommentItem';
 
@@ -27,6 +28,8 @@ export const CommentList: React.FC<CommentListProps> = ({
   const [hasMore, setHasMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showInput, setShowInput] = useState(false);
+
+  const likeMutation = useCommentLikeMutation(sessionId);
 
   // Load initial comments
   useEffect(() => {
@@ -115,6 +118,10 @@ export const CommentList: React.FC<CommentListProps> = ({
     }
   };
 
+  const handleLike = (commentId: string, action: 'like' | 'unlike') => {
+    likeMutation.mutate({ commentId, action });
+  };
+
   if (isLoading) {
     return (
       <div className="space-y-4 py-4">
@@ -164,7 +171,9 @@ export const CommentList: React.FC<CommentListProps> = ({
             <CommentItem
               key={comment.id}
               comment={comment}
+              sessionId={sessionId}
               onDelete={handleDelete}
+              onLike={handleLike}
               currentUserId={user?.id}
             />
           ))}

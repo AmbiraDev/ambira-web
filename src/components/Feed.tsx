@@ -1,14 +1,15 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { SessionWithDetails, FeedFilters } from '@/types';
 import { firebaseApi } from '@/lib/firebaseApi';
 import SessionCard from './SessionCard';
-import { useFeedSessions } from '@/hooks/useCache';
+import { useFeedSessions, useFeedSessionsPaginated } from '@/hooks/useCache';
 import { useAuth } from '@/contexts/AuthContext';
 import ConfirmDialog from './ConfirmDialog';
 import { useSupportMutation, useDeleteSessionMutation } from '@/hooks/useMutations';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface FeedProps {
   filters?: FeedFilters;
@@ -26,83 +27,102 @@ export const Feed: React.FC<FeedProps> = ({
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [nextCursor, setNextCursor] = useState<string | undefined>();
   const [hasNewSessions, setHasNewSessions] = useState(false);
   const [newSessionsCount, setNewSessionsCount] = useState(0);
   const [allSessions, setAllSessions] = useState<SessionWithDetails[]>([]);
   const [deleteConfirmSession, setDeleteConfirmSession] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [shouldLoadMore, setShouldLoadMore] = useState(false);
+
+  // Ref for infinite scroll trigger element
+  const loadMoreTriggerRef = React.useRef<HTMLDivElement>(null);
 
   // Use React Query for initial feed load with caching
-  const { data, isLoading, error, refetch } = useFeedSessions(initialLimit, undefined, filters, {
+  const { data, isLoading, error, refetch, isFetching } = useFeedSessions(initialLimit, undefined, filters, {
     enabled: true,
   });
 
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  // Use React Query for pagination with caching
+  const { data: paginatedData, isLoading: isLoadingMore, isFetching: isFetchingMore } = useFeedSessionsPaginated(
+    initialLimit,
+    shouldLoadMore ? nextCursor : undefined,
+    filters,
+    {
+      enabled: shouldLoadMore && !!nextCursor,
+    }
+  );
+
+  // Log cache behavior
+  useEffect(() => {
+    if (isFetching && !isLoading) {
+      console.log('📡 Refetching initial feed data from server (cache is stale)');
+    } else if (!isFetching && data) {
+      console.log('✅ Using cached feed data');
+    }
+  }, [isFetching, isLoading, data]);
+
+  useEffect(() => {
+    if (isFetchingMore && !isLoadingMore) {
+      console.log('📡 Refetching paginated data from server (cache is stale)');
+    } else if (!isFetchingMore && paginatedData && shouldLoadMore) {
+      console.log('✅ Using cached paginated data');
+    }
+  }, [isFetchingMore, isLoadingMore, paginatedData, shouldLoadMore]);
+
   const [hasMore, setHasMore] = useState(true);
 
   // Optimistic mutations
   const supportMutation = useSupportMutation(user?.id);
   const deleteSessionMutation = useDeleteSessionMutation();
 
-  // Update sessions when data changes
+  // Update sessions when initial data changes
   useEffect(() => {
     if (data) {
-      console.log('=== FEED DEBUG ===');
+      console.log('=== FEED DEBUG (Initial Load) ===');
       console.log('Feed filter:', filters);
       console.log('Total sessions loaded:', data.sessions.length);
       console.log('Has more:', data.hasMore);
-
-      // Helper to get session date
-      const getSessionDate = (session: any): Date => {
-        if (session.startTime) {
-          return session.startTime instanceof Date
-            ? session.startTime
-            : new Date(session.startTime);
-        }
-        return session.createdAt instanceof Date
-          ? session.createdAt
-          : new Date(session.createdAt);
-      };
-
-      // Log today's sessions
-      const now = new Date();
-      const todaySessions = data.sessions.filter(s => {
-        const sessionDate = getSessionDate(s);
-        return sessionDate.toDateString() === now.toDateString();
-      });
-
-      console.log('Today\'s date:', now.toDateString());
-      console.log('Today\'s sessions in feed:', todaySessions.length);
-      console.log('Today\'s sessions details:', todaySessions.map(s => ({
-        title: s.title,
-        startTime: getSessionDate(s).toString(),
-        duration: (s.duration / 3600).toFixed(2) + 'h',
-        userId: s.userId,
-      })));
-
-      console.log('All sessions:', data.sessions.map(s => ({
-        id: s.id,
-        title: s.title,
-        startTime: getSessionDate(s).toString(),
-        duration: (s.duration / 3600).toFixed(2) + 'h',
-      })));
+      console.log('Next cursor:', data.nextCursor);
+      console.log('Cache status: Using React Query cache');
       console.log('==================');
 
       setAllSessions(data.sessions);
       setHasMore(data.hasMore);
       setNextCursor(data.nextCursor);
+      setShouldLoadMore(false); // Reset load more trigger
     }
   }, [data, filters]);
 
-  // Refresh sessions
+  // Handle paginated data
+  useEffect(() => {
+    if (paginatedData && shouldLoadMore) {
+      console.log('=== FEED DEBUG (Pagination) ===');
+      console.log('Paginated sessions loaded:', paginatedData.sessions.length);
+      console.log('Has more:', paginatedData.hasMore);
+      console.log('Next cursor:', paginatedData.nextCursor);
+      console.log('Cache status: Using React Query cache');
+      console.log('==================');
+
+      setAllSessions(prev => [...prev, ...paginatedData.sessions]);
+      setHasMore(paginatedData.hasMore);
+      setNextCursor(paginatedData.nextCursor);
+      setShouldLoadMore(false); // Reset load more trigger
+    }
+  }, [paginatedData, shouldLoadMore]);
+
+  // Refresh sessions and invalidate cache
   const refreshSessions = useCallback(() => {
     setAllSessions([]);
     setNextCursor(undefined);
     setHasNewSessions(false);
     setNewSessionsCount(0);
+    setShouldLoadMore(false);
+    // Invalidate all feed caches to force refetch
+    queryClient.invalidateQueries({ queryKey: ['feed'] });
     refetch();
-  }, [refetch]);
+  }, [refetch, queryClient]);
 
   // Auto-refresh feed when coming from session creation
   useEffect(() => {
@@ -115,43 +135,32 @@ export const Feed: React.FC<FeedProps> = ({
     }
   }, [searchParams, router, refreshSessions]);
 
-  const loadSessions = useCallback(async (cursor?: string, append = false) => {
-    try {
-      if (append) {
-        setIsLoadingMore(true);
-      }
-
-      const response = await firebaseApi.post.getFeedSessions(initialLimit, cursor, filters);
-
-      if (append) {
-        setAllSessions(prev => [...prev, ...response.sessions]);
-      } else {
-        setAllSessions(response.sessions);
-      }
-
-      setHasMore(response.hasMore);
-      setNextCursor(response.nextCursor);
-    } catch (err: any) {
-      console.error('Failed to load sessions:', err);
-    } finally {
-      setIsLoadingMore(false);
-    }
-  }, [filters, initialLimit]);
-
-  // Load more sessions
+  // Load more sessions - now uses React Query hook
   const loadMore = useCallback(() => {
     if (!isLoadingMore && hasMore && nextCursor) {
-      loadSessions(nextCursor, true);
+      console.log('Triggering load more with cursor:', nextCursor);
+      setShouldLoadMore(true);
     }
-  }, [isLoadingMore, hasMore, nextCursor, loadSessions]);
+  }, [isLoadingMore, hasMore, nextCursor]);
 
-  // Check for new sessions periodically
+  // Check for new sessions periodically - using cache
   useEffect(() => {
     if (allSessions.length === 0) return;
 
     const checkForNewSessions = async () => {
       try {
-        const response = await firebaseApi.post.getFeedSessions(5, undefined, filters);
+        // Use queryClient to check cache first, then fetch if stale
+        const cachedData = queryClient.getQueryData(['feed', 'sessions', 5, undefined, filters]);
+
+        let response;
+        if (cachedData) {
+          response = cachedData as { sessions: any[] };
+          console.log('New sessions check: Using cached data');
+        } else {
+          response = await firebaseApi.post.getFeedSessions(5, undefined, filters);
+          console.log('New sessions check: Fetched from DB');
+        }
+
         const newSessionIds = response.sessions.map(s => s.id);
         const currentSessionIds = allSessions.slice(0, 5).map(s => s.id);
 
@@ -165,10 +174,10 @@ export const Feed: React.FC<FeedProps> = ({
       }
     };
 
-    // Check every 30 seconds
-    const interval = setInterval(checkForNewSessions, 30000);
+    // Check every 60 seconds (reduced from 30 to limit DB calls)
+    const interval = setInterval(checkForNewSessions, 60000);
     return () => clearInterval(interval);
-  }, [allSessions, filters]);
+  }, [allSessions, filters, queryClient]);
 
   // Handle support with optimistic updates via React Query
   const handleSupport = useCallback(async (sessionId: string) => {
@@ -227,14 +236,21 @@ export const Feed: React.FC<FeedProps> = ({
     }
   }, [deleteConfirmSession, deleteSessionMutation]);
 
+  // Memoize top 10 session IDs string to create stable dependency
+  // This prevents useEffect from re-running when sessions array changes but top 10 IDs remain same
+  const top10SessionIdsString = useMemo(() => {
+    const MAX_LISTENERS = 10;
+    return allSessions.slice(0, MAX_LISTENERS).map(session => session.id).join(',');
+  }, [allSessions]);
+
   // Real-time updates for support counts (throttled to reduce reads)
   // Only listen to the first 10 sessions to reduce overhead
   useEffect(() => {
-    if (allSessions.length === 0) return;
+    if (allSessions.length === 0 || !top10SessionIdsString) return;
 
-    // Only listen to first 10 sessions to reduce Firestore reads
-    const MAX_LISTENERS = 10;
-    const sessionIds = allSessions.slice(0, MAX_LISTENERS).map(session => session.id);
+    // Parse session IDs from memoized string
+    const sessionIds = top10SessionIdsString.split(',').filter(Boolean);
+    if (sessionIds.length === 0) return;
 
     const unsubscribe = firebaseApi.post.listenToSessionUpdates(sessionIds, (updates) => {
       setAllSessions(prev => prev.map(session => {
@@ -251,22 +267,43 @@ export const Feed: React.FC<FeedProps> = ({
     });
 
     return unsubscribe;
-  }, [allSessions.slice(0, 10).map(s => s.id).join(',')]); // Only re-run when top 10 IDs change
+  }, [top10SessionIdsString]); // Only re-run when top 10 IDs change
 
-  // Infinite scroll effect
+  // Infinite scroll using IntersectionObserver
   useEffect(() => {
-    const handleScroll = () => {
-      if (
-        window.innerHeight + document.documentElement.scrollTop >=
-        document.documentElement.offsetHeight - 1000
-      ) {
-        loadMore();
+    const trigger = loadMoreTriggerRef.current;
+    if (!trigger) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const [entry] = entries;
+        console.log('IntersectionObserver triggered:', {
+          isIntersecting: entry.isIntersecting,
+          hasMore,
+          isLoadingMore,
+          nextCursor
+        });
+
+        if (entry.isIntersecting && hasMore && !isLoadingMore && nextCursor) {
+          console.log('Loading more sessions...');
+          loadMore();
+        }
+      },
+      {
+        root: null, // viewport
+        rootMargin: '200px', // Trigger 200px before reaching the element
+        threshold: 0,
+      }
+    );
+
+    observer.observe(trigger);
+
+    return () => {
+      if (trigger) {
+        observer.unobserve(trigger);
       }
     };
-
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [loadMore]);
+  }, [loadMore, hasMore, isLoadingMore, nextCursor]);
 
   if (isLoading) {
     return (
@@ -400,6 +437,11 @@ export const Feed: React.FC<FeedProps> = ({
           );
         })}
       </div>
+
+      {/* Infinite scroll trigger element */}
+      {hasMore && !isLoadingMore && (
+        <div ref={loadMoreTriggerRef} className="h-4" aria-hidden="true" />
+      )}
 
       {/* Load more indicator */}
       {isLoadingMore && (

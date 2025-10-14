@@ -4,6 +4,7 @@ import './globals.css';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { ProjectsProvider } from '@/contexts/ProjectsContext';
 import { TimerProvider } from '@/contexts/TimerContext';
+import { NotificationsProvider } from '@/contexts/NotificationsContext';
 import { QueryProvider } from '@/providers/QueryProvider';
 import { ToastProvider } from '@/contexts/ToastContext';
 import PWAInstaller from '@/components/PWAInstaller';
@@ -89,9 +90,11 @@ export default function RootLayout({
         <QueryProvider>
           <AuthProvider>
             <ToastProvider>
-              <ProjectsProvider>
-                <TimerProvider>{children}</TimerProvider>
-              </ProjectsProvider>
+              <NotificationsProvider>
+                <ProjectsProvider>
+                  <TimerProvider>{children}</TimerProvider>
+                </ProjectsProvider>
+              </NotificationsProvider>
             </ToastProvider>
           </AuthProvider>
         </QueryProvider>

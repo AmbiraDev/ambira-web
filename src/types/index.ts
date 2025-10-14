@@ -537,6 +537,9 @@ export interface Notification {
   createdAt: Date;
   // Additional metadata based on type
   actorId?: string; // User who triggered the notification
+  actorName?: string; // Name of user who triggered the notification
+  actorUsername?: string; // Username of user who triggered the notification
+  actorProfilePicture?: string; // Profile picture of user who triggered the notification
   sessionId?: string; // Session related to the notification
   commentId?: string;
   groupId?: string;
