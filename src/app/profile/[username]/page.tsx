@@ -1,26 +1,24 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
-import { UserProfile, UserStats, ProfileTab, Session, User as UserType } from '@/types';
+import { UserProfile, UserStats, Session } from '@/types';
 import { firebaseUserApi, firebaseSessionApi } from '@/lib/firebaseApi';
 import { useAuth } from '@/contexts/AuthContext';
-import { ProfileHeader } from '@/components/ProfileHeader';
-import { ProfileTabs, TabContent, OverviewContent, AchievementsContent, FollowersContent, FollowingContent, PostsContent } from '@/components/ProfileTabs';
-import { ProfileStats } from '@/components/ProfileStats';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import Header from '@/components/HeaderComponent';
 import MobileHeader from '@/components/MobileHeader';
 import BottomNavigation from '@/components/BottomNavigation';
 import { Button } from '@/components/ui/button';
-import { UserX, Heart, MessageCircle, Share2, Calendar, Clock, Target, ChevronDown, MoreVertical, Edit, User as UserIcon, Users, TrendingUp, BarChart3 } from 'lucide-react';
+import { UserX, User as UserIcon, Users, TrendingUp, BarChart3, ChevronDown } from 'lucide-react';
 import { toast } from 'sonner';
 import Link from 'next/link';
+import Image from 'next/image';
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip, Area, ComposedChart, BarChart, Bar } from 'recharts';
-import { useUserFollowers, useUserFollowing } from '@/hooks/useCache';
-import { UnifiedProfileCard } from '@/components/UnifiedProfileCard';
+import { useUserFollowers, useUserFollowing, useProjects } from '@/hooks/useCache';
+import Feed from '@/components/Feed';
 
-type YouTab = 'progress' | 'sessions';
+type YouTab = 'progress' | 'sessions' | 'followers' | 'following';
 type TimePeriod = '7D' | '2W' | '4W' | '3M' | '1Y';
 type ChartType = 'bar' | 'line';
 
@@ -50,33 +48,41 @@ export default function ProfilePage() {
   const [stats, setStats] = useState<UserStats | null>(null);
   const [postsCount, setPostsCount] = useState<number>(0);
   const [activeTab, setActiveTab] = useState<YouTab>(
-    tabParam === 'sessions' ? 'sessions' : 'progress'
+    tabParam === 'sessions' ? 'sessions' :
+    tabParam === 'followers' ? 'followers' :
+    tabParam === 'following' ? 'following' : 'progress'
   );
   const [timePeriod, setTimePeriod] = useState<TimePeriod>('7D');
   const [chartType, setChartType] = useState<ChartType>('line');
-  const [showTimePeriodDropdown, setShowTimePeriodDropdown] = useState(false);
   const [showChartTypeDropdown, setShowChartTypeDropdown] = useState(false);
   const [selectedActivityId, setSelectedActivityId] = useState<string>('all');
   const [showActivityDropdown, setShowActivityDropdown] = useState(false);
   const [sessions, setSessions] = useState<Session[]>([]);
-  const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
-  const [categoryStats, setCategoryStats] = useState<CategoryStats[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const isOwnProfile = currentUser?.username === username;
 
-  // Use cached hooks for followers/following
-  const { data: followers = [], isLoading: followersLoading } = useUserFollowers(profile?.id || '', {
+  // Use cached hooks for followers/following and activities
+  const { data: followers = [] } = useUserFollowers(profile?.id || '', {
     enabled: !!profile?.id,
   });
-  const { data: following = [], isLoading: followingLoading } = useUserFollowing(profile?.id || '', {
+  const { data: following = [] } = useUserFollowing(profile?.id || '', {
+    enabled: !!profile?.id,
+  });
+  const { data: activities = [] } = useProjects(profile?.id || '', {
     enabled: !!profile?.id,
   });
 
+  // Filter sessions based on selected activity
+  const filteredSessions = useMemo(() => {
+    if (selectedActivityId === 'all') return sessions;
+    return sessions.filter(s => s.activityId === selectedActivityId || s.projectId === selectedActivityId);
+  }, [sessions, selectedActivityId]);
+
   // Update tab when URL changes
   useEffect(() => {
-    if (tabParam === 'sessions' || tabParam === 'progress') {
+    if (tabParam === 'sessions' || tabParam === 'progress' || tabParam === 'followers' || tabParam === 'following') {
       setActiveTab(tabParam);
     }
   }, [tabParam]);
@@ -97,7 +103,7 @@ export default function ProfilePage() {
       let sessionsData: Session[] = [];
       try {
         sessionsData = await firebaseSessionApi.getUserSessions(profileData.id, 50, isOwnProfile);
-      } catch (sessionError) {
+      } catch {
         // Silently handle session loading errors, default to empty array
         sessionsData = [];
       }
@@ -132,42 +138,21 @@ export default function ProfilePage() {
     }
   }, [username, loadProfile]);
 
-  useEffect(() => {
-    processChartData();
-    if (sessions.length > 0) {
-      processCategoryStats();
-    } else {
-      setCategoryStats([]);
-    }
-  }, [sessions, timePeriod]);
+  // Calculate chart data using useMemo to prevent infinite loop
+  const chartData = useMemo(() => {
+    if (!filteredSessions) return [];
 
-  const processChartData = () => {
     const now = new Date();
     const data: ChartDataPoint[] = [];
 
-    if (timePeriod === 'day') {
-      for (let i = 23; i >= 0; i--) {
-        const hour = new Date(now);
-        hour.setHours(hour.getHours() - i);
-        const hourLabel = hour.getHours().toString().padStart(2, '0');
-
-        const hoursWorked = sessions.length > 0 ? sessions
-          .filter(s => {
-            const sessionDate = new Date(s.createdAt);
-            return sessionDate.getHours() === hour.getHours() &&
-                   sessionDate.toDateString() === hour.toDateString();
-          })
-          .reduce((sum, s) => sum + s.duration / 3600, 0) : 0;
-
-        data.push({ name: hourLabel, hours: Number(hoursWorked.toFixed(2)) });
-      }
-    } else if (timePeriod === 'week') {
+    if (timePeriod === '7D') {
+      // Last 7 days
       const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
       for (let i = 6; i >= 0; i--) {
         const day = new Date(now);
         day.setDate(day.getDate() - i);
 
-        const hoursWorked = sessions.length > 0 ? sessions
+        const hoursWorked = filteredSessions.length > 0 ? filteredSessions
           .filter(s => new Date(s.createdAt).toDateString() === day.toDateString())
           .reduce((sum, s) => sum + s.duration / 3600, 0) : 0;
 
@@ -176,14 +161,31 @@ export default function ProfilePage() {
           hours: Number(hoursWorked.toFixed(2))
         });
       }
-    } else if (timePeriod === 'month') {
+    } else if (timePeriod === '2W') {
+      // Last 14 days
+      const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      for (let i = 13; i >= 0; i--) {
+        const day = new Date(now);
+        day.setDate(day.getDate() - i);
+
+        const hoursWorked = filteredSessions.length > 0 ? filteredSessions
+          .filter(s => new Date(s.createdAt).toDateString() === day.toDateString())
+          .reduce((sum, s) => sum + s.duration / 3600, 0) : 0;
+
+        data.push({
+          name: `${dayNames[day.getDay()]} ${day.getDate()}`,
+          hours: Number(hoursWorked.toFixed(2))
+        });
+      }
+    } else if (timePeriod === '4W') {
+      // Last 4 weeks
       for (let i = 3; i >= 0; i--) {
         const weekStart = new Date(now);
         weekStart.setDate(weekStart.getDate() - (i * 7 + 6));
         const weekEnd = new Date(now);
         weekEnd.setDate(weekEnd.getDate() - (i * 7));
 
-        const hoursWorked = sessions.length > 0 ? sessions
+        const hoursWorked = filteredSessions.length > 0 ? filteredSessions
           .filter(s => {
             const sessionDate = new Date(s.createdAt);
             return sessionDate >= weekStart && sessionDate <= weekEnd;
@@ -195,13 +197,34 @@ export default function ProfilePage() {
           hours: Number(hoursWorked.toFixed(2))
         });
       }
-    } else if (timePeriod === 'year') {
+    } else if (timePeriod === '3M') {
+      // Last 3 months
       const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
       for (let i = 11; i >= 0; i--) {
         const month = new Date(now);
         month.setMonth(month.getMonth() - i);
 
-        const hoursWorked = sessions.length > 0 ? sessions
+        const hoursWorked = filteredSessions.length > 0 ? filteredSessions
+          .filter(s => {
+            const sessionDate = new Date(s.createdAt);
+            return sessionDate.getMonth() === month.getMonth() &&
+                   sessionDate.getFullYear() === month.getFullYear();
+          })
+          .reduce((sum, s) => sum + s.duration / 3600, 0) : 0;
+
+        data.push({
+          name: monthNames[month.getMonth()],
+          hours: Number(hoursWorked.toFixed(2))
+        });
+      }
+    } else if (timePeriod === '1Y') {
+      // Last 12 months
+      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      for (let i = 11; i >= 0; i--) {
+        const month = new Date(now);
+        month.setMonth(month.getMonth() - i);
+
+        const hoursWorked = filteredSessions.length > 0 ? filteredSessions
           .filter(s => {
             const sessionDate = new Date(s.createdAt);
             return sessionDate.getMonth() === month.getMonth() &&
@@ -216,12 +239,8 @@ export default function ProfilePage() {
       }
     }
 
-    setChartData(data);
-  };
-
-  const processCategoryStats = () => {
-    setCategoryStats([]);
-  };
+    return data;
+  }, [filteredSessions, timePeriod]);
 
   const formatTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
@@ -333,15 +352,6 @@ export default function ProfilePage() {
     );
   }
 
-  const tabStats = {
-    totalHours: stats?.totalHours || 0,
-    currentStreak: stats?.currentStreak || 0,
-    achievements: 0, // TODO: Implement achievements
-    followers: followers.length,
-    following: following.length,
-    posts: postsCount,
-  };
-  
   return (
     <ProtectedRoute>
       <div className="min-h-screen bg-white md:bg-gray-50">
@@ -355,523 +365,733 @@ export default function ProfilePage() {
           <MobileHeader title={profile.name} />
         </div>
 
-        {/* Profile Header - Only for other users' profiles */}
-        {!isOwnProfile && (
-          <div className="bg-white md:bg-gray-50 pt-4 md:pt-6">
-            <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
-              <div className="max-w-4xl mx-auto">
-                <div className="bg-white md:rounded-xl md:border border-gray-200 p-4 md:p-6">
-                  {/* Profile Picture */}
-                  {profile.profilePicture ? (
-                    <div className="w-20 h-20 md:w-24 md:h-24 rounded-full mb-3 md:mb-4 overflow-hidden ring-4 ring-white bg-white">
-                      <img
-                        src={profile.profilePicture}
-                        alt={`${profile.name}'s profile picture`}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                  ) : (
-                    <div className="w-20 h-20 md:w-24 md:h-24 bg-gradient-to-br from-[#FC4C02] to-[#FF8800] rounded-full flex items-center justify-center mb-3 md:mb-4">
-                      <span className="text-white font-bold text-3xl md:text-4xl">
-                        {profile.name.charAt(0).toUpperCase()}
-                      </span>
-                    </div>
-                  )}
-
-                  {/* Name and Pronouns */}
-                  <div className="mb-1">
-                    <h1 className="text-xl md:text-2xl font-bold text-gray-900">{profile.name}</h1>
-                    {profile.pronouns && (
-                      <p className="text-gray-400 text-xs md:text-sm mt-0.5">{profile.pronouns}</p>
-                    )}
-                  </div>
-
-                  {/* Username */}
-                  <p className="text-gray-500 text-sm md:text-base mb-2 md:mb-3">@{profile.username}</p>
-
-                  {/* Tagline */}
-                  {profile.tagline && (
-                    <p className="text-gray-600 text-sm mb-2 md:mb-3 font-medium">
-                      {profile.tagline}
-                    </p>
-                  )}
-
-                  {/* Bio */}
-                  {profile.bio && (
-                    <p className="text-gray-700 text-sm md:text-base mb-2 md:mb-3 leading-relaxed">
-                      {profile.bio}
-                    </p>
-                  )}
-
-                  {/* Location */}
-                  {profile.location && (
-                    <div className="flex items-center gap-1 text-gray-600 mb-2 md:mb-3">
-                      <svg className="w-3.5 h-3.5 md:w-4 md:h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                      </svg>
-                      <span className="text-xs md:text-sm">{profile.location}</span>
-                    </div>
-                  )}
-
-                  {/* Website */}
-                  {profile.website && (
-                    <div className="flex items-center gap-1.5 text-gray-600 mb-2 md:mb-3">
-                      <svg className="w-3.5 h-3.5 md:w-4 md:h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                      </svg>
-                      <a
-                        href={profile.website.startsWith('http') ? profile.website : `https://${profile.website}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs md:text-sm text-[#007AFF] hover:underline truncate"
-                      >
-                        {profile.website.replace(/^https?:\/\//, '')}
-                      </a>
-                    </div>
-                  )}
-
-                  {/* Social Links */}
-                  {profile.socialLinks && (profile.socialLinks.twitter || profile.socialLinks.github || profile.socialLinks.linkedin) && (
-                    <div className="flex items-center gap-3 mb-3 md:mb-4">
-                      {profile.socialLinks.twitter && (
-                        <a
-                          href={`https://twitter.com/${profile.socialLinks.twitter.replace('@', '')}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-gray-600 hover:text-[#1DA1F2] transition-colors"
-                          title="Twitter"
-                        >
-                          <svg className="w-4 h-4 md:w-5 md:h-5" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-                          </svg>
-                        </a>
-                      )}
-                      {profile.socialLinks.github && (
-                        <a
-                          href={`https://github.com/${profile.socialLinks.github.replace('@', '')}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-gray-600 hover:text-gray-900 transition-colors"
-                          title="GitHub"
-                        >
-                          <svg className="w-4 h-4 md:w-5 md:h-5" fill="currentColor" viewBox="0 0 24 24">
-                            <path fillRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clipRule="evenodd" />
-                          </svg>
-                        </a>
-                      )}
-                      {profile.socialLinks.linkedin && (
-                        <a
-                          href={`https://linkedin.com/in/${profile.socialLinks.linkedin}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-gray-600 hover:text-[#0A66C2] transition-colors"
-                          title="LinkedIn"
-                        >
-                          <svg className="w-4 h-4 md:w-5 md:h-5" fill="currentColor" viewBox="0 0 24 24">
-                            <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
-                          </svg>
-                        </a>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Stats */}
-                  <div className="flex gap-6 md:gap-8 mb-3 md:mb-4">
-                    <div>
-                      <div className="text-xs md:text-sm text-gray-600">Following</div>
-                      <div className="text-lg md:text-xl font-bold text-gray-900">
-                        {following.length}
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-xs md:text-sm text-gray-600">Followers</div>
-                      <div className="text-lg md:text-xl font-bold text-gray-900">
-                        {followers.length}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Follow Button */}
-                  <button
-                    onClick={async () => {
-                      try {
-                        if (profile.isFollowing) {
-                          await firebaseUserApi.unfollowUser(profile.id);
-                          handleProfileUpdate({ ...profile, isFollowing: false });
-                        } else {
-                          await firebaseUserApi.followUser(profile.id);
-                          handleProfileUpdate({ ...profile, isFollowing: true });
-                        }
-                      } catch (error) {
-                        console.error('Follow error:', error);
-                      }
-                    }}
-                    className={`w-full py-2.5 md:py-3 rounded-lg md:rounded-xl text-sm md:text-base font-semibold transition-colors ${
-                      profile.isFollowing
-                        ? 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                        : 'bg-[#007AFF] text-white hover:bg-[#0056D6]'
-                    }`}
-                  >
-                    {profile.isFollowing ? 'Following' : 'Follow'}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Tabs */}
-        <div className="sticky top-12 md:top-0 bg-white md:bg-gray-50 z-30">
-          <div className="bg-gray-50 border-b md:border-b-0 border-gray-200">
-            <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
-              <div className="flex md:gap-8 md:pl-[220px]">
-                <button
-                  onClick={() => {
-                    setActiveTab('progress');
-                    router.push(`/profile/${username}?tab=progress`);
-                  }}
-                  className={`flex-1 md:flex-initial py-3 md:py-4 px-1 text-sm md:text-base font-medium border-b-2 transition-colors ${
-                    activeTab === 'progress'
-                      ? 'border-[#007AFF] text-[#007AFF] md:text-gray-900'
-                      : 'border-transparent text-gray-500 md:text-gray-600 hover:text-gray-700 md:hover:text-gray-900'
-                  }`}
-                >
-                  Progress
-                </button>
-                <button
-                  onClick={() => {
-                    setActiveTab('sessions');
-                    router.push(`/profile/${username}?tab=sessions`);
-                  }}
-                  className={`flex-1 md:flex-initial py-3 md:py-4 px-1 text-sm md:text-base font-medium border-b-2 transition-colors ${
-                    activeTab === 'sessions'
-                      ? 'border-[#007AFF] text-[#007AFF] md:text-gray-900'
-                      : 'border-transparent text-gray-500 md:text-gray-600 hover:text-gray-700 md:hover:text-gray-900'
-                  }`}
-                >
-                  Sessions
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
         {/* Content */}
         <div className="pb-24 md:pb-8">
-          <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-4 md:py-6">
-            {activeTab === 'progress' && (
-              <div className="max-w-4xl mx-auto space-y-4 md:space-y-6">
-                {/* Last 4 Weeks Summary */}
-                <div className="bg-white rounded-lg md:rounded-xl border border-gray-200 p-4 md:p-6">
-                  <div className="flex items-center justify-between mb-4 md:mb-6">
-                    <h2 className="text-base md:text-lg font-semibold text-gray-900">Last 4 Weeks</h2>
-                  </div>
+          <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-6">
+            <div className="max-w-4xl mx-auto">
+              {/* Profile Card with This Week Stats */}
+              <div className="bg-gray-50 md:rounded-xl md:border border-gray-200 p-3 md:p-6 mb-4 md:mb-6 relative">
+                {/* Responsive Layout - Stacks on mobile, side-by-side on desktop */}
+                <div className="flex flex-col md:flex-row md:gap-8">
+                  {/* Left Column - Profile Info */}
+                  <div className="flex-1">
+                    {/* Profile Picture */}
+                    {profile.profilePicture ? (
+                      <div className="w-20 h-20 md:w-32 md:h-32 rounded-full overflow-hidden ring-4 ring-white shadow-md mb-3 md:mb-4">
+                        <img
+                          src={profile.profilePicture}
+                          alt={`${profile.name}'s profile picture`}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-20 h-20 md:w-32 md:h-32 bg-[#FC4C02] rounded-full flex items-center justify-center ring-4 ring-white shadow-md mb-3 md:mb-4">
+                        <span className="text-white font-bold text-2xl md:text-4xl">
+                          {profile.name.charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                    )}
 
-                  {/* Main Stats Grid */}
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-4 md:mb-6">
-                    <div>
-                      <div className="text-[10px] md:text-xs text-gray-500 uppercase tracking-wide mb-1">Total Time</div>
-                      <div className="text-xl md:text-2xl font-bold text-gray-900">
-                        {stats?.totalHours?.toFixed(1) || 0}h
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-[10px] md:text-xs text-gray-500 uppercase tracking-wide mb-1">Sessions</div>
-                      <div className="text-xl md:text-2xl font-bold text-gray-900">
-                        {sessions.length}
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-[10px] md:text-xs text-gray-500 uppercase tracking-wide mb-1">Avg/Week</div>
-                      <div className="text-xl md:text-2xl font-bold text-gray-900">
-                        {stats?.weeklyHours?.toFixed(1) || 0}h
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-[10px] md:text-xs text-gray-500 uppercase tracking-wide mb-1">Avg/Day</div>
-                      <div className="text-xl md:text-2xl font-bold text-gray-900">
-                        {stats?.totalHours ? (stats.totalHours / 28).toFixed(1) : 0}h
-                      </div>
-                    </div>
-                  </div>
+                    {/* Name and Username */}
+                    <h1 className="text-lg md:text-2xl font-bold text-gray-900">{profile.name}</h1>
+                    <p className="text-gray-600 text-sm md:text-base mb-2 md:mb-3">@{profile.username}</p>
 
-                  {/* Weekly Breakdown Chart */}
-                  <div className="h-48">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart
-                        data={chartData}
-                        margin={{ top: 10, right: 15, left: 0, bottom: 5 }}
-                      >
-                        <XAxis
-                          dataKey="name"
-                          tick={{ fontSize: 12, fill: '#6b7280' }}
-                          axisLine={{ stroke: '#e5e7eb' }}
-                          tickLine={false}
-                        />
-                        <YAxis
-                          tick={{ fontSize: 12, fill: '#6b7280' }}
-                          axisLine={{ stroke: '#e5e7eb' }}
-                          tickLine={false}
-                          width={40}
-                        />
-                        <Tooltip
-                          contentStyle={{
-                            backgroundColor: '#fff',
-                            border: '1px solid #e5e7eb',
-                            borderRadius: '8px',
-                            fontSize: '12px'
-                          }}
-                          formatter={(value: number) => [`${value}h`, 'Hours']}
-                        />
-                        <Line
-                          type="monotone"
-                          dataKey="hours"
-                          stroke="#FC4C02"
-                          strokeWidth={2}
-                          isAnimationActive={false}
-                          dot={(props: any) => {
-                            const { cx, cy, index, payload } = props;
-                            const isToday = index === chartData.length - 1;
-                            return (
-                              <circle
-                                key={`dot-${index}-${payload.name}`}
-                                cx={cx}
-                                cy={cy}
-                                r={isToday ? 5 : 0}
-                                fill="#FC4C02"
-                                stroke="none"
-                              />
-                            );
-                          }}
-                        />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </div>
-                </div>
+                    {/* Bio */}
+                    {profile.bio && (
+                      <p className="text-gray-700 mb-2 md:mb-3 text-sm md:text-base leading-snug">{profile.bio}</p>
+                    )}
 
-                {/* Year Stats and Additional Metrics */}
-                <div className="grid md:grid-cols-2 gap-6">
-                  {/* This Year Section */}
-                  <div className="bg-white rounded-lg border border-gray-200 p-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="font-semibold text-gray-900">
-                        {new Date().getFullYear()}
-                      </h3>
+                    {/* Location */}
+                    {profile.location && (
+                      <p className="text-gray-500 text-xs md:text-sm mb-3 md:mb-4">📍 {profile.location}</p>
+                    )}
+
+                    {/* Follow Button - Only for other users' profiles */}
+                    {!isOwnProfile && (
                       <button
-                        onClick={() => setTimePeriod('year')}
-                        className="text-xs text-gray-500 hover:text-gray-700"
+                        onClick={async () => {
+                          try {
+                            if (profile.isFollowing) {
+                              await firebaseUserApi.unfollowUser(profile.id);
+                              handleProfileUpdate({ ...profile, isFollowing: false });
+                            } else {
+                              await firebaseUserApi.followUser(profile.id);
+                              handleProfileUpdate({ ...profile, isFollowing: true });
+                            }
+                          } catch (error) {
+                            console.error('Follow error:', error);
+                          }
+                        }}
+                        className={`inline-flex items-center gap-2 mb-3 md:mb-4 px-3 md:px-4 py-2 md:py-2.5 rounded-lg transition-colors font-semibold text-xs md:text-sm ${
+                          profile.isFollowing
+                            ? 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                            : 'bg-[#007AFF] text-white hover:bg-[#0056D6]'
+                        }`}
                       >
-                        View chart
+                        {profile.isFollowing ? 'Following' : 'Follow'}
+                      </button>
+                    )}
+
+                    {/* Follower/Following Counts */}
+                    <div className="flex gap-4 md:gap-6 mb-4 md:mb-0">
+                      <button
+                        onClick={() => {
+                          setActiveTab('followers');
+                          router.push(`/profile/${username}?tab=followers`);
+                        }}
+                        className="hover:underline"
+                      >
+                        <span className="font-bold text-gray-900 text-sm md:text-base">{followers.length}</span>{' '}
+                        <span className="text-gray-600 text-xs md:text-sm">Followers</span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          setActiveTab('following');
+                          router.push(`/profile/${username}?tab=following`);
+                        }}
+                        className="hover:underline"
+                      >
+                        <span className="font-bold text-gray-900 text-sm md:text-base">{following.length}</span>{' '}
+                        <span className="text-gray-600 text-xs md:text-sm">Following</span>
                       </button>
                     </div>
-                    <div className="space-y-3">
-                      <div className="flex justify-between items-center pb-3 border-b border-gray-100">
-                        <span className="text-sm text-gray-600">Total Time</span>
-                        <span className="font-semibold text-gray-900">
-                          {stats?.totalHours?.toFixed(1) || 0}h
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center pb-3 border-b border-gray-100">
-                        <span className="text-sm text-gray-600">Sessions</span>
-                        <span className="font-semibold text-gray-900">
-                          {sessions.length}
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center pb-3 border-b border-gray-100">
-                        <span className="text-sm text-gray-600">Longest Session</span>
-                        <span className="font-semibold text-gray-900">
-                          {sessions.length > 0
-                            ? formatTime(Math.max(...sessions.map(s => s.duration)))
-                            : '0m'}
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-600">Current Streak</span>
-                        <span className="font-semibold text-gray-900">
-                          {stats?.currentStreak || 0} days
-                        </span>
-                      </div>
-                    </div>
                   </div>
 
-                  {/* All-Time Section */}
-                  <div className="bg-white rounded-lg border border-gray-200 p-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="font-semibold text-gray-900">All-Time</h3>
+                  {/* Right Column - This Week Stats */}
+                  <div className="md:w-64 border-t md:border-t-0 md:border-l border-gray-200 pt-4 md:pt-0 md:pl-8">
+                    <div className="flex items-center gap-2 mb-3 md:mb-4">
+                      <div className="w-4 h-4 md:w-5 md:h-5 text-[#FC4C02]">📊</div>
+                      <h2 className="text-sm md:text-base font-bold">This week</h2>
                     </div>
-                    <div className="space-y-3">
-                      <div className="flex justify-between items-center pb-3 border-b border-gray-100">
-                        <span className="text-sm text-gray-600">Total Sessions</span>
-                        <span className="font-semibold text-gray-900">
-                          {postsCount}
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center pb-3 border-b border-gray-100">
-                        <span className="text-sm text-gray-600">Total Time</span>
-                        <span className="font-semibold text-gray-900">
-                          {stats?.totalHours?.toFixed(1) || 0}h
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center pb-3 border-b border-gray-100">
-                        <span className="text-sm text-gray-600">Longest Streak</span>
-                        <span className="font-semibold text-gray-900">
-                          {stats?.longestStreak || stats?.currentStreak || 0} days
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-600">Avg Session</span>
-                        <span className="font-semibold text-gray-900">
-                          {sessions.length > 0
-                            ? formatTime(sessions.reduce((sum, s) => sum + s.duration, 0) / sessions.length)
-                            : '0m'}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
 
-                {/* Detailed Time Period Chart */}
-                <div className="bg-white rounded-lg border border-gray-200 p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-semibold text-gray-900">
-                      {timePeriod === 'day' && 'Last 24 Hours'}
-                      {timePeriod === 'week' && 'Last 7 Days'}
-                      {timePeriod === 'month' && 'Last 4 Weeks'}
-                      {timePeriod === 'year' && 'Last 12 Months'}
-                    </h3>
-                    <div className="relative">
-                      <button
-                        onClick={() => setShowTimePeriodDropdown(!showTimePeriodDropdown)}
-                        className="flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors border border-gray-200"
-                      >
-                        {timePeriod.charAt(0).toUpperCase() + timePeriod.slice(1)}
-                        <ChevronDown className="w-4 h-4" />
-                      </button>
-                      {showTimePeriodDropdown && (
-                        <div className="absolute right-0 mt-2 w-32 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
-                          {(['day', 'week', 'month', 'year'] as TimePeriod[]).map((period) => (
-                            <button
-                              key={period}
-                              onClick={() => {
-                                setTimePeriod(period);
-                                setShowTimePeriodDropdown(false);
-                              }}
-                              className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 ${
-                                timePeriod === period ? 'text-[#FC4C02] font-medium' : 'text-gray-700'
-                              }`}
-                            >
-                              {period.charAt(0).toUpperCase() + period.slice(1)}
-                            </button>
-                          ))}
+                    <div className="grid grid-cols-3 md:grid-cols-1 gap-3 md:gap-4 md:space-y-0">
+                      <div>
+                        <div className="text-[10px] md:text-xs text-gray-600 uppercase tracking-wide">Time</div>
+                        <div className="text-lg md:text-2xl font-bold">
+                          {stats?.weeklyHours?.toFixed(1) || 0}h
                         </div>
-                      )}
+                      </div>
+                      <div>
+                        <div className="text-[10px] md:text-xs text-gray-600 uppercase tracking-wide">Sessions</div>
+                        <div className="text-lg md:text-2xl font-bold">
+                          {stats?.sessionsThisWeek || 0}
+                        </div>
+                      </div>
+                      <div>
+                        <div className="text-[10px] md:text-xs text-gray-600 uppercase tracking-wide">Streak</div>
+                        <div className="text-lg md:text-2xl font-bold">
+                          {stats?.currentStreak || 0} <span className="text-sm md:text-base">days</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                  <div className="h-64">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart
-                        data={chartData}
-                        margin={{ top: 10, right: 15, left: 0, bottom: 5 }}
-                      >
-                        <XAxis
-                          dataKey="name"
-                          tick={{ fontSize: 12, fill: '#6b7280' }}
-                          axisLine={{ stroke: '#e5e7eb' }}
-                          tickLine={false}
-                        />
-                        <YAxis
-                          tick={{ fontSize: 12, fill: '#6b7280' }}
-                          axisLine={{ stroke: '#e5e7eb' }}
-                          tickLine={false}
-                          width={40}
-                          label={{ value: 'Hours', angle: -90, position: 'insideLeft', style: { fontSize: 12, fill: '#6b7280' } }}
-                        />
-                        <Tooltip
-                          contentStyle={{
-                            backgroundColor: '#fff',
-                            border: '1px solid #e5e7eb',
-                            borderRadius: '8px',
-                            fontSize: '12px',
-                            padding: '8px 12px'
-                          }}
-                          formatter={(value: number) => [`${value}h`, 'Hours']}
-                        />
-                        <Line
-                          type="monotone"
-                          dataKey="hours"
-                          stroke="#FC4C02"
-                          strokeWidth={2}
-                          isAnimationActive={false}
-                          dot={false}
-                          activeDot={{ r: 4, fill: '#FC4C02' }}
-                        />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </div>
                 </div>
+              </div>
 
-                {/* Recent Sessions Summary */}
-                <div className="bg-white rounded-lg border border-gray-200 p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-semibold text-gray-900">Recent Activity</h3>
+              {/* Tabs */}
+              <div className="sticky top-12 md:top-14 bg-white md:bg-gray-50 z-30 -mx-4 md:mx-0">
+                <div className="bg-white md:bg-gray-50 border-b border-gray-200">
+                  <div className="flex md:gap-8 px-4 md:px-0 overflow-x-auto scrollbar-hide">
+                    <button
+                      onClick={() => {
+                        setActiveTab('progress');
+                        router.push(`/profile/${username}?tab=progress`);
+                      }}
+                      className={`flex-1 md:flex-initial py-3 md:py-4 px-1 text-sm md:text-base font-medium border-b-2 transition-colors whitespace-nowrap ${
+                        activeTab === 'progress'
+                          ? 'border-[#007AFF] text-[#007AFF]'
+                          : 'border-transparent text-gray-500 md:text-gray-600 hover:text-gray-700 md:hover:text-gray-900'
+                      }`}
+                    >
+                      Progress
+                    </button>
                     <button
                       onClick={() => {
                         setActiveTab('sessions');
                         router.push(`/profile/${username}?tab=sessions`);
                       }}
-                      className="text-sm text-[#FC4C02] hover:text-[#E04402] font-medium"
+                      className={`flex-1 md:flex-initial py-3 md:py-4 px-1 text-sm md:text-base font-medium border-b-2 transition-colors whitespace-nowrap ${
+                        activeTab === 'sessions'
+                          ? 'border-[#007AFF] text-[#007AFF]'
+                          : 'border-transparent text-gray-500 md:text-gray-600 hover:text-gray-700 md:hover:text-gray-900'
+                      }`}
                     >
-                      View all
+                      Sessions
+                    </button>
+                    <button
+                      onClick={() => {
+                        setActiveTab('followers');
+                        router.push(`/profile/${username}?tab=followers`);
+                      }}
+                      className={`flex-1 md:flex-initial py-3 md:py-4 px-1 text-sm md:text-base font-medium border-b-2 transition-colors whitespace-nowrap ${
+                        activeTab === 'followers'
+                          ? 'border-[#007AFF] text-[#007AFF]'
+                          : 'border-transparent text-gray-500 md:text-gray-600 hover:text-gray-700 md:hover:text-gray-900'
+                      }`}
+                    >
+                      Followers
+                    </button>
+                    <button
+                      onClick={() => {
+                        setActiveTab('following');
+                        router.push(`/profile/${username}?tab=following`);
+                      }}
+                      className={`flex-1 md:flex-initial py-3 md:py-4 px-1 text-sm md:text-base font-medium border-b-2 transition-colors whitespace-nowrap ${
+                        activeTab === 'following'
+                          ? 'border-[#007AFF] text-[#007AFF]'
+                          : 'border-transparent text-gray-500 md:text-gray-600 hover:text-gray-700 md:hover:text-gray-900'
+                      }`}
+                    >
+                      Following
                     </button>
                   </div>
-                  {sessions.length > 0 ? (
-                    <div className="space-y-3">
-                      {sessions.slice(0, 5).map((session) => (
-                        <Link key={session.id} href={`/sessions/${session.id}`} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0 hover:bg-gray-50 -mx-2 px-2 rounded transition-colors cursor-pointer">
-                          <div className="flex-1">
-                            <div className="font-medium text-gray-900 text-sm">
-                              {session.title || 'Focus Session'}
-                            </div>
-                            <div className="text-xs text-gray-500">
-                              {formatDate(new Date(session.createdAt))}
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <div className="font-semibold text-gray-900 text-sm">
-                              {formatTime(session.duration)}
-                            </div>
-                            <div className="text-xs text-gray-500">
-                              {session.tasks?.length || 0} tasks
-                            </div>
-                          </div>
-                        </Link>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="text-center py-8 text-gray-400">
-                      No sessions yet
-                    </div>
-                  )}
                 </div>
+              </div>
 
-                {/* Followers and Following Section - Mobile Friendly */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                  {/* Followers Section */}
-                  <div className="bg-white rounded-lg border border-gray-200 p-4 md:p-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-base md:text-lg font-semibold text-gray-900">Followers ({followers.length})</h3>
+              {/* Tab Content */}
+              <div className="mt-6">
+                                {activeTab === 'progress' && (
+                  <div className="max-w-4xl mx-auto space-y-4 md:space-y-6">
+                    {/* Header with Time Period Selector and Chart Type */}
+                    <div className="flex items-center justify-between gap-2 py-2 -mx-4 px-4 md:mx-0 md:px-0">
+                      {/* Activity Filter Dropdown */}
+                      <div className="relative flex-shrink-0">
+                        <button
+                          onClick={() => setShowActivityDropdown(!showActivityDropdown)}
+                          className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-700 bg-white border border-gray-300 rounded-full hover:bg-gray-50 transition-colors whitespace-nowrap"
+                        >
+                          <span className="font-medium">
+                            {selectedActivityId === 'all'
+                              ? 'All'
+                              : activities.find(a => a.id === selectedActivityId)?.name || 'All'
+                            }
+                          </span>
+                          <ChevronDown className="w-3.5 h-3.5" />
+                        </button>
+
+                        {/* Activity Dropdown Menu */}
+                        {showActivityDropdown && (
+                          <>
+                            {/* Backdrop to close dropdown */}
+                            <div
+                              className="fixed inset-0 z-40"
+                              onClick={() => setShowActivityDropdown(false)}
+                            />
+                            <div className="absolute left-0 top-full mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50 max-h-64 overflow-y-auto">
+                              <button
+                                onClick={() => {
+                                  setSelectedActivityId('all');
+                                  setShowActivityDropdown(false);
+                                }}
+                                className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors flex items-center gap-2 ${
+                                  selectedActivityId === 'all' ? 'text-[#007AFF] font-medium bg-blue-50' : 'text-gray-700'
+                                }`}
+                              >
+                                {selectedActivityId === 'all' && <span className="text-[#007AFF]">✓</span>}
+                                <span>All Activities</span>
+                              </button>
+                              {activities.map((activity) => (
+                                <button
+                                  key={activity.id}
+                                  onClick={() => {
+                                    setSelectedActivityId(activity.id);
+                                    setShowActivityDropdown(false);
+                                  }}
+                                  className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors flex items-center gap-2 ${
+                                    selectedActivityId === activity.id ? 'text-[#007AFF] font-medium bg-blue-50' : 'text-gray-700'
+                                  }`}
+                                >
+                                  {selectedActivityId === activity.id && <span className="text-[#007AFF]">✓</span>}
+                                  <span className="flex items-center gap-2">
+                                    <span style={{ color: activity.color }}>●</span>
+                                    {activity.name}
+                                  </span>
+                                </button>
+                              ))}
+                            </div>
+                          </>
+                        )}
+                      </div>
+
+                      {/* Time Period Buttons - Scrollable on mobile */}
+                      <div className="flex items-center gap-2 flex-1 min-w-0">
+                        <div className="overflow-x-auto flex items-center gap-1.5 md:gap-2 flex-1 scrollbar-hide">
+                          {(['7D', '2W', '4W', '3M', '1Y'] as TimePeriod[]).map((period) => (
+                            <button
+                              key={period}
+                              onClick={() => setTimePeriod(period)}
+                              className={`px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-medium rounded-full transition-colors whitespace-nowrap flex-shrink-0 ${
+                                timePeriod === period
+                                  ? 'bg-gray-900 text-white'
+                                  : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                              }`}
+                            >
+                              {period}
+                            </button>
+                          ))}
+                        </div>
+
+                        {/* Chart Type Selector */}
+                        <div className="relative flex-shrink-0">
+                          <button
+                            onClick={() => setShowChartTypeDropdown(!showChartTypeDropdown)}
+                            className="flex items-center gap-1 px-2 md:px-3 py-1.5 md:py-2 text-xs md:text-sm text-gray-700 bg-white border border-gray-300 rounded-full hover:bg-gray-50 transition-colors whitespace-nowrap"
+                          >
+                            {chartType === 'bar' ? (
+                              <BarChart3 className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                            ) : (
+                              <TrendingUp className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                            )}
+                            <span className="capitalize hidden sm:inline">{chartType}</span>
+                            <ChevronDown className="w-3 h-3" />
+                          </button>
+
+                          {/* Chart Type Dropdown */}
+                          {showChartTypeDropdown && (
+                            <>
+                              {/* Backdrop to close dropdown */}
+                              <div
+                                className="fixed inset-0 z-40"
+                                onClick={() => setShowChartTypeDropdown(false)}
+                              />
+                              <div className="absolute right-0 mt-2 w-32 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
+                                <button
+                                  onClick={() => {
+                                    setChartType('bar');
+                                    setShowChartTypeDropdown(false);
+                                  }}
+                                  className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors flex items-center gap-2 ${
+                                    chartType === 'bar' ? 'text-[#007AFF] font-medium' : 'text-gray-700'
+                                  }`}
+                                >
+                                  {chartType === 'bar' && <span className="text-[#007AFF]">✓</span>}
+                                  <BarChart3 className="w-4 h-4" />
+                                  Bar
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setChartType('line');
+                                    setShowChartTypeDropdown(false);
+                                  }}
+                                  className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors flex items-center gap-2 ${
+                                    chartType === 'line' ? 'text-[#007AFF] font-medium' : 'text-gray-700'
+                                  }`}
+                                >
+                                  {chartType === 'line' && <span className="text-[#007AFF]">✓</span>}
+                                  <TrendingUp className="w-4 h-4" />
+                                  Line
+                                </button>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      </div>
                     </div>
+
+                    {/* Activity Chart */}
+                    <div className="bg-gray-50 rounded-lg md:rounded-xl border border-gray-200 p-3 md:p-6">
+                      <div className="mb-3 md:mb-6">
+                        <h3 className="text-sm md:text-base font-medium text-gray-900">Hours Tracked</h3>
+                        <p className="text-[10px] md:text-sm text-gray-500 mt-0.5">
+                          {timePeriod === '7D' && 'Daily'}
+                          {timePeriod === '2W' && 'Daily'}
+                          {timePeriod === '4W' && 'Weekly'}
+                          {timePeriod === '3M' && 'Monthly'}
+                          {timePeriod === '1Y' && 'Monthly'}
+                        </p>
+                      </div>
+                      <div className="h-48 md:h-72">
+                        {isLoading ? (
+                          <div className="h-full bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl animate-pulse flex items-center justify-center">
+                            <p className="text-gray-400 text-sm">Loading...</p>
+                          </div>
+                        ) : (
+                          <ResponsiveContainer width="100%" height="100%">
+                            {chartType === 'bar' ? (
+                              <BarChart
+                                data={chartData}
+                                margin={{ top: 10, right: 10, left: -15, bottom: 5 }}
+                              >
+                                <XAxis
+                                  dataKey="name"
+                                  tick={{ fontSize: 11, fill: '#9ca3af' }}
+                                  axisLine={{ stroke: '#e5e7eb' }}
+                                  tickLine={false}
+                                  dy={8}
+                                />
+                                <YAxis
+                                  tick={{ fontSize: 11, fill: '#9ca3af' }}
+                                  axisLine={{ stroke: '#e5e7eb' }}
+                                  tickLine={false}
+                                  width={35}
+                                  domain={[0, 'dataMax + 0.5']}
+                                  tickFormatter={(value) => `${value}`}
+                                />
+                                <Tooltip
+                                  contentStyle={{
+                                    backgroundColor: 'rgba(0, 0, 0, 0.85)',
+                                    border: 'none',
+                                    borderRadius: '8px',
+                                    padding: '8px 12px',
+                                    fontSize: '12px',
+                                    color: 'white',
+                                  }}
+                                  formatter={(value: number) => [`${value.toFixed(1)}h`, 'Hours']}
+                                  cursor={{ fill: 'rgba(0, 0, 0, 0.05)' }}
+                                />
+                                <Bar
+                                  dataKey="hours"
+                                  fill="#007AFF"
+                                  radius={[4, 4, 0, 0]}
+                                />
+                              </BarChart>
+                            ) : (
+                              <ComposedChart
+                                data={chartData}
+                                margin={{ top: 10, right: 10, left: -15, bottom: 5 }}
+                              >
+                                <defs>
+                                  <linearGradient id="colorHours" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="5%" stopColor="#007AFF" stopOpacity={0.1}/>
+                                    <stop offset="95%" stopColor="#007AFF" stopOpacity={0}/>
+                                  </linearGradient>
+                                </defs>
+                                <XAxis
+                                  dataKey="name"
+                                  tick={{ fontSize: 11, fill: '#9ca3af' }}
+                                  axisLine={{ stroke: '#e5e7eb' }}
+                                  tickLine={false}
+                                  dy={8}
+                                />
+                                <YAxis
+                                  tick={{ fontSize: 11, fill: '#9ca3af' }}
+                                  axisLine={{ stroke: '#e5e7eb' }}
+                                  tickLine={false}
+                                  width={35}
+                                  domain={[0, 'dataMax + 0.5']}
+                                  tickFormatter={(value) => `${value}`}
+                                />
+                                <Tooltip
+                                  contentStyle={{
+                                    backgroundColor: 'rgba(0, 0, 0, 0.85)',
+                                    border: 'none',
+                                    borderRadius: '8px',
+                                    padding: '8px 12px',
+                                    fontSize: '12px',
+                                    color: 'white',
+                                  }}
+                                  formatter={(value: number) => [`${value.toFixed(1)}h`, 'Hours']}
+                                  cursor={{ stroke: '#e5e7eb', strokeWidth: 1 }}
+                                />
+                                <Area
+                                  type="monotone"
+                                  dataKey="hours"
+                                  stroke="none"
+                                  fill="url(#colorHours)"
+                                />
+                                <Line
+                                  type="monotone"
+                                  dataKey="hours"
+                                  stroke="#007AFF"
+                                  strokeWidth={2}
+                                  dot={false}
+                                  activeDot={{
+                                    r: 4,
+                                    fill: '#007AFF',
+                                    stroke: 'white',
+                                    strokeWidth: 2
+                                  }}
+                                />
+                              </ComposedChart>
+                            )}
+                          </ResponsiveContainer>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Secondary Charts */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-6">
+                      {/* Sessions over time */}
+                      <div className="bg-gray-50 rounded-lg md:rounded-xl border border-gray-200 p-3 md:p-6">
+                        <h3 className="text-xs md:text-base font-medium text-gray-900 mb-2 md:mb-4">Sessions over time</h3>
+                        <div className="h-32 md:h-48">
+                          <ResponsiveContainer width="100%" height="100%">
+                            {chartType === 'bar' ? (
+                              <BarChart
+                                data={chartData}
+                                margin={{ top: 10, right: 10, left: 0, bottom: 5 }}
+                              >
+                                <XAxis
+                                  dataKey="name"
+                                  tick={{ fontSize: 11, fill: '#6b7280' }}
+                                  axisLine={false}
+                                  tickLine={false}
+                                />
+                                <YAxis
+                                  tick={{ fontSize: 11, fill: '#9ca3af' }}
+                                  axisLine={false}
+                                  tickLine={false}
+                                  width={35}
+                                  domain={[0, 'dataMax + 0.5']}
+                                  tickFormatter={(value) => `${value}`}
+                                />
+                                <Tooltip
+                                  contentStyle={{
+                                    backgroundColor: 'rgba(0, 0, 0, 0.9)',
+                                    border: 'none',
+                                    borderRadius: '8px',
+                                    padding: '8px 12px',
+                                    fontSize: '12px',
+                                    color: 'white',
+                                  }}
+                                  formatter={(value: number) => [`${value.toFixed(1)}h`, 'Hours']}
+                                />
+                                <Bar
+                                  dataKey="hours"
+                                  fill="#007AFF"
+                                  radius={[4, 4, 0, 0]}
+                                />
+                              </BarChart>
+                            ) : (
+                              <ComposedChart
+                                data={chartData}
+                                margin={{ top: 10, right: 10, left: 0, bottom: 5 }}
+                              >
+                                <defs>
+                                  <linearGradient id="colorSessions" x1="0" y1="0" x2="0" y2="1">
+                                    <stop offset="5%" stopColor="#007AFF" stopOpacity={0.3}/>
+                                    <stop offset="95%" stopColor="#007AFF" stopOpacity={0}/>
+                                  </linearGradient>
+                                </defs>
+                                <XAxis
+                                  dataKey="name"
+                                  tick={{ fontSize: 11, fill: '#6b7280' }}
+                                  axisLine={false}
+                                  tickLine={false}
+                                />
+                                <YAxis
+                                  tick={{ fontSize: 11, fill: '#9ca3af' }}
+                                  axisLine={false}
+                                  tickLine={false}
+                                  width={35}
+                                  domain={[0, 'dataMax + 0.5']}
+                                  tickFormatter={(value) => `${value}`}
+                                />
+                                <Tooltip
+                                  contentStyle={{
+                                    backgroundColor: 'rgba(0, 0, 0, 0.9)',
+                                    border: 'none',
+                                    borderRadius: '8px',
+                                    padding: '8px 12px',
+                                    fontSize: '12px',
+                                    color: 'white',
+                                  }}
+                                  formatter={(value: number) => [`${value.toFixed(1)}h`, 'Hours']}
+                                />
+                                <Area
+                                  type="monotone"
+                                  dataKey="hours"
+                                  stroke="#007AFF"
+                                  strokeWidth={2}
+                                  fill="url(#colorSessions)"
+                                />
+                              </ComposedChart>
+                            )}
+                          </ResponsiveContainer>
+                        </div>
+                      </div>
+
+                      {/* Productivity trends */}
+                      <div className="bg-gray-50 rounded-lg md:rounded-xl border border-gray-200 p-3 md:p-6">
+                        <h3 className="text-xs md:text-base font-medium text-gray-900 mb-2 md:mb-4">Productivity trends</h3>
+                        <div className="space-y-2 md:space-y-3">
+                          <div className="flex items-center justify-between p-2 md:p-3 bg-white rounded-lg">
+                            <div>
+                              <div className="text-xs md:text-sm font-medium text-gray-900">Total hours</div>
+                              <div className="text-[10px] md:text-xs text-gray-500">All time</div>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-base md:text-lg font-bold text-gray-900">{stats?.totalHours?.toFixed(1) || 0}h</div>
+                              <div className="text-[10px] md:text-xs text-green-600">↑ 100%</div>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center justify-between p-2 md:p-3 bg-white rounded-lg">
+                            <div>
+                              <div className="text-xs md:text-sm font-medium text-gray-900">Avg session</div>
+                              <div className="text-[10px] md:text-xs text-gray-500">Per session</div>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-base md:text-lg font-bold text-gray-900">
+                                {filteredSessions.length > 0 ? Math.round(filteredSessions.reduce((sum, s) => sum + s.duration, 0) / filteredSessions.length / 60) : 0}m
+                              </div>
+                              <div className="text-[10px] md:text-xs text-green-600">↑ 100%</div>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center justify-between p-2 md:p-3 bg-white rounded-lg">
+                            <div>
+                              <div className="text-xs md:text-sm font-medium text-gray-900">Current streak</div>
+                              <div className="text-[10px] md:text-xs text-gray-500">Consecutive days</div>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-base md:text-lg font-bold text-gray-900">{stats?.currentStreak || 0}</div>
+                              <div className="text-[10px] md:text-xs text-green-600">↑ 100%</div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Metrics Grid */}
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 md:gap-4">
+                      {/* Total Hours */}
+                      <div className="bg-gray-50 rounded-lg md:rounded-xl border border-gray-200 p-2.5 md:p-4">
+                        <div className="text-[10px] md:text-sm text-gray-600 mb-0.5 md:mb-1 uppercase tracking-wide">Total hours</div>
+                        <div className="text-lg md:text-2xl font-bold text-gray-900">
+                          {stats?.totalHours?.toFixed(1) || '0'}
+                        </div>
+                        <div className="text-[10px] md:text-xs text-green-600 mt-0.5 md:mt-1 flex items-center gap-1">
+                          <span>↑</span>
+                          <span>100%</span>
+                        </div>
+                      </div>
+
+                      {/* Sessions */}
+                      <div className="bg-gray-50 rounded-lg md:rounded-xl border border-gray-200 p-2.5 md:p-4">
+                        <div className="text-[10px] md:text-sm text-gray-600 mb-0.5 md:mb-1 uppercase tracking-wide">Sessions</div>
+                        <div className="text-lg md:text-2xl font-bold text-gray-900">
+                          {filteredSessions.length}
+                        </div>
+                        <div className="text-[10px] md:text-xs text-green-600 mt-0.5 md:mt-1 flex items-center gap-1">
+                          <span>↑</span>
+                          <span>100%</span>
+                        </div>
+                      </div>
+
+                      {/* Avg Duration */}
+                      <div className="bg-gray-50 rounded-lg md:rounded-xl border border-gray-200 p-2.5 md:p-4">
+                        <div className="text-[10px] md:text-sm text-gray-600 mb-0.5 md:mb-1 uppercase tracking-wide">Avg duration</div>
+                        <div className="text-lg md:text-2xl font-bold text-gray-900">
+                          {filteredSessions.length > 0 ? Math.round(filteredSessions.reduce((sum, s) => sum + s.duration, 0) / filteredSessions.length / 60) : 0}m
+                        </div>
+                        <div className="text-[10px] md:text-xs text-green-600 mt-0.5 md:mt-1 flex items-center gap-1">
+                          <span>↑</span>
+                          <span>100%</span>
+                        </div>
+                      </div>
+
+                      {/* Current Streak */}
+                      <div className="bg-gray-50 rounded-lg md:rounded-xl border border-gray-200 p-2.5 md:p-4">
+                        <div className="text-[10px] md:text-sm text-gray-600 mb-0.5 md:mb-1 uppercase tracking-wide">Current streak</div>
+                        <div className="text-lg md:text-2xl font-bold text-gray-900">
+                          {stats?.currentStreak || 0}
+                        </div>
+                        <div className="text-[10px] md:text-xs text-green-600 mt-0.5 md:mt-1 flex items-center gap-1">
+                          <span>↑</span>
+                          <span>100%</span>
+                        </div>
+                      </div>
+
+                      {/* Longest Streak */}
+                      <div className="bg-gray-50 rounded-lg md:rounded-xl border border-gray-200 p-2.5 md:p-4">
+                        <div className="text-[10px] md:text-sm text-gray-600 mb-0.5 md:mb-1 uppercase tracking-wide">Longest streak</div>
+                        <div className="text-lg md:text-2xl font-bold text-gray-900">
+                          {stats?.longestStreak || 0}
+                        </div>
+                        <div className="text-[10px] md:text-xs text-green-600 mt-0.5 md:mt-1 flex items-center gap-1">
+                          <span>↑</span>
+                          <span>100%</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Secondary Metrics Grid */}
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 md:gap-4">
+                      {/* Weekly Hours */}
+                      <div className="bg-gray-50 rounded-lg md:rounded-xl border border-gray-200 p-2.5 md:p-4">
+                        <div className="text-[10px] md:text-sm text-gray-600 mb-0.5 md:mb-1 uppercase tracking-wide">This week</div>
+                        <div className="text-lg md:text-2xl font-bold text-gray-900">
+                          {stats?.weeklyHours?.toFixed(1) || '0'}h
+                        </div>
+                        <div className="text-[10px] md:text-xs text-green-600 mt-0.5 md:mt-1 flex items-center gap-1">
+                          <span>↑</span>
+                          <span>100%</span>
+                        </div>
+                      </div>
+
+                      {/* Weekly Sessions */}
+                      <div className="bg-gray-50 rounded-lg md:rounded-xl border border-gray-200 p-2.5 md:p-4">
+                        <div className="text-[10px] md:text-sm text-gray-600 mb-0.5 md:mb-1 uppercase tracking-wide">Weekly sessions</div>
+                        <div className="text-lg md:text-2xl font-bold text-gray-900">
+                          {stats?.sessionsThisWeek || 0}
+                        </div>
+                        <div className="text-[10px] md:text-xs text-green-600 mt-0.5 md:mt-1 flex items-center gap-1">
+                          <span>↑</span>
+                          <span>100%</span>
+                        </div>
+                      </div>
+
+                      {/* Active Days */}
+                      <div className="bg-gray-50 rounded-lg md:rounded-xl border border-gray-200 p-2.5 md:p-4">
+                        <div className="text-[10px] md:text-sm text-gray-600 mb-0.5 md:mb-1 uppercase tracking-wide">Active days</div>
+                        <div className="text-lg md:text-2xl font-bold text-gray-900">
+                          {chartData.slice(-7).filter(d => d.hours > 0).length}
+                        </div>
+                        <div className="text-[10px] md:text-xs text-gray-600 mt-0.5 md:mt-1">
+                          This week
+                        </div>
+                      </div>
+
+                      {/* Total Projects */}
+                      <div className="bg-gray-50 rounded-lg md:rounded-xl border border-gray-200 p-2.5 md:p-4">
+                        <div className="text-[10px] md:text-sm text-gray-600 mb-0.5 md:mb-1 uppercase tracking-wide">Projects</div>
+                        <div className="text-lg md:text-2xl font-bold text-gray-900">
+                          {/* Will be populated when we have project count */}
+                          0
+                        </div>
+                        <div className="text-[10px] md:text-xs text-gray-600 mt-0.5 md:mt-1">
+                          All time
+                        </div>
+                      </div>
+
+                      {/* Followers */}
+                      <div className="bg-gray-50 rounded-lg md:rounded-xl border border-gray-200 p-2.5 md:p-4">
+                        <div className="text-[10px] md:text-sm text-gray-600 mb-0.5 md:mb-1 uppercase tracking-wide">Followers</div>
+                        <div className="text-lg md:text-2xl font-bold text-gray-900">
+                          {followers.length}
+                        </div>
+                        <div className="text-[10px] md:text-xs text-green-600 mt-0.5 md:mt-1 flex items-center gap-1">
+                          <span>↑</span>
+                          <span>100%</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {activeTab === 'sessions' && (
+                  <div className="max-w-4xl mx-auto">
+                    <Feed
+                      filters={{ type: 'user', userId: profile.id }}
+                      showEndMessage={true}
+                    />
+                  </div>
+                )}
+
+                {activeTab === 'followers' && (
+                  <div className="bg-gray-50 rounded-xl border border-gray-200 p-4 md:p-6">
+                    <h3 className="text-base md:text-lg font-bold mb-4">Followers ({followers.length})</h3>
                     {followers.length > 0 ? (
-                      <div className="space-y-2 md:space-y-3">
-                        {followers.slice(0, 5).map((follower) => (
+                      <div className="space-y-3">
+                        {followers.map((follower) => (
                           <Link
                             key={follower.id}
                             href={`/profile/${follower.username}`}
-                            className="flex items-center gap-2 md:gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors"
+                            className="flex items-center gap-3 p-2 rounded-lg hover:bg-white transition-colors"
                           >
                             {follower.profilePicture ? (
-                              <div className="w-8 h-8 md:w-10 md:h-10 rounded-full overflow-hidden ring-2 ring-white flex-shrink-0">
+                              <div className="w-10 h-10 rounded-full overflow-hidden ring-2 ring-white">
                                 <img
                                   src={follower.profilePicture}
                                   alt={follower.name}
@@ -879,49 +1099,41 @@ export default function ProfilePage() {
                                 />
                               </div>
                             ) : (
-                              <div className="w-8 h-8 md:w-10 md:h-10 bg-[#FC4C02] rounded-full flex items-center justify-center flex-shrink-0">
-                                <span className="text-white font-semibold text-xs md:text-sm">
+                              <div className="w-10 h-10 bg-[#FC4C02] rounded-full flex items-center justify-center">
+                                <span className="text-white font-semibold text-sm">
                                   {follower.name.charAt(0).toUpperCase()}
                                 </span>
                               </div>
                             )}
-                            <div className="flex-1 min-w-0">
-                              <div className="font-medium text-sm md:text-base text-gray-900 truncate">{follower.name}</div>
-                              <div className="text-xs md:text-sm text-gray-500 truncate">@{follower.username}</div>
+                            <div className="flex-1">
+                              <div className="font-medium">{follower.name}</div>
+                              <div className="text-sm text-gray-500">@{follower.username}</div>
                             </div>
                           </Link>
                         ))}
-                        {followers.length > 5 && (
-                          <div className="text-center pt-2">
-                            <button className="text-[#007AFF] text-xs md:text-sm font-medium">
-                              View all {followers.length} followers
-                            </button>
-                          </div>
-                        )}
                       </div>
                     ) : (
-                      <div className="text-center py-6 md:py-8 text-gray-400">
-                        <Users className="w-10 h-10 md:w-12 md:h-12 mx-auto mb-2 opacity-50" />
-                        <p className="text-sm md:text-base">No followers yet</p>
+                      <div className="text-center py-8 text-gray-400">
+                        <Users className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                        <p>No followers yet</p>
                       </div>
                     )}
                   </div>
+                )}
 
-                  {/* Following Section */}
-                  <div className="bg-white rounded-lg border border-gray-200 p-4 md:p-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className="text-base md:text-lg font-semibold text-gray-900">Following ({following.length})</h3>
-                    </div>
+                {activeTab === 'following' && (
+                  <div className="bg-gray-50 rounded-xl border border-gray-200 p-4 md:p-6">
+                    <h3 className="text-base md:text-lg font-bold mb-4">Following ({following.length})</h3>
                     {following.length > 0 ? (
-                      <div className="space-y-2 md:space-y-3">
-                        {following.slice(0, 5).map((followedUser) => (
+                      <div className="space-y-3">
+                        {following.map((followedUser) => (
                           <Link
                             key={followedUser.id}
                             href={`/profile/${followedUser.username}`}
-                            className="flex items-center gap-2 md:gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors"
+                            className="flex items-center gap-3 p-2 rounded-lg hover:bg-white transition-colors"
                           >
                             {followedUser.profilePicture ? (
-                              <div className="w-8 h-8 md:w-10 md:h-10 rounded-full overflow-hidden ring-2 ring-white flex-shrink-0">
+                              <div className="w-10 h-10 rounded-full overflow-hidden ring-2 ring-white">
                                 <img
                                   src={followedUser.profilePicture}
                                   alt={followedUser.name}
@@ -929,139 +1141,29 @@ export default function ProfilePage() {
                                 />
                               </div>
                             ) : (
-                              <div className="w-8 h-8 md:w-10 md:h-10 bg-[#FC4C02] rounded-full flex items-center justify-center flex-shrink-0">
-                                <span className="text-white font-semibold text-xs md:text-sm">
+                              <div className="w-10 h-10 bg-[#FC4C02] rounded-full flex items-center justify-center">
+                                <span className="text-white font-semibold text-sm">
                                   {followedUser.name.charAt(0).toUpperCase()}
                                 </span>
                               </div>
                             )}
-                            <div className="flex-1 min-w-0">
-                              <div className="font-medium text-sm md:text-base text-gray-900 truncate">{followedUser.name}</div>
-                              <div className="text-xs md:text-sm text-gray-500 truncate">@{followedUser.username}</div>
+                            <div className="flex-1">
+                              <div className="font-medium">{followedUser.name}</div>
+                              <div className="text-sm text-gray-500">@{followedUser.username}</div>
                             </div>
                           </Link>
                         ))}
-                        {following.length > 5 && (
-                          <div className="text-center pt-2">
-                            <button className="text-[#007AFF] text-xs md:text-sm font-medium">
-                              View all {following.length} following
-                            </button>
-                          </div>
-                        )}
                       </div>
                     ) : (
-                      <div className="text-center py-6 md:py-8 text-gray-400">
-                        <UserIcon className="w-10 h-10 md:w-12 md:h-12 mx-auto mb-2 opacity-50" />
-                        <p className="text-sm md:text-base">Not following anyone yet</p>
+                      <div className="text-center py-8 text-gray-400">
+                        <UserIcon className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                        <p>Not following anyone yet</p>
                       </div>
                     )}
                   </div>
-                </div>
-              </div>
-            )}
-
-            {activeTab === 'sessions' && (
-              <div className="max-w-4xl mx-auto space-y-4">
-                {isLoading ? (
-                  <div className="p-8 text-center text-gray-500">Loading sessions...</div>
-                ) : sessions.length === 0 ? (
-                  <div className="p-8 text-center text-gray-500">No sessions yet</div>
-                ) : (
-                  sessions.map((session) => (
-                    <div key={session.id} className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100">
-                      {/* Session Header */}
-                      <div className="flex items-center justify-between p-4 pb-3">
-                        <div className="flex items-center gap-3">
-                          <Link href={`/profile/${username}`}>
-                            {profile.profilePicture ? (
-                              <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-white bg-white">
-                                <img
-                                  src={profile.profilePicture}
-                                  alt={`${profile.name}'s profile picture`}
-                                  className="w-full h-full object-cover"
-                                />
-                              </div>
-                            ) : (
-                              <div className="w-10 h-10 bg-gradient-to-br from-[#007AFF] to-[#0051D5] rounded-full flex items-center justify-center flex-shrink-0 ring-2 ring-white">
-                                <span className="text-white font-semibold text-sm">
-                                  {profile.name.charAt(0).toUpperCase()}
-                                </span>
-                              </div>
-                            )}
-                          </Link>
-                          <div>
-                            <div className="font-semibold text-gray-900 text-base">{profile.name}</div>
-                            <div className="text-xs text-gray-500">
-                              {formatDate(new Date(session.createdAt))}
-                            </div>
-                          </div>
-                        </div>
-                        <button className="text-gray-400 hover:text-gray-600 transition-colors p-2">
-                          <MoreVertical className="w-5 h-5" />
-                        </button>
-                      </div>
-
-                      {/* Session Title and Description */}
-                      <Link href={`/sessions/${session.id}`} className="px-4 pb-3 block cursor-pointer">
-                        <h3 className="text-2xl font-bold text-gray-900 mb-1 hover:text-[#007AFF] transition-colors">
-                          {session.title || 'Focus Session'}
-                        </h3>
-                        {session.description && (
-                          <p className="text-gray-600 text-sm line-clamp-2">
-                            {session.description}
-                          </p>
-                        )}
-                      </Link>
-
-                      {/* Session Stats - Strava style */}
-                      <Link href={`/sessions/${session.id}`} className="px-4 pb-4 block cursor-pointer hover:bg-gray-50/50 transition-colors">
-                        <div className="grid grid-cols-3 gap-4">
-                          <div>
-                            <div className="text-xs text-gray-500 uppercase tracking-wide mb-0.5">Time</div>
-                            <div className="text-xl font-bold text-gray-900">
-                              {formatTime(session.duration)}
-                            </div>
-                          </div>
-                          <div>
-                            <div className="text-xs text-gray-500 uppercase tracking-wide mb-0.5">Tasks</div>
-                            <div className="text-xl font-bold text-gray-900">
-                              {session.tasks?.length || 0}
-                            </div>
-                          </div>
-                          <div>
-                            <div className="text-xs text-gray-500 uppercase tracking-wide mb-0.5">Tags</div>
-                            <div className="text-xl font-bold text-gray-900">
-                              {session.tags?.length || 0}
-                            </div>
-                          </div>
-                        </div>
-                      </Link>
-
-                      {/* Action Buttons */}
-                      <div className="flex items-center border-t border-gray-100 px-2">
-                        <Link href={`/sessions/${session.id}`} className="flex-1 flex items-center justify-center gap-2 py-3 text-gray-600 hover:bg-gray-50 transition-colors rounded-lg">
-                          <Heart className="w-6 h-6" />
-                          <span className="text-sm font-medium">
-                            {session.supportCount || 0}
-                          </span>
-                        </Link>
-                        <div className="w-px h-6 bg-gray-200"></div>
-                        <Link href={`/sessions/${session.id}`} className="flex-1 flex items-center justify-center gap-2 py-3 text-gray-600 hover:bg-gray-50 transition-colors rounded-lg">
-                          <MessageCircle className="w-6 h-6" />
-                          <span className="text-sm font-medium">
-                            {session.commentCount || 0}
-                          </span>
-                        </Link>
-                        <div className="w-px h-6 bg-gray-200"></div>
-                        <button className="flex-1 flex items-center justify-center gap-2 py-3 text-gray-600 hover:bg-gray-50 transition-colors rounded-lg">
-                          <Share2 className="w-6 h-6" />
-                        </button>
-                      </div>
-                    </div>
-                  ))
                 )}
               </div>
-            )}
+            </div>
           </div>
         </div>
 
