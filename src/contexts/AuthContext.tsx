@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { AuthContextType, AuthUser, LoginCredentials, SignupCredentials } from '@/types';
 import { firebaseAuthApi } from '@/lib/firebaseApi';
@@ -26,6 +26,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
+  const redirectHandledRef = useRef(false);
 
   // Check if user is authenticated
   const isAuthenticated = !!user;
@@ -38,8 +39,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         const redirectResult = await firebaseAuthApi.handleGoogleRedirectResult();
         if (redirectResult) {
           console.log('Google redirect sign-in successful:', redirectResult.user);
-          setUser(redirectResult.user);
-          router.push('/');
+          redirectHandledRef.current = true;
+          // Don't call router.push here - let the auth state change handle it
         }
       } catch (error) {
         console.error('Google redirect result error:', error);
@@ -56,6 +57,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           const userData = await firebaseAuthApi.getCurrentUser();
           console.log('User data loaded:', userData);
           setUser(userData);
+
+          // Only redirect after auth state is fully established
+          if (redirectHandledRef.current) {
+            console.log('Redirecting after successful Google sign-in');
+            router.push('/');
+            redirectHandledRef.current = false; // Reset flag
+          }
         } else {
           console.log('No Firebase user authenticated');
           setUser(null);
