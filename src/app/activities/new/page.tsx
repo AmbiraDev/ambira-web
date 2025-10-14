@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import Header from '@/components/HeaderComponent';
 import { CreateProjectData } from '@/types';
 import { useProjects } from '@/contexts/ProjectsContext';
@@ -9,6 +10,7 @@ import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { IconSelector } from '@/components/IconSelector';
 import { ColorSelector } from '@/components/ColorSelector';
 import { Icon } from '@iconify/react';
+import { ArrowLeft } from 'lucide-react';
 
 // Available icons from Iconify flat-color-icons
 const AVAILABLE_ICONS = [
@@ -270,12 +272,28 @@ function CreateProjectContent() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header />
+      {/* Desktop Header */}
+      <div className="hidden md:block">
+        <Header />
+      </div>
 
-      <div className="max-w-2xl mx-auto px-4 py-8">
-        <div className="bg-white rounded-lg shadow-md p-6 md:p-8">
-          {/* Header */}
-          <div className="mb-6">
+      {/* Mobile Header */}
+      <div className="md:hidden bg-white border-b border-gray-200 px-4 py-3 sticky top-0 z-40">
+        <div className="flex items-center gap-3">
+          <Link
+            href={redirectPath || '/timer'}
+            className="flex items-center justify-center w-10 h-10 -ml-2 hover:bg-gray-100 rounded-full transition-colors"
+          >
+            <ArrowLeft className="w-6 h-6 text-gray-700" />
+          </Link>
+          <h1 className="text-lg font-bold text-gray-900">New Activity</h1>
+        </div>
+      </div>
+
+      <div className="max-w-2xl mx-auto px-4 py-4 md:py-8">
+        <div className="bg-white md:rounded-lg md:shadow-md p-4 md:p-8">
+          {/* Desktop Header - Only show on desktop */}
+          <div className="hidden md:block mb-6">
             <h1 className="text-3xl font-bold text-gray-900">Create New Activity</h1>
             <p className="text-gray-600 mt-2">
               {redirectPath
@@ -295,19 +313,19 @@ function CreateProjectContent() {
           )}
 
           {/* Preview Card */}
-          <div className="mb-8 p-6 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border border-gray-200">
-            <div className="flex items-center gap-4">
+          <div className="mb-6 md:mb-8 p-4 md:p-6 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border border-gray-200">
+            <div className="flex items-center gap-3 md:gap-4">
               <div
-                className="w-16 h-16 rounded-xl flex items-center justify-center shadow-lg p-2"
+                className="w-14 h-14 md:w-16 md:h-16 rounded-xl flex items-center justify-center shadow-lg p-2"
                 style={{ backgroundColor: selectedColorData.hex }}
               >
-                <Icon icon={selectedIconData.icon} width={48} height={48} />
+                <Icon icon={selectedIconData.icon} width={40} height={40} className="md:w-12 md:h-12" />
               </div>
-              <div className="flex-1">
-                <h2 className="text-xl font-bold text-gray-900">
+              <div className="flex-1 min-w-0">
+                <h2 className="text-lg md:text-xl font-bold text-gray-900 truncate">
                   {formData.name || 'Activity Name'}
                 </h2>
-                <p className="text-sm text-gray-600 mt-1">
+                <p className="text-sm text-gray-600 mt-1 line-clamp-2">
                   {formData.description || 'Activity description'}
                 </p>
               </div>
@@ -315,7 +333,7 @@ function CreateProjectContent() {
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
             {/* Activity Name */}
             <div>
               <label htmlFor="name" className="block text-sm font-semibold text-gray-900 mb-2">

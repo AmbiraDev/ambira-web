@@ -383,7 +383,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                               No activities yet
                             </p>
                             <Link
-                              href="/projects/new?redirect=/timer"
+                              href="/activities/new"
                               className="inline-flex items-center gap-2 px-4 py-2 bg-[#007AFF] text-white rounded-lg hover:bg-[#0051D5] transition-colors text-sm font-medium"
                             >
                               <svg
@@ -667,59 +667,6 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
         <ArrowLeft className="w-6 h-6 text-gray-700" />
       </Link>
 
-      {/* No Activities Banner - Show prominent message when no activities exist */}
-      {needsActivity && (
-        <div className="absolute top-0 left-0 right-0 bg-blue-50 border-b border-blue-200 px-4 py-3 md:py-4">
-          <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-start md:items-center gap-3 md:gap-4">
-            <div className="flex items-start gap-3 flex-1">
-              <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 mt-0.5 md:mt-0">
-                <svg
-                  className="w-5 h-5 text-blue-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                  />
-                </svg>
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="text-sm md:text-base font-semibold text-blue-900 mb-1">
-                  Create your first activity to get started
-                </h3>
-                <p className="text-xs md:text-sm text-blue-700">
-                  Activities help you organize your work sessions. You'll need
-                  at least one activity before you can start tracking time.
-                </p>
-              </div>
-            </div>
-            <Link
-              href="/projects/new?redirect=/timer"
-              className="w-full md:w-auto flex items-center justify-center gap-2 px-4 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium text-sm whitespace-nowrap shadow-sm"
-            >
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                />
-              </svg>
-              Create Activity
-            </Link>
-          </div>
-        </div>
-      )}
-
       {/* Centered Timer Container */}
       <div className="w-full max-w-2xl px-4 flex flex-col items-center space-y-8">
         {/* Large Timer Display */}
@@ -834,7 +781,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                       No activities yet
                     </p>
                     <Link
-                      href="/projects/new?redirect=/timer"
+                      href="/activities/new"
                       className="inline-flex items-center gap-2 px-4 py-2 bg-[#007AFF] text-white rounded-lg hover:bg-[#0051D5] transition-colors text-sm font-medium"
                     >
                       <svg
@@ -913,6 +860,37 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
             </>
           )}
         </div>
+
+        {/* No Activities Message - Minimalist design below activity selector */}
+        {needsActivity && (
+          <div className="w-full max-w-xl border border-gray-300 rounded-lg p-6 bg-white">
+            <h3 className="text-base font-semibold text-gray-900 mb-2">
+              Create your first activity to get started
+            </h3>
+            <p className="text-sm text-gray-600 mb-4">
+              Activities help you organize your work sessions. You'll need at least one activity before you can start tracking time.
+            </p>
+            <Link
+              href="/activities/new"
+              className="inline-flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-[#007AFF] text-white rounded-lg hover:bg-[#0051D5] transition-colors text-sm font-medium"
+            >
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                />
+              </svg>
+              Create Activity
+            </Link>
+          </div>
+        )}
       </div>
     </div>
   );

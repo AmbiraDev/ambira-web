@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { SignupCredentials } from '@/types';
 import { firebaseUserApi } from '@/lib/firebaseApi';
@@ -12,8 +11,6 @@ import PWAInstallPrompt from './PWAInstallPrompt';
 
 export const LandingPage: React.FC = () => {
   const { login, signup, signInWithGoogle } = useAuth();
-  const router = useRouter();
-  const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showSignup, setShowSignup] = useState(false);
@@ -39,10 +36,9 @@ export const LandingPage: React.FC = () => {
       setIsLoading(true);
       setError(null);
       await signInWithGoogle();
-
-      // Check for redirect parameter
-      const redirectTo = searchParams.get('redirect');
-      router.push(redirectTo || '/');
+      // Navigation is handled by AuthContext after successful authentication
+      // No need to manually navigate here - AuthContext will update isAuthenticated
+      // and the page component will automatically show the authenticated view
     } catch (err: any) {
       console.error('Google sign-in error:', err);
       setError('Failed to sign in with Google. Please try again.');
@@ -104,13 +100,12 @@ export const LandingPage: React.FC = () => {
       setIsLoading(true);
       setError(null);
       await login(loginData);
-      
-      // Check for redirect parameter
-      const redirectTo = searchParams.get('redirect');
-      router.push(redirectTo || '/');
+      // Navigation is handled by AuthContext after successful authentication
+      // No need to manually navigate here - AuthContext will update isAuthenticated
+      // and the page component will automatically show the authenticated view
     } catch (err: any) {
       console.error('Login error:', err);
-      
+
       // Handle specific Firebase errors with user-friendly messages
       if (err.message?.includes('auth/user-not-found')) {
         setError('No account found with this email address. Please sign up or check your email.');
@@ -225,13 +220,12 @@ export const LandingPage: React.FC = () => {
       setIsLoading(true);
       setError(null);
       await signup(signupData);
-      
-      // Check for redirect parameter
-      const redirectTo = searchParams.get('redirect');
-      router.push(redirectTo || '/');
+      // Navigation is handled by AuthContext after successful authentication
+      // No need to manually navigate here - AuthContext will update isAuthenticated
+      // and the page component will automatically show the authenticated view
     } catch (err: any) {
       console.error('Signup error:', err);
-      
+
       // Handle specific Firebase errors with user-friendly messages
       if (err.message?.includes('auth/email-already-in-use')) {
         setError('This email address is already registered. Please try logging in instead or use a different email.');
