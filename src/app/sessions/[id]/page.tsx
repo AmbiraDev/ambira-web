@@ -34,7 +34,7 @@ function SessionDetailContent({ sessionId }: { sessionId: string }) {
 
       // Fetch the session with details
       const sessionData = await firebaseApi.session.getSessionWithDetails(sessionId);
-      setSession(sessionData);
+      setSession(sessionData as unknown as SessionWithDetails);
     } catch (err: any) {
       console.error('Error loading session:', err);
       setError(err.message || 'Failed to load session');
@@ -117,7 +117,7 @@ function SessionDetailContent({ sessionId }: { sessionId: string }) {
         <div className="hidden md:block">
           <Header />
         </div>
-        <MobileHeader title="Session" showBackButton />
+        <MobileHeader title="Session" />
 
         <div className="max-w-[600px] mx-auto px-4 py-6">
           <div className="bg-white border border-gray-200 rounded-lg p-4 animate-pulse">
@@ -145,7 +145,7 @@ function SessionDetailContent({ sessionId }: { sessionId: string }) {
         <div className="hidden md:block">
           <Header />
         </div>
-        <MobileHeader title="Session" showBackButton />
+        <MobileHeader title="Session" />
 
         <div className="max-w-[600px] mx-auto px-4 py-6">
           <div className="text-center py-12">
@@ -177,7 +177,7 @@ function SessionDetailContent({ sessionId }: { sessionId: string }) {
       <div className="hidden md:block">
         <Header />
       </div>
-      <MobileHeader title="Session" showBackButton />
+      <MobileHeader title="Session" />
 
       <div className="max-w-[600px] mx-auto md:px-4 md:py-6">
         {/* Back button for desktop */}
@@ -218,7 +218,7 @@ export default function SessionDetailPageWrapper({ params }: SessionDetailPagePr
           <div className="hidden md:block">
             <Header />
           </div>
-          <MobileHeader title="Session" showBackButton />
+          <MobileHeader title="Session" />
           <div className="max-w-[600px] mx-auto px-4 py-6">
             <div className="animate-pulse">
               <div className="h-8 bg-gray-200 rounded w-48 mb-4"></div>

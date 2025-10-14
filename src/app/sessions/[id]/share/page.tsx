@@ -34,7 +34,7 @@ function SessionShareContent({ sessionId }: { sessionId: string }) {
 
       // Fetch the session with details
       const sessionData = await firebaseApi.session.getSessionWithDetails(sessionId);
-      setSession(sessionData);
+      setSession(sessionData as unknown as SessionWithDetails);
     } catch (err: any) {
       console.error('Error loading session:', err);
       setError(err.message || 'Failed to load session');

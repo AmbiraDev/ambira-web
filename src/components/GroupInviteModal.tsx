@@ -218,7 +218,7 @@ export default function GroupInviteModal({ group, isOpen, onClose }: GroupInvite
               </div>
 
               {/* Share Button (shows on mobile with Web Share API support) */}
-              {typeof navigator !== 'undefined' && navigator.share && (
+              {typeof navigator !== 'undefined' && typeof navigator.share !== 'undefined' && (
                 <button
                   onClick={handleShare}
                   className="w-full px-4 py-3 bg-gray-100 text-gray-900 rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center gap-2 font-medium"
@@ -347,7 +347,7 @@ export default function GroupInviteModal({ group, isOpen, onClose }: GroupInvite
                   <Download className="w-4 h-4" />
                   Download Image
                 </button>
-                {typeof navigator !== 'undefined' && navigator.share && (
+                {typeof navigator !== 'undefined' && typeof navigator.share !== 'undefined' && (
                   <button
                     onClick={handleShare}
                     className="flex-1 px-4 py-3 bg-gray-100 text-gray-900 rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center gap-2 font-medium"

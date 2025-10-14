@@ -1,11 +1,11 @@
 'use client';
 
 import React from 'react';
-import { PostWithDetails } from '@/types';
+import { SessionWithDetails } from '@/types';
 import PostCard from './PostCard';
 
 interface PostProps {
-  post: PostWithDetails;
+  post: SessionWithDetails;
   onSupport: (postId: string) => Promise<void>;
   onRemoveSupport: (postId: string) => Promise<void>;
   onShare: (postId: string) => Promise<void>;

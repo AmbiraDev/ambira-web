@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { User } from '@/types';
+import { UserSearchResult } from '@/types';
 import { firebaseUserApi } from '@/lib/firebaseApi';
 
 interface CommentInputProps {
@@ -15,7 +15,7 @@ interface CommentInputProps {
 }
 
 interface MentionSuggestion {
-  user: User;
+  user: UserSearchResult;
   index: number;
 }
 
@@ -33,7 +33,7 @@ export const CommentInput: React.FC<CommentInputProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showMentions, setShowMentions] = useState(false);
   const [mentionQuery, setMentionQuery] = useState('');
-  const [mentionSuggestions, setMentionSuggestions] = useState<User[]>([]);
+  const [mentionSuggestions, setMentionSuggestions] = useState<UserSearchResult[]>([]);
   const [selectedMentionIndex, setSelectedMentionIndex] = useState(0);
   const [mentionStartPos, setMentionStartPos] = useState<number | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -60,7 +60,7 @@ export const CommentInput: React.FC<CommentInputProps> = ({
       if (mentionQuery.length > 0) {
         try {
           const results = await firebaseUserApi.searchUsers(mentionQuery, 5);
-          setMentionSuggestions(results);
+          setMentionSuggestions(results.users);
         } catch (error) {
           console.error('Failed to search users:', error);
           setMentionSuggestions([]);
@@ -107,19 +107,19 @@ export const CommentInput: React.FC<CommentInputProps> = ({
     }
   };
 
-  const insertMention = (user: User) => {
+  const insertMention = (user: UserSearchResult) => {
     if (mentionStartPos === null) return;
 
     const beforeMention = content.slice(0, mentionStartPos);
     const cursorPos = textareaRef.current?.selectionStart || content.length;
     const afterCursor = content.slice(cursorPos);
-    
+
     const newContent = `${beforeMention}@${user.username} ${afterCursor}`;
     setContent(newContent);
     setShowMentions(false);
     setMentionQuery('');
     setMentionStartPos(null);
-    
+
     // Focus back on textarea
     setTimeout(() => {
       if (textareaRef.current) {

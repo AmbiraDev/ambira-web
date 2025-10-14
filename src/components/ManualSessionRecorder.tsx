@@ -231,6 +231,7 @@ export default function ManualSessionRecorder() {
       }
       
       const formData: CreateSessionData = {
+        activityId: '',
         projectId,
         title,
         description,

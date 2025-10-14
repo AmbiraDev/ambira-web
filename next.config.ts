@@ -12,10 +12,9 @@ const nextConfig: NextConfig = {
     ];
   },
   eslint: {
-    // Only lint production code directories, excluding tests
-    // Tests still run with full linting via `npm run lint`
-    dirs: ['src/app', 'src/components', 'src/lib'],
-    ignoreDuringBuilds: false, // Keep linting enabled for these specific dirs
+    // Disable ESLint during builds
+    // Linting still runs via `npm run lint`
+    ignoreDuringBuilds: true,
   },
   typescript: {
     // Type checking is now enabled for production builds

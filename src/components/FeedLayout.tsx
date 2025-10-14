@@ -214,7 +214,7 @@ export const FeedLayout: React.FC<FeedLayoutProps> = ({ className = '' }) => {
         <div className="lg:col-span-3 order-3 hidden lg:block">
           <div className="sticky top-6 space-y-6">
             {/* Suggested Users */}
-            <SuggestedUsers users={suggestedUsers} />
+            <SuggestedUsers />
             
             {/* Trending Projects */}
             <div className="bg-white rounded-lg border border-gray-200 p-6">

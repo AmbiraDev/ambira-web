@@ -38,11 +38,13 @@ export const ActivityList: React.FC<ActivityListProps> = ({
   // };
 
   // Show all activities
-  const filteredActivities = activities;
+  const filteredActivities = activities || [];
 
   const handleDelete = async (activity: Activity) => {
     try {
-      await deleteProject(activity.id);
+      if (deleteProject) {
+        await deleteProject(activity.id);
+      }
       setDeleteConfirm(null);
     } catch (error) {
       console.error('Failed to delete activity:', error);
@@ -51,7 +53,9 @@ export const ActivityList: React.FC<ActivityListProps> = ({
 
   const handleArchive = async (activity: Activity) => {
     try {
-      await archiveProject(activity.id);
+      if (archiveProject) {
+        await archiveProject(activity.id);
+      }
     } catch (error) {
       console.error('Failed to archive activity:', error);
     }
@@ -59,7 +63,9 @@ export const ActivityList: React.FC<ActivityListProps> = ({
 
   const handleRestore = async (activity: Activity) => {
     try {
-      await archiveProject(activity.id); // This will toggle the status
+      if (archiveProject) {
+        await archiveProject(activity.id); // This will toggle the status
+      }
     } catch (error) {
       console.error('Failed to restore activity:', error);
     }
@@ -134,7 +140,7 @@ export const ActivityList: React.FC<ActivityListProps> = ({
 
   return (
     <div className="space-y-8">
-      <div className={viewMode === 'list' ? 'max-w-3xl mx-auto' : ''}>
+      <div>
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-2">
           <div>

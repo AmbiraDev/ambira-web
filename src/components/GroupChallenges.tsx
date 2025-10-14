@@ -256,7 +256,7 @@ export default function GroupChallenges({ group, isAdmin }: GroupChallengesProps
         onClose={() => setShowCreateModal(false)}
         onSubmit={handleCreateChallenge}
         groupId={group.id}
-        projects={projects}
+        projects={projects || []}
         isLoading={false}
       />
     </div>

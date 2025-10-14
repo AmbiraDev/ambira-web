@@ -72,9 +72,9 @@ export default function BrowseGroups({
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [filters, setFilters] = useState<GroupFilters>({
     search: '',
-    category: '',
-    type: '',
-    privacySetting: '',
+    category: undefined,
+    type: undefined,
+    privacySetting: undefined,
     location: ''
   });
   const [sortBy, setSortBy] = useState('recent');
@@ -143,9 +143,9 @@ export default function BrowseGroups({
   const clearFilters = () => {
     setFilters({
       search: '',
-      category: '',
-      type: '',
-      privacySetting: '',
+      category: undefined,
+      type: undefined,
+      privacySetting: undefined,
       location: ''
     });
   };

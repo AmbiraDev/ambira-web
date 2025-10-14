@@ -41,7 +41,7 @@ function ActivityDetailContent({ activityId }: { activityId: string }) {
     try {
       setIsLoading(true);
       const sessionData = await firebaseApi.session.getSessionWithDetails(activityId);
-      setSession(sessionData);
+      setSession(sessionData as unknown as SessionWithDetails);
     } catch (error: any) {
       const isPermissionError = error?.message?.includes('permission') || error?.message?.includes('Permission');
       const isNotFound = error?.message?.includes('not found') || error?.message?.includes('Not found');
@@ -75,9 +75,9 @@ function ActivityDetailContent({ activityId }: { activityId: string }) {
     try {
       setIsSupporting(true);
       if (session.isSupported) {
-        await firebaseApi.session.unsupportSession(session.id);
+        await firebaseApi.post.removeSupportFromSession(session.id);
       } else {
-        await firebaseApi.session.supportSession(session.id);
+        await firebaseApi.post.supportSession(session.id);
       }
       await loadSessionData();
     } catch (error) {

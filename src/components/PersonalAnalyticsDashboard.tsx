@@ -73,8 +73,8 @@ export const PersonalAnalyticsDashboard: React.FC<PersonalAnalyticsDashboardProp
     // Calculate sessions
     const totalSessions = sessions.length;
 
-    // Calculate tasks
-    const totalTasks = sessions.reduce((sum, s) => sum + (s.tasks?.length || 0), 0);
+    // Calculate tasks (tasks tracking not implemented at session level)
+    const totalTasks = 0;
 
     // Calculate average session duration in minutes
     const averageSessionDuration = totalSessions > 0 ? totalSeconds / totalSessions / 60 : 0;

@@ -27,7 +27,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
     totalTarget: undefined,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errors, setErrors] = useState<Partial<CreateProjectData>>({});
+  const [errors, setErrors] = useState<Partial<Record<keyof CreateProjectData, string>>>({});
 
   // Handle ESC key to close modal
   React.useEffect(() => {
@@ -64,7 +64,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
   ];
 
   const validateForm = (): boolean => {
-    const newErrors: Partial<CreateProjectData> = {};
+    const newErrors: Partial<Record<keyof CreateProjectData, string>> = {};
 
     if (!formData.name.trim()) {
       newErrors.name = 'Project name is required';
@@ -95,9 +95,14 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
       return;
     }
 
+    if (!createProject) {
+      showError('Create project function is not available');
+      return;
+    }
+
     try {
       setIsSubmitting(true);
-      const project = await createProject({
+      const project = await createProject!({
         ...formData,
         name: formData.name.trim(),
         description: formData.description.trim(),

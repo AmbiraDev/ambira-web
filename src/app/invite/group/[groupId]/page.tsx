@@ -3,13 +3,14 @@ import { firebaseApi } from '@/lib/firebaseApi';
 import GroupInviteLanding from '@/components/GroupInviteLanding';
 
 type Props = {
-  params: { groupId: string };
+  params: Promise<{ groupId: string }>;
 };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   try {
+    const { groupId } = await params;
     // Fetch group data for metadata
-    const group = await firebaseApi.group.getGroup(params.groupId);
+    const group = await firebaseApi.group.getGroup(groupId);
 
     if (!group) {
       return {
@@ -47,6 +48,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
-export default function GroupInvitePage({ params }: Props) {
-  return <GroupInviteLanding groupId={params.groupId} />;
+export default async function GroupInvitePage({ params }: Props) {
+  const { groupId } = await params;
+  return <GroupInviteLanding groupId={groupId} />;
 }

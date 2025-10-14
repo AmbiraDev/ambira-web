@@ -1,8 +1,14 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { SessionFormData, Project, Task } from '@/types';
+import { SessionFormData, Project } from '@/types';
 import { parseLocalDateTime } from '@/lib/utils';
+
+interface Task {
+  id: string;
+  name: string;
+  status: string;
+}
 
 interface ManualEntryProps {
   onSave: (data: SessionFormData) => Promise<void>;
@@ -24,6 +30,7 @@ export const ManualEntry: React.FC<ManualEntryProps> = ({
   isLoading = false
 }) => {
   const [formData, setFormData] = useState<SessionFormData>({
+    activityId: '',
     projectId: '',
     title: '',
     description: '',
@@ -62,7 +69,7 @@ export const ManualEntry: React.FC<ManualEntryProps> = ({
       try {
         const token = getAuthToken();
         // TODO: Load projects from Firebase
-        const projectList = []; // await mockProjectApiLocal.getProjects(token);
+        const projectList: Project[] = []; // await mockProjectApiLocal.getProjects(token);
         setProjects(projectList);
       } catch (error) {
         console.error('Failed to load projects:', error);
@@ -84,7 +91,7 @@ export const ManualEntry: React.FC<ManualEntryProps> = ({
       try {
         const token = getAuthToken();
         // TODO: Load tasks from Firebase
-        const taskList = []; // await mockTaskApiLocal.getProjectTasks(formData.projectId, token);
+        const taskList: Task[] = []; // await mockTaskApiLocal.getProjectTasks(formData.projectId, token);
         setTasks(taskList.filter(task => task.status === 'active'));
         setSelectedTasks([]);
         setFormData(prev => ({ ...prev, taskIds: [] }));
@@ -155,11 +162,12 @@ export const ManualEntry: React.FC<ManualEntryProps> = ({
   };
 
   const handleTagToggle = (tag: string) => {
-    const isSelected = formData.tags.includes(tag);
-    const newTags = isSelected 
-      ? formData.tags.filter(t => t !== tag)
-      : [...formData.tags, tag];
-    
+    const tags = formData.tags || [];
+    const isSelected = tags.includes(tag);
+    const newTags = isSelected
+      ? tags.filter(t => t !== tag)
+      : [...tags, tag];
+
     setFormData(prev => ({ ...prev, tags: newTags }));
   };
 
@@ -457,7 +465,7 @@ export const ManualEntry: React.FC<ManualEntryProps> = ({
                     type="button"
                     onClick={() => handleTagToggle(tag)}
                     className={`px-3 py-1 rounded-full text-sm transition-colors ${
-                      formData.tags.includes(tag)
+                      (formData.tags || []).includes(tag)
                         ? 'bg-blue-600 text-white'
                         : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                     }`}

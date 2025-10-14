@@ -171,12 +171,12 @@ function EditActivityContent({ activityId }: { activityId: string }) {
     totalTarget: undefined,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errors, setErrors] = useState<Partial<UpdateActivityData>>({});
+  const [errors, setErrors] = useState<Partial<Record<keyof UpdateActivityData, string>>>({});
   const [successMessage, setSuccessMessage] = useState('');
 
   // Load activity data
   useEffect(() => {
-    const activity = projects.find(p => p.id === activityId);
+    const activity = projects?.find(p => p.id === activityId);
     if (activity) {
       setFormData({
         name: activity.name,
@@ -194,7 +194,7 @@ function EditActivityContent({ activityId }: { activityId: string }) {
   }, [activityId, projects]);
 
   const validateForm = (): boolean => {
-    const newErrors: Partial<UpdateActivityData> = {};
+    const newErrors: Partial<Record<keyof UpdateActivityData, string>> = {};
 
     if (!formData.name?.trim()) {
       newErrors.name = 'Activity name is required';
@@ -228,6 +228,10 @@ function EditActivityContent({ activityId }: { activityId: string }) {
     try {
       setIsSubmitting(true);
       setSuccessMessage('');
+
+      if (!updateProject) {
+        throw new Error('Update project function is not available');
+      }
 
       // Convert icon name to full Iconify string and color name to hex
       const selectedIcon = AVAILABLE_ICONS.find(i => i.name === formData.icon);
@@ -397,7 +401,7 @@ function EditActivityContent({ activityId }: { activityId: string }) {
               </label>
               <IconSelector
                 icons={AVAILABLE_ICONS}
-                value={formData.icon}
+                value={formData.icon || 'briefcase'}
                 onChange={(iconName) => handleInputChange('icon', iconName)}
               />
               <p className="mt-1 text-xs text-gray-500">Choose an icon that represents this activity</p>
@@ -410,7 +414,7 @@ function EditActivityContent({ activityId }: { activityId: string }) {
               </label>
               <ColorSelector
                 colors={AVAILABLE_COLORS}
-                value={formData.color}
+                value={formData.color || 'orange'}
                 onChange={(colorName) => handleInputChange('color', colorName)}
               />
               <p className="mt-1 text-xs text-gray-500">Pick a color to identify this activity</p>

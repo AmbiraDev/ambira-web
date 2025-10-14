@@ -54,8 +54,10 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
   const loadStats = async () => {
     try {
       setIsLoadingStats(true);
-      const fetchedStats = await getProjectStats(activity.id);
-      setActivityStats(fetchedStats);
+      if (getProjectStats) {
+        const fetchedStats = await getProjectStats(activity.id);
+        setActivityStats(fetchedStats);
+      }
     } catch (error) {
       console.error('Failed to load activity stats:', error);
     } finally {

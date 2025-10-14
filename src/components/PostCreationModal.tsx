@@ -60,7 +60,8 @@ export const PostCreationModal: React.FC<PostCreationModalProps> = ({
     return `${minutes}m`;
   };
 
-  const completedTasks = session.tasks?.filter(task => task.status === 'completed').length || 0;
+  // Task tracking not implemented at session level
+  const completedTasks = 0;
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">

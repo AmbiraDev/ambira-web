@@ -34,9 +34,7 @@ export const ActiveTimerBar: React.FC<ActiveTimerBarProps> = ({ className = '' }
             
             <div className="text-sm text-gray-600">
               <span className="font-medium">{timerState.currentProject.name}</span>
-              {timerState.selectedTasks.length > 0 && (
-                <span className="ml-1">• {timerState.selectedTasks.length} task(s)</span>
-              )}
+              {/* TODO: Add selectedTasks to TimerState */}
             </div>
           </div>
 

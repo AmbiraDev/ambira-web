@@ -106,8 +106,8 @@ const NotificationsPage: React.FC = () => {
   };
 
   const getNotificationLink = (notification: Notification) => {
-    if (notification.type.startsWith('challenge_') && notification.data?.challengeId) {
-      return `/challenges/${notification.data.challengeId}`;
+    if (notification.type.startsWith('challenge_') && notification.challengeId) {
+      return `/challenges/${notification.challengeId}`;
     }
     return null;
   };

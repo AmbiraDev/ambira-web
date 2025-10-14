@@ -64,7 +64,7 @@ export default function DiscoverPeoplePage() {
       </div>
 
       {/* Mobile Header */}
-      <MobileHeader title="Discover People" showBack />
+      <MobileHeader title="Discover People" />
 
       <div className="max-w-4xl mx-auto px-0 md:px-6 md:py-8 md:pt-24">
         {/* Page Header - Desktop */}

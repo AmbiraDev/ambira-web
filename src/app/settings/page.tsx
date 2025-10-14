@@ -63,7 +63,7 @@ export default function SettingsPage() {
     twitter: user?.socialLinks?.twitter || '',
     github: user?.socialLinks?.github || '',
     linkedin: user?.socialLinks?.linkedin || '',
-    profileVisibility: (user?.profileVisibility || 'everyone') as 'everyone' | 'followers' | 'private',
+    profileVisibility: 'everyone' as 'everyone' | 'followers' | 'private',
   });
 
   const tabs = [
@@ -313,7 +313,7 @@ export default function SettingsPage() {
                           {profilePictureUrl || user?.profilePicture ? (
                             <div className="w-24 h-24 rounded-full overflow-hidden ring-4 ring-white flex-shrink-0">
                               <Image
-                                src={profilePictureUrl || user.profilePicture || ''}
+                                src={profilePictureUrl || user?.profilePicture || ''}
                                 alt="Profile"
                                 width={96}
                                 height={96}

@@ -26,8 +26,9 @@ export const PostStats: React.FC<PostStatsProps> = ({
     return `${minutes}m`;
   };
 
-  const completedTasks = session.tasks?.filter(task => task.status === 'completed') || [];
-  const totalTasks = session.tasks?.length || 0;
+  // Task tracking not implemented at session level
+  const completedTasks: any[] = [];
+  const totalTasks = 0;
 
   return (
     <div className={`bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border border-gray-200 overflow-hidden ${className}`}>

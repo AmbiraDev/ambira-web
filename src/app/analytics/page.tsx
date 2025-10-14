@@ -57,7 +57,7 @@ export default function AnalyticsPage() {
   // Debug logging for activities
   console.log('Analytics - User ID:', user?.id);
   console.log('Analytics - Activities data:', activities);
-  console.log('Analytics - Activities length:', activities.length);
+  console.log('Analytics - Activities length:', activities?.length);
   console.log('Analytics - Sessions count:', sessions.length);
   console.log('Analytics - Sample session projectIds:', sessions.slice(0, 3).map(s => ({ id: s.id, projectId: s.projectId, activityId: s.activityId })));
   console.log('Analytics - Selected activity ID:', selectedProjectId);
@@ -166,7 +166,7 @@ export default function AnalyticsPage() {
       currentStreak: stats?.currentStreak || 0,
       longestStreak: stats?.longestStreak || 0,
       activeDays: currentActiveDays,
-      activities: activities.length,
+      activities: activities?.length || 0,
 
       // Percentage changes
       hoursChange,
@@ -314,7 +314,7 @@ export default function AnalyticsPage() {
                     onClick={() => setShowProjectDropdown(!showProjectDropdown)}
                     className="flex items-center gap-2 px-3 md:px-4 py-2 text-xs md:text-sm font-semibold border border-gray-300 rounded-lg hover:bg-gray-50 min-w-[140px] max-w-[200px]"
                   >
-                    <span className="truncate">{selectedProjectId === 'all' ? 'All activities' : activities.find(p => p.id === selectedProjectId)?.name || 'All activities'}</span>
+                    <span className="truncate">{selectedProjectId === 'all' ? 'All activities' : activities?.find(p => p.id === selectedProjectId)?.name || 'All activities'}</span>
                     <ChevronDown className="w-3.5 h-3.5 md:w-4 md:h-4 flex-shrink-0" />
                   </button>
                   {showProjectDropdown && (
@@ -327,8 +327,8 @@ export default function AnalyticsPage() {
                         >
                           All
                         </button>
-                        {activities.length === 0 && <div className="px-4 py-2 text-xs text-gray-400">No activities yet</div>}
-                        {activities.map((activity) => (
+                        {(!activities || activities.length === 0) && <div className="px-4 py-2 text-xs text-gray-400">No activities yet</div>}
+                        {activities?.map((activity) => (
                           <button
                             key={activity.id}
                             onClick={() => { setSelectedProjectId(activity.id); setShowProjectDropdown(false); }}

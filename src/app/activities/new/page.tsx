@@ -166,11 +166,11 @@ function CreateProjectContent() {
     totalTarget: undefined,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errors, setErrors] = useState<Partial<CreateProjectData>>({});
+  const [errors, setErrors] = useState<Partial<Record<keyof CreateProjectData, string>>>({});
   const [successMessage, setSuccessMessage] = useState('');
 
   const validateForm = (): boolean => {
-    const newErrors: Partial<CreateProjectData> = {};
+    const newErrors: Partial<Record<keyof CreateProjectData, string>> = {};
 
     if (!formData.name.trim()) {
       newErrors.name = 'Activity name is required';
@@ -220,6 +220,10 @@ function CreateProjectContent() {
       // Convert icon name to full Iconify string and color name to hex
       const selectedIcon = AVAILABLE_ICONS.find(i => i.name === formData.icon);
       const selectedColor = AVAILABLE_COLORS.find(c => c.name === formData.color);
+
+      if (!createProject) {
+        throw new Error('Create project function is not available');
+      }
 
       const project = await createProject({
         ...formData,

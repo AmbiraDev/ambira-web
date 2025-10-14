@@ -331,7 +331,7 @@ export const EditSessionModal: React.FC<EditSessionModalProps> = ({
               className="w-full pl-3 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] bg-white text-sm appearance-none"
             >
               <option value="">Unassigned</option>
-              {projects.map((project) => (
+              {projects?.map((project) => (
                 <option key={project.id} value={project.id}>
                   {project.name}
                 </option>

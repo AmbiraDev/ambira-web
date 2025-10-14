@@ -1,13 +1,13 @@
 'use client';
 
 import React, { useState } from 'react';
-import { PostWithDetails, User } from '@/types';
+import { SessionWithDetails, User } from '@/types';
 import PostStats from './PostStats';
 import PostInteractions from './PostInteractions';
 import CommentList from './CommentList';
 
 interface PostCardProps {
-  post: PostWithDetails;
+  post: SessionWithDetails;
   onSupport: (postId: string) => Promise<void>;
   onRemoveSupport: (postId: string) => Promise<void>;
   onShare: (postId: string) => Promise<void>;
@@ -158,10 +158,10 @@ export const PostCard: React.FC<PostCardProps> = ({
         </div>
 
         {/* Post Description */}
-        {post.content && (
+        {post.description && (
           <div className="mt-4">
             <p className="text-gray-900 leading-relaxed whitespace-pre-wrap">
-              {post.content}
+              {post.description}
             </p>
           </div>
         )}
@@ -169,9 +169,9 @@ export const PostCard: React.FC<PostCardProps> = ({
 
       {/* Session Stats */}
       <div className="px-4 pb-4">
-        <PostStats 
-          session={post.session} 
-          project={post.project}
+        <PostStats
+          session={post}
+          project={post.activity || post.project}
         />
       </div>
 
@@ -210,7 +210,7 @@ export const PostCard: React.FC<PostCardProps> = ({
       {/* Comments Section */}
       {showCommentSection && (
         <div className="border-t border-gray-200">
-          <CommentList postId={post.id} initialCommentCount={post.commentCount} />
+          <CommentList sessionId={post.id} initialCommentCount={post.commentCount} />
         </div>
       )}
     </article>
