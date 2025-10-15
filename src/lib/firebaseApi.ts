@@ -758,11 +758,17 @@ export const firebaseAuthApi = {
       console.log('[signInWithGoogle] Starting Google sign-in...');
       console.log('[signInWithGoogle] User agent:', navigator.userAgent);
       console.log('[signInWithGoogle] Current URL:', window.location.href);
+      console.log('[signInWithGoogle] Auth domain:', auth.config.authDomain);
 
       const provider = new GoogleAuthProvider();
       // Add scopes for better user info
       provider.addScope('profile');
       provider.addScope('email');
+
+      // Set custom parameters - let Firebase handle redirect_uri automatically
+      provider.setCustomParameters({
+        prompt: 'select_account'
+      });
 
       // Always use redirect for mobile devices and Safari (more reliable)
       // Safari especially has issues with popups and third-party cookies
@@ -778,19 +784,31 @@ export const firebaseAuthApi = {
       if (isMobileOrSafari) {
         // Use redirect for mobile devices and Safari (more reliable)
         console.log('[signInWithGoogle] Using redirect flow for mobile/Safari');
-        console.log('[signInWithGoogle] Firebase Auth domain:', auth.config.authDomain);
+        console.log('[signInWithGoogle] Redirect URI:', `https://${auth.config.authDomain}/__/auth/handler`);
 
         try {
+          // Important: signInWithRedirect initiates the redirect and never returns
           await signInWithRedirect(auth, provider);
-          // Redirect happens here - the user will be redirected to Google
-          // The result will be handled by getRedirectResult in AuthContext
-          // This code path will never return - browser redirects away
-          // We throw a special marker that won't be seen but keeps TypeScript happy
+          // This line will never be reached - browser redirects to Google
           throw new Error('REDIRECT_IN_PROGRESS');
         } catch (redirectError: any) {
-          console.error('[signInWithGoogle] Redirect error:', redirectError);
-          console.error('[signInWithGoogle] Error code:', redirectError.code);
-          console.error('[signInWithGoogle] Error message:', redirectError.message);
+          // Only log if it's NOT our expected REDIRECT_IN_PROGRESS marker
+          if (redirectError?.message !== 'REDIRECT_IN_PROGRESS') {
+            console.error('[signInWithGoogle] Redirect error:', redirectError);
+            console.error('[signInWithGoogle] Error code:', redirectError.code);
+            console.error('[signInWithGoogle] Error message:', redirectError.message);
+
+            // Handle specific error codes
+            if (redirectError.code === 'auth/network-request-failed') {
+              throw new Error(
+                'Network error. Please check your internet connection and try again.'
+              );
+            } else if (redirectError.code === 'auth/unauthorized-domain') {
+              throw new Error(
+                `This domain (${window.location.hostname}) is not authorized. Please contact support.`
+              );
+            }
+          }
           throw redirectError;
         }
       } else {
@@ -814,6 +832,10 @@ export const firebaseAuthApi = {
           } else if (popupError.code === 'auth/unauthorized-domain') {
             throw new Error(
               'This domain is not authorized for Google Sign-in. Please add it to authorized domains in Firebase Console.'
+            );
+          } else if (popupError.code === 'auth/network-request-failed') {
+            throw new Error(
+              'Network error. Please check your internet connection and try again.'
             );
           }
           // Re-throw if it's a different error
@@ -1172,9 +1194,12 @@ export const firebaseUserApi = {
             });
           }
         } catch (error) {
-          handleError(error, 'Recalculate follower counts', {
-            severity: ErrorSeverity.WARNING,
-          });
+          // Handle permission errors silently - this is expected for privacy-protected data
+          if (!isPermissionError(error)) {
+            handleError(error, 'Recalculate follower counts', {
+              severity: ErrorSeverity.WARNING,
+            });
+          }
           // Keep the default values if recalculation fails
         }
       }
@@ -1764,22 +1789,50 @@ export const firebaseUserApi = {
   // Get followers for a user
   getFollowers: async (userId: string): Promise<User[]> => {
     try {
-      // Get all inbound connections (people who follow this user)
+      console.log('[getFollowers] Starting fetch for userId:', userId);
+
+      // Try new social_graph structure first
       const inboundRef = collection(db, `social_graph/${userId}/inbound`);
       const inboundSnapshot = await getDocs(inboundRef);
+      console.log('[getFollowers] social_graph inbound snapshot size:', inboundSnapshot.size);
 
-      if (inboundSnapshot.empty) {
+      let followerIds: string[] = [];
+
+      if (!inboundSnapshot.empty) {
+        followerIds = inboundSnapshot.docs.map(doc => doc.id);
+        console.log('[getFollowers] Found followers in social_graph:', followerIds);
+      } else {
+        // Fallback to old follows collection for backward compatibility
+        console.log('[getFollowers] social_graph empty, trying follows collection...');
+        const followersQuery = query(
+          collection(db, 'follows'),
+          where('followingId', '==', userId)
+        );
+        const followersSnapshot = await getDocs(followersQuery);
+        console.log('[getFollowers] follows collection snapshot size:', followersSnapshot.size);
+
+        followerIds = followersSnapshot.docs.map(doc => {
+          const data = doc.data();
+          console.log('[getFollowers] follows doc data:', doc.id, data);
+          return data.followerId;
+        });
+        console.log('[getFollowers] Extracted follower IDs from follows:', followerIds);
+      }
+
+      if (followerIds.length === 0) {
+        console.log('[getFollowers] No followers found, returning empty array');
         return [];
       }
 
       // Get user details for all followers
-      const followerIds = inboundSnapshot.docs.map(doc => doc.id);
       const followers: User[] = [];
 
       for (const followerId of followerIds) {
+        console.log('[getFollowers] Fetching user data for followerId:', followerId);
         const userDoc = await getDoc(doc(db, 'users', followerId));
         if (userDoc.exists()) {
           const userData = userDoc.data();
+          console.log('[getFollowers] Found user:', userData.username);
           followers.push({
             id: userDoc.id,
             username: userData.username,
@@ -1792,14 +1845,20 @@ export const firebaseUserApi = {
             createdAt: userData.createdAt?.toDate() || new Date(),
             updatedAt: userData.updatedAt?.toDate() || new Date(),
           });
+        } else {
+          console.log('[getFollowers] User doc does not exist for ID:', followerId);
         }
       }
 
+      console.log('[getFollowers] Returning', followers.length, 'followers');
       return followers;
     } catch (error) {
-      handleError(error, 'fetching followers', {
-        severity: ErrorSeverity.ERROR,
-      });
+      console.error('[getFollowers] Error:', error);
+      // Handle permission errors silently for privacy-protected data
+      if (isPermissionError(error)) {
+        console.log('[getFollowers] Permission error, returning empty array');
+        return [];
+      }
       const apiError = handleError(error, 'Fetch followers', {
         defaultMessage: 'Failed to fetch followers',
       });
@@ -1810,22 +1869,50 @@ export const firebaseUserApi = {
   // Get following for a user
   getFollowing: async (userId: string): Promise<User[]> => {
     try {
-      // Get all outbound connections (people this user follows)
+      console.log('[getFollowing] Starting fetch for userId:', userId);
+
+      // Try new social_graph structure first
       const outboundRef = collection(db, `social_graph/${userId}/outbound`);
       const outboundSnapshot = await getDocs(outboundRef);
+      console.log('[getFollowing] social_graph outbound snapshot size:', outboundSnapshot.size);
 
-      if (outboundSnapshot.empty) {
+      let followingIds: string[] = [];
+
+      if (!outboundSnapshot.empty) {
+        followingIds = outboundSnapshot.docs.map(doc => doc.id);
+        console.log('[getFollowing] Found following in social_graph:', followingIds);
+      } else {
+        // Fallback to old follows collection for backward compatibility
+        console.log('[getFollowing] social_graph empty, trying follows collection...');
+        const followingQuery = query(
+          collection(db, 'follows'),
+          where('followerId', '==', userId)
+        );
+        const followingSnapshot = await getDocs(followingQuery);
+        console.log('[getFollowing] follows collection snapshot size:', followingSnapshot.size);
+
+        followingIds = followingSnapshot.docs.map(doc => {
+          const data = doc.data();
+          console.log('[getFollowing] follows doc data:', doc.id, data);
+          return data.followingId;
+        });
+        console.log('[getFollowing] Extracted following IDs from follows:', followingIds);
+      }
+
+      if (followingIds.length === 0) {
+        console.log('[getFollowing] No following found, returning empty array');
         return [];
       }
 
       // Get user details for all following
-      const followingIds = outboundSnapshot.docs.map(doc => doc.id);
       const following: User[] = [];
 
       for (const followingId of followingIds) {
+        console.log('[getFollowing] Fetching user data for followingId:', followingId);
         const userDoc = await getDoc(doc(db, 'users', followingId));
         if (userDoc.exists()) {
           const userData = userDoc.data();
+          console.log('[getFollowing] Found user:', userData.username);
           following.push({
             id: userDoc.id,
             username: userData.username,
@@ -1838,14 +1925,20 @@ export const firebaseUserApi = {
             createdAt: userData.createdAt?.toDate() || new Date(),
             updatedAt: userData.updatedAt?.toDate() || new Date(),
           });
+        } else {
+          console.log('[getFollowing] User doc does not exist for ID:', followingId);
         }
       }
 
+      console.log('[getFollowing] Returning', following.length, 'following');
       return following;
     } catch (error) {
-      handleError(error, 'fetching following', {
-        severity: ErrorSeverity.ERROR,
-      });
+      console.error('[getFollowing] Error:', error);
+      // Handle permission errors silently for privacy-protected data
+      if (isPermissionError(error)) {
+        console.log('[getFollowing] Permission error, returning empty array');
+        return [];
+      }
       const apiError = handleError(error, 'Fetch following', {
         defaultMessage: 'Failed to fetch following',
       });

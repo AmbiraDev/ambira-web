@@ -211,15 +211,15 @@ export default function GroupDetailPage() {
     <div className="min-h-screen bg-gray-50">
       <Header />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
         <div className="flex gap-8">
           {/* Main Content */}
           <div className="flex-1">
             {/* Group Header */}
             <div className="mb-6">
-              <div className="flex items-start gap-4">
+              <div className="flex flex-col sm:flex-row items-start gap-4">
                 {/* Group Avatar */}
-                <div className="w-32 h-32 bg-gradient-to-br from-[#007AFF] to-[#0051D5] rounded-full flex items-center justify-center flex-shrink-0">
+                <div className="w-20 h-20 sm:w-32 sm:h-32 bg-gradient-to-br from-[#007AFF] to-[#0051D5] rounded-full flex items-center justify-center flex-shrink-0">
                   {group.imageUrl ? (
                     <img
                       src={group.imageUrl}
@@ -227,14 +227,14 @@ export default function GroupDetailPage() {
                       className="w-full h-full rounded-full object-cover"
                     />
                   ) : (
-                    <Users className="w-16 h-16 text-white" />
+                    <Users className="w-10 h-10 sm:w-16 sm:h-16 text-white" />
                   )}
                 </div>
 
-                <div className="flex-1 min-w-0">
+                <div className="flex-1 min-w-0 w-full">
                   {/* Group Name and Action Buttons */}
-                  <div className="flex items-center gap-3 mb-2">
-                    <h1 className="text-3xl font-bold text-gray-900">{group.name}</h1>
+                  <div className="flex items-center gap-2 sm:gap-3 mb-2 flex-wrap">
+                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">{group.name}</h1>
                     {isAdmin && (
                       <>
                         <button
@@ -267,11 +267,11 @@ export default function GroupDetailPage() {
                   </div>
 
                   {/* Category and Location */}
-                  <div className="flex items-center gap-4 mb-3">
+                  <div className="flex flex-wrap items-center gap-3 sm:gap-4 mb-3">
                     {/* Category */}
                     <div className="flex items-center gap-2">
-                      <span className="text-2xl">{getCategoryIcon()}</span>
-                      <span className="text-sm text-gray-600 capitalize">
+                      <span className="text-xl sm:text-2xl">{getCategoryIcon()}</span>
+                      <span className="text-xs sm:text-sm text-gray-600 capitalize">
                         {group.category.replace('-', ' ')}
                       </span>
                     </div>
@@ -279,8 +279,8 @@ export default function GroupDetailPage() {
                     {/* Location */}
                     {group.location && (
                       <div className="flex items-center gap-2">
-                        <span className="text-lg">📍</span>
-                        <span className="text-sm text-gray-600">
+                        <span className="text-base sm:text-lg">📍</span>
+                        <span className="text-xs sm:text-sm text-gray-600">
                           {group.location}
                         </span>
                       </div>
@@ -289,18 +289,18 @@ export default function GroupDetailPage() {
 
                   {/* Description */}
                   {group.description && (
-                    <p className="text-gray-700 mb-4 whitespace-pre-line max-h-24 overflow-y-auto">{group.description}</p>
+                    <p className="text-sm sm:text-base text-gray-700 mb-4 whitespace-pre-line max-h-24 overflow-y-auto">{group.description}</p>
                   )}
                 </div>
               </div>
             </div>
 
             {/* Tabs */}
-            <div className="border-b border-gray-200 mb-6">
-              <nav className="flex gap-8" aria-label="Group tabs">
+            <div className="border-b border-gray-200 mb-6 -mx-4 sm:mx-0">
+              <nav className="flex gap-4 sm:gap-8 overflow-x-auto px-4 sm:px-0" aria-label="Group tabs">
                 <button
                   onClick={() => setActiveTab('leaderboard')}
-                  className={`pb-3 px-1 text-sm font-medium border-b-2 transition-colors ${
+                  className={`pb-3 px-1 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                     activeTab === 'leaderboard'
                       ? 'border-gray-900 text-gray-900'
                       : 'border-transparent text-gray-600 hover:text-gray-900'
@@ -310,7 +310,7 @@ export default function GroupDetailPage() {
                 </button>
                 <button
                   onClick={() => setActiveTab('recent-activity')}
-                  className={`pb-3 px-1 text-sm font-medium border-b-2 transition-colors ${
+                  className={`pb-3 px-1 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                     activeTab === 'recent-activity'
                       ? 'border-gray-900 text-gray-900'
                       : 'border-transparent text-gray-600 hover:text-gray-900'
@@ -320,7 +320,7 @@ export default function GroupDetailPage() {
                 </button>
                 <button
                   onClick={() => setActiveTab('members')}
-                  className={`pb-3 px-1 text-sm font-medium border-b-2 transition-colors ${
+                  className={`pb-3 px-1 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                     activeTab === 'members'
                       ? 'border-gray-900 text-gray-900'
                       : 'border-transparent text-gray-600 hover:text-gray-900'
@@ -330,7 +330,7 @@ export default function GroupDetailPage() {
                 </button>
                 <button
                   onClick={() => setActiveTab('posts')}
-                  className={`pb-3 px-1 text-sm font-medium border-b-2 transition-colors ${
+                  className={`pb-3 px-1 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
                     activeTab === 'posts'
                       ? 'border-gray-900 text-gray-900'
                       : 'border-transparent text-gray-600 hover:text-gray-900'
@@ -345,14 +345,14 @@ export default function GroupDetailPage() {
             <div>
               {activeTab === 'leaderboard' && (
                 <div>
-                  <div className="flex items-center justify-between mb-6">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-6">
                     <h2 className="text-xl font-bold text-gray-900">Group Leaderboard</h2>
 
                     {/* Time Period Dropdown */}
-                    <div className="relative">
+                    <div className="relative w-full sm:w-auto">
                       <button
                         onClick={() => setShowPeriodDropdown(!showPeriodDropdown)}
-                        className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                        className="flex items-center justify-between w-full sm:w-auto gap-2 px-4 py-2 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
                       >
                         <span className="text-sm font-medium text-gray-700">{getPeriodLabel(timePeriod)}</span>
                         <ChevronDown className="w-4 h-4 text-gray-600" />
@@ -364,7 +364,7 @@ export default function GroupDetailPage() {
                             className="fixed inset-0 z-10"
                             onClick={() => setShowPeriodDropdown(false)}
                           />
-                          <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg z-20">
+                          <div className="absolute left-0 sm:right-0 sm:left-auto mt-2 w-full sm:w-40 bg-white border border-gray-200 rounded-lg shadow-lg z-20">
                             {(['today', 'week', 'month', 'year'] as TimePeriod[]).map((period) => (
                               <button
                                 key={period}
@@ -403,14 +403,22 @@ export default function GroupDetailPage() {
                     </div>
                   ) : (
                     <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                      {/* Table Header */}
-                      <div className="grid grid-cols-[60px_1fr_100px_100px_110px_110px] gap-4 px-6 py-4 bg-gray-50 border-b border-gray-200">
+                      {/* Desktop Table Header */}
+                      <div className="hidden md:grid grid-cols-[60px_1fr_100px_100px_110px_110px] gap-4 px-6 py-4 bg-gray-50 border-b border-gray-200">
                         <div className="text-xs font-semibold text-gray-600 uppercase">Rank</div>
                         <div className="text-xs font-semibold text-gray-600 uppercase">User</div>
                         <div className="text-xs font-semibold text-gray-600 uppercase text-right">Time</div>
                         <div className="text-xs font-semibold text-gray-600 uppercase text-right">Sessions</div>
                         <div className="text-xs font-semibold text-gray-600 uppercase text-right">Longest</div>
                         <div className="text-xs font-semibold text-gray-600 uppercase text-right">Avg. Time</div>
+                      </div>
+
+                      {/* Mobile Table Header */}
+                      <div className="md:hidden grid grid-cols-[50px_1fr_80px_80px] gap-2 px-4 py-3 bg-gray-50 border-b border-gray-200">
+                        <div className="text-xs font-semibold text-gray-600 uppercase">Rank</div>
+                        <div className="text-xs font-semibold text-gray-600 uppercase">User</div>
+                        <div className="text-xs font-semibold text-gray-600 uppercase text-right">Time</div>
+                        <div className="text-xs font-semibold text-gray-600 uppercase text-right">Sessions</div>
                       </div>
 
                       {/* Table Body */}
@@ -423,85 +431,152 @@ export default function GroupDetailPage() {
                             <Link
                               key={entry.user.id}
                               href={`/profile/${entry.user.username}`}
-                              className="grid grid-cols-[60px_1fr_100px_100px_110px_110px] gap-4 px-6 py-4 hover:bg-gray-50 transition-colors items-center"
+                              className="block hover:bg-gray-50 transition-colors"
                             >
-                              {/* Rank */}
-                              <div className="flex items-center justify-center">
-                                {entry.rank <= 3 ? (
-                                  <div className="flex items-center gap-2">
-                                    <span className="text-lg font-bold text-gray-900">{entry.rank}</span>
-                                    <Trophy
-                                      className={`w-5 h-5 ${
-                                        entry.rank === 1 ? 'text-yellow-400' :
-                                        entry.rank === 2 ? 'text-gray-400' :
-                                        'text-amber-600'
-                                      }`}
-                                    />
-                                  </div>
-                                ) : (
-                                  <span className="text-base font-semibold text-gray-900">{entry.rank}</span>
-                                )}
-                              </div>
-
-                              {/* User Info */}
-                              <div className="flex items-center gap-3 min-w-0">
-                                {/* Profile Picture with Medal Outline */}
-                                <div className={`flex-shrink-0 rounded-full ${getMedalOutline(entry.rank)}`}>
-                                  {entry.user.profilePicture ? (
-                                    <div className="w-12 h-12 rounded-full overflow-hidden bg-white">
-                                      <img
-                                        src={entry.user.profilePicture}
-                                        alt={entry.user.name}
-                                        className="w-full h-full object-cover"
+                              {/* Desktop Layout */}
+                              <div className="hidden md:grid grid-cols-[60px_1fr_100px_100px_110px_110px] gap-4 px-6 py-4 items-center">
+                                {/* Rank */}
+                                <div className="flex items-center justify-center">
+                                  {entry.rank <= 3 ? (
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-lg font-bold text-gray-900">{entry.rank}</span>
+                                      <Trophy
+                                        className={`w-5 h-5 ${
+                                          entry.rank === 1 ? 'text-yellow-400' :
+                                          entry.rank === 2 ? 'text-gray-400' :
+                                          'text-amber-600'
+                                        }`}
                                       />
                                     </div>
                                   ) : (
-                                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#FC4C02] to-[#FC4C02]/80 flex items-center justify-center">
-                                      <span className="text-white font-semibold">
-                                        {entry.user.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
-                                      </span>
-                                    </div>
+                                    <span className="text-base font-semibold text-gray-900">{entry.rank}</span>
                                   )}
                                 </div>
 
-                                {/* User Name and Location */}
-                                <div className="flex-1 min-w-0">
-                                  <div className="font-semibold text-gray-900 truncate">
-                                    {entry.user.name}
+                                {/* User Info */}
+                                <div className="flex items-center gap-3 min-w-0">
+                                  {/* Profile Picture with Medal Outline */}
+                                  <div className={`flex-shrink-0 rounded-full ${getMedalOutline(entry.rank)}`}>
+                                    {entry.user.profilePicture ? (
+                                      <div className="w-12 h-12 rounded-full overflow-hidden bg-white">
+                                        <img
+                                          src={entry.user.profilePicture}
+                                          alt={entry.user.name}
+                                          className="w-full h-full object-cover"
+                                        />
+                                      </div>
+                                    ) : (
+                                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#FC4C02] to-[#FC4C02]/80 flex items-center justify-center">
+                                        <span className="text-white font-semibold">
+                                          {entry.user.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                                        </span>
+                                      </div>
+                                    )}
                                   </div>
-                                  {entry.user.location && (
-                                    <div className="text-sm text-gray-500 truncate">
-                                      {entry.user.location}
+
+                                  {/* User Name and Location */}
+                                  <div className="flex-1 min-w-0">
+                                    <div className="font-semibold text-gray-900 truncate">
+                                      {entry.user.name}
                                     </div>
+                                    {entry.user.location && (
+                                      <div className="text-sm text-gray-500 truncate">
+                                        {entry.user.location}
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+
+                                {/* Total Time */}
+                                <div className="text-right">
+                                  <div className="text-base font-bold text-gray-900">
+                                    {formatHours(entry.totalHours)}
+                                  </div>
+                                </div>
+
+                                {/* Sessions */}
+                                <div className="text-right">
+                                  <div className="text-base font-bold text-gray-900">
+                                    {entry.sessionCount}
+                                  </div>
+                                </div>
+
+                                {/* Longest Session */}
+                                <div className="text-right">
+                                  <div className="text-base font-bold text-gray-900">
+                                    {formatHours(longestSession * 0.6)}
+                                  </div>
+                                </div>
+
+                                {/* Average Time */}
+                                <div className="text-right">
+                                  <div className="text-base font-bold text-gray-900">
+                                    {formatHours(avgSessionHours)}
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Mobile Layout */}
+                              <div className="md:hidden grid grid-cols-[50px_1fr_80px_80px] gap-2 px-4 py-3 items-center">
+                                {/* Rank */}
+                                <div className="flex items-center justify-center">
+                                  {entry.rank <= 3 ? (
+                                    <div className="flex flex-col items-center gap-1">
+                                      <span className="text-base font-bold text-gray-900">{entry.rank}</span>
+                                      <Trophy
+                                        className={`w-4 h-4 ${
+                                          entry.rank === 1 ? 'text-yellow-400' :
+                                          entry.rank === 2 ? 'text-gray-400' :
+                                          'text-amber-600'
+                                        }`}
+                                      />
+                                    </div>
+                                  ) : (
+                                    <span className="text-base font-semibold text-gray-900">{entry.rank}</span>
                                   )}
                                 </div>
-                              </div>
 
-                              {/* Total Time */}
-                              <div className="text-right">
-                                <div className="text-base font-bold text-gray-900">
-                                  {formatHours(entry.totalHours)}
+                                {/* User Info */}
+                                <div className="flex items-center gap-2 min-w-0">
+                                  {/* Profile Picture with Medal Outline */}
+                                  <div className={`flex-shrink-0 rounded-full ${getMedalOutline(entry.rank)}`}>
+                                    {entry.user.profilePicture ? (
+                                      <div className="w-10 h-10 rounded-full overflow-hidden bg-white">
+                                        <img
+                                          src={entry.user.profilePicture}
+                                          alt={entry.user.name}
+                                          className="w-full h-full object-cover"
+                                        />
+                                      </div>
+                                    ) : (
+                                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#FC4C02] to-[#FC4C02]/80 flex items-center justify-center">
+                                        <span className="text-white font-semibold text-xs">
+                                          {entry.user.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                                        </span>
+                                      </div>
+                                    )}
+                                  </div>
+
+                                  {/* User Name */}
+                                  <div className="flex-1 min-w-0">
+                                    <div className="font-semibold text-gray-900 text-sm truncate">
+                                      {entry.user.name}
+                                    </div>
+                                  </div>
                                 </div>
-                              </div>
 
-                              {/* Sessions */}
-                              <div className="text-right">
-                                <div className="text-base font-bold text-gray-900">
-                                  {entry.sessionCount}
+                                {/* Total Time */}
+                                <div className="text-right">
+                                  <div className="text-base font-bold text-gray-900">
+                                    {formatHours(entry.totalHours)}
+                                  </div>
                                 </div>
-                              </div>
 
-                              {/* Longest Session */}
-                              <div className="text-right">
-                                <div className="text-base font-bold text-gray-900">
-                                  {formatHours(longestSession * 0.6)}
-                                </div>
-                              </div>
-
-                              {/* Average Time */}
-                              <div className="text-right">
-                                <div className="text-base font-bold text-gray-900">
-                                  {formatHours(avgSessionHours)}
+                                {/* Sessions */}
+                                <div className="text-right">
+                                  <div className="text-base font-bold text-gray-900">
+                                    {entry.sessionCount}
+                                  </div>
                                 </div>
                               </div>
                             </Link>

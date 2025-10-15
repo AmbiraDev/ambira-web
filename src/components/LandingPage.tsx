@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useAuth } from '@/contexts/AuthContext';
@@ -8,7 +8,6 @@ import { SignupCredentials } from '@/types';
 import { firebaseUserApi } from '@/lib/firebaseApi';
 import Header from './HeaderComponent';
 import PWAInstallPrompt from './PWAInstallPrompt';
-import AuthDebugger from './AuthDebugger';
 
 export const LandingPage: React.FC = () => {
   const { login, signup, signInWithGoogle, user, isAuthenticated, isLoading: authIsLoading } = useAuth();
@@ -31,6 +30,14 @@ export const LandingPage: React.FC = () => {
   const [loginErrors, setLoginErrors] = useState<{email?: string; password?: string}>({});
   const [usernameCheckLoading, setUsernameCheckLoading] = useState(false);
   const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Detect if user is on mobile device
+  useEffect(() => {
+    const userAgent = navigator.userAgent.toLowerCase();
+    const isMobileDevice = /iphone|ipad|ipod|android/.test(userAgent);
+    setIsMobile(isMobileDevice);
+  }, []);
 
   const handleGoogleSignIn = async () => {
     try {
@@ -279,80 +286,87 @@ export const LandingPage: React.FC = () => {
       </div>
 
       {/* Hero Section - Full screen on mobile, with header space on desktop */}
-      <main className="h-screen md:h-[calc(100vh-56px)] flex flex-col md:items-center md:justify-center px-4 md:px-8 pt-32 md:pt-0">
-        {/* Mobile Carousel View - Only show when not in login/signup mode */}
+      <main className="min-h-screen md:h-[calc(100vh-56px)] flex flex-col md:items-center md:justify-center px-4 md:px-8 py-8 md:pt-0">
+        {/* Mobile View - Compact version similar to desktop */}
         {!showLogin && !showSignup && (
-          <div className="md:hidden flex-1 flex flex-col justify-between py-4 pb-6">
-            {/* Logo */}
-            <div className="text-center">
-              <div className="w-40 h-40 flex items-center justify-center mx-auto mb-2">
+          <div className="md:hidden w-full max-w-md mx-auto flex flex-col justify-center min-h-[calc(100vh-4rem)]">
+            {/* Logo and Welcome */}
+            <div className="text-center mb-6">
+              <div className="w-32 h-32 flex items-center justify-center mx-auto mb-4">
                 <Image
                   src="/logo.svg"
                   alt="Ambira Logo"
-                  width={160}
-                  height={160}
+                  width={128}
+                  height={128}
                   priority
                 />
               </div>
+              <h1 className="text-2xl font-bold text-gray-900 mb-1">Welcome to Ambira</h1>
+              <p className="text-base text-gray-600">
+                Study, work, and build with your friends.
+              </p>
             </div>
 
-          {/* Swipeable Carousel */}
-          <div className="flex-1 flex flex-col justify-start">
-            <div
-              className="overflow-hidden touch-pan-x"
-              onTouchStart={(e) => {
-                const touch = e.touches[0];
-                e.currentTarget.setAttribute('data-start-x', touch.clientX.toString());
-              }}
-              onTouchEnd={(e) => {
-                const startX = parseInt(e.currentTarget.getAttribute('data-start-x') || '0');
-                const endX = e.changedTouches[0].clientX;
-                const diff = startX - endX;
-
-                if (Math.abs(diff) > 50) {
-                  if (diff > 0 && carouselIndex < benefits.length - 1) {
-                    setCarouselIndex(carouselIndex + 1);
-                  } else if (diff < 0 && carouselIndex > 0) {
-                    setCarouselIndex(carouselIndex - 1);
-                  }
-                }
-              }}
-            >
-              <div className="text-center px-4">
-                <div className="text-6xl mb-4">{benefits[carouselIndex].image}</div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">{benefits[carouselIndex].title}</h2>
-                <p className="text-lg text-gray-600">{benefits[carouselIndex].description}</p>
-              </div>
+            {/* Already a Member Header */}
+            <div className="text-center mb-4">
+              <p className="text-lg text-gray-600">
+                Already a Member?{' '}
+                <button
+                  onClick={() => setShowLogin(true)}
+                  className="text-[#007AFF] font-semibold hover:text-[#0056D6] transition-colors"
+                >
+                  Log In
+                </button>
+              </p>
             </div>
 
-            {/* Dots Indicator - Actual circles */}
-            <div className="flex justify-center gap-2.5 mt-6">
-              {benefits.map((_, index) => (
-                <div
-                  key={index}
-                  className={`w-3 h-3 rounded-full transition-all flex-shrink-0 ${
-                    index === carouselIndex ? 'bg-[#007AFF]' : 'bg-gray-300'
-                  }`}
-                />
-              ))}
-            </div>
-          </div>
+            {/* CTA Buttons */}
+            <div className="space-y-3">
+              {/* Coming Soon Label - Only show on mobile */}
+              {isMobile && (
+                <p className="text-center text-sm text-gray-500 font-medium">Google Sign-In Coming Soon</p>
+              )}
 
-          {/* CTA Buttons */}
-          <div className="space-y-3 mt-6">
-            <button
-              onClick={handleSignupWithEmail}
-              className="w-full py-4 bg-[#007AFF] text-white font-semibold text-lg rounded-xl hover:bg-[#0056D6] transition-colors"
-            >
-              Join for free
-            </button>
-            <button
-              onClick={() => setShowLogin(true)}
-              className="w-full py-4 text-[#007AFF] font-semibold text-lg"
-            >
-              Log in
-            </button>
-          </div>
+              {/* Google Sign Up Button - Disabled only on mobile */}
+              <button
+                onClick={isMobile ? undefined : handleGoogleSignIn}
+                disabled={isMobile || isLoading}
+                className={`w-full flex items-center justify-center px-4 py-3 border-2 font-semibold rounded-lg ${
+                  isMobile
+                    ? 'border-gray-300 text-gray-400 opacity-50 cursor-not-allowed'
+                    : 'border-gray-300 text-gray-900 hover:border-gray-400 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
+                }`}
+              >
+                <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
+                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                </svg>
+                Sign Up With Google
+              </button>
+
+              {/* Email Sign Up Button */}
+              <button
+                onClick={handleSignupWithEmail}
+                disabled={isLoading}
+                className="w-full flex items-center justify-center px-4 py-3 bg-[#007AFF] text-white font-semibold rounded-lg hover:bg-[#0056D6] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isLoading ? (
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                ) : (
+                  'Sign Up With Email'
+                )}
+              </button>
+            </div>
+
+            {/* Legal Text */}
+            <p className="text-xs text-gray-600 text-center mt-6">
+              By continuing, you are agreeing to our{' '}
+              <Link href="/terms" className="text-[#007AFF]">Terms of Service</Link>
+              {' '}and{' '}
+              <Link href="/privacy" className="text-[#007AFF]">Privacy Policy</Link>.
+            </p>
           </div>
         )}
 
@@ -381,12 +395,21 @@ export const LandingPage: React.FC = () => {
             <div className="flex-1">
               {showLogin ? (
                 <form onSubmit={handleLoginSubmit} className="space-y-3">
-                  {/* OAuth Buttons */}
+                  {/* Coming Soon Label - Only show on mobile */}
+                  {isMobile && (
+                    <p className="text-center text-sm text-gray-500 font-medium">Google Sign-In Coming Soon</p>
+                  )}
+
+                  {/* OAuth Buttons - Disabled only on mobile */}
                   <button
-                    onClick={handleGoogleSignIn}
+                    onClick={isMobile ? undefined : handleGoogleSignIn}
                     type="button"
-                    disabled={isLoading}
-                    className="w-full flex items-center justify-center py-3 border border-gray-300 rounded-xl font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={isMobile || isLoading}
+                    className={`w-full flex items-center justify-center py-3 border-2 rounded-xl font-medium text-sm ${
+                      isMobile
+                        ? 'border-gray-300 text-gray-400 opacity-50 cursor-not-allowed'
+                        : 'border-gray-300 text-gray-900 hover:border-gray-400 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
+                    }`}
                   >
                     <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
                       <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -441,12 +464,21 @@ export const LandingPage: React.FC = () => {
                 </form>
               ) : (
                 <form onSubmit={handleSignupSubmit} className="space-y-3">
-                  {/* Google Button */}
+                  {/* Coming Soon Label - Only show on mobile */}
+                  {isMobile && (
+                    <p className="text-center text-sm text-gray-500 font-medium">Google Sign-In Coming Soon</p>
+                  )}
+
+                  {/* Google Button - Disabled only on mobile */}
                   <button
-                    onClick={handleGoogleSignIn}
+                    onClick={isMobile ? undefined : handleGoogleSignIn}
                     type="button"
-                    disabled={isLoading}
-                    className="w-full flex items-center justify-center py-3 border-2 border-gray-300 rounded-xl font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={isMobile || isLoading}
+                    className={`w-full flex items-center justify-center py-3 border-2 rounded-xl font-medium ${
+                      isMobile
+                        ? 'border-gray-300 text-gray-400 opacity-50 cursor-not-allowed'
+                        : 'border-gray-300 text-gray-900 hover:border-gray-400 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
+                    }`}
                   >
                     <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
                       <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -1094,9 +1126,6 @@ export const LandingPage: React.FC = () => {
 
       {/* PWA Install Prompt - Always show on mobile when in login/signup mode */}
       <PWAInstallPrompt alwaysShowOnMobile={showLogin || showSignup} />
-
-      {/* Debug panel for troubleshooting OAuth on mobile */}
-      <AuthDebugger />
     </div>
   );
 };
