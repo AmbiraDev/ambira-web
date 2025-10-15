@@ -8,6 +8,7 @@ import { SignupCredentials } from '@/types';
 import { firebaseUserApi } from '@/lib/firebaseApi';
 import Header from './HeaderComponent';
 import PWAInstallPrompt from './PWAInstallPrompt';
+import AuthDebugger from './AuthDebugger';
 
 export const LandingPage: React.FC = () => {
   const { login, signup, signInWithGoogle, user, isAuthenticated, isLoading: authIsLoading } = useAuth();
@@ -41,9 +42,13 @@ export const LandingPage: React.FC = () => {
       // and the page component will automatically show the authenticated view
     } catch (err: any) {
       console.error('Google sign-in error:', err);
-      setError('Failed to sign in with Google. Please try again.');
-    } finally {
-      setIsLoading(false);
+      // Don't show error or clear loading if redirect is in progress
+      // (user is being redirected to Google)
+      if (err?.message !== 'REDIRECT_IN_PROGRESS') {
+        setError(err?.message || 'Failed to sign in with Google. Please try again.');
+        setIsLoading(false);
+      }
+      // If REDIRECT_IN_PROGRESS, keep loading state - browser will redirect
     }
   };
 
@@ -277,22 +282,22 @@ export const LandingPage: React.FC = () => {
       <main className="h-screen md:h-[calc(100vh-56px)] flex flex-col md:items-center md:justify-center px-4 md:px-8 pt-32 md:pt-0">
         {/* Mobile Carousel View - Only show when not in login/signup mode */}
         {!showLogin && !showSignup && (
-          <div className="md:hidden flex-1 flex flex-col justify-between py-12 pb-8">
+          <div className="md:hidden flex-1 flex flex-col justify-between py-4 pb-6">
             {/* Logo */}
             <div className="text-center">
-              <div className="w-48 h-48 flex items-center justify-center mx-auto mb-6">
+              <div className="w-40 h-40 flex items-center justify-center mx-auto mb-2">
                 <Image
                   src="/logo.svg"
                   alt="Ambira Logo"
-                  width={192}
-                  height={192}
+                  width={160}
+                  height={160}
                   priority
                 />
               </div>
             </div>
 
           {/* Swipeable Carousel */}
-          <div className="flex-1 flex flex-col justify-center">
+          <div className="flex-1 flex flex-col justify-start">
             <div
               className="overflow-hidden touch-pan-x"
               onTouchStart={(e) => {
@@ -314,14 +319,14 @@ export const LandingPage: React.FC = () => {
               }}
             >
               <div className="text-center px-4">
-                <div className="text-6xl mb-6">{benefits[carouselIndex].image}</div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-3">{benefits[carouselIndex].title}</h2>
+                <div className="text-6xl mb-4">{benefits[carouselIndex].image}</div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">{benefits[carouselIndex].title}</h2>
                 <p className="text-lg text-gray-600">{benefits[carouselIndex].description}</p>
               </div>
             </div>
 
             {/* Dots Indicator - Actual circles */}
-            <div className="flex justify-center gap-2.5 mt-8">
+            <div className="flex justify-center gap-2.5 mt-6">
               {benefits.map((_, index) => (
                 <div
                   key={index}
@@ -334,7 +339,7 @@ export const LandingPage: React.FC = () => {
           </div>
 
           {/* CTA Buttons */}
-          <div className="space-y-3">
+          <div className="space-y-3 mt-6">
             <button
               onClick={handleSignupWithEmail}
               className="w-full py-4 bg-[#007AFF] text-white font-semibold text-lg rounded-xl hover:bg-[#0056D6] transition-colors"
@@ -1089,6 +1094,9 @@ export const LandingPage: React.FC = () => {
 
       {/* PWA Install Prompt - Always show on mobile when in login/signup mode */}
       <PWAInstallPrompt alwaysShowOnMobile={showLogin || showSignup} />
+
+      {/* Debug panel for troubleshooting OAuth on mobile */}
+      <AuthDebugger />
     </div>
   );
 };

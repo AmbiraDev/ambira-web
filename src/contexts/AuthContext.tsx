@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode, useRef } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { AuthContextType, AuthUser, LoginCredentials, SignupCredentials } from '@/types';
 import { firebaseAuthApi } from '@/lib/firebaseApi';
@@ -30,6 +30,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // Check if user is authenticated
   const isAuthenticated = !!user;
+
+  // Memoize the navigation function to avoid re-renders
+  const navigateToHome = useCallback(() => {
+    router.push('/');
+  }, [router]);
 
   // Initialize auth state on mount
   useEffect(() => {
@@ -61,8 +66,10 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           // Set user immediately and stop loading
           setUser(redirectResult.user);
           setIsLoading(false);
-          // Don't navigate yet - let the auth state listener handle it
-          console.log('[AuthContext] Redirect user set, setting up listener...');
+          // Navigate to home after successful redirect
+          console.log('[AuthContext] Navigating to home...');
+          navigateToHome();
+          return; // Exit early since we handled the redirect
         } else {
           console.log('[AuthContext] ❌ No redirect result found (redirectResult is null)');
         }
@@ -72,6 +79,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           message: error instanceof Error ? error.message : 'Unknown error',
           stack: error instanceof Error ? error.stack : undefined
         });
+        // Set loading to false even on error so user isn't stuck
+        setIsLoading(false);
         // Continue with normal auth flow even if redirect check fails
       }
 
@@ -80,10 +89,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       authUnsubscribe = firebaseAuthApi.onAuthStateChanged(async (firebaseUser) => {
         console.log('[AuthContext] Auth state changed. FirebaseUser:', firebaseUser ? firebaseUser.uid : 'null');
 
-        // If we already handled the redirect, skip the auth state listener
+        // If we already handled the redirect, skip this callback
         if (redirectHandledRef.current) {
           console.log('[AuthContext] Skipping auth state change - redirect already handled');
-          setIsLoading(false);
           return;
         }
 
@@ -112,7 +120,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         authUnsubscribe();
       }
     };
-  }, [router]);
+  }, [navigateToHome]);
 
   // Login function
   const login = async (credentials: LoginCredentials): Promise<void> => {
@@ -156,8 +164,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Sign in with Google function
   const signInWithGoogle = async (): Promise<void> => {
     try {
-      setIsLoading(true);
-
       const response = await firebaseAuthApi.signInWithGoogle();
       console.log('Google sign-in response:', response);
 
@@ -165,11 +171,19 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       // Redirect to home page
       router.push('/');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Google sign-in error:', error);
+
+      // Special case: if redirect is in progress, don't throw error
+      // The page will redirect away, so we just return normally
+      if (error?.message === 'REDIRECT_IN_PROGRESS') {
+        console.log('[AuthContext] Google redirect in progress, browser will redirect to Google');
+        // Just return - the browser will redirect and page will reload
+        return;
+      }
+
+      // For all other errors, throw so the UI can handle them
       throw error;
-    } finally {
-      setIsLoading(false);
     }
   };
 

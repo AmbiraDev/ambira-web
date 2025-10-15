@@ -755,35 +755,56 @@ export const firebaseAuthApi = {
   // Sign in with Google
   signInWithGoogle: async (): Promise<AuthResponse> => {
     try {
+      console.log('[signInWithGoogle] Starting Google sign-in...');
+      console.log('[signInWithGoogle] User agent:', navigator.userAgent);
+      console.log('[signInWithGoogle] Current URL:', window.location.href);
+
       const provider = new GoogleAuthProvider();
       // Add scopes for better user info
       provider.addScope('profile');
       provider.addScope('email');
 
-      // Detect if user is on mobile device
-      const isMobile =
+      // Always use redirect for mobile devices and Safari (more reliable)
+      // Safari especially has issues with popups and third-party cookies
+      const isMobileOrSafari =
         /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
           navigator.userAgent
-        );
+        ) || /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
+      console.log('[signInWithGoogle] Is mobile or Safari?', isMobileOrSafari);
 
       let userCredential;
 
-      if (isMobile) {
-        // Use redirect for mobile devices (more reliable)
-        await signInWithRedirect(auth, provider);
-        // Redirect happens here - the user will be redirected to Google
-        // The result will be handled by getRedirectResult in AuthContext
-        return { user: null as any, token: '' }; // This won't be reached, but TypeScript needs it
+      if (isMobileOrSafari) {
+        // Use redirect for mobile devices and Safari (more reliable)
+        console.log('[signInWithGoogle] Using redirect flow for mobile/Safari');
+        console.log('[signInWithGoogle] Firebase Auth domain:', auth.config.authDomain);
+
+        try {
+          await signInWithRedirect(auth, provider);
+          // Redirect happens here - the user will be redirected to Google
+          // The result will be handled by getRedirectResult in AuthContext
+          // This code path will never return - browser redirects away
+          // We throw a special marker that won't be seen but keeps TypeScript happy
+          throw new Error('REDIRECT_IN_PROGRESS');
+        } catch (redirectError: any) {
+          console.error('[signInWithGoogle] Redirect error:', redirectError);
+          console.error('[signInWithGoogle] Error code:', redirectError.code);
+          console.error('[signInWithGoogle] Error message:', redirectError.message);
+          throw redirectError;
+        }
       } else {
         // Use popup for desktop (better UX)
+        console.log('[signInWithGoogle] Using popup flow for desktop');
         try {
           userCredential = await signInWithPopup(auth, provider);
         } catch (popupError: any) {
-          // If popup was blocked or failed, provide helpful error
+          console.error('[signInWithGoogle] Popup error:', popupError);
+          // If popup was blocked or failed, fall back to redirect
           if (popupError.code === 'auth/popup-blocked') {
-            throw new Error(
-              'Popup was blocked. Please allow popups for this site and try again.'
-            );
+            console.log('[signInWithGoogle] Popup blocked, falling back to redirect');
+            await signInWithRedirect(auth, provider);
+            throw new Error('REDIRECT_IN_PROGRESS');
           } else if (popupError.code === 'auth/popup-closed-by-user') {
             throw new Error('Sign-in was cancelled.');
           } else if (popupError.code === 'auth/configuration-not-found') {
@@ -857,7 +878,18 @@ export const firebaseAuthApi = {
     } catch (error: any) {
       console.error('Google sign-in error:', error);
 
-      // Provide more specific error messages
+      // Special case: if redirect is in progress, pass through without modification
+      if (error.message === 'REDIRECT_IN_PROGRESS') {
+        throw error; // Re-throw as-is for redirect flow
+      }
+
+      // If the error is already a custom Error with a message (not a Firebase error object),
+      // re-throw it as-is to preserve our custom error messages
+      if (error instanceof Error && !(error as any).code) {
+        throw error;
+      }
+
+      // Provide more specific error messages for Firebase errors
       if (error.message && error.message.includes('Firebase Console')) {
         throw error; // Re-throw our custom error messages
       }
@@ -950,6 +982,9 @@ export const firebaseAuthApi = {
   handleGoogleRedirectResult: async (): Promise<AuthResponse | null> => {
     try {
       console.log('[handleGoogleRedirectResult] Starting...');
+      console.log('[handleGoogleRedirectResult] Current URL:', window.location.href);
+      console.log('[handleGoogleRedirectResult] User agent:', navigator.userAgent);
+
       const result = await getRedirectResult(auth);
       console.log('[handleGoogleRedirectResult] getRedirectResult returned:', result ? 'RESULT FOUND' : 'NULL');
 
