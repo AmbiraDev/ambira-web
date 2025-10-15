@@ -99,10 +99,10 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 hover:shadow-lg hover:border-gray-300 transition-all duration-200 relative group">
-      <Link href={`/activities/${project.id}`} className="block p-6">
+    <div className="bg-white rounded-xl border border-gray-200 hover:shadow-lg hover:border-gray-300 transition-all duration-200 relative group h-full flex flex-col">
+      <Link href={`/activities/${project.id}`} className="block p-6 flex-1 flex flex-col min-h-[280px]">
         {/* Header with icon and menu */}
-        <div className="flex items-start justify-between mb-5">
+        <div className="flex items-start justify-between mb-5 flex-shrink-0">
           <div
             className="w-14 h-14 rounded-xl flex items-center justify-center p-2 shadow-sm"
             style={{ backgroundColor: project.color }}
@@ -120,12 +120,13 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
         </div>
 
         {/* Project info */}
-        <div className="mb-5">
+        <div className="mb-5 flex-shrink-0">
           <h3 className="text-xl font-bold text-gray-900 mb-2">{project.name}</h3>
-          <p className="text-gray-600 text-sm line-clamp-2 leading-relaxed">{project.description}</p>
+          <p className="text-gray-600 text-sm line-clamp-2 leading-relaxed min-h-[2.5rem]">{project.description}</p>
         </div>
 
         {/* Progress indicators */}
+        <div className="flex-1 flex flex-col justify-end">
         {isLoadingStats ? (
           <div className="space-y-4">
             <div className="animate-pulse">
@@ -174,6 +175,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
             No targets set
           </div>
         )}
+        </div>
       </Link>
 
       {/* Dropdown menu */}

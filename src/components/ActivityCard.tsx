@@ -130,10 +130,10 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
   };
 
   return (
-    <div className="bg-transparent rounded-xl border border-gray-200/60 hover:border-gray-300 hover:shadow-sm transition-all duration-200 relative group">
-      <Link href={`/activities/${activity.id}`} className="block p-5">
+    <div className="bg-transparent rounded-xl border border-gray-200/60 hover:border-gray-300 hover:shadow-sm transition-all duration-200 relative group h-full flex flex-col">
+      <Link href={`/activities/${activity.id}`} className="block p-5 flex-1 flex flex-col min-h-[280px]">
         {/* Header with icon and menu */}
-        <div className="flex items-start justify-between mb-5">
+        <div className="flex items-start justify-between mb-5 flex-shrink-0">
           <div
             className="w-14 h-14 rounded-xl flex items-center justify-center p-2 shadow-sm"
             style={{ backgroundColor: colorValue }}
@@ -151,12 +151,13 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
         </div>
 
         {/* Activity info */}
-        <div className="mb-5">
+        <div className="mb-5 flex-shrink-0">
           <h3 className="text-xl font-bold text-gray-900 mb-2">{activity.name}</h3>
-          <p className="text-gray-600 text-sm line-clamp-2 leading-relaxed">{activity.description}</p>
+          <p className="text-gray-600 text-sm line-clamp-2 leading-relaxed min-h-[2.5rem]">{activity.description}</p>
         </div>
 
         {/* Progress indicators */}
+        <div className="flex-1 flex flex-col justify-end">
         {isLoadingStats ? (
           <div className="space-y-4">
             <div className="animate-pulse">
@@ -205,6 +206,7 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
             No targets set
           </div>
         )}
+        </div>
       </Link>
 
       {/* Dropdown menu */}

@@ -157,7 +157,7 @@ async function deleteUser(userId: string): Promise<void> {
       .get();
 
     const commentBatch = db.batch();
-    commentsSnapshot.docs.forEach(doc => {
+    commentsSnapshot.docs.forEach((doc: QueryDocumentSnapshot<DocumentData>) => {
       commentBatch.delete(doc.ref);
       stats.comments++;
     });
@@ -172,7 +172,7 @@ async function deleteUser(userId: string): Promise<void> {
       .get();
 
     const supportBatch = db.batch();
-    supportsSnapshot.docs.forEach(doc => {
+    supportsSnapshot.docs.forEach((doc: QueryDocumentSnapshot<DocumentData>) => {
       supportBatch.delete(doc.ref);
       stats.supports++;
     });
@@ -239,7 +239,7 @@ async function deleteUser(userId: string): Promise<void> {
       .get();
 
     const challengeBatch = db.batch();
-    challengeParticipantsSnapshot.docs.forEach(doc => {
+    challengeParticipantsSnapshot.docs.forEach((doc: QueryDocumentSnapshot<DocumentData>) => {
       challengeBatch.delete(doc.ref);
       stats.challengeParticipants++;
     });
@@ -254,7 +254,7 @@ async function deleteUser(userId: string): Promise<void> {
       .get();
 
     const groupBatch = db.batch();
-    groupsSnapshot.docs.forEach(doc => {
+    groupsSnapshot.docs.forEach((doc: QueryDocumentSnapshot<DocumentData>) => {
       groupBatch.update(doc.ref, {
         members: FieldValue.arrayRemove(userId),
         memberCount: FieldValue.increment(-1)
@@ -272,7 +272,7 @@ async function deleteUser(userId: string): Promise<void> {
       .get();
 
     const notificationBatch = db.batch();
-    notificationsSnapshot.docs.forEach(doc => {
+    notificationsSnapshot.docs.forEach((doc: QueryDocumentSnapshot<DocumentData>) => {
       notificationBatch.delete(doc.ref);
       stats.notifications++;
     });
