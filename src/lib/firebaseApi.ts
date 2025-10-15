@@ -909,26 +909,38 @@ export const firebaseAuthApi = {
   // Handle Google redirect result (for mobile)
   handleGoogleRedirectResult: async (): Promise<AuthResponse | null> => {
     try {
+      console.log('[handleGoogleRedirectResult] Starting...');
       const result = await getRedirectResult(auth);
+      console.log('[handleGoogleRedirectResult] getRedirectResult returned:', result ? 'RESULT FOUND' : 'NULL');
 
       if (!result) {
         // No redirect result (user didn't come from redirect flow)
+        console.log('[handleGoogleRedirectResult] No redirect result, returning null');
         return null;
       }
 
       const firebaseUser = result.user;
+      console.log('[handleGoogleRedirectResult] Firebase user:', {
+        uid: firebaseUser.uid,
+        email: firebaseUser.email,
+        displayName: firebaseUser.displayName
+      });
 
       // Check if user profile exists
+      console.log('[handleGoogleRedirectResult] Checking if user profile exists...');
       const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
       let userData = userDoc.data();
+      console.log('[handleGoogleRedirectResult] User profile exists:', !!userData);
 
       // If user profile doesn't exist, create it
       if (!userData) {
+        console.log('[handleGoogleRedirectResult] Creating new user profile...');
         // Generate a unique username using the helper function
         const username = await generateUniqueUsername(
           firebaseUser.email!,
           firebaseUser.displayName || undefined
         );
+        console.log('[handleGoogleRedirectResult] Generated username:', username);
 
         userData = {
           email: firebaseUser.email!,
@@ -952,7 +964,9 @@ export const firebaseAuthApi = {
           updatedAt: serverTimestamp(),
         };
 
+        console.log('[handleGoogleRedirectResult] Writing user profile to Firestore...');
         await setDoc(doc(db, 'users', firebaseUser.uid), userData);
+        console.log('[handleGoogleRedirectResult] User profile created successfully');
       }
 
       const user: AuthUser = {
@@ -967,11 +981,18 @@ export const firebaseAuthApi = {
         updatedAt: convertTimestamp(userData.updatedAt),
       };
 
+      console.log('[handleGoogleRedirectResult] Getting ID token...');
       const token = await firebaseUser.getIdToken();
 
+      console.log('[handleGoogleRedirectResult] ✅ SUCCESS! Returning user:', user.username);
       return { user, token };
     } catch (error: any) {
-      console.error('Google redirect result error:', error);
+      console.error('[handleGoogleRedirectResult] ❌ ERROR:', error);
+      console.error('[handleGoogleRedirectResult] Error details:', {
+        message: error.message,
+        code: error.code,
+        stack: error.stack
+      });
 
       const apiError = handleError(error, 'Google sign-in redirect', {
         defaultMessage: 'Google sign-in failed. Please try again.',
