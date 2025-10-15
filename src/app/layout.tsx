@@ -9,6 +9,7 @@ import { QueryProvider } from '@/providers/QueryProvider';
 import { ToastProvider } from '@/contexts/ToastContext';
 import PWAInstaller from '@/components/PWAInstaller';
 import { Analytics } from '@vercel/analytics/react';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 
 const inter = Inter({
   variable: '--font-inter',
@@ -99,6 +100,7 @@ export default function RootLayout({
           </AuthProvider>
         </QueryProvider>
         <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
