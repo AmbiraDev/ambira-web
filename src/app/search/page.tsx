@@ -85,35 +85,13 @@ function SearchContent() {
 
     const run = async () => {
       try {
-        // Load users for People tab
+        // Load users for People tab - use the same API as home page
         if (type === 'people') {
           try {
-            // Fetch users directly from Firestore sorted by follower count
-            const usersSnapshot = await getDocs(
-              firestoreQuery(
-                collection(db, 'users'),
-                orderBy('followersCount', 'desc'),
-                limit(50)
-              )
-            );
-
-            const usersData = usersSnapshot.docs
-              .map(doc => {
-                const data = doc.data();
-                return {
-                  id: doc.id,
-                  username: data.username,
-                  name: data.name,
-                  bio: data.bio,
-                  profilePicture: data.profilePicture,
-                  followersCount: data.followersCount || 0,
-                  isFollowing: false,
-                };
-              })
-              .filter(u => u.id !== user?.id);
-
+            // Use the same getSuggestedUsers API that properly filters followed users
+            const suggestions = await firebaseUserApi.getSuggestedUsers(50);
             if (!isMounted) return;
-            setSuggestedUsers(usersData);
+            setSuggestedUsers(suggestions);
           } catch (error) {
             console.error('Error loading users:', error);
             if (isMounted) setSuggestedUsers([]);

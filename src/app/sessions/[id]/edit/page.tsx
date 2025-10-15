@@ -57,6 +57,8 @@ function SessionEditContent({ sessionId }: { sessionId: string }) {
     tags?: string[];
     visibility?: 'everyone' | 'followers' | 'private';
     images?: string[];
+    startTime?: Date;
+    duration?: number;
   }) => {
     try {
       await firebaseApi.session.updateSession(sessionId, data);

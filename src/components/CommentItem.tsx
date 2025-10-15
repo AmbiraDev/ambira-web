@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { CommentWithDetails } from '@/types';
 import Link from 'next/link';
-import { Trash2, Heart } from 'lucide-react';
+import { Trash2, Heart, MoreVertical } from 'lucide-react';
 
 interface CommentItemProps {
   comment: CommentWithDetails;
@@ -24,12 +24,31 @@ export const CommentItem: React.FC<CommentItemProps> = ({
   const [isLiking, setIsLiking] = useState(false);
   const [optimisticLiked, setOptimisticLiked] = useState(comment.isLiked);
   const [optimisticLikeCount, setOptimisticLikeCount] = useState(comment.likeCount);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   // Update optimistic state when prop changes (from cache invalidation)
-  React.useEffect(() => {
+  useEffect(() => {
     setOptimisticLiked(comment.isLiked);
     setOptimisticLikeCount(comment.likeCount);
   }, [comment.isLiked, comment.likeCount]);
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsMenuOpen(false);
+      }
+    };
+
+    if (isMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isMenuOpen]);
 
   const isOwner = currentUserId === comment.userId;
   const canDelete = isOwner && !!onDelete;
@@ -100,6 +119,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({
 
   const handleDelete = async () => {
     if (!onDelete) return;
+    setIsMenuOpen(false);
     if (window.confirm('Are you sure you want to delete this comment?')) {
       setIsDeleting(true);
       try {
@@ -174,15 +194,30 @@ export const CommentItem: React.FC<CommentItemProps> = ({
               {formatTimeAgo(comment.createdAt)}
             </span>
 
-            {/* Delete Button */}
+            {/* More Menu */}
             {canDelete && (
-              <button
-                onClick={handleDelete}
-                className="ml-auto text-gray-400 hover:text-red-600 p-1 rounded-full hover:bg-gray-100 transition-colors"
-                title="Delete comment"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
+              <div className="ml-auto relative" ref={menuRef}>
+                <button
+                  onClick={() => setIsMenuOpen(!isMenuOpen)}
+                  className="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 transition-colors"
+                  title="More options"
+                >
+                  <MoreVertical className="w-4 h-4" />
+                </button>
+
+                {/* Dropdown Menu */}
+                {isMenuOpen && (
+                  <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-10 min-w-[120px]">
+                    <button
+                      onClick={handleDelete}
+                      className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-50 transition-colors flex items-center gap-2"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      Delete
+                    </button>
+                  </div>
+                )}
+              </div>
             )}
           </div>
 

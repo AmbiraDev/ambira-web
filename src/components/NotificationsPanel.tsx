@@ -14,6 +14,8 @@ import {
   Reply,
   AtSign,
   Check,
+  X,
+  Trash2,
 } from 'lucide-react';
 import { Notification } from '@/types';
 
@@ -45,10 +47,11 @@ const getNotificationIcon = (type: Notification['type']) => {
 
 
 export default function NotificationsPanel({ isOpen, onClose }: NotificationsPanelProps) {
-  const { notifications, unreadCount, markAsRead, markAllAsRead, deleteNotification } =
+  const { notifications, unreadCount, markAsRead, markAllAsRead, deleteNotification, clearAllNotifications } =
     useNotifications();
   const router = useRouter();
   const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
 
   const handleNotificationClick = (notification: Notification) => {
     // Close panel and navigate immediately for better UX
@@ -69,6 +72,10 @@ export default function NotificationsPanel({ isOpen, onClose }: NotificationsPan
 
   const handleDelete = async (e: React.MouseEvent, notificationId: string) => {
     e.stopPropagation();
+
+    // Get the current mouse position
+    const mouseY = e.clientY;
+
     setDeletingIds((prev) => new Set(prev).add(notificationId));
     await deleteNotification(notificationId);
     setDeletingIds((prev) => {
@@ -76,10 +83,24 @@ export default function NotificationsPanel({ isOpen, onClose }: NotificationsPan
       next.delete(notificationId);
       return next;
     });
+
+    // After deletion, check which notification is now under the mouse cursor
+    const elementAtPoint = document.elementFromPoint(e.clientX, mouseY);
+    const notificationElement = elementAtPoint?.closest('[data-notification-id]');
+    if (notificationElement) {
+      const newNotificationId = notificationElement.getAttribute('data-notification-id');
+      if (newNotificationId) {
+        setHoveredId(newNotificationId);
+      }
+    }
   };
 
   const handleMarkAllRead = async () => {
     await markAllAsRead();
+  };
+
+  const handleClearAll = async () => {
+    await clearAllNotifications();
   };
 
   if (!isOpen) return null;
@@ -104,15 +125,26 @@ export default function NotificationsPanel({ isOpen, onClose }: NotificationsPan
               </span>
             )}
           </div>
-          {unreadCount > 0 && (
-            <button
-              onClick={handleMarkAllRead}
-              className="text-xs text-[#007AFF] hover:text-[#0051D5] font-medium flex items-center gap-1"
-            >
-              <Check className="w-3 h-3" />
-              Mark all read
-            </button>
-          )}
+          <div className="flex items-center gap-2">
+            {unreadCount > 0 && (
+              <button
+                onClick={handleMarkAllRead}
+                className="text-xs text-[#007AFF] hover:text-[#0051D5] font-medium flex items-center gap-1"
+              >
+                <Check className="w-3 h-3" />
+                Mark all read
+              </button>
+            )}
+            {notifications.length > 0 && (
+              <button
+                onClick={handleClearAll}
+                className="text-xs text-gray-600 hover:text-gray-900 font-medium flex items-center gap-1"
+              >
+                <Trash2 className="w-3 h-3" />
+                Clear all
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Notifications list */}
@@ -129,7 +161,10 @@ export default function NotificationsPanel({ isOpen, onClose }: NotificationsPan
               {notifications.map((notification) => (
                 <div
                   key={notification.id}
+                  data-notification-id={notification.id}
                   onClick={() => handleNotificationClick(notification)}
+                  onMouseEnter={() => setHoveredId(notification.id)}
+                  onMouseLeave={() => setHoveredId(null)}
                   className={`px-4 py-3 hover:bg-gray-50 cursor-pointer transition-colors relative ${
                     !notification.isRead ? 'bg-gray-100' : ''
                   } ${deletingIds.has(notification.id) ? 'opacity-50' : ''}`}
@@ -153,12 +188,22 @@ export default function NotificationsPanel({ isOpen, onClose }: NotificationsPan
                       </p>
                     </div>
 
-                    {/* Unread indicator */}
-                    {!notification.isRead && (
-                      <div className="flex-shrink-0">
-                        <div className="w-2 h-2 bg-[#007AFF] rounded-full mt-2" />
-                      </div>
-                    )}
+                    {/* Delete button (shown on hover) or Unread indicator */}
+                    <div className="flex-shrink-0">
+                      {hoveredId === notification.id ? (
+                        <button
+                          onClick={(e) => handleDelete(e, notification.id)}
+                          className="text-gray-400 hover:text-gray-600 transition-colors"
+                          disabled={deletingIds.has(notification.id)}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      ) : (
+                        !notification.isRead && (
+                          <div className="w-2 h-2 bg-[#007AFF] rounded-full mt-2" />
+                        )
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}

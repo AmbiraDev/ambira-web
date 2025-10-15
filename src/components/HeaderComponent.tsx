@@ -93,7 +93,7 @@ export default function Header() {
                 height={32}
                 className="w-8 h-8"
               />
-              <span className="text-xl font-bold text-[#007AFF] hidden sm:inline">Ambira</span>
+              <span className="text-xl font-bold text-[#007AFF] hidden lg:inline">Ambira</span>
             </Link>
 
             {/* Search Area */}
@@ -290,8 +290,8 @@ export default function Header() {
                 href="/timer"
                 className="hidden md:flex items-center space-x-2 px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors"
               >
-                <div className="w-2 h-2 rounded-full bg-green-300" />
-                <span>{pathname.startsWith('/timer') ? 'Active' : headerTimer || 'Active'}</span>
+                <div className="w-2 h-2 rounded-full bg-green-300 flex-shrink-0" />
+                <span className="w-[60px] text-center">{pathname.startsWith('/timer') ? 'Active' : headerTimer || 'Active'}</span>
               </Link>
             )}
 

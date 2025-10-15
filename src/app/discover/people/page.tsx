@@ -15,6 +15,7 @@ export default function DiscoverPeoplePage() {
   const { user } = useAuth();
   const [suggestedUsers, setSuggestedUsers] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [followingUsers, setFollowingUsers] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     const loadUsers = async () => {
@@ -25,6 +26,16 @@ export default function DiscoverPeoplePage() {
 
       try {
         setIsLoading(true);
+
+        // Load the list of users we're already following
+        try {
+          const following = await firebaseUserApi.getFollowing(user.id);
+          const followingIds = new Set(following.map(u => u.id));
+          setFollowingUsers(followingIds);
+        } catch (error) {
+          console.error('Failed to load following list:', error);
+        }
+
         // Load suggested users (filters by profileVisibility and excludes following)
         const suggestions = await firebaseUserApi.getSuggestedUsers(50);
 
@@ -41,6 +52,18 @@ export default function DiscoverPeoplePage() {
   }, [user]);
 
   const handleFollowChange = (userId: string, isFollowing: boolean) => {
+    // Update following state
+    setFollowingUsers(prev => {
+      const next = new Set(prev);
+      if (isFollowing) {
+        next.add(userId);
+      } else {
+        next.delete(userId);
+      }
+      return next;
+    });
+
+    // Update user data
     setSuggestedUsers(prev =>
       prev.map(u =>
         u.id === userId
@@ -54,6 +77,11 @@ export default function DiscoverPeoplePage() {
           : u
       )
     );
+
+    // Remove from suggestions after following
+    if (isFollowing) {
+      setSuggestedUsers(prev => prev.filter(u => u.id !== userId));
+    }
   };
 
   return (

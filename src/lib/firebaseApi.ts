@@ -2106,6 +2106,26 @@ export const firebaseUserApi = {
         return [];
       }
 
+      // Get list of users we're already following directly from social_graph
+      const outboundRef = collection(db, `social_graph/${auth.currentUser.uid}/outbound`);
+      const outboundSnapshot = await getDocs(outboundRef);
+      const followingIds = new Set(outboundSnapshot.docs.map(doc => doc.id));
+
+      // Also check old follows collection for backward compatibility if social_graph is empty
+      if (followingIds.size === 0) {
+        const followingQuery = query(
+          collection(db, 'follows'),
+          where('followerId', '==', auth.currentUser.uid)
+        );
+        const followingSnapshot = await getDocs(followingQuery);
+        followingSnapshot.docs.forEach(doc => {
+          const data = doc.data();
+          if (data.followingId) {
+            followingIds.add(data.followingId);
+          }
+        });
+      }
+
       // Get users with public profiles - fetch more to account for filtering
       const usersQuery = query(
         collection(db, 'users'),
@@ -2116,12 +2136,6 @@ export const firebaseUserApi = {
       const querySnapshot = await getDocs(usersQuery);
       const allUsers: Array<{ id: string; data: any; followersCount: number }> =
         [];
-
-      // Get list of users we're already following
-      const followingList = await firebaseUserApi.getFollowing(
-        auth.currentUser.uid
-      );
-      const followingIds = new Set(followingList.map(u => u.id));
 
       // Collect all eligible users
       querySnapshot.forEach(doc => {
@@ -3559,6 +3573,8 @@ export const firebaseSessionApi = {
       if (data.images !== undefined) updateData.images = data.images;
       if (data.allowComments !== undefined)
         updateData.allowComments = data.allowComments;
+      if (data.startTime !== undefined) updateData.startTime = Timestamp.fromDate(data.startTime);
+      if (data.duration !== undefined) updateData.duration = data.duration;
 
       // Remove undefined values
       Object.keys(updateData).forEach(

@@ -6,6 +6,7 @@ import { Session } from '@/types';
 import { X, XCircle, Image as ImageIcon } from 'lucide-react';
 import { uploadImages } from '@/lib/imageUpload';
 import { useProjects } from '@/contexts/ProjectsContext';
+import { parseLocalDateTime } from '@/lib/utils';
 
 interface EditSessionModalProps {
   session: Session;
@@ -17,6 +18,8 @@ interface EditSessionModalProps {
     tags?: string[];
     visibility?: 'everyone' | 'followers' | 'private';
     images?: string[];
+    startTime?: Date;
+    duration?: number;
   }) => Promise<void>;
   isPage?: boolean;
 }
@@ -42,6 +45,24 @@ export const EditSessionModal: React.FC<EditSessionModalProps> = ({
   const [isUploading, setIsUploading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
+  // Date/time state
+  const [sessionDate, setSessionDate] = useState(() => {
+    const date = new Date(session.startTime);
+    return date.toISOString().split('T')[0];
+  });
+  const [startTime, setStartTime] = useState(() => {
+    const date = new Date(session.startTime);
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    return `${hours}:${minutes}`;
+  });
+  const [durationHours, setDurationHours] = useState(() => {
+    return String(Math.floor(session.duration / 3600));
+  });
+  const [durationMinutes, setDurationMinutes] = useState(() => {
+    return String(Math.floor((session.duration % 3600) / 60));
+  });
+
   // Update state when session prop changes (important for modal reuse)
   useEffect(() => {
     console.log('📝 EditSessionModal session changed:', {
@@ -58,6 +79,15 @@ export const EditSessionModal: React.FC<EditSessionModalProps> = ({
     setExistingImages(session.images || []);
     setSelectedImages([]);
     setImagePreviewUrls([]);
+
+    // Update date/time fields
+    const date = new Date(session.startTime);
+    setSessionDate(date.toISOString().split('T')[0]);
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    setStartTime(`${hours}:${minutes}`);
+    setDurationHours(String(Math.floor(session.duration / 3600)));
+    setDurationMinutes(String(Math.floor((session.duration % 3600) / 60)));
   }, [session.id]);
 
   // Handle ESC key to close modal
@@ -142,6 +172,16 @@ export const EditSessionModal: React.FC<EditSessionModalProps> = ({
       return;
     }
 
+    // Validate duration
+    const hours = parseInt(durationHours) || 0;
+    const minutes = parseInt(durationMinutes) || 0;
+    const totalDuration = (hours * 3600) + (minutes * 60);
+
+    if (totalDuration <= 0) {
+      alert('Duration must be greater than 0');
+      return;
+    }
+
     setIsSaving(true);
     try {
       // Upload new images if any
@@ -165,12 +205,17 @@ export const EditSessionModal: React.FC<EditSessionModalProps> = ({
       // Combine existing and new images
       const allImages = [...existingImages, ...newImageUrls];
 
+      // Parse the new start time
+      const newStartTime = parseLocalDateTime(sessionDate, startTime);
+
       await onSave(session.id, {
         title,
         description: description || undefined,
         projectId: selectedProjectId || undefined,
         visibility,
         images: allImages.length > 0 ? allImages : undefined,
+        startTime: newStartTime,
+        duration: totalDuration,
       });
 
       onClose();
@@ -239,6 +284,78 @@ export const EditSessionModal: React.FC<EditSessionModalProps> = ({
               rows={3}
               placeholder="How did the session go? What did you accomplish?"
             />
+          </div>
+
+          {/* Date and Time Section */}
+          <div>
+            <h3 className="text-sm font-semibold text-gray-900 mb-3">
+              Session Timing
+            </h3>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+              {/* Date */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Date *
+                </label>
+                <input
+                  type="date"
+                  value={sessionDate}
+                  onChange={(e) => setSessionDate(e.target.value)}
+                  max={new Date().toISOString().split('T')[0]}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#007AFF]"
+                  required
+                />
+                <p className="text-xs text-gray-500 mt-1">Date of your session</p>
+              </div>
+
+              {/* Start Time */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Start Time
+                </label>
+                <input
+                  type="time"
+                  value={startTime}
+                  onChange={(e) => setStartTime(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#007AFF]"
+                />
+                <p className="text-xs text-gray-500 mt-1">When you started</p>
+              </div>
+            </div>
+
+            {/* Duration */}
+            <div className="mt-3 sm:mt-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Duration *
+              </label>
+              <div className="flex gap-2 sm:gap-3">
+                <div className="flex-1">
+                  <input
+                    type="number"
+                    min="0"
+                    max="23"
+                    value={durationHours}
+                    onChange={(e) => setDurationHours(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#007AFF]"
+                    placeholder="0"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Hours</p>
+                </div>
+                <div className="flex-1">
+                  <input
+                    type="number"
+                    min="0"
+                    max="59"
+                    value={durationMinutes}
+                    onChange={(e) => setDurationMinutes(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#007AFF]"
+                    placeholder="0"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Minutes</p>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Images */}

@@ -48,25 +48,34 @@ function RightSidebar() {
 
       if (!user) return;
 
-      // Load suggested users (top 3)
+      // Load the list of users we're already following
       try {
-        // Use the getSuggestedUsers API which filters by profileVisibility
-        const suggestions = await firebaseUserApi.getSuggestedUsers(3);
+        const following = await firebaseUserApi.getFollowing(user.id);
+        const followingIds = new Set(following.map(u => u.id));
+        setFollowingUsers(followingIds);
+      } catch (error) {
+        console.error('Failed to load following list:', error);
+      }
+
+      // Load suggested users (top 5)
+      try {
+        // Use the getSuggestedUsers API which filters by profileVisibility and already-followed users
+        const suggestions = await firebaseUserApi.getSuggestedUsers(5);
         setSuggestedUsers(suggestions);
       } catch (error) {
         console.error('Failed to load suggested users:', error);
       }
 
-      // Load suggested groups (top 3)
+      // Load suggested groups (top 5)
       try {
         // Get user's current groups to exclude them from suggestions
         const userGroups = await firebaseApi.group.getUserGroups(user.id);
         const userGroupIds = new Set(userGroups.map(g => g.id));
 
         // Get all groups and filter out ones user is already in
-        const allGroups = await firebaseApi.group.searchGroups({}, 10);
+        const allGroups = await firebaseApi.group.searchGroups({}, 15);
         const filteredGroups = allGroups.filter(group => !userGroupIds.has(group.id));
-        setSuggestedGroups(filteredGroups.slice(0, 3));
+        setSuggestedGroups(filteredGroups.slice(0, 5));
       } catch (error) {
         console.error('Failed to load suggested groups:', error);
       }
@@ -98,6 +107,8 @@ function RightSidebar() {
         await firebaseApi.user.unfollowUser(userId);
       } else {
         await firebaseApi.user.followUser(userId);
+        // Remove from suggestions after following
+        setSuggestedUsers(prev => prev.filter(u => u.id !== userId));
       }
     } catch (error) {
       console.error('Failed to toggle follow:', error);
@@ -132,7 +143,7 @@ function RightSidebar() {
 
           {isLoading ? (
             <div className="space-y-2">
-              {[1, 2, 3].map(i => (
+              {[1, 2, 3, 4, 5].map(i => (
                 <div key={i} className="flex items-center gap-3 animate-pulse p-3 bg-white rounded-lg">
                   <div className="w-12 h-12 bg-gray-200 rounded-full"></div>
                   <div className="flex-1">
@@ -205,7 +216,7 @@ function RightSidebar() {
 
           {isLoading ? (
             <div className="space-y-2">
-              {[1, 2, 3].map(i => (
+              {[1, 2, 3, 4, 5].map(i => (
                 <div key={i} className="flex items-center gap-3 animate-pulse p-3 bg-white rounded-lg">
                   <div className="w-12 h-12 bg-gray-200 rounded-lg"></div>
                   <div className="flex-1">

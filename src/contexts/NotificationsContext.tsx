@@ -14,6 +14,7 @@ interface NotificationsContextType {
   markAsRead: (notificationId: string) => Promise<void>;
   markAllAsRead: () => Promise<void>;
   deleteNotification: (notificationId: string) => Promise<void>;
+  clearAllNotifications: () => Promise<void>;
   refreshNotifications: () => Promise<void>;
 }
 
@@ -132,6 +133,21 @@ export const NotificationsProvider: React.FC<NotificationsProviderProps> = ({ ch
     }
   };
 
+  const clearAllNotifications = async () => {
+    if (!user) return;
+
+    try {
+      // Delete all notifications for the current user
+      const deletePromises = notifications.map(notification =>
+        firebaseNotificationApi.deleteNotification(notification.id)
+      );
+      await Promise.all(deletePromises);
+      // The real-time listener will automatically update the state
+    } catch (error) {
+      console.error('Error clearing all notifications:', error);
+    }
+  };
+
   const refreshNotifications = async () => {
     if (!user) return;
 
@@ -154,6 +170,7 @@ export const NotificationsProvider: React.FC<NotificationsProviderProps> = ({ ch
     markAsRead,
     markAllAsRead,
     deleteNotification,
+    clearAllNotifications,
     refreshNotifications,
   };
 
