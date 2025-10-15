@@ -123,6 +123,7 @@ import {
   ChallengeLeaderboard,
   ChallengeLeaderboardEntry,
   ChallengeStats,
+  DEFAULT_ACTIVITIES,
 } from '@/types';
 
 // Helper function to convert Firestore timestamp to Date
@@ -362,21 +363,38 @@ const populateSessionsWithDetails = async (
       }
       const userData = userDoc.data();
 
-      // Get project data
-      let projectData = null;
-      const projectId = sessionData.projectId;
-      if (projectId) {
-        try {
-          const projectDoc = await getDoc(
-            doc(db, 'projects', sessionData.userId, 'userProjects', projectId)
-          );
-          if (projectDoc.exists()) {
-            projectData = projectDoc.data();
+      // Get activity data (check both activityId and projectId for backwards compatibility)
+      let activityData: any = null;
+      const activityId = sessionData.activityId || sessionData.projectId;
+
+      if (activityId) {
+        // First, check if it's a default activity
+        const defaultActivity = DEFAULT_ACTIVITIES.find(a => a.id === activityId);
+
+        if (defaultActivity) {
+          activityData = {
+            id: defaultActivity.id,
+            name: defaultActivity.name,
+            icon: defaultActivity.icon,
+            color: defaultActivity.color,
+            description: '',
+            status: 'active',
+            isDefault: true,
+          };
+        } else {
+          // If not a default activity, try to fetch from custom activities collection
+          try {
+            const activityDoc = await getDoc(
+              doc(db, 'projects', sessionData.userId, 'userProjects', activityId)
+            );
+            if (activityDoc.exists()) {
+              activityData = activityDoc.data();
+            }
+          } catch (error) {
+            handleError(error, `Fetch activity ${activityId}`, {
+              severity: ErrorSeverity.WARNING,
+            });
           }
-        } catch (error) {
-          handleError(error, `Fetch project ${projectId}`, {
-            severity: ErrorSeverity.WARNING,
-          });
         }
       }
 
@@ -420,24 +438,46 @@ const populateSessionsWithDetails = async (
           createdAt: convertTimestamp(userData?.createdAt) || new Date(),
           updatedAt: convertTimestamp(userData?.updatedAt) || new Date(),
         },
-        activity: {
-          id: sessionData.activityId || sessionData.projectId || '',
+        activity: activityData ? {
+          id: activityData.id || activityId || '',
           userId: sessionData.userId,
-          name: '', // Would need to fetch from activities collection
+          name: activityData.name || 'Unknown Activity',
+          description: activityData.description || '',
+          icon: activityData.icon || 'flat-color-icons:briefcase',
+          color: activityData.color || '#007AFF',
+          status: activityData.status || 'active',
+          isDefault: activityData.isDefault || false,
+          createdAt: activityData.createdAt ? convertTimestamp(activityData.createdAt) : new Date(),
+          updatedAt: activityData.updatedAt ? convertTimestamp(activityData.updatedAt) : new Date(),
+        } : {
+          id: activityId || '',
+          userId: sessionData.userId,
+          name: 'Unknown Activity',
           description: '',
-          icon: '',
-          color: '',
+          icon: 'flat-color-icons:briefcase',
+          color: '#007AFF',
           status: 'active',
           createdAt: new Date(),
           updatedAt: new Date(),
         },
-        project: {
-          id: sessionData.projectId || sessionData.activityId || '',
+        project: activityData ? {
+          id: activityData.id || activityId || '',
           userId: sessionData.userId,
-          name: '', // Would need to fetch from activities collection
+          name: activityData.name || 'Unknown Activity',
+          description: activityData.description || '',
+          icon: activityData.icon || 'flat-color-icons:briefcase',
+          color: activityData.color || '#007AFF',
+          status: activityData.status || 'active',
+          isDefault: activityData.isDefault || false,
+          createdAt: activityData.createdAt ? convertTimestamp(activityData.createdAt) : new Date(),
+          updatedAt: activityData.updatedAt ? convertTimestamp(activityData.updatedAt) : new Date(),
+        } : {
+          id: activityId || '',
+          userId: sessionData.userId,
+          name: 'Unknown Activity',
           description: '',
-          icon: '',
-          color: '',
+          icon: 'flat-color-icons:briefcase',
+          color: '#007AFF',
           status: 'active',
           createdAt: new Date(),
           updatedAt: new Date(),

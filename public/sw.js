@@ -1,5 +1,5 @@
 // Service Worker for Ambira PWA
-const CACHE_NAME = 'ambira-v4'; // Bumped version to clear old cache
+const CACHE_NAME = 'ambira-v5'; // Bumped version to clear old cache after activity migration
 const urlsToCache = [
   '/',
   '/manifest.json',

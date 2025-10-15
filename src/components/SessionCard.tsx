@@ -261,8 +261,8 @@ export const SessionCard: React.FC<SessionCardProps> = ({
             <div className="text-base font-semibold text-gray-900">{formatTime(session.duration)}</div>
           </div>
           <div className="min-w-0">
-            <div className="text-xs text-gray-500 mb-1">Project</div>
-            <div className="text-base font-semibold text-gray-900 truncate">{session.project?.name || 'N/A'}</div>
+            <div className="text-xs text-gray-500 mb-1">Activity</div>
+            <div className="text-base font-semibold text-gray-900 truncate">{session.activity?.name || session.project?.name || 'N/A'}</div>
           </div>
         </div>
       </Link>
