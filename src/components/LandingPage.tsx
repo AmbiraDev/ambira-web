@@ -268,16 +268,6 @@ export const LandingPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* DEBUG PANEL - REMOVE AFTER TESTING */}
-      <div className="fixed top-0 left-0 right-0 z-50 bg-yellow-100 border-b-2 border-yellow-400 p-2 text-xs overflow-x-auto">
-        <div className="font-bold mb-1">🔧 DEBUG INFO (Remove after testing)</div>
-        <div><strong>isAuthenticated:</strong> {isAuthenticated ? '✅ true' : '❌ false'}</div>
-        <div><strong>authIsLoading:</strong> {authIsLoading ? '⏳ true' : '✅ false'}</div>
-        <div><strong>user:</strong> {user ? `✅ ${user.username} (${user.email})` : '❌ null'}</div>
-        <div><strong>user.id:</strong> {user?.id || 'N/A'}</div>
-        <div><strong>Current URL:</strong> {typeof window !== 'undefined' ? window.location.href : 'SSR'}</div>
-      </div>
-
       {/* Hide header on mobile */}
       <div className="hidden md:block">
         <Header />
