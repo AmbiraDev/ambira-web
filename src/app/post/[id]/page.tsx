@@ -259,7 +259,7 @@ function ActivityDetailContent({ activityId }: { activityId: string }) {
           <div className="px-6 py-6">
             {/* Activity Badge */}
             <Link
-              href={`/projects/${session.activityId}`}
+              href={`/activities/${session.activityId}`}
               className="inline-flex items-center gap-2 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors mb-4"
             >
               <span className="text-xl">{session.activity.icon || '📊'}</span>
@@ -484,7 +484,7 @@ function ActivityDetailContent({ activityId }: { activityId: string }) {
                   <div className="flex items-center justify-between py-3">
                     <span className="text-sm text-gray-600">Activity</span>
                     <Link
-                      href={`/projects/${session.activityId}`}
+                      href={`/activities/${session.activityId}`}
                       className="text-sm font-medium text-[#007AFF] hover:text-[#0051D5] transition-colors"
                     >
                       {session.activity.name}

@@ -1039,7 +1039,7 @@ export const LandingPage: React.FC = () => {
                 <h3 className="font-semibold text-gray-900 mb-3">Product</h3>
                 <ul className="space-y-2 text-sm">
                   <li><Link href="/features" className="text-gray-600 hover:text-[#007AFF]">Features</Link></li>
-                  <li><Link href="/projects" className="text-gray-600 hover:text-[#007AFF]">Projects</Link></li>
+                  <li><Link href="/activities" className="text-gray-600 hover:text-[#007AFF]">Activities</Link></li>
                   <li><Link href="/groups" className="text-gray-600 hover:text-[#007AFF]">Groups</Link></li>
                   <li><Link href="/challenges" className="text-gray-600 hover:text-[#007AFF]">Challenges</Link></li>
                 </ul>

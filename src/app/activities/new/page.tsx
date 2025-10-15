@@ -241,8 +241,8 @@ function CreateProjectContent() {
       resetForm();
 
       setTimeout(() => {
-        // Redirect to the specified path or default to /projects
-        router.push(redirectPath || '/projects');
+        // Redirect to the specified path or default to /activities
+        router.push(redirectPath || '/activities');
       }, 1500);
     } catch (error) {
       console.error('Failed to create activity:', error);
@@ -457,7 +457,7 @@ function CreateProjectContent() {
             <div className="flex flex-col sm:flex-row gap-3 pt-6 border-t border-gray-200">
               <button
                 type="button"
-                onClick={() => router.push(redirectPath || '/projects')}
+                onClick={() => router.push(redirectPath || '/activities')}
                 className="flex-1 px-6 py-3 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors font-medium"
                 disabled={isSubmitting}
               >

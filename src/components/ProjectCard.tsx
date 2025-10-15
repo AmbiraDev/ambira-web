@@ -100,7 +100,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 hover:shadow-lg hover:border-gray-300 transition-all duration-200 relative group">
-      <Link href={`/projects/${project.id}`} className="block p-6">
+      <Link href={`/activities/${project.id}`} className="block p-6">
         {/* Header with icon and menu */}
         <div className="flex items-start justify-between mb-5">
           <div

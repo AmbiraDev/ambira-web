@@ -20,7 +20,7 @@ export default function SimpleLayout({ children }: SimpleLayoutProps) {
             </div>
             <nav className="hidden md:flex items-center space-x-8">
               <Link href="/" className="text-gray-700 hover:text-blue-600 transition-colors">Home</Link>
-              <Link href="/projects" className="text-gray-700 hover:text-blue-600 transition-colors">Projects</Link>
+              <Link href="/activities" className="text-gray-700 hover:text-blue-600 transition-colors">Activities</Link>
               <Link href="/groups" className="text-gray-700 hover:text-blue-600 transition-colors">Groups</Link>
             </nav>
           </div>
