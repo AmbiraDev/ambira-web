@@ -81,22 +81,7 @@ service cloud.firestore {
         (get(/databases/$(database)/documents/users/$(userId)).data.projectVisibility == 'everyone' ||
          !('projectVisibility' in get(/databases/$(database)/documents/users/$(userId)).data));
     }
-    
-    // User project tasks - subcollection of projects
-    match /projects/{userId}/userProjects/{projectId}/tasks/{taskId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
-      // Allow followers to read tasks if project visibility allows (with fallback)
-      allow read: if request.auth != null && 
-        exists(/databases/$(database)/documents/users/$(userId)) &&
-        (get(/databases/$(database)/documents/users/$(userId)).data.projectVisibility == 'followers' ||
-         !('projectVisibility' in get(/databases/$(database)/documents/users/$(userId)).data)) &&
-        exists(/databases/$(database)/documents/follows/$(request.auth.uid + '_' + userId));
-      allow read: if request.auth != null && 
-        exists(/databases/$(database)/documents/users/$(userId)) &&
-        (get(/databases/$(database)/documents/users/$(userId)).data.projectVisibility == 'everyone' ||
-         !('projectVisibility' in get(/databases/$(database)/documents/users/$(userId)).data));
-    }
-    
+
     // Sessions
     match /sessions/{sessionId} {
       function isAuthenticated() {
@@ -140,7 +125,7 @@ service cloud.firestore {
       // User can only add/remove their own ID from supportedBy array
       allow update: if isAuthenticated() &&
         request.resource.data.keys().hasAny(['supportedBy', 'supportCount', 'commentCount', 'updatedAt']) &&
-        !request.resource.data.diff(resource.data).affectedKeys().hasAny(['userId', 'projectId', 'title', 'description', 'duration', 'startTime', 'tasks', 'tags', 'visibility', 'createdAt']) &&
+        !request.resource.data.diff(resource.data).affectedKeys().hasAny(['userId', 'projectId', 'title', 'description', 'duration', 'startTime', 'tags', 'visibility', 'createdAt']) &&
         (
           // Either supportedBy wasn't changed
           !request.resource.data.diff(resource.data).affectedKeys().hasAny(['supportedBy']) ||
@@ -207,12 +192,7 @@ service cloud.firestore {
       // Read/Update/Delete: only notification owner can access
       allow read, update, delete: if request.auth != null && resource.data.userId == request.auth.uid;
     }
-    
-    // Unassigned tasks (user's personal tasks)
-    match /users/{userId}/tasks/{taskId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
-    }
-    
+
     // Follows
     match /follows/{followId} {
       // Create: validate followerId matches authenticated user and both users exist

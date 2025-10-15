@@ -80,11 +80,6 @@ import {
   CreateProjectData,
   UpdateProjectData,
   ProjectStats,
-  Task,
-  CreateTaskData,
-  UpdateTaskData,
-  TaskStats,
-  BulkTaskUpdate,
   Session,
   SessionWithDetails,
   CreateSessionData,
@@ -415,7 +410,6 @@ const populateSessionsWithDetails = async (
         tags: sessionData.tags || [],
         visibility: sessionData.visibility || 'everyone',
         showStartTime: sessionData.showStartTime,
-        hideTaskNames: sessionData.hideTaskNames,
         howFelt: sessionData.howFelt,
         privateNotes: sessionData.privateNotes,
         images: sessionData.images || [],
@@ -615,26 +609,18 @@ export const firebaseAuthApi = {
       const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
       let userData = userDoc.data();
 
-      // If user profile doesn't exist (for demo user), create it
+      // If user profile doesn't exist, create it
       if (!userData) {
-        const demoUserData = {
+        const newUserData = {
           email: credentials.email,
-          name:
-            credentials.email === 'demo@ambira.com' ? 'Demo User' : 'New User',
-          username:
-            credentials.email === 'demo@ambira.com'
-              ? 'demo'
-              : credentials.email.split('@')[0],
-          bio:
-            credentials.email === 'demo@ambira.com'
-              ? 'Welcome to Ambira! This is a demo account to explore the app.'
-              : '',
-          location:
-            credentials.email === 'demo@ambira.com' ? 'San Francisco, CA' : '',
+          name: 'New User',
+          username: credentials.email.split('@')[0],
+          bio: '',
+          location: '',
           profilePicture: null,
-          followersCount: credentials.email === 'demo@ambira.com' ? 42 : 0,
-          followingCount: credentials.email === 'demo@ambira.com' ? 28 : 0,
-          totalHours: credentials.email === 'demo@ambira.com' ? 156.5 : 0,
+          followersCount: 0,
+          followingCount: 0,
+          totalHours: 0,
           profileVisibility: 'everyone',
           activityVisibility: 'everyone',
           projectVisibility: 'everyone',
@@ -642,8 +628,8 @@ export const firebaseAuthApi = {
           updatedAt: serverTimestamp(),
         };
 
-        await setDoc(doc(db, 'users', firebaseUser.uid), demoUserData);
-        userData = demoUserData;
+        await setDoc(doc(db, 'users', firebaseUser.uid), newUserData);
+        userData = newUserData;
       }
 
       const user: AuthUser = {
@@ -755,10 +741,6 @@ export const firebaseAuthApi = {
   // Sign in with Google
   signInWithGoogle: async (): Promise<AuthResponse> => {
     try {
-      console.log('[signInWithGoogle] Starting Google sign-in...');
-      console.log('[signInWithGoogle] User agent:', navigator.userAgent);
-      console.log('[signInWithGoogle] Current URL:', window.location.href);
-      console.log('[signInWithGoogle] Auth domain:', auth.config.authDomain);
 
       const provider = new GoogleAuthProvider();
       // Add scopes for better user info
@@ -777,14 +759,11 @@ export const firebaseAuthApi = {
           navigator.userAgent
         ) || /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
-      console.log('[signInWithGoogle] Is mobile or Safari?', isMobileOrSafari);
 
       let userCredential;
 
       if (isMobileOrSafari) {
         // Use redirect for mobile devices and Safari (more reliable)
-        console.log('[signInWithGoogle] Using redirect flow for mobile/Safari');
-        console.log('[signInWithGoogle] Redirect URI:', `https://${auth.config.authDomain}/__/auth/handler`);
 
         try {
           // Important: signInWithRedirect initiates the redirect and never returns
@@ -813,14 +792,12 @@ export const firebaseAuthApi = {
         }
       } else {
         // Use popup for desktop (better UX)
-        console.log('[signInWithGoogle] Using popup flow for desktop');
         try {
           userCredential = await signInWithPopup(auth, provider);
         } catch (popupError: any) {
           console.error('[signInWithGoogle] Popup error:', popupError);
           // If popup was blocked or failed, fall back to redirect
           if (popupError.code === 'auth/popup-blocked') {
-            console.log('[signInWithGoogle] Popup blocked, falling back to redirect');
             await signInWithRedirect(auth, provider);
             throw new Error('REDIRECT_IN_PROGRESS');
           } else if (popupError.code === 'auth/popup-closed-by-user') {
@@ -1003,41 +980,27 @@ export const firebaseAuthApi = {
   // Handle Google redirect result (for mobile)
   handleGoogleRedirectResult: async (): Promise<AuthResponse | null> => {
     try {
-      console.log('[handleGoogleRedirectResult] Starting...');
-      console.log('[handleGoogleRedirectResult] Current URL:', window.location.href);
-      console.log('[handleGoogleRedirectResult] User agent:', navigator.userAgent);
 
       const result = await getRedirectResult(auth);
-      console.log('[handleGoogleRedirectResult] getRedirectResult returned:', result ? 'RESULT FOUND' : 'NULL');
 
       if (!result) {
         // No redirect result (user didn't come from redirect flow)
-        console.log('[handleGoogleRedirectResult] No redirect result, returning null');
         return null;
       }
 
       const firebaseUser = result.user;
-      console.log('[handleGoogleRedirectResult] Firebase user:', {
-        uid: firebaseUser.uid,
-        email: firebaseUser.email,
-        displayName: firebaseUser.displayName
-      });
 
       // Check if user profile exists
-      console.log('[handleGoogleRedirectResult] Checking if user profile exists...');
       const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
       let userData = userDoc.data();
-      console.log('[handleGoogleRedirectResult] User profile exists:', !!userData);
 
       // If user profile doesn't exist, create it
       if (!userData) {
-        console.log('[handleGoogleRedirectResult] Creating new user profile...');
         // Generate a unique username using the helper function
         const username = await generateUniqueUsername(
           firebaseUser.email!,
           firebaseUser.displayName || undefined
         );
-        console.log('[handleGoogleRedirectResult] Generated username:', username);
 
         userData = {
           email: firebaseUser.email!,
@@ -1061,9 +1024,7 @@ export const firebaseAuthApi = {
           updatedAt: serverTimestamp(),
         };
 
-        console.log('[handleGoogleRedirectResult] Writing user profile to Firestore...');
         await setDoc(doc(db, 'users', firebaseUser.uid), userData);
-        console.log('[handleGoogleRedirectResult] User profile created successfully');
       }
 
       const user: AuthUser = {
@@ -1078,10 +1039,8 @@ export const firebaseAuthApi = {
         updatedAt: convertTimestamp(userData.updatedAt),
       };
 
-      console.log('[handleGoogleRedirectResult] Getting ID token...');
       const token = await firebaseUser.getIdToken();
 
-      console.log('[handleGoogleRedirectResult] ✅ SUCCESS! Returning user:', user.username);
       return { user, token };
     } catch (error: any) {
       console.error('[handleGoogleRedirectResult] ❌ ERROR:', error);
@@ -1789,38 +1748,30 @@ export const firebaseUserApi = {
   // Get followers for a user
   getFollowers: async (userId: string): Promise<User[]> => {
     try {
-      console.log('[getFollowers] Starting fetch for userId:', userId);
 
       // Try new social_graph structure first
       const inboundRef = collection(db, `social_graph/${userId}/inbound`);
       const inboundSnapshot = await getDocs(inboundRef);
-      console.log('[getFollowers] social_graph inbound snapshot size:', inboundSnapshot.size);
 
       let followerIds: string[] = [];
 
       if (!inboundSnapshot.empty) {
         followerIds = inboundSnapshot.docs.map(doc => doc.id);
-        console.log('[getFollowers] Found followers in social_graph:', followerIds);
       } else {
         // Fallback to old follows collection for backward compatibility
-        console.log('[getFollowers] social_graph empty, trying follows collection...');
         const followersQuery = query(
           collection(db, 'follows'),
           where('followingId', '==', userId)
         );
         const followersSnapshot = await getDocs(followersQuery);
-        console.log('[getFollowers] follows collection snapshot size:', followersSnapshot.size);
 
         followerIds = followersSnapshot.docs.map(doc => {
           const data = doc.data();
-          console.log('[getFollowers] follows doc data:', doc.id, data);
           return data.followerId;
         });
-        console.log('[getFollowers] Extracted follower IDs from follows:', followerIds);
       }
 
       if (followerIds.length === 0) {
-        console.log('[getFollowers] No followers found, returning empty array');
         return [];
       }
 
@@ -1828,11 +1779,9 @@ export const firebaseUserApi = {
       const followers: User[] = [];
 
       for (const followerId of followerIds) {
-        console.log('[getFollowers] Fetching user data for followerId:', followerId);
         const userDoc = await getDoc(doc(db, 'users', followerId));
         if (userDoc.exists()) {
           const userData = userDoc.data();
-          console.log('[getFollowers] Found user:', userData.username);
           followers.push({
             id: userDoc.id,
             username: userData.username,
@@ -1846,17 +1795,14 @@ export const firebaseUserApi = {
             updatedAt: userData.updatedAt?.toDate() || new Date(),
           });
         } else {
-          console.log('[getFollowers] User doc does not exist for ID:', followerId);
         }
       }
 
-      console.log('[getFollowers] Returning', followers.length, 'followers');
       return followers;
     } catch (error) {
       console.error('[getFollowers] Error:', error);
       // Handle permission errors silently for privacy-protected data
       if (isPermissionError(error)) {
-        console.log('[getFollowers] Permission error, returning empty array');
         return [];
       }
       const apiError = handleError(error, 'Fetch followers', {
@@ -1869,38 +1815,30 @@ export const firebaseUserApi = {
   // Get following for a user
   getFollowing: async (userId: string): Promise<User[]> => {
     try {
-      console.log('[getFollowing] Starting fetch for userId:', userId);
 
       // Try new social_graph structure first
       const outboundRef = collection(db, `social_graph/${userId}/outbound`);
       const outboundSnapshot = await getDocs(outboundRef);
-      console.log('[getFollowing] social_graph outbound snapshot size:', outboundSnapshot.size);
 
       let followingIds: string[] = [];
 
       if (!outboundSnapshot.empty) {
         followingIds = outboundSnapshot.docs.map(doc => doc.id);
-        console.log('[getFollowing] Found following in social_graph:', followingIds);
       } else {
         // Fallback to old follows collection for backward compatibility
-        console.log('[getFollowing] social_graph empty, trying follows collection...');
         const followingQuery = query(
           collection(db, 'follows'),
           where('followerId', '==', userId)
         );
         const followingSnapshot = await getDocs(followingQuery);
-        console.log('[getFollowing] follows collection snapshot size:', followingSnapshot.size);
 
         followingIds = followingSnapshot.docs.map(doc => {
           const data = doc.data();
-          console.log('[getFollowing] follows doc data:', doc.id, data);
           return data.followingId;
         });
-        console.log('[getFollowing] Extracted following IDs from follows:', followingIds);
       }
 
       if (followingIds.length === 0) {
-        console.log('[getFollowing] No following found, returning empty array');
         return [];
       }
 
@@ -1908,11 +1846,9 @@ export const firebaseUserApi = {
       const following: User[] = [];
 
       for (const followingId of followingIds) {
-        console.log('[getFollowing] Fetching user data for followingId:', followingId);
         const userDoc = await getDoc(doc(db, 'users', followingId));
         if (userDoc.exists()) {
           const userData = userDoc.data();
-          console.log('[getFollowing] Found user:', userData.username);
           following.push({
             id: userDoc.id,
             username: userData.username,
@@ -1926,17 +1862,14 @@ export const firebaseUserApi = {
             updatedAt: userData.updatedAt?.toDate() || new Date(),
           });
         } else {
-          console.log('[getFollowing] User doc does not exist for ID:', followingId);
         }
       }
 
-      console.log('[getFollowing] Returning', following.length, 'following');
       return following;
     } catch (error) {
       console.error('[getFollowing] Error:', error);
       // Handle permission errors silently for privacy-protected data
       if (isPermissionError(error)) {
-        console.log('[getFollowing] Permission error, returning empty array');
         return [];
       }
       const apiError = handleError(error, 'Fetch following', {
@@ -2283,7 +2216,6 @@ export const firebaseUserApi = {
       let failed = 0;
       const total = querySnapshot.size;
 
-      console.log(`Starting migration for ${total} users...`);
 
       for (const userDoc of querySnapshot.docs) {
         try {
@@ -2302,7 +2234,6 @@ export const firebaseUserApi = {
           if (Object.keys(updates).length > 1) {
             await updateDoc(doc(db, 'users', userDoc.id), updates);
             success++;
-            console.log(`Migrated user ${userDoc.id} (${userData.username})`);
           }
         } catch (error) {
           failed++;
@@ -2311,7 +2242,6 @@ export const firebaseUserApi = {
       }
 
       const result = { success, failed, total };
-      console.log('Migration complete:', result);
       return result;
     } catch (error) {
       const apiError = handleError(error, 'Migrate users to lowercase', {
@@ -2329,10 +2259,8 @@ export const firebaseUserApi = {
       }
 
       const userId = auth.currentUser.uid;
-      console.log(`Starting account deletion for user ${userId}`);
 
       // 1. Delete all user's sessions
-      console.log('Deleting sessions...');
       const sessionsQuery = query(
         collection(db, 'sessions'),
         where('userId', '==', userId)
@@ -2342,10 +2270,8 @@ export const firebaseUserApi = {
         deleteDoc(doc.ref)
       );
       await Promise.all(sessionDeletes);
-      console.log(`Deleted ${sessionsSnapshot.size} sessions`);
 
       // 2. Delete all user's comments
-      console.log('Deleting comments...');
       const commentsQuery = query(
         collection(db, 'comments'),
         where('userId', '==', userId)
@@ -2355,10 +2281,8 @@ export const firebaseUserApi = {
         deleteDoc(doc.ref)
       );
       await Promise.all(commentDeletes);
-      console.log(`Deleted ${commentsSnapshot.size} comments`);
 
       // 3. Delete all follow relationships where user is follower or following
-      console.log('Deleting follow relationships...');
       const followsAsFollowerQuery = query(
         collection(db, 'follows'),
         where('followerId', '==', userId)
@@ -2377,12 +2301,8 @@ export const firebaseUserApi = {
         ...followsAsFollowingSnapshot.docs.map(doc => deleteDoc(doc.ref)),
       ];
       await Promise.all(followDeletes);
-      console.log(
-        `Deleted ${followsAsFollowerSnapshot.size + followsAsFollowingSnapshot.size} follow relationships`
-      );
 
       // 4. Delete user's projects and their tasks
-      console.log('Deleting projects and tasks...');
       const projectsRef = collection(db, 'projects', userId, 'userProjects');
       const projectsSnapshot = await getDocs(projectsRef);
 
@@ -2403,20 +2323,15 @@ export const firebaseUserApi = {
         // Delete the project
         await deleteDoc(projectDoc.ref);
       }
-      console.log(`Deleted ${projectsSnapshot.size} projects and their tasks`);
 
       // 5. Delete user's streak data
-      console.log('Deleting streak data...');
       try {
         const streakRef = doc(db, 'streaks', userId);
         await deleteDoc(streakRef);
-        console.log('Deleted streak data');
       } catch (error) {
-        console.log('No streak data to delete or error:', error);
       }
 
       // 6. Delete user's active session data
-      console.log('Deleting active session data...');
       try {
         const activeSessionRef = doc(
           db,
@@ -2426,34 +2341,25 @@ export const firebaseUserApi = {
           'current'
         );
         await deleteDoc(activeSessionRef);
-        console.log('Deleted active session data');
       } catch (error) {
-        console.log('No active session data to delete or error:', error);
       }
 
       // 7. Delete profile picture from storage if it exists
-      console.log('Deleting profile picture...');
       try {
         const userDoc = await getDoc(doc(db, 'users', userId));
         const userData = userDoc.data();
         if (userData?.profilePicture) {
           const storageRef = ref(storage, `profile-pictures/${userId}`);
           await deleteObject(storageRef);
-          console.log('Deleted profile picture from storage');
         }
       } catch (error) {
-        console.log('No profile picture to delete or error:', error);
       }
 
       // 8. Delete the user document from Firestore
-      console.log('Deleting user document...');
       await deleteDoc(doc(db, 'users', userId));
-      console.log('Deleted user document');
 
       // 9. Finally, delete the Firebase Auth user
-      console.log('Deleting Firebase Auth user...');
       await auth.currentUser.delete();
-      console.log('Account deletion complete');
     } catch (error) {
       const apiError = handleError(error, 'Delete account', {
         defaultMessage:
@@ -2616,297 +2522,6 @@ export const firebaseProjectApi = {
   },
 };
 
-// Firebase Task API
-export const firebaseTaskApi = {
-  // Get tasks for a project
-  getProjectTasks: async (projectId: string): Promise<Task[]> => {
-    try {
-      if (!auth.currentUser) {
-        throw new Error('User not authenticated');
-      }
-
-      console.log(
-        'Firebase API: Getting tasks for project:',
-        projectId,
-        'User:',
-        auth.currentUser.uid
-      );
-      const tasksQuery = query(
-        collection(
-          db,
-          'projects',
-          auth.currentUser.uid,
-          'userProjects',
-          projectId,
-          'tasks'
-        ),
-        orderBy('createdAt', 'desc')
-      );
-
-      const tasksSnapshot = await getDocs(tasksQuery);
-      console.log('Firebase API: Found tasks:', tasksSnapshot.docs.length);
-
-      const tasks = tasksSnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: convertTimestamp(doc.data().createdAt),
-        updatedAt: convertTimestamp(doc.data().updatedAt),
-        completedAt: doc.data().completedAt
-          ? convertTimestamp(doc.data().completedAt)
-          : undefined,
-      })) as Task[];
-
-      console.log('Firebase API: Processed tasks:', tasks);
-      return tasks;
-    } catch (error) {
-      handleError(error, 'Firebase API: getting project tasks', {
-        severity: ErrorSeverity.ERROR,
-      });
-      const apiError = handleError(error, 'Get project tasks', {
-        defaultMessage: 'Failed to get project tasks',
-      });
-      throw new Error(apiError.userMessage);
-    }
-  },
-
-  // Get all tasks (project tasks + unassigned tasks)
-  getAllTasks: async (): Promise<Task[]> => {
-    try {
-      if (!auth.currentUser) {
-        throw new Error('User not authenticated');
-      }
-
-      // Get unassigned tasks
-      const unassignedQuery = query(
-        collection(db, 'users', auth.currentUser.uid, 'tasks'),
-        orderBy('createdAt', 'desc')
-      );
-
-      const unassignedSnapshot = await getDocs(unassignedQuery);
-      const unassignedTasks = unassignedSnapshot.docs.map(doc => {
-        const data = doc.data();
-        return {
-          id: doc.id,
-          userId: auth.currentUser!.uid,
-          projectId: data.projectId || '',
-          title: data.title || '',
-          status: data.status || 'todo',
-          createdAt: convertTimestamp(data.createdAt),
-          updatedAt: convertTimestamp(data.updatedAt),
-          completedAt: data.completedAt
-            ? convertTimestamp(data.completedAt)
-            : undefined,
-          description: data.description,
-          priority: data.priority,
-          dueDate: data.dueDate ? convertTimestamp(data.dueDate) : undefined,
-        } as Task;
-      });
-
-      // TODO: Also load project tasks
-      // For now, just return unassigned tasks
-      // In the future, we should also load tasks from all projects
-
-      return unassignedTasks;
-    } catch (error) {
-      const apiError = handleError(error, 'Get all tasks', {
-        defaultMessage: 'Failed to get all tasks',
-      });
-      throw new Error(apiError.userMessage);
-    }
-  },
-
-  // Create a new task
-  createTask: async (data: CreateTaskData): Promise<Task> => {
-    try {
-      if (!auth.currentUser) {
-        throw new Error('User not authenticated');
-      }
-
-      const taskData = {
-        ...data,
-        status: 'active',
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-        userId: auth.currentUser.uid,
-      };
-
-      let docRef;
-
-      if (data.projectId) {
-        // Create task in project subcollection
-        docRef = await addDoc(
-          collection(
-            db,
-            'projects',
-            auth.currentUser.uid,
-            'userProjects',
-            data.projectId,
-            'tasks'
-          ),
-          taskData
-        );
-      } else {
-        // Create unassigned task in user's tasks collection
-        docRef = await addDoc(
-          collection(db, 'users', auth.currentUser.uid, 'tasks'),
-          taskData
-        );
-      }
-
-      return {
-        id: docRef.id,
-        ...taskData,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      } as Task;
-    } catch (error) {
-      const apiError = handleError(error, 'Create task', {
-        defaultMessage: 'Failed to create task',
-      });
-      throw new Error(apiError.userMessage);
-    }
-  },
-
-  // Update a task
-  updateTask: async (
-    id: string,
-    data: UpdateTaskData,
-    projectId?: string
-  ): Promise<Task> => {
-    try {
-      if (!auth.currentUser) {
-        throw new Error('User not authenticated');
-      }
-
-      const updateData = {
-        ...data,
-        updatedAt: serverTimestamp(),
-        completedAt: data.status === 'completed' ? serverTimestamp() : null,
-      };
-
-      let docRef;
-      if (projectId) {
-        // Update task in project subcollection
-        docRef = doc(
-          db,
-          'projects',
-          auth.currentUser.uid,
-          'userProjects',
-          projectId,
-          'tasks',
-          id
-        );
-      } else {
-        // Update unassigned task
-        docRef = doc(db, 'users', auth.currentUser.uid, 'tasks', id);
-      }
-
-      await updateDoc(docRef, updateData);
-
-      // Return updated task (would need to fetch from DB for complete data)
-      return {
-        id,
-        ...data,
-        updatedAt: new Date(),
-        completedAt: data.status === 'completed' ? new Date() : undefined,
-      } as Task;
-    } catch (error) {
-      const apiError = handleError(error, 'Update task', {
-        defaultMessage: 'Failed to update task',
-      });
-      throw new Error(apiError.userMessage);
-    }
-  },
-
-  // Delete a task
-  deleteTask: async (id: string, projectId: string): Promise<void> => {
-    try {
-      if (!auth.currentUser) {
-        throw new Error('User not authenticated');
-      }
-
-      await deleteDoc(
-        doc(
-          db,
-          'projects',
-          auth.currentUser.uid,
-          'userProjects',
-          projectId,
-          'tasks',
-          id
-        )
-      );
-    } catch (error) {
-      const apiError = handleError(error, 'Delete task', {
-        defaultMessage: 'Failed to delete task',
-      });
-      throw new Error(apiError.userMessage);
-    }
-  },
-
-  // Bulk update tasks
-  bulkUpdateTasks: async (
-    update: BulkTaskUpdate,
-    projectId: string
-  ): Promise<void> => {
-    try {
-      if (!auth.currentUser) {
-        throw new Error('User not authenticated');
-      }
-
-      const batch = writeBatch(db);
-
-      const taskRef = doc(
-        db,
-        'projects',
-        auth.currentUser!.uid,
-        'userProjects',
-        projectId,
-        'tasks',
-        update.taskId
-      );
-      batch.update(taskRef, {
-        ...update.updates,
-        updatedAt: serverTimestamp(),
-        ...(update.updates.status === 'completed' ? { completedAt: serverTimestamp() } : {}),
-      });
-
-      await batch.commit();
-    } catch (error) {
-      handleError(error, 'Bulk update tasks error', {
-        severity: ErrorSeverity.ERROR,
-      });
-      const apiError = handleError(error, 'Bulk update tasks', {
-        defaultMessage: 'Failed to bulk update tasks',
-      });
-      throw new Error(apiError.userMessage);
-    }
-  },
-
-  // Get task statistics
-  getTaskStats: async (projectId: string): Promise<TaskStats> => {
-    try {
-      if (!auth.currentUser) {
-        throw new Error('User not authenticated');
-      }
-
-      // TODO: Implement proper task stats calculation
-      // For now, return default stats
-      return {
-        totalTasks: 0,
-        completedTasks: 0,
-        inProgressTasks: 0,
-        completionRate: 0,
-      };
-    } catch (error) {
-      const apiError = handleError(error, 'Get task stats', {
-        defaultMessage: 'Failed to get task stats',
-      });
-      throw new Error(apiError.userMessage);
-    }
-  },
-};
-
 // Firebase Session API
 export const firebaseSessionApi = {
   // Create a new session
@@ -2918,77 +2533,6 @@ export const firebaseSessionApi = {
 
       // Rate limitFn session creation
       checkRateLimit(auth.currentUser.uid, 'SESSION_CREATE');
-
-      // Get selected tasks
-      const selectedTasks = [];
-      if (data.taskIds && data.taskIds.length > 0) {
-        // Fetch task data for each task ID
-        for (const taskId of data.taskIds) {
-          try {
-            // Try to find task in project subcollections first
-            const projectsQuery = query(
-              collection(db, 'projects', auth.currentUser.uid, 'userProjects')
-            );
-            const projectsSnapshot = await getDocs(projectsQuery);
-
-            let taskFound = false;
-            for (const projectDoc of projectsSnapshot.docs) {
-              const taskDoc = await getDoc(
-                doc(
-                  db,
-                  'projects',
-                  auth.currentUser.uid,
-                  'userProjects',
-                  projectDoc.id,
-                  'tasks',
-                  taskId
-                )
-              );
-              if (taskDoc.exists()) {
-                const taskData = taskDoc.data();
-                selectedTasks.push({
-                  id: taskId,
-                  projectId: projectDoc.id,
-                  name: taskData.name,
-                  status: taskData.status || 'active',
-                  createdAt: convertTimestamp(taskData.createdAt),
-                  updatedAt: convertTimestamp(taskData.updatedAt),
-                  completedAt: taskData.completedAt
-                    ? convertTimestamp(taskData.completedAt)
-                    : undefined,
-                });
-                taskFound = true;
-                break;
-              }
-            }
-
-            // If not found in projects, try unassigned tasks
-            if (!taskFound) {
-              const taskDoc = await getDoc(
-                doc(db, 'users', auth.currentUser.uid, 'tasks', taskId)
-              );
-              if (taskDoc.exists()) {
-                const taskData = taskDoc.data();
-                selectedTasks.push({
-                  id: taskId,
-                  projectId: null,
-                  name: taskData.name,
-                  status: taskData.status || 'active',
-                  createdAt: convertTimestamp(taskData.createdAt),
-                  updatedAt: convertTimestamp(taskData.updatedAt),
-                  completedAt: taskData.completedAt
-                    ? convertTimestamp(taskData.completedAt)
-                    : undefined,
-                });
-              }
-            }
-          } catch (error) {
-            handleError(error, `Fetch task ${taskId}`, {
-              severity: ErrorSeverity.WARNING,
-            });
-          }
-        }
-      }
 
       // Prepare session data for Firestore
       const activityId = data.activityId || data.projectId || ''; // Support both for backwards compatibility
@@ -3003,7 +2547,6 @@ export const firebaseSessionApi = {
         // tags removed - no longer used
         visibility: data.visibility || 'private',
         showStartTime: data.showStartTime || false,
-        hideTaskNames: data.hideTaskNames || false,
         privateNotes: data.privateNotes || '',
         images: data.images || [],
         allowComments: data.allowComments !== false,
@@ -3027,7 +2570,6 @@ export const firebaseSessionApi = {
       // This ensures the timer is stopped even if the user navigates away
       try {
         await firebaseSessionApi.clearActiveSession();
-        console.log('✅ Active session cleared after creating session');
       } catch (error) {
         handleError(error, 'clear active session', {
           severity: ErrorSeverity.WARNING,
@@ -3043,7 +2585,6 @@ export const firebaseSessionApi = {
             ...sessionData,
             id: docRef.id,
             startTime: data.startTime,
-            tasks: selectedTasks,
           }
         );
       } catch (error) {
@@ -3066,7 +2607,6 @@ export const firebaseSessionApi = {
         // tags removed - no longer used
         visibility: sessionData.visibility,
         showStartTime: sessionData.showStartTime,
-        hideTaskNames: sessionData.hideTaskNames,
         howFelt: data.howFelt,
         privateNotes: data.privateNotes,
         images: data.images || [],
@@ -3079,7 +2619,6 @@ export const firebaseSessionApi = {
         updatedAt: new Date(),
       };
 
-      console.log('Session created successfully:', newSession);
       return newSession;
     } catch (error) {
       const apiError = handleError(error, 'Create session', {
@@ -3096,11 +2635,6 @@ export const firebaseSessionApi = {
     visibility: 'everyone' | 'followers' | 'private'
   ): Promise<{ session: Session; post?: Post }> => {
     try {
-      console.log('Creating session with post:', {
-        sessionData,
-        postContent,
-        visibility,
-      });
 
       // Create session first with the correct visibility
       const session = await firebaseSessionApi.createSession({
@@ -3108,19 +2642,16 @@ export const firebaseSessionApi = {
         visibility,
       });
 
-      console.log('Session created:', session);
 
       let post: Post | undefined;
 
       // Create post if not private
       if (visibility !== 'private') {
-        console.log('Creating post for session:', session.id);
         post = await firebasePostApi.createPost({
           sessionId: session.id,
           content: postContent,
           visibility,
         });
-        console.log('Post created:', post);
       }
 
       return { session, post };
@@ -3179,7 +2710,6 @@ export const firebaseSessionApi = {
         createdAt: serverTimestamp(),
       });
 
-      console.log('Active session saved successfully');
     } catch (error) {
       const apiError = handleError(error, 'Save active session');
       throw new Error(apiError.userMessage);
@@ -3264,7 +2794,6 @@ export const firebaseSessionApi = {
       // This is atomic and prevents any in-flight auto-save from restoring the session
       await deleteDoc(activeSessionRef);
 
-      console.log('Active session deleted successfully');
 
       // Broadcast cancellation to other tabs using localStorage event
       try {
@@ -3398,7 +2927,6 @@ export const firebaseSessionApi = {
           tags: sessionData.tags || [],
           visibility: sessionData.visibility || 'everyone',
           showStartTime: sessionData.showStartTime,
-          hideTaskNames: sessionData.hideTaskNames,
           howFelt: sessionData.howFelt,
           privateNotes: sessionData.privateNotes,
           isArchived: sessionData.isArchived || false,
@@ -3414,7 +2942,6 @@ export const firebaseSessionApi = {
         });
       }
 
-      console.log(`Found ${sessions.length} sessions for user ${userId}`);
       return sessions;
     } catch (error) {
       handleError(error, 'get user sessions', {
@@ -3509,7 +3036,6 @@ export const firebaseSessionApi = {
           tags: data.tags || [],
           visibility: data.visibility || 'private',
           showStartTime: data.showStartTime,
-          hideTaskNames: data.hideTaskNames,
           howFelt: data.howFelt,
           privateNotes: data.privateNotes,
           isArchived: data.isArchived || false,
@@ -3649,7 +3175,6 @@ export const firebaseSessionApi = {
         tags: data.tags || [],
         visibility: data.visibility || 'private',
         showStartTime: data.showStartTime,
-        hideTaskNames: data.hideTaskNames,
         howFelt: data.howFelt,
         privateNotes: data.privateNotes,
         isArchived: data.isArchived || false,
@@ -3733,7 +3258,6 @@ export const firebaseSessionApi = {
         tags: data.tags || [],
         visibility: data.visibility || 'private',
         showStartTime: data.showStartTime,
-        hideTaskNames: data.hideTaskNames,
         howFelt: data.howFelt,
         privateNotes: data.privateNotes,
         isArchived: data.isArchived || false,
@@ -3878,7 +3402,6 @@ const processPosts = async (postDocs: any[]): Promise<PostWithDetails[]> => {
               tags: sessionData.tags || [],
               visibility: sessionData.visibility || 'everyone',
               showStartTime: sessionData.showStartTime,
-              hideTaskNames: sessionData.hideTaskNames,
               howFelt: sessionData.howFelt,
               privateNotes: sessionData.privateNotes,
               isArchived: sessionData.isArchived || false,
@@ -4212,8 +3735,8 @@ export const firebasePostApi = {
           nextCursor,
         };
       } else {
-        // Recent: default chronological feed of public sessions (excluding followed users)
-        // Get list of users the current user is following to exclude them
+        // Recent: default chronological feed - only show sessions from followed users
+        // Get list of users the current user is following
         const followingQuery = query(
           collection(db, 'follows'),
           where('followerId', '==', auth.currentUser.uid)
@@ -4223,15 +3746,24 @@ export const firebasePostApi = {
           doc => doc.data().followingId
         );
 
-        // Also exclude current user's own posts
+        // Include current user's sessions too
         followingIds.push(auth.currentUser.uid);
 
-        // Fetch more sessions to account for filtering
+        // If not following anyone yet, return empty feed
+        if (
+          followingIds.length === 1 &&
+          followingIds[0] === auth.currentUser.uid
+        ) {
+          return { sessions: [], hasMore: false, nextCursor: undefined };
+        }
+
+        // Fetch sessions from followed users
+        // Due to Firestore limitations, fetch all and filter
         sessionsQuery = query(
           collection(db, 'sessions'),
-          where('visibility', '==', 'everyone'),
+          where('visibility', 'in', ['everyone', 'followers']),
           orderBy('createdAt', 'desc'),
-          limitFn(limitCount * 3)
+          limitFn(limitCount * 3) // Fetch more to account for filtering
         );
 
         if (cursor) {
@@ -4239,7 +3771,7 @@ export const firebasePostApi = {
           if (cursorDoc.exists()) {
             sessionsQuery = query(
               collection(db, 'sessions'),
-              where('visibility', '==', 'everyone'),
+              where('visibility', 'in', ['everyone', 'followers']),
               orderBy('createdAt', 'desc'),
               startAfter(cursorDoc),
               limitFn(limitCount * 3)
@@ -4249,9 +3781,9 @@ export const firebasePostApi = {
 
         const querySnapshot = await getDocs(sessionsQuery);
 
-        // Filter out sessions from followed users and current user
+        // Filter to only sessions from followed users
         const filteredDocs = querySnapshot.docs
-          .filter(doc => !followingIds.includes(doc.data().userId))
+          .filter(doc => followingIds.includes(doc.data().userId))
           .slice(0, limitCount + 1);
 
         const sessions = await populateSessionsWithDetails(
@@ -4490,7 +4022,6 @@ export const firebasePostApi = {
           // 2. Session is deleted while listener is active
           // 3. User unfollows session owner and visibility is 'followers'
           if (isPermissionError(error)) {
-            console.debug(`[Listener] Permission denied for session ${sessionId} - likely visibility changed or session deleted`);
             return;
           }
           // For other errors, log them normally
@@ -4608,8 +4139,7 @@ export const firebasePostApi = {
                 tags: sessionData.tags || [],
                 visibility: sessionData.visibility || 'everyone',
                 showStartTime: sessionData.showStartTime,
-                hideTaskNames: sessionData.hideTaskNames,
-                howFelt: sessionData.howFelt,
+                  howFelt: sessionData.howFelt,
                 privateNotes: sessionData.privateNotes,
                 isArchived: sessionData.isArchived || false,
                 supportCount: sessionData.supportCount || 0,
@@ -7179,30 +6709,6 @@ const ACHIEVEMENT_DEFINITIONS: Record<
     icon: '⏱️',
     targetValue: 1000,
   },
-  'tasks-50': {
-    name: '50 Tasks',
-    description: 'Complete 50 tasks',
-    icon: '✅',
-    targetValue: 50,
-  },
-  'tasks-100': {
-    name: '100 Tasks',
-    description: 'Complete 100 tasks',
-    icon: '✅',
-    targetValue: 100,
-  },
-  'tasks-500': {
-    name: '500 Tasks',
-    description: 'Complete 500 tasks',
-    icon: '✅',
-    targetValue: 500,
-  },
-  'tasks-1000': {
-    name: '1000 Tasks',
-    description: 'Complete 1000 tasks',
-    icon: '✅',
-    targetValue: 1000,
-  },
   'challenge-complete': {
     name: 'Challenge Complete',
     description: 'Complete a challenge',
@@ -7343,33 +6849,6 @@ export const firebaseAchievementApi = {
         });
       });
 
-      // Task achievements
-      const taskAchievements: AchievementType[] = [
-        'tasks-50',
-        'tasks-100',
-        'tasks-500',
-        'tasks-1000',
-      ];
-      taskAchievements.forEach(type => {
-        const def = ACHIEVEMENT_DEFINITIONS[type];
-        const isUnlocked = unlockedTypes.has(type);
-        const achievement = achievements.find(a => a.type === type);
-
-        progress.push({
-          type,
-          name: def.name,
-          description: def.description,
-          icon: def.icon,
-          currentValue: userData.totalTasks,
-          targetValue: def.targetValue || 0,
-          percentage: Math.min(
-            100,
-            (userData.totalTasks / (def.targetValue || 1)) * 100
-          ),
-          isUnlocked,
-          unlockedAt: achievement?.earnedAt,
-        });
-      });
 
       return progress;
     } catch (error) {
@@ -7390,14 +6869,6 @@ export const firebaseAchievementApi = {
         firebaseUserApi.getUserStats(userId),
       ]);
 
-      // Get task count
-      const tasksQuery = query(
-        collection(db, 'tasks'),
-        where('userId', '==', userId),
-        where('status', '==', 'completed')
-      );
-      const tasksSnapshot = await getDocs(tasksQuery);
-
       // Get session stats
       const sessionsQuery = query(
         collection(db, 'sessions'),
@@ -7411,7 +6882,6 @@ export const firebaseAchievementApi = {
       return {
         userId,
         totalHours: userStats.totalHours,
-        totalTasks: tasksSnapshot.size,
         currentStreak: streakData.currentStreak,
         longestStreak: streakData.longestStreak,
         totalSessions: userStats.sessionsThisMonth, // Approximate
@@ -7527,43 +6997,6 @@ export const firebaseAchievementApi = {
         );
       }
 
-      // Check task achievements
-      if (userData.totalTasks >= 50 && !unlockedTypes.has('tasks-50')) {
-        newAchievements.push(
-          await firebaseAchievementApi.awardAchievement(
-            userId,
-            'tasks-50',
-            sessionId
-          )
-        );
-      }
-      if (userData.totalTasks >= 100 && !unlockedTypes.has('tasks-100')) {
-        newAchievements.push(
-          await firebaseAchievementApi.awardAchievement(
-            userId,
-            'tasks-100',
-            sessionId
-          )
-        );
-      }
-      if (userData.totalTasks >= 500 && !unlockedTypes.has('tasks-500')) {
-        newAchievements.push(
-          await firebaseAchievementApi.awardAchievement(
-            userId,
-            'tasks-500',
-            sessionId
-          )
-        );
-      }
-      if (userData.totalTasks >= 1000 && !unlockedTypes.has('tasks-1000')) {
-        newAchievements.push(
-          await firebaseAchievementApi.awardAchievement(
-            userId,
-            'tasks-1000',
-            sessionId
-          )
-        );
-      }
 
       // Check time-based achievements if recent session provided
       if (userData.recentSession) {
@@ -8071,7 +7504,6 @@ export const firebaseApi = {
   user: firebaseUserApi,
   project: firebaseProjectApi,
   activity: firebaseActivityApi, // New alias
-  task: firebaseTaskApi,
   session: firebaseSessionApi,
   post: firebasePostApi,
   comment: firebaseCommentApi,

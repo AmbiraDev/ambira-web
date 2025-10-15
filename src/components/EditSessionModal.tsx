@@ -65,12 +65,6 @@ export const EditSessionModal: React.FC<EditSessionModalProps> = ({
 
   // Update state when session prop changes (important for modal reuse)
   useEffect(() => {
-    console.log('📝 EditSessionModal session changed:', {
-      id: session.id,
-      title: session.title,
-      images: session.images,
-      imageCount: session.images?.length || 0
-    });
 
     setTitle(session.title || '');
     setDescription(session.description || '');
@@ -106,7 +100,6 @@ export const EditSessionModal: React.FC<EditSessionModalProps> = ({
 
   const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    console.log('📸 Files selected in edit modal:', files.length);
 
     const totalImages = existingImages.length + selectedImages.length + files.length;
 
@@ -120,7 +113,6 @@ export const EditSessionModal: React.FC<EditSessionModalProps> = ({
     const previewUrls: string[] = [];
 
     for (const file of files) {
-      console.log('📸 Processing:', file.name, file.type, `${(file.size / 1024 / 1024).toFixed(2)}MB`);
 
       // Check if it's HEIC - we'll handle conversion during upload
       const isHeic = file.type === 'image/heic' ||
@@ -141,7 +133,6 @@ export const EditSessionModal: React.FC<EditSessionModalProps> = ({
       }
 
       const previewUrl = URL.createObjectURL(file);
-      console.log('✅ Added preview for:', file.name);
       validFiles.push(file);
       previewUrls.push(previewUrl);
     }
@@ -149,7 +140,6 @@ export const EditSessionModal: React.FC<EditSessionModalProps> = ({
     if (validFiles.length > 0) {
       setSelectedImages(prev => [...prev, ...validFiles]);
       setImagePreviewUrls(prev => [...prev, ...previewUrls]);
-      console.log('✅ Total images after adding:', existingImages.length + selectedImages.length + validFiles.length);
     }
   };
 

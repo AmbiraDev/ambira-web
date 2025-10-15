@@ -119,7 +119,6 @@ export default function ManualSessionRecorder() {
               file.name.replace(/\.heic$/i, '.jpg').replace(/\.heif$/i, '.jpg'),
               { type: 'image/jpeg' }
             );
-            console.log(`✅ Successfully converted HEIC file: ${file.name}`);
           } catch (error) {
             console.error('Error converting HEIC:', error);
             // More helpful error message
@@ -213,7 +212,6 @@ export default function ManualSessionRecorder() {
         try {
           const uploadResults = await uploadImages(selectedImages);
           imageUrls = uploadResults.map(result => result.url);
-          console.log('📸 Images uploaded:', imageUrls);
         } catch (error) {
           console.error('Failed to upload images:', error);
           setErrors({ submit: 'Failed to upload images. Please try again.' });
@@ -231,7 +229,6 @@ export default function ManualSessionRecorder() {
         description,
         duration,
         startTime: sessionDateTime,
-        taskIds: [],
         tags: [],
         visibility,
         privateNotes,

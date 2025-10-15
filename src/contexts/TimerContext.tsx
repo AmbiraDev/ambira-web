@@ -169,7 +169,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
 
         // Check if we have an active timer that needs to be cancelled
         if (timerState.activeTimerId) {
-          console.log('Received session cancellation event from another tab');
 
           // Reset local timer state immediately
           setTimerState({
@@ -202,7 +201,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
 
         // If no active session found (it was cancelled or completed), reset local state
         if (!activeSession) {
-          console.log('Active session no longer exists, resetting local timer');
           setTimerState({
             isRunning: false,
             startTime: null,
@@ -310,22 +308,18 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
 
         // If user has no projects, clear the active session
         if (projects.length === 0) {
-          console.log('No projects available, clearing active session');
           await firebaseSessionApi.clearActiveSession();
           return;
         }
 
         // Otherwise, assign to the first project
         project = projects[0];
-        console.log(
-          `Reassigning active session to first project: ${project.name}`
-        );
 
         // Update the active session with the new project
         await firebaseSessionApi.saveActiveSession({
           startTime: activeSession.startTime,
           projectId: project.id,
-          selectedTaskIds: [], // Clear tasks since they belonged to the old project
+          selectedTaskIds: [],
           pausedDuration: activeSession.pausedDuration,
           isPaused: activeSession.isPaused,
         });
@@ -342,21 +336,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
         lastAutoSave: null,
       });
 
-      // Log session details for debugging
-      const currentElapsed = activeSession.isPaused
-        ? activeSession.pausedDuration
-        : Math.floor(
-            (now.getTime() - activeSession.startTime.getTime()) / 1000
-          );
-
-      console.log('Active timer loaded successfully', {
-        projectName: project.name,
-        isPaused: activeSession.isPaused,
-        startTime: activeSession.startTime.toISOString(),
-        sessionAge: `${Math.floor(sessionAge / 1000 / 60)} minutes`,
-        pausedDuration: `${activeSession.pausedDuration} seconds`,
-        currentElapsed: `${Math.floor(currentElapsed / 60)} minutes ${currentElapsed % 60} seconds`,
-      });
+      // Timer successfully loaded
     } catch (error) {
       console.error('Failed to load active timer:', error);
     }
@@ -364,8 +344,7 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
 
   // Start timer
   const startTimer = async (
-    projectId: string,
-    taskIds: string[] = []
+    projectId: string
   ): Promise<void> => {
     try {
       if (!user) {
@@ -403,7 +382,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
         lastAutoSave: now,
       });
 
-      console.log('Timer started successfully with Firebase integration');
     } catch (error) {
       console.error('Failed to start timer:', error);
       throw error;
@@ -434,7 +412,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
         pausedDuration: currentElapsed,
       }));
 
-      console.log('Timer paused successfully');
     } catch (error) {
       console.error('Failed to pause timer:', error);
       throw error;
@@ -470,7 +447,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
         pausedDuration: 0,
       }));
 
-      console.log('Timer resumed successfully');
     } catch (error) {
       console.error('Failed to resume timer:', error);
       throw error;
@@ -487,7 +463,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
     options?: {
       visibility?: 'everyone' | 'followers' | 'private';
       showStartTime?: boolean;
-      hideTaskNames?: boolean;
       publishToFeeds?: boolean;
       customDuration?: number;
       images?: string[];
@@ -506,11 +481,9 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
         description,
         duration: finalDuration,
         startTime: timerState.startTime!,
-        taskIds: [],
         tags,
         visibility: options?.visibility,
         showStartTime: options?.showStartTime,
-        hideTaskNames: options?.hideTaskNames,
         publishToFeeds: options?.publishToFeeds,
         howFelt,
         privateNotes,
@@ -519,17 +492,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
 
       // Save session to Firebase and create post if visibility allows
       let session: Session;
-      let post: any;
-
-      console.log('📝 Creating session with data:', {
-        title,
-        description,
-        duration: `${Math.floor(finalDuration / 3600)}h ${Math.floor((finalDuration % 3600) / 60)}m`,
-        visibility: options?.visibility || 'private',
-        projectName: timerState.currentProject.name,
-        tags,
-        sessionData,
-      });
 
       if (options?.visibility && options.visibility !== 'private') {
         // Create session with post for non-private sessions
@@ -539,30 +501,9 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
           options.visibility
         );
         session = result.session;
-        post = result.post;
-        console.log('✅ Session and post created successfully!', {
-          sessionId: session.id,
-          sessionTitle: session.title,
-          duration: `${Math.floor(session.duration / 3600)}h ${Math.floor((session.duration % 3600) / 60)}m`,
-          visibility: session.visibility,
-          supportCount: session.supportCount,
-          commentCount: session.commentCount,
-          postId: post?.id,
-          fullSession: session,
-          fullPost: post,
-        });
       } else {
         // Create private session only
         session = await firebaseSessionApi.createSession(sessionData);
-        console.log('✅ Private session created successfully!', {
-          sessionId: session.id,
-          sessionTitle: session.title,
-          duration: `${Math.floor(session.duration / 3600)}h ${Math.floor((session.duration % 3600) / 60)}m`,
-          visibility: session.visibility,
-          supportCount: session.supportCount,
-          commentCount: session.commentCount,
-          fullSession: session,
-        });
       }
 
       // NOTE: Active session is automatically cleared inside createSession/createSessionWithPost
@@ -570,15 +511,9 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
       // The clearActiveSession call is now redundant but kept as a safety net
       try {
         await firebaseSessionApi.clearActiveSession();
-        console.log('🧹 Active session cleared from Firebase (safety net)');
       } catch (error) {
         // Ignore errors since clearActiveSession is already called in createSession
-        console.log('Active session already cleared by createSession');
       }
-
-      console.log(
-        '🧹 Session saved to Firebase and active session cleared successfully'
-      );
 
       // Reset timer state immediately
       setTimerState({
@@ -591,7 +526,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
         lastAutoSave: null,
       });
 
-      console.log('✅ Timer state reset complete');
 
       return session;
     } catch (error) {
@@ -607,7 +541,6 @@ export const TimerProvider: React.FC<TimerProviderProps> = ({ children }) => {
     try {
       // Clear active session from Firebase first
       await firebaseSessionApi.clearActiveSession();
-      console.log('Timer cancelled and cleared from Firebase');
 
       // Only reset state after successful deletion
       setTimerState({

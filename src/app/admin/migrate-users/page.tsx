@@ -69,9 +69,8 @@ export default function MigrateUsersPage() {
             <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
               <h3 className="font-semibold text-green-900 mb-2">Migration Complete</h3>
               <div className="text-green-700 space-y-1">
-                <p>Total users: {result.total}</p>
                 <p>Successfully migrated: {result.success}</p>
-                <p>Failed: {result.failed}</p>
+                {result.failed > 0 && <p>Failed: {result.failed}</p>}
               </div>
             </div>
           )}

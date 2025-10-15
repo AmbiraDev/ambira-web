@@ -38,14 +38,12 @@ export const WeekStreakCalendar: React.FC<WeekStreakCalendarProps> = ({ userId }
       try {
         // Fetch a generous amount and filter client-side by week range
         const res = await firebaseApi.session.getSessions(1, 100, {} as any);
-        console.log('🧾 Sessions fetched (latest 100):', res.sessions?.length);
 
         const withinWeek = res.sessions.filter((s) => {
           const dt = new Date(s.startTime);
           return dt >= weekStart && dt <= weekEnd;
         });
 
-        console.log('📆 Sessions within week:', withinWeek.map((s) => ({ id: s.id, start: toLocalYMD(new Date(s.startTime)) })));
 
         const dateSet = new Set<string>();
         withinWeek.forEach((s) => {
@@ -53,7 +51,6 @@ export const WeekStreakCalendar: React.FC<WeekStreakCalendarProps> = ({ userId }
           dateSet.add(localKey);
         });
 
-        console.log('✅ Active date keys:', Array.from(dateSet));
         setActiveDates(dateSet);
       } catch (error) {
         console.error('❌ Failed to load sessions for week:', error);
@@ -90,9 +87,6 @@ export const WeekStreakCalendar: React.FC<WeekStreakCalendarProps> = ({ userId }
       isPast: boolean;
     }>;
 
-    console.log('🗓️ Generating week days...');
-    console.log('📍 Today (local):', toLocalYMD(today));
-    console.log('📍 Week Start (local):', toLocalYMD(weekStart), '→ Week End (local):', toLocalYMD(weekEnd));
 
     for (let i = 0; i < 7; i++) {
       const date = new Date(weekStart);
@@ -111,12 +105,6 @@ export const WeekStreakCalendar: React.FC<WeekStreakCalendarProps> = ({ userId }
         localKey,
         isPast: date < today && !isToday
       };
-
-      console.log(`📅 ${dayInfo.dayOfWeek} ${dayInfo.dayNumber}:`, {
-        localKey,
-        hasActivity,
-        isToday
-      });
 
       days.push(dayInfo);
     }

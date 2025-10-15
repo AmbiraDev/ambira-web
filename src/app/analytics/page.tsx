@@ -55,16 +55,9 @@ export default function AnalyticsPage() {
   const isLoading = sessionsLoading || statsLoading;
 
   // Debug logging for activities
-  console.log('Analytics - User ID:', user?.id);
-  console.log('Analytics - Activities data:', activities);
-  console.log('Analytics - Activities length:', activities?.length);
-  console.log('Analytics - Sessions count:', sessions.length);
-  console.log('Analytics - Sample session projectIds:', sessions.slice(0, 3).map(s => ({ id: s.id, projectId: s.projectId, activityId: s.activityId })));
-  console.log('Analytics - Selected activity ID:', selectedProjectId);
 
   const filteredSessions = useMemo(() => {
     if (selectedProjectId === 'all') {
-      console.log('Analytics - Showing all sessions:', sessions.length);
       return sessions;
     }
 
@@ -75,7 +68,6 @@ export default function AnalyticsPage() {
       return matchesActivityId || matchesProjectId;
     });
 
-    console.log('Analytics - Filtered sessions for activity:', selectedProjectId, 'Count:', filtered.length);
     return filtered;
   }, [sessions, selectedProjectId]);
 

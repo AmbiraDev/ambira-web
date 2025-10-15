@@ -247,20 +247,19 @@ export default function BottomNavigation() {
           <Link
             href="/timer"
             className={`flex flex-col items-center justify-center space-y-0.5 px-3 py-1 transition-colors ${
-              isActive('/timer') ? 'text-[#007AFF]' : 'text-gray-500'
+              hasActiveSession || isActive('/timer') ? 'text-[#007AFF]' : 'text-gray-500'
             }`}
           >
-            <div className="relative">
+            <div className={`relative p-0.5 rounded-full ${hasActiveSession ? 'ring-2 ring-[#007AFF]' : ''}`}>
               <PlayCircle
                 className="w-6 h-6"
-                strokeWidth={isActive('/timer') ? 2.5 : 2}
-                fill={isActive('/timer') ? 'currentColor' : 'none'}
+                strokeWidth={hasActiveSession || isActive('/timer') ? 2.5 : 2}
+                fill={hasActiveSession || isActive('/timer') ? 'currentColor' : 'none'}
               />
-              {hasActiveSession && !isOnTimerPage && (
-                <div className="absolute -top-0.5 -right-0.5 w-2 h-2 bg-[#007AFF] rounded-full animate-pulse" />
-              )}
             </div>
-            <span className="text-[10px] font-medium">Record</span>
+            <span className="text-[10px] font-medium">
+              {hasActiveSession ? 'Active' : 'Record'}
+            </span>
           </Link>
 
           {/* Groups */}

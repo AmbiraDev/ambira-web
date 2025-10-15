@@ -83,7 +83,7 @@ export const PostStats: React.FC<PostStatsProps> = ({
       </div>
 
       {/* Completed Tasks Expandable List */}
-      {completedTasks.length > 0 && !session.hideTaskNames && (
+      {completedTasks.length > 0 && (
         <div className="border-t border-gray-200">
           <button
             onClick={() => setShowAllTasks(!showAllTasks)}
@@ -92,16 +92,16 @@ export const PostStats: React.FC<PostStatsProps> = ({
             <span className="text-sm font-medium text-gray-700">
               {completedTasks.length} {completedTasks.length === 1 ? 'task' : 'tasks'} completed
             </span>
-            <svg 
+            <svg
               className={`w-5 h-5 text-gray-400 transition-transform ${showAllTasks ? 'rotate-180' : ''}`}
-              fill="none" 
-              stroke="currentColor" 
+              fill="none"
+              stroke="currentColor"
               viewBox="0 0 24 24"
             >
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
             </svg>
           </button>
-          
+
           {showAllTasks && (
             <div className="px-4 pb-3 space-y-2">
               {completedTasks.map((task, index) => (

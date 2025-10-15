@@ -12,7 +12,6 @@ import { Challenge } from '@/types';
  */
 export async function checkChallengesEndingSoon(): Promise<void> {
   try {
-    console.log('Checking for challenges ending soon...');
     
     // Get all active challenges
     const challenges = await firebaseChallengeApi.getChallenges({
@@ -30,7 +29,6 @@ export async function checkChallengesEndingSoon(): Promise<void> {
       if (endDate > oneDayFromNow && endDate <= twoDaysFromNow) {
         const daysRemaining = Math.ceil((endDate.getTime() - now.getTime()) / (24 * 60 * 60 * 1000));
         
-        console.log(`Challenge "${challenge.name}" ends in ${daysRemaining} day(s), sending notifications...`);
         
         await challengeNotifications.notifyEndingSoon(
           challenge.id,
@@ -40,7 +38,6 @@ export async function checkChallengesEndingSoon(): Promise<void> {
       }
     }
     
-    console.log('Finished checking challenges ending soon');
   } catch (error) {
     console.error('Error checking challenges ending soon:', error);
   }
@@ -57,7 +54,6 @@ export async function checkRankChanges(challengeId: string): Promise<void> {
     
     // For now, we'll skip rank change notifications as they require storing previous ranks
     // This could be implemented with a separate collection to track rank history
-    console.log(`Checked rank changes for challenge ${challengeId}`);
   } catch (error) {
     console.error('Error checking rank changes:', error);
   }
@@ -69,7 +65,6 @@ export async function checkRankChanges(challengeId: string): Promise<void> {
  */
 export async function testChallengeNotifications(challengeId: string, userId: string): Promise<void> {
   try {
-    console.log('Testing challenge notifications...');
     
     // Test completion notification
     await challengeNotifications.notifyCompletion(
@@ -88,7 +83,6 @@ export async function testChallengeNotifications(challengeId: string, userId: st
       100
     );
     
-    console.log('Test notifications sent successfully');
   } catch (error) {
     console.error('Error sending test notifications:', error);
   }

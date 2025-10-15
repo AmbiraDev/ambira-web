@@ -28,10 +28,6 @@ export const useActivity = (id: string): { activity: Activity | null; isLoading:
   const { activities, isLoading } = useActivities();
   const activity = activities.find(a => a.id === id) || null;
 
-  console.log('[useActivity] Looking for activity with ID:', id);
-  console.log('[useActivity] All activities:', activities.map(a => ({ id: a.id, name: a.name })));
-  console.log('[useActivity] Found activity:', activity);
-  console.log('[useActivity] isLoading:', isLoading);
 
   return {
     activity,
@@ -88,7 +84,6 @@ export const ActivitiesProvider: React.FC<ActivitiesProviderProps> = ({ children
       try {
         // Update in Firebase
         await firebaseActivityApi.updateProject(activity.id, { icon: newIcon });
-        console.log(`Migrated icon for ${activity.name}: ${activity.icon} -> ${newIcon}`);
 
         // Return updated activity
         return {

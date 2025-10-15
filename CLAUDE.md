@@ -58,7 +58,6 @@ npx firebase-tools deploy --only firestore:rules --non-interactive
 
 **Projects**: `/projects/{userId}/userProjects/{projectId}`
 - Organized as subcollection under user
-- Tasks are nested: `/projects/{userId}/userProjects/{projectId}/tasks/{taskId}`
 
 **Sessions**: `/sessions/{sessionId}`
 - Sessions are the main content/feed items
@@ -87,7 +86,6 @@ npx firebase-tools deploy --only firestore:rules --non-interactive
 **React Context Providers** (in `/src/contexts/`):
 - `AuthContext`: User authentication state, login/signup/logout
 - `ProjectsContext`: Project CRUD operations
-- `TasksContext`: Task management across projects
 - `TimerContext`: Active timer state and persistence
 
 All contexts wrap the app in `/src/app/layout.tsx`

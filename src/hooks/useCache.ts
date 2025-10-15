@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient, UseQueryOptions } from '@tanstack/react-query';
 import { firebaseSessionApi, firebaseUserApi, firebaseApi } from '@/lib/firebaseApi';
 import { CACHE_KEYS, CACHE_TIMES } from '@/lib/queryClient';
-import { Session, UserStats, UserProfile, User as UserType, Project, Task, Group, Challenge } from '@/types';
+import { Session, UserStats, UserProfile, User as UserType, Project, Group, Challenge } from '@/types';
 
 // ==================== USER HOOKS ====================
 
@@ -120,17 +120,6 @@ export function useProjects(userId: string, options?: Partial<UseQueryOptions<Pr
   });
 }
 
-// ==================== TASK HOOKS ====================
-
-export function useTasks(userId: string, options?: Partial<UseQueryOptions<Task[]>>) {
-  return useQuery({
-    queryKey: CACHE_KEYS.TASKS(userId),
-    queryFn: () => firebaseApi.task.getAllTasks(),
-    staleTime: CACHE_TIMES.SHORT, // 1 minute cache for tasks (frequently updated)
-    ...options,
-  });
-}
-
 // ==================== GROUP HOOKS ====================
 
 export function useGroups(filters?: any, options?: Partial<UseQueryOptions<Group[]>>) {
@@ -232,16 +221,8 @@ export function useInvalidateFeed() {
 
 export function useInvalidateProjects() {
   const queryClient = useQueryClient();
-  
+
   return (userId: string) => {
     queryClient.invalidateQueries({ queryKey: CACHE_KEYS.PROJECTS(userId) });
-  };
-}
-
-export function useInvalidateTasks() {
-  const queryClient = useQueryClient();
-  
-  return (userId: string) => {
-    queryClient.invalidateQueries({ queryKey: CACHE_KEYS.TASKS(userId) });
   };
 }

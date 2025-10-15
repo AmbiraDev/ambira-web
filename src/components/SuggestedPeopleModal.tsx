@@ -153,23 +153,21 @@ export default function SuggestedPeopleModal({ isOpen, onClose }: SuggestedPeopl
             <button
               onClick={goToPreviousPage}
               disabled={currentPage === 0}
-              className="p-2 rounded-lg hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-sm font-medium text-gray-700"
               aria-label="Previous page"
             >
-              <ChevronLeft className="w-5 h-5 text-gray-700" />
+              <ChevronLeft className="w-4 h-4" />
+              Previous
             </button>
-
-            <span className="text-sm text-gray-600 font-medium">
-              Page {currentPage + 1} of {totalPages}
-            </span>
 
             <button
               onClick={goToNextPage}
               disabled={currentPage >= totalPages - 1}
-              className="p-2 rounded-lg hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-sm font-medium text-gray-700"
               aria-label="Next page"
             >
-              <ChevronRight className="w-5 h-5 text-gray-700" />
+              Next
+              <ChevronRight className="w-4 h-4" />
             </button>
           </div>
         )}

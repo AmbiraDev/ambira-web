@@ -89,7 +89,6 @@ describe('Image Upload Integration Flow', () => {
         description: 'Completed some great work with visual progress',
         duration: 3600,
         startTime: new Date(),
-        taskIds: [],
         tags: ['Work'],
         visibility: 'everyone',
         images: imageUrls
@@ -116,7 +115,6 @@ describe('Image Upload Integration Flow', () => {
         description: 'No images needed',
         duration: 1800,
         startTime: new Date(),
-        taskIds: [],
         visibility: 'private',
         images: []
       };
@@ -137,8 +135,7 @@ describe('Image Upload Integration Flow', () => {
         title: 'Legacy Session',
         description: 'Created before image support',
         duration: 2400,
-        startTime: new Date(),
-        taskIds: []
+        startTime: new Date()
       };
 
       const { addDoc } = require('firebase/firestore');
@@ -246,7 +243,6 @@ describe('Image Upload Integration Flow', () => {
         description: 'Images failed to upload',
         duration: 3600,
         startTime: new Date(),
-        taskIds: [],
         images: [] // Empty because upload failed
       };
 

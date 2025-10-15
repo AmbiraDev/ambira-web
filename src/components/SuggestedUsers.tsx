@@ -239,26 +239,6 @@ const SuggestedUsers: React.FC<SuggestedUsersProps> = ({
           </div>
         ))}
       </div>
-
-      {suggestions.length >= limit && (
-        <div className="mt-4 pt-4 border-t border-border">
-          <Button
-            variant="outline"
-            onClick={handleRefresh}
-            disabled={isRefreshing}
-            className="w-full"
-          >
-            {isRefreshing ? (
-              <div className="flex items-center gap-2">
-                <RefreshCw className="w-4 h-4 animate-spin" />
-                Refreshing...
-              </div>
-            ) : (
-              'Refresh Suggestions'
-            )}
-          </Button>
-        </div>
-      )}
     </div>
   );
 };

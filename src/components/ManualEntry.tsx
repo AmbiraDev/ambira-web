@@ -4,12 +4,6 @@ import React, { useState, useEffect } from 'react';
 import { SessionFormData, Project } from '@/types';
 import { parseLocalDateTime } from '@/lib/utils';
 
-interface Task {
-  id: string;
-  name: string;
-  status: string;
-}
-
 interface ManualEntryProps {
   onSave: (data: SessionFormData) => Promise<void>;
   onCancel: () => void;
@@ -36,7 +30,6 @@ export const ManualEntry: React.FC<ManualEntryProps> = ({
     description: '',
     duration: 0,
     startTime: new Date(),
-    taskIds: [],
     tags: [],
     visibility: 'everyone',
     howFelt: 3,
@@ -44,9 +37,6 @@ export const ManualEntry: React.FC<ManualEntryProps> = ({
   });
 
   const [projects, setProjects] = useState<Project[]>([]);
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [selectedTasks, setSelectedTasks] = useState<Task[]>([]);
-  const [manualTasks, setManualTasks] = useState<string>('');
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   // Time inputs
@@ -79,29 +69,6 @@ export const ManualEntry: React.FC<ManualEntryProps> = ({
     loadProjects();
   }, []);
 
-  // Load tasks when project changes
-  useEffect(() => {
-    const loadTasks = async () => {
-      if (!formData.projectId) {
-        setTasks([]);
-        setSelectedTasks([]);
-        return;
-      }
-
-      try {
-        const token = getAuthToken();
-        // TODO: Load tasks from Firebase
-        const taskList: Task[] = []; // await mockTaskApiLocal.getProjectTasks(formData.projectId, token);
-        setTasks(taskList.filter(task => task.status === 'active'));
-        setSelectedTasks([]);
-        setFormData(prev => ({ ...prev, taskIds: [] }));
-      } catch (error) {
-        console.error('Failed to load tasks:', error);
-      }
-    };
-
-    loadTasks();
-  }, [formData.projectId]);
 
   // Update duration when time inputs change
   useEffect(() => {
@@ -141,26 +108,6 @@ export const ManualEntry: React.FC<ManualEntryProps> = ({
     }
   };
 
-  const handleTaskToggle = (taskId: string) => {
-    const task = tasks.find(t => t.id === taskId);
-    if (!task) return;
-
-    const isSelected = selectedTasks.some(t => t.id === taskId);
-    let newSelectedTasks: Task[];
-    let newTaskIds: string[];
-
-    if (isSelected) {
-      newSelectedTasks = selectedTasks.filter(t => t.id !== taskId);
-      newTaskIds = formData.taskIds?.filter(id => id !== taskId) || [];
-    } else {
-      newSelectedTasks = [...selectedTasks, task];
-      newTaskIds = [...(formData.taskIds || []), taskId];
-    }
-
-    setSelectedTasks(newSelectedTasks);
-    setFormData(prev => ({ ...prev, taskIds: newTaskIds }));
-  };
-
   const handleTagToggle = (tag: string) => {
     const tags = formData.tags || [];
     const isSelected = tags.includes(tag);
@@ -169,22 +116,6 @@ export const ManualEntry: React.FC<ManualEntryProps> = ({
       : [...tags, tag];
 
     setFormData(prev => ({ ...prev, tags: newTags }));
-  };
-
-  const handleManualTasksChange = (value: string) => {
-    setManualTasks(value);
-    
-    // Parse line breaks and create task entries
-    const taskLines = value.split('\n').filter(line => line.trim());
-    // For manual entry, we'll store the task names in the description
-    // In a real app, you might want to create actual Task objects
-    if (taskLines.length > 0) {
-      const taskDescription = taskLines.join('\n');
-      setFormData(prev => ({ 
-        ...prev, 
-        description: prev.description ? `${prev.description}\n\nTasks:\n${taskDescription}` : `Tasks:\n${taskDescription}`
-      }));
-    }
   };
 
   const validateForm = (): boolean => {
@@ -395,47 +326,6 @@ export const ManualEntry: React.FC<ManualEntryProps> = ({
               {errors.duration && (
                 <p className="text-red-500 text-sm mt-1">{errors.duration}</p>
               )}
-            </div>
-
-            {/* Project Tasks */}
-            {tasks.length > 0 && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Select Tasks (Optional)
-                </label>
-                <div className="space-y-2 max-h-32 overflow-y-auto">
-                  {tasks.map((task) => (
-                    <label key={task.id} className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        checked={selectedTasks.some(t => t.id === task.id)}
-                        onChange={() => handleTaskToggle(task.id)}
-                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                        disabled={isLoading}
-                      />
-                      <span className="text-sm text-gray-700">{task.name}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Manual Task Entry */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Manual Task Entry
-              </label>
-              <textarea
-                value={manualTasks}
-                onChange={(e) => handleManualTasksChange(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                rows={3}
-                placeholder="Enter tasks one per line..."
-                disabled={isLoading}
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                Enter each task on a new line. These will be added to your session description.
-              </p>
             </div>
 
             {/* Description */}

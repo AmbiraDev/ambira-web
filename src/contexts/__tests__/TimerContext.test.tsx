@@ -72,7 +72,6 @@ const mockSession = {
   tasks: [mockTask],
   visibility: 'private' as const,
   showStartTime: false,
-  hideTaskNames: false,
   publishToFeeds: true,
   isArchived: false,
   supportCount: 0,
@@ -112,7 +111,7 @@ describe('TimerContext', () => {
 
       // Start a timer first
       await act(async () => {
-        await result.current.startTimer('project-1', ['task-1']);
+        await result.current.startTimer('project-1');
       });
 
       // Verify timer is running
@@ -144,7 +143,7 @@ describe('TimerContext', () => {
 
       // Start a timer first
       await act(async () => {
-        await result.current.startTimer('project-1', ['task-1']);
+        await result.current.startTimer('project-1');
       });
 
       // Mock clearActiveSession to fail
@@ -189,7 +188,7 @@ describe('TimerContext', () => {
 
       // Start a timer first
       await act(async () => {
-        await result.current.startTimer('project-1', ['task-1']);
+        await result.current.startTimer('project-1');
       });
 
       // Complete the session
@@ -204,7 +203,6 @@ describe('TimerContext', () => {
           {
             visibility: 'private',
             showStartTime: true,
-            hideTaskNames: false,
             publishToFeeds: true
           }
         );
@@ -218,7 +216,6 @@ describe('TimerContext', () => {
           description: 'Completed some tasks',
           visibility: 'private',
           showStartTime: true,
-          hideTaskNames: false,
           publishToFeeds: true,
           howFelt: 3,
           privateNotes: 'Private notes'
@@ -247,7 +244,7 @@ describe('TimerContext', () => {
 
       // Start a timer first
       await act(async () => {
-        await result.current.startTimer('project-1', ['task-1']);
+        await result.current.startTimer('project-1');
       });
 
       // Complete the session with public visibility
@@ -261,7 +258,6 @@ describe('TimerContext', () => {
           {
             visibility: 'everyone',
             showStartTime: true,
-            hideTaskNames: false,
             publishToFeeds: true
           }
         );
@@ -289,7 +285,7 @@ describe('TimerContext', () => {
 
       // Start a timer first
       await act(async () => {
-        await result.current.startTimer('project-1', ['task-1']);
+        await result.current.startTimer('project-1');
       });
 
       // Complete the session with custom duration
@@ -324,7 +320,7 @@ describe('TimerContext', () => {
 
       // Start a timer first
       await act(async () => {
-        await result.current.startTimer('project-1', ['task-1']);
+        await result.current.startTimer('project-1');
       });
 
       // Mock clearActiveSession to fail
@@ -384,7 +380,7 @@ describe('TimerContext', () => {
 
       // Start a timer first
       await act(async () => {
-        await result.current.startTimer('project-1', ['task-1']);
+        await result.current.startTimer('project-1');
       });
 
       const imageUrls = ['https://example.com/image1.jpg', 'https://example.com/image2.jpg'];
@@ -423,7 +419,7 @@ describe('TimerContext', () => {
 
       // Start a timer
       await act(async () => {
-        await result.current.startTimer('project-1', ['task-1']);
+        await result.current.startTimer('project-1');
       });
 
       expect(result.current.timerState.isRunning).toBe(true);
@@ -585,7 +581,7 @@ describe('TimerContext', () => {
 
       // Start timer
       await act(async () => {
-        await result.current.startTimer('project-1', ['task-1']);
+        await result.current.startTimer('project-1');
       });
 
       // Run for 11 minutes
@@ -650,7 +646,7 @@ describe('TimerContext', () => {
       const { result: result1, unmount } = renderHook(() => useTimer(), { wrapper: wrapper1 });
 
       await act(async () => {
-        await result1.current.startTimer('project-1', ['task-1']);
+        await result1.current.startTimer('project-1');
       });
 
       // Run for 11 minutes
@@ -744,7 +740,7 @@ describe('TimerContext', () => {
       const { result } = renderHook(() => useTimer(), { wrapper });
 
       await act(async () => {
-        await result.current.startTimer('project-1', ['task-1']);
+        await result.current.startTimer('project-1');
       });
 
       // Immediately pause (very short duration)
@@ -794,7 +790,7 @@ describe('TimerContext', () => {
       const { result } = renderHook(() => useTimer(), { wrapper });
 
       await act(async () => {
-        await result.current.startTimer('project-1', ['task-1']);
+        await result.current.startTimer('project-1');
       });
 
       const originalStartTime = result.current.timerState.startTime;
@@ -831,7 +827,7 @@ describe('TimerContext', () => {
       const { result } = renderHook(() => useTimer(), { wrapper });
 
       await act(async () => {
-        await result.current.startTimer('project-1', ['task-1']);
+        await result.current.startTimer('project-1');
       });
 
       const originalStartTime = result.current.timerState.startTime;

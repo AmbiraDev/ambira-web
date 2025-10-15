@@ -87,7 +87,6 @@ export const NotificationSettings: React.FC<NotificationSettingsProps> = ({
     try {
       setIsSaving(true);
       // TODO: Save to Firestore when backend is ready
-      console.log('Saving notification preferences:', preferences);
       alert('Notification preferences saved successfully!');
     } catch (error) {
       console.error('Failed to save notification preferences:', error);

@@ -47,7 +47,6 @@ export default function GroupInviteModal({ group, isOpen, onClose }: GroupInvite
         });
       } catch (err) {
         // User cancelled or error occurred
-        console.log('Share cancelled or failed:', err);
       }
     } else {
       // Fallback to copy

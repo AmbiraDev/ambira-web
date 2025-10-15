@@ -68,51 +68,6 @@ export interface ActivityStats {
 // Backwards compatibility alias
 export type ProjectStats = ActivityStats;
 
-// Task types (deprecated but kept for backwards compatibility)
-export interface Task {
-  id: string;
-  userId: string;
-  projectId: string;
-  title: string;
-  description?: string;
-  status: 'todo' | 'in_progress' | 'completed';
-  priority?: 'low' | 'medium' | 'high';
-  dueDate?: Date;
-  completedAt?: Date;
-  createdAt: Date;
-  updatedAt: Date;
-}
-
-export interface CreateTaskData {
-  projectId: string;
-  title: string;
-  description?: string;
-  status?: 'todo' | 'in_progress' | 'completed';
-  priority?: 'low' | 'medium' | 'high';
-  dueDate?: Date;
-}
-
-export interface UpdateTaskData {
-  title?: string;
-  description?: string;
-  status?: 'todo' | 'in_progress' | 'completed';
-  priority?: 'low' | 'medium' | 'high';
-  dueDate?: Date;
-  completedAt?: Date;
-}
-
-export interface BulkTaskUpdate {
-  taskId: string;
-  updates: UpdateTaskData;
-}
-
-export interface TaskStats {
-  totalTasks: number;
-  completedTasks: number;
-  inProgressTasks: number;
-  completionRate: number;
-}
-
 // Post types (deprecated - sessions are now posts)
 export interface Post {
   id: string;
@@ -214,7 +169,6 @@ export interface Session {
   tags?: string[]; // Deprecated but kept for backwards compatibility
   visibility: 'everyone' | 'followers' | 'private';
   showStartTime?: boolean;
-  hideTaskNames?: boolean;
   howFelt?: number; // 1-5 rating
   privateNotes?: string;
   isArchived: boolean;
@@ -510,10 +464,6 @@ export type AchievementType =
   | 'hours-100'
   | 'hours-500'
   | 'hours-1000'
-  | 'tasks-50'
-  | 'tasks-100'
-  | 'tasks-500'
-  | 'tasks-1000'
   | 'challenge-complete'
   | 'challenge-winner'
   | 'personal-record-session'
@@ -535,7 +485,6 @@ export interface AchievementDefinition {
 export interface UserAchievementData {
   userId: string;
   totalHours: number;
-  totalTasks: number;
   currentStreak: number;
   longestStreak: number;
   totalSessions: number;
@@ -864,7 +813,6 @@ export interface ActiveTimer {
   projectId?: string; // Backwards compatibility
   startTime: Date;
   pausedDuration: number; // seconds
-  selectedTaskIds: string[];
   lastUpdated: Date;
 }
 
@@ -880,7 +828,7 @@ export interface TimerState {
 
 export interface TimerContextType {
   timerState: TimerState;
-  startTimer: (projectId: string, taskIds?: string[]) => Promise<void>;
+  startTimer: (projectId: string) => Promise<void>;
   pauseTimer: () => Promise<void>;
   resumeTimer: () => Promise<void>;
   finishTimer: (
@@ -892,7 +840,6 @@ export interface TimerContextType {
     options?: {
       visibility?: 'everyone' | 'followers' | 'private';
       showStartTime?: boolean;
-      hideTaskNames?: boolean;
       publishToFeeds?: boolean;
       customDuration?: number;
       images?: string[];
@@ -911,11 +858,9 @@ export interface CreateSessionData {
   description?: string;
   duration: number;
   startTime: Date;
-  taskIds: string[];
   tags?: string[]; // Deprecated but kept for backwards compatibility
   visibility?: 'everyone' | 'followers' | 'private';
   showStartTime?: boolean;
-  hideTaskNames?: boolean;
   publishToFeeds?: boolean; // Whether to publish to home/group feeds
   howFelt?: number;
   privateNotes?: string;
@@ -931,11 +876,9 @@ export interface SessionFormData {
   description?: string;
   duration: number;
   startTime: Date;
-  taskIds?: string[];
   tags?: string[]; // Deprecated but kept for backwards compatibility
   visibility: 'everyone' | 'followers' | 'private';
   showStartTime?: boolean;
-  hideTaskNames?: boolean;
   howFelt?: number;
   privateNotes?: string;
   images?: string[]; // Array of image URLs (max 3)
@@ -1002,7 +945,6 @@ export interface PersonalAnalytics {
   period: AnalyticsPeriod;
   totalHours: TrendData;
   totalSessions: TrendData;
-  totalTasks: TrendData;
   averageSessionDuration: number;
   currentStreak: number;
   longestStreak: number;
@@ -1020,7 +962,6 @@ export interface ProjectAnalytics {
   totalHours: number;
   weeklyAverage: number;
   sessionCount: number;
-  taskCompletionRate: number;
   cumulativeHours: Array<{ date: string; hours: number }>;
   sessionFrequency: Array<{ date: string; count: number }>;
   goalProgress?: {
@@ -1037,7 +978,6 @@ export interface ComparativeAnalytics {
     projectName: string;
     hours: number;
     sessions: number;
-    tasks: number;
   }>;
   weekOverWeek: Array<{
     week: string;
@@ -1052,7 +992,7 @@ export interface ComparativeAnalytics {
 }
 
 export interface ExportOptions {
-  type: 'sessions' | 'projects' | 'tasks' | 'all';
+  type: 'sessions' | 'projects' | 'all';
   dateFrom: Date;
   dateTo: Date;
   format: 'csv' | 'json';

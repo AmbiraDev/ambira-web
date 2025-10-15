@@ -293,7 +293,6 @@ export async function withNullOnError<T>(
 
     if (shouldReturnNull) {
       if (!options.silent && process.env.NODE_ENV === 'development') {
-        console.log(`[${context}] Returning null for expected error:`, getErrorCode(error));
       }
       return null;
     }

@@ -24,9 +24,7 @@ export const SessionTimer: React.FC<SessionTimerProps> = ({ className = '' }) =>
     return '';
   };
   const [projects, setProjects] = useState<Project[]>([]);
-  const [tasks, setTasks] = useState<any[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState<string>('');
-  const [selectedTaskIds, setSelectedTaskIds] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showFinishModal, setShowFinishModal] = useState(false);
 
@@ -53,33 +51,13 @@ export const SessionTimer: React.FC<SessionTimerProps> = ({ className = '' }) =>
     }
   }, [user, timerState.currentProject]);
 
-  // Load tasks when project changes
-  useEffect(() => {
-    const loadTasks = async () => {
-      if (!selectedProjectId) {
-        setTasks([]);
-        return;
-      }
-
-      try {
-        const token = getAuthToken();
-        // TODO: Load tasks from Firebase
-        const taskList: any[] = []; // await mockTaskApi.getProjectTasks(selectedProjectId, token);
-        setTasks(taskList.filter(task => task.status === 'active'));
-      } catch (error) {
-        console.error('Failed to load tasks:', error);
-      }
-    };
-
-    loadTasks();
-  }, [selectedProjectId]);
 
   const handleStartTimer = async () => {
     if (!selectedProjectId) return;
 
     try {
       setIsLoading(true);
-      await startTimer(selectedProjectId, selectedTaskIds);
+      await startTimer(selectedProjectId);
     } catch (error) {
       console.error('Failed to start timer:', error);
     } finally {
@@ -87,24 +65,6 @@ export const SessionTimer: React.FC<SessionTimerProps> = ({ className = '' }) =>
     }
   };
 
-  const handleTaskToggle = async (taskId: string) => {
-    const newSelectedTaskIds = selectedTaskIds.includes(taskId)
-      ? selectedTaskIds.filter(id => id !== taskId)
-      : [...selectedTaskIds, taskId];
-
-    setSelectedTaskIds(newSelectedTaskIds);
-
-    // Update timer if it's running
-    // Note: updateSelectedTasks method not implemented in TimerContext
-    if (timerState.isRunning && timerState.activeTimerId) {
-      try {
-        // TODO: Implement updateSelectedTasks in TimerContext if needed
-        console.log('Selected tasks updated:', newSelectedTaskIds);
-      } catch (error) {
-        console.error('Failed to update selected tasks:', error);
-      }
-    }
-  };
 
   const handleFinishModalOpen = () => {
     setShowFinishModal(true);
@@ -165,43 +125,6 @@ export const SessionTimer: React.FC<SessionTimerProps> = ({ className = '' }) =>
           </div>
         )}
 
-        {/* Task Selection */}
-        {selectedProjectId && tasks.length > 0 && (
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Select Tasks (Optional)
-            </label>
-            <div className="space-y-2 max-h-40 overflow-y-auto">
-              {tasks.map((task) => (
-                <label key={task.id} className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    checked={selectedTaskIds.includes(task.id)}
-                    onChange={() => handleTaskToggle(task.id)}
-                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                    disabled={isLoading}
-                  />
-                  <span className="text-sm text-gray-700">{task.name}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Selected Tasks Display (when timer is active) */}
-        {isActive && selectedTaskIds.length > 0 && (
-          <div className="mb-6">
-            <h3 className="text-sm font-medium text-gray-700 mb-2">Selected Tasks</h3>
-            <div className="space-y-2">
-              {tasks.filter(task => selectedTaskIds.includes(task.id)).map((task) => (
-                <div key={task.id} className="flex items-center space-x-2 p-2 bg-gray-50 rounded">
-                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  <span className="text-sm text-gray-700">{task.name}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
 
         {/* Timer Controls */}
         <div className="flex justify-center">
@@ -233,10 +156,9 @@ export const SessionTimer: React.FC<SessionTimerProps> = ({ className = '' }) =>
         <SaveSession
           onSave={async (data) => {
             try {
-              // Ensure taskIds is always an array
+              // Create session data
               const sessionData: CreateSessionData = {
-                ...data,
-                taskIds: data.taskIds || []
+                ...data
               };
 
               // Create session and post if visibility allows
@@ -248,11 +170,9 @@ export const SessionTimer: React.FC<SessionTimerProps> = ({ className = '' }) =>
                   data.description || `Completed ${data.title}`,
                   data.visibility
                 );
-                console.log('Session and post created:', { session, post });
               } else {
                 // Create private session only
                 const session = await firebaseApi.session.createSession(sessionData);
-                console.log('Private session created:', session);
               }
 
               setShowFinishModal(false);
@@ -265,11 +185,11 @@ export const SessionTimer: React.FC<SessionTimerProps> = ({ className = '' }) =>
           onCancel={() => setShowFinishModal(false)}
           initialData={{
             projectId: timerState.currentProject?.id || '',
+            activityId: timerState.currentProject?.id || '',
             title: '',
             description: '',
             duration: timerState.pausedDuration || 0,
             startTime: timerState.startTime || new Date(),
-            taskIds: selectedTaskIds,
             tags: [],
             visibility: 'everyone',
             howFelt: 3,

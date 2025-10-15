@@ -223,7 +223,6 @@ export function useCommentLikeMutation(sessionId: string) {
         // If already liked/unliked, treat as success (idempotent)
         const errorMsg = error.message || String(error);
         if (errorMsg.includes('Already liked') || errorMsg.includes('not liked')) {
-          console.log('Comment like/unlike was idempotent, treating as success');
           return;
         }
         throw error;

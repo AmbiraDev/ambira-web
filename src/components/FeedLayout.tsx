@@ -215,50 +215,7 @@ export const FeedLayout: React.FC<FeedLayoutProps> = ({ className = '' }) => {
           <div className="sticky top-6 space-y-6">
             {/* Suggested Users */}
             <SuggestedUsers />
-            
-            {/* Trending Projects */}
-            <div className="bg-white rounded-lg border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Trending Projects
-              </h3>
-              
-              <div className="space-y-3">
-                <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                  <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
-                    <span className="text-white text-sm font-medium">💻</span>
-                  </div>
-                  <div className="flex-1">
-                    <div className="font-medium text-gray-900">Web Development</div>
-                    <div className="text-sm text-gray-600">1.2k sessions this week</div>
-                  </div>
-                </div>
-                
-                <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                  <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
-                    <span className="text-white text-sm font-medium">📚</span>
-                  </div>
-                  <div className="flex-1">
-                    <div className="font-medium text-gray-900">Learning</div>
-                    <div className="text-sm text-gray-600">890 sessions this week</div>
-                  </div>
-                </div>
-                
-                <div className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-                  <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center">
-                    <span className="text-white text-sm font-medium">🎨</span>
-                  </div>
-                  <div className="flex-1">
-                    <div className="font-medium text-gray-900">Design</div>
-                    <div className="text-sm text-gray-600">567 sessions this week</div>
-                  </div>
-                </div>
-              </div>
-              
-              <button className="w-full mt-4 text-sm text-blue-600 hover:text-blue-700 font-medium">
-                View All Projects
-              </button>
-            </div>
-            
+
             {/* Feed Tips */}
             <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200 p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-2">

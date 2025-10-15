@@ -222,12 +222,10 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
   // Session handlers for SessionCard
   const handleSupport = async (sessionId: string) => {
     // TODO: Re-implement when API is fixed
-    console.log('Support:', sessionId);
   };
 
   const handleRemoveSupport = async (sessionId: string) => {
     // TODO: Re-implement when API is fixed
-    console.log('Remove support:', sessionId);
   };
 
   const handleShare = async (sessionId: string) => {

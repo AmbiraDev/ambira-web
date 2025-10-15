@@ -41,37 +41,23 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     let authUnsubscribe: (() => void) | null = null;
 
     const initializeAuth = async () => {
-      console.log('[AuthContext] ========================================');
-      console.log('[AuthContext] Initializing auth...');
-      console.log('[AuthContext] Current URL:', typeof window !== 'undefined' ? window.location.href : 'SSR');
-      console.log('[AuthContext] ========================================');
 
       // Check for Google redirect result FIRST (important for mobile sign-in)
       // This MUST happen before setting up the auth listener because getRedirectResult
       // can only be called once per redirect
       try {
-        console.log('[AuthContext] Checking for Google redirect result...');
         const redirectResult = await firebaseAuthApi.handleGoogleRedirectResult();
-        console.log('[AuthContext] Redirect result received:', redirectResult);
 
         if (redirectResult) {
-          console.log('[AuthContext] ✅ Google redirect sign-in successful!');
-          console.log('[AuthContext] User data:', {
-            id: redirectResult.user.id,
-            email: redirectResult.user.email,
-            username: redirectResult.user.username,
-            name: redirectResult.user.name
-          });
+
           redirectHandledRef.current = true;
           // Set user immediately and stop loading
           setUser(redirectResult.user);
           setIsLoading(false);
           // Navigate to home after successful redirect
-          console.log('[AuthContext] Navigating to home...');
           navigateToHome();
           return; // Exit early since we handled the redirect
         } else {
-          console.log('[AuthContext] ❌ No redirect result found (redirectResult is null)');
         }
       } catch (error) {
         console.error('[AuthContext] ❌ Google redirect result ERROR:', error);
@@ -85,23 +71,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
 
       // Set up the auth state listener
-      console.log('[AuthContext] Setting up auth state listener...');
       authUnsubscribe = firebaseAuthApi.onAuthStateChanged(async (firebaseUser) => {
-        console.log('[AuthContext] Auth state changed. FirebaseUser:', firebaseUser ? firebaseUser.uid : 'null');
 
         // If we already handled the redirect, skip this callback
         if (redirectHandledRef.current) {
-          console.log('[AuthContext] Skipping auth state change - redirect already handled');
           return;
         }
 
         try {
           if (firebaseUser) {
             const userData = await firebaseAuthApi.getCurrentUser();
-            console.log('[AuthContext] User data loaded for:', userData.username);
             setUser(userData);
           } else {
-            console.log('[AuthContext] User signed out');
             setUser(null);
           }
         } catch (error) {
@@ -128,7 +109,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setIsLoading(true);
       
       const response = await firebaseAuthApi.login(credentials);
-      console.log('Login response:', response);
       
       setUser(response.user);
       
@@ -165,7 +145,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const signInWithGoogle = async (): Promise<void> => {
     try {
       const response = await firebaseAuthApi.signInWithGoogle();
-      console.log('Google sign-in response:', response);
 
       setUser(response.user);
 
@@ -177,7 +156,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // Special case: if redirect is in progress, don't throw error
       // The page will redirect away, so we just return normally
       if (error?.message === 'REDIRECT_IN_PROGRESS') {
-        console.log('[AuthContext] Google redirect in progress, browser will redirect to Google');
         // Just return - the browser will redirect and page will reload
         return;
       }

@@ -57,15 +57,7 @@ async function convertHeicToJpeg(file: File): Promise<File> {
     return file;
   }
 
-  console.log('🔍 HEIC detected:', {
-    extension: hasHeicExtension,
-    mimeType: hasHeicType,
-    magicBytes: isActualHeic,
-    fileName: file.name,
-  });
-
   try {
-    console.log('🔄 Converting HEIC to JPEG...');
     const heic2any = (await import('heic2any')).default;
 
     const convertedBlob = await heic2any({
@@ -86,7 +78,6 @@ async function convertHeicToJpeg(file: File): Promise<File> {
       { type: 'image/jpeg' }
     );
 
-    console.log('✅ HEIC converted to JPEG:', convertedFile.name);
     return convertedFile;
   } catch (error) {
     console.error('❌ Failed to convert HEIC:', error);
@@ -126,15 +117,10 @@ export async function uploadImage(
     throw new Error('File must be an image (JPG, PNG, GIF, WebP)');
   }
 
-  console.log(
-    `📦 Processing file: ${processedFile.name} (${(processedFile.size / 1024 / 1024).toFixed(2)}MB)`
-  );
-
   // Compress if file is larger than 5MB
   const maxSize = 5 * 1024 * 1024; // 5MB
   if (processedFile.size > maxSize) {
     const sizeMB = (processedFile.size / 1024 / 1024).toFixed(1);
-    console.log(`🔄 Image is ${sizeMB}MB, compressing to reduce size...`);
     try {
       processedFile = await compressToSize(processedFile, 5);
     } catch (error: any) {
@@ -156,17 +142,11 @@ export async function uploadImage(
   );
 
   try {
-    console.log(`📤 Uploading to: ${storageRef.fullPath}`);
-
     // Upload the processed file (not the original)
     const snapshot = await uploadBytes(storageRef, processedFile);
-    console.log(
-      `✅ Upload complete. Bytes transferred: ${snapshot.metadata.size}`
-    );
 
     // Get download URL
     const url = await getDownloadURL(storageRef);
-    console.log(`🔗 Download URL obtained: ${url.substring(0, 100)}...`);
 
     return {
       url,
@@ -294,9 +274,6 @@ export async function compressImage(
                 { type: 'image/jpeg' }
               );
 
-              console.log(
-                `✅ Compressed: ${(file.size / 1024 / 1024).toFixed(2)}MB → ${(compressedFile.size / 1024 / 1024).toFixed(2)}MB`
-              );
               resolve(compressedFile);
             },
             'image/jpeg',
@@ -339,10 +316,6 @@ async function compressToSize(
     return file;
   }
 
-  console.log(
-    `📉 File is ${(file.size / 1024 / 1024).toFixed(2)}MB, compressing to under ${maxSizeMB}MB...`
-  );
-
   // Start with aggressive compression settings
   let compressedFile = file;
 
@@ -363,9 +336,6 @@ async function compressToSize(
     );
 
     if (compressedFile.size <= maxSizeBytes) {
-      console.log(
-        `✅ Compression successful at quality ${attempt.quality}, ${attempt.maxDimension}px`
-      );
       return compressedFile;
     }
   }

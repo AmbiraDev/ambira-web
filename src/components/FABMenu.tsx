@@ -28,15 +28,12 @@ export const FABMenu: React.FC = () => {
           data.description || `Completed ${data.title}`,
           data.visibility
         );
-        console.log('Session and post created:', { session, post });
       } else {
         // Create private session only
         const session = await firebaseApi.session.createSession(data);
-        console.log('Private session created:', session);
       }
       
       setShowManualEntry(false);
-      console.log('Session saved successfully!');
     } catch (error) {
       console.error('Failed to save session:', error);
       throw error;

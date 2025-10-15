@@ -8,7 +8,7 @@ import GroupInviteModal from '@/components/GroupInviteModal';
 import { Group, User, GroupStats } from '@/types';
 import { firebaseApi } from '@/lib/firebaseApi';
 import Link from 'next/link';
-import { Users, Settings, Activity, ChevronDown, Trophy, UserPlus } from 'lucide-react';
+import { Users, Settings, Activity, ChevronDown, Trophy, UserPlus, ArrowLeft } from 'lucide-react';
 
 type GroupTab = 'leaderboard' | 'recent-activity' | 'members' | 'posts';
 type TimePeriod = 'today' | 'week' | 'month' | 'year';
@@ -209,7 +209,27 @@ export default function GroupDetailPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header />
+      {/* Desktop Header */}
+      <div className="hidden sm:block">
+        <Header />
+      </div>
+
+      {/* Mobile Header with Back Button */}
+      <div className="sm:hidden sticky top-0 left-0 right-0 z-50 bg-gray-50">
+        <div className="flex items-center justify-between h-14 px-4">
+          <button
+            onClick={() => router.back()}
+            className="p-2 -ml-2 text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+            aria-label="Go back"
+          >
+            <ArrowLeft className="w-6 h-6" />
+          </button>
+          <h1 className="text-lg font-semibold text-gray-900 truncate flex-1 text-center px-2">
+            {group?.name || 'Group'}
+          </h1>
+          <div className="w-10" /> {/* Spacer for centering */}
+        </div>
+      </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
         <div className="flex gap-8">
@@ -217,7 +237,62 @@ export default function GroupDetailPage() {
           <div className="flex-1">
             {/* Group Header */}
             <div className="mb-6">
-              <div className="flex flex-col sm:flex-row items-start gap-4">
+              {/* Mobile Layout */}
+              <div className="sm:hidden">
+                {/* Top Row: Avatar, Name, and Settings */}
+                <div className="flex items-center gap-3 mb-3">
+                  {/* Group Avatar */}
+                  <div className="w-16 h-16 bg-gradient-to-br from-[#007AFF] to-[#0051D5] rounded-full flex items-center justify-center flex-shrink-0">
+                    {group.imageUrl ? (
+                      <img
+                        src={group.imageUrl}
+                        alt={group.name}
+                        className="w-full h-full rounded-full object-cover"
+                      />
+                    ) : (
+                      <Users className="w-8 h-8 text-white" />
+                    )}
+                  </div>
+
+                  {/* Name and Settings */}
+                  <div className="flex-1 min-w-0">
+                    <h1 className="text-xl font-bold text-gray-900 mb-1 truncate">{group.name}</h1>
+                    <div className="flex items-center gap-2">
+                      <span className="text-base">{getCategoryIcon()}</span>
+                      <span className="text-xs text-gray-600 capitalize">
+                        {group.category.replace('-', ' ')}
+                      </span>
+                      {group.location && (
+                        <>
+                          <span className="text-gray-400">•</span>
+                          <span className="text-xs text-gray-600 truncate">
+                            {group.location}
+                          </span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Settings Button */}
+                  {isAdmin && (
+                    <button
+                      onClick={() => router.push(`/groups/${group.id}/settings`)}
+                      className="p-2 hover:bg-gray-100 rounded-lg transition-colors flex-shrink-0"
+                      aria-label="Edit group"
+                    >
+                      <Settings className="w-5 h-5 text-gray-600" />
+                    </button>
+                  )}
+                </div>
+
+                {/* Description */}
+                {group.description && (
+                  <p className="text-sm text-gray-700 mb-3 line-clamp-3">{group.description}</p>
+                )}
+              </div>
+
+              {/* Desktop Layout */}
+              <div className="hidden sm:flex flex-col sm:flex-row items-start gap-4">
                 {/* Group Avatar */}
                 <div className="w-20 h-20 sm:w-32 sm:h-32 bg-gradient-to-br from-[#007AFF] to-[#0051D5] rounded-full flex items-center justify-center flex-shrink-0">
                   {group.imageUrl ? (

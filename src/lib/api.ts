@@ -1,8 +1,8 @@
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
-import { 
-  AuthResponse, 
-  LoginCredentials, 
-  SignupCredentials, 
+import {
+  AuthResponse,
+  LoginCredentials,
+  SignupCredentials,
   AuthUser,
   Project,
   ProjectStats,
@@ -15,11 +15,6 @@ import {
   SessionFilters,
   SessionSort,
   SessionListResponse,
-  Task,
-  CreateTaskData,
-  UpdateTaskData,
-  BulkTaskUpdate,
-  TaskStats,
   UserProfile,
   UserStats,
   ActivityData,
@@ -185,19 +180,17 @@ export const projectApi = {
 // Timer API methods
 export const timerApi = {
   // Start a new timer session
-  startSession: async (projectId: string, taskIds: string[] = []): Promise<ActiveTimer> => {
+  startSession: async (projectId: string): Promise<ActiveTimer> => {
     const response: AxiosResponse<ActiveTimer> = await api.post('/sessions/start', {
       projectId,
-      taskIds,
     });
     return response.data;
   },
 
   // Update active timer (for pause/resume)
-  updateActiveTimer: async (timerId: string, pausedDuration: number, taskIds: string[] = []): Promise<ActiveTimer> => {
+  updateActiveTimer: async (timerId: string, pausedDuration: number): Promise<ActiveTimer> => {
     const response: AxiosResponse<ActiveTimer> = await api.put(`/sessions/active/${timerId}`, {
       pausedDuration,
-      taskIds,
     });
     return response.data;
   },
@@ -224,48 +217,6 @@ export const timerApi = {
   // Cancel active timer
   cancelActiveTimer: async (timerId: string): Promise<void> => {
     await api.delete(`/sessions/active/${timerId}`);
-  },
-};
-
-// Task API methods
-export const taskApi = {
-  // Get tasks for a project
-  getProjectTasks: async (projectId: string): Promise<Task[]> => {
-    const response: AxiosResponse<Task[]> = await api.get(`/projects/${projectId}/tasks`);
-    return response.data;
-  },
-
-  // Create a new task
-  createTask: async (data: CreateTaskData): Promise<Task> => {
-    const response: AxiosResponse<Task> = await api.post(`/projects/${data.projectId}/tasks`, data);
-    return response.data;
-  },
-
-  // Update task
-  updateTask: async (id: string, data: UpdateTaskData): Promise<Task> => {
-    const response: AxiosResponse<Task> = await api.put(`/tasks/${id}`, data);
-    return response.data;
-  },
-
-  // Delete task
-  deleteTask: async (id: string): Promise<void> => {
-    await api.delete(`/tasks/${id}`);
-  },
-
-  // Bulk update tasks
-  bulkUpdateTasks: async (update: BulkTaskUpdate): Promise<void> => {
-    await api.post('/tasks/bulk', update);
-  },
-
-  // Get task statistics for a project
-  getTaskStats: async (projectId: string): Promise<TaskStats> => {
-    const response: AxiosResponse<TaskStats> = await api.get(`/projects/${projectId}/tasks/stats`);
-    return response.data;
-  },
-
-  // Update task status (legacy method)
-  updateTaskStatus: async (taskId: string, status: 'active' | 'completed' | 'archived'): Promise<Task> => {
-    return taskApi.updateTask(taskId, { status: status === 'active' ? 'in_progress' : status as any });
   },
 };
 

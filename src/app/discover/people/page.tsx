@@ -37,7 +37,8 @@ export default function DiscoverPeoplePage() {
         }
 
         // Load suggested users (filters by profileVisibility and excludes following)
-        const suggestions = await firebaseUserApi.getSuggestedUsers(50);
+        // Limit to 5 to avoid revealing total user count
+        const suggestions = await firebaseUserApi.getSuggestedUsers(5);
 
         setSuggestedUsers(suggestions);
       } catch (error) {
@@ -108,7 +109,7 @@ export default function DiscoverPeoplePage() {
           <div>
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Discover People</h1>
             <p className="text-gray-600">
-              Connect with productive people in the Ambira community
+              Here are some people you might want to follow
             </p>
           </div>
         </div>

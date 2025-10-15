@@ -47,7 +47,6 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
     'everyone' | 'followers' | 'private'
   >('everyone');
   const [showStartTime, setShowStartTime] = useState(false);
-  const [hideTaskNames, setHideTaskNames] = useState(false);
   const [publishToFeeds, setPublishToFeeds] = useState(true);
   const [howFelt, setHowFelt] = useState<number>(3);
   const [privateNotes, setPrivateNotes] = useState('');
@@ -135,7 +134,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
     }
 
     try {
-      await startTimer(selectedActivityId, []);
+      await startTimer(selectedActivityId);
     } catch (error) {
       console.error('Failed to start timer:', error);
       alert('Failed to start timer. Please try again.');
@@ -165,7 +164,6 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
 
   const handleFinishTimer = async () => {
     try {
-      console.log('💾 Starting session save...');
 
       // Validate required fields
       if (!sessionTitle.trim()) {
@@ -180,7 +178,6 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
         try {
           const uploadResults = await uploadImages(selectedImages);
           imageUrls = uploadResults.map(result => result.url);
-          console.log('📸 Images uploaded:', imageUrls);
         } catch (error) {
           console.error('Failed to upload images:', error);
           alert(
@@ -201,13 +198,11 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
         {
           visibility,
           showStartTime,
-          hideTaskNames,
           publishToFeeds,
           customDuration: adjustedDuration,
           images: imageUrls,
         }
       );
-      console.log('✅ Session saved successfully:', session.id);
 
       // Reset modal and form state
       setShowFinishModal(false);
@@ -517,15 +512,6 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                         className="w-4 h-4 flex-shrink-0"
                       />
                       Show start time
-                    </label>
-                    <label className="flex items-center gap-2 text-sm text-gray-700 min-h-[36px]">
-                      <input
-                        type="checkbox"
-                        checked={hideTaskNames}
-                        onChange={e => setHideTaskNames(e.target.checked)}
-                        className="w-4 h-4 flex-shrink-0"
-                      />
-                      Don't show task names
                     </label>
                     <label className="flex items-center gap-2 text-sm text-gray-700 min-h-[36px]">
                       <input

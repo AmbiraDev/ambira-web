@@ -54,22 +54,6 @@ export const Feed: React.FC<FeedProps> = ({
     }
   );
 
-  // Log cache behavior
-  useEffect(() => {
-    if (isFetching && !isLoading) {
-      console.log('📡 Refetching initial feed data from server (cache is stale)');
-    } else if (!isFetching && data) {
-      console.log('✅ Using cached feed data');
-    }
-  }, [isFetching, isLoading, data]);
-
-  useEffect(() => {
-    if (isFetchingMore && !isLoadingMore) {
-      console.log('📡 Refetching paginated data from server (cache is stale)');
-    } else if (!isFetchingMore && paginatedData && shouldLoadMore) {
-      console.log('✅ Using cached paginated data');
-    }
-  }, [isFetchingMore, isLoadingMore, paginatedData, shouldLoadMore]);
 
   const [hasMore, setHasMore] = useState(true);
 
@@ -80,14 +64,6 @@ export const Feed: React.FC<FeedProps> = ({
   // Update sessions when initial data changes
   useEffect(() => {
     if (data) {
-      console.log('=== FEED DEBUG (Initial Load) ===');
-      console.log('Feed filter:', filters);
-      console.log('Total sessions loaded:', data.sessions.length);
-      console.log('Has more:', data.hasMore);
-      console.log('Next cursor:', data.nextCursor);
-      console.log('Cache status: Using React Query cache');
-      console.log('==================');
-
       setAllSessions(data.sessions);
       setHasMore(data.hasMore);
       setNextCursor(data.nextCursor);
@@ -98,13 +74,6 @@ export const Feed: React.FC<FeedProps> = ({
   // Handle paginated data
   useEffect(() => {
     if (paginatedData && shouldLoadMore) {
-      console.log('=== FEED DEBUG (Pagination) ===');
-      console.log('Paginated sessions loaded:', paginatedData.sessions.length);
-      console.log('Has more:', paginatedData.hasMore);
-      console.log('Next cursor:', paginatedData.nextCursor);
-      console.log('Cache status: Using React Query cache');
-      console.log('==================');
-
       setAllSessions(prev => [...prev, ...paginatedData.sessions]);
       setHasMore(paginatedData.hasMore);
       setNextCursor(paginatedData.nextCursor);
@@ -138,7 +107,6 @@ export const Feed: React.FC<FeedProps> = ({
   // Load more sessions - now uses React Query hook
   const loadMore = useCallback(() => {
     if (!isLoadingMore && hasMore && nextCursor) {
-      console.log('Triggering load more with cursor:', nextCursor);
       setShouldLoadMore(true);
     }
   }, [isLoadingMore, hasMore, nextCursor]);
@@ -155,10 +123,8 @@ export const Feed: React.FC<FeedProps> = ({
         let response;
         if (cachedData) {
           response = cachedData as { sessions: any[] };
-          console.log('New sessions check: Using cached data');
         } else {
           response = await firebaseApi.post.getFeedSessions(5, undefined, filters);
-          console.log('New sessions check: Fetched from DB');
         }
 
         const newSessionIds = response.sessions.map(s => s.id);
@@ -205,14 +171,12 @@ export const Feed: React.FC<FeedProps> = ({
         // Fallback to clipboard
         await navigator.clipboard.writeText(sessionUrl);
         // Could show success toast here
-        console.log('Link copied to clipboard');
       }
     } catch (err: any) {
       // Silently ignore if user cancels the share dialog
       if (err.name === 'AbortError') {
         return;
       }
-      console.error('Failed to share session:', err);
       // Could show error toast here
     }
   }, []);
@@ -230,7 +194,7 @@ export const Feed: React.FC<FeedProps> = ({
       await deleteSessionMutation.mutateAsync(deleteConfirmSession);
       setDeleteConfirmSession(null);
     } catch (err: any) {
-      console.error('Failed to delete session:', err);
+      // Could show error toast here
     } finally {
       setIsDeleting(false);
     }
@@ -277,15 +241,8 @@ export const Feed: React.FC<FeedProps> = ({
     const observer = new IntersectionObserver(
       (entries) => {
         const [entry] = entries;
-        console.log('IntersectionObserver triggered:', {
-          isIntersecting: entry.isIntersecting,
-          hasMore,
-          isLoadingMore,
-          nextCursor
-        });
 
         if (entry.isIntersecting && hasMore && !isLoadingMore && nextCursor) {
-          console.log('Loading more sessions...');
           loadMore();
         }
       },
@@ -362,39 +319,28 @@ export const Feed: React.FC<FeedProps> = ({
 
   if (allSessions.length === 0) {
     return (
-      <div className={`text-center py-8 px-4 ${className}`}>
+      <div className={`text-center py-12 px-4 ${className}`}>
         <div className="max-w-md mx-auto">
-          <div className="text-gray-500 mb-6">
-            <svg className="w-16 h-16 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+          <div className="text-gray-500 mb-8">
+            <svg className="w-20 h-20 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
             </svg>
-            <p className="font-semibold text-lg text-gray-900 mb-2">No sessions yet</p>
-            <p className="text-sm text-gray-600">
-              Be the first to share your productive session!
+            <h3 className="font-bold text-xl text-gray-900 mb-2">Your feed is empty</h3>
+            <p className="text-base text-gray-600 leading-relaxed">
+              Follow people to see their productive sessions in your feed and get inspired by their work!
             </p>
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <button
-              onClick={() => router.push('/discover/people')}
-              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-3 bg-white border-2 border-gray-300 text-gray-700 rounded-lg hover:border-gray-400 hover:bg-gray-50 transition-colors font-medium text-sm sm:min-w-[180px]"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-              </svg>
-              Find People
-            </button>
-            <button
-              onClick={() => router.push('/timer')}
-              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-3 bg-[#007AFF] text-white rounded-lg hover:bg-[#0051D5] transition-colors font-medium text-sm shadow-sm sm:min-w-[180px]"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-              Record Session
-            </button>
-          </div>
+          {/* Action Button */}
+          <button
+            onClick={() => router.push('/discover/people')}
+            className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#007AFF] text-white rounded-lg hover:bg-[#0051D5] transition-colors font-semibold text-base shadow-md hover:shadow-lg transform hover:scale-[1.02] transition-all"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            Find People to Follow
+          </button>
         </div>
       </div>
     );

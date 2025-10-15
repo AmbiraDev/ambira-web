@@ -105,8 +105,6 @@ export const SignupForm: React.FC = () => {
       newErrors.email = 'Email is required';
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = 'Email is invalid';
-    } else if (formData.email === 'demo@ambira.com') {
-      newErrors.email = 'This email is reserved for demo purposes. Please use the demo login instead.';
     }
 
     if (!formData.password) {

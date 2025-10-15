@@ -30,7 +30,7 @@ function HomeContent() {
       </div>
 
       {/* Mobile header */}
-      <MobileHeader title="Feed" />
+      <MobileHeader title="Feed" showNotifications={true} />
 
       {/* Main Content Area - Scrollable */}
       <div className="flex-1 overflow-hidden">

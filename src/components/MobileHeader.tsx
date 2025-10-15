@@ -8,15 +8,16 @@ import NotificationIcon from './NotificationIcon';
 
 interface MobileHeaderProps {
   title: string;
+  showNotifications?: boolean;
 }
 
-export default function MobileHeader({ title }: MobileHeaderProps) {
+export default function MobileHeader({ title, showNotifications = false }: MobileHeaderProps) {
   const { user } = useAuth();
 
   if (!user) return null;
 
   return (
-    <div className="md:hidden bg-white border-b border-gray-200 px-4 py-2 sticky top-0 z-40">
+    <div className="md:hidden bg-gray-50 px-4 py-2 sticky top-0 z-40">
       <div className="flex items-center justify-center h-10 relative">
         {/* Profile Picture - Smaller and on left */}
         <Link href="/you?tab=profile" className="absolute left-0 top-1/2 -translate-y-1/2">
@@ -45,10 +46,12 @@ export default function MobileHeader({ title }: MobileHeaderProps) {
           {title}
         </h1>
 
-        {/* Notification Icon - Right */}
-        <div className="absolute right-0 top-1/2 -translate-y-1/2">
-          <NotificationIcon className="text-gray-700" />
-        </div>
+        {/* Notification Icon - Right (only show when showNotifications is true) */}
+        {showNotifications && (
+          <div className="absolute right-0 top-1/2 -translate-y-1/2">
+            <NotificationIcon className="text-gray-700" />
+          </div>
+        )}
       </div>
     </div>
   );

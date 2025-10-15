@@ -35,7 +35,7 @@ function SearchContent() {
   const type = (searchParams.get('type') || 'people') as 'people' | 'groups';
 
   const [query, setQuery] = useState(initialQuery);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true); // Start with loading true
   const [results, setResults] = useState<any[]>([]);
   const [suggestedUsers, setSuggestedUsers] = useState<any[]>([]);
   const [suggestedGroups, setSuggestedGroups] = useState<any[]>([]);
@@ -50,81 +50,75 @@ function SearchContent() {
 
   const ITEMS_PER_PAGE = 10;
 
-  // Load user's groups and following on mount
-  useEffect(() => {
-    if (!user) return;
-
-    const loadUserData = async () => {
-      try {
-        // Load user's groups
-        const userGroups = await firebaseApi.group.getUserGroups(user.id);
-        setJoinedGroups(new Set(userGroups.map(g => g.id)));
-
-        // Load user's following
-        const following = await firebaseUserApi.getFollowing(user.id);
-        setFollowingUsers(new Set(following.map(u => u.id)));
-      } catch (error) {
-        console.error('Error loading user data:', error);
-      }
-    };
-
-    loadUserData();
-  }, [user?.id]);
-
   // Load suggested content based on current tab (only when no search query)
   useEffect(() => {
     // Only load suggestions when there's no search query
-    if (initialQuery.trim()) return;
+    if (initialQuery.trim()) {
+      setIsLoading(false);
+      return;
+    }
     if (!user) {
       setIsLoading(false);
       return;
     }
 
     let isMounted = true;
-    setIsLoading(true);
 
     const run = async () => {
       try {
-        // Load users for People tab - use the same API as home page
+        // Load users for People tab
         if (type === 'people') {
-          try {
-            // Use the same getSuggestedUsers API that properly filters followed users
-            const suggestions = await firebaseUserApi.getSuggestedUsers(50);
-            if (!isMounted) return;
-            setSuggestedUsers(suggestions);
-          } catch (error) {
-            console.error('Error loading users:', error);
-            if (isMounted) setSuggestedUsers([]);
-          }
+          // Load following list first
+          const following = await firebaseUserApi.getFollowing(user.id);
+          if (!isMounted) return;
+          setFollowingUsers(new Set(following.map(u => u.id)));
+
+          // Use the same getSuggestedUsers API that properly filters followed users
+          // Limit to 5 to avoid revealing total user count
+          const suggestions = await firebaseUserApi.getSuggestedUsers(5);
+          if (!isMounted) return;
+          setSuggestedUsers(suggestions);
         }
 
         // Load groups for Groups tab
         if (type === 'groups') {
-          try {
-            const allGroupsSnapshot = await getDocs(
-              firestoreQuery(collection(db, 'groups'), orderBy('memberCount', 'desc'), limit(20))
-            );
-            const groups = allGroupsSnapshot.docs.map(doc => {
-              const data = doc.data();
-              return {
-                id: doc.id,
-                name: data.name,
-                description: data.description,
-                imageUrl: data.imageUrl,
-                location: data.location,
-                category: data.category,
-                memberCount: data.memberCount,
-                members: data.memberCount,
-                image: data.imageUrl || '📁'
-              };
-            });
-            if (isMounted) setSuggestedGroups(groups);
-          } catch (error) {
-            console.error('Error loading groups:', error);
-            if (isMounted) setSuggestedGroups([]);
-          }
+          // Load user's joined groups first
+          const userGroups = await firebaseApi.group.getUserGroups(user.id);
+          if (!isMounted) return;
+          const joinedGroupIds = new Set(userGroups.map(g => g.id));
+          setJoinedGroups(joinedGroupIds);
+
+          // Fetch all groups
+          const allGroupsSnapshot = await getDocs(
+            firestoreQuery(collection(db, 'groups'), orderBy('memberCount', 'desc'), limit(20))
+          );
+          const allGroups = allGroupsSnapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+              id: doc.id,
+              name: data.name,
+              description: data.description,
+              imageUrl: data.imageUrl,
+              location: data.location,
+              category: data.category,
+              memberCount: data.memberCount,
+              members: data.memberCount,
+              image: data.imageUrl || '📁'
+            };
+          });
+
+          // Filter out groups user is already in
+          const filteredGroups = allGroups.filter(group => !joinedGroupIds.has(group.id));
+          if (!isMounted) return;
+          setSuggestedGroups(filteredGroups);
         }
 
+      } catch (error) {
+        console.error('Error loading suggestions:', error);
+        if (isMounted) {
+          setSuggestedUsers([]);
+          setSuggestedGroups([]);
+        }
       } finally {
         if (isMounted) setIsLoading(false);
       }
@@ -138,7 +132,7 @@ function SearchContent() {
     // Only search if there's a query
     if (!initialQuery.trim()) {
       setResults([]);
-      setIsLoading(false);
+      // Don't set isLoading to false here - let the suggestions effect handle it
       return;
     }
 
@@ -224,9 +218,9 @@ function SearchContent() {
   const handleJoinGroup = async (groupId: string, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     if (!user) return;
-    
+
     const isJoined = joinedGroups.has(groupId);
     
     try {
@@ -435,24 +429,10 @@ function SearchContent() {
                     {suggestedUsers.length > 0 ? (
                       <div>
                         <div className="flex items-center justify-between mb-3 px-1">
-                          <h3 className="text-lg font-semibold text-gray-900">Suggested for you</h3>
-                          {suggestedUsers.length > 5 && !showAllPeople && (
-                            <button
-                              onClick={() => {
-                                setShowAllPeople(true);
-                                setPeoplePage(1);
-                              }}
-                              className="text-xs text-[#007AFF] hover:text-[#0056D6] font-semibold"
-                            >
-                              See all
-                            </button>
-                          )}
+                          <h3 className="text-lg font-semibold text-gray-900">People you might like</h3>
                         </div>
                         <div className="space-y-1">
-                          {(showAllPeople
-                            ? suggestedUsers.slice(0, peoplePage * ITEMS_PER_PAGE)
-                            : suggestedUsers.slice(0, 5)
-                          ).map((suggestedUser) => {
+                          {suggestedUsers.map((suggestedUser) => {
                             const isFollowing = followingUsers.has(suggestedUser.id);
                             return (
                               <div key={suggestedUser.id} className="bg-white rounded-lg overflow-hidden">
@@ -465,27 +445,6 @@ function SearchContent() {
                             );
                           })}
                         </div>
-                        {suggestedUsers.length > 5 && showAllPeople && (
-                          <div className="mt-4 space-y-2">
-                            {peoplePage * ITEMS_PER_PAGE < suggestedUsers.length && (
-                              <button
-                                onClick={() => setPeoplePage(prev => prev + 1)}
-                                className="w-full text-center text-[#007AFF] font-semibold text-sm py-3 hover:text-[#0056D6] transition-colors bg-white rounded-lg border border-gray-200"
-                              >
-                                Load More ({Math.min(ITEMS_PER_PAGE, suggestedUsers.length - peoplePage * ITEMS_PER_PAGE)} more)
-                              </button>
-                            )}
-                            <button
-                              onClick={() => {
-                                setShowAllPeople(false);
-                                setPeoplePage(1);
-                              }}
-                              className="w-full text-center text-gray-600 font-medium text-sm py-3 hover:text-gray-900 transition-colors"
-                            >
-                              Show Less
-                            </button>
-                          </div>
-                        )}
                       </div>
                     ) : (
                       <div className="p-12 text-center">
@@ -507,24 +466,10 @@ function SearchContent() {
                     {suggestedGroups.length > 0 ? (
                       <div>
                         <div className="flex items-center justify-between mb-3 px-1">
-                          <h3 className="text-lg font-semibold text-gray-900">Groups to join</h3>
-                          {suggestedGroups.length > 3 && !showAllGroups && (
-                            <button
-                              onClick={() => {
-                                setShowAllGroups(true);
-                                setGroupsPage(1);
-                              }}
-                              className="text-xs text-[#007AFF] hover:text-[#0056D6] font-semibold"
-                            >
-                              See all
-                            </button>
-                          )}
+                          <h3 className="text-lg font-semibold text-gray-900">Suggested Groups</h3>
                         </div>
                         <div className="space-y-1">
-                          {(showAllGroups
-                            ? suggestedGroups.slice(0, groupsPage * ITEMS_PER_PAGE)
-                            : suggestedGroups.slice(0, 3)
-                          ).map((group) => (
+                          {suggestedGroups.slice(0, 5).map((group) => (
                             <div
                               key={group.id}
                               className="bg-white rounded-lg overflow-hidden hover:bg-gray-50 transition-colors"
@@ -533,27 +478,6 @@ function SearchContent() {
                             </div>
                           ))}
                         </div>
-                        {suggestedGroups.length > 3 && showAllGroups && (
-                          <div className="mt-4 space-y-2">
-                            {groupsPage * ITEMS_PER_PAGE < suggestedGroups.length && (
-                              <button
-                                onClick={() => setGroupsPage(prev => prev + 1)}
-                                className="w-full text-center text-[#007AFF] font-semibold text-sm py-3 hover:text-[#0056D6] transition-colors bg-white rounded-lg border border-gray-200"
-                              >
-                                Load More ({Math.min(ITEMS_PER_PAGE, suggestedGroups.length - groupsPage * ITEMS_PER_PAGE)} more)
-                              </button>
-                            )}
-                            <button
-                              onClick={() => {
-                                setShowAllGroups(false);
-                                setGroupsPage(1);
-                              }}
-                              className="w-full text-center text-gray-600 font-medium text-sm py-3 hover:text-gray-900 transition-colors"
-                            >
-                              Show Less
-                            </button>
-                          </div>
-                        )}
                       </div>
                     ) : (
                       <div className="p-12 text-center">

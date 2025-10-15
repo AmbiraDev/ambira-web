@@ -133,12 +133,6 @@ function RightSidebar() {
         <div className="px-2">
           <div className="flex items-center justify-between mb-3 px-2">
             <h3 className="text-lg font-semibold text-gray-900">Suggested for you</h3>
-            <button
-              onClick={() => setShowPeopleModal(true)}
-              className="text-xs text-[#007AFF] hover:text-[#0056D6] font-semibold"
-            >
-              See more
-            </button>
           </div>
 
           {isLoading ? (
@@ -205,13 +199,7 @@ function RightSidebar() {
         {/* Clubs - Redesigned */}
         <div className="px-2">
           <div className="flex items-center justify-between mb-3 px-2">
-            <h3 className="text-lg font-semibold text-gray-900">Groups to join</h3>
-            <button
-              onClick={() => setShowGroupsModal(true)}
-              className="text-xs text-[#007AFF] hover:text-[#0056D6] font-semibold"
-            >
-              See more
-            </button>
+            <h3 className="text-lg font-semibold text-gray-900">Suggested Groups</h3>
           </div>
 
           {isLoading ? (

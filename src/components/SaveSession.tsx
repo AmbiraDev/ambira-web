@@ -34,15 +34,12 @@ export const SaveSession: React.FC<SaveSessionProps> = ({
     description: initialData.description || '',
     duration: initialData.duration || 0,
     startTime: initialData.startTime || new Date(),
-    taskIds: initialData.taskIds || [],
     tags: initialData.tags || [],
     visibility: initialData.visibility || 'everyone',
     privateNotes: initialData.privateNotes || '',
   });
 
   const [projects, setProjects] = useState<Project[]>([]);
-  const [tasks, setTasks] = useState<any[]>([]);
-  const [selectedTasks, setSelectedTasks] = useState<any[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showPostModal, setShowPostModal] = useState(false);
 
@@ -74,32 +71,6 @@ export const SaveSession: React.FC<SaveSessionProps> = ({
     loadProjects();
   }, [user, initialData.projectId, formData.projectId]);
 
-  // Load tasks when project changes
-  useEffect(() => {
-    const loadTasks = async () => {
-      if (!formData.projectId) {
-        setTasks([]);
-        setSelectedTasks([]);
-        return;
-      }
-
-      try {
-        const taskList = await firebaseApi.task.getProjectTasks(formData.projectId);
-        setTasks(taskList.filter(task => task.status !== 'completed'));
-        
-        // Set selected tasks from initial data
-        if (initialData.taskIds && initialData.taskIds.length > 0) {
-          const selected = taskList.filter(task => initialData.taskIds!.includes(task.id));
-          setSelectedTasks(selected);
-          setFormData(prev => ({ ...prev, taskIds: initialData.taskIds! }));
-        }
-      } catch (error) {
-        console.error('Failed to load tasks:', error);
-      }
-    };
-
-    loadTasks();
-  }, [formData.projectId, initialData.taskIds]);
 
   // Generate smart title based on time of day and project
   useEffect(() => {
@@ -124,26 +95,6 @@ export const SaveSession: React.FC<SaveSessionProps> = ({
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
     }
-  };
-
-  const handleTaskToggle = (taskId: string) => {
-    const task = tasks.find(t => t.id === taskId);
-    if (!task) return;
-
-    const isSelected = selectedTasks.some(t => t.id === taskId);
-    let newSelectedTasks: any[];
-    let newTaskIds: string[];
-
-    if (isSelected) {
-      newSelectedTasks = selectedTasks.filter(t => t.id !== taskId);
-      newTaskIds = formData.taskIds?.filter(id => id !== taskId) || [];
-    } else {
-      newSelectedTasks = [...selectedTasks, task];
-      newTaskIds = [...(formData.taskIds || []), taskId];
-    }
-
-    setSelectedTasks(newSelectedTasks);
-    setFormData(prev => ({ ...prev, taskIds: newTaskIds }));
   };
 
   const handleTagToggle = (tag: string) => {
@@ -275,23 +226,6 @@ export const SaveSession: React.FC<SaveSessionProps> = ({
                 </div>
               </div>
             </div>
-
-            {/* Selected Tasks */}
-            {selectedTasks.length > 0 && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Completed Tasks
-                </label>
-                <div className="space-y-2">
-                  {selectedTasks.map((task) => (
-                    <div key={task.id} className="flex items-center space-x-2 p-2 bg-green-50 rounded">
-                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                      <span className="text-sm text-gray-700">{task.name}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
 
             {/* Description */}
             <div>
