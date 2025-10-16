@@ -12,7 +12,6 @@ import { useUserSessions, useUserStats } from '@/hooks/useCache';
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, LineChart, Line, ComposedChart, Area } from 'recharts';
 import { ChevronDown } from 'lucide-react';
 import { IconRenderer } from '@/components/IconRenderer';
-import { StreakCard } from '@/components/StreakCard';
 
 type TimePeriod = '7D' | '2W' | '4W' | '3M' | '1Y';
 
@@ -408,9 +407,6 @@ export default function AnalyticsPage() {
             </div>
 
             <div className="space-y-4">
-              {/* Streak Card */}
-              {user && <StreakCard userId={user.id} showProgress={true} />}
-
               {/* Main Chart */}
               <div className="bg-white border border-gray-200 rounded-xl p-6">
                 <div className="mb-4">
@@ -558,33 +554,48 @@ export default function AnalyticsPage() {
               {/* Stats Grid - 5 columns */}
               <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                 <div className="bg-white border border-gray-200 rounded-xl p-4">
-                  <div className="text-sm text-gray-600 mb-2">Total Hours</div>
+                  <div className="text-sm text-gray-600 mb-2 uppercase tracking-wide">Total Hours</div>
                   <div className="text-2xl font-bold mb-1">{calculatedStats.totalHours.toFixed(1)}</div>
                   {renderPercentageChange(calculatedStats.hoursChange)}
                 </div>
 
                 <div className="bg-white border border-gray-200 rounded-xl p-4">
-                  <div className="text-sm text-gray-600 mb-2">Avg Duration</div>
+                  <div className="text-sm text-gray-600 mb-2 uppercase tracking-wide">Avg Duration</div>
                   <div className="text-2xl font-bold mb-1">{calculatedStats.avgDuration}m</div>
                   {renderPercentageChange(calculatedStats.avgDurationChange)}
                 </div>
 
                 <div className="bg-white border border-gray-200 rounded-xl p-4">
-                  <div className="text-sm text-gray-600 mb-2">Sessions</div>
+                  <div className="text-sm text-gray-600 mb-2 uppercase tracking-wide">Sessions</div>
                   <div className="text-2xl font-bold mb-1">{calculatedStats.sessions}</div>
                   {renderPercentageChange(calculatedStats.sessionsChange)}
                 </div>
 
                 <div className="bg-white border border-gray-200 rounded-xl p-4">
-                  <div className="text-sm text-gray-600 mb-2">Active Days</div>
+                  <div className="text-sm text-gray-600 mb-2 uppercase tracking-wide">Active Days</div>
                   <div className="text-2xl font-bold mb-1">{calculatedStats.activeDays}</div>
                   {renderPercentageChange(calculatedStats.activeDaysChange)}
                 </div>
 
                 <div className="bg-white border border-gray-200 rounded-xl p-4">
-                  <div className="text-sm text-gray-600 mb-2">Activities</div>
+                  <div className="text-sm text-gray-600 mb-2 uppercase tracking-wide">Activities</div>
                   <div className="text-2xl font-bold mb-1">{calculatedStats.activities}</div>
                   {renderPercentageChange(calculatedStats.activitiesChange)}
+                </div>
+              </div>
+
+              {/* Secondary Stats Grid - Streaks */}
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                <div className="bg-white border border-gray-200 rounded-xl p-4">
+                  <div className="text-sm text-gray-600 mb-2 uppercase tracking-wide">Current Streak</div>
+                  <div className="text-2xl font-bold mb-1">{calculatedStats.currentStreak}</div>
+                  {renderPercentageChange(calculatedStats.streakChange)}
+                </div>
+
+                <div className="bg-white border border-gray-200 rounded-xl p-4">
+                  <div className="text-sm text-gray-600 mb-2 uppercase tracking-wide">Longest Streak</div>
+                  <div className="text-2xl font-bold mb-1">{calculatedStats.longestStreak}</div>
+                  {renderPercentageChange(calculatedStats.streakChange)}
                 </div>
               </div>
             </div>

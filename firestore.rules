@@ -388,11 +388,18 @@ service cloud.firestore {
     match /streaks/{userId} {
       // Users can read/write their own streak data
       allow read, write: if request.auth != null && request.auth.uid == userId;
-      
-      // Allow authenticated users to read public streaks for social features
-      allow read: if request.auth != null && 
+
+      // Allow authenticated users to read public streaks for social features (if document exists)
+      allow read: if request.auth != null &&
+        resource != null &&
         (resource.data.isPublic == true || !('isPublic' in resource.data));
-      
+
+      // Allow creating streak document if it doesn't exist (for initialization)
+      allow create: if request.auth != null &&
+        request.resource.data.userId == userId &&
+        request.resource.data.currentStreak == 0 &&
+        request.resource.data.longestStreak == 0;
+
       // Allow listing streaks for leaderboards (only public ones)
       allow list: if request.auth != null;
     }
@@ -439,6 +446,9 @@ service cloud.firestore {
     match /social_graph/{userId} {
       // Allow reading the user's social graph document (if it exists)
       allow read: if request.auth != null;
+
+      // Allow creating/updating the parent document
+      allow create, update: if request.auth != null;
 
       // Inbound connections (followers)
       match /inbound/{friendId} {

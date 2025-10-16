@@ -5,6 +5,7 @@ import { Flame } from 'lucide-react';
 import { firebaseApi } from '@/lib/firebaseApi';
 import { StreakStats } from '@/types';
 import Link from 'next/link';
+import { WeekStreakCalendar } from './WeekStreakCalendar';
 
 interface StreakCardProps {
   userId: string;
@@ -75,23 +76,35 @@ export const StreakCard: React.FC<StreakCardProps> = ({
   if (variant === 'compact') {
     return (
       <Link href="/analytics" className="block">
-        <div className={`bg-gradient-to-br ${getGradientColor()} border border-gray-200 rounded-xl p-4 hover:shadow-md transition-all cursor-pointer`}>
-          <div className="flex items-center gap-3">
-            <div className={`${getFlameColor()} relative`}>
-              <Flame className="w-10 h-10" fill="currentColor" />
-              {streakStats.streakAtRisk && streakStats.currentStreak > 0 && (
-                <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white animate-pulse"></div>
-              )}
-            </div>
-            <div className="flex-1">
-              <div className="text-3xl font-bold text-gray-900 leading-none">
+        <div className="p-4 hover:bg-gray-50 rounded-xl transition-all cursor-pointer">
+          {/* Header */}
+          <h3 className="text-base font-semibold text-gray-900 mb-4">Your streak</h3>
+
+          {/* Flame icon and week calendar side by side */}
+          <div className="flex items-center gap-4">
+            {/* Left side - Flame with day count */}
+            <div className="flex flex-col items-center flex-shrink-0">
+              <div className={`${getFlameColor()} relative`}>
+                <Flame className="w-12 h-12" fill="currentColor" />
+                {streakStats.streakAtRisk && streakStats.currentStreak > 0 && (
+                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white animate-pulse"></div>
+                )}
+              </div>
+              <div className="text-sm font-medium text-gray-900 mt-1">
                 {streakStats.currentStreak}
               </div>
-              <div className="text-sm text-gray-600 mt-1">
-                {streakStats.currentStreak === 1 ? 'day streak' : 'day streak'}
+              <div className="text-xs text-gray-500">
+                Day{streakStats.currentStreak !== 1 ? 's' : ''}
               </div>
             </div>
+
+            {/* Right side - Week calendar */}
+            <div className="flex-1">
+              <WeekStreakCalendar userId={userId} />
+            </div>
           </div>
+
+          {/* Warning message if streak at risk */}
           {streakStats.streakAtRisk && streakStats.currentStreak > 0 && (
             <div className="mt-3 text-xs text-red-600 font-medium">
               ⚠️ Complete a session today to keep your streak alive

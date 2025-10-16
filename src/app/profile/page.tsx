@@ -344,7 +344,7 @@ export default function ProfilePage() {
                       <h2 className="text-sm md:text-base font-bold">This week</h2>
                     </div>
 
-                    <div className="grid grid-cols-3 md:grid-cols-1 gap-3 md:gap-4 md:space-y-0">
+                    <div className="grid grid-cols-2 md:grid-cols-1 gap-3 md:gap-4 md:space-y-0">
                       <div>
                         <div className="text-[10px] md:text-xs text-gray-600 uppercase tracking-wide">Time</div>
                         <div className="text-lg md:text-2xl font-bold">
@@ -355,12 +355,6 @@ export default function ProfilePage() {
                         <div className="text-[10px] md:text-xs text-gray-600 uppercase tracking-wide">Sessions</div>
                         <div className="text-lg md:text-2xl font-bold">
                           {stats?.sessionsThisWeek || 0}
-                        </div>
-                      </div>
-                      <div>
-                        <div className="text-[10px] md:text-xs text-gray-600 uppercase tracking-wide">Streak</div>
-                        <div className="text-lg md:text-2xl font-bold">
-                          {stats?.currentStreak || 0} <span className="text-sm md:text-base">days</span>
                         </div>
                       </div>
                     </div>
@@ -876,26 +870,18 @@ export default function ProfilePage() {
                       </div>
 
                       {/* Current Streak */}
-                      <div className="bg-gray-50 rounded-lg md:rounded-xl border border-gray-200 p-2.5 md:p-4">
-                        <div className="text-[10px] md:text-sm text-gray-600 mb-0.5 md:mb-1 uppercase tracking-wide">Current streak</div>
-                        <div className="text-lg md:text-2xl font-bold text-gray-900">
+                      <div className="bg-white rounded-lg md:rounded-xl border border-gray-200 p-2.5 md:p-4">
+                        <div className="text-[10px] md:text-sm text-gray-600 mb-0.5 md:mb-2 uppercase tracking-wide">Current streak</div>
+                        <div className="text-lg md:text-2xl font-bold text-gray-900 mb-1">
                           {stats?.currentStreak || 0}
-                        </div>
-                        <div className="text-[10px] md:text-xs text-green-600 mt-0.5 md:mt-1 flex items-center gap-1">
-                          <span>↑</span>
-                          <span>100%</span>
                         </div>
                       </div>
 
                       {/* Longest Streak */}
-                      <div className="bg-gray-50 rounded-lg md:rounded-xl border border-gray-200 p-2.5 md:p-4">
-                        <div className="text-[10px] md:text-sm text-gray-600 mb-0.5 md:mb-1 uppercase tracking-wide">Longest streak</div>
-                        <div className="text-lg md:text-2xl font-bold text-gray-900">
+                      <div className="bg-white rounded-lg md:rounded-xl border border-gray-200 p-2.5 md:p-4">
+                        <div className="text-[10px] md:text-sm text-gray-600 mb-0.5 md:mb-2 uppercase tracking-wide">Longest streak</div>
+                        <div className="text-lg md:text-2xl font-bold text-gray-900 mb-1">
                           {stats?.longestStreak || 0}
-                        </div>
-                        <div className="text-[10px] md:text-xs text-green-600 mt-0.5 md:mt-1 flex items-center gap-1">
-                          <span>↑</span>
-                          <span>100%</span>
                         </div>
                       </div>
                     </div>
@@ -937,9 +923,9 @@ export default function ProfilePage() {
                         </div>
                       </div>
 
-                      {/* Total Projects */}
+                      {/* Total Activities */}
                       <div className="bg-gray-50 rounded-lg md:rounded-xl border border-gray-200 p-2.5 md:p-4">
-                        <div className="text-[10px] md:text-sm text-gray-600 mb-0.5 md:mb-1 uppercase tracking-wide">Projects</div>
+                        <div className="text-[10px] md:text-sm text-gray-600 mb-0.5 md:mb-1 uppercase tracking-wide">Activities</div>
                         <div className="text-lg md:text-2xl font-bold text-gray-900">
                           {/* Will be populated when we have project count */}
                           0

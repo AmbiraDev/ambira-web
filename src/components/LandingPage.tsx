@@ -30,14 +30,6 @@ export const LandingPage: React.FC = () => {
   const [loginErrors, setLoginErrors] = useState<{email?: string; password?: string}>({});
   const [usernameCheckLoading, setUsernameCheckLoading] = useState(false);
   const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
-  const [isMobile, setIsMobile] = useState(false);
-
-  // Detect if user is on mobile device
-  useEffect(() => {
-    const userAgent = navigator.userAgent.toLowerCase();
-    const isMobileDevice = /iphone|ipad|ipod|android/.test(userAgent);
-    setIsMobile(isMobileDevice);
-  }, []);
 
   const handleGoogleSignIn = async () => {
     try {
@@ -322,20 +314,11 @@ export const LandingPage: React.FC = () => {
 
             {/* CTA Buttons */}
             <div className="space-y-3">
-              {/* Coming Soon Label - Only show on mobile */}
-              {isMobile && (
-                <p className="text-center text-sm text-gray-500 font-medium">Google Sign-In Coming Soon</p>
-              )}
-
-              {/* Google Sign Up Button - Disabled only on mobile */}
+              {/* Google Sign Up Button */}
               <button
-                onClick={isMobile ? undefined : handleGoogleSignIn}
-                disabled={isMobile || isLoading}
-                className={`w-full flex items-center justify-center px-4 py-3 border-2 font-semibold rounded-lg ${
-                  isMobile
-                    ? 'border-gray-300 text-gray-400 opacity-50 cursor-not-allowed'
-                    : 'border-gray-300 text-gray-900 hover:border-gray-400 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
-                }`}
+                onClick={handleGoogleSignIn}
+                disabled={isLoading}
+                className="w-full flex items-center justify-center px-4 py-3 border-2 border-gray-300 text-gray-900 font-semibold rounded-lg hover:border-gray-400 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
                   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -395,21 +378,12 @@ export const LandingPage: React.FC = () => {
             <div className="flex-1">
               {showLogin ? (
                 <form onSubmit={handleLoginSubmit} className="space-y-3">
-                  {/* Coming Soon Label - Only show on mobile */}
-                  {isMobile && (
-                    <p className="text-center text-sm text-gray-500 font-medium">Google Sign-In Coming Soon</p>
-                  )}
-
-                  {/* OAuth Buttons - Disabled only on mobile */}
+                  {/* OAuth Buttons */}
                   <button
-                    onClick={isMobile ? undefined : handleGoogleSignIn}
+                    onClick={handleGoogleSignIn}
                     type="button"
-                    disabled={isMobile || isLoading}
-                    className={`w-full flex items-center justify-center py-3 border-2 rounded-xl font-medium text-sm ${
-                      isMobile
-                        ? 'border-gray-300 text-gray-400 opacity-50 cursor-not-allowed'
-                        : 'border-gray-300 text-gray-900 hover:border-gray-400 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
-                    }`}
+                    disabled={isLoading}
+                    className="w-full flex items-center justify-center py-3 border-2 border-gray-300 text-gray-900 rounded-xl font-medium text-sm hover:border-gray-400 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
                       <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -464,21 +438,12 @@ export const LandingPage: React.FC = () => {
                 </form>
               ) : (
                 <form onSubmit={handleSignupSubmit} className="space-y-3">
-                  {/* Coming Soon Label - Only show on mobile */}
-                  {isMobile && (
-                    <p className="text-center text-sm text-gray-500 font-medium">Google Sign-In Coming Soon</p>
-                  )}
-
-                  {/* Google Button - Disabled only on mobile */}
+                  {/* Google Button */}
                   <button
-                    onClick={isMobile ? undefined : handleGoogleSignIn}
+                    onClick={handleGoogleSignIn}
                     type="button"
-                    disabled={isMobile || isLoading}
-                    className={`w-full flex items-center justify-center py-3 border-2 rounded-xl font-medium ${
-                      isMobile
-                        ? 'border-gray-300 text-gray-400 opacity-50 cursor-not-allowed'
-                        : 'border-gray-300 text-gray-900 hover:border-gray-400 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed'
-                    }`}
+                    disabled={isLoading}
+                    className="w-full flex items-center justify-center py-3 border-2 border-gray-300 text-gray-900 rounded-xl font-medium hover:border-gray-400 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
                       <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>

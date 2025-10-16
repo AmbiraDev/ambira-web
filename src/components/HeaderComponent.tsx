@@ -83,17 +83,16 @@ export default function Header() {
         <div className="max-w-[1400px] mx-auto px-4">
           <div className="flex items-center justify-between h-14">
           {/* Left side: Logo + Search + Navigation */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-4 ml-8">
             {/* Logo */}
-            <Link href="/" className="flex items-center space-x-3">
+            <Link href="/" className="flex items-center">
               <Image
                 src="/logo.svg"
                 alt="Ambira"
-                width={32}
-                height={32}
-                className="w-8 h-8"
+                width={48}
+                height={48}
+                className="w-12 h-12"
               />
-              <span className="text-xl font-bold text-[#007AFF] hidden lg:inline">Ambira</span>
             </Link>
 
             {/* Search Area */}

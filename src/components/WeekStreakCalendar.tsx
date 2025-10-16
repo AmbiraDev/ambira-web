@@ -64,11 +64,11 @@ export const WeekStreakCalendar: React.FC<WeekStreakCalendarProps> = ({ userId }
 
   if (isLoading) {
     return (
-      <div className="flex justify-between animate-pulse">
+      <div className="flex justify-between gap-0.5 animate-pulse">
         {[...Array(7)].map((_, i) => (
-          <div key={i} className="flex-1 text-center">
-            <div className="h-3 bg-gray-200 rounded mb-1 mx-auto w-4"></div>
-            <div className="h-8 bg-gray-200 rounded mx-auto w-8"></div>
+          <div key={i} className="flex flex-col items-center flex-1">
+            <div className="h-3 bg-gray-200 rounded mb-1.5 w-4"></div>
+            <div className="h-8 w-8 bg-gray-200 rounded-full"></div>
           </div>
         ))}
       </div>
@@ -115,25 +115,27 @@ export const WeekStreakCalendar: React.FC<WeekStreakCalendarProps> = ({ userId }
   const weekDays = getWeekDays();
 
   return (
-    <div className="flex justify-between">
+    <div className="flex justify-between gap-0.5">
       {weekDays.map((day, index) => (
-        <div key={index} className="flex-1 text-center">
-          <div className="text-xs text-gray-500 mb-1">{day.dayOfWeek}</div>
-          <div className="h-8 flex items-center justify-center">
+        <div key={index} className="flex flex-col items-center flex-1">
+          <div className="text-xs font-medium text-gray-500 mb-1.5">{day.dayOfWeek}</div>
+          <div className="h-8 w-8 flex items-center justify-center">
             {day.hasActivity ? (
               <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                day.isToday 
-                  ? 'bg-gray-900 text-white' 
-                  : 'bg-[#007AFF] text-white'
+                day.isToday
+                  ? 'bg-gray-900 text-white border-2 border-gray-900'
+                  : 'bg-gray-200 text-gray-900'
               }`}>
-                <span className="text-sm font-semibold">{day.dayNumber}</span>
+                <span className="text-xs font-medium">{day.dayNumber}</span>
               </div>
             ) : (
-              <span className={`text-sm font-semibold ${
-                day.isPast ? 'text-gray-300' : 'text-gray-400'
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center border ${
+                day.isToday
+                  ? 'border-2 border-gray-900 text-gray-900'
+                  : 'border-gray-200 text-gray-400'
               }`}>
-                {day.dayNumber}
-              </span>
+                <span className="text-xs font-medium">{day.dayNumber}</span>
+              </div>
             )}
           </div>
         </div>

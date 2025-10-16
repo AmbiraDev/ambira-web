@@ -553,9 +553,6 @@ export default function ProfilePage() {
               <div className="mt-6">
                                 {activeTab === 'progress' && (
                   <div className="max-w-4xl mx-auto space-y-4 md:space-y-6">
-                    {/* Streak Card */}
-                    {profile && <StreakCard userId={profile.id} showProgress={true} />}
-
                     {/* Header with Time Period Selector and Chart Type */}
                     <div className="flex items-center justify-between gap-2 py-2 -mx-4 px-4 md:mx-0 md:px-0">
                       {/* Activity Filter Dropdown */}
@@ -1047,9 +1044,9 @@ export default function ProfilePage() {
                         </div>
                       </div>
 
-                      {/* Total Projects */}
+                      {/* Total Activities */}
                       <div className="bg-gray-50 rounded-lg md:rounded-xl border border-gray-200 p-2.5 md:p-4">
-                        <div className="text-[10px] md:text-sm text-gray-600 mb-0.5 md:mb-1 uppercase tracking-wide">Projects</div>
+                        <div className="text-[10px] md:text-sm text-gray-600 mb-0.5 md:mb-1 uppercase tracking-wide">Activities</div>
                         <div className="text-lg md:text-2xl font-bold text-gray-900">
                           {/* Will be populated when we have project count */}
                           0

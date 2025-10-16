@@ -764,11 +764,16 @@ export const firebaseAuthApi = {
 
       if (isMobileOrSafari) {
         // Use redirect for mobile devices and Safari (more reliable)
+        console.log('[signInWithGoogle] 📱 Mobile/Safari detected, using redirect flow');
+        console.log('[signInWithGoogle] User agent:', navigator.userAgent);
+        console.log('[signInWithGoogle] Current URL:', window.location.href);
 
         try {
           // Important: signInWithRedirect initiates the redirect and never returns
+          console.log('[signInWithGoogle] 🔄 Calling signInWithRedirect...');
           await signInWithRedirect(auth, provider);
           // This line will never be reached - browser redirects to Google
+          console.log('[signInWithGoogle] ⚠️ This should not print - redirect should have happened');
           throw new Error('REDIRECT_IN_PROGRESS');
         } catch (redirectError: any) {
           // Only log if it's NOT our expected REDIRECT_IN_PROGRESS marker
@@ -980,8 +985,20 @@ export const firebaseAuthApi = {
   // Handle Google redirect result (for mobile)
   handleGoogleRedirectResult: async (): Promise<AuthResponse | null> => {
     try {
+      console.log('[handleGoogleRedirectResult] 🔍 Calling getRedirectResult...');
+      console.log('[handleGoogleRedirectResult] Current URL:', window.location.href);
+      console.log('[handleGoogleRedirectResult] Auth config:', {
+        apiKey: auth.config.apiKey?.substring(0, 10) + '...',
+        authDomain: auth.config.authDomain,
+      });
 
       const result = await getRedirectResult(auth);
+      console.log('[handleGoogleRedirectResult] Result:', result ? 'User found' : 'No result');
+
+      if (result) {
+        console.log('[handleGoogleRedirectResult] Credential:', result.credential);
+        console.log('[handleGoogleRedirectResult] Operation type:', result.operationType);
+      }
 
       if (!result) {
         // No redirect result (user didn't come from redirect flow)
@@ -989,6 +1006,7 @@ export const firebaseAuthApi = {
       }
 
       const firebaseUser = result.user;
+      console.log('[handleGoogleRedirectResult] ✅ User from redirect:', firebaseUser.email);
 
       // Check if user profile exists
       const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
@@ -1748,17 +1766,22 @@ export const firebaseUserApi = {
   // Get followers for a user
   getFollowers: async (userId: string): Promise<User[]> => {
     try {
-
-      // Try new social_graph structure first
-      const inboundRef = collection(db, `social_graph/${userId}/inbound`);
-      const inboundSnapshot = await getDocs(inboundRef);
-
       let followerIds: string[] = [];
 
-      if (!inboundSnapshot.empty) {
-        followerIds = inboundSnapshot.docs.map(doc => doc.id);
-      } else {
-        // Fallback to old follows collection for backward compatibility
+      // Try new social_graph structure first
+      try {
+        const inboundRef = collection(db, `social_graph/${userId}/inbound`);
+        const inboundSnapshot = await getDocs(inboundRef);
+
+        if (!inboundSnapshot.empty) {
+          followerIds = inboundSnapshot.docs.map(doc => doc.id);
+        }
+      } catch (socialGraphError) {
+        // If social_graph doesn't exist or has permission issues, continue to fallback
+      }
+
+      // Fallback to old follows collection if no followers found via social_graph
+      if (followerIds.length === 0) {
         const followersQuery = query(
           collection(db, 'follows'),
           where('followingId', '==', userId)
@@ -1800,11 +1823,11 @@ export const firebaseUserApi = {
 
       return followers;
     } catch (error) {
-      console.error('[getFollowers] Error:', error);
       // Handle permission errors silently for privacy-protected data
       if (isPermissionError(error)) {
         return [];
       }
+      console.error('[getFollowers] Error:', error);
       const apiError = handleError(error, 'Fetch followers', {
         defaultMessage: 'Failed to fetch followers',
       });
@@ -1815,17 +1838,22 @@ export const firebaseUserApi = {
   // Get following for a user
   getFollowing: async (userId: string): Promise<User[]> => {
     try {
-
-      // Try new social_graph structure first
-      const outboundRef = collection(db, `social_graph/${userId}/outbound`);
-      const outboundSnapshot = await getDocs(outboundRef);
-
       let followingIds: string[] = [];
 
-      if (!outboundSnapshot.empty) {
-        followingIds = outboundSnapshot.docs.map(doc => doc.id);
-      } else {
-        // Fallback to old follows collection for backward compatibility
+      // Try new social_graph structure first
+      try {
+        const outboundRef = collection(db, `social_graph/${userId}/outbound`);
+        const outboundSnapshot = await getDocs(outboundRef);
+
+        if (!outboundSnapshot.empty) {
+          followingIds = outboundSnapshot.docs.map(doc => doc.id);
+        }
+      } catch (socialGraphError) {
+        // If social_graph doesn't exist or has permission issues, continue to fallback
+      }
+
+      // Fallback to old follows collection if no following found via social_graph
+      if (followingIds.length === 0) {
         const followingQuery = query(
           collection(db, 'follows'),
           where('followerId', '==', userId)
@@ -1867,11 +1895,11 @@ export const firebaseUserApi = {
 
       return following;
     } catch (error) {
-      console.error('[getFollowing] Error:', error);
       // Handle permission errors silently for privacy-protected data
       if (isPermissionError(error)) {
         return [];
       }
+      console.error('[getFollowing] Error:', error);
       const apiError = handleError(error, 'Fetch following', {
         defaultMessage: 'Failed to fetch following',
       });
@@ -6451,10 +6479,22 @@ export const firebaseStreakApi = {
           streakHistory: [],
           isPublic: true,
         };
-        await setDoc(doc(db, 'streaks', userId), {
-          ...initialStreak,
-          lastActivityDate: Timestamp.fromDate(initialStreak.lastActivityDate),
-        });
+
+        // Try to create the document, but if permission is denied (viewing another user's profile),
+        // just return the initial streak without creating it
+        try {
+          await setDoc(doc(db, 'streaks', userId), {
+            ...initialStreak,
+            lastActivityDate: Timestamp.fromDate(initialStreak.lastActivityDate),
+          });
+        } catch (createError) {
+          // If we can't create (permission denied), just return the empty streak
+          if (isPermissionError(createError)) {
+            return initialStreak;
+          }
+          throw createError;
+        }
+
         return initialStreak;
       }
 
@@ -6469,6 +6509,19 @@ export const firebaseStreakApi = {
         isPublic: data.isPublic !== false,
       };
     } catch (error) {
+      // Handle permission errors gracefully - return empty streak
+      if (isPermissionError(error)) {
+        return {
+          userId,
+          currentStreak: 0,
+          longestStreak: 0,
+          lastActivityDate: new Date(0),
+          totalStreakDays: 0,
+          streakHistory: [],
+          isPublic: true,
+        };
+      }
+
       const apiError = handleError(error, 'Get streak data', {
         defaultMessage: 'Failed to get streak data',
       });

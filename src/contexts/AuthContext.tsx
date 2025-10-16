@@ -45,11 +45,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // Check for Google redirect result FIRST (important for mobile sign-in)
       // This MUST happen before setting up the auth listener because getRedirectResult
       // can only be called once per redirect
+      console.log('[AuthContext] 🔍 Checking for Google redirect result...');
       try {
         const redirectResult = await firebaseAuthApi.handleGoogleRedirectResult();
 
         if (redirectResult) {
-
+          console.log('[AuthContext] ✅ Google redirect successful! User:', redirectResult.user.email);
           redirectHandledRef.current = true;
           // Set user immediately and stop loading
           setUser(redirectResult.user);
@@ -58,6 +59,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           navigateToHome();
           return; // Exit early since we handled the redirect
         } else {
+          console.log('[AuthContext] ℹ️ No redirect result found (normal page load)');
         }
       } catch (error) {
         console.error('[AuthContext] ❌ Google redirect result ERROR:', error);
