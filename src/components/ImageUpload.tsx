@@ -2,7 +2,58 @@
 
 import React, { useState, useRef } from 'react';
 import Image from 'next/image';
-import { ImageIcon, XCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { ImageIcon, X, AlertCircle, Loader2 } from 'lucide-react';
+
+interface DeleteConfirmProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onDelete: () => void;
+}
+
+const DeleteConfirm: React.FC<DeleteConfirmProps> = ({ isOpen, onClose, onDelete }) => {
+  if (!isOpen) return null;
+
+  return (
+    <>
+      {/* Backdrop */}
+      <div
+        className="fixed inset-0 bg-black/60 z-50 md:hidden flex items-center justify-center p-4"
+        onClick={onClose}
+      >
+        {/* Modal */}
+        <div
+          className="bg-white rounded-lg p-5 w-full max-w-sm shadow-xl"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            Delete Image?
+          </h3>
+          <p className="text-sm text-gray-600 mb-6">
+            This image will be removed from your session.
+          </p>
+
+          <div className="flex gap-3">
+            <button
+              onClick={onClose}
+              className="flex-1 px-4 py-2.5 bg-gray-200 text-gray-800 rounded-lg font-medium hover:bg-gray-300 active:bg-gray-300 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => {
+                onDelete();
+                onClose();
+              }}
+              className="flex-1 px-4 py-2.5 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 active:bg-red-700 transition-colors"
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
 
 interface ImageUploadProps {
   /** Maximum number of images allowed */
@@ -55,6 +106,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
   const [error, setError] = useState<string>('');
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<number>(0);
+  const [actionSheetIndex, setActionSheetIndex] = useState<number | null>(null);
 
   const maxSize = maxSizeMB * 1024 * 1024;
   const effectiveMaxImages = singleImage ? 1 : maxImages;
@@ -228,16 +280,30 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
                 quality={90}
                 className="w-full h-full object-cover"
                 unoptimized
+                onClick={() => !disabled && setActionSheetIndex(index)}
               />
               {!disabled && (
-                <button
-                  type="button"
-                  onClick={() => handleRemoveImage(index)}
-                  className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors shadow-md"
-                  aria-label="Remove image"
-                >
-                  <XCircle className="w-4 h-4" />
-                </button>
+                <>
+                  {/* Desktop X button */}
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveImage(index)}
+                    className="hidden md:block absolute top-1 right-1 p-0.5 text-white hover:text-red-500 transition-colors"
+                    aria-label="Remove image"
+                    style={{ filter: 'drop-shadow(0 1px 2px rgb(0 0 0 / 0.9))' }}
+                  >
+                    <X className="w-5 h-5" strokeWidth={3} />
+                  </button>
+
+                  {/* Mobile tap indicator */}
+                  <div className="md:hidden absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <div className="opacity-0 hover:opacity-100 transition-opacity">
+                      <div className="bg-black/20 rounded-full p-2">
+                        <X className="w-6 h-6 text-white" strokeWidth={2} />
+                      </div>
+                    </div>
+                  </div>
+                </>
               )}
               {/* File size indicator */}
               {images[index] && (
@@ -249,6 +315,18 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
           ))}
         </div>
       )}
+
+      {/* Delete confirmation modal */}
+      <DeleteConfirm
+        isOpen={actionSheetIndex !== null}
+        onClose={() => setActionSheetIndex(null)}
+        onDelete={() => {
+          if (actionSheetIndex !== null) {
+            handleRemoveImage(actionSheetIndex);
+            setActionSheetIndex(null);
+          }
+        }}
+      />
 
       {/* Upload Progress */}
       {isUploading && showProgress && (

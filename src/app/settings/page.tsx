@@ -678,18 +678,18 @@ export default function SettingsPage() {
 
               {/* Danger Zone - Only show on My Profile tab */}
               {activeTab === 'profile' && (
-                <div className="mt-6 p-4 md:p-6">
-                  <div className="flex items-center justify-center gap-6 text-sm">
+                <div className="mt-4 p-4 md:pl-6">
+                  <div className="flex items-center gap-2">
                     <button
                       onClick={handleLogout}
-                      className="text-gray-600 hover:text-gray-900 transition-colors underline decoration-gray-400 hover:decoration-gray-900"
+                      className="text-lg font-bold text-gray-700 hover:text-gray-900 transition-colors"
                     >
                       Log Out
                     </button>
-                    <span className="text-gray-300">|</span>
+                    <span className="text-gray-300 text-lg">|</span>
                     <button
                       onClick={() => setShowDeleteConfirm(true)}
-                      className="text-red-600 hover:text-red-700 transition-colors underline decoration-red-400 hover:decoration-red-700"
+                      className="text-lg font-bold text-red-600 hover:text-red-700 transition-colors"
                     >
                       Delete Account
                     </button>

@@ -7,12 +7,63 @@ import { SessionFormData, Project, CreateSessionData } from '@/types';
 import { firebaseApi } from '@/lib/firebaseApi';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/contexts/ToastContext';
-import { ArrowLeft, Check, Image as ImageIcon, XCircle } from 'lucide-react';
+import { ArrowLeft, Check, Image as ImageIcon, X } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { uploadImages, compressImage } from '@/lib/imageUpload';
 import { parseLocalDateTime } from '@/lib/utils';
 import Header from '@/components/HeaderComponent';
+
+interface DeleteConfirmProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onDelete: () => void;
+}
+
+const DeleteConfirm: React.FC<DeleteConfirmProps> = ({ isOpen, onClose, onDelete }) => {
+  if (!isOpen) return null;
+
+  return (
+    <>
+      {/* Backdrop */}
+      <div
+        className="fixed inset-0 bg-black/60 z-50 md:hidden flex items-center justify-center p-4"
+        onClick={onClose}
+      >
+        {/* Modal */}
+        <div
+          className="bg-white rounded-lg p-5 w-full max-w-sm shadow-xl"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            Delete Image?
+          </h3>
+          <p className="text-sm text-gray-600 mb-6">
+            This image will be removed from your session.
+          </p>
+
+          <div className="flex gap-3">
+            <button
+              onClick={onClose}
+              className="flex-1 px-4 py-2.5 bg-gray-200 text-gray-800 rounded-lg font-medium hover:bg-gray-300 active:bg-gray-300 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => {
+                onDelete();
+                onClose();
+              }}
+              className="flex-1 px-4 py-2.5 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 active:bg-red-700 transition-colors"
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+};
 
 export default function ManualSessionRecorder() {
   const router = useRouter();
@@ -47,6 +98,7 @@ export default function ManualSessionRecorder() {
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
   const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
   const [isUploadingImages, setIsUploadingImages] = useState(false);
+  const [actionSheetIndex, setActionSheetIndex] = useState<number | null>(null);
 
   // Load projects on mount
   useEffect(() => {
@@ -370,18 +422,34 @@ export default function ManualSessionRecorder() {
                         quality={90}
                         className="w-full h-full object-cover"
                         unoptimized
+                        onClick={() => setActionSheetIndex(index)}
                       />
+                      {/* Desktop X button */}
                       <button
                         type="button"
                         onClick={() => handleRemoveImage(index)}
-                        className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors"
+                        className="hidden md:block absolute top-1 right-1 p-0.5 text-white hover:text-red-500 transition-colors"
+                        aria-label="Remove image"
+                        style={{ filter: 'drop-shadow(0 1px 2px rgb(0 0 0 / 0.9))' }}
                       >
-                        <XCircle className="w-4 h-4" />
+                        <X className="w-5 h-5" strokeWidth={3} />
                       </button>
                     </div>
                   ))}
                 </div>
               )}
+
+              {/* Delete confirmation modal */}
+              <DeleteConfirm
+                isOpen={actionSheetIndex !== null}
+                onClose={() => setActionSheetIndex(null)}
+                onDelete={() => {
+                  if (actionSheetIndex !== null) {
+                    handleRemoveImage(actionSheetIndex);
+                    setActionSheetIndex(null);
+                  }
+                }}
+              />
 
               {/* Upload Button */}
               {selectedImages.length < 3 && (
