@@ -124,11 +124,11 @@ export const CommentList: React.FC<CommentListProps> = ({
 
   if (isLoading) {
     return (
-      <div className="space-y-4 py-4">
+      <div className="space-y-3 py-4">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="flex gap-3 animate-pulse">
-            <div className="w-8 h-8 rounded-full bg-gray-200" />
-            <div className="flex-1 space-y-2">
+          <div key={i} className="flex gap-2.5 animate-pulse">
+            <div className="w-10 h-10 rounded-full bg-gray-200" />
+            <div className="flex-1 space-y-1.5">
               <div className="h-4 bg-gray-200 rounded w-1/4" />
               <div className="h-3 bg-gray-200 rounded w-full" />
               <div className="h-3 bg-gray-200 rounded w-3/4" />
@@ -156,9 +156,9 @@ export const CommentList: React.FC<CommentListProps> = ({
   }
 
   return (
-    <div className="px-4 py-4 space-y-4">
+    <div className="px-4 py-3 space-y-3">
       {/* Comment Count Header */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-2">
         <h3 className="text-base font-semibold text-gray-900">
           {comments.length > 0 ? `${comments.length} ${comments.length === 1 ? 'Comment' : 'Comments'}` : 'Comments'}
         </h3>
@@ -166,7 +166,7 @@ export const CommentList: React.FC<CommentListProps> = ({
 
       {/* Comments List */}
       {comments.length > 0 ? (
-        <div className="space-y-4 mb-4">
+        <div className="space-y-3 mb-3">
           {comments.map((comment) => (
             <CommentItem
               key={comment.id}
@@ -190,13 +190,13 @@ export const CommentList: React.FC<CommentListProps> = ({
           )}
         </div>
       ) : (
-        <div className="text-center py-8 text-gray-500 text-sm mb-4">
+        <div className="text-center py-6 text-gray-500 text-sm mb-3">
           No comments yet. Be the first to comment!
         </div>
       )}
 
       {/* Comment Input - Always at bottom */}
-      <div className="border-t border-gray-200 pt-4">
+      <div className="border-t border-gray-200 pt-3">
         {showInput ? (
           <CommentInput
             sessionId={sessionId}

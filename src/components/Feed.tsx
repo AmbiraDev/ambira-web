@@ -16,13 +16,15 @@ interface FeedProps {
   className?: string;
   initialLimit?: number;
   showEndMessage?: boolean;
+  showGroupInfo?: boolean;
 }
 
 export const Feed: React.FC<FeedProps> = ({
   filters = {},
   className = '',
   initialLimit = 10,
-  showEndMessage = true
+  showEndMessage = true,
+  showGroupInfo = false
 }) => {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -379,6 +381,7 @@ export const Feed: React.FC<FeedProps> = ({
               onShare={handleShare}
               onEdit={isOwnSession ? (sessionId) => router.push(`/sessions/${sessionId}/edit`) : undefined}
               onDelete={isOwnSession ? handleDelete : undefined}
+              showGroupInfo={showGroupInfo}
             />
           );
         })}

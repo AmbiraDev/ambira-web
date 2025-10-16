@@ -10,6 +10,8 @@ import { ImageGallery } from './ImageGallery';
 import LikesModal from './LikesModal';
 import CommentsModal from './CommentsModal';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/contexts/AuthContext';
+import { firebaseApi } from '@/lib/firebaseApi';
 import { MoreVertical, Heart, MessageCircle, Share2, Clock, ListTodo, Tag } from 'lucide-react';
 import Link from 'next/link';
 
@@ -22,6 +24,7 @@ interface SessionCardProps {
   onEdit?: (sessionId: string) => void;
   className?: string;
   showComments?: boolean;
+  showGroupInfo?: boolean;
 }
 
 export const SessionCard: React.FC<SessionCardProps> = ({
@@ -32,10 +35,14 @@ export const SessionCard: React.FC<SessionCardProps> = ({
   onDelete,
   onEdit,
   className = '',
-  showComments = false
+  showComments = false,
+  showGroupInfo = false
 }) => {
   const router = useRouter();
+  const { user } = useAuth();
   const [showMenu, setShowMenu] = useState(false);
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [isFollowLoading, setIsFollowLoading] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [localCommentCount, setLocalCommentCount] = useState(session.commentCount || 0);
   const [showCommentInput, setShowCommentInput] = useState(false);
@@ -44,6 +51,44 @@ export const SessionCard: React.FC<SessionCardProps> = ({
   const [expandComments, setExpandComments] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const commentSectionRef = useRef<HTMLDivElement>(null);
+
+  // Check if user is following the session author
+  useEffect(() => {
+    const checkFollowStatus = async () => {
+      if (user && session.userId !== user.id && showGroupInfo) {
+        try {
+          const isUserFollowing = await firebaseApi.user.isFollowing(user.id, session.userId);
+          setIsFollowing(isUserFollowing);
+        } catch (error) {
+          console.error('Error checking follow status:', error);
+        }
+      }
+    };
+    checkFollowStatus();
+  }, [user, session.userId, showGroupInfo]);
+
+  // Handle follow/unfollow
+  const handleFollowToggle = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!user || isFollowLoading) return;
+
+    setIsFollowLoading(true);
+    try {
+      if (isFollowing) {
+        await firebaseApi.user.unfollowUser(session.userId);
+        setIsFollowing(false);
+      } else {
+        await firebaseApi.user.followUser(session.userId);
+        setIsFollowing(true);
+      }
+    } catch (error) {
+      console.error('Error toggling follow:', error);
+    } finally {
+      setIsFollowLoading(false);
+    }
+  };
 
   // Close menu when clicking outside or pressing escape
   useEffect(() => {
@@ -167,7 +212,23 @@ export const SessionCard: React.FC<SessionCardProps> = ({
 
           {/* User Info */}
           <div className="min-w-0 flex-1">
-            <div className="font-semibold text-gray-900 text-sm md:text-base hover:underline truncate">{session.user.name}</div>
+            <div className="flex items-center gap-2">
+              <span className="font-semibold text-gray-900 text-sm md:text-base hover:underline truncate">{session.user.name}</span>
+              {/* Follow button - Mobile only when showGroupInfo is true */}
+              {showGroupInfo && user && session.userId !== user.id && (
+                <button
+                  onClick={handleFollowToggle}
+                  disabled={isFollowLoading}
+                  className={`md:hidden text-xs font-semibold transition-colors whitespace-nowrap flex-shrink-0 ${
+                    isFollowing
+                      ? 'text-gray-600 hover:text-gray-900'
+                      : 'text-[#007AFF] hover:text-[#0051D5]'
+                  }`}
+                >
+                  {isFollowing ? 'Following' : 'Follow'}
+                </button>
+              )}
+            </div>
             <div className="text-xs text-gray-500">{formatTimeAgo(session.createdAt)}</div>
           </div>
         </Link>
@@ -278,6 +339,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({
         onRemoveSupport={onRemoveSupport}
         onShare={onShare}
         onShareImage={() => router.push(`/sessions/${session.id}/share`)}
+        isOwnPost={session.userId === user?.id}
         onCommentClick={() => setShowCommentsModal(true)}
         onLikesClick={() => setShowLikesModal(true)}
         onViewAllCommentsClick={() => setShowCommentsModal(true)}

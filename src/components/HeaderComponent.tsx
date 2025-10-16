@@ -195,10 +195,10 @@ export default function Header() {
               <nav className="hidden md:flex items-center space-x-6 h-14">
                 <Link
                   href="/"
-                  className={`text-base font-medium transition-colors h-full relative flex items-center ${
+                  className={`text-base font-[450] transition-colors h-full relative flex items-center ${
                     isActive('/')
                       ? 'text-gray-900'
-                      : 'text-gray-600 hover:text-gray-900'
+                      : 'text-gray-600 hover:text-[#007AFF]'
                   }`}
                 >
                   Dashboard
@@ -208,10 +208,10 @@ export default function Header() {
                 </Link>
                 <Link
                   href="/groups"
-                  className={`text-base font-medium transition-colors h-full relative flex items-center ${
+                  className={`text-base font-[450] transition-colors h-full relative flex items-center ${
                     isActive('/groups')
                       ? 'text-gray-900'
-                      : 'text-gray-600 hover:text-gray-900'
+                      : 'text-gray-600 hover:text-[#007AFF]'
                   }`}
                 >
                   Groups
@@ -221,10 +221,10 @@ export default function Header() {
                 </Link>
                 <Link
                   href="/activities"
-                  className={`text-base font-medium transition-colors h-full relative flex items-center ${
+                  className={`text-base font-[450] transition-colors h-full relative flex items-center ${
                     isActive('/activities')
                       ? 'text-gray-900'
-                      : 'text-gray-600 hover:text-gray-900'
+                      : 'text-gray-600 hover:text-[#007AFF]'
                   }`}
                 >
                   Activities
@@ -234,10 +234,10 @@ export default function Header() {
                 </Link>
                 <Link
                   href="/analytics"
-                  className={`text-base font-medium transition-colors h-full relative flex items-center ${
+                  className={`text-base font-[450] transition-colors h-full relative flex items-center ${
                     isActive('/analytics')
                       ? 'text-gray-900'
-                      : 'text-gray-600 hover:text-gray-900'
+                      : 'text-gray-600 hover:text-[#007AFF]'
                   }`}
                 >
                   Analytics
@@ -255,30 +255,16 @@ export default function Header() {
             {/* Session Actions - Only show when NO active session */}
             {!timerState.currentProject && (
               <>
-                {/* Start Session Button */}
+                {/* Start Button - Solid Blue */}
                 <Link
                   href="/timer"
-                  className="hidden md:flex items-center gap-2 px-4 py-2 bg-white border-2 border-[#007AFF] text-[#007AFF] hover:bg-[#007AFF] hover:text-white rounded-md transition-colors whitespace-nowrap font-semibold text-sm"
+                  className="hidden md:flex items-center gap-2 px-4 py-2 bg-[#007AFF] text-white hover:bg-[#0051D5] rounded-md transition-colors whitespace-nowrap font-semibold text-sm"
                 >
                   <Timer
                     className="w-4 h-4"
                     strokeWidth={2.5}
                   />
-                  <span className="hidden xl:inline">Start Session</span>
-                  <span className="xl:hidden">Start</span>
-                </Link>
-
-                {/* Log Manually Button */}
-                <Link
-                  href="/record-manual"
-                  className="hidden md:flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 rounded-md transition-colors whitespace-nowrap font-semibold text-sm"
-                >
-                  <Edit3
-                    className="w-4 h-4"
-                    strokeWidth={2.5}
-                  />
-                  <span className="hidden xl:inline">Log Manually</span>
-                  <span className="xl:hidden">Manual</span>
+                  <span>Start</span>
                 </Link>
               </>
             )}

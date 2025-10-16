@@ -55,37 +55,46 @@ export const CommentItem: React.FC<CommentItemProps> = ({
 
   const formatTimeAgo = (date: Date): string => {
     const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
-    const commentDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-
-    // Format time as "h:mm am/pm"
-    const timeStr = date.toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true
-    });
-
-    // Check if today
-    if (commentDate.getTime() === today.getTime()) {
-      return `Today at ${timeStr}`;
+    // Less than 1 minute
+    if (diffInSeconds < 60) {
+      return 'just now';
     }
 
-    // Check if yesterday
-    if (commentDate.getTime() === yesterday.getTime()) {
-      return `Yesterday at ${timeStr}`;
+    // Less than 1 hour
+    const diffInMinutes = Math.floor(diffInSeconds / 60);
+    if (diffInMinutes < 60) {
+      return `${diffInMinutes}m`;
     }
 
-    // Otherwise show full date: "Month Day, Year at h:mm am/pm"
-    const dateStr = date.toLocaleDateString('en-US', {
-      month: 'long',
-      day: 'numeric',
-      year: 'numeric'
-    });
+    // Less than 1 day
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    if (diffInHours < 24) {
+      return `${diffInHours}h`;
+    }
 
-    return `${dateStr} at ${timeStr}`;
+    // Less than 7 days
+    const diffInDays = Math.floor(diffInHours / 24);
+    if (diffInDays < 7) {
+      return `${diffInDays} day${diffInDays === 1 ? '' : 's'} ago`;
+    }
+
+    // Less than 4 weeks
+    const diffInWeeks = Math.floor(diffInDays / 7);
+    if (diffInWeeks < 4) {
+      return `${diffInWeeks}w`;
+    }
+
+    // Otherwise show months or date
+    const diffInMonths = Math.floor(diffInDays / 30);
+    if (diffInMonths < 12) {
+      return `${diffInMonths}mo`;
+    }
+
+    // More than a year
+    const diffInYears = Math.floor(diffInDays / 365);
+    return `${diffInYears}y`;
   };
 
   const getUserInitials = (name: string): string => {
@@ -152,10 +161,10 @@ export const CommentItem: React.FC<CommentItemProps> = ({
 
   if (isDeleting) {
     return (
-      <div className="flex gap-3 opacity-50">
-        <div className="w-8 h-8 rounded-full bg-gray-200 animate-pulse" />
+      <div className="flex gap-2 opacity-50">
+        <div className="w-10 h-10 rounded-full bg-gray-200 animate-pulse" />
         <div className="flex-1">
-          <div className="h-4 bg-gray-200 rounded w-1/3 mb-2 animate-pulse" />
+          <div className="h-4 bg-gray-200 rounded w-1/3 mb-1 animate-pulse" />
           <div className="h-3 bg-gray-200 rounded w-full animate-pulse" />
         </div>
       </div>
@@ -164,18 +173,18 @@ export const CommentItem: React.FC<CommentItemProps> = ({
 
   return (
     <div>
-      <div className="flex gap-3">
+      <div className="flex gap-2.5">
         {/* User Avatar */}
         <Link href={`/profile/${comment.user.username}`} className="shrink-0">
           {comment.user.profilePicture ? (
             <img
               src={comment.user.profilePicture}
               alt={comment.user.name}
-              className="w-8 h-8 min-w-[2rem] min-h-[2rem] rounded-full object-cover"
+              className="w-10 h-10 min-w-[2.5rem] min-h-[2.5rem] rounded-full object-cover"
             />
           ) : (
-            <div className="w-8 h-8 min-w-[2rem] min-h-[2rem] bg-gray-100 rounded-full flex items-center justify-center">
-              <span className="text-xs font-semibold text-gray-600">
+            <div className="w-10 h-10 min-w-[2.5rem] min-h-[2.5rem] bg-gray-100 rounded-full flex items-center justify-center">
+              <span className="text-sm font-semibold text-gray-600">
                 {getUserInitials(comment.user.name)}
               </span>
             </div>
@@ -184,19 +193,21 @@ export const CommentItem: React.FC<CommentItemProps> = ({
 
         {/* Comment Content */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <Link href={`/profile/${comment.user.username}`}>
-              <span className="text-sm font-semibold text-gray-900 hover:text-[#007AFF] transition-colors">
-                {comment.user.name}
+          <div className="flex items-start justify-between gap-2">
+            <div className="flex flex-col min-w-0">
+              <Link href={`/profile/${comment.user.username}`}>
+                <span className="text-sm font-semibold text-gray-900 hover:text-[#007AFF] transition-colors">
+                  {comment.user.name}
+                </span>
+              </Link>
+              <span className="text-xs text-gray-500">
+                {formatTimeAgo(comment.createdAt)}
               </span>
-            </Link>
-            <span className="text-xs text-gray-500">
-              {formatTimeAgo(comment.createdAt)}
-            </span>
+            </div>
 
             {/* More Menu */}
             {canDelete && (
-              <div className="ml-auto relative" ref={menuRef}>
+              <div className="relative shrink-0" ref={menuRef}>
                 <button
                   onClick={() => setIsMenuOpen(!isMenuOpen)}
                   className="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 transition-colors"
@@ -222,16 +233,16 @@ export const CommentItem: React.FC<CommentItemProps> = ({
           </div>
 
           {/* Comment Text */}
-          <p className="text-sm text-gray-900 whitespace-pre-wrap break-words">
+          <p className="text-[15px] text-gray-900 whitespace-pre-wrap break-words mt-0.5">
             {renderContent(comment.content)}
           </p>
 
           {/* Like Button */}
           {currentUserId && (
-            <div className="flex items-center gap-2 mt-2">
+            <div className="flex items-center gap-2 mt-1.5">
               <button
                 onClick={handleLike}
-                className={`flex items-center gap-1 text-xs transition-colors ${
+                className={`flex items-center gap-1 transition-colors ${
                   optimisticLiked
                     ? 'text-red-600 hover:text-red-700'
                     : 'text-gray-500 hover:text-red-600'
@@ -239,10 +250,10 @@ export const CommentItem: React.FC<CommentItemProps> = ({
                 disabled={!onLike || isLiking}
               >
                 <Heart
-                  className={`w-4 h-4 ${optimisticLiked ? 'fill-current' : ''}`}
+                  className={`w-[18px] h-[18px] ${optimisticLiked ? 'fill-current' : ''}`}
                 />
                 {optimisticLikeCount > 0 && (
-                  <span className="font-medium">{optimisticLikeCount}</span>
+                  <span className="text-xs font-medium">{optimisticLikeCount > 1 ? `${optimisticLikeCount} like${optimisticLikeCount > 1 ? 's' : ''}` : '1 like'}</span>
                 )}
               </button>
             </div>

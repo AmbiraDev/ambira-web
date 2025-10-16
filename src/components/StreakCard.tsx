@@ -24,7 +24,93 @@ export const StreakCard: React.FC<StreakCardProps> = ({
   useEffect(() => {
     const loadStreak = async () => {
       try {
+        console.log('=== STREAK CARD: Loading streak data ===');
+        console.log('User ID:', userId);
+
         const stats = await firebaseApi.streak.getStreakStats(userId);
+
+        console.log('=== STREAK CARD: Raw streak stats ===');
+        console.log('Current Streak:', stats.currentStreak);
+        console.log('Longest Streak:', stats.longestStreak);
+        console.log('Total Streak Days:', stats.totalStreakDays);
+        console.log('Last Activity Date:', stats.lastActivityDate);
+        console.log('Streak At Risk:', stats.streakAtRisk);
+        console.log('Next Milestone:', stats.nextMilestone);
+
+        // Calculate and log time-based info
+        if (stats.lastActivityDate) {
+          const now = new Date();
+          const lastActivity = new Date(stats.lastActivityDate);
+          const daysSince = Math.floor((now.getTime() - lastActivity.getTime()) / (1000 * 60 * 60 * 24));
+          console.log('Days since last activity:', daysSince);
+          console.log('Last activity formatted:', lastActivity.toLocaleDateString());
+        }
+
+        // Fetch last 7 days of sessions for detailed logging
+        console.log('\n=== LAST 7 DAYS BREAKDOWN ===');
+        const sessionsResponse = await firebaseApi.session.getSessions(1, 100, {} as any);
+
+        // Get date 7 days ago at start of day
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const sevenDaysAgo = new Date(today);
+        sevenDaysAgo.setDate(today.getDate() - 6); // Include today = 7 days total
+
+        // Create a map of dates to sessions
+        const dateMap = new Map<string, { totalMinutes: number; sessionCount: number; sessions: any[] }>();
+
+        // Initialize all 7 days
+        for (let i = 0; i < 7; i++) {
+          const date = new Date(sevenDaysAgo);
+          date.setDate(sevenDaysAgo.getDate() + i);
+          const dateKey = date.toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' });
+          dateMap.set(dateKey, { totalMinutes: 0, sessionCount: 0, sessions: [] });
+        }
+
+        // Filter sessions from last 7 days and group by date
+        sessionsResponse.sessions.forEach(session => {
+          const sessionDate = new Date(session.startTime);
+          if (sessionDate >= sevenDaysAgo && sessionDate <= new Date()) {
+            const dateKey = sessionDate.toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' });
+            const dayData = dateMap.get(dateKey);
+            if (dayData) {
+              dayData.totalMinutes += session.duration;
+              dayData.sessionCount += 1;
+              dayData.sessions.push(session);
+            }
+          }
+        });
+
+        // Log each day with formatted output
+        const sortedDates = Array.from(dateMap.entries()).sort((a, b) => {
+          const dateA = new Date(a[0]);
+          const dateB = new Date(b[0]);
+          return dateA.getTime() - dateB.getTime();
+        });
+
+        sortedDates.forEach(([dateKey, data], index) => {
+          const dayNum = index + 1;
+          const hours = (data.totalMinutes / 60).toFixed(2);
+          const isComplete = data.totalMinutes > 0;
+          const date = new Date(dateKey);
+          const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
+
+          console.log(`Day ${dayNum} (${dayName} ${dateKey}):`);
+          console.log(`  - Total hours: ${hours}h`);
+          console.log(`  - Day marked complete on streak map: ${isComplete}`);
+          console.log(`  - Session count: ${data.sessionCount}`);
+          if (data.sessions.length > 0) {
+            console.log(`  - Sessions:`);
+            data.sessions.forEach((s, i) => {
+              console.log(`    ${i + 1}. ${(s.duration / 60).toFixed(1)}h - ${new Date(s.startTime).toLocaleTimeString()}`);
+            });
+          }
+          console.log('');
+        });
+
+        console.log('=== END LAST 7 DAYS BREAKDOWN ===\n');
+        console.log('=== END STREAK CARD DATA ===\n');
+
         setStreakStats(stats);
       } catch (error) {
         console.error('Failed to load streak:', error);
@@ -54,10 +140,13 @@ export const StreakCard: React.FC<StreakCardProps> = ({
   if (!streakStats) return null;
 
   const getFlameColor = () => {
+    // Grey flame when user has a streak but hasn't completed today's session
     if (streakStats.streakAtRisk && streakStats.currentStreak > 0) return 'text-gray-400';
+    // Milestone-based colors for active streaks
     if (streakStats.currentStreak >= 100) return 'text-purple-500';
     if (streakStats.currentStreak >= 30) return 'text-blue-500';
     if (streakStats.currentStreak >= 7) return 'text-orange-500';
+    // Default orange for new streaks
     return 'text-orange-400';
   };
 
@@ -86,9 +175,6 @@ export const StreakCard: React.FC<StreakCardProps> = ({
             <div className="flex flex-col items-center flex-shrink-0">
               <div className={`${getFlameColor()} relative`}>
                 <Flame className="w-12 h-12" fill="currentColor" />
-                {streakStats.streakAtRisk && streakStats.currentStreak > 0 && (
-                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white animate-pulse"></div>
-                )}
               </div>
               <div className="text-sm font-medium text-gray-900 mt-1">
                 {streakStats.currentStreak}
@@ -103,13 +189,6 @@ export const StreakCard: React.FC<StreakCardProps> = ({
               <WeekStreakCalendar userId={userId} />
             </div>
           </div>
-
-          {/* Warning message if streak at risk */}
-          {streakStats.streakAtRisk && streakStats.currentStreak > 0 && (
-            <div className="mt-3 text-xs text-red-600 font-medium">
-              ⚠️ Complete a session today to keep your streak alive
-            </div>
-          )}
         </div>
       </Link>
     );
@@ -122,9 +201,6 @@ export const StreakCard: React.FC<StreakCardProps> = ({
         <div className="flex items-center gap-3">
           <div className={`${getFlameColor()} relative`}>
             <Flame className="w-10 h-10" fill="currentColor" />
-            {streakStats.streakAtRisk && streakStats.currentStreak > 0 && (
-              <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white animate-pulse"></div>
-            )}
           </div>
           <div>
             <h3 className="text-lg font-bold text-gray-900">Streak</h3>
@@ -189,35 +265,6 @@ export const StreakCard: React.FC<StreakCardProps> = ({
         </div>
       )}
 
-      {/* Streak At Risk Warning */}
-      {streakStats.streakAtRisk && streakStats.currentStreak > 0 && (
-        <div className="mt-4 bg-red-50 border border-red-200 rounded-lg p-3">
-          <div className="flex items-start gap-2">
-            <span className="text-red-600 text-lg">⚠️</span>
-            <div className="flex-1">
-              <p className="text-sm font-medium text-red-900">Streak at risk!</p>
-              <p className="text-xs text-red-700 mt-1">
-                Complete a session today to maintain your {streakStats.currentStreak} day streak.
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Motivational Message for New Streaks */}
-      {streakStats.currentStreak === 0 && !streakStats.streakAtRisk && (
-        <div className="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-3">
-          <div className="flex items-start gap-2">
-            <span className="text-blue-600 text-lg">💪</span>
-            <div className="flex-1">
-              <p className="text-sm font-medium text-blue-900">Start your streak!</p>
-              <p className="text-xs text-blue-700 mt-1">
-                Complete your first session today and build momentum.
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

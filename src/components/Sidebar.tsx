@@ -11,7 +11,7 @@ interface SidebarProps {
 function Sidebar({ type, children, className = '' }: SidebarProps) {
   return (
     <aside className={`hidden lg:block ${type === 'left' ? 'lg:w-80' : 'lg:w-72'} ${className}`}>
-      <div className="sticky top-20 h-[calc(100vh-5rem)] overflow-y-auto">
+      <div className="sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto">
         {children}
       </div>
     </aside>

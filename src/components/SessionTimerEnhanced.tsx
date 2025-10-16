@@ -644,10 +644,10 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
   // Main timer UI - only show when not completing a session
   return (
     <div className="min-h-screen bg-white flex items-start justify-center pt-20">
-      {/* Back Button - Top Left */}
+      {/* Back Button - Top Left (Mobile Only) */}
       <Link
         href="/"
-        className="fixed top-4 left-4 z-50 flex items-center justify-center w-10 h-10 hover:opacity-70 transition-opacity"
+        className="md:hidden fixed top-4 left-4 z-50 flex items-center justify-center w-10 h-10 hover:opacity-70 transition-opacity"
         aria-label="Go back to home"
       >
         <ArrowLeft className="w-6 h-6 text-gray-700" />
@@ -673,7 +673,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                   disabled={!selectedActivityId}
                   className={`inline-flex items-center justify-center gap-3 px-10 py-4 rounded-xl text-lg font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation ${
                     selectedActivityId
-                      ? 'bg-[#34C759] hover:bg-[#2FB84D] text-white focus-visible:ring-[#34C759]'
+                      ? 'bg-[#007AFF] hover:bg-[#0051D5] text-white focus-visible:ring-[#007AFF]'
                       : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                   }`}
                 >
@@ -683,7 +683,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
 
                 <Link
                   href="/record-manual"
-                  className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-[#007AFF] text-white hover:bg-[#0051D5] transition-colors text-lg font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] focus-visible:ring-offset-2 touch-manipulation"
+                  className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-white border-2 border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors text-lg font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-300 focus-visible:ring-offset-2 touch-manipulation"
                 >
                   <Edit3 className="w-5 h-5" />
                   <span>Manual</span>
@@ -694,7 +694,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
             {timerState.isRunning && (
               <button
                 onClick={handlePauseTimer}
-                className="px-10 py-4 rounded-lg bg-gray-900 hover:bg-gray-800 text-white flex items-center gap-3 transition-all text-lg font-semibold"
+                className="px-10 py-4 rounded-xl bg-gray-900 hover:bg-gray-800 text-white flex items-center gap-3 transition-all text-lg font-semibold"
               >
                 <Pause className="w-6 h-6" />
                 <span>Pause</span>
@@ -705,14 +705,14 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
               <>
                 <button
                   onClick={handleResumeTimer}
-                  className="px-8 py-4 rounded-lg bg-[#34C759] hover:bg-[#2FB84D] text-white flex items-center gap-2 transition-all text-lg font-semibold"
+                  className="px-10 py-4 rounded-xl bg-[#007AFF] hover:bg-[#0051D5] text-white flex items-center gap-3 transition-all text-lg font-semibold"
                 >
                   <Play className="w-6 h-6" />
                   <span>Resume</span>
                 </button>
                 <button
                   onClick={() => setShowFinishModal(true)}
-                  className="px-8 py-4 rounded-lg bg-gray-900 hover:bg-gray-800 text-white flex items-center gap-2 transition-all text-lg font-semibold"
+                  className="px-10 py-4 rounded-xl bg-[#34C759] hover:bg-[#2FB84D] text-white flex items-center gap-3 transition-all text-lg font-semibold"
                 >
                   <Flag className="w-6 h-6" />
                   <span>Finish</span>

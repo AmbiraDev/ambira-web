@@ -6496,38 +6496,149 @@ export const firebaseStreakApi = {
   // Get streak stats with calculated fields
   getStreakStats: async (userId: string): Promise<StreakStats> => {
     try {
-      const streakData = await firebaseStreakApi.getStreakData(userId);
+      console.log('=== FIREBASE API: getStreakStats called ===');
+      console.log('User ID:', userId);
+
+      // Fetch sessions to calculate actual streak from data
+      console.log('\n--- Fetching user sessions to calculate streak ---');
+      const sessionsQuery = query(
+        collection(db, 'sessions'),
+        where('userId', '==', userId),
+        orderBy('startTime', 'desc'),
+        limitFn(365) // Get last year of sessions
+      );
+      const sessionsSnapshot = await getDocs(sessionsQuery);
+      const sessions = sessionsSnapshot.docs.map(doc => ({
+        ...doc.data(),
+        startTime: convertTimestamp(doc.data().startTime),
+      }));
+
+      console.log(`Found ${sessions.length} sessions in last year`);
+
+      // Group sessions by day (YYYY-MM-DD)
+      const sessionsByDay = new Map<string, boolean>();
+      sessions.forEach(session => {
+        const date = new Date(session.startTime);
+        const dayKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+        sessionsByDay.set(dayKey, true);
+      });
+
+      console.log(`Sessions found on ${sessionsByDay.size} unique days`);
+
+      // Calculate current streak by going backwards from today
       const now = new Date();
       const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-      const lastActivity = new Date(
-        streakData.lastActivityDate.getFullYear(),
-        streakData.lastActivityDate.getMonth(),
-        streakData.lastActivityDate.getDate()
-      );
+      let currentStreak = 0;
+      let checkDate = new Date(today);
+      let lastActivityDate: Date | null = null;
 
-      const daysSinceActivity = Math.floor(
-        (today.getTime() - lastActivity.getTime()) / (1000 * 60 * 60 * 24)
-      );
-      const streakAtRisk = daysSinceActivity >= 1;
+      console.log('\n--- Calculating current streak (going backwards from today) ---');
+      console.log('Starting from:', today.toISOString());
+
+      // Start checking from today, going backwards
+      for (let i = 0; i < 365; i++) {
+        const dayKey = `${checkDate.getFullYear()}-${String(checkDate.getMonth() + 1).padStart(2, '0')}-${String(checkDate.getDate()).padStart(2, '0')}`;
+        const hasSession = sessionsByDay.has(dayKey);
+
+        if (i === 0) {
+          // Today - if no session, start checking from yesterday
+          if (hasSession) {
+            console.log(`Day ${i} (${dayKey}): ✓ Has session - counting`);
+            currentStreak = 1;
+            lastActivityDate = new Date(checkDate);
+          } else {
+            console.log(`Day ${i} (${dayKey}): ✗ No session today - checking yesterday`);
+          }
+        } else {
+          // Previous days
+          if (hasSession) {
+            console.log(`Day ${i} (${dayKey}): ✓ Has session - extending streak`);
+            currentStreak++;
+            if (!lastActivityDate) {
+              lastActivityDate = new Date(checkDate);
+            }
+          } else {
+            // Gap found - stop counting
+            console.log(`Day ${i} (${dayKey}): ✗ No session - streak ends here`);
+            break;
+          }
+        }
+
+        // Move to previous day
+        checkDate.setDate(checkDate.getDate() - 1);
+      }
+
+      console.log('\n--- Streak Calculation Complete ---');
+      console.log('Current Streak:', currentStreak);
+      console.log('Last Activity Date:', lastActivityDate?.toISOString() || 'null');
+
+      // Calculate longest streak and total days
+      const sortedDays = Array.from(sessionsByDay.keys()).sort();
+      let longestStreak = 0;
+      let tempStreak = 0;
+      let prevDate: Date | null = null;
+
+      console.log('\n--- Calculating longest streak from all session days ---');
+      sortedDays.forEach((dayKey, index) => {
+        const [year, month, day] = dayKey.split('-').map(Number);
+        const currentDate = new Date(year, month - 1, day);
+
+        if (!prevDate) {
+          // First day
+          tempStreak = 1;
+        } else {
+          const daysDiff = Math.floor((currentDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24));
+          if (daysDiff === 1) {
+            // Consecutive day
+            tempStreak++;
+          } else {
+            // Gap - reset streak
+            tempStreak = 1;
+          }
+        }
+
+        longestStreak = Math.max(longestStreak, tempStreak);
+        prevDate = currentDate;
+      });
+
+      const totalStreakDays = sessionsByDay.size;
+
+      console.log('Longest Streak:', longestStreak);
+      console.log('Total Streak Days:', totalStreakDays);
+
+      // Determine if streak is at risk
+      const daysSinceActivity = lastActivityDate
+        ? Math.floor((today.getTime() - lastActivityDate.getTime()) / (1000 * 60 * 60 * 24))
+        : 999;
+      const streakAtRisk = currentStreak > 0 && daysSinceActivity >= 1;
+
+      console.log('\n--- Streak Risk ---');
+      console.log('Days since last activity:', daysSinceActivity);
+      console.log('Streak at risk:', streakAtRisk);
 
       // Calculate next milestone
       const milestones = [7, 30, 100, 365, 500, 1000];
       const nextMilestone =
-        milestones.find(m => m > streakData.currentStreak) ||
+        milestones.find(m => m > currentStreak) ||
         milestones[milestones.length - 1];
 
-      return {
-        currentStreak: streakData.currentStreak,
-        longestStreak: streakData.longestStreak,
-        totalStreakDays: streakData.totalStreakDays,
-        lastActivityDate:
-          streakData.lastActivityDate.getTime() === 0
-            ? null
-            : streakData.lastActivityDate,
+      console.log('Next milestone:', nextMilestone);
+
+      const result = {
+        currentStreak,
+        longestStreak,
+        totalStreakDays,
+        lastActivityDate,
         streakAtRisk,
         nextMilestone,
       };
+
+      console.log('\n=== FIREBASE API: Final result ===', result);
+      console.log('=== END FIREBASE API getStreakStats ===\n');
+
+      return result;
     } catch (error) {
+      console.error('=== FIREBASE API: Error in getStreakStats ===', error);
       const apiError = handleError(error, 'Get streak stats', {
         defaultMessage: 'Failed to get streak stats',
       });
@@ -6541,7 +6652,18 @@ export const firebaseStreakApi = {
     sessionDate: Date
   ): Promise<StreakData> => {
     try {
+      console.log('\n=== UPDATE STREAK CALLED ===');
+      console.log('User ID:', userId);
+      console.log('Session Date (raw):', sessionDate);
+      console.log('Session Date ISO:', sessionDate.toISOString());
+
       const streakData = await firebaseStreakApi.getStreakData(userId);
+      console.log('\n--- Current Streak Data from Firestore ---');
+      console.log('Current Streak:', streakData.currentStreak);
+      console.log('Longest Streak:', streakData.longestStreak);
+      console.log('Total Streak Days:', streakData.totalStreakDays);
+      console.log('Last Activity Date:', streakData.lastActivityDate);
+      console.log('Last Activity ISO:', streakData.lastActivityDate.toISOString());
 
       const sessionDay = new Date(
         sessionDate.getFullYear(),
@@ -6554,28 +6676,71 @@ export const firebaseStreakApi = {
         streakData.lastActivityDate.getDate()
       );
 
+      console.log('\n--- Date Normalization (start of day) ---');
+      console.log('Session Day (normalized):', sessionDay.toISOString());
+      console.log('Last Activity Day (normalized):', lastActivityDay.toISOString());
+
       const daysDiff = Math.floor(
         (sessionDay.getTime() - lastActivityDay.getTime()) /
           (1000 * 60 * 60 * 24)
       );
 
+      console.log('\n--- Streak Calculation ---');
+      console.log('Days Difference:', daysDiff);
+      console.log('Time difference (ms):', sessionDay.getTime() - lastActivityDay.getTime());
+      console.log('Time difference (days):', (sessionDay.getTime() - lastActivityDay.getTime()) / (1000 * 60 * 60 * 24));
+
       let newCurrentStreak = streakData.currentStreak;
       let newLongestStreak = streakData.longestStreak;
       let newTotalStreakDays = streakData.totalStreakDays;
 
-      if (daysDiff === 0) {
+      // Special case: If current streak is 0 (first session ever or after long break)
+      // Check if this is truly the first session or if we're restarting
+      const isFirstEverSession = streakData.currentStreak === 0 && streakData.totalStreakDays === 0;
+      const isRestartingStreak = streakData.currentStreak === 0 && streakData.totalStreakDays > 0;
+
+      if (isFirstEverSession || isRestartingStreak) {
+        // First session or restarting - start streak at 1
+        if (isFirstEverSession) {
+          console.log('🎯 FIRST SESSION EVER - Starting streak at 1');
+          newTotalStreakDays = 1;
+        } else {
+          console.log('🔄 RESTARTING STREAK - Setting current streak to 1');
+          newTotalStreakDays += 1;
+        }
+        newCurrentStreak = 1;
+        newLongestStreak = Math.max(1, newLongestStreak);
+        console.log('  New current streak:', newCurrentStreak);
+        console.log('  New total streak days:', newTotalStreakDays);
+        console.log('  New longest streak:', newLongestStreak);
+      } else if (daysDiff === 0) {
         // Same day, no change to streak
+        console.log('✓ Same day - No streak change');
+        console.log('  Current streak remains:', newCurrentStreak);
       } else if (daysDiff === 1) {
         // Consecutive day, increment streak
         newCurrentStreak += 1;
         newTotalStreakDays += 1;
+        console.log('✓ Consecutive day - Incrementing streak');
+        console.log('  New current streak:', newCurrentStreak);
+        console.log('  New total streak days:', newTotalStreakDays);
         if (newCurrentStreak > newLongestStreak) {
           newLongestStreak = newCurrentStreak;
+          console.log('  🎉 New longest streak record!:', newLongestStreak);
         }
       } else if (daysDiff > 1) {
         // Streak broken, reset to 1
+        console.log('❌ Streak broken (gap > 1 day) - Resetting to 1');
+        console.log('  Previous streak was:', newCurrentStreak);
         newCurrentStreak = 1;
         newTotalStreakDays += 1;
+        console.log('  New current streak:', newCurrentStreak);
+        console.log('  New total streak days:', newTotalStreakDays);
+      } else if (daysDiff < 0) {
+        // Session is in the past before last activity
+        console.log('⚠️ WARNING: Session date is BEFORE last activity date!');
+        console.log('  This should not happen in normal flow');
+        console.log('  Not updating streak to prevent corruption');
       }
 
       // Update streak history (keep last 365 days)
@@ -6608,10 +6773,22 @@ export const firebaseStreakApi = {
         streakHistory: newHistory,
       };
 
+      console.log('\n--- Saving Updated Streak to Firestore ---');
+      console.log('Updated Streak Object:', {
+        currentStreak: updatedStreak.currentStreak,
+        longestStreak: updatedStreak.longestStreak,
+        lastActivityDate: updatedStreak.lastActivityDate,
+        totalStreakDays: updatedStreak.totalStreakDays,
+        historyLength: updatedStreak.streakHistory.length,
+      });
+
       await setDoc(doc(db, 'streaks', userId), {
         ...updatedStreak,
         lastActivityDate: Timestamp.fromDate(sessionDate),
       });
+
+      console.log('✅ Streak saved successfully to Firestore');
+      console.log('=== END UPDATE STREAK ===\n');
 
       return updatedStreak;
     } catch (error) {

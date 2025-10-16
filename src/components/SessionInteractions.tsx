@@ -13,6 +13,7 @@ interface SessionInteractionsProps {
   onRemoveSupport: (sessionId: string) => Promise<void>;
   onShare: (sessionId: string) => Promise<void>;
   onShareImage?: () => void;
+  isOwnPost?: boolean;
   onCommentClick?: () => void;
   onLikesClick?: () => void;
   onViewAllCommentsClick?: () => void;
@@ -29,6 +30,7 @@ export const SessionInteractions: React.FC<SessionInteractionsProps> = ({
   onRemoveSupport,
   onShare,
   onShareImage,
+  isOwnPost = false,
   onCommentClick,
   onLikesClick,
   onViewAllCommentsClick,
@@ -195,15 +197,19 @@ export const SessionInteractions: React.FC<SessionInteractionsProps> = ({
                   className="absolute right-0 mt-2 w-52 bg-white rounded-lg shadow-2xl border-2 border-gray-300 py-2 z-50"
                   role="menu"
                 >
-                  <button
-                    onClick={handleShareImage}
-                    className="w-full px-4 py-2.5 text-left text-sm font-medium text-gray-900 hover:bg-blue-50 flex items-center gap-3"
-                    role="menuitem"
-                  >
-                    <ImageIcon className="w-5 h-5 text-[#007AFF]" />
-                    Share as image
-                  </button>
-                  <div className="border-t border-gray-200 my-1"></div>
+                  {isOwnPost && onShareImage && (
+                    <>
+                      <button
+                        onClick={handleShareImage}
+                        className="w-full px-4 py-2.5 text-left text-sm font-medium text-gray-900 hover:bg-blue-50 flex items-center gap-3"
+                        role="menuitem"
+                      >
+                        <ImageIcon className="w-5 h-5 text-[#007AFF]" />
+                        Share as image
+                      </button>
+                      <div className="border-t border-gray-200 my-1"></div>
+                    </>
+                  )}
                   <button
                     onClick={handleShare}
                     className="w-full px-4 py-2.5 text-left text-sm font-medium text-gray-900 hover:bg-blue-50 flex items-center gap-3"
@@ -303,15 +309,19 @@ export const SessionInteractions: React.FC<SessionInteractionsProps> = ({
                   className="absolute right-0 bottom-full mb-2 w-56 bg-white rounded-lg shadow-2xl border-2 border-gray-300 py-2 z-50"
                   role="menu"
                 >
-                  <button
-                    onClick={handleShareImage}
-                    className="w-full px-4 py-3 text-left text-base font-medium text-gray-900 hover:bg-blue-50 flex items-center gap-3"
-                    role="menuitem"
-                  >
-                    <ImageIcon className="w-5 h-5 text-[#007AFF]" />
-                    Share as image
-                  </button>
-                  <div className="border-t border-gray-200 my-1"></div>
+                  {isOwnPost && onShareImage && (
+                    <>
+                      <button
+                        onClick={handleShareImage}
+                        className="w-full px-4 py-3 text-left text-base font-medium text-gray-900 hover:bg-blue-50 flex items-center gap-3"
+                        role="menuitem"
+                      >
+                        <ImageIcon className="w-5 h-5 text-[#007AFF]" />
+                        Share as image
+                      </button>
+                      <div className="border-t border-gray-200 my-1"></div>
+                    </>
+                  )}
                   <button
                     onClick={handleShare}
                     className="w-full px-4 py-3 text-left text-base font-medium text-gray-900 hover:bg-blue-50 flex items-center gap-3"

@@ -10,14 +10,12 @@ import Header from '@/components/HeaderComponent';
 import MobileHeader from '@/components/MobileHeader';
 import BottomNavigation from '@/components/BottomNavigation';
 import { Button } from '@/components/ui/button';
-import { UserX, User as UserIcon, Users, TrendingUp, BarChart3, ChevronDown } from 'lucide-react';
+import { UserX, User as UserIcon, Users, ChevronDown } from 'lucide-react';
 import { toast } from 'sonner';
 import Link from 'next/link';
-import Image from 'next/image';
-import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip, Area, ComposedChart, BarChart, Bar } from 'recharts';
+import { XAxis, YAxis, ResponsiveContainer, Tooltip, Area, ComposedChart, BarChart, Bar } from 'recharts';
 import { useUserFollowers, useUserFollowing, useProjects } from '@/hooks/useCache';
 import Feed from '@/components/Feed';
-import { StreakCard } from '@/components/StreakCard';
 
 type YouTab = 'progress' | 'sessions' | 'followers' | 'following';
 type TimePeriod = '7D' | '2W' | '4W' | '3M' | '1Y';
@@ -26,15 +24,8 @@ type ChartType = 'bar' | 'line';
 interface ChartDataPoint {
   name: string;
   hours: number;
-}
-
-interface CategoryStats {
-  category: string;
-  hours: number;
   sessions: number;
-  percentage: number;
-  icon: string;
-  color: string;
+  avgDuration: number;
 }
 
 export default function ProfilePage() {
@@ -47,7 +38,6 @@ export default function ProfilePage() {
 
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [stats, setStats] = useState<UserStats | null>(null);
-  const [postsCount, setPostsCount] = useState<number>(0);
   const [activeTab, setActiveTab] = useState<YouTab>(
     tabParam === 'sessions' ? 'sessions' :
     tabParam === 'followers' ? 'followers' :
@@ -110,10 +100,6 @@ export default function ProfilePage() {
       }
       setSessions(sessionsData);
 
-      // Load posts count (sessions count since sessions = posts)
-      const sessionsCount = await firebaseSessionApi.getUserSessionsCount(profileData.id, isOwnProfile);
-      setPostsCount(sessionsCount);
-
       // Note: Followers and following are now loaded via cached hooks above
 
     } catch (error: any) {
@@ -153,13 +139,17 @@ export default function ProfilePage() {
         const day = new Date(now);
         day.setDate(day.getDate() - i);
 
-        const hoursWorked = filteredSessions.length > 0 ? filteredSessions
-          .filter(s => new Date(s.createdAt).toDateString() === day.toDateString())
-          .reduce((sum, s) => sum + s.duration / 3600, 0) : 0;
+        const daySessions = filteredSessions.filter(s => new Date(s.createdAt).toDateString() === day.toDateString());
+        const hoursWorked = daySessions.reduce((sum, s) => sum + s.duration / 3600, 0);
+        const avgDuration = daySessions.length > 0
+          ? daySessions.reduce((sum, s) => sum + s.duration, 0) / daySessions.length / 60
+          : 0;
 
         data.push({
-          name: dayNames[day.getDay()],
-          hours: Number(hoursWorked.toFixed(2))
+          name: `${dayNames[day.getDay()].slice(0, 3)} ${day.getDate()}`,
+          hours: Number(hoursWorked.toFixed(2)),
+          sessions: daySessions.length,
+          avgDuration: Math.round(avgDuration)
         });
       }
     } else if (timePeriod === '2W') {
@@ -169,13 +159,17 @@ export default function ProfilePage() {
         const day = new Date(now);
         day.setDate(day.getDate() - i);
 
-        const hoursWorked = filteredSessions.length > 0 ? filteredSessions
-          .filter(s => new Date(s.createdAt).toDateString() === day.toDateString())
-          .reduce((sum, s) => sum + s.duration / 3600, 0) : 0;
+        const daySessions = filteredSessions.filter(s => new Date(s.createdAt).toDateString() === day.toDateString());
+        const hoursWorked = daySessions.reduce((sum, s) => sum + s.duration / 3600, 0);
+        const avgDuration = daySessions.length > 0
+          ? daySessions.reduce((sum, s) => sum + s.duration, 0) / daySessions.length / 60
+          : 0;
 
         data.push({
-          name: `${dayNames[day.getDay()]} ${day.getDate()}`,
-          hours: Number(hoursWorked.toFixed(2))
+          name: `${dayNames[day.getDay()].slice(0, 3)} ${day.getDate()}`,
+          hours: Number(hoursWorked.toFixed(2)),
+          sessions: daySessions.length,
+          avgDuration: Math.round(avgDuration)
         });
       }
     } else if (timePeriod === '4W') {
@@ -186,36 +180,44 @@ export default function ProfilePage() {
         const weekEnd = new Date(now);
         weekEnd.setDate(weekEnd.getDate() - (i * 7));
 
-        const hoursWorked = filteredSessions.length > 0 ? filteredSessions
-          .filter(s => {
-            const sessionDate = new Date(s.createdAt);
-            return sessionDate >= weekStart && sessionDate <= weekEnd;
-          })
-          .reduce((sum, s) => sum + s.duration / 3600, 0) : 0;
+        const weekSessions = filteredSessions.filter(s => {
+          const sessionDate = new Date(s.createdAt);
+          return sessionDate >= weekStart && sessionDate <= weekEnd;
+        });
+        const hoursWorked = weekSessions.reduce((sum, s) => sum + s.duration / 3600, 0);
+        const avgDuration = weekSessions.length > 0
+          ? weekSessions.reduce((sum, s) => sum + s.duration, 0) / weekSessions.length / 60
+          : 0;
 
         data.push({
           name: `Week ${4 - i}`,
-          hours: Number(hoursWorked.toFixed(2))
+          hours: Number(hoursWorked.toFixed(2)),
+          sessions: weekSessions.length,
+          avgDuration: Math.round(avgDuration)
         });
       }
     } else if (timePeriod === '3M') {
       // Last 3 months
       const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-      for (let i = 11; i >= 0; i--) {
+      for (let i = 2; i >= 0; i--) {
         const month = new Date(now);
         month.setMonth(month.getMonth() - i);
 
-        const hoursWorked = filteredSessions.length > 0 ? filteredSessions
-          .filter(s => {
-            const sessionDate = new Date(s.createdAt);
-            return sessionDate.getMonth() === month.getMonth() &&
-                   sessionDate.getFullYear() === month.getFullYear();
-          })
-          .reduce((sum, s) => sum + s.duration / 3600, 0) : 0;
+        const monthSessions = filteredSessions.filter(s => {
+          const sessionDate = new Date(s.createdAt);
+          return sessionDate.getMonth() === month.getMonth() &&
+                 sessionDate.getFullYear() === month.getFullYear();
+        });
+        const hoursWorked = monthSessions.reduce((sum, s) => sum + s.duration / 3600, 0);
+        const avgDuration = monthSessions.length > 0
+          ? monthSessions.reduce((sum, s) => sum + s.duration, 0) / monthSessions.length / 60
+          : 0;
 
         data.push({
           name: monthNames[month.getMonth()],
-          hours: Number(hoursWorked.toFixed(2))
+          hours: Number(hoursWorked.toFixed(2)),
+          sessions: monthSessions.length,
+          avgDuration: Math.round(avgDuration)
         });
       }
     } else if (timePeriod === '1Y') {
@@ -225,17 +227,21 @@ export default function ProfilePage() {
         const month = new Date(now);
         month.setMonth(month.getMonth() - i);
 
-        const hoursWorked = filteredSessions.length > 0 ? filteredSessions
-          .filter(s => {
-            const sessionDate = new Date(s.createdAt);
-            return sessionDate.getMonth() === month.getMonth() &&
-                   sessionDate.getFullYear() === month.getFullYear();
-          })
-          .reduce((sum, s) => sum + s.duration / 3600, 0) : 0;
+        const monthSessions = filteredSessions.filter(s => {
+          const sessionDate = new Date(s.createdAt);
+          return sessionDate.getMonth() === month.getMonth() &&
+                 sessionDate.getFullYear() === month.getFullYear();
+        });
+        const hoursWorked = monthSessions.reduce((sum, s) => sum + s.duration / 3600, 0);
+        const avgDuration = monthSessions.length > 0
+          ? monthSessions.reduce((sum, s) => sum + s.duration, 0) / monthSessions.length / 60
+          : 0;
 
         data.push({
           name: monthNames[month.getMonth()],
-          hours: Number(hoursWorked.toFixed(2))
+          hours: Number(hoursWorked.toFixed(2)),
+          sessions: monthSessions.length,
+          avgDuration: Math.round(avgDuration)
         });
       }
     }
@@ -243,27 +249,140 @@ export default function ProfilePage() {
     return data;
   }, [filteredSessions, timePeriod]);
 
-  const formatTime = (seconds: number) => {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    if (hours > 0) {
-      return `${hours}h ${minutes}m`;
-    }
-    return `${minutes}m`;
+  // Calculate stats with percentage changes
+  const calculatedStats = useMemo(() => {
+    const now = new Date();
+
+    // Helper to get date range based on time period
+    const getDateRange = (period: TimePeriod) => {
+      const end = new Date(now);
+      const start = new Date(now);
+
+      switch (period) {
+        case '7D':
+          start.setDate(now.getDate() - 7);
+          break;
+        case '2W':
+          start.setDate(now.getDate() - 14);
+          break;
+        case '4W':
+          start.setDate(now.getDate() - 28);
+          break;
+        case '3M':
+          start.setMonth(now.getMonth() - 3);
+          break;
+        case '1Y':
+          start.setFullYear(now.getFullYear() - 1);
+          break;
+      }
+
+      return { start, end };
+    };
+
+    // Get current and previous period ranges
+    const currentRange = getDateRange(timePeriod);
+    const previousStart = new Date(currentRange.start);
+    const periodLength = currentRange.end.getTime() - currentRange.start.getTime();
+    previousStart.setTime(previousStart.getTime() - periodLength);
+
+    // Filter sessions for current period
+    const currentPeriodSessions = filteredSessions.filter(s => {
+      const sessionDate = new Date(s.createdAt);
+      return sessionDate >= currentRange.start && sessionDate <= currentRange.end;
+    });
+
+    // Filter sessions for previous period
+    const previousPeriodSessions = filteredSessions.filter(s => {
+      const sessionDate = new Date(s.createdAt);
+      return sessionDate >= previousStart && sessionDate < currentRange.start;
+    });
+
+    // Calculate current period stats
+    const currentHours = currentPeriodSessions.reduce((sum, s) => sum + s.duration / 3600, 0);
+    const currentSessionCount = currentPeriodSessions.length;
+    const currentAvgDuration = currentSessionCount > 0
+      ? currentPeriodSessions.reduce((sum, s) => sum + s.duration, 0) / currentSessionCount / 60
+      : 0;
+
+    const currentActiveDays = new Set(
+      currentPeriodSessions.map(s => new Date(s.createdAt).toDateString())
+    ).size;
+
+    // Calculate previous period stats
+    const previousHours = previousPeriodSessions.reduce((sum, s) => sum + s.duration / 3600, 0);
+    const previousSessionCount = previousPeriodSessions.length;
+    const previousAvgDuration = previousSessionCount > 0
+      ? previousPeriodSessions.reduce((sum, s) => sum + s.duration, 0) / previousSessionCount / 60
+      : 0;
+
+    const previousActiveDays = new Set(
+      previousPeriodSessions.map(s => new Date(s.createdAt).toDateString())
+    ).size;
+
+    // Calculate percentage changes
+    const calculateChange = (current: number, previous: number): number | null => {
+      if (previous === 0) return null; // No previous data
+      return ((current - previous) / previous) * 100;
+    };
+
+    const hoursChange = calculateChange(currentHours, previousHours);
+    const sessionsChange = calculateChange(currentSessionCount, previousSessionCount);
+    const avgDurationChange = calculateChange(currentAvgDuration, previousAvgDuration);
+    const activeDaysChange = calculateChange(currentActiveDays, previousActiveDays);
+
+    return {
+      totalHours: currentHours,
+      sessions: currentSessionCount,
+      avgDuration: Math.round(currentAvgDuration),
+      currentStreak: stats?.currentStreak || 0,
+      longestStreak: stats?.longestStreak || 0,
+      activeDays: currentActiveDays,
+      activities: activities?.length || 0,
+
+      // Percentage changes
+      hoursChange,
+      sessionsChange,
+      avgDurationChange,
+      activeDaysChange,
+      activitiesChange: null, // Activities count doesn't have time-based comparison
+      streakChange: null, // Streaks don't have meaningful percentage changes
+    };
+  }, [filteredSessions, stats, activities, timePeriod]);
+
+  // Average duration over time data - extract from chartData
+  const avgDurationData = useMemo(() => {
+    return chartData.map(d => ({ name: d.name, value: d.avgDuration }));
+  }, [chartData]);
+
+  // Helper to render percentage change
+  const renderPercentageChange = (change: number | null) => {
+    if (change === null) return null;
+
+    const isPositive = change >= 0;
+    const formattedChange = Math.abs(change).toFixed(0);
+
+    return (
+      <div className={`text-sm ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
+        {isPositive ? '↑' : '↓'} {formattedChange}%
+      </div>
+    );
   };
 
-  const formatDate = (date: Date) => {
-    const today = new Date();
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
-
-    if (date.toDateString() === today.toDateString()) {
-      return `Today at ${date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`;
-    } else if (date.toDateString() === yesterday.toDateString()) {
-      return `Yesterday at ${date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`;
-    } else {
-      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+  // Custom tooltip formatter
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-white border border-gray-200 rounded-lg shadow-lg p-3">
+          <p className="text-sm font-medium text-gray-900 mb-2">{label}</p>
+          {payload.map((entry: any, index: number) => (
+            <p key={index} className="text-sm" style={{ color: entry.color }}>
+              <span className="font-semibold">{entry.name}</span>: {entry.value}
+            </p>
+          ))}
+        </div>
+      );
     }
+    return null;
   };
 
   const handleProfileUpdate = (updatedProfile: UserProfile) => {
@@ -551,135 +670,94 @@ export default function ProfilePage() {
 
               {/* Tab Content */}
               <div className="mt-6">
-                                {activeTab === 'progress' && (
-                  <div className="max-w-4xl mx-auto space-y-4 md:space-y-6">
-                    {/* Header with Time Period Selector and Chart Type */}
-                    <div className="flex items-center justify-between gap-2 py-2 -mx-4 px-4 md:mx-0 md:px-0">
-                      {/* Activity Filter Dropdown */}
-                      <div className="relative flex-shrink-0">
-                        <button
-                          onClick={() => setShowActivityDropdown(!showActivityDropdown)}
-                          className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-700 bg-white border border-gray-300 rounded-full hover:bg-gray-50 transition-colors whitespace-nowrap"
-                        >
-                          <span className="font-medium">
-                            {selectedActivityId === 'all'
-                              ? 'All'
-                              : activities.find(a => a.id === selectedActivityId)?.name || 'All'
-                            }
-                          </span>
-                          <ChevronDown className="w-3.5 h-3.5" />
-                        </button>
-
-                        {/* Activity Dropdown Menu */}
-                        {showActivityDropdown && (
-                          <>
-                            {/* Backdrop to close dropdown */}
-                            <div
-                              className="fixed inset-0 z-40"
-                              onClick={() => setShowActivityDropdown(false)}
-                            />
-                            <div className="absolute left-0 top-full mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50 max-h-64 overflow-y-auto">
-                              <button
-                                onClick={() => {
-                                  setSelectedActivityId('all');
-                                  setShowActivityDropdown(false);
-                                }}
-                                className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors flex items-center gap-2 ${
-                                  selectedActivityId === 'all' ? 'text-[#007AFF] font-medium bg-blue-50' : 'text-gray-700'
-                                }`}
-                              >
-                                {selectedActivityId === 'all' && <span className="text-[#007AFF]">✓</span>}
-                                <span>All Activities</span>
-                              </button>
-                              {activities.map((activity) => (
+                {activeTab === 'progress' && (
+                  <div className="space-y-4">
+                    {/* Controls */}
+                    <div className="space-y-3">
+                      {/* Row 1: Activity Selector & Chart Type */}
+                      <div className="flex items-center gap-2">
+                        {/* Activity Selector */}
+                        <div className="relative flex-shrink-0">
+                          <button
+                            onClick={() => setShowActivityDropdown(!showActivityDropdown)}
+                            className="flex items-center gap-2 px-3 md:px-4 py-2 text-xs md:text-sm font-semibold border border-gray-300 rounded-lg hover:bg-gray-50 min-w-[140px] max-w-[200px]"
+                          >
+                            <span className="truncate">{selectedActivityId === 'all' ? 'All activities' : activities?.find(p => p.id === selectedActivityId)?.name || 'All activities'}</span>
+                            <ChevronDown className="w-3.5 h-3.5 md:w-4 md:h-4 flex-shrink-0" />
+                          </button>
+                          {showActivityDropdown && (
+                            <>
+                              <div className="fixed inset-0 z-40" onClick={() => setShowActivityDropdown(false)} />
+                              <div className="absolute left-0 top-full mt-2 w-full max-w-xs bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50 max-h-64 overflow-y-auto">
                                 <button
-                                  key={activity.id}
-                                  onClick={() => {
-                                    setSelectedActivityId(activity.id);
-                                    setShowActivityDropdown(false);
-                                  }}
-                                  className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors flex items-center gap-2 ${
-                                    selectedActivityId === activity.id ? 'text-[#007AFF] font-medium bg-blue-50' : 'text-gray-700'
-                                  }`}
+                                  onClick={() => { setSelectedActivityId('all'); setShowActivityDropdown(false); }}
+                                  className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${selectedActivityId === 'all' ? 'bg-blue-50 text-blue-600' : ''}`}
                                 >
-                                  {selectedActivityId === activity.id && <span className="text-[#007AFF]">✓</span>}
-                                  <span className="flex items-center gap-2">
-                                    <span style={{ color: activity.color }}>●</span>
-                                    {activity.name}
-                                  </span>
+                                  All
                                 </button>
-                              ))}
-                            </div>
-                          </>
-                        )}
-                      </div>
-
-                      {/* Time Period Buttons - Scrollable on mobile */}
-                      <div className="flex items-center gap-2 flex-1 min-w-0">
-                        <div className="overflow-x-auto flex items-center gap-1.5 md:gap-2 flex-1 scrollbar-hide">
-                          {(['7D', '2W', '4W', '3M', '1Y'] as TimePeriod[]).map((period) => (
-                            <button
-                              key={period}
-                              onClick={() => setTimePeriod(period)}
-                              className={`px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-medium rounded-full transition-colors whitespace-nowrap flex-shrink-0 ${
-                                timePeriod === period
-                                  ? 'bg-gray-900 text-white'
-                                  : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-                              }`}
-                            >
-                              {period}
-                            </button>
-                          ))}
+                                {(!activities || activities.length === 0) && <div className="px-4 py-2 text-xs text-gray-400">No activities yet</div>}
+                                {activities?.map((activity) => (
+                                  <button
+                                    key={activity.id}
+                                    onClick={() => { setSelectedActivityId(activity.id); setShowActivityDropdown(false); }}
+                                    className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-3 ${selectedActivityId === activity.id ? 'bg-blue-50 text-blue-600' : ''}`}
+                                  >
+                                    <div
+                                      className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
+                                      style={{ backgroundColor: activity.color + '20' }}
+                                    >
+                                      <span style={{ color: activity.color }}>●</span>
+                                    </div>
+                                    <span className="truncate">{activity.name}</span>
+                                  </button>
+                                ))}
+                              </div>
+                            </>
+                          )}
                         </div>
 
                         {/* Chart Type Selector */}
                         <div className="relative flex-shrink-0">
                           <button
                             onClick={() => setShowChartTypeDropdown(!showChartTypeDropdown)}
-                            className="flex items-center gap-1 px-2 md:px-3 py-1.5 md:py-2 text-xs md:text-sm text-gray-700 bg-white border border-gray-300 rounded-full hover:bg-gray-50 transition-colors whitespace-nowrap"
+                            className="flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-2 text-xs md:text-sm font-semibold border border-gray-300 rounded-lg hover:bg-gray-50"
                           >
-                            {chartType === 'bar' ? (
-                              <BarChart3 className="w-3.5 h-3.5 md:w-4 md:h-4" />
-                            ) : (
-                              <TrendingUp className="w-3.5 h-3.5 md:w-4 md:h-4" />
-                            )}
-                            <span className="capitalize hidden sm:inline">{chartType}</span>
-                            <ChevronDown className="w-3 h-3" />
+                            <svg className="w-3.5 h-3.5 md:w-4 md:h-4" viewBox="0 0 16 16" fill="currentColor">
+                              {chartType === 'bar' ? (
+                                <>
+                                  <rect x="2" y="8" width="3" height="6" rx="0.5"/>
+                                  <rect x="6.5" y="4" width="3" height="10" rx="0.5"/>
+                                  <rect x="11" y="6" width="3" height="8" rx="0.5"/>
+                                </>
+                              ) : (
+                                <path d="M2 12 L5 8 L8 10 L11 4 L14 6" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+                              )}
+                            </svg>
+                            <span className="capitalize">{chartType}</span>
+                            <ChevronDown className="w-3 h-3 md:w-4 md:h-4" />
                           </button>
-
-                          {/* Chart Type Dropdown */}
                           {showChartTypeDropdown && (
                             <>
-                              {/* Backdrop to close dropdown */}
-                              <div
-                                className="fixed inset-0 z-40"
-                                onClick={() => setShowChartTypeDropdown(false)}
-                              />
-                              <div className="absolute right-0 mt-2 w-32 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
+                              <div className="fixed inset-0 z-40" onClick={() => setShowChartTypeDropdown(false)} />
+                              <div className="absolute right-0 top-full mt-2 w-32 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
                                 <button
-                                  onClick={() => {
-                                    setChartType('bar');
-                                    setShowChartTypeDropdown(false);
-                                  }}
-                                  className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors flex items-center gap-2 ${
-                                    chartType === 'bar' ? 'text-[#007AFF] font-medium' : 'text-gray-700'
-                                  }`}
+                                  onClick={() => { setChartType('bar'); setShowChartTypeDropdown(false); }}
+                                  className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2 ${chartType === 'bar' ? 'bg-blue-50 text-blue-600' : ''}`}
                                 >
-                                  {chartType === 'bar' && <span className="text-[#007AFF]">✓</span>}
-                                  <BarChart3 className="w-4 h-4" />
+                                  <svg className="w-4 h-4" viewBox="0 0 16 16" fill="currentColor">
+                                    <rect x="2" y="8" width="3" height="6" rx="0.5"/>
+                                    <rect x="6.5" y="4" width="3" height="10" rx="0.5"/>
+                                    <rect x="11" y="6" width="3" height="8" rx="0.5"/>
+                                  </svg>
                                   Bar
                                 </button>
                                 <button
-                                  onClick={() => {
-                                    setChartType('line');
-                                    setShowChartTypeDropdown(false);
-                                  }}
-                                  className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors flex items-center gap-2 ${
-                                    chartType === 'line' ? 'text-[#007AFF] font-medium' : 'text-gray-700'
-                                  }`}
+                                  onClick={() => { setChartType('line'); setShowChartTypeDropdown(false); }}
+                                  className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2 ${chartType === 'line' ? 'bg-blue-50 text-blue-600' : ''}`}
                                 >
-                                  {chartType === 'line' && <span className="text-[#007AFF]">✓</span>}
-                                  <TrendingUp className="w-4 h-4" />
+                                  <svg className="w-4 h-4" viewBox="0 0 16 16" fill="none" stroke="currentColor">
+                                    <path d="M2 12 L5 8 L8 10 L11 4 L14 6" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                  </svg>
                                   Line
                                 </button>
                               </div>
@@ -687,384 +765,213 @@ export default function ProfilePage() {
                           )}
                         </div>
                       </div>
-                    </div>
 
-                    {/* Activity Chart */}
-                    <div className="bg-gray-50 rounded-lg md:rounded-xl border border-gray-200 p-3 md:p-6">
-                      <div className="mb-3 md:mb-6">
-                        <h3 className="text-sm md:text-base font-medium text-gray-900">Hours Tracked</h3>
-                        <p className="text-[10px] md:text-sm text-gray-500 mt-0.5">
-                          {timePeriod === '7D' && 'Daily'}
-                          {timePeriod === '2W' && 'Daily'}
-                          {timePeriod === '4W' && 'Weekly'}
-                          {timePeriod === '3M' && 'Monthly'}
-                          {timePeriod === '1Y' && 'Monthly'}
-                        </p>
-                      </div>
-                      <div className="h-48 md:h-72">
-                        {isLoading ? (
-                          <div className="h-full bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl animate-pulse flex items-center justify-center">
-                            <p className="text-gray-400 text-sm">Loading...</p>
-                          </div>
-                        ) : (
-                          <ResponsiveContainer width="100%" height="100%">
-                            {chartType === 'bar' ? (
-                              <BarChart
-                                data={chartData}
-                                margin={{ top: 10, right: 10, left: -15, bottom: 5 }}
-                              >
-                                <XAxis
-                                  dataKey="name"
-                                  tick={{ fontSize: 11, fill: '#9ca3af' }}
-                                  axisLine={{ stroke: '#e5e7eb' }}
-                                  tickLine={false}
-                                  dy={8}
-                                />
-                                <YAxis
-                                  tick={{ fontSize: 11, fill: '#9ca3af' }}
-                                  axisLine={{ stroke: '#e5e7eb' }}
-                                  tickLine={false}
-                                  width={35}
-                                  domain={[0, 'dataMax + 0.5']}
-                                  tickFormatter={(value) => `${value}`}
-                                />
-                                <Tooltip
-                                  contentStyle={{
-                                    backgroundColor: 'rgba(0, 0, 0, 0.85)',
-                                    border: 'none',
-                                    borderRadius: '8px',
-                                    padding: '8px 12px',
-                                    fontSize: '12px',
-                                    color: 'white',
-                                  }}
-                                  formatter={(value: number) => [`${value.toFixed(1)}h`, 'Hours']}
-                                  cursor={{ fill: 'rgba(0, 0, 0, 0.05)' }}
-                                />
-                                <Bar
-                                  dataKey="hours"
-                                  fill="#007AFF"
-                                  radius={[4, 4, 0, 0]}
-                                />
-                              </BarChart>
-                            ) : (
-                              <ComposedChart
-                                data={chartData}
-                                margin={{ top: 10, right: 10, left: -15, bottom: 5 }}
-                              >
-                                <defs>
-                                  <linearGradient id="colorHours" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#007AFF" stopOpacity={0.1}/>
-                                    <stop offset="95%" stopColor="#007AFF" stopOpacity={0}/>
-                                  </linearGradient>
-                                </defs>
-                                <XAxis
-                                  dataKey="name"
-                                  tick={{ fontSize: 11, fill: '#9ca3af' }}
-                                  axisLine={{ stroke: '#e5e7eb' }}
-                                  tickLine={false}
-                                  dy={8}
-                                />
-                                <YAxis
-                                  tick={{ fontSize: 11, fill: '#9ca3af' }}
-                                  axisLine={{ stroke: '#e5e7eb' }}
-                                  tickLine={false}
-                                  width={35}
-                                  domain={[0, 'dataMax + 0.5']}
-                                  tickFormatter={(value) => `${value}`}
-                                />
-                                <Tooltip
-                                  contentStyle={{
-                                    backgroundColor: 'rgba(0, 0, 0, 0.85)',
-                                    border: 'none',
-                                    borderRadius: '8px',
-                                    padding: '8px 12px',
-                                    fontSize: '12px',
-                                    color: 'white',
-                                  }}
-                                  formatter={(value: number) => [`${value.toFixed(1)}h`, 'Hours']}
-                                  cursor={{ stroke: '#e5e7eb', strokeWidth: 1 }}
-                                />
-                                <Area
-                                  type="monotone"
-                                  dataKey="hours"
-                                  stroke="none"
-                                  fill="url(#colorHours)"
-                                />
-                                <Line
-                                  type="monotone"
-                                  dataKey="hours"
-                                  stroke="#007AFF"
-                                  strokeWidth={2}
-                                  dot={false}
-                                  activeDot={{
-                                    r: 4,
-                                    fill: '#007AFF',
-                                    stroke: 'white',
-                                    strokeWidth: 2
-                                  }}
-                                />
-                              </ComposedChart>
-                            )}
-                          </ResponsiveContainer>
-                        )}
+                      {/* Row 2: Time Period Buttons - Scrollable on mobile */}
+                      <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
+                        {(['7D', '2W', '4W', '3M', '1Y'] as TimePeriod[]).map((period) => (
+                          <button
+                            key={period}
+                            onClick={() => setTimePeriod(period)}
+                            className={`flex-shrink-0 px-4 md:px-5 py-2 text-xs md:text-sm font-semibold rounded-lg transition-colors ${
+                              timePeriod === period ? 'bg-gray-900 text-white' : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
+                            }`}
+                          >
+                            {period}
+                          </button>
+                        ))}
                       </div>
                     </div>
 
-                    {/* Secondary Charts */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-6">
-                      {/* Sessions over time */}
-                      <div className="bg-gray-50 rounded-lg md:rounded-xl border border-gray-200 p-3 md:p-6">
-                        <h3 className="text-xs md:text-base font-medium text-gray-900 mb-2 md:mb-4">Sessions over time</h3>
-                        <div className="h-32 md:h-48">
-                          <ResponsiveContainer width="100%" height="100%">
-                            {chartType === 'bar' ? (
-                              <BarChart
-                                data={chartData}
-                                margin={{ top: 10, right: 10, left: 0, bottom: 5 }}
-                              >
-                                <XAxis
-                                  dataKey="name"
-                                  tick={{ fontSize: 11, fill: '#6b7280' }}
-                                  axisLine={false}
-                                  tickLine={false}
-                                />
-                                <YAxis
-                                  tick={{ fontSize: 11, fill: '#9ca3af' }}
-                                  axisLine={false}
-                                  tickLine={false}
-                                  width={35}
-                                  domain={[0, 'dataMax + 0.5']}
-                                  tickFormatter={(value) => `${value}`}
-                                />
-                                <Tooltip
-                                  contentStyle={{
-                                    backgroundColor: 'rgba(0, 0, 0, 0.9)',
-                                    border: 'none',
-                                    borderRadius: '8px',
-                                    padding: '8px 12px',
-                                    fontSize: '12px',
-                                    color: 'white',
-                                  }}
-                                  formatter={(value: number) => [`${value.toFixed(1)}h`, 'Hours']}
-                                />
-                                <Bar
-                                  dataKey="hours"
-                                  fill="#007AFF"
-                                  radius={[4, 4, 0, 0]}
-                                />
-                              </BarChart>
-                            ) : (
-                              <ComposedChart
-                                data={chartData}
-                                margin={{ top: 10, right: 10, left: 0, bottom: 5 }}
-                              >
-                                <defs>
-                                  <linearGradient id="colorSessions" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#007AFF" stopOpacity={0.3}/>
-                                    <stop offset="95%" stopColor="#007AFF" stopOpacity={0}/>
-                                  </linearGradient>
-                                </defs>
-                                <XAxis
-                                  dataKey="name"
-                                  tick={{ fontSize: 11, fill: '#6b7280' }}
-                                  axisLine={false}
-                                  tickLine={false}
-                                />
-                                <YAxis
-                                  tick={{ fontSize: 11, fill: '#9ca3af' }}
-                                  axisLine={false}
-                                  tickLine={false}
-                                  width={35}
-                                  domain={[0, 'dataMax + 0.5']}
-                                  tickFormatter={(value) => `${value}`}
-                                />
-                                <Tooltip
-                                  contentStyle={{
-                                    backgroundColor: 'rgba(0, 0, 0, 0.9)',
-                                    border: 'none',
-                                    borderRadius: '8px',
-                                    padding: '8px 12px',
-                                    fontSize: '12px',
-                                    color: 'white',
-                                  }}
-                                  formatter={(value: number) => [`${value.toFixed(1)}h`, 'Hours']}
-                                />
-                                <Area
-                                  type="monotone"
-                                  dataKey="hours"
-                                  stroke="#007AFF"
-                                  strokeWidth={2}
-                                  fill="url(#colorSessions)"
-                                />
-                              </ComposedChart>
-                            )}
-                          </ResponsiveContainer>
+                    <div className="space-y-4">
+                      {/* Main Chart */}
+                      <div className="bg-white border border-gray-200 rounded-xl p-6">
+                        <div className="mb-4">
+                          <h3 className="font-semibold text-gray-900">Hours completed</h3>
+                        </div>
+                        <div className="h-72">
+                          {isLoading ? (
+                            <div className="h-full bg-gray-50 rounded animate-pulse" />
+                          ) : (
+                            <ResponsiveContainer width="100%" height="100%">
+                              {chartType === 'bar' ? (
+                                <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                                  <XAxis
+                                    dataKey="name"
+                                    tick={{ fontSize: 12, fill: '#666' }}
+                                    axisLine={false}
+                                    tickLine={false}
+                                  />
+                                  <YAxis
+                                    tick={{ fontSize: 12, fill: '#666' }}
+                                    axisLine={false}
+                                    tickLine={false}
+                                    width={40}
+                                  />
+                                  <Tooltip content={<CustomTooltip />} />
+                                  <Bar dataKey="hours" fill="#1D9BF0" radius={[4, 4, 0, 0]} name="Hours" />
+                                </BarChart>
+                              ) : (
+                                <ComposedChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                                  <defs>
+                                    <linearGradient id="colorHours" x1="0" y1="0" x2="0" y2="1">
+                                      <stop offset="5%" stopColor="#1D9BF0" stopOpacity={0.3}/>
+                                      <stop offset="95%" stopColor="#1D9BF0" stopOpacity={0}/>
+                                    </linearGradient>
+                                  </defs>
+                                  <XAxis
+                                    dataKey="name"
+                                    tick={{ fontSize: 12, fill: '#666' }}
+                                    axisLine={false}
+                                    tickLine={false}
+                                  />
+                                  <YAxis
+                                    tick={{ fontSize: 12, fill: '#666' }}
+                                    axisLine={false}
+                                    tickLine={false}
+                                    width={40}
+                                  />
+                                  <Tooltip content={<CustomTooltip />} />
+                                  <Area
+                                    type="monotone"
+                                    dataKey="hours"
+                                    stroke="#1D9BF0"
+                                    strokeWidth={2}
+                                    fill="url(#colorHours)"
+                                    name="Hours"
+                                  />
+                                </ComposedChart>
+                              )}
+                            </ResponsiveContainer>
+                          )}
                         </div>
                       </div>
 
-                      {/* Productivity trends */}
-                      <div className="bg-gray-50 rounded-lg md:rounded-xl border border-gray-200 p-3 md:p-6">
-                        <h3 className="text-xs md:text-base font-medium text-gray-900 mb-2 md:mb-4">Productivity trends</h3>
-                        <div className="space-y-2 md:space-y-3">
-                          <div className="flex items-center justify-between p-2 md:p-3 bg-white rounded-lg">
-                            <div>
-                              <div className="text-xs md:text-sm font-medium text-gray-900">Total hours</div>
-                              <div className="text-[10px] md:text-xs text-gray-500">All time</div>
-                            </div>
-                            <div className="text-right">
-                              <div className="text-base md:text-lg font-bold text-gray-900">{stats?.totalHours?.toFixed(1) || 0}h</div>
-                              <div className="text-[10px] md:text-xs text-green-600">↑ 100%</div>
-                            </div>
+                      {/* Second Row - Two Charts */}
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                        {/* Average Session Duration */}
+                        <div className="bg-white border border-gray-200 rounded-xl p-6">
+                          <div className="mb-4">
+                            <h3 className="font-semibold text-gray-900">Average session duration</h3>
                           </div>
-
-                          <div className="flex items-center justify-between p-2 md:p-3 bg-white rounded-lg">
-                            <div>
-                              <div className="text-xs md:text-sm font-medium text-gray-900">Avg session</div>
-                              <div className="text-[10px] md:text-xs text-gray-500">Per session</div>
-                            </div>
-                            <div className="text-right">
-                              <div className="text-base md:text-lg font-bold text-gray-900">
-                                {filteredSessions.length > 0 ? Math.round(filteredSessions.reduce((sum, s) => sum + s.duration, 0) / filteredSessions.length / 60) : 0}m
-                              </div>
-                              <div className="text-[10px] md:text-xs text-green-600">↑ 100%</div>
-                            </div>
-                          </div>
-
-                          <div className="flex items-center justify-between p-2 md:p-3 bg-white rounded-lg">
-                            <div>
-                              <div className="text-xs md:text-sm font-medium text-gray-900">Current streak</div>
-                              <div className="text-[10px] md:text-xs text-gray-500">Consecutive days</div>
-                            </div>
-                            <div className="text-right">
-                              <div className="text-base md:text-lg font-bold text-gray-900">{stats?.currentStreak || 0}</div>
-                              <div className="text-[10px] md:text-xs text-green-600">↑ 100%</div>
-                            </div>
+                          <div className="h-48">
+                            <ResponsiveContainer width="100%" height="100%">
+                              {chartType === 'bar' ? (
+                                <BarChart data={avgDurationData} margin={{ top: 5, right: 5, left: -30, bottom: 0 }}>
+                                  <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#666' }} axisLine={false} tickLine={false} />
+                                  <YAxis tick={{ fontSize: 11, fill: '#666' }} axisLine={false} tickLine={false} />
+                                  <Tooltip content={<CustomTooltip />} />
+                                  <Bar dataKey="value" fill="#00BA7C" radius={[4, 4, 0, 0]} name="Minutes" />
+                                </BarChart>
+                              ) : (
+                                <ComposedChart data={avgDurationData} margin={{ top: 5, right: 5, left: -30, bottom: 0 }}>
+                                  <defs>
+                                    <linearGradient id="colorAvgDuration" x1="0" y1="0" x2="0" y2="1">
+                                      <stop offset="5%" stopColor="#00BA7C" stopOpacity={0.3}/>
+                                      <stop offset="95%" stopColor="#00BA7C" stopOpacity={0}/>
+                                    </linearGradient>
+                                  </defs>
+                                  <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#666' }} axisLine={false} tickLine={false} />
+                                  <YAxis tick={{ fontSize: 11, fill: '#666' }} axisLine={false} tickLine={false} />
+                                  <Tooltip content={<CustomTooltip />} />
+                                  <Area
+                                    type="monotone"
+                                    dataKey="value"
+                                    stroke="#00BA7C"
+                                    strokeWidth={2}
+                                    fill="url(#colorAvgDuration)"
+                                    name="Minutes"
+                                  />
+                                </ComposedChart>
+                              )}
+                            </ResponsiveContainer>
                           </div>
                         </div>
-                      </div>
-                    </div>
 
-                    {/* Metrics Grid */}
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 md:gap-4">
-                      {/* Total Hours */}
-                      <div className="bg-gray-50 rounded-lg md:rounded-xl border border-gray-200 p-2.5 md:p-4">
-                        <div className="text-[10px] md:text-sm text-gray-600 mb-0.5 md:mb-1 uppercase tracking-wide">Total hours</div>
-                        <div className="text-lg md:text-2xl font-bold text-gray-900">
-                          {stats?.totalHours?.toFixed(1) || '0'}
-                        </div>
-                        <div className="text-[10px] md:text-xs text-green-600 mt-0.5 md:mt-1 flex items-center gap-1">
-                          <span>↑</span>
-                          <span>100%</span>
-                        </div>
-                      </div>
-
-                      {/* Sessions */}
-                      <div className="bg-gray-50 rounded-lg md:rounded-xl border border-gray-200 p-2.5 md:p-4">
-                        <div className="text-[10px] md:text-sm text-gray-600 mb-0.5 md:mb-1 uppercase tracking-wide">Sessions</div>
-                        <div className="text-lg md:text-2xl font-bold text-gray-900">
-                          {filteredSessions.length}
-                        </div>
-                        <div className="text-[10px] md:text-xs text-green-600 mt-0.5 md:mt-1 flex items-center gap-1">
-                          <span>↑</span>
-                          <span>100%</span>
-                        </div>
-                      </div>
-
-                      {/* Avg Duration */}
-                      <div className="bg-gray-50 rounded-lg md:rounded-xl border border-gray-200 p-2.5 md:p-4">
-                        <div className="text-[10px] md:text-sm text-gray-600 mb-0.5 md:mb-1 uppercase tracking-wide">Avg duration</div>
-                        <div className="text-lg md:text-2xl font-bold text-gray-900">
-                          {filteredSessions.length > 0 ? Math.round(filteredSessions.reduce((sum, s) => sum + s.duration, 0) / filteredSessions.length / 60) : 0}m
-                        </div>
-                        <div className="text-[10px] md:text-xs text-green-600 mt-0.5 md:mt-1 flex items-center gap-1">
-                          <span>↑</span>
-                          <span>100%</span>
-                        </div>
-                      </div>
-
-                      {/* Current Streak */}
-                      <div className="bg-gray-50 rounded-lg md:rounded-xl border border-gray-200 p-2.5 md:p-4">
-                        <div className="text-[10px] md:text-sm text-gray-600 mb-0.5 md:mb-1 uppercase tracking-wide">Current streak</div>
-                        <div className="text-lg md:text-2xl font-bold text-gray-900">
-                          {stats?.currentStreak || 0}
-                        </div>
-                        <div className="text-[10px] md:text-xs text-green-600 mt-0.5 md:mt-1 flex items-center gap-1">
-                          <span>↑</span>
-                          <span>100%</span>
+                        {/* Sessions */}
+                        <div className="bg-white border border-gray-200 rounded-xl p-6">
+                          <div className="mb-4">
+                            <h3 className="font-semibold text-gray-900">Sessions completed</h3>
+                          </div>
+                          <div className="h-48">
+                            <ResponsiveContainer width="100%" height="100%">
+                              {chartType === 'bar' ? (
+                                <BarChart data={chartData} margin={{ top: 5, right: 5, left: -30, bottom: 0 }}>
+                                  <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#666' }} axisLine={false} tickLine={false} />
+                                  <YAxis tick={{ fontSize: 11, fill: '#666' }} axisLine={false} tickLine={false} />
+                                  <Tooltip content={<CustomTooltip />} />
+                                  <Bar dataKey="sessions" fill="#00BA7C" radius={[4, 4, 0, 0]} name="Sessions" />
+                                </BarChart>
+                              ) : (
+                                <ComposedChart data={chartData} margin={{ top: 5, right: 5, left: -30, bottom: 0 }}>
+                                  <defs>
+                                    <linearGradient id="colorSessionsSmall" x1="0" y1="0" x2="0" y2="1">
+                                      <stop offset="5%" stopColor="#00BA7C" stopOpacity={0.3}/>
+                                      <stop offset="95%" stopColor="#00BA7C" stopOpacity={0}/>
+                                    </linearGradient>
+                                  </defs>
+                                  <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#666' }} axisLine={false} tickLine={false} />
+                                  <YAxis tick={{ fontSize: 11, fill: '#666' }} axisLine={false} tickLine={false} />
+                                  <Tooltip content={<CustomTooltip />} />
+                                  <Area
+                                    type="monotone"
+                                    dataKey="sessions"
+                                    stroke="#00BA7C"
+                                    strokeWidth={2}
+                                    fill="url(#colorSessionsSmall)"
+                                    name="Sessions"
+                                  />
+                                </ComposedChart>
+                              )}
+                            </ResponsiveContainer>
+                          </div>
                         </div>
                       </div>
 
-                      {/* Longest Streak */}
-                      <div className="bg-gray-50 rounded-lg md:rounded-xl border border-gray-200 p-2.5 md:p-4">
-                        <div className="text-[10px] md:text-sm text-gray-600 mb-0.5 md:mb-1 uppercase tracking-wide">Longest streak</div>
-                        <div className="text-lg md:text-2xl font-bold text-gray-900">
-                          {stats?.longestStreak || 0}
+                      {/* Stats Grid - 5 columns */}
+                      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                        <div className="bg-white border border-gray-200 rounded-xl p-4">
+                          <div className="text-sm text-gray-600 mb-2 uppercase tracking-wide">Total Hours</div>
+                          <div className="text-2xl font-bold mb-1">{calculatedStats.totalHours.toFixed(1)}</div>
+                          {renderPercentageChange(calculatedStats.hoursChange)}
                         </div>
-                        <div className="text-[10px] md:text-xs text-green-600 mt-0.5 md:mt-1 flex items-center gap-1">
-                          <span>↑</span>
-                          <span>100%</span>
-                        </div>
-                      </div>
-                    </div>
 
-                    {/* Secondary Metrics Grid */}
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 md:gap-4">
-                      {/* Weekly Hours */}
-                      <div className="bg-gray-50 rounded-lg md:rounded-xl border border-gray-200 p-2.5 md:p-4">
-                        <div className="text-[10px] md:text-sm text-gray-600 mb-0.5 md:mb-1 uppercase tracking-wide">This week</div>
-                        <div className="text-lg md:text-2xl font-bold text-gray-900">
-                          {stats?.weeklyHours?.toFixed(1) || '0'}h
+                        <div className="bg-white border border-gray-200 rounded-xl p-4">
+                          <div className="text-sm text-gray-600 mb-2 uppercase tracking-wide">Avg Duration</div>
+                          <div className="text-2xl font-bold mb-1">{calculatedStats.avgDuration}m</div>
+                          {renderPercentageChange(calculatedStats.avgDurationChange)}
                         </div>
-                        <div className="text-[10px] md:text-xs text-green-600 mt-0.5 md:mt-1 flex items-center gap-1">
-                          <span>↑</span>
-                          <span>100%</span>
-                        </div>
-                      </div>
 
-                      {/* Weekly Sessions */}
-                      <div className="bg-gray-50 rounded-lg md:rounded-xl border border-gray-200 p-2.5 md:p-4">
-                        <div className="text-[10px] md:text-sm text-gray-600 mb-0.5 md:mb-1 uppercase tracking-wide">Weekly sessions</div>
-                        <div className="text-lg md:text-2xl font-bold text-gray-900">
-                          {stats?.sessionsThisWeek || 0}
+                        <div className="bg-white border border-gray-200 rounded-xl p-4">
+                          <div className="text-sm text-gray-600 mb-2 uppercase tracking-wide">Sessions</div>
+                          <div className="text-2xl font-bold mb-1">{calculatedStats.sessions}</div>
+                          {renderPercentageChange(calculatedStats.sessionsChange)}
                         </div>
-                        <div className="text-[10px] md:text-xs text-green-600 mt-0.5 md:mt-1 flex items-center gap-1">
-                          <span>↑</span>
-                          <span>100%</span>
+
+                        <div className="bg-white border border-gray-200 rounded-xl p-4">
+                          <div className="text-sm text-gray-600 mb-2 uppercase tracking-wide">Active Days</div>
+                          <div className="text-2xl font-bold mb-1">{calculatedStats.activeDays}</div>
+                          {renderPercentageChange(calculatedStats.activeDaysChange)}
+                        </div>
+
+                        <div className="bg-white border border-gray-200 rounded-xl p-4">
+                          <div className="text-sm text-gray-600 mb-2 uppercase tracking-wide">Activities</div>
+                          <div className="text-2xl font-bold mb-1">{calculatedStats.activities}</div>
+                          {renderPercentageChange(calculatedStats.activitiesChange)}
                         </div>
                       </div>
 
-                      {/* Active Days */}
-                      <div className="bg-gray-50 rounded-lg md:rounded-xl border border-gray-200 p-2.5 md:p-4">
-                        <div className="text-[10px] md:text-sm text-gray-600 mb-0.5 md:mb-1 uppercase tracking-wide">Active days</div>
-                        <div className="text-lg md:text-2xl font-bold text-gray-900">
-                          {chartData.slice(-7).filter(d => d.hours > 0).length}
+                      {/* Secondary Stats Grid - Streaks */}
+                      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                        <div className="bg-white border border-gray-200 rounded-xl p-4">
+                          <div className="text-sm text-gray-600 mb-2 uppercase tracking-wide">Current Streak</div>
+                          <div className="text-2xl font-bold mb-1">{calculatedStats.currentStreak}</div>
+                          {renderPercentageChange(calculatedStats.streakChange)}
                         </div>
-                        <div className="text-[10px] md:text-xs text-gray-600 mt-0.5 md:mt-1">
-                          This week
-                        </div>
-                      </div>
 
-                      {/* Total Activities */}
-                      <div className="bg-gray-50 rounded-lg md:rounded-xl border border-gray-200 p-2.5 md:p-4">
-                        <div className="text-[10px] md:text-sm text-gray-600 mb-0.5 md:mb-1 uppercase tracking-wide">Activities</div>
-                        <div className="text-lg md:text-2xl font-bold text-gray-900">
-                          {/* Will be populated when we have project count */}
-                          0
-                        </div>
-                        <div className="text-[10px] md:text-xs text-gray-600 mt-0.5 md:mt-1">
-                          All time
-                        </div>
-                      </div>
-
-                      {/* Followers */}
-                      <div className="bg-gray-50 rounded-lg md:rounded-xl border border-gray-200 p-2.5 md:p-4">
-                        <div className="text-[10px] md:text-sm text-gray-600 mb-0.5 md:mb-1 uppercase tracking-wide">Followers</div>
-                        <div className="text-lg md:text-2xl font-bold text-gray-900">
-                          {followers.length}
-                        </div>
-                        <div className="text-[10px] md:text-xs text-green-600 mt-0.5 md:mt-1 flex items-center gap-1">
-                          <span>↑</span>
-                          <span>100%</span>
+                        <div className="bg-white border border-gray-200 rounded-xl p-4">
+                          <div className="text-sm text-gray-600 mb-2 uppercase tracking-wide">Longest Streak</div>
+                          <div className="text-2xl font-bold mb-1">{calculatedStats.longestStreak}</div>
+                          {renderPercentageChange(calculatedStats.streakChange)}
                         </div>
                       </div>
                     </div>

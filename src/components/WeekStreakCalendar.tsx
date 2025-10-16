@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useMemo, useState } from 'react';
+import { Check } from 'lucide-react';
 import { firebaseApi } from '@/lib/firebaseApi';
 
 interface WeekStreakCalendarProps {
@@ -19,15 +20,17 @@ export const WeekStreakCalendar: React.FC<WeekStreakCalendarProps> = ({ userId }
   const [isLoading, setIsLoading] = useState(true);
   const [activeDates, setActiveDates] = useState<Set<string>>(new Set());
 
-  // Compute this week's start (Sun 00:00) and end (Sat 23:59:59.999) in local time
+  // Compute this week's start and end - ending with today as the 7th node
   const { weekStart, weekEnd } = useMemo(() => {
     const today = new Date();
-    const start = new Date(today);
-    start.setHours(0, 0, 0, 0);
-    start.setDate(today.getDate() - today.getDay()); // Sunday
+    today.setHours(0, 0, 0, 0);
 
-    const end = new Date(start);
-    end.setDate(start.getDate() + 6); // Saturday
+    // Start is 6 days before today
+    const start = new Date(today);
+    start.setDate(today.getDate() - 6);
+
+    // End is today
+    const end = new Date(today);
     end.setHours(23, 59, 59, 999);
 
     return { weekStart: start, weekEnd: end };
@@ -78,6 +81,8 @@ export const WeekStreakCalendar: React.FC<WeekStreakCalendarProps> = ({ userId }
   // Build the visual model for the current week using the activeDates Set
   const getWeekDays = () => {
     const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
     const days = [] as Array<{
       dayOfWeek: string;
       dayNumber: number;
@@ -87,6 +92,7 @@ export const WeekStreakCalendar: React.FC<WeekStreakCalendarProps> = ({ userId }
       isPast: boolean;
     }>;
 
+    const dayLabels = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
     for (let i = 0; i < 7; i++) {
       const date = new Date(weekStart);
@@ -98,7 +104,7 @@ export const WeekStreakCalendar: React.FC<WeekStreakCalendarProps> = ({ userId }
       const hasActivity = activeDates.has(localKey);
 
       const dayInfo = {
-        dayOfWeek: ['S', 'M', 'T', 'W', 'T', 'F', 'S'][i],
+        dayOfWeek: dayLabels[date.getDay()],
         dayNumber: date.getDate(),
         hasActivity,
         isToday,
@@ -118,26 +124,26 @@ export const WeekStreakCalendar: React.FC<WeekStreakCalendarProps> = ({ userId }
     <div className="flex justify-between gap-0.5">
       {weekDays.map((day, index) => (
         <div key={index} className="flex flex-col items-center flex-1">
-          <div className="text-xs font-medium text-gray-500 mb-1.5">{day.dayOfWeek}</div>
-          <div className="h-8 w-8 flex items-center justify-center">
+          <div className="text-xs font-medium text-gray-400 mb-1.5">{day.dayOfWeek}</div>
+          <div className="h-6 w-6 flex items-center justify-center">
             {day.hasActivity ? (
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                day.isToday
-                  ? 'bg-gray-900 text-white border-2 border-gray-900'
-                  : 'bg-gray-200 text-gray-900'
-              }`}>
-                <span className="text-xs font-medium">{day.dayNumber}</span>
+              // Completed day - orange circle with white checkmark
+              <div className="w-6 h-6 rounded-full flex items-center justify-center bg-orange-400">
+                <Check className="w-3.5 h-3.5 text-white stroke-[3]" />
+              </div>
+            ) : day.isToday ? (
+              // Today (not completed) - grey circle with white checkmark
+              <div className="w-6 h-6 rounded-full flex items-center justify-center bg-gray-300">
+                <Check className="w-3.5 h-3.5 text-white stroke-[3]" />
               </div>
             ) : (
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center border ${
-                day.isToday
-                  ? 'border-2 border-gray-900 text-gray-900'
-                  : 'border-gray-200 text-gray-400'
-              }`}>
-                <span className="text-xs font-medium">{day.dayNumber}</span>
+              // Past incomplete day - light grey circle with grey checkmark
+              <div className="w-6 h-6 rounded-full flex items-center justify-center bg-gray-100">
+                <Check className="w-3.5 h-3.5 text-gray-300 stroke-[3]" />
               </div>
             )}
           </div>
+          <div className="text-[10px] font-medium text-gray-500 mt-0.5">{day.dayNumber}</div>
         </div>
       ))}
     </div>

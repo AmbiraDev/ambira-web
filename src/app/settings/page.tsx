@@ -678,24 +678,22 @@ export default function SettingsPage() {
 
               {/* Danger Zone - Only show on My Profile tab */}
               {activeTab === 'profile' && (
-                <div className="mt-6 bg-gray-50 rounded-xl border border-gray-200 p-4 md:p-6 space-y-4">
-                  {/* Logout Button */}
-                  <button
-                    onClick={handleLogout}
-                    className="flex items-center gap-2 px-6 py-3 md:py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                  >
-                    <LogOut className="w-4 h-4" />
-                    Log Out
-                  </button>
-
-                  {/* Delete Account Button */}
-                  <button
-                    onClick={() => setShowDeleteConfirm(true)}
-                    className="flex items-center gap-2 px-6 py-3 md:py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                    Delete Account
-                  </button>
+                <div className="mt-6 p-4 md:p-6">
+                  <div className="flex items-center justify-center gap-6 text-sm">
+                    <button
+                      onClick={handleLogout}
+                      className="text-gray-600 hover:text-gray-900 transition-colors underline decoration-gray-400 hover:decoration-gray-900"
+                    >
+                      Log Out
+                    </button>
+                    <span className="text-gray-300">|</span>
+                    <button
+                      onClick={() => setShowDeleteConfirm(true)}
+                      className="text-red-600 hover:text-red-700 transition-colors underline decoration-red-400 hover:decoration-red-700"
+                    >
+                      Delete Account
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
