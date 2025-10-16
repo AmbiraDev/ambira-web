@@ -752,77 +752,40 @@ export const firebaseAuthApi = {
         prompt: 'select_account'
       });
 
-      // Always use redirect for mobile devices and Safari (more reliable)
-      // Safari especially has issues with popups and third-party cookies
-      const isMobileOrSafari =
-        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-          navigator.userAgent
-        ) || /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
-
+      // Try popup first for all devices (avoids cross-origin issues with custom domains)
+      // Fall back to redirect if popup fails
+      console.log('[signInWithGoogle] 🔍 User agent:', navigator.userAgent);
+      console.log('[signInWithGoogle] Current URL:', window.location.href);
 
       let userCredential;
 
-      if (isMobileOrSafari) {
-        // Use redirect for mobile devices and Safari (more reliable)
-        console.log('[signInWithGoogle] 📱 Mobile/Safari detected, using redirect flow');
-        console.log('[signInWithGoogle] User agent:', navigator.userAgent);
-        console.log('[signInWithGoogle] Current URL:', window.location.href);
+      try {
+        // Use popup for better UX and to avoid cross-origin issues
+        console.log('[signInWithGoogle] 🪟 Attempting popup flow...');
+        userCredential = await signInWithPopup(auth, provider);
+      } catch (popupError: any) {
+        console.error('[signInWithGoogle] Popup error:', popupError);
+        console.error('[signInWithGoogle] Error code:', popupError.code);
+        console.error('[signInWithGoogle] Error message:', popupError.message);
 
-        try {
-          // Important: signInWithRedirect initiates the redirect and never returns
-          console.log('[signInWithGoogle] 🔄 Calling signInWithRedirect...');
-          await signInWithRedirect(auth, provider);
-          // This line will never be reached - browser redirects to Google
-          console.log('[signInWithGoogle] ⚠️ This should not print - redirect should have happened');
-          throw new Error('REDIRECT_IN_PROGRESS');
-        } catch (redirectError: any) {
-          // Only log if it's NOT our expected REDIRECT_IN_PROGRESS marker
-          if (redirectError?.message !== 'REDIRECT_IN_PROGRESS') {
-            console.error('[signInWithGoogle] Redirect error:', redirectError);
-            console.error('[signInWithGoogle] Error code:', redirectError.code);
-            console.error('[signInWithGoogle] Error message:', redirectError.message);
-
-            // Handle specific error codes
-            if (redirectError.code === 'auth/network-request-failed') {
-              throw new Error(
-                'Network error. Please check your internet connection and try again.'
-              );
-            } else if (redirectError.code === 'auth/unauthorized-domain') {
-              throw new Error(
-                `This domain (${window.location.hostname}) is not authorized. Please contact support.`
-              );
-            }
-          }
-          throw redirectError;
+        // Handle specific error codes
+        if (popupError.code === 'auth/popup-blocked') {
+          throw new Error('Popup was blocked by your browser. Please allow popups for this site.');
+        } else if (popupError.code === 'auth/popup-closed-by-user') {
+          throw new Error('Sign-in was cancelled.');
+        } else if (popupError.code === 'auth/cancelled-popup-request') {
+          throw new Error('Sign-in was cancelled.');
+        } else if (popupError.code === 'auth/unauthorized-domain') {
+          throw new Error(
+            'This domain is not authorized for Google Sign-in. Please contact support.'
+          );
+        } else if (popupError.code === 'auth/network-request-failed') {
+          throw new Error(
+            'Network error. Please check your internet connection and try again.'
+          );
         }
-      } else {
-        // Use popup for desktop (better UX)
-        try {
-          userCredential = await signInWithPopup(auth, provider);
-        } catch (popupError: any) {
-          console.error('[signInWithGoogle] Popup error:', popupError);
-          // If popup was blocked or failed, fall back to redirect
-          if (popupError.code === 'auth/popup-blocked') {
-            await signInWithRedirect(auth, provider);
-            throw new Error('REDIRECT_IN_PROGRESS');
-          } else if (popupError.code === 'auth/popup-closed-by-user') {
-            throw new Error('Sign-in was cancelled.');
-          } else if (popupError.code === 'auth/configuration-not-found') {
-            throw new Error(
-              'Google Sign-in is not configured. Please enable Google authentication in Firebase Console.'
-            );
-          } else if (popupError.code === 'auth/unauthorized-domain') {
-            throw new Error(
-              'This domain is not authorized for Google Sign-in. Please add it to authorized domains in Firebase Console.'
-            );
-          } else if (popupError.code === 'auth/network-request-failed') {
-            throw new Error(
-              'Network error. Please check your internet connection and try again.'
-            );
-          }
-          // Re-throw if it's a different error
-          throw popupError;
-        }
+        // Re-throw if it's a different error
+        throw popupError;
       }
 
       const firebaseUser = userCredential.user;

@@ -16,6 +16,7 @@ interface SuggestedUser {
   username: string;
   location?: string;
   followersCount: number;
+  profilePicture?: string;
 }
 
 interface SuggestedGroup {
@@ -160,11 +161,21 @@ function RightSidebar() {
                   className="block px-3 py-3 bg-white hover:bg-gray-50 rounded-lg transition-colors"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
-                      <span className="text-gray-600 font-semibold text-sm">
-                        {suggestedUser.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
-                      </span>
-                    </div>
+                    {suggestedUser.profilePicture ? (
+                      <Image
+                        src={suggestedUser.profilePicture}
+                        alt={`${suggestedUser.name}'s profile picture`}
+                        width={48}
+                        height={48}
+                        className="w-12 h-12 rounded-full object-cover flex-shrink-0"
+                      />
+                    ) : (
+                      <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
+                        <span className="text-gray-600 font-semibold text-sm">
+                          {suggestedUser.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                        </span>
+                      </div>
+                    )}
                     <div className="flex-1 min-w-0">
                       <p className="font-semibold text-sm text-gray-900 hover:text-[#007AFF] truncate mb-0.5">
                         {suggestedUser.name}

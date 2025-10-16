@@ -85,7 +85,7 @@ export default function Header() {
           {/* Left side: Logo + Search + Navigation */}
           <div className="flex items-center space-x-4 ml-8">
             {/* Logo */}
-            <Link href="/" className="flex items-center">
+            <Link href="/" className="flex items-center flex-shrink-0">
               <Image
                 src="/logo.svg"
                 alt="Ambira"
