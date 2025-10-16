@@ -56,12 +56,7 @@ export const ImageLightbox: React.FC<ImageLightboxProps> = ({
   return (
     <div
       className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/90"
-      onClick={(e) => {
-        // Only close if clicking the background, not the image
-        if (e.target === e.currentTarget) {
-          onClose();
-        }
-      }}
+      onClick={onClose}
     >
       {/* Close button */}
       <button
@@ -78,28 +73,18 @@ export const ImageLightbox: React.FC<ImageLightboxProps> = ({
       {/* Main image container */}
       <div
         className="relative w-full h-full flex items-center justify-center p-4 md:p-8"
-        onClick={(e) => {
-          // Close if clicking the padding area around the image
-          if (e.target === e.currentTarget) {
-            onClose();
-          }
-        }}
+        onClick={onClose}
       >
         {/* Image */}
-        <div 
+        <div
           className="relative max-w-7xl max-h-full w-full h-full flex items-center justify-center"
-          onClick={(e) => {
-            // Close if clicking the container but not the actual image
-            if (e.target === e.currentTarget) {
-              onClose();
-            }
-          }}
+          onClick={onClose}
         >
           <Image
             src={images[currentIndex]}
             alt={`Image ${currentIndex + 1} of ${images.length}`}
             fill
-            className="object-contain"
+            className="object-contain pointer-events-none"
             quality={95}
             priority
             sizes="100vw"
