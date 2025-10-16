@@ -12,6 +12,7 @@ import { useUserSessions, useUserStats } from '@/hooks/useCache';
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, LineChart, Line, ComposedChart, Area } from 'recharts';
 import { ChevronDown } from 'lucide-react';
 import { IconRenderer } from '@/components/IconRenderer';
+import { StreakCard } from '@/components/StreakCard';
 
 type TimePeriod = '7D' | '2W' | '4W' | '3M' | '1Y';
 
@@ -407,6 +408,9 @@ export default function AnalyticsPage() {
             </div>
 
             <div className="space-y-4">
+              {/* Streak Card */}
+              {user && <StreakCard userId={user.id} showProgress={true} />}
+
               {/* Main Chart */}
               <div className="bg-white border border-gray-200 rounded-xl p-6">
                 <div className="mb-4">

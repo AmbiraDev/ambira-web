@@ -17,6 +17,7 @@ import Image from 'next/image';
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip, Area, ComposedChart, BarChart, Bar } from 'recharts';
 import { useUserFollowers, useUserFollowing, useProjects } from '@/hooks/useCache';
 import Feed from '@/components/Feed';
+import { StreakCard } from '@/components/StreakCard';
 
 type YouTab = 'progress' | 'sessions' | 'followers' | 'following';
 type TimePeriod = '7D' | '2W' | '4W' | '3M' | '1Y';
@@ -552,6 +553,9 @@ export default function ProfilePage() {
               <div className="mt-6">
                                 {activeTab === 'progress' && (
                   <div className="max-w-4xl mx-auto space-y-4 md:space-y-6">
+                    {/* Streak Card */}
+                    {profile && <StreakCard userId={profile.id} showProgress={true} />}
+
                     {/* Header with Time Period Selector and Chart Type */}
                     <div className="flex items-center justify-between gap-2 py-2 -mx-4 px-4 md:mx-0 md:px-0">
                       {/* Activity Filter Dropdown */}

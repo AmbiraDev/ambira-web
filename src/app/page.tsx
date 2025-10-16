@@ -12,6 +12,7 @@ import Feed from '@/components/Feed';
 import FeedCarousel from '@/components/FeedCarousel';
 import DayOverview from '@/components/DayOverview';
 import { FeedFilterDropdown, FeedFilterOption } from '@/components/FeedFilterDropdown';
+import { StreakCard } from '@/components/StreakCard';
 import { useState, Suspense } from 'react';
 import { FeedFilters } from '@/types';
 
@@ -50,6 +51,13 @@ function HomeContent() {
                   onFilterChange={(filter) => setSelectedFilter(filter)}
                 />
               </div>
+
+              {/* Streak Card - Mobile Only */}
+              {user && (
+                <div className="md:hidden px-4 mb-4">
+                  <StreakCard userId={user.id} variant="compact" showProgress={false} />
+                </div>
+              )}
 
               {/* Feed based on selected filter */}
               <Suspense fallback={
