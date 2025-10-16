@@ -996,7 +996,8 @@ export const firebaseAuthApi = {
       console.log('[handleGoogleRedirectResult] Result:', result ? 'User found' : 'No result');
 
       if (result) {
-        console.log('[handleGoogleRedirectResult] Credential:', result.credential);
+        const credential = GoogleAuthProvider.credentialFromResult(result);
+        console.log('[handleGoogleRedirectResult] Credential:', credential);
         console.log('[handleGoogleRedirectResult] Operation type:', result.operationType);
       }
 
