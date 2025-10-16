@@ -255,7 +255,7 @@ export default function Header() {
             {/* Session Actions - Only show when NO active session */}
             {!timerState.currentProject && (
               <>
-                {/* Start Button - Solid Blue */}
+                {/* Start Session Button - Solid Blue */}
                 <Link
                   href="/timer"
                   className="hidden md:flex items-center gap-2 px-4 py-2 bg-[#007AFF] text-white hover:bg-[#0051D5] rounded-md transition-colors whitespace-nowrap font-semibold text-sm"
@@ -264,7 +264,19 @@ export default function Header() {
                     className="w-4 h-4"
                     strokeWidth={2.5}
                   />
-                  <span>Start</span>
+                  <span>Start Session</span>
+                </Link>
+
+                {/* Manual Session Button - White with Border */}
+                <Link
+                  href="/record-manual"
+                  className="hidden md:flex items-center gap-2 px-4 py-2 bg-white text-gray-900 border border-gray-300 hover:bg-gray-50 rounded-md transition-colors whitespace-nowrap font-semibold text-sm"
+                >
+                  <Edit3
+                    className="w-4 h-4"
+                    strokeWidth={2.5}
+                  />
+                  <span>Manual Session</span>
                 </Link>
               </>
             )}
