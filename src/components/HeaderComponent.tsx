@@ -276,7 +276,7 @@ export default function Header() {
                     className="w-4 h-4"
                     strokeWidth={2.5}
                   />
-                  <span>Manual Session</span>
+                  <span>Log Manual</span>
                 </Link>
               </>
             )}
