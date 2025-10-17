@@ -165,18 +165,18 @@ export const StreakCard: React.FC<StreakCardProps> = ({
   if (variant === 'compact') {
     return (
       <Link href="/analytics" className="block">
-        <div className="p-4 hover:bg-gray-50 rounded-xl transition-all cursor-pointer">
+        <div className="p-3 hover:bg-gray-50 rounded-xl transition-all cursor-pointer">
           {/* Header */}
-          <h3 className="text-base font-semibold text-gray-900 mb-4">Your streak</h3>
+          <h3 className="text-sm font-semibold text-gray-900 mb-3">Your streak</h3>
 
           {/* Flame icon and week calendar side by side */}
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             {/* Left side - Flame with day count */}
             <div className="flex flex-col items-center flex-shrink-0">
               <div className={`${getFlameColor()} relative`}>
-                <Flame className="w-12 h-12" fill="currentColor" />
+                <Flame className="w-10 h-10" fill="currentColor" />
               </div>
-              <div className="text-sm font-medium text-gray-900 mt-1">
+              <div className="text-sm font-medium text-gray-900 mt-0.5">
                 {streakStats.currentStreak}
               </div>
               <div className="text-xs text-gray-500">

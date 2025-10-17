@@ -369,6 +369,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({
         isOpen={showCommentsModal}
         onClose={() => setShowCommentsModal(false)}
         sessionId={session.id}
+        session={session}
         totalCommentCount={localCommentCount}
         onCommentCountChange={setLocalCommentCount}
       />

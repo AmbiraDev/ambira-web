@@ -624,6 +624,8 @@ export const firebaseAuthApi = {
           profileVisibility: 'everyone',
           activityVisibility: 'everyone',
           projectVisibility: 'everyone',
+          onboardingCompleted: false,
+          onboardingStep: 0,
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp(),
         };
@@ -700,6 +702,8 @@ export const firebaseAuthApi = {
         profileVisibility: 'everyone',
         activityVisibility: 'everyone',
         projectVisibility: 'everyone',
+        onboardingCompleted: false,
+        onboardingStep: 0,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       };
@@ -719,6 +723,8 @@ export const firebaseAuthApi = {
         bio: '',
         location: '',
         profilePicture: undefined,
+        onboardingCompleted: false,
+        onboardingStep: 0,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -820,6 +826,8 @@ export const firebaseAuthApi = {
           profileVisibility: 'everyone',
           activityVisibility: 'everyone',
           projectVisibility: 'everyone',
+          onboardingCompleted: false,
+          onboardingStep: 0,
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp(),
         };
@@ -906,6 +914,8 @@ export const firebaseAuthApi = {
           profileVisibility: 'everyone',
           activityVisibility: 'everyone',
           projectVisibility: 'everyone',
+          onboardingCompleted: false,
+          onboardingStep: 0,
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp(),
         };
@@ -1002,6 +1012,8 @@ export const firebaseAuthApi = {
           profileVisibility: 'everyone',
           activityVisibility: 'everyone',
           projectVisibility: 'everyone',
+          onboardingCompleted: false,
+          onboardingStep: 0,
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp(),
         };
@@ -1047,6 +1059,44 @@ export const firebaseAuthApi = {
   checkUsernameAvailability: async (username: string): Promise<boolean> => {
     const exists = await checkUsernameExists(username);
     return !exists; // Return true if available (username does not exist)
+  },
+
+  // Complete onboarding
+  completeOnboarding: async (): Promise<void> => {
+    try {
+      if (!auth.currentUser) {
+        throw new Error('No authenticated user');
+      }
+
+      await updateDoc(doc(db, 'users', auth.currentUser.uid), {
+        onboardingCompleted: true,
+        updatedAt: serverTimestamp(),
+      });
+    } catch (error) {
+      const apiError = handleError(error, 'Complete onboarding', {
+        defaultMessage: 'Failed to complete onboarding',
+      });
+      throw new Error(apiError.userMessage);
+    }
+  },
+
+  // Update onboarding step
+  updateOnboardingStep: async (step: number): Promise<void> => {
+    try {
+      if (!auth.currentUser) {
+        throw new Error('No authenticated user');
+      }
+
+      await updateDoc(doc(db, 'users', auth.currentUser.uid), {
+        onboardingStep: step,
+        updatedAt: serverTimestamp(),
+      });
+    } catch (error) {
+      const apiError = handleError(error, 'Update onboarding step', {
+        defaultMessage: 'Failed to update onboarding step',
+      });
+      throw new Error(apiError.userMessage);
+    }
   },
 };
 
@@ -3540,63 +3590,60 @@ export const firebasePostApi = {
         return { sessions, hasMore, nextCursor };
       } else if (type === 'following') {
         // Get list of users the current user is following
-        const followingQuery = query(
-          collection(db, 'follows'),
-          where('followerId', '==', auth.currentUser.uid)
-        );
-        const followingSnapshot = await getDocs(followingQuery);
-        const followingIds = followingSnapshot.docs.map(
-          doc => doc.data().followingId
-        );
+        let followingIds: string[] = [];
 
-        // Include current user's sessions too
-        followingIds.push(auth.currentUser.uid);
+        // Try new social_graph structure first
+        try {
+          const outboundRef = collection(db, `social_graph/${auth.currentUser.uid}/outbound`);
+          const outboundSnapshot = await getDocs(outboundRef);
+
+          if (!outboundSnapshot.empty) {
+            followingIds = outboundSnapshot.docs.map(doc => doc.id);
+          }
+        } catch (socialGraphError) {
+          // If social_graph doesn't exist or has permission issues, continue to fallback
+        }
+
+        // Fallback to old follows collection if no following found via social_graph
+        if (followingIds.length === 0) {
+          const followingQuery = query(
+            collection(db, 'follows'),
+            where('followerId', '==', auth.currentUser.uid)
+          );
+          const followingSnapshot = await getDocs(followingQuery);
+
+          followingIds = followingSnapshot.docs.map(doc => {
+            const data = doc.data();
+            return data.followingId;
+          });
+        }
+
+        // DO NOT include current user's sessions in following feed
 
         // If not following anyone yet, return empty feed
-        if (
-          followingIds.length === 1 &&
-          followingIds[0] === auth.currentUser.uid
-        ) {
-          // Only show current user's sessions
-          sessionsQuery = query(
-            collection(db, 'sessions'),
-            where('userId', '==', auth.currentUser.uid),
-            where('visibility', 'in', ['everyone', 'followers']),
-            orderBy('createdAt', 'desc'),
-            limitFn(limitCount + 1)
-          );
-        } else {
-          // Fetch sessions from followed users
-          // Due to Firestore limitations, fetch all and filter
-          sessionsQuery = query(
-            collection(db, 'sessions'),
-            where('visibility', 'in', ['everyone', 'followers']),
-            orderBy('createdAt', 'desc'),
-            limitFn(limitCount * 3) // Fetch more to account for filtering
-          );
+        if (followingIds.length === 0) {
+          return { sessions: [], hasMore: false, nextCursor: undefined };
         }
+
+        // Fetch sessions from followed users only
+        // Due to Firestore limitations, fetch all and filter
+        sessionsQuery = query(
+          collection(db, 'sessions'),
+          where('visibility', 'in', ['everyone', 'followers']),
+          orderBy('createdAt', 'desc'),
+          limitFn(limitCount * 3) // Fetch more to account for filtering
+        );
 
         if (cursor) {
           const cursorDoc = await getDoc(doc(db, 'sessions', cursor));
           if (cursorDoc.exists()) {
-            if (followingIds.length === 1) {
-              sessionsQuery = query(
-                collection(db, 'sessions'),
-                where('userId', '==', auth.currentUser.uid),
-                where('visibility', 'in', ['everyone', 'followers']),
-                orderBy('createdAt', 'desc'),
-                startAfter(cursorDoc),
-                limitFn(limitCount + 1)
-              );
-            } else {
-              sessionsQuery = query(
-                collection(db, 'sessions'),
-                where('visibility', 'in', ['everyone', 'followers']),
-                orderBy('createdAt', 'desc'),
-                startAfter(cursorDoc),
-                limitFn(limitCount * 3)
-              );
-            }
+            sessionsQuery = query(
+              collection(db, 'sessions'),
+              where('visibility', 'in', ['everyone', 'followers']),
+              orderBy('createdAt', 'desc'),
+              startAfter(cursorDoc),
+              limitFn(limitCount * 3)
+            );
           }
         }
 
@@ -3691,6 +3738,117 @@ export const firebasePostApi = {
           hasMore,
           nextCursor,
         };
+      } else if (type === 'group-members-unfollowed') {
+        // Get list of users the current user is following
+        let followingIds: string[] = [];
+
+        // Try new social_graph structure first
+        try {
+          const outboundRef = collection(db, `social_graph/${auth.currentUser.uid}/outbound`);
+          const outboundSnapshot = await getDocs(outboundRef);
+
+          if (!outboundSnapshot.empty) {
+            followingIds = outboundSnapshot.docs.map(doc => doc.id);
+          }
+        } catch (socialGraphError) {
+          // If social_graph doesn't exist or has permission issues, continue to fallback
+        }
+
+        // Fallback to old follows collection if no following found via social_graph
+        if (followingIds.length === 0) {
+          const followingQuery = query(
+            collection(db, 'follows'),
+            where('followerId', '==', auth.currentUser.uid)
+          );
+          const followingSnapshot = await getDocs(followingQuery);
+
+          followingIds = followingSnapshot.docs.map(doc => {
+            const data = doc.data();
+            return data.followingId;
+          });
+        }
+
+        // Get all groups the user is a member of
+        const membershipQuery = query(
+          collection(db, 'groupMemberships'),
+          where('userId', '==', auth.currentUser.uid),
+          where('status', '==', 'active')
+        );
+        const membershipSnapshot = await getDocs(membershipQuery);
+        const userGroupIds = membershipSnapshot.docs.map(doc => doc.data().groupId);
+
+        if (userGroupIds.length === 0) {
+          return { sessions: [], hasMore: false, nextCursor: undefined };
+        }
+
+        // Get all members from all the user's groups
+        const allGroupMemberIds: string[] = [];
+        for (const groupId of userGroupIds) {
+          const groupMembersQuery = query(
+            collection(db, 'groupMemberships'),
+            where('groupId', '==', groupId),
+            where('status', '==', 'active')
+          );
+          const groupMembersSnapshot = await getDocs(groupMembersQuery);
+          groupMembersSnapshot.docs.forEach(doc => {
+            const memberId = doc.data().userId;
+            // Exclude current user and people they follow
+            if (memberId !== auth.currentUser!.uid && !followingIds.includes(memberId)) {
+              if (!allGroupMemberIds.includes(memberId)) {
+                allGroupMemberIds.push(memberId);
+              }
+            }
+          });
+        }
+
+        if (allGroupMemberIds.length === 0) {
+          return { sessions: [], hasMore: false, nextCursor: undefined };
+        }
+
+        // Fetch sessions from group members (excluding followed users and current user)
+        sessionsQuery = query(
+          collection(db, 'sessions'),
+          where('visibility', 'in', ['everyone', 'followers']),
+          orderBy('createdAt', 'desc'),
+          limitFn(limitCount * 3) // Fetch more to account for filtering
+        );
+
+        if (cursor) {
+          const cursorDoc = await getDoc(doc(db, 'sessions', cursor));
+          if (cursorDoc.exists()) {
+            sessionsQuery = query(
+              collection(db, 'sessions'),
+              where('visibility', 'in', ['everyone', 'followers']),
+              orderBy('createdAt', 'desc'),
+              startAfter(cursorDoc),
+              limitFn(limitCount * 3)
+            );
+          }
+        }
+
+        const querySnapshot = await getDocs(sessionsQuery);
+        // Filter to only sessions from group members who user doesn't follow
+        const filteredDocs = querySnapshot.docs
+          .filter(doc => {
+            const sessionUserId = doc.data().userId;
+            const isInGroupMembers = allGroupMemberIds.includes(sessionUserId);
+            const isFollowed = followingIds.includes(sessionUserId);
+            const isCurrentUser = sessionUserId === auth.currentUser!.uid;
+
+            // Must be in group members list AND not in following list AND not current user
+            return isInGroupMembers && !isFollowed && !isCurrentUser;
+          })
+          .slice(0, limitCount + 1);
+
+        const sessions = await populateSessionsWithDetails(
+          filteredDocs.slice(0, limitCount)
+        );
+        const hasMore = filteredDocs.length > limitCount;
+        const nextCursor = hasMore
+          ? filteredDocs[limitCount - 1]?.id
+          : undefined;
+
+        return { sessions, hasMore, nextCursor };
       } else if (type === 'all') {
         // All: chronological feed of all public sessions (not filtering anyone out)
         sessionsQuery = query(
@@ -3729,14 +3887,33 @@ export const firebasePostApi = {
       } else {
         // Recent: default chronological feed - only show sessions from followed users
         // Get list of users the current user is following
-        const followingQuery = query(
-          collection(db, 'follows'),
-          where('followerId', '==', auth.currentUser.uid)
-        );
-        const followingSnapshot = await getDocs(followingQuery);
-        const followingIds = followingSnapshot.docs.map(
-          doc => doc.data().followingId
-        );
+        let followingIds: string[] = [];
+
+        // Try new social_graph structure first
+        try {
+          const outboundRef = collection(db, `social_graph/${auth.currentUser.uid}/outbound`);
+          const outboundSnapshot = await getDocs(outboundRef);
+
+          if (!outboundSnapshot.empty) {
+            followingIds = outboundSnapshot.docs.map(doc => doc.id);
+          }
+        } catch (socialGraphError) {
+          // If social_graph doesn't exist or has permission issues, continue to fallback
+        }
+
+        // Fallback to old follows collection if no following found via social_graph
+        if (followingIds.length === 0) {
+          const followingQuery = query(
+            collection(db, 'follows'),
+            where('followerId', '==', auth.currentUser.uid)
+          );
+          const followingSnapshot = await getDocs(followingQuery);
+
+          followingIds = followingSnapshot.docs.map(doc => {
+            const data = doc.data();
+            return data.followingId;
+          });
+        }
 
         // Include current user's sessions too
         followingIds.push(auth.currentUser.uid);

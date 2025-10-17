@@ -1,123 +1,210 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { Bell, Check, CheckCheck, X, Filter } from 'lucide-react';
+import React, { useState } from 'react';
+import { ArrowLeft, Trash2, UserPlus, Heart, MessageCircle, Reply, AtSign, Users, Trophy, Bell } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { firebaseNotificationApi } from '@/lib/firebaseApi';
+import { useNotifications } from '@/contexts/NotificationsContext';
+import MobileHeader from '@/components/MobileHeader';
+import Header from '@/components/HeaderComponent';
+import BottomNavigation from '@/components/BottomNavigation';
 import { Notification } from '@/types';
-import Link from 'next/link';
+import { formatDistanceToNow } from 'date-fns';
 
-const NotificationsPage: React.FC = () => {
-  const { user } = useAuth();
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [filteredNotifications, setFilteredNotifications] = useState<Notification[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [filter, setFilter] = useState<'all' | 'unread' | 'challenges'>('all');
+// Swipeable notification item component
+function SwipeableNotificationItem({
+  notification,
+  onDelete,
+  onMarkRead,
+  onClick
+}: {
+  notification: Notification;
+  onDelete: (id: string) => void;
+  onMarkRead: (id: string) => void;
+  onClick: (notification: Notification) => void;
+}) {
+  const [touchStart, setTouchStart] = useState(0);
+  const [touchEnd, setTouchEnd] = useState(0);
+  const [swipeOffset, setSwipeOffset] = useState(0);
+  const [isDeleting, setIsDeleting] = useState(false);
 
-  useEffect(() => {
-    if (user) {
-      loadNotifications();
-    }
-  }, [user]);
+  const minSwipeDistance = 80;
+  const deleteThreshold = 120;
 
-  useEffect(() => {
-    applyFilter();
-  }, [notifications, filter]);
+  const onTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(0);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
 
-  const loadNotifications = async () => {
-    if (!user) return;
-    
-    try {
-      setIsLoading(true);
-      const userNotifications = await firebaseNotificationApi.getUserNotifications(user.id, 100);
-      setNotifications(userNotifications);
-    } catch (error) {
-      console.error('Failed to load notifications:', error);
-    } finally {
-      setIsLoading(false);
+  const onTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+    const distance = touchStart - e.targetTouches[0].clientX;
+    if (distance > 0) {
+      setSwipeOffset(Math.min(distance, deleteThreshold + 20));
     }
   };
 
-  const applyFilter = () => {
-    let filtered = notifications;
-    
-    switch (filter) {
-      case 'unread':
-        filtered = notifications.filter(n => !n.isRead);
-        break;
-      case 'challenges':
-        filtered = notifications.filter(n => n.type.startsWith('challenge_'));
-        break;
-      default:
-        filtered = notifications;
-    }
-    
-    setFilteredNotifications(filtered);
-  };
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
 
-  const markAsRead = async (notificationId: string) => {
-    try {
-      await firebaseNotificationApi.markAsRead(notificationId);
-      setNotifications(prev => 
-        prev.map(n => n.id === notificationId ? { ...n, isRead: true } : n)
-      );
-    } catch (error) {
-      console.error('Failed to mark notification as read:', error);
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+
+    if (isLeftSwipe && distance >= deleteThreshold) {
+      // Delete if swiped past threshold
+      handleDelete();
+    } else if (isLeftSwipe && distance >= minSwipeDistance) {
+      // Show delete button
+      setSwipeOffset(deleteThreshold);
+    } else {
+      // Reset
+      setSwipeOffset(0);
     }
   };
 
-  const markAllAsRead = async () => {
-    if (!user) return;
-    
-    try {
-      await firebaseNotificationApi.markAllAsRead(user.id);
-      setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
-    } catch (error) {
-      console.error('Failed to mark all as read:', error);
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    setTimeout(() => {
+      onDelete(notification.id);
+    }, 200);
+  };
+
+  const handleClick = () => {
+    if (swipeOffset === 0 && !isDeleting) {
+      onClick(notification);
     }
   };
 
-  const deleteNotification = async (notificationId: string) => {
-    try {
-      await firebaseNotificationApi.deleteNotification(notificationId);
-      setNotifications(prev => prev.filter(n => n.id !== notificationId));
-    } catch (error) {
-      console.error('Failed to delete notification:', error);
-    }
-  };
+  const getNotificationIcon = (type: Notification['type']) => {
+    const iconClass = "w-5 h-5 text-gray-600";
 
-  const getNotificationIcon = (type: string) => {
     switch (type) {
-      case 'challenge_completed':
-        return '🏆';
-      case 'challenge_joined':
-        return '👋';
-      case 'challenge_ending':
-        return '⏰';
-      case 'challenge_created':
-        return '🎯';
-      case 'challenge_rank_changed':
-        return '📈';
-      case 'challenge_milestone':
-        return '🎯';
+      case 'follow':
+        return <UserPlus className={iconClass} />;
+      case 'support':
+        return <Heart className={iconClass} />;
+      case 'comment':
+        return <MessageCircle className={iconClass} />;
+      case 'reply':
+        return <Reply className={iconClass} />;
+      case 'mention':
+        return <AtSign className={iconClass} />;
+      case 'group':
+        return <Users className={iconClass} />;
+      case 'challenge':
+        return <Trophy className={iconClass} />;
       default:
-        return '🔔';
+        return <Bell className={iconClass} />;
     }
   };
 
-  const getNotificationLink = (notification: Notification) => {
-    if (notification.type.startsWith('challenge_') && notification.challengeId) {
-      return `/challenges/${notification.challengeId}`;
+  return (
+    <div className="relative overflow-hidden">
+      {/* Delete button background */}
+      <div
+        className="absolute right-0 top-0 bottom-0 flex items-center justify-end bg-red-500 px-6"
+        style={{
+          width: `${Math.max(swipeOffset, 0)}px`,
+          transition: isDeleting ? 'none' : swipeOffset === deleteThreshold ? 'width 0.2s ease-out' : 'none'
+        }}
+      >
+        <button
+          onClick={handleDelete}
+          className="text-white flex flex-col items-center gap-1"
+        >
+          <Trash2 className="w-6 h-6" />
+          <span className="text-xs font-medium">Delete</span>
+        </button>
+      </div>
+
+      {/* Notification content */}
+      <div
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+        onClick={handleClick}
+        className={`border-b border-gray-200 transition-all ${
+          isDeleting ? 'opacity-0 translate-x-full' : ''
+        } ${!notification.isRead ? 'bg-gray-100' : 'bg-white'}`}
+        style={{
+          transform: `translateX(-${swipeOffset}px)`,
+          transition: isDeleting
+            ? 'all 0.3s ease-out'
+            : swipeOffset === deleteThreshold || swipeOffset === 0
+              ? 'transform 0.2s ease-out'
+              : 'none'
+        }}
+      >
+        <div className="flex items-start gap-4 p-4">
+          {/* Avatar / Icon */}
+          <div className="flex-shrink-0">
+            {notification.actorProfilePicture ? (
+              <img
+                src={notification.actorProfilePicture}
+                alt={notification.actorName || ''}
+                className="w-12 h-12 rounded-full object-cover"
+              />
+            ) : (
+              <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center">
+                {getNotificationIcon(notification.type)}
+              </div>
+            )}
+          </div>
+
+          {/* Content */}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex-1">
+                <p className={`text-base text-gray-900 ${!notification.isRead ? 'font-semibold' : 'font-medium'}`}>
+                  {notification.title}
+                </p>
+                <p className="text-sm text-gray-600 mt-1">
+                  {notification.message}
+                </p>
+                <p className="text-xs text-gray-500 mt-2">
+                  {formatDistanceToNow(notification.createdAt, { addSuffix: true })}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default function NotificationsPage() {
+  const router = useRouter();
+  const { user } = useAuth();
+  const { notifications, unreadCount, markAsRead, markAllAsRead, deleteNotification } = useNotifications();
+
+  const handleNotificationClick = (notification: Notification) => {
+    // Mark as read
+    if (!notification.isRead) {
+      markAsRead(notification.id);
     }
-    return null;
+
+    // Navigate to link if available
+    if (notification.linkUrl) {
+      router.push(notification.linkUrl);
+    }
   };
 
-  const unreadCount = notifications.filter(n => !n.isRead).length;
-  const challengeCount = notifications.filter(n => n.type.startsWith('challenge_')).length;
+  const handleDelete = (id: string) => {
+    deleteNotification(id);
+  };
+
+  const handleMarkRead = (id: string) => {
+    markAsRead(id);
+  };
+
+  const handleMarkAllRead = () => {
+    markAllAsRead();
+  };
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
           <p className="text-gray-600">Please log in to view notifications</p>
         </div>
@@ -126,180 +213,110 @@ const NotificationsPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Bell className="w-8 h-8 text-blue-600" />
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">Notifications</h1>
-                <p className="text-gray-600">
-                  {unreadCount > 0 ? `${unreadCount} unread notification${unreadCount !== 1 ? 's' : ''}` : 'All caught up!'}
-                </p>
-              </div>
-            </div>
-            
-            {unreadCount > 0 && (
-              <button
-                onClick={markAllAsRead}
-                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                <CheckCheck className="w-4 h-4" />
-                Mark all read
-              </button>
-            )}
-          </div>
-        </div>
+    <div className="min-h-screen bg-white flex flex-col">
+      {/* Desktop Header */}
+      <div className="hidden md:block">
+        <Header />
+      </div>
 
-        {/* Filters */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
-          <div className="flex items-center gap-4">
-            <Filter className="w-5 h-5 text-gray-500" />
-            <div className="flex gap-2">
-              <button
-                onClick={() => setFilter('all')}
-                className={`px-3 py-1 rounded-full text-sm transition-colors ${
-                  filter === 'all'
-                    ? 'bg-blue-100 text-blue-700'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
-              >
-                All ({notifications.length})
-              </button>
-              <button
-                onClick={() => setFilter('unread')}
-                className={`px-3 py-1 rounded-full text-sm transition-colors ${
-                  filter === 'unread'
-                    ? 'bg-blue-100 text-blue-700'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
-              >
-                Unread ({unreadCount})
-              </button>
-              <button
-                onClick={() => setFilter('challenges')}
-                className={`px-3 py-1 rounded-full text-sm transition-colors ${
-                  filter === 'challenges'
-                    ? 'bg-blue-100 text-blue-700'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
-              >
-                Challenges ({challengeCount})
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Notifications List */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-          {isLoading ? (
-            <div className="p-8 text-center text-gray-500">
-              Loading notifications...
-            </div>
-          ) : filteredNotifications.length === 0 ? (
-            <div className="p-8 text-center text-gray-500">
-              <Bell className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-              <p className="text-lg font-medium mb-2">No notifications</p>
-              <p>
-                {filter === 'unread' 
-                  ? "You're all caught up!" 
-                  : filter === 'challenges'
-                  ? "No challenge notifications yet"
-                  : "You don't have any notifications yet"}
-              </p>
-            </div>
-          ) : (
-            <div className="divide-y divide-gray-200">
-              {filteredNotifications.map((notification) => {
-                const link = getNotificationLink(notification);
-                const NotificationContent = (
-                  <div
-                    className={`p-6 hover:bg-gray-50 transition-colors ${
-                      !notification.isRead ? 'bg-blue-50 border-l-4 border-l-blue-500' : ''
-                    }`}
-                  >
-                    <div className="flex items-start gap-4">
-                      <span className="text-2xl flex-shrink-0">
-                        {getNotificationIcon(notification.type)}
-                      </span>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <p className={`text-lg font-medium text-gray-900 mb-2 ${
-                              !notification.isRead ? 'font-semibold' : ''
-                            }`}>
-                              {notification.title}
-                            </p>
-                            <p className="text-gray-600 mb-3">
-                              {notification.message}
-                            </p>
-                            <div className="flex items-center gap-4 text-sm text-gray-500">
-                              <span>
-                                {notification.createdAt.toLocaleDateString()} at{' '}
-                                {notification.createdAt.toLocaleTimeString([], { 
-                                  hour: '2-digit', 
-                                  minute: '2-digit' 
-                                })}
-                              </span>
-                              {!notification.isRead && (
-                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                  New
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2 ml-4">
-                            {!notification.isRead && (
-                              <button
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  e.stopPropagation();
-                                  markAsRead(notification.id);
-                                }}
-                                className="flex items-center gap-1 px-3 py-1 text-sm text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-colors"
-                                title="Mark as read"
-                              >
-                                <Check className="w-4 h-4" />
-                                Mark read
-                              </button>
-                            )}
-                            <button
-                              onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                deleteNotification(notification.id);
-                              }}
-                              className="flex items-center gap-1 px-3 py-1 text-sm text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                              title="Delete"
-                            >
-                              <X className="w-4 h-4" />
-                              Delete
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-
-                return link ? (
-                  <Link key={notification.id} href={link}>
-                    {NotificationContent}
-                  </Link>
-                ) : (
-                  <div key={notification.id}>
-                    {NotificationContent}
-                  </div>
-                );
-              })}
-            </div>
-          )}
+      {/* Mobile Header */}
+      <div className="md:hidden bg-white border-b border-gray-200 sticky top-0 z-10">
+        <div className="flex items-center justify-between px-4 py-3">
+          <button
+            onClick={() => router.back()}
+            className="p-2 -ml-2 hover:bg-gray-100 rounded-lg transition-colors"
+          >
+            <ArrowLeft className="w-6 h-6 text-gray-700" />
+          </button>
+          <h1 className="text-lg font-bold text-gray-900">Notifications</h1>
+          <div className="w-10" /> {/* Spacer for centering */}
         </div>
       </div>
+
+      {/* Desktop content wrapper */}
+      <div className="hidden md:flex flex-1 items-start justify-center pt-24 pb-8">
+        <div className="w-full max-w-2xl px-4">
+          <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+            <div className="p-6 border-b border-gray-200">
+              <h1 className="text-2xl font-bold text-gray-900">Notifications</h1>
+              <p className="text-sm text-gray-600 mt-1">
+                {unreadCount > 0 ? `${unreadCount} unread notification${unreadCount !== 1 ? 's' : ''}` : 'All caught up!'}
+              </p>
+            </div>
+
+            {/* Desktop notifications list */}
+            <div className="divide-y divide-gray-200">
+              {notifications.length === 0 ? (
+                <div className="p-12 text-center">
+                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span className="text-3xl">🔔</span>
+                  </div>
+                  <p className="text-gray-600">No notifications yet</p>
+                </div>
+              ) : (
+                notifications.map((notification) => (
+                  <SwipeableNotificationItem
+                    key={notification.id}
+                    notification={notification}
+                    onDelete={handleDelete}
+                    onMarkRead={handleMarkRead}
+                    onClick={handleNotificationClick}
+                  />
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Action Buttons - Sticky at top on mobile */}
+      {notifications.length > 0 && (
+        <div className="md:hidden bg-gray-50 border-b border-gray-200 px-4 py-3 flex items-center justify-between sticky top-[57px] z-10">
+          <span className="text-sm text-gray-600">
+            {unreadCount > 0 ? `${unreadCount} unread` : 'All caught up!'}
+          </span>
+          {unreadCount > 0 && (
+            <button
+              onClick={handleMarkAllRead}
+              className="text-[#007AFF] font-semibold text-sm hover:text-[#0051D5] transition-colors"
+            >
+              Mark all read
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Mobile Notifications List */}
+      <div className="md:hidden flex-1 overflow-y-auto">
+        {notifications.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-20 px-4">
+            <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+              <span className="text-4xl">🔔</span>
+            </div>
+            <p className="text-lg font-semibold text-gray-900 mb-2">No notifications</p>
+            <p className="text-gray-600 text-center">
+              When you get notifications, they'll show up here
+            </p>
+          </div>
+        ) : (
+          <div>
+            {notifications.map((notification) => (
+              <SwipeableNotificationItem
+                key={notification.id}
+                notification={notification}
+                onDelete={handleDelete}
+                onMarkRead={handleMarkRead}
+                onClick={handleNotificationClick}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Bottom padding for mobile navigation */}
+      <div className="h-20 md:hidden" />
+
+      <BottomNavigation />
     </div>
   );
-};
-
-export default NotificationsPage;
+}

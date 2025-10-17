@@ -41,7 +41,7 @@ export const ProfilePicture: React.FC<ProfilePictureProps> = ({
 
   if (user.profilePicture && !imageError) {
     return (
-      <div className={`${sizeClass} relative ${borderClass} ${className} rounded-full overflow-hidden bg-white`}>
+      <div className={`${sizeClass} relative ${borderClass} ${className} rounded-full overflow-hidden bg-white border border-gray-200`}>
         <Image
           src={user.profilePicture}
           alt={`${user.name}'s profile picture`}
@@ -64,7 +64,7 @@ export const ProfilePicture: React.FC<ProfilePictureProps> = ({
 
   return (
     <div
-      className={`${sizeClass} bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold ${borderClass} ${className}`}
+      className={`${sizeClass} bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold border border-gray-200 ${borderClass} ${className}`}
     >
       {initials}
     </div>

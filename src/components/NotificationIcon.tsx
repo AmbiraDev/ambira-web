@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Bell } from 'lucide-react';
 import { useNotifications } from '@/contexts/NotificationsContext';
 import NotificationsPanel from './NotificationsPanel';
+import { useRouter } from 'next/navigation';
 
 interface NotificationIconProps {
   className?: string;
@@ -18,11 +19,31 @@ export default function NotificationIcon({
 }: NotificationIconProps) {
   const { unreadCount } = useNotifications();
   const [isPanelOpen, setIsPanelOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+  const router = useRouter();
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  const handleClick = () => {
+    if (isMobile) {
+      router.push('/notifications');
+    } else {
+      setIsPanelOpen(true);
+    }
+  };
 
   return (
     <div className="relative">
       <button
-        onClick={() => setIsPanelOpen(true)}
+        onClick={handleClick}
         className={`relative flex items-center gap-2 ${className}`}
       >
         <div className="relative">
@@ -36,7 +57,8 @@ export default function NotificationIcon({
         {showLabel && <span className={labelClassName}>Notifications</span>}
       </button>
 
-      <NotificationsPanel isOpen={isPanelOpen} onClose={() => setIsPanelOpen(false)} />
+      {/* Desktop dropdown panel */}
+      {!isMobile && <NotificationsPanel isOpen={isPanelOpen} onClose={() => setIsPanelOpen(false)} />}
     </div>
   );
 }

@@ -25,6 +25,9 @@ export interface User {
   // Follower counts (optional, may not be populated)
   followersCount?: number;
   followingCount?: number;
+  // Onboarding state
+  onboardingCompleted?: boolean;
+  onboardingStep?: number;
 }
 
 // Represents a user document inside a social graph subcollection
@@ -206,7 +209,7 @@ export interface FeedResponse {
 }
 
 export interface FeedFilters {
-  type?: 'following' | 'trending' | 'recent' | 'user' | 'group' | 'all';
+  type?: 'following' | 'trending' | 'recent' | 'user' | 'group' | 'all' | 'group-members-unfollowed';
   activityId?: string; // Changed from projectId
   projectId?: string; // Backwards compatibility
   userId?: string;
@@ -726,6 +729,9 @@ export interface AuthUser {
   };
   createdAt: Date;
   updatedAt: Date;
+  // Onboarding state
+  onboardingCompleted?: boolean;
+  onboardingStep?: number;
 }
 
 export interface LoginCredentials {

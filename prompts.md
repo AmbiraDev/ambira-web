@@ -1,17 +1,6 @@
   ---
   🎮 ESSENTIAL GAMIFICATION (Add Value)
 
-  5. Implement Basic Streaks
-
-  Implement a basic streak system that:
-  - Calculates current streak (consecutive days with at least 1 session)
-  - Displays current streak on user profiles and dashboard
-  - Shows longest streak achieved
-  - Updates automatically when users complete sessions
-
-  Don't implement advanced features like reminders or streak freeze yet - just the core streak calculation and
-  display.
-
   6. Add Starter Achievements
 
   Implement 5 basic achievements that unlock automatically:

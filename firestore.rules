@@ -10,7 +10,7 @@ service cloud.firestore {
       // This is safe because only increment/decrement operations are used in the code
       allow update: if request.auth != null &&
         request.resource.data.keys().hasAny(['followersCount', 'followingCount', 'inboundFriendshipCount', 'outboundFriendshipCount', 'mutualFriendshipCount', 'updatedAt']) &&
-        !request.resource.data.diff(resource.data).affectedKeys().hasAny(['email', 'username', 'name', 'bio', 'tagline', 'pronouns', 'location', 'website', 'socialLinks', 'profilePicture', 'totalHours', 'profileVisibility', 'activityVisibility', 'projectVisibility', 'createdAt']);
+        !request.resource.data.diff(resource.data).affectedKeys().hasAny(['email', 'username', 'name', 'bio', 'tagline', 'pronouns', 'location', 'website', 'socialLinks', 'profilePicture', 'totalHours', 'profileVisibility', 'activityVisibility', 'projectVisibility', 'onboardingCompleted', 'onboardingStep', 'createdAt']);
 
       // Allow authenticated users to read user profiles based on visibility settings
       allow read: if request.auth != null &&

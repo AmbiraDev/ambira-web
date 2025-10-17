@@ -79,7 +79,7 @@ export default function Header() {
   };
 
   return (
-    <header className="sticky top-0 left-0 right-0 z-50 bg-white border-b border-gray-200">
+    <header className="sticky top-0 left-0 right-0 z-50 bg-white border-b border-gray-200 shadow-sm">
         <div className="max-w-[1400px] mx-auto px-4">
           <div className="flex items-center justify-between h-14">
           {/* Left side: Logo + Search + Navigation */}
@@ -397,7 +397,7 @@ export default function Header() {
 
         {/* Mobile Navigation */}
         {isMobileMenuOpen && (
-          <div className="md:hidden border-t border-gray-200 bg-white">
+          <div className="md:hidden border-t border-gray-200 bg-white shadow-sm">
             <nav className="py-4 space-y-2">
               <Link
                 href="/"

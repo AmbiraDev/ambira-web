@@ -25,23 +25,25 @@ interface NotificationsPanelProps {
 }
 
 const getNotificationIcon = (type: Notification['type']) => {
+  const iconClass = "w-5 h-5 text-gray-600";
+
   switch (type) {
     case 'follow':
-      return <UserPlus className="w-5 h-5" />;
+      return <UserPlus className={iconClass} />;
     case 'support':
-      return <Heart className="w-5 h-5" />;
+      return <Heart className={iconClass} />;
     case 'comment':
-      return <MessageCircle className="w-5 h-5" />;
+      return <MessageCircle className={iconClass} />;
     case 'reply':
-      return <Reply className="w-5 h-5" />;
+      return <Reply className={iconClass} />;
     case 'mention':
-      return <AtSign className="w-5 h-5" />;
+      return <AtSign className={iconClass} />;
     case 'group':
-      return <Users className="w-5 h-5" />;
+      return <Users className={iconClass} />;
     case 'challenge':
-      return <Trophy className="w-5 h-5" />;
+      return <Trophy className={iconClass} />;
     default:
-      return <Bell className="w-5 h-5" />;
+      return <Bell className={iconClass} />;
   }
 };
 
@@ -171,7 +173,7 @@ export default function NotificationsPanel({ isOpen, onClose }: NotificationsPan
                 >
                   <div className="flex items-start gap-3">
                     {/* Icon */}
-                    <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-500">
+                    <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center">
                       {getNotificationIcon(notification.type)}
                     </div>
 

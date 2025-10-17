@@ -178,7 +178,7 @@ export const CommentInput: React.FC<CommentInputProps> = ({
 
   return (
     <div className="relative">
-      <div className="flex items-start gap-2 sm:gap-3">
+      <div className="flex items-center gap-3 border-t border-gray-200 pt-2">
         <textarea
           ref={textareaRef}
           value={content}
@@ -187,7 +187,7 @@ export const CommentInput: React.FC<CommentInputProps> = ({
           placeholder={placeholder}
           autoFocus={autoFocus}
           disabled={isSubmitting}
-          className="flex-1 px-3 sm:px-4 py-2 sm:py-3 bg-gray-50 border-0 rounded-lg resize-none focus:outline-none focus:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px] max-h-[200px] scrollbar-hide overflow-y-auto text-sm sm:text-base"
+          className="flex-1 px-0 pt-2 pb-0 bg-transparent border-0 resize-none focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed min-h-[20px] max-h-[120px] scrollbar-hide overflow-y-auto text-base placeholder:text-gray-400 leading-5"
           rows={1}
           style={{
             scrollbarWidth: 'none',
@@ -200,14 +200,14 @@ export const CommentInput: React.FC<CommentInputProps> = ({
         <button
           onClick={handleSubmit}
           disabled={!content.trim() || isSubmitting}
-          className={`px-2 sm:px-3 py-2 text-sm font-semibold rounded-lg transition-colors flex-shrink-0 mt-1 ${
+          className={`text-base font-semibold transition-colors flex-shrink-0 leading-5 ${
             content.trim() && !isSubmitting
               ? 'text-[#007AFF] hover:text-[#0051D5]'
-              : 'text-gray-400 cursor-not-allowed'
+              : 'text-gray-300 cursor-not-allowed'
           }`}
           aria-label="Post comment"
         >
-          Post
+          Send
         </button>
       </div>
       <span id="comment-help-text" className="sr-only">

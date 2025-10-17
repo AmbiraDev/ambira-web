@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useAuth } from '@/contexts/AuthContext';
 import { firebaseUserApi, firebaseApi } from '@/lib/firebaseApi';
+import { cachedQuery } from '@/lib/cache';
 import GroupAvatar from '@/components/GroupAvatar';
 import SuggestedPeopleModal from '@/components/SuggestedPeopleModal';
 import SuggestedGroupsModal from '@/components/SuggestedGroupsModal';
@@ -58,23 +59,41 @@ function RightSidebar() {
         console.error('Failed to load following list:', error);
       }
 
-      // Load suggested users (top 5)
+      // Load suggested users (top 5) with 1 hour cache
       try {
         // Use the getSuggestedUsers API which filters by profileVisibility and already-followed users
-        const suggestions = await firebaseUserApi.getSuggestedUsers(5);
+        const suggestions = await cachedQuery(
+          `suggested_users_${user.id}`,
+          () => firebaseUserApi.getSuggestedUsers(5),
+          {
+            memoryTtl: 60 * 60 * 1000, // 1 hour in memory
+            localTtl: 60 * 60 * 1000,  // 1 hour in localStorage
+            sessionCache: true,
+            dedupe: true,
+          }
+        );
         setSuggestedUsers(suggestions);
       } catch (error) {
         console.error('Failed to load suggested users:', error);
       }
 
-      // Load suggested groups (top 5)
+      // Load suggested groups (top 5) with 1 hour cache
       try {
         // Get user's current groups to exclude them from suggestions
         const userGroups = await firebaseApi.group.getUserGroups(user.id);
         const userGroupIds = new Set(userGroups.map(g => g.id));
 
-        // Get all groups and filter out ones user is already in
-        const allGroups = await firebaseApi.group.searchGroups({}, 15);
+        // Get all groups with caching
+        const allGroups = await cachedQuery(
+          `suggested_groups_all`,
+          () => firebaseApi.group.searchGroups({}, 15),
+          {
+            memoryTtl: 60 * 60 * 1000, // 1 hour in memory
+            localTtl: 60 * 60 * 1000,  // 1 hour in localStorage
+            sessionCache: true,
+            dedupe: true,
+          }
+        );
         const filteredGroups = allGroups.filter(group => !userGroupIds.has(group.id));
         setSuggestedGroups(filteredGroups.slice(0, 5));
       } catch (error) {

@@ -10,6 +10,7 @@ import GroupAvatar from '@/components/GroupAvatar';
 // import CreateGroupModal from '@/components/CreateGroupModal';
 import { Group } from '@/types';
 import { firebaseApi } from '@/lib/firebaseApi';
+import { cachedQuery } from '@/lib/cache';
 import { Users, Search, ChevronLeft, ChevronRight, MapPin } from 'lucide-react';
 import Link from 'next/link';
 
@@ -55,12 +56,21 @@ export default function GroupsPage() {
 
     try {
       setIsLoading(true);
-      // Load user's groups
+      // Load user's groups (no caching for user's own groups to keep them fresh)
       const userGroupsData = await firebaseApi.group.getUserGroups(user.id);
       setUserGroups(userGroupsData);
 
-      // Load suggested groups (include all groups, we'll show "Joined" for user's groups)
-      const suggestedGroups = await firebaseApi.group.searchGroups({}, TOTAL_GROUPS_TO_FETCH);
+      // Load suggested groups with 1 hour cache
+      const suggestedGroups = await cachedQuery(
+        `groups_discovery_all`,
+        () => firebaseApi.group.searchGroups({}, TOTAL_GROUPS_TO_FETCH),
+        {
+          memoryTtl: 60 * 60 * 1000, // 1 hour in memory
+          localTtl: 60 * 60 * 1000,  // 1 hour in localStorage
+          sessionCache: true,
+          dedupe: true,
+        }
+      );
       setAllSuggestedGroups(suggestedGroups);
     } catch (error) {
       console.error('Error loading data:', error);

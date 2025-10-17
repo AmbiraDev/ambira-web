@@ -320,6 +320,32 @@ export const Feed: React.FC<FeedProps> = ({
   }
 
   if (allSessions.length === 0) {
+    // Determine empty state content based on feed type
+    const feedType = filters?.type || 'all';
+
+    let emptyStateContent = {
+      title: 'Your feed is empty',
+      message: 'Follow people to see their productive sessions in your feed and get inspired by their work!',
+      buttonText: 'Find People to Follow',
+      buttonAction: () => router.push('/discover/people')
+    };
+
+    if (feedType === 'group-members-unfollowed') {
+      emptyStateContent = {
+        title: 'No sessions yet',
+        message: 'When group members you don\'t follow post sessions, they\'ll appear here!',
+        buttonText: 'Discover Groups',
+        buttonAction: () => router.push('/groups')
+      };
+    } else if (feedType === 'user') {
+      emptyStateContent = {
+        title: 'No sessions yet',
+        message: 'Start tracking your productive sessions to build your profile!',
+        buttonText: 'Start a Session',
+        buttonAction: () => router.push('/timer')
+      };
+    }
+
     return (
       <div className={`text-center py-12 px-4 ${className}`}>
         <div className="max-w-md mx-auto">
@@ -327,21 +353,21 @@ export const Feed: React.FC<FeedProps> = ({
             <svg className="w-20 h-20 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
             </svg>
-            <h3 className="font-bold text-xl text-gray-900 mb-2">Your feed is empty</h3>
+            <h3 className="font-bold text-xl text-gray-900 mb-2">{emptyStateContent.title}</h3>
             <p className="text-base text-gray-600 leading-relaxed">
-              Follow people to see their productive sessions in your feed and get inspired by their work!
+              {emptyStateContent.message}
             </p>
           </div>
 
           {/* Action Button */}
           <button
-            onClick={() => router.push('/discover/people')}
+            onClick={emptyStateContent.buttonAction}
             className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#007AFF] text-white rounded-lg hover:bg-[#0051D5] transition-colors font-semibold text-base shadow-md hover:shadow-lg transform hover:scale-[1.02] transition-all"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
-            Find People to Follow
+            {emptyStateContent.buttonText}
           </button>
         </div>
       </div>

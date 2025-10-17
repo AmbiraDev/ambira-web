@@ -13,8 +13,9 @@ import FeedCarousel from '@/components/FeedCarousel';
 import DayOverview from '@/components/DayOverview';
 import { FeedFilterDropdown, FeedFilterOption } from '@/components/FeedFilterDropdown';
 import { StreakCard } from '@/components/StreakCard';
-import { useState, Suspense } from 'react';
+import React, { useState, Suspense, useEffect } from 'react';
 import { FeedFilters } from '@/types';
+import { useRouter } from 'next/navigation';
 
 function HomeContent() {
   const { user } = useAuth();
@@ -95,7 +96,7 @@ function HomeContent() {
                         </div>
                         <p className="text-sm text-gray-500">Sessions from members in your groups</p>
                       </div>
-                      <Feed filters={{ type: 'all' }} key="group-members-feed" initialLimit={20} showEndMessage={true} showGroupInfo={true} />
+                      <Feed filters={{ type: 'group-members-unfollowed' }} key="group-members-feed" initialLimit={20} showEndMessage={true} showGroupInfo={true} />
                     </div>
                   </>
                 </div>
@@ -163,7 +164,15 @@ function HomeContent() {
 }
 
 export default function Home() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
+  const router = useRouter();
+
+  // Redirect to onboarding if user hasn't completed it
+  useEffect(() => {
+    if (user && user.onboardingCompleted === false) {
+      router.push('/onboarding');
+    }
+  }, [user, router]);
 
   // Show loading spinner while checking authentication
   if (isLoading) {

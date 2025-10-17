@@ -83,7 +83,7 @@ export default function GroupHeader({
   return (
     <div className="bg-white md:bg-gray-50">
       {/* Mobile Back Button Header */}
-      <div className="md:hidden sticky top-0 bg-white border-b border-gray-200 px-4 py-3 z-50 flex items-center gap-3">
+      <div className="md:hidden sticky top-0 bg-white border-b border-gray-200 px-4 py-3 z-50 flex items-center gap-3 shadow-sm">
         <button
           onClick={() => router.back()}
           className="p-2 -ml-2 hover:bg-gray-100 rounded-full transition-colors"

@@ -347,10 +347,10 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
       {/* Upload Button */}
       {previewUrls.length < effectiveMaxImages && !disabled && (
         <label
-          className={`flex flex-col items-center justify-center gap-2 px-4 py-8 border-2 border-dashed rounded-lg cursor-pointer transition-colors min-h-[120px] ${
+          className={`flex flex-col items-center justify-center gap-2 px-8 py-8 border-[3px] border-dashed rounded-lg cursor-pointer transition-colors max-w-[240px] ${
             isUploading
               ? 'border-blue-300 bg-blue-50 cursor-not-allowed'
-              : 'border-gray-300 hover:border-[#007AFF] hover:bg-gray-50'
+              : 'border-[#007AFF] hover:border-[#0051D5] hover:bg-gray-50'
           }`}
         >
           {isUploading ? (
@@ -360,15 +360,10 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
             </>
           ) : (
             <>
-              <ImageIcon className="w-8 h-8 text-gray-400" />
-              <span className="text-sm font-medium text-gray-600">
+              <ImageIcon className="w-8 h-8 text-[#007AFF]" />
+              <span className="text-sm font-medium text-[#007AFF]">
                 {getPlaceholderText()}
               </span>
-              {showTypeHint && (
-                <span className="text-xs text-gray-400">
-                  {formatFileTypes()} (max {maxSizeMB}MB each)
-                </span>
-              )}
             </>
           )}
           <input

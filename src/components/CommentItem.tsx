@@ -172,93 +172,91 @@ export const CommentItem: React.FC<CommentItemProps> = ({
   }
 
   return (
-    <div>
-      <div className="flex gap-2.5">
-        {/* User Avatar */}
-        <Link href={`/profile/${comment.user.username}`} className="shrink-0">
-          {comment.user.profilePicture ? (
-            <img
-              src={comment.user.profilePicture}
-              alt={comment.user.name}
-              className="w-10 h-10 min-w-[2.5rem] min-h-[2.5rem] rounded-full object-cover"
-            />
-          ) : (
-            <div className="w-10 h-10 min-w-[2.5rem] min-h-[2.5rem] bg-gray-100 rounded-full flex items-center justify-center">
-              <span className="text-sm font-semibold text-gray-600">
-                {getUserInitials(comment.user.name)}
+    <div className="flex gap-3">
+      {/* User Avatar */}
+      <Link href={`/profile/${comment.user.username}`} className="shrink-0">
+        {comment.user.profilePicture ? (
+          <img
+            src={comment.user.profilePicture}
+            alt={comment.user.name}
+            className="w-10 h-10 rounded-full object-cover"
+          />
+        ) : (
+          <div className="w-10 h-10 bg-gradient-to-br from-orange-400 to-orange-600 rounded-full flex items-center justify-center">
+            <span className="text-sm font-semibold text-white">
+              {getUserInitials(comment.user.name)}
+            </span>
+          </div>
+        )}
+      </Link>
+
+      {/* Comment Content */}
+      <div className="flex-1 min-w-0">
+        <div className="flex items-baseline justify-between gap-2">
+          <div className="flex items-baseline gap-2 min-w-0">
+            <Link href={`/profile/${comment.user.username}`}>
+              <span className="text-sm font-semibold text-gray-900 hover:text-[#007AFF] transition-colors">
+                {comment.user.name}
               </span>
-            </div>
-          )}
-        </Link>
-
-        {/* Comment Content */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between gap-2">
-            <div className="flex flex-col min-w-0">
-              <Link href={`/profile/${comment.user.username}`}>
-                <span className="text-sm font-semibold text-gray-900 hover:text-[#007AFF] transition-colors">
-                  {comment.user.name}
-                </span>
-              </Link>
-              <span className="text-xs text-gray-500">
-                {formatTimeAgo(comment.createdAt)}
-              </span>
-            </div>
-
-            {/* More Menu */}
-            {canDelete && (
-              <div className="relative shrink-0" ref={menuRef}>
-                <button
-                  onClick={() => setIsMenuOpen(!isMenuOpen)}
-                  className="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 transition-colors"
-                  title="More options"
-                >
-                  <MoreVertical className="w-4 h-4" />
-                </button>
-
-                {/* Dropdown Menu */}
-                {isMenuOpen && (
-                  <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-10 min-w-[120px]">
-                    <button
-                      onClick={handleDelete}
-                      className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-50 transition-colors flex items-center gap-2"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                      Delete
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
+            </Link>
+            <span className="text-xs text-gray-500 flex-shrink-0">
+              {formatTimeAgo(comment.createdAt)}
+            </span>
           </div>
 
-          {/* Comment Text */}
-          <p className="text-[15px] text-gray-900 whitespace-pre-wrap break-words mt-0.5">
-            {renderContent(comment.content)}
-          </p>
-
-          {/* Like Button */}
-          {currentUserId && (
-            <div className="flex items-center gap-2 mt-1.5">
+          {/* More Menu */}
+          {canDelete && (
+            <div className="relative shrink-0" ref={menuRef}>
               <button
-                onClick={handleLike}
-                className={`flex items-center gap-1 transition-colors ${
-                  optimisticLiked
-                    ? 'text-red-600 hover:text-red-700'
-                    : 'text-gray-500 hover:text-red-600'
-                } ${isLiking ? 'opacity-70' : ''}`}
-                disabled={!onLike || isLiking}
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                className="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 transition-colors"
+                title="More options"
               >
-                <Heart
-                  className={`w-[18px] h-[18px] ${optimisticLiked ? 'fill-current' : ''}`}
-                />
-                {optimisticLikeCount > 0 && (
-                  <span className="text-xs font-medium">{optimisticLikeCount > 1 ? `${optimisticLikeCount} like${optimisticLikeCount > 1 ? 's' : ''}` : '1 like'}</span>
-                )}
+                <MoreVertical className="w-4 h-4" />
               </button>
+
+              {/* Dropdown Menu */}
+              {isMenuOpen && (
+                <div className="absolute right-0 top-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg py-1 z-10 min-w-[120px]">
+                  <button
+                    onClick={handleDelete}
+                    className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-50 transition-colors flex items-center gap-2"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    Delete
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </div>
+
+        {/* Comment Text */}
+        <p className="text-[15px] text-gray-900 whitespace-pre-wrap break-words mt-0.5">
+          {renderContent(comment.content)}
+        </p>
+
+        {/* Like Button */}
+        {currentUserId && (
+          <div className="flex items-center gap-2 mt-1">
+            <button
+              onClick={handleLike}
+              className={`flex items-center gap-1 transition-colors ${
+                optimisticLiked
+                  ? 'text-red-600 hover:text-red-700'
+                  : 'text-gray-500 hover:text-red-600'
+              } ${isLiking ? 'opacity-70' : ''}`}
+              disabled={!onLike || isLiking}
+            >
+              <Heart
+                className={`w-4 h-4 ${optimisticLiked ? 'fill-current' : ''}`}
+              />
+              {optimisticLikeCount > 0 && (
+                <span className="text-xs font-medium">{optimisticLikeCount > 1 ? `${optimisticLikeCount} like${optimisticLikeCount > 1 ? 's' : ''}` : '1 like'}</span>
+              )}
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

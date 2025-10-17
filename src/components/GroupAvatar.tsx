@@ -30,7 +30,7 @@ export default function GroupAvatar({
   className = ''
 }: GroupAvatarProps) {
   return (
-    <div className={`${sizeClasses[size]} rounded-xl bg-gray-100 flex items-center justify-center overflow-hidden shadow-sm ${className}`}>
+    <div className={`${sizeClasses[size]} rounded-xl bg-gray-100 flex items-center justify-center overflow-hidden shadow-sm border border-gray-200 ${className}`}>
       {imageUrl ? (
         <Image
           src={imageUrl}

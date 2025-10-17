@@ -320,100 +320,80 @@ export default function ManualSessionRecorder() {
         <Header />
       </div>
 
-      {/* Mobile Back Button with Title */}
-      <div className="md:hidden pt-4 px-4 flex items-center gap-3">
-        <button
-          onClick={() => router.back()}
-          className="p-2 -ml-2 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-          disabled={isLoading}
-        >
-          <ArrowLeft className="w-6 h-6" />
-        </button>
-        <h1 className="text-xl font-bold text-gray-900">Log Manual Session</h1>
-      </div>
-
-      {/* Desktop Page Title */}
-      <div className="hidden md:block bg-gray-50">
-        <div className="max-w-3xl mx-auto px-4 pt-6 pb-3">
-          <h1 className="text-2xl font-bold text-gray-900">Log Manual Session</h1>
+      {/* Header with Cancel and Save Session title */}
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 pt-4">
+        <div className="flex justify-between items-center mb-6">
+          <button
+            onClick={() => router.back()}
+            className="text-[#007AFF] hover:text-[#0051D5] font-semibold text-base"
+            disabled={isLoading}
+          >
+            Cancel
+          </button>
+          <h3 className="text-base font-semibold text-gray-900">
+            Log Manual Session
+          </h3>
+          <div className="w-16"></div> {/* Spacer for centering */}
         </div>
       </div>
 
       {/* Form */}
-      <div className="max-w-3xl mx-auto px-4 py-4">
-        <form onSubmit={handleSubmit} className="space-y-4">
-          
-          {/* Project Selection */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Project *
-            </label>
-            <select
-              value={projectId}
-              onChange={(e) => setProjectId(e.target.value)}
-              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.projectId ? 'border-red-500' : 'border-gray-300'
-              }`}
-              disabled={isLoading}
-            >
-              <option value="">Select a project...</option>
-              {projects.map((project) => (
-                <option key={project.id} value={project.id}>
-                  {project.name}
-                </option>
-              ))}
-            </select>
-            {errors.projectId && (
-              <p className="text-red-500 text-sm mt-1">{errors.projectId}</p>
-            )}
-          </div>
+      <div className="max-w-2xl mx-auto px-4 sm:px-6">
+        <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
 
           {/* Session Title */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Session Title *
-            </label>
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                errors.title ? 'border-red-500' : 'border-gray-300'
-              }`}
-              placeholder="e.g., Morning Work Session"
-              disabled={isLoading}
-            />
-            {errors.title && (
-              <p className="text-red-500 text-sm mt-1">{errors.title}</p>
-            )}
-          </div>
+          <input
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] text-base ${
+              errors.title ? 'border-red-500' : 'border-gray-300'
+            }`}
+            placeholder="Afternoon Work Session"
+            disabled={isLoading}
+          />
+          {errors.title && (
+            <p className="text-red-500 text-sm -mt-2">{errors.title}</p>
+          )}
 
           {/* Description */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Description
-            </label>
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              rows={3}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-              placeholder="What did you accomplish during this session?"
-              disabled={isLoading}
-            />
-          </div>
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            rows={3}
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] text-base"
+            placeholder="How'd it go? Share more about your session."
+            disabled={isLoading}
+          />
+
+          {/* Project Selection */}
+          <select
+            value={projectId}
+            onChange={(e) => setProjectId(e.target.value)}
+            className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] bg-white text-base ${
+              errors.projectId ? 'border-red-500' : 'border-gray-300'
+            }`}
+            disabled={isLoading}
+          >
+            <option value="">Select an activity</option>
+            {projects.map((project) => (
+              <option key={project.id} value={project.id}>
+                {project.name}
+              </option>
+            ))}
+          </select>
+          {errors.projectId && (
+            <p className="text-red-500 text-sm -mt-2">{errors.projectId}</p>
+          )}
 
           {/* Image Upload */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Photos (Optional)
-            </label>
-            <div className="space-y-2">
+          <div className="max-w-md">
+            <div className="space-y-3">
               {/* Image Previews */}
               {imagePreviewUrls.length > 0 && (
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                <div className="grid grid-cols-3 gap-2">
                   {imagePreviewUrls.map((url, index) => (
-                    <div key={index} className="relative aspect-square rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
+                    <div key={index} className="relative aspect-square rounded-lg overflow-hidden bg-gray-100">
                       <Image
                         src={url}
                         alt={`Preview ${index + 1}`}
@@ -453,13 +433,10 @@ export default function ManualSessionRecorder() {
 
               {/* Upload Button */}
               {selectedImages.length < 3 && (
-                <label className="flex flex-col items-center justify-center gap-2 px-4 py-8 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-[#007AFF] hover:bg-gray-50 transition-colors min-h-[120px]">
-                  <ImageIcon className="w-8 h-8 text-gray-400" />
-                  <span className="text-sm font-medium text-gray-600">
+                <label className="flex flex-col items-center justify-center gap-2 px-8 py-8 border-[3px] border-dashed border-[#007AFF] rounded-lg cursor-pointer hover:border-[#0051D5] hover:bg-gray-50 transition-colors max-w-[240px]">
+                  <ImageIcon className="w-8 h-8 text-[#007AFF]" />
+                  <span className="text-sm font-medium text-[#007AFF]">
                     {imagePreviewUrls.length === 0 ? 'Add images' : `Add ${3 - imagePreviewUrls.length} more`}
-                  </span>
-                  <span className="text-xs text-gray-400">
-                    JPG, PNG, HEIC (max 5MB each)
                   </span>
                   <input
                     type="file"
@@ -475,28 +452,27 @@ export default function ManualSessionRecorder() {
 
           {/* Date and Time Section */}
           <div>
-            <h3 className="text-sm font-semibold text-gray-900 mb-3">
-              When did this session happen?
-            </h3>
+            <label className="block text-sm font-medium text-gray-700 mb-3">
+              Date & Time
+            </label>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="space-y-3">
               {/* Date */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Date *
+                <label className="block text-xs font-medium text-gray-600 mb-1">
+                  Date
                 </label>
                 <input
                   type="date"
                   value={sessionDate}
                   onChange={(e) => setSessionDate(e.target.value)}
                   max={new Date().toISOString().split('T')[0]}
-                  className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] text-sm ${
                     errors.sessionDate ? 'border-red-500' : 'border-gray-300'
                   }`}
                   disabled={isLoading}
                   required
                 />
-                <p className="text-xs text-gray-500 mt-1">Select the date of your session</p>
                 {errors.sessionDate && (
                   <p className="text-red-500 text-sm mt-1">{errors.sessionDate}</p>
                 )}
@@ -504,93 +480,80 @@ export default function ManualSessionRecorder() {
 
               {/* Start Time */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-xs font-medium text-gray-600 mb-1">
                   Start Time
                 </label>
                 <input
                   type="time"
                   value={startTime}
                   onChange={(e) => setStartTime(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] text-sm"
                   disabled={isLoading}
                 />
-                <p className="text-xs text-gray-500 mt-1">When you started working</p>
               </div>
-            </div>
 
-            {/* Duration */}
-            <div className="mt-3">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Duration *
-              </label>
-              <div className="flex gap-3">
-                <div className="flex-1">
-                  <input
-                    type="number"
-                    min="0"
-                    max="23"
-                    value={manualDurationHours}
-                    onChange={(e) => setManualDurationHours(e.target.value)}
-                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      errors.duration ? 'border-red-500' : 'border-gray-300'
-                    }`}
-                    placeholder="0"
-                    disabled={isLoading}
-                  />
-                  <p className="text-xs text-gray-500 mt-1">Hours</p>
+              {/* Duration */}
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-1">
+                  Duration
+                </label>
+                <div className="flex gap-3">
+                  <div className="flex-1">
+                    <input
+                      type="number"
+                      min="0"
+                      max="23"
+                      value={manualDurationHours}
+                      onChange={(e) => setManualDurationHours(e.target.value)}
+                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] text-sm ${
+                        errors.duration ? 'border-red-500' : 'border-gray-300'
+                      }`}
+                      placeholder="Hours"
+                      disabled={isLoading}
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <input
+                      type="number"
+                      min="0"
+                      max="59"
+                      value={manualDurationMinutes}
+                      onChange={(e) => setManualDurationMinutes(e.target.value)}
+                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] text-sm ${
+                        errors.duration ? 'border-red-500' : 'border-gray-300'
+                      }`}
+                      placeholder="Minutes"
+                      disabled={isLoading}
+                    />
+                  </div>
                 </div>
-                <div className="flex-1">
-                  <input
-                    type="number"
-                    min="0"
-                    max="59"
-                    value={manualDurationMinutes}
-                    onChange={(e) => setManualDurationMinutes(e.target.value)}
-                    className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                      errors.duration ? 'border-red-500' : 'border-gray-300'
-                    }`}
-                    placeholder="0"
-                    disabled={isLoading}
-                  />
-                  <p className="text-xs text-gray-500 mt-1">Minutes</p>
-                </div>
+                {errors.duration && (
+                  <p className="text-red-500 text-sm mt-1">{errors.duration}</p>
+                )}
               </div>
-              {errors.duration && (
-                <p className="text-red-500 text-sm mt-1">{errors.duration}</p>
-              )}
             </div>
           </div>
 
-          {/* Privacy */}
+          {/* Visibility */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Privacy
+              Visibility
             </label>
             <select
               value={visibility}
               onChange={(e) => setVisibility(e.target.value as 'everyone' | 'followers' | 'private')}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white appearance-none"
+              className="w-full pl-3 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] appearance-none bg-white min-h-[44px]"
+              style={{
+                backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 9L1 4h10z'/%3E%3C/svg%3E\")",
+                backgroundRepeat: 'no-repeat',
+                backgroundPosition: 'right 0.75rem center',
+              }}
               disabled={isLoading}
             >
-              <option value="everyone">Everyone - Visible to all users</option>
-              <option value="followers">Followers - Visible to your followers</option>
-              <option value="private">Only You - Private to you only</option>
+              <option value="everyone">Everyone</option>
+              <option value="followers">Followers</option>
+              <option value="private">Only You</option>
             </select>
-          </div>
-
-          {/* Private Notes */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Private Notes <span className="text-xs text-gray-500">(Only visible to you)</span>
-            </label>
-            <textarea
-              value={privateNotes}
-              onChange={(e) => setPrivateNotes(e.target.value)}
-              rows={2}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-              placeholder="Personal reflections, learnings, or notes..."
-              disabled={isLoading}
-            />
           </div>
 
           {/* Error Message */}
@@ -600,39 +563,14 @@ export default function ManualSessionRecorder() {
             </div>
           )}
 
-          {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row gap-3 pt-6">
-            <button
-              type="button"
-              onClick={() => router.back()}
-              className="flex-1 px-4 py-3 border border-gray-300 rounded-lg text-gray-700 bg-white font-medium hover:bg-gray-50 transition-colors disabled:opacity-50 min-h-[48px]"
-              disabled={isLoading}
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 min-h-[48px]"
-              disabled={isLoading || isUploadingImages}
-            >
-              {isUploadingImages ? (
-                <>
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  Uploading Images...
-                </>
-              ) : isLoading ? (
-                <>
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  Creating...
-                </>
-              ) : (
-                <>
-                  <Check className="w-5 h-5" />
-                  Create Session
-                </>
-              )}
-            </button>
-          </div>
+          {/* Save Button */}
+          <button
+            type="submit"
+            className="w-full px-4 py-3 bg-[#007AFF] text-white rounded-lg hover:bg-[#0051D5] transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-base mt-4"
+            disabled={isLoading || isUploadingImages}
+          >
+            {isUploadingImages ? 'Uploading...' : isLoading ? 'Creating...' : 'Create Session'}
+          </button>
         </form>
       </div>
     </div>
