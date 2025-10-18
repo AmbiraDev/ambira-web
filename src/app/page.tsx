@@ -13,9 +13,8 @@ import FeedCarousel from '@/components/FeedCarousel';
 import DayOverview from '@/components/DayOverview';
 import { FeedFilterDropdown, FeedFilterOption } from '@/components/FeedFilterDropdown';
 import { StreakCard } from '@/components/StreakCard';
-import React, { useState, Suspense, useEffect } from 'react';
+import React, { useState, Suspense } from 'react';
 import { FeedFilters } from '@/types';
-import { useRouter } from 'next/navigation';
 
 function HomeContent() {
   const { user } = useAuth();
@@ -164,15 +163,7 @@ function HomeContent() {
 }
 
 export default function Home() {
-  const { isAuthenticated, isLoading, user } = useAuth();
-  const router = useRouter();
-
-  // Redirect to onboarding if user hasn't completed it
-  useEffect(() => {
-    if (user && user.onboardingCompleted === false) {
-      router.push('/onboarding');
-    }
-  }, [user, router]);
+  const { isAuthenticated, isLoading } = useAuth();
 
   // Show loading spinner while checking authentication
   if (isLoading) {

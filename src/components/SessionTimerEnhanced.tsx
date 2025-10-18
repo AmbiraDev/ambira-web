@@ -26,10 +26,9 @@ import { IconRenderer } from '@/components/IconRenderer';
 
 interface SessionTimerEnhancedProps {
   projectId: string;
-  onSessionComplete?: () => void;
 }
 
-export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = ({ onSessionComplete }) => {
+export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
   const {
     timerState,
     getElapsedTime,
@@ -264,12 +263,6 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = ({ onSe
       setHowFelt(3);
       setSelectedImages([]);
       setImagePreviewUrls([]);
-
-      // Call onboarding completion callback if provided
-      if (onSessionComplete) {
-        onSessionComplete();
-        return;
-      }
 
       // Wait a moment to ensure state is cleared, then navigate
       await new Promise(resolve => setTimeout(resolve, 100));

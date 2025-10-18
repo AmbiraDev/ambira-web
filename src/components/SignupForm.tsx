@@ -52,8 +52,8 @@ export const SignupForm: React.FC = () => {
       }
     };
 
-    // Debounce: wait 500ms after user stops typing
-    const timeoutId = setTimeout(checkUsername, 500);
+    // Debounce: wait 1000ms after user stops typing
+    const timeoutId = setTimeout(checkUsername, 1000);
     return () => clearTimeout(timeoutId);
   }, [formData.username]);
 

@@ -624,8 +624,6 @@ export const firebaseAuthApi = {
           profileVisibility: 'everyone',
           activityVisibility: 'everyone',
           projectVisibility: 'everyone',
-          onboardingCompleted: false,
-          onboardingStep: 0,
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp(),
         };
@@ -702,8 +700,6 @@ export const firebaseAuthApi = {
         profileVisibility: 'everyone',
         activityVisibility: 'everyone',
         projectVisibility: 'everyone',
-        onboardingCompleted: false,
-        onboardingStep: 0,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       };
@@ -723,8 +719,6 @@ export const firebaseAuthApi = {
         bio: '',
         location: '',
         profilePicture: undefined,
-        onboardingCompleted: false,
-        onboardingStep: 0,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
@@ -826,8 +820,6 @@ export const firebaseAuthApi = {
           profileVisibility: 'everyone',
           activityVisibility: 'everyone',
           projectVisibility: 'everyone',
-          onboardingCompleted: false,
-          onboardingStep: 0,
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp(),
         };
@@ -914,8 +906,6 @@ export const firebaseAuthApi = {
           profileVisibility: 'everyone',
           activityVisibility: 'everyone',
           projectVisibility: 'everyone',
-          onboardingCompleted: false,
-          onboardingStep: 0,
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp(),
         };
@@ -1012,8 +1002,6 @@ export const firebaseAuthApi = {
           profileVisibility: 'everyone',
           activityVisibility: 'everyone',
           projectVisibility: 'everyone',
-          onboardingCompleted: false,
-          onboardingStep: 0,
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp(),
         };
@@ -1061,43 +1049,6 @@ export const firebaseAuthApi = {
     return !exists; // Return true if available (username does not exist)
   },
 
-  // Complete onboarding
-  completeOnboarding: async (): Promise<void> => {
-    try {
-      if (!auth.currentUser) {
-        throw new Error('No authenticated user');
-      }
-
-      await updateDoc(doc(db, 'users', auth.currentUser.uid), {
-        onboardingCompleted: true,
-        updatedAt: serverTimestamp(),
-      });
-    } catch (error) {
-      const apiError = handleError(error, 'Complete onboarding', {
-        defaultMessage: 'Failed to complete onboarding',
-      });
-      throw new Error(apiError.userMessage);
-    }
-  },
-
-  // Update onboarding step
-  updateOnboardingStep: async (step: number): Promise<void> => {
-    try {
-      if (!auth.currentUser) {
-        throw new Error('No authenticated user');
-      }
-
-      await updateDoc(doc(db, 'users', auth.currentUser.uid), {
-        onboardingStep: step,
-        updatedAt: serverTimestamp(),
-      });
-    } catch (error) {
-      const apiError = handleError(error, 'Update onboarding step', {
-        defaultMessage: 'Failed to update onboarding step',
-      });
-      throw new Error(apiError.userMessage);
-    }
-  },
 };
 
 // User API methods

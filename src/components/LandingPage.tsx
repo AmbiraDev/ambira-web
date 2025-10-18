@@ -129,46 +129,65 @@ export const LandingPage: React.FC = () => {
 
   const handleSignupChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    
+
     if (name === 'confirmPassword') {
       setConfirmPassword(value);
     } else {
       setSignupData(prev => ({ ...prev, [name]: value }));
     }
-    
+
     // Clear field-specific error when user starts typing
     if (signupErrors[name as keyof (SignupCredentials & { confirmPassword: string })]) {
       setSignupErrors(prev => ({ ...prev, [name]: undefined }));
     }
-    
+
     // Clear submit error
     if (error) {
       setError('');
     }
 
-    // Check username availability when username changes
-    if (name === 'username' && value.trim().length >= 3) {
-      checkUsernameAvailability(value.trim());
-    } else if (name === 'username') {
+    // Reset username availability when username changes
+    if (name === 'username') {
       setUsernameAvailable(null);
     }
   };
 
-  const checkUsernameAvailability = async (username: string) => {
-    try {
+  // Debounced username availability check
+  useEffect(() => {
+    const checkUsername = async () => {
+      const username = signupData.username.trim();
+
+      // Only check if username meets minimum requirements
+      if (username.length < 3) {
+        setUsernameAvailable(null);
+        return;
+      }
+
+      // Validate username format
+      if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+        setUsernameAvailable(null);
+        return;
+      }
+
       setUsernameCheckLoading(true);
-      const available = await firebaseUserApi.checkUsernameAvailability(username);
-      setUsernameAvailable(available);
-    } catch (error: any) {
-      // Log error for debugging but don't show to user
-      console.warn('Username availability check failed:', error.message);
-      // Set to null to indicate check couldn't be completed
-      // Registration will still proceed with server-side validation
-      setUsernameAvailable(null);
-    } finally {
-      setUsernameCheckLoading(false);
-    }
-  };
+      try {
+        const available = await firebaseUserApi.checkUsernameAvailability(username);
+        setUsernameAvailable(available);
+      } catch (error: any) {
+        // Log error for debugging but don't show to user
+        console.warn('Username availability check failed:', error.message);
+        // Set to null to indicate check couldn't be completed
+        // Registration will still proceed with server-side validation
+        setUsernameAvailable(null);
+      } finally {
+        setUsernameCheckLoading(false);
+      }
+    };
+
+    // Debounce: wait 1000ms after user stops typing
+    const timeoutId = setTimeout(checkUsername, 1000);
+    return () => clearTimeout(timeoutId);
+  }, [signupData.username]);
 
   const validateSignupForm = (): boolean => {
     const newErrors: Partial<SignupCredentials & { confirmPassword: string }> = {};
