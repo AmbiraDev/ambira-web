@@ -1,7 +1,10 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { useUserGroups, useGroups, useGroupSearch } from '@/hooks/useCache';
+import { useQueryClient } from '@tanstack/react-query';
+import { CACHE_KEYS } from '@/lib/queryClient';
 import Header from '@/components/HeaderComponent';
 import MobileHeader from '@/components/MobileHeader';
 import BottomNavigation from '@/components/BottomNavigation';
@@ -10,7 +13,6 @@ import GroupAvatar from '@/components/GroupAvatar';
 // import CreateGroupModal from '@/components/CreateGroupModal';
 import { Group } from '@/types';
 import { firebaseApi } from '@/lib/firebaseApi';
-import { cachedQuery } from '@/lib/cache';
 import { Users, Search, ChevronLeft, ChevronRight, MapPin } from 'lucide-react';
 import Link from 'next/link';
 
@@ -28,10 +30,8 @@ const TOTAL_GROUPS_TO_FETCH = 100;
 
 export default function GroupsPage() {
   const { user } = useAuth();
-  const [userGroups, setUserGroups] = useState<Group[]>([]);
+  const queryClient = useQueryClient();
   const [searchResults, setSearchResults] = useState<Group[]>([]);
-  const [allSuggestedGroups, setAllSuggestedGroups] = useState<Group[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [isSearching, setIsSearching] = useState(false);
   const [joiningGroups, setJoiningGroups] = useState<Set<string>>(new Set());
   const [currentPage, setCurrentPage] = useState(0);
@@ -45,39 +45,34 @@ export default function GroupsPage() {
     category: '',
   });
 
+  // Use React Query hooks for cached data fetching
+  const { data: userGroups = [], isLoading: isLoadingUserGroups } = useUserGroups(user?.id || '', {
+    enabled: !!user?.id,
+  });
+
+  // Fetch all groups for discovery with caching
+  const { data: allSuggestedGroups = [], isLoading: isLoadingSuggested } = useGroups({}, {
+    enabled: !!user,
+  });
+
+  // Use search hook with caching - only when filters are set
+  const hasActiveFilters = !!(searchFilters.name || searchFilters.location || searchFilters.category);
+  const { data: cachedSearchResults = [], isLoading: isLoadingSearch, refetch: refetchSearch } = useGroupSearch(
+    searchFilters,
+    50,
+    {
+      enabled: false, // We'll manually trigger the search
+    }
+  );
+
+  const isLoading = isLoadingUserGroups || isLoadingSuggested;
+
+  // Update search results when cached results change
   useEffect(() => {
-    if (user) {
-      loadData();
+    if (hasSearched && cachedSearchResults.length > 0) {
+      setSearchResults(cachedSearchResults);
     }
-  }, [user]);
-
-  const loadData = async () => {
-    if (!user) return;
-
-    try {
-      setIsLoading(true);
-      // Load user's groups (no caching for user's own groups to keep them fresh)
-      const userGroupsData = await firebaseApi.group.getUserGroups(user.id);
-      setUserGroups(userGroupsData);
-
-      // Load suggested groups with 1 hour cache
-      const suggestedGroups = await cachedQuery(
-        `groups_discovery_all`,
-        () => firebaseApi.group.searchGroups({}, TOTAL_GROUPS_TO_FETCH),
-        {
-          memoryTtl: 60 * 60 * 1000, // 1 hour in memory
-          localTtl: 60 * 60 * 1000,  // 1 hour in localStorage
-          sessionCache: true,
-          dedupe: true,
-        }
-      );
-      setAllSuggestedGroups(suggestedGroups);
-    } catch (error) {
-      console.error('Error loading data:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  }, [cachedSearchResults, hasSearched]);
 
   const handleSearch = async () => {
     if (!user) return;
@@ -87,31 +82,11 @@ export default function GroupsPage() {
       setHasSearched(true);
       setCurrentPage(0);
 
-      // Build search criteria
-      const criteria: any = { privacySetting: 'public' };
-
-      if (searchFilters.category) {
-        criteria.category = searchFilters.category;
+      // Trigger the cached query refetch
+      const { data } = await refetchSearch();
+      if (data) {
+        setSearchResults(data);
       }
-
-      // Search for groups
-      const results = await firebaseApi.group.searchGroups(criteria, 50);
-
-      // Filter by name and location on client side
-      let filtered = results;
-
-      if (searchFilters.name) {
-        const nameLower = searchFilters.name.toLowerCase();
-        filtered = filtered.filter(g => g.name.toLowerCase().includes(nameLower));
-      }
-
-      if (searchFilters.location) {
-        const locationLower = searchFilters.location.toLowerCase();
-        filtered = filtered.filter(g => g.location?.toLowerCase().includes(locationLower));
-      }
-
-      // Don't exclude groups user is already in - we'll show "Joined" instead
-      setSearchResults(filtered);
     } catch (error) {
       console.error('Error searching groups:', error);
     } finally {
@@ -146,8 +121,8 @@ export default function GroupsPage() {
     setJoiningGroups(prev => new Set(prev).add(groupId));
     try {
       await firebaseApi.group.joinGroup(groupId, user.id);
-      // Reload data to update user groups
-      await loadData();
+      // Invalidate user groups cache to refetch
+      queryClient.invalidateQueries({ queryKey: CACHE_KEYS.USER_GROUPS(user.id) });
     } catch (error) {
       console.error('Failed to join group:', error);
     } finally {

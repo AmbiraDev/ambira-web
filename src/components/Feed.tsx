@@ -113,11 +113,17 @@ export const Feed: React.FC<FeedProps> = ({
     }
   }, [isLoadingMore, hasMore, nextCursor]);
 
-  // Check for new sessions periodically - using cache
+  // Check for new sessions periodically - only when page is visible
   useEffect(() => {
     if (allSessions.length === 0) return;
 
+    // Track if page is currently visible
+    let isPageVisible = !document.hidden;
+
     const checkForNewSessions = async () => {
+      // Skip check if page is not visible
+      if (!isPageVisible) return;
+
       try {
         // Use queryClient to check cache first, then fetch if stale
         const cachedData = queryClient.getQueryData(['feed', 'sessions', 5, undefined, filters]);
@@ -142,9 +148,24 @@ export const Feed: React.FC<FeedProps> = ({
       }
     };
 
-    // Check every 60 seconds (reduced from 30 to limit DB calls)
-    const interval = setInterval(checkForNewSessions, 60000);
-    return () => clearInterval(interval);
+    // Update visibility state when page visibility changes
+    const handleVisibilityChange = () => {
+      isPageVisible = !document.hidden;
+      // Check immediately when page becomes visible
+      if (isPageVisible) {
+        checkForNewSessions();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    // Check every 2 minutes when visible (reduced frequency saves resources)
+    const interval = setInterval(checkForNewSessions, 120000);
+
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, [allSessions, filters, queryClient]);
 
   // Handle support with optimistic updates via React Query

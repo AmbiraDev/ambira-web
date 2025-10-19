@@ -9,6 +9,7 @@ import TopComments from './TopComments';
 import { ImageGallery } from './ImageGallery';
 import LikesModal from './LikesModal';
 import CommentsModal from './CommentsModal';
+import { PrefetchLink } from './PrefetchLink';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { firebaseApi } from '@/lib/firebaseApi';
@@ -189,7 +190,12 @@ export const SessionCard: React.FC<SessionCardProps> = ({
     <article className={`bg-white md:rounded-lg md:border md:border-gray-200 md:shadow-sm mb-0 md:mb-4 border-b-[6px] border-gray-200 md:border-b-0 ${className}`}>
       {/* Session Header */}
       <div className="flex items-center justify-between px-4 pt-4 pb-3">
-        <Link href={`/profile/${session.user.username}`} className="flex items-center gap-2 md:gap-3 min-w-0 flex-1">
+        <PrefetchLink
+          href={`/profile/${session.user.username}`}
+          prefetchProfile={session.user.username}
+          prefetchUserId={session.user.id}
+          className="flex items-center gap-2 md:gap-3 min-w-0 flex-1"
+        >
           {/* User Avatar */}
           {session.user.profilePicture ? (
             <div className="w-10 h-10 min-w-[2.5rem] aspect-square rounded-full overflow-hidden flex-shrink-0 ring-2 ring-white">
@@ -231,7 +237,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({
             </div>
             <div className="text-xs text-gray-500">{formatTimeAgo(session.createdAt)}</div>
           </div>
-        </Link>
+        </PrefetchLink>
 
         {/* Options Menu */}
         <div className="relative" ref={menuRef}>

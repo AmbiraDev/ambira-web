@@ -23,6 +23,26 @@ export function useUserProfile(userId: string, options?: Partial<UseQueryOptions
   });
 }
 
+// Hook to get user profile by username (useful for profile pages)
+export function useUserProfileByUsername(username: string, options?: Partial<UseQueryOptions<UserProfile | null>>) {
+  return useQuery({
+    queryKey: ['user', 'profile', 'username', username],
+    queryFn: async () => {
+      try {
+        return await firebaseUserApi.getUserProfile(username);
+      } catch (error: any) {
+        if (error?.message?.includes('not found') || error?.message?.includes('private')) {
+          return null;
+        }
+        throw error;
+      }
+    },
+    staleTime: CACHE_TIMES.LONG, // 15 minutes cache
+    retry: false, // Don't retry on permission/not found errors
+    ...options,
+  });
+}
+
 export function useUserSessions(userId: string, limit: number = 50, options?: Partial<UseQueryOptions<Session[]>>) {
   return useQuery({
     queryKey: CACHE_KEYS.USER_SESSIONS(userId, limit),
@@ -125,8 +145,48 @@ export function useProjects(userId: string, options?: Partial<UseQueryOptions<Pr
 export function useGroups(filters?: any, options?: Partial<UseQueryOptions<Group[]>>) {
   return useQuery({
     queryKey: CACHE_KEYS.GROUPS(filters),
-    queryFn: () => firebaseApi.group.searchGroups(filters, 10),
+    queryFn: () => firebaseApi.group.searchGroups(filters, 100),
     staleTime: CACHE_TIMES.LONG, // 15 minutes cache
+    ...options,
+  });
+}
+
+// Hook for searching groups with caching
+export function useGroupSearch(
+  searchFilters: { name?: string; location?: string; category?: string },
+  limit: number = 50,
+  options?: Partial<UseQueryOptions<Group[]>>
+) {
+  return useQuery({
+    queryKey: ['groups', 'search', searchFilters, limit],
+    queryFn: async () => {
+      // Build search criteria
+      const criteria: any = { privacySetting: 'public' };
+      if (searchFilters.category) {
+        criteria.category = searchFilters.category;
+      }
+
+      // Search for groups
+      const results = await firebaseApi.group.searchGroups(criteria, limit);
+
+      // Filter by name and location on client side
+      let filtered = results;
+
+      if (searchFilters.name) {
+        const nameLower = searchFilters.name.toLowerCase();
+        filtered = filtered.filter(g => g.name.toLowerCase().includes(nameLower));
+      }
+
+      if (searchFilters.location) {
+        const locationLower = searchFilters.location.toLowerCase();
+        filtered = filtered.filter(g => g.location?.toLowerCase().includes(locationLower));
+      }
+
+      return filtered;
+    },
+    staleTime: CACHE_TIMES.MEDIUM, // 5 minutes cache for search results
+    // Only enable when at least one filter is set
+    enabled: !!(searchFilters.name || searchFilters.location || searchFilters.category),
     ...options,
   });
 }
@@ -156,6 +216,55 @@ export function useChallenges(filters?: any, options?: Partial<UseQueryOptions<C
     queryKey: CACHE_KEYS.CHALLENGES(filters),
     queryFn: () => firebaseApi.challenge.getChallenges(filters),
     staleTime: CACHE_TIMES.LONG, // 15 minutes cache
+    ...options,
+  });
+}
+
+export function useChallenge(challengeId: string, options?: Partial<UseQueryOptions<Challenge | null>>) {
+  return useQuery({
+    queryKey: CACHE_KEYS.CHALLENGE(challengeId),
+    queryFn: () => firebaseApi.challenge.getChallenge(challengeId),
+    staleTime: CACHE_TIMES.LONG, // 15 minutes cache
+    ...options,
+  });
+}
+
+export function useChallengeProgress(
+  challengeId: string,
+  userId?: string,
+  options?: Partial<UseQueryOptions<any>>
+) {
+  return useQuery({
+    queryKey: CACHE_KEYS.CHALLENGE_PROGRESS(challengeId, userId || 'current'),
+    queryFn: () => firebaseApi.challenge.getChallengeProgress(challengeId, userId),
+    staleTime: CACHE_TIMES.MEDIUM, // 5 minutes cache for progress
+    ...options,
+  });
+}
+
+// Batch fetch challenge progress for multiple challenges
+export function useChallengesProgress(
+  challengeIds: string[],
+  userId?: string,
+  options?: Partial<UseQueryOptions<Record<string, any>>>
+) {
+  return useQuery({
+    queryKey: ['challenges', 'progress', 'batch', userId || 'current', ...challengeIds.sort()],
+    queryFn: async () => {
+      const progressMap: Record<string, any> = {};
+      // Batch fetch all progress in parallel
+      const results = await Promise.all(
+        challengeIds.map(id =>
+          firebaseApi.challenge.getChallengeProgress(id, userId).catch(() => null)
+        )
+      );
+      challengeIds.forEach((id, index) => {
+        progressMap[id] = results[index];
+      });
+      return progressMap;
+    },
+    staleTime: CACHE_TIMES.MEDIUM, // 5 minutes cache
+    enabled: challengeIds.length > 0,
     ...options,
   });
 }

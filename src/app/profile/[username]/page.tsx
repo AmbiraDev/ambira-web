@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { UserProfile, UserStats, Session } from '@/types';
-import { firebaseUserApi, firebaseSessionApi } from '@/lib/firebaseApi';
+import { firebaseUserApi } from '@/lib/firebaseApi';
 import { useAuth } from '@/contexts/AuthContext';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import Header from '@/components/HeaderComponent';
@@ -14,7 +14,15 @@ import { UserX, User as UserIcon, Users, ChevronDown } from 'lucide-react';
 import { toast } from 'sonner';
 import Link from 'next/link';
 import { XAxis, YAxis, ResponsiveContainer, Tooltip, Area, ComposedChart, BarChart, Bar } from 'recharts';
-import { useUserFollowers, useUserFollowing, useProjects } from '@/hooks/useCache';
+import {
+  useUserProfileByUsername,
+  useUserStats,
+  useUserSessions,
+  useUserFollowers,
+  useUserFollowing,
+  useProjects
+} from '@/hooks/useCache';
+import { useQueryClient } from '@tanstack/react-query';
 import Feed from '@/components/Feed';
 
 type YouTab = 'progress' | 'sessions' | 'followers' | 'following';
@@ -34,10 +42,9 @@ export default function ProfilePage() {
   const searchParams = useSearchParams();
   const username = params.username as string;
   const { user: currentUser } = useAuth();
+  const queryClient = useQueryClient();
   const tabParam = searchParams?.get('tab') as YouTab | null;
 
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [stats, setStats] = useState<UserStats | null>(null);
   const [activeTab, setActiveTab] = useState<YouTab>(
     tabParam === 'sessions' ? 'sessions' :
     tabParam === 'followers' ? 'followers' :
@@ -48,22 +55,53 @@ export default function ProfilePage() {
   const [showChartTypeDropdown, setShowChartTypeDropdown] = useState(false);
   const [selectedActivityId, setSelectedActivityId] = useState<string>('all');
   const [showActivityDropdown, setShowActivityDropdown] = useState(false);
-  const [sessions, setSessions] = useState<Session[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+
+  // Use React Query hooks for all data fetching with automatic caching
+  const {
+    data: profile,
+    isLoading: isLoadingProfile,
+    error: profileError
+  } = useUserProfileByUsername(username);
 
   const isOwnProfile = currentUser?.username === username;
 
-  // Use cached hooks for followers/following and activities
+  const {
+    data: stats,
+    isLoading: isLoadingStats
+  } = useUserStats(profile?.id || '', {
+    enabled: !!profile?.id,
+  });
+
+  const {
+    data: sessions = [],
+    isLoading: isLoadingSessions
+  } = useUserSessions(profile?.id || '', 50, {
+    enabled: !!profile?.id,
+  });
+
   const { data: followers = [] } = useUserFollowers(profile?.id || '', {
     enabled: !!profile?.id,
   });
+
   const { data: following = [] } = useUserFollowing(profile?.id || '', {
     enabled: !!profile?.id,
   });
+
   const { data: activities = [] } = useProjects(profile?.id || '', {
     enabled: !!profile?.id,
   });
+
+  // Compute loading and error states
+  const isLoading = isLoadingProfile || isLoadingStats || isLoadingSessions;
+  const error = profileError
+    ? profileError.message?.includes('not found')
+      ? 'User not found'
+      : profileError.message?.includes('private')
+      ? 'This profile is private'
+      : profileError.message?.includes('followers')
+      ? 'This profile is only visible to followers'
+      : 'Failed to load profile'
+    : null;
 
   // Filter sessions based on selected activity
   const filteredSessions = useMemo(() => {
@@ -78,52 +116,12 @@ export default function ProfilePage() {
     }
   }, [tabParam]);
 
-  const loadProfile = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-
-      const profileData = await firebaseUserApi.getUserProfile(username);
-      setProfile(profileData);
-
-      // Load stats after we have the profile
-      const statsData = await firebaseUserApi.getUserStats(profileData.id);
-      setStats(statsData);
-
-      // Load sessions
-      let sessionsData: Session[] = [];
-      try {
-        sessionsData = await firebaseSessionApi.getUserSessions(profileData.id, 50, isOwnProfile);
-      } catch {
-        // Silently handle session loading errors, default to empty array
-        sessionsData = [];
-      }
-      setSessions(sessionsData);
-
-      // Note: Followers and following are now loaded via cached hooks above
-
-    } catch (error: any) {
-      // Handle profile load errors gracefully without console logging
-      if (error.message?.includes('not found')) {
-        setError('User not found');
-      } else if (error.message?.includes('private')) {
-        setError('This profile is private');
-      } else if (error.message?.includes('followers')) {
-        setError('This profile is only visible to followers');
-      } else {
-        setError('Failed to load profile');
-        toast.error('Failed to load profile');
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  }, [username, isOwnProfile]);
-
+  // Show error toast when profile fails to load
   useEffect(() => {
-    if (username) {
-      loadProfile();
+    if (error && profileError) {
+      toast.error(error);
     }
-  }, [username, loadProfile]);
+  }, [error, profileError]);
 
   // Calculate chart data using useMemo to prevent infinite loop
   const chartData = useMemo(() => {
@@ -386,7 +384,8 @@ export default function ProfilePage() {
   };
 
   const handleProfileUpdate = (updatedProfile: UserProfile) => {
-    setProfile(updatedProfile);
+    // Invalidate profile cache to refetch with updated data
+    queryClient.invalidateQueries({ queryKey: ['user', 'profile', 'username', username] });
   };
 
   if (isLoading) {

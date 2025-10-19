@@ -1,9 +1,12 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { firebaseChallengeApi } from '@/lib/firebaseApi';
-import { Challenge, ChallengeFilters, ChallengeProgress } from '@/types';
+import { ChallengeFilters } from '@/types';
+import { useChallenges, useChallengesProgress } from '@/hooks/useCache';
+import { useQueryClient } from '@tanstack/react-query';
+import { CACHE_KEYS } from '@/lib/queryClient';
 import Header from '@/components/HeaderComponent';
 import ChallengeCard from '@/components/ChallengeCard';
 import { Button } from '@/components/ui/button';
@@ -32,66 +35,62 @@ const challengeTypeFilters = [
 
 export default function ChallengesPage() {
   const { user } = useAuth();
-  const [challenges, setChallenges] = useState<Challenge[]>([]);
-  const [userProgress, setUserProgress] = useState<Record<string, ChallengeProgress>>({});
-  const [isLoading, setIsLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [activeFilter, setActiveFilter] = useState<'all' | 'active' | 'upcoming' | 'participating'>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [participatingChallenges, setParticipatingChallenges] = useState<Set<string>>(new Set());
 
-  useEffect(() => {
-    loadChallenges();
+  // Build filters based on active filter state
+  const filters = useMemo(() => {
+    const filterObj: ChallengeFilters = {};
+
+    if (activeFilter === 'active') {
+      filterObj.status = 'active';
+    } else if (activeFilter === 'upcoming') {
+      filterObj.status = 'upcoming';
+    } else if (activeFilter === 'participating') {
+      filterObj.isParticipating = true;
+    }
+
+    if (typeFilter !== 'all') {
+      filterObj.type = typeFilter as any;
+    }
+
+    return filterObj;
   }, [activeFilter, typeFilter]);
 
-  const loadChallenges = async () => {
-    try {
-      setIsLoading(true);
-      
-      const filters: ChallengeFilters = {};
-      
-      if (activeFilter === 'active') {
-        filters.status = 'active';
-      } else if (activeFilter === 'upcoming') {
-        filters.status = 'upcoming';
-      } else if (activeFilter === 'participating') {
-        filters.isParticipating = true;
-      }
-      
-      if (typeFilter !== 'all') {
-        filters.type = typeFilter as any;
-      }
+  // Fetch challenges with caching
+  const { data: challenges = [], isLoading: isLoadingChallenges } = useChallenges(filters);
 
-      const challengesList = await firebaseChallengeApi.getChallenges(filters);
-      setChallenges(challengesList);
+  // Extract challenge IDs for batch progress loading
+  const challengeIds = useMemo(() => challenges.map(c => c.id), [challenges]);
 
-      // Load user progress for participating challenges
-      if (user) {
-        const progressMap: Record<string, ChallengeProgress> = {};
-        const participatingSet = new Set<string>();
-        
-        for (const challenge of challengesList) {
-          const progress = await firebaseChallengeApi.getChallengeProgress(challenge.id);
-          if (progress) {
-            progressMap[challenge.id] = progress;
-            participatingSet.add(challenge.id);
-          }
-        }
-        
-        setUserProgress(progressMap);
-        setParticipatingChallenges(participatingSet);
+  // Batch fetch all challenge progress in a single query
+  const { data: userProgress = {}, isLoading: isLoadingProgress } = useChallengesProgress(
+    challengeIds,
+    user?.id,
+    { enabled: !!user && challengeIds.length > 0 }
+  );
+
+  const isLoading = isLoadingChallenges || (user && isLoadingProgress);
+
+  // Calculate participating challenges set
+  const participatingChallenges = useMemo(() => {
+    const set = new Set<string>();
+    Object.entries(userProgress).forEach(([challengeId, progress]) => {
+      if (progress) {
+        set.add(challengeId);
       }
-    } catch (error) {
-      console.error('Failed to load challenges:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    });
+    return set;
+  }, [userProgress]);
 
   const handleJoinChallenge = async (challengeId: string) => {
     try {
       await firebaseChallengeApi.joinChallenge(challengeId);
-      await loadChallenges(); // Reload to update participation status
+      // Invalidate relevant caches to refetch data
+      queryClient.invalidateQueries({ queryKey: CACHE_KEYS.CHALLENGES(filters) });
+      queryClient.invalidateQueries({ queryKey: ['challenges', 'progress', 'batch'] });
     } catch (error) {
       console.error('Failed to join challenge:', error);
       alert('Failed to join challenge. Please try again.');
@@ -101,21 +100,24 @@ export default function ChallengesPage() {
   const handleLeaveChallenge = async (challengeId: string) => {
     try {
       await firebaseChallengeApi.leaveChallenge(challengeId);
-      await loadChallenges(); // Reload to update participation status
+      // Invalidate relevant caches to refetch data
+      queryClient.invalidateQueries({ queryKey: CACHE_KEYS.CHALLENGES(filters) });
+      queryClient.invalidateQueries({ queryKey: ['challenges', 'progress', 'batch'] });
     } catch (error) {
       console.error('Failed to leave challenge:', error);
       alert('Failed to leave challenge. Please try again.');
     }
   };
 
-  const filteredChallenges = challenges.filter(challenge => {
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      return challenge.name.toLowerCase().includes(query) ||
-             challenge.description.toLowerCase().includes(query);
-    }
-    return true;
-  });
+  const filteredChallenges = useMemo(() => {
+    if (!searchQuery) return challenges;
+
+    const query = searchQuery.toLowerCase();
+    return challenges.filter(challenge =>
+      challenge.name.toLowerCase().includes(query) ||
+      challenge.description.toLowerCase().includes(query)
+    );
+  }, [challenges, searchQuery]);
 
   return (
     <div className="min-h-screen bg-gray-50">

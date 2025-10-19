@@ -55,6 +55,7 @@ export const CACHE_KEYS = {
   CHALLENGES: (filters?: any) => ['challenges', filters],
   CHALLENGE: (challengeId: string) => ['challenge', challengeId],
   USER_CHALLENGES: (userId: string) => ['user', 'challenges', userId],
+  CHALLENGE_PROGRESS: (challengeId: string, userId: string) => ['challenge', 'progress', challengeId, userId],
   
   // Feed data
   FEED_SESSIONS: (limit?: number, cursor?: string, filters?: any) => 
