@@ -8,7 +8,6 @@ import { firebaseApi } from '@/lib/firebaseApi';
 import { useAuth } from '@/contexts/AuthContext';
 import Header from '@/components/HeaderComponent';
 import MobileHeader from '@/components/MobileHeader';
-import Image from 'next/image';
 import { toPng } from 'html-to-image';
 
 interface SessionSharePageProps {
@@ -17,7 +16,7 @@ interface SessionSharePageProps {
   }>;
 }
 
-type LayoutType = 'minimal';
+type LayoutType = 'minimal' | 'square';
 
 function SessionShareContent({ sessionId }: { sessionId: string }) {
   const router = useRouter();
@@ -25,17 +24,18 @@ function SessionShareContent({ sessionId }: { sessionId: string }) {
   const [session, setSession] = useState<SessionWithDetails | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedLayout, setSelectedLayout] = useState<LayoutType>('minimal');
+  const [selectedLayout, setSelectedLayout] = useState<LayoutType | null>('square');
   const [isExporting, setIsExporting] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
 
   const minimalRef = useRef<HTMLDivElement>(null);
+  const squareRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (sessionId) {
+    if (sessionId && user) {
       loadSession();
     }
-  }, [sessionId]);
+  }, [sessionId, user]);
 
   const loadSession = async () => {
     try {
@@ -60,6 +60,37 @@ function SessionShareContent({ sessionId }: { sessionId: string }) {
       return `${hours}h ${minutes}m`;
     }
     return `${minutes}m`;
+  };
+
+  const formatTimeAgo = (date: Date): string => {
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+
+    const sessionDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+
+    const timeStr = date.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true
+    });
+
+    if (sessionDate.getTime() === today.getTime()) {
+      return `Today at ${timeStr}`;
+    }
+
+    if (sessionDate.getTime() === yesterday.getTime()) {
+      return `Yesterday at ${timeStr}`;
+    }
+
+    const dateStr = date.toLocaleDateString('en-US', {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric'
+    });
+
+    return `${dateStr} at ${timeStr}`;
   };
 
   const getUserInitials = (user: User): string => {
@@ -88,12 +119,14 @@ function SessionShareContent({ sessionId }: { sessionId: string }) {
   };
 
   const getCurrentRef = () => {
-    return minimalRef;
+    if (selectedLayout === 'square') return squareRef;
+    if (selectedLayout === 'minimal') return minimalRef;
+    return null;
   };
 
   const handleExport = async () => {
     const imageRef = getCurrentRef();
-    if (!imageRef.current) return;
+    if (!imageRef || !imageRef.current) return;
 
     setIsExporting(true);
     setExportError(null);
@@ -116,8 +149,8 @@ function SessionShareContent({ sessionId }: { sessionId: string }) {
         pixelRatio: 2,
         cacheBust: true,
         backgroundColor: '#ffffff',
-        width: 1080,
-        height: 1080
+        width: selectedLayout === 'square' ? 1080 : 1080,
+        height: selectedLayout === 'square' ? 1110 : 1080
       });
 
       // Clean up
@@ -137,7 +170,7 @@ function SessionShareContent({ sessionId }: { sessionId: string }) {
 
   const handleShare = async () => {
     const imageRef = getCurrentRef();
-    if (!imageRef.current) return;
+    if (!imageRef || !imageRef.current) return;
 
     setIsExporting(true);
     setExportError(null);
@@ -160,8 +193,8 @@ function SessionShareContent({ sessionId }: { sessionId: string }) {
         pixelRatio: 2,
         cacheBust: true,
         backgroundColor: '#ffffff',
-        width: 1080,
-        height: 1080
+        width: selectedLayout === 'square' ? 1080 : 1080,
+        height: selectedLayout === 'square' ? 1110 : 1080
       });
 
       // Clean up
@@ -275,6 +308,188 @@ function SessionShareContent({ sessionId }: { sessionId: string }) {
       </div>
     );
   }
+
+  // Square Mobile Post Layout
+  const SquareLayout = () => (
+    <div
+      ref={squareRef}
+      style={{
+        width: '1080px',
+        height: '1110px',
+        backgroundColor: '#ffffff',
+        overflow: 'hidden',
+        fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
+      }}
+    >
+      <div style={{
+        height: '100%',
+        paddingTop: '48px',
+        paddingLeft: '32px',
+        paddingRight: '32px',
+        paddingBottom: '16px',
+        display: 'flex',
+        flexDirection: 'column',
+        backgroundColor: '#ffffff'
+      }}>
+        {/* Top Bar - Logo/Website and User Info */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '36px' }}>
+          {/* User Info */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+          {session.user.profilePicture ? (
+            <div style={{ width: '88px', height: '88px', borderRadius: '50%', overflow: 'hidden', flexShrink: 0 }}>
+              <img src={session.user.profilePicture} alt={session.user.name} width="88" height="88" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            </div>
+          ) : (
+            <div style={{
+              width: '88px',
+              height: '88px',
+              backgroundColor: '#f3f4f6',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0
+            }}>
+              <span style={{ color: '#4b5563', fontWeight: 600, fontSize: '36px' }}>{getUserInitials(session.user)}</span>
+            </div>
+          )}
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px' }}>
+            <div style={{ fontWeight: 700, fontSize: '40px', color: '#111827', lineHeight: 1 }}>{session.user.name}</div>
+            <div style={{ fontSize: '28px', color: '#6b7280', lineHeight: 1, position: 'relative', top: '-3px' }}>@{session.user.username}</div>
+          </div>
+          </div>
+
+          {/* Logo and Website - Top Right */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '14px',
+            flexShrink: 0
+          }}>
+            <svg width="56" height="56" viewBox="0 0 375 375" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
+              <path d="M 56.387 320.265 L 105.145 307.202 L 134.619 191.47 L 222.369 275.789 L 300.91 254.743 C 300.91 254.743 327.644 243.277 327.701 205.067 C 327.765 162.452 292.22 150.864 292.22 150.864 C 292.22 150.864 311.586 129.825 286.573 94.501 C 265.409 64.612 226.767 75.885 226.767 75.885 L 131.479 100.996 L 163.14 132.378 L 240.652 113.004 C 240.652 113.004 253.429 109.011 259.254 125.122 C 264.463 139.529 249.128 146.798 249.139 146.809 C 249.186 146.856 192.6 161.379 192.553 161.379 C 192.506 161.379 224.354 193.363 224.406 193.466 C 224.435 193.523 259.751 183.839 259.751 183.839 C 259.751 183.839 281.184 181.354 285.882 196.467 C 292.14 216.599 271.779 222.147 271.79 222.147 C 271.837 222.147 239.215 231.316 239.215 231.316 C 239.215 231.316 113.277 106.094 113.228 106.045 C 113.179 105.996 56.211 321.004 56.387 320.265 Z" fill="#007AFF" transform="matrix(0.96592605, 0.25881901, -0.25881901, 0.96592605, 57.2958925, -43.02296686)"/>
+            </svg>
+            <span style={{ fontSize: '36px', fontWeight: 400, color: '#111827', lineHeight: 1, whiteSpace: 'nowrap' }}>www.ambira.app</span>
+          </div>
+        </div>
+
+        {/* Title and Description */}
+        <div style={{ marginBottom: '32px' }}>
+          <h3 style={{
+            fontSize: '44px',
+            fontWeight: 'bold',
+            color: '#111827',
+            lineHeight: '1.2',
+            margin: 0,
+            marginBottom: '12px',
+            textAlign: 'left'
+          }}>
+            {session.title || 'Focus Session'}
+          </h3>
+          {session.description && (
+            <p style={{
+              color: '#4b5563',
+              fontSize: '28px',
+              lineHeight: '1.4',
+              margin: 0,
+              wordBreak: 'break-word',
+              textAlign: 'left'
+            }}>
+              {session.description}
+            </p>
+          )}
+        </div>
+
+        {/* Images */}
+        {session.images && session.images.length > 0 && (
+          <div style={{ marginBottom: '32px' }}>
+            {session.images.length === 1 ? (
+              <div style={{
+                width: '100%',
+                height: '480px',
+                borderRadius: '16px',
+                overflow: 'hidden',
+                backgroundColor: '#f9fafb'
+              }}>
+                <img
+                  src={session.images[0]}
+                  alt="Session image"
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    objectPosition: 'center center'
+                  }}
+                />
+              </div>
+            ) : session.images.length === 2 ? (
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                {session.images.slice(0, 2).map((img, idx) => (
+                  <div key={idx} style={{
+                    width: '100%',
+                    height: '380px',
+                    borderRadius: '16px',
+                    overflow: 'hidden',
+                    backgroundColor: '#f9fafb'
+                  }}>
+                    <img
+                      src={img}
+                      alt={`Session image ${idx + 1}`}
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                        objectPosition: 'center center'
+                      }}
+                    />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                {session.images.slice(0, 4).map((img, idx) => (
+                  <div key={idx} style={{
+                    width: '100%',
+                    height: '240px',
+                    borderRadius: '16px',
+                    overflow: 'hidden',
+                    backgroundColor: '#f9fafb'
+                  }}>
+                    <img
+                      src={img}
+                      alt={`Session image ${idx + 1}`}
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                        objectPosition: 'center center'
+                      }}
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Stats */}
+        <div style={{ paddingLeft: '8px', paddingBottom: '0px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px' }}>
+            <div>
+              <div style={{ fontSize: '24px', color: '#6b7280', marginBottom: '10px', fontWeight: 500 }}>Time</div>
+              <div style={{ fontSize: '32px', fontWeight: 600, color: '#111827' }}>{formatTime(session.duration)}</div>
+            </div>
+            <div>
+              <div style={{ fontSize: '24px', color: '#6b7280', marginBottom: '10px', fontWeight: 500 }}>Activity</div>
+              <div style={{ fontSize: '32px', fontWeight: 600, color: '#111827', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                {session.activity?.name || session.project?.name || 'N/A'}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 
   // Minimal Clean Layout (no images)
   const MinimalLayout = () => (
@@ -434,36 +649,68 @@ function SessionShareContent({ sessionId }: { sessionId: string }) {
           </div>
         )}
 
-        {/* Preview */}
-        <div className="flex items-center justify-center mb-8">
-          <div className="relative rounded-2xl overflow-hidden ring-2 ring-gray-200 shadow-xl" style={{ width: '420px', height: '420px' }}>
-            <div className="absolute inset-0 flex items-center justify-center">
+        {/* Layout Previews - Side by Side */}
+        <div className="flex flex-col md:flex-row items-center justify-center gap-6 mb-8">
+          {/* Minimal Layout Preview */}
+          <button
+            onClick={() => setSelectedLayout('minimal')}
+            className={`relative rounded-lg overflow-hidden transition-all ${
+              selectedLayout === 'minimal'
+                ? 'ring-4 ring-[#007AFF]'
+                : 'ring-2 ring-gray-200 hover:ring-gray-300'
+            }`}
+            style={{ width: '420px', height: '420px' }}
+          >
+            <div className="absolute inset-0 flex items-center justify-center bg-white">
               <div className="transform scale-[0.389] origin-center">
                 <MinimalLayout />
               </div>
             </div>
-          </div>
+          </button>
+
+          {/* Square Post Layout Preview */}
+          <button
+            onClick={() => setSelectedLayout('square')}
+            className={`relative rounded-lg overflow-hidden transition-all ${
+              selectedLayout === 'square'
+                ? 'ring-4 ring-[#007AFF]'
+                : 'ring-2 ring-gray-200 hover:ring-gray-300'
+            }`}
+            style={{ width: '420px', height: '432px' }}
+          >
+            <div className="absolute inset-0 flex items-center justify-center bg-white">
+              <div className="transform scale-[0.389] origin-center">
+                <SquareLayout />
+              </div>
+            </div>
+          </button>
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 max-w-md mx-auto">
-          <button
-            onClick={handleShare}
-            className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-[#007AFF] text-white rounded-lg hover:bg-[#0056b3] transition-all disabled:opacity-50 disabled:cursor-not-allowed font-semibold shadow-lg hover:shadow-xl active:scale-95"
-            disabled={isExporting}
-          >
-            <Share2 className="w-4 h-4" />
-            {isExporting ? 'Processing...' : 'Share'}
-          </button>
-          <button
-            onClick={handleExport}
-            className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-semibold shadow-lg hover:shadow-xl active:scale-95"
-            disabled={isExporting}
-          >
-            <Download className="w-4 h-4" />
-            {isExporting ? 'Processing...' : 'Download'}
-          </button>
-        </div>
+        {/* Action Buttons or Prompt */}
+        {selectedLayout ? (
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 max-w-md mx-auto">
+            <button
+              onClick={handleShare}
+              className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-[#007AFF] text-white rounded-lg hover:bg-[#0056b3] transition-all disabled:opacity-50 disabled:cursor-not-allowed font-semibold shadow-lg hover:shadow-xl active:scale-95"
+              disabled={isExporting}
+            >
+              <Share2 className="w-4 h-4" />
+              {isExporting ? 'Processing...' : 'Share'}
+            </button>
+            <button
+              onClick={handleExport}
+              className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-semibold shadow-lg hover:shadow-xl active:scale-95"
+              disabled={isExporting}
+            >
+              <Download className="w-4 h-4" />
+              {isExporting ? 'Processing...' : 'Download'}
+            </button>
+          </div>
+        ) : (
+          <div className="text-center py-8">
+            <p className="text-gray-500 text-lg">Select a layout to continue</p>
+          </div>
+        )}
       </div>
     </div>
   );
