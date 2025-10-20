@@ -95,114 +95,118 @@ export default function Header() {
               />
             </Link>
 
-            {/* Search Area */}
-            {isSearchOpen ? (
-              <div className="flex items-center space-x-1 md:space-x-2 flex-1 md:flex-none">
-                <form onSubmit={handleSearch} className="flex items-center space-x-1 md:space-x-2 flex-1 md:flex-none">
-                  {/* Filter Dropdown */}
-                  <div className="relative flex-shrink-0">
+            {/* Search Area - Only show when authenticated */}
+            {user && (
+              <>
+                {isSearchOpen ? (
+                  <div className="flex items-center space-x-1 md:space-x-2 flex-1 md:flex-none">
+                    <form onSubmit={handleSearch} className="flex items-center space-x-1 md:space-x-2 flex-1 md:flex-none">
+                      {/* Filter Dropdown */}
+                      <div className="relative flex-shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => setIsFilterDropdownOpen(!isFilterDropdownOpen)}
+                          className="flex items-center space-x-1 md:space-x-1.5 px-2 md:px-3 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors whitespace-nowrap text-xs md:text-sm"
+                        >
+                          <span className="font-medium hidden md:inline">{getFilterLabel()}</span>
+                          <span className="font-medium md:hidden">{getFilterLabel().slice(0, 1)}</span>
+                          <ChevronDown className="w-3 h-3 md:w-4 md:h-4" />
+                        </button>
+
+                        {/* Dropdown Menu */}
+                        {isFilterDropdownOpen && (
+                          <div className="absolute top-full left-0 mt-1 w-40 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSearchFilter('people');
+                                setIsFilterDropdownOpen(false);
+                              }}
+                              className={`w-full text-left px-4 py-2 transition-colors ${
+                                searchFilter === 'people' ? 'bg-blue-50 text-[#007AFF]' : 'text-gray-700 hover:bg-gray-50'
+                              }`}
+                            >
+                              People
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSearchFilter('groups');
+                                setIsFilterDropdownOpen(false);
+                              }}
+                              className={`w-full text-left px-4 py-2 transition-colors ${
+                                searchFilter === 'groups' ? 'bg-blue-50 text-[#007AFF]' : 'text-gray-700 hover:bg-gray-50'
+                              }`}
+                            >
+                              Groups
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSearchFilter('challenges');
+                                setIsFilterDropdownOpen(false);
+                              }}
+                              className={`w-full text-left px-4 py-2 transition-colors ${
+                                searchFilter === 'challenges' ? 'bg-blue-50 text-[#007AFF]' : 'text-gray-700 hover:bg-gray-50'
+                              }`}
+                            >
+                              Challenges
+                            </button>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Search Input */}
+                      <div className="relative flex-1 md:w-80 md:flex-none min-w-0">
+                        <input
+                          ref={searchInputRef}
+                          type="text"
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          placeholder={`Search ${getFilterLabel().toLowerCase()}...`}
+                          className="w-full px-3 md:px-4 py-2 pr-8 md:pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:border-transparent text-xs md:text-sm"
+                        />
+                        <Search className="w-3 h-3 md:w-4 md:h-4 absolute right-2 md:right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                      </div>
+                    </form>
+
+                    {/* Close Button */}
                     <button
                       type="button"
-                      onClick={() => setIsFilterDropdownOpen(!isFilterDropdownOpen)}
-                      className="flex items-center space-x-1 md:space-x-1.5 px-2 md:px-3 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors whitespace-nowrap text-xs md:text-sm"
+                      onClick={() => {
+                        setIsSearchOpen(false);
+                        setSearchQuery('');
+                        setIsFilterDropdownOpen(false);
+                      }}
+                      className="p-2 text-gray-600 hover:text-gray-900 transition-colors"
                     >
-                      <span className="font-medium hidden md:inline">{getFilterLabel()}</span>
-                      <span className="font-medium md:hidden">{getFilterLabel().slice(0, 1)}</span>
-                      <ChevronDown className="w-3 h-3 md:w-4 md:h-4" />
+                      <X className="w-5 h-5" />
                     </button>
-
-                    {/* Dropdown Menu */}
-                    {isFilterDropdownOpen && (
-                      <div className="absolute top-full left-0 mt-1 w-40 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setSearchFilter('people');
-                            setIsFilterDropdownOpen(false);
-                          }}
-                          className={`w-full text-left px-4 py-2 transition-colors ${
-                            searchFilter === 'people' ? 'bg-blue-50 text-[#007AFF]' : 'text-gray-700 hover:bg-gray-50'
-                          }`}
-                        >
-                          People
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setSearchFilter('groups');
-                            setIsFilterDropdownOpen(false);
-                          }}
-                          className={`w-full text-left px-4 py-2 transition-colors ${
-                            searchFilter === 'groups' ? 'bg-blue-50 text-[#007AFF]' : 'text-gray-700 hover:bg-gray-50'
-                          }`}
-                        >
-                          Groups
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setSearchFilter('challenges');
-                            setIsFilterDropdownOpen(false);
-                          }}
-                          className={`w-full text-left px-4 py-2 transition-colors ${
-                            searchFilter === 'challenges' ? 'bg-blue-50 text-[#007AFF]' : 'text-gray-700 hover:bg-gray-50'
-                          }`}
-                        >
-                          Challenges
-                        </button>
-                      </div>
-                    )}
                   </div>
-
-                  {/* Search Input */}
-                  <div className="relative flex-1 md:w-80 md:flex-none min-w-0">
-                    <input
-                      ref={searchInputRef}
-                      type="text"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      placeholder={`Search ${getFilterLabel().toLowerCase()}...`}
-                      className="w-full px-3 md:px-4 py-2 pr-8 md:pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:border-transparent text-xs md:text-sm"
-                    />
-                    <Search className="w-3 h-3 md:w-4 md:h-4 absolute right-2 md:right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-                  </div>
-                </form>
-
-                {/* Close Button */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsSearchOpen(false);
-                    setSearchQuery('');
-                    setIsFilterDropdownOpen(false);
-                  }}
-                  className="p-2 text-gray-600 hover:text-gray-900 transition-colors"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-            ) : (
-              <button 
-                onClick={() => setIsSearchOpen(true)}
-                className="p-2 text-gray-600 hover:text-[#007AFF] transition-colors"
-              >
-                <Search className="w-5 h-5" />
-              </button>
+                ) : (
+                  <button
+                    onClick={() => setIsSearchOpen(true)}
+                    className="p-2 text-gray-600 hover:text-[#007AFF] transition-colors"
+                  >
+                    <Search className="w-5 h-5" />
+                  </button>
+                )}
+              </>
             )}
 
-            {/* Desktop Navigation - Only show when search is closed */}
-            {!isSearchOpen && (
+            {/* Desktop Navigation - Only show when search is closed AND user is authenticated */}
+            {!isSearchOpen && user && (
               <nav className="hidden md:flex items-center space-x-6 h-14">
                 <Link
-                  href="/"
+                  href="/feed"
                   className={`text-base font-[450] transition-colors h-full relative flex items-center ${
-                    isActive('/')
+                    isActive('/feed')
                       ? 'text-gray-900'
                       : 'text-gray-600 hover:text-[#007AFF]'
                   }`}
                 >
                   Dashboard
-                  {isActive('/') && (
+                  {isActive('/feed') && (
                     <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#007AFF]"></div>
                   )}
                 </Link>
@@ -251,6 +255,19 @@ export default function Header() {
 
           {/* Right side actions */}
           <div className="flex items-center space-x-3">
+
+            {/* "Have an account?" text + Sign In Button - Only show when NOT authenticated */}
+            {!user && (
+              <div className="hidden md:flex items-center gap-3">
+                <span className="text-gray-600 text-sm font-medium">Have an account?</span>
+                <Link
+                  href="/auth"
+                  className="flex items-center gap-2 px-4 py-2 bg-[#007AFF] text-white hover:bg-[#0056D6] rounded-md transition-colors whitespace-nowrap font-semibold text-sm"
+                >
+                  <span>Sign In</span>
+                </Link>
+              </div>
+            )}
 
             {/* Discord Community Button - Only show when NOT authenticated */}
             {!user && (
@@ -400,24 +417,26 @@ export default function Header() {
               </div>
             )}
 
-            {/* Mobile menu button */}
-            <button
-              className="md:hidden p-2 text-gray-600 hover:text-[#007AFF] transition-colors"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            >
-              <Menu className="w-5 h-5" />
-            </button>
+            {/* Mobile menu button - Only show when authenticated */}
+            {user && (
+              <button
+                className="md:hidden p-2 text-gray-600 hover:text-[#007AFF] transition-colors"
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              >
+                <Menu className="w-5 h-5" />
+              </button>
+            )}
           </div>
         </div>
 
-        {/* Mobile Navigation */}
-        {isMobileMenuOpen && (
+        {/* Mobile Navigation - Only show when authenticated */}
+        {user && isMobileMenuOpen && (
           <div className="md:hidden border-t border-gray-200 bg-white shadow-sm">
             <nav className="py-4 space-y-2">
               <Link
-                href="/"
+                href="/feed"
                 className={`block px-4 py-2 transition-colors ${
-                  isActive('/')
+                  isActive('/feed')
                     ? 'text-[#007AFF] bg-blue-50'
                     : 'text-gray-900 hover:text-[#007AFF]'
                 }`}

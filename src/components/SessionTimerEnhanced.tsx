@@ -604,10 +604,10 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
           <div className="fixed inset-0 bg-black/50 z-[9999] flex items-center justify-center p-4">
             <div className="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl">
               <h3 className="text-xl font-bold text-gray-900 mb-3">
-                Cancel Session?
+                Discard Session?
               </h3>
               <p className="text-gray-600 mb-6">
-                Are you sure you want to cancel this session? All progress will
+                Are you sure you want to discard this session? All progress will
                 be lost.
               </p>
               <div className="flex gap-3">
@@ -621,7 +621,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                   onClick={handleCancelTimer}
                   className="flex-1 px-4 py-3 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-colors font-medium"
                 >
-                  Cancel
+                  Discard
                 </button>
               </div>
             </div>

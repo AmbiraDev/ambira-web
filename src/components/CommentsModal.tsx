@@ -219,7 +219,7 @@ export const CommentsModal: React.FC<CommentsModalProps> = ({
         {/* Session Info Card */}
         {session && (
           <div className="px-4 py-2.5 border-b border-gray-200 flex-shrink-0">
-            <Link href={`/sessions/${session.id}`} className="block">
+            <div>
               <h2 className="text-base font-bold text-gray-900 mb-1.5">
                 {session.title || 'Focus Session'}
               </h2>
@@ -251,7 +251,7 @@ export const CommentsModal: React.FC<CommentsModalProps> = ({
                   </>
                 )}
               </div>
-            </Link>
+            </div>
           </div>
         )}
 
