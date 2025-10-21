@@ -365,6 +365,13 @@ export const Feed: React.FC<FeedProps> = ({
         buttonText: 'Start a Session',
         buttonAction: () => router.push('/timer')
       };
+    } else if (feedType === 'following') {
+      emptyStateContent = {
+        title: 'Your feed is empty',
+        message: 'Follow people to see their productive sessions in your feed and get inspired by their work!',
+        buttonText: 'Find People to Follow',
+        buttonAction: () => router.push('/discover/people')
+      };
     }
 
     return (

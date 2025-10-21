@@ -19,8 +19,8 @@ export default function Home() {
   const { isAuthenticated, isLoading, user } = useAuth();
   const router = useRouter();
   const [selectedFilter, setSelectedFilter] = useState<FeedFilterOption>({
-    type: 'all',
-    label: 'All'
+    type: 'following',
+    label: 'Following'
   });
 
   console.log('[Home Page] Auth State:', { isAuthenticated, isLoading });
