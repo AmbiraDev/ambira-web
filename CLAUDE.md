@@ -146,6 +146,49 @@ npx firebase-tools deploy --only firestore:rules --non-interactive
 - Feature components in `/src/components/` (organized by feature)
 - Reusable patterns: modal overlays, tab interfaces, stat cards
 
+## Visual Development
+
+### Design Principles
+- Comprehensive design checklist in `/context/design-principles.md`
+- Brand style guide in `/context/style-guide.md`
+- When making visual (front-end, UI/UX) changes, always refer to these files for guidance
+
+### Quick Visual Check
+
+IMMEDIATELY after implementing any front-end change:
+
+1. **Identify what changed** - Review the modified components/pages
+2. **Navigate to affected pages** - Use `mcp__playwright__browser_navigate` to visit each changed view
+3. **Verify design compliance** - Compare against `/context/design-principles.md` and `/context/style-guide.md`
+4. **Validate feature implementation** - Ensure the change fulfills the user's specific request
+5. **Check acceptance criteria** - Review any provided context files or requirements
+6. **Capture evidence** - Take full page screenshot at desktop viewport (1440px) of each changed view
+7. **Check for errors** - Run `mcp__playwright__browser_console_messages`
+
+This verification ensures changes meet design standards and user requirements.
+
+### Comprehensive Design Review
+
+Invoke the `@agent-design-review` subagent for thorough design validation when:
+- Completing significant UI/UX features
+- Before finalizing PRs with visual changes
+- Needing comprehensive accessibility and responsiveness testing
+
+### shadcn/ui Components
+
+- Modern component library built on Radix UI primitives
+- Components in `/src/components/ui/`
+- Tailwind CSS v4 with CSS variables for theming
+- Lucide React icons throughout
+
+### Key Features
+
+- Dashboard for event management
+- Content moderation tools
+- Export functionality
+- Credits system
+- Notification support
+
 ## Development Notes
 
 ### Cursor Rules (from `.cursor/rules/`)

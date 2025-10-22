@@ -309,7 +309,7 @@ export const LandingPage: React.FC = () => {
                   alt="Ambira Logo"
                   width={128}
                   height={128}
-                  priority
+                  priority={true}
                 />
               </div>
               <h1 className="text-2xl font-bold text-gray-900 mb-1">Welcome to Ambira</h1>
@@ -363,7 +363,7 @@ export const LandingPage: React.FC = () => {
             </div>
 
             {/* Legal Text */}
-            <p className="text-xs text-gray-600 text-center mt-6">
+            <p className="text-sm text-gray-600 text-center mt-6">
               By continuing, you are agreeing to our{' '}
               <Link href="/terms" className="text-[#007AFF]">Terms of Service</Link>
               {' '}and{' '}
@@ -383,13 +383,14 @@ export const LandingPage: React.FC = () => {
                   setShowSignup(false);
                 }}
                 className="absolute right-0 top-0 text-gray-600 p-2"
+                aria-label="Close form"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
               <h1 className="text-2xl font-bold text-gray-900 pt-2">
-                {showLogin ? 'Log in to Ambira' : 'Create an Account'}
+                {showLogin ? 'Log In to Ambira' : 'Create Your Account'}
               </h1>
             </div>
 
@@ -402,7 +403,7 @@ export const LandingPage: React.FC = () => {
                     onClick={handleGoogleSignIn}
                     type="button"
                     disabled={isLoading}
-                    className="w-full flex items-center justify-center py-3 border-2 border-gray-300 text-gray-900 rounded-xl font-medium text-sm hover:border-gray-400 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full flex items-center justify-center py-3 border-2 border-gray-300 text-gray-900 rounded-lg font-medium text-sm hover:border-gray-400 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
                       <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -429,7 +430,7 @@ export const LandingPage: React.FC = () => {
                       type="email"
                       value={loginData.email}
                       onChange={handleLoginChange}
-                      className="w-full px-3 py-2.5 border border-gray-300 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-[#007AFF]"
+                      className="w-full px-3 py-2.5 border border-gray-300 rounded-md text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] focus-visible:ring-offset-2"
                       placeholder="Email"
                     />
                   </div>
@@ -443,14 +444,14 @@ export const LandingPage: React.FC = () => {
                       type="password"
                       value={loginData.password}
                       onChange={handleLoginChange}
-                      className="w-full px-3 py-2.5 border border-gray-300 rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-[#007AFF]"
+                      className="w-full px-3 py-2.5 border border-gray-300 rounded-md text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] focus-visible:ring-offset-2"
                       placeholder="Password"
                     />
                   </div>
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full py-3.5 bg-[#007AFF] text-white font-semibold rounded-xl hover:bg-[#0056D6] transition-colors"
+                    className="w-full py-4 bg-[#007AFF] text-white font-semibold rounded-lg hover:bg-[#0056D6] transition-colors min-h-[44px]"
                   >
                     {isLoading ? 'Logging in...' : 'Log In'}
                   </button>
@@ -462,7 +463,7 @@ export const LandingPage: React.FC = () => {
                     onClick={handleGoogleSignIn}
                     type="button"
                     disabled={isLoading}
-                    className="w-full flex items-center justify-center py-3 border-2 border-gray-300 text-gray-900 rounded-xl font-medium hover:border-gray-400 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full flex items-center justify-center py-3 border-2 border-gray-300 text-gray-900 rounded-lg font-medium hover:border-gray-400 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px]"
                   >
                     <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
                       <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -493,7 +494,7 @@ export const LandingPage: React.FC = () => {
                       autoComplete="name"
                       value={signupData.name}
                       onChange={handleSignupChange}
-                      className={`w-full px-4 py-3 border rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-[#007AFF] ${
+                      className={`w-full px-4 py-3 border rounded-md text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] focus-visible:ring-offset-2 ${
                         signupErrors.name ? 'border-red-300' : 'border-gray-300'
                       }`}
                       placeholder="Enter your full name"
@@ -512,8 +513,8 @@ export const LandingPage: React.FC = () => {
                         autoComplete="username"
                         value={signupData.username}
                         onChange={handleSignupChange}
-                        className={`w-full px-4 py-3 pr-10 border rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-[#007AFF] ${
-                          signupErrors.username ? 'border-red-300' : 
+                        className={`w-full px-4 py-3 pr-10 border rounded-md text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] focus-visible:ring-offset-2 ${
+                          signupErrors.username ? 'border-red-300' :
                           usernameAvailable === true ? 'border-green-300' :
                           usernameAvailable === false ? 'border-red-300' : 'border-gray-300'
                         }`}
@@ -525,14 +526,14 @@ export const LandingPage: React.FC = () => {
                         </div>
                       )}
                       {!usernameCheckLoading && usernameAvailable === true && signupData.username.trim().length >= 3 && (
-                        <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                        <div className="absolute right-3 top-1/2 transform -translate-y-1/2 transition-opacity duration-200">
                           <svg className="h-4 w-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                           </svg>
                         </div>
                       )}
                       {!usernameCheckLoading && usernameAvailable === false && (
-                        <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                        <div className="absolute right-3 top-1/2 transform -translate-y-1/2 transition-opacity duration-200">
                           <svg className="h-4 w-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                           </svg>
@@ -555,7 +556,7 @@ export const LandingPage: React.FC = () => {
                       autoComplete="email"
                       value={signupData.email}
                       onChange={handleSignupChange}
-                      className={`w-full px-4 py-3 border rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-[#007AFF] ${
+                      className={`w-full px-4 py-3 border rounded-md text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] focus-visible:ring-offset-2 ${
                         signupErrors.email ? 'border-red-300' : 'border-gray-300'
                       }`}
                       placeholder="Enter your email"
@@ -573,7 +574,7 @@ export const LandingPage: React.FC = () => {
                       autoComplete="new-password"
                       value={signupData.password}
                       onChange={handleSignupChange}
-                      className={`w-full px-4 py-3 border rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-[#007AFF] ${
+                      className={`w-full px-4 py-3 border rounded-md text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] focus-visible:ring-offset-2 ${
                         signupErrors.password ? 'border-red-300' : 'border-gray-300'
                       }`}
                       placeholder="Create a password"
@@ -591,7 +592,7 @@ export const LandingPage: React.FC = () => {
                       autoComplete="new-password"
                       value={confirmPassword}
                       onChange={handleSignupChange}
-                      className={`w-full px-4 py-3 border rounded-xl text-base focus:outline-none focus:ring-2 focus:ring-[#007AFF] ${
+                      className={`w-full px-4 py-3 border rounded-md text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] focus-visible:ring-offset-2 ${
                         signupErrors.confirmPassword ? 'border-red-300' : 'border-gray-300'
                       }`}
                       placeholder="Confirm your password"
@@ -604,7 +605,7 @@ export const LandingPage: React.FC = () => {
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full py-4 bg-[#007AFF] text-white font-semibold text-lg rounded-xl hover:bg-[#0056D6] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full py-4 bg-[#007AFF] text-white font-semibold text-lg rounded-lg hover:bg-[#0056D6] transition-colors disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px]"
                   >
                     {isLoading ? (
                       <div className="flex items-center justify-center">
@@ -641,7 +642,7 @@ export const LandingPage: React.FC = () => {
                     alt="Ambira Logo"
                     width={192}
                     height={192}
-                    priority
+                    priority={true}
                   />
                 </div>
                 <h1 className="text-4xl font-bold text-gray-900 mb-2">Welcome to Ambira</h1>
@@ -652,7 +653,7 @@ export const LandingPage: React.FC = () => {
 
               {/* Already a Member Header */}
               <div className="text-center mb-6">
-                <h2 className="text-2xl text-gray-600">
+                <p className="text-2xl text-gray-600">
                   Already a Member?{' '}
                   <button
                     onClick={() => setShowLogin(true)}
@@ -660,7 +661,7 @@ export const LandingPage: React.FC = () => {
                   >
                     Log In
                   </button>
-                </h2>
+                </p>
               </div>
             </>
           )}
@@ -674,7 +675,7 @@ export const LandingPage: React.FC = () => {
                   alt="Ambira Logo"
                   width={192}
                   height={192}
-                  priority
+                  priority={true}
                 />
               </div>
               <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h1>
@@ -693,12 +694,12 @@ export const LandingPage: React.FC = () => {
                   alt="Ambira Logo"
                   width={192}
                   height={192}
-                  priority
+                  priority={true}
                 />
               </div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">Join Ambira</h1>
+              <h1 className="text-3xl font-bold text-gray-900 mb-2">Create Your Account</h1>
               <p className="text-lg text-gray-600">
-                Create your account
+                Join Ambira and start tracking your productivity
               </p>
             </div>
           )}
@@ -746,6 +747,7 @@ export const LandingPage: React.FC = () => {
                     onClick={() => setShowLogin(false)}
                     className="text-gray-400 hover:text-gray-600"
                     type="button"
+                    aria-label="Go back to login options"
                   >
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -784,7 +786,7 @@ export const LandingPage: React.FC = () => {
                       autoComplete="email"
                       value={loginData.email}
                       onChange={handleLoginChange}
-                      className={`w-full px-4 py-4 text-lg border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:border-transparent ${loginErrors.email ? 'border-red-300' : 'border-gray-300'}`}
+                      className={`w-full px-4 py-4 text-lg border rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] focus-visible:ring-offset-2 ${loginErrors.email ? 'border-red-300' : 'border-gray-300'}`}
                       placeholder="Enter your email"
                     />
                     {loginErrors.email && <p className="mt-2 text-sm text-red-600">{loginErrors.email}</p>}
@@ -798,15 +800,23 @@ export const LandingPage: React.FC = () => {
                       autoComplete="current-password"
                       value={loginData.password}
                       onChange={handleLoginChange}
-                      className={`w-full px-4 py-4 text-lg border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:border-transparent ${loginErrors.password ? 'border-red-300' : 'border-gray-300'}`}
+                      className={`w-full px-4 py-4 text-lg border rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] focus-visible:ring-offset-2 ${loginErrors.password ? 'border-red-300' : 'border-gray-300'}`}
                       placeholder="Enter your password"
                     />
                     {loginErrors.password && <p className="mt-2 text-sm text-red-600">{loginErrors.password}</p>}
                   </div>
+
+                  {/* Error Message - Display before submit button */}
+                  {error && (
+                    <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
+                      {error}
+                    </div>
+                  )}
+
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full flex justify-center py-4 px-4 rounded-lg text-lg font-semibold text-white bg-[#007AFF] hover:bg-[#0056D6] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#007AFF] disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full flex justify-center py-4 px-4 rounded-lg text-lg font-semibold text-white bg-[#007AFF] hover:bg-[#0056D6] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#007AFF] disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isLoading ? 'Signing in...' : 'Sign In'}
                   </button>
@@ -815,15 +825,14 @@ export const LandingPage: React.FC = () => {
             ) : (
               <>
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-2xl font-semibold text-gray-900">
-                    Create your account
-                  </h2>
                   <button
                     onClick={() => setShowSignup(false)}
                     className="text-gray-400 hover:text-gray-600"
+                    type="button"
+                    aria-label="Go back to signup options"
                   >
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                     </svg>
                   </button>
                 </div>
@@ -841,7 +850,7 @@ export const LandingPage: React.FC = () => {
                       autoComplete="name"
                       value={signupData.name}
                       onChange={handleSignupChange}
-                      className={`w-full px-3 py-2 border rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:border-transparent ${
+                      className={`w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] focus-visible:ring-offset-2 ${
                         signupErrors.name ? 'border-red-300' : 'border-gray-300'
                       }`}
                       placeholder="Enter your full name"
@@ -863,8 +872,8 @@ export const LandingPage: React.FC = () => {
                         autoComplete="username"
                         value={signupData.username}
                         onChange={handleSignupChange}
-                        className={`w-full px-3 py-2 pr-10 border rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:border-transparent ${
-                          signupErrors.username ? 'border-red-300' : 
+                        className={`w-full px-3 py-2 pr-10 border rounded-md shadow-sm placeholder-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] focus-visible:ring-offset-2 ${
+                          signupErrors.username ? 'border-red-300' :
                           usernameAvailable === true ? 'border-green-300' :
                           usernameAvailable === false ? 'border-red-300' : 'border-gray-300'
                         }`}
@@ -876,14 +885,14 @@ export const LandingPage: React.FC = () => {
                         </div>
                       )}
                       {!usernameCheckLoading && usernameAvailable === true && signupData.username.trim().length >= 3 && (
-                        <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                        <div className="absolute right-3 top-1/2 transform -translate-y-1/2 transition-opacity duration-200">
                           <svg className="h-4 w-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                           </svg>
                         </div>
                       )}
                       {!usernameCheckLoading && usernameAvailable === false && (
-                        <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                        <div className="absolute right-3 top-1/2 transform -translate-y-1/2 transition-opacity duration-200">
                           <svg className="h-4 w-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                           </svg>
@@ -909,7 +918,7 @@ export const LandingPage: React.FC = () => {
                       autoComplete="email"
                       value={signupData.email}
                       onChange={handleSignupChange}
-                      className={`w-full px-3 py-2 border rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:border-transparent ${
+                      className={`w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] focus-visible:ring-offset-2 ${
                         signupErrors.email ? 'border-red-300' : 'border-gray-300'
                       }`}
                       placeholder="Enter your email"
@@ -930,7 +939,7 @@ export const LandingPage: React.FC = () => {
                       autoComplete="new-password"
                       value={signupData.password}
                       onChange={handleSignupChange}
-                      className={`w-full px-3 py-2 border rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:border-transparent ${
+                      className={`w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] focus-visible:ring-offset-2 ${
                         signupErrors.password ? 'border-red-300' : 'border-gray-300'
                       }`}
                       placeholder="Create a password"
@@ -951,7 +960,7 @@ export const LandingPage: React.FC = () => {
                       autoComplete="new-password"
                       value={confirmPassword}
                       onChange={handleSignupChange}
-                      className={`w-full px-3 py-2 border rounded-lg shadow-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:border-transparent ${
+                      className={`w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] focus-visible:ring-offset-2 ${
                         signupErrors.confirmPassword ? 'border-red-300' : 'border-gray-300'
                       }`}
                       placeholder="Confirm your password"
@@ -979,25 +988,6 @@ export const LandingPage: React.FC = () => {
 
                 </form>
               </>
-            )}
-
-            {/* Error Message */}
-            {error && (
-              <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    {error}
-                  </div>
-                  {error.includes('already registered') && (
-                    <button
-                      onClick={() => setShowSignup(false)}
-                      className="ml-3 text-red-700 hover:text-red-800 underline text-xs font-medium"
-                    >
-                      Switch to Login
-                    </button>
-                  )}
-                </div>
-              </div>
             )}
           </div>
 
