@@ -10,6 +10,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import ConfirmDialog from './ConfirmDialog';
 import { useSupportMutation, useDeleteSessionMutation } from '@/hooks/useMutations';
 import { useQueryClient } from '@tanstack/react-query';
+import { AlertTriangle, Users, Search, ChevronUp } from 'lucide-react';
 
 interface FeedProps {
   filters?: FeedFilters;
@@ -314,9 +315,7 @@ export const Feed: React.FC<FeedProps> = ({
     return (
       <div className={`text-center py-8 px-4 ${className}`} role="alert" aria-live="polite">
         <div className="text-red-600 mb-4">
-          <svg className="w-12 h-12 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 18.5c-.77.833.192 2.5 1.732 2.5z" />
-          </svg>
+          <AlertTriangle className="w-12 h-12 mx-auto mb-2" aria-hidden="true" />
           <p className="font-medium text-sm sm:text-base">Failed to load sessions</p>
           <p className="text-sm text-gray-600 mt-1">
             {isPermissionError
@@ -332,7 +331,7 @@ export const Feed: React.FC<FeedProps> = ({
         </div>
         <button
           onClick={refreshSessions}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200"
         >
           Try Again
         </button>
@@ -378,9 +377,7 @@ export const Feed: React.FC<FeedProps> = ({
       <div className={`text-center py-12 px-4 ${className}`}>
         <div className="max-w-md mx-auto">
           <div className="text-gray-500 mb-8">
-            <svg className="w-20 h-20 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-            </svg>
+            <Users className="w-20 h-20 mx-auto mb-4 text-gray-400" />
             <h3 className="font-bold text-xl text-gray-900 mb-2">{emptyStateContent.title}</h3>
             <p className="text-base text-gray-600 leading-relaxed">
               {emptyStateContent.message}
@@ -390,11 +387,9 @@ export const Feed: React.FC<FeedProps> = ({
           {/* Action Button */}
           <button
             onClick={emptyStateContent.buttonAction}
-            className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#007AFF] text-white rounded-lg hover:bg-[#0051D5] transition-colors font-semibold text-base shadow-md hover:shadow-lg transform hover:scale-[1.02] transition-all"
+            className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#007AFF] text-white rounded-lg hover:bg-[#0051D5] transition-colors duration-200 font-semibold text-base shadow-md hover:shadow-lg"
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
+            <Search className="w-5 h-5" />
             {emptyStateContent.buttonText}
           </button>
         </div>
@@ -409,12 +404,10 @@ export const Feed: React.FC<FeedProps> = ({
         <div className="mb-4 sticky top-0 z-10">
           <button
             onClick={refreshSessions}
-            className="w-full py-3 px-3 sm:px-4 bg-gradient-to-r from-[#007AFF] to-[#0051D5] text-white rounded-lg shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200 flex items-center justify-center gap-2 font-medium text-sm sm:text-base"
+            className="w-full py-3 px-3 sm:px-4 bg-gradient-to-r from-[#007AFF] to-[#0051D5] text-white rounded-lg shadow-lg hover:shadow-xl transition-colors duration-200 flex items-center justify-center gap-2 font-medium text-sm sm:text-base"
             aria-label={`${newSessionsCount} new sessions available, click to refresh`}
           >
-            <svg className="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-            </svg>
+            <ChevronUp className="w-5 h-5 flex-shrink-0" aria-hidden="true" />
             <span className="truncate">
               {newSessionsCount} new {newSessionsCount === 1 ? 'session' : 'sessions'} - Click to refresh
             </span>
@@ -424,8 +417,10 @@ export const Feed: React.FC<FeedProps> = ({
 
       {/* Sessions */}
       <div className="space-y-0 md:space-y-0">
-        {allSessions.map((session) => {
+        {allSessions.map((session, index) => {
           const isOwnSession = user && session.userId === user.id;
+          // First 2 sessions are above the fold on most screens
+          const isAboveFold = index < 2;
           return (
             <SessionCard
               key={session.id}
@@ -436,6 +431,8 @@ export const Feed: React.FC<FeedProps> = ({
               onEdit={isOwnSession ? (sessionId) => router.push(`/sessions/${sessionId}/edit`) : undefined}
               onDelete={isOwnSession ? handleDelete : undefined}
               showGroupInfo={showGroupInfo}
+              isAboveFold={isAboveFold}
+              priority={isAboveFold}
             />
           );
         })}

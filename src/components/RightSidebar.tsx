@@ -9,7 +9,6 @@ import { cachedQuery } from '@/lib/cache';
 import GroupAvatar from '@/components/GroupAvatar';
 import SuggestedPeopleModal from '@/components/SuggestedPeopleModal';
 import SuggestedGroupsModal from '@/components/SuggestedGroupsModal';
-import { Users } from 'lucide-react';
 
 interface SuggestedUser {
   id: string;
@@ -177,7 +176,7 @@ function RightSidebar() {
                 <Link
                   key={suggestedUser.id}
                   href={`/profile/${suggestedUser.username}`}
-                  className="block px-3 py-3 bg-white hover:bg-gray-50 rounded-lg transition-colors"
+                  className="block px-3 py-3 bg-white hover:bg-gray-50 rounded-lg transition-colors duration-200"
                 >
                   <div className="flex items-center gap-3">
                     {suggestedUser.profilePicture ? (
@@ -187,6 +186,8 @@ function RightSidebar() {
                         width={48}
                         height={48}
                         className="w-12 h-12 rounded-full object-cover flex-shrink-0"
+                        loading="lazy"
+                        sizes="48px"
                       />
                     ) : (
                       <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
@@ -209,7 +210,7 @@ function RightSidebar() {
                         e.stopPropagation();
                         handleFollowToggle(suggestedUser.id);
                       }}
-                      className={`text-sm font-semibold transition-colors whitespace-nowrap flex-shrink-0 ${
+                      className={`text-sm font-semibold transition-colors duration-200 whitespace-nowrap flex-shrink-0 ${
                         followingUsers.has(suggestedUser.id)
                           ? 'text-gray-600 hover:text-gray-900'
                           : 'text-[#007AFF] hover:text-[#0051D5]'
@@ -254,7 +255,7 @@ function RightSidebar() {
                 <Link
                   key={group.id}
                   href={`/groups/${group.id}`}
-                  className="block px-3 py-3 bg-white hover:bg-gray-50 rounded-lg transition-colors"
+                  className="block px-3 py-3 bg-white hover:bg-gray-50 rounded-lg transition-colors duration-200"
                 >
                   <div className="flex items-center gap-3">
                     <GroupAvatar
@@ -296,7 +297,7 @@ function RightSidebar() {
                           });
                         }
                       }}
-                      className="text-sm font-semibold text-[#007AFF] hover:text-[#0051D5] transition-colors whitespace-nowrap flex-shrink-0"
+                      className="text-sm font-semibold text-[#007AFF] hover:text-[#0051D5] transition-colors duration-200 whitespace-nowrap flex-shrink-0"
                       disabled={joiningGroups.has(group.id)}
                     >
                       {joiningGroups.has(group.id) ? 'Joining...' : 'Join'}

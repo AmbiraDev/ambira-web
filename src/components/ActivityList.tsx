@@ -2,16 +2,16 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { Plus, FileText } from 'lucide-react';
 import { Activity } from '@/types';
 import { ActivityCard } from './ActivityCard';
 import { useProjects } from '@/contexts/ProjectsContext';
+import { useToast } from '@/contexts/ToastContext';
 
 interface ActivityListProps {
   onCreateActivity?: () => void;
   onEditActivity?: (activity: Activity) => void;
 }
-
-// const STORAGE_KEY = 'activityViewMode';
 
 export const ActivityList: React.FC<ActivityListProps> = ({
   onCreateActivity,
@@ -19,35 +19,25 @@ export const ActivityList: React.FC<ActivityListProps> = ({
 }) => {
   const router = useRouter();
   const { projects: activities, isLoading, error, deleteProject, archiveProject } = useProjects();
-  // const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
-  const viewMode = 'grid'; // Always use grid view
+  const toast = useToast();
   const [deleteConfirm, setDeleteConfirm] = useState<Activity | null>(null);
 
-  // // Load view mode from localStorage on mount
-  // useEffect(() => {
-  //   const savedViewMode = localStorage.getItem(STORAGE_KEY);
-  //   if (savedViewMode === 'grid' || savedViewMode === 'list') {
-  //     setViewMode(savedViewMode);
-  //   }
-  // }, []);
+  // View mode is always 'grid' - list view has been removed for consistency
+  const viewMode = 'grid';
 
-  // // Save view mode to localStorage whenever it changes
-  // const handleViewModeChange = (mode: 'grid' | 'list') => {
-  //   setViewMode(mode);
-  //   localStorage.setItem(STORAGE_KEY, mode);
-  // };
-
-  // Show all activities
+  // Display all activities without filtering (no active filters applied)
   const filteredActivities = activities || [];
 
   const handleDelete = async (activity: Activity) => {
     try {
       if (deleteProject) {
         await deleteProject(activity.id);
+        toast.success(`Activity "${activity.name}" deleted successfully`);
       }
       setDeleteConfirm(null);
     } catch (error) {
       console.error('Failed to delete activity:', error);
+      toast.error('Failed to delete activity. Please try again.');
     }
   };
 
@@ -55,9 +45,11 @@ export const ActivityList: React.FC<ActivityListProps> = ({
     try {
       if (archiveProject) {
         await archiveProject(activity.id);
+        toast.success(`Activity "${activity.name}" archived successfully`);
       }
     } catch (error) {
       console.error('Failed to archive activity:', error);
+      toast.error('Failed to archive activity. Please try again.');
     }
   };
 
@@ -65,9 +57,11 @@ export const ActivityList: React.FC<ActivityListProps> = ({
     try {
       if (archiveProject) {
         await archiveProject(activity.id); // This will toggle the status
+        toast.success(`Activity "${activity.name}" restored successfully`);
       }
     } catch (error) {
       console.error('Failed to restore activity:', error);
+      toast.error('Failed to restore activity. Please try again.');
     }
   };
 
@@ -99,6 +93,7 @@ export const ActivityList: React.FC<ActivityListProps> = ({
         </div>
 
         {/* Loading skeleton for activity cards */}
+        {/* Showing 6 skeleton cards to fill a typical viewport (2 rows × 3 columns on desktop) */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {[1, 2, 3, 4, 5, 6].map(i => (
             <div key={i} className="animate-pulse">
@@ -152,14 +147,12 @@ export const ActivityList: React.FC<ActivityListProps> = ({
           <div className="flex gap-2">
             <button
               onClick={() => router.push('/activities/new')}
-              className="bg-[#007AFF] text-white px-5 py-2.5 rounded-lg hover:bg-[#0056D6] transition-colors flex items-center gap-2 font-medium shadow-sm hover:shadow-md"
+              aria-label="Create new activity"
+              className="bg-[#007AFF] text-white px-5 py-2.5 rounded-lg hover:bg-[#0056D6] transition-colors flex items-center gap-2 font-medium shadow-sm hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] focus-visible:ring-offset-2"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-              </svg>
+              <Plus className="w-5 h-5" aria-hidden="true" />
               New Activity
             </button>
-            {/* View mode toggle removed - grid view only */}
           </div>
         </div>
       </div>
@@ -169,9 +162,7 @@ export const ActivityList: React.FC<ActivityListProps> = ({
         <div className="bg-transparent rounded-xl border border-gray-200/60 p-8 md:p-12">
           <div className="max-w-md mx-auto text-center">
             <div className="w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-[#007AFF] to-[#0051D5] rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm">
-              <svg className="w-8 h-8 md:w-10 md:h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
+              <FileText className="w-8 h-8 md:w-10 md:h-10 text-white" />
             </div>
             <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-2">
               No activities yet
@@ -181,11 +172,10 @@ export const ActivityList: React.FC<ActivityListProps> = ({
             </p>
             <button
               onClick={() => router.push('/activities/new')}
-              className="inline-flex items-center gap-2 bg-[#007AFF] text-white px-6 py-3 rounded-xl hover:bg-[#0056D6] transition-colors font-medium shadow-sm mb-4"
+              aria-label="Create your first activity"
+              className="inline-flex items-center gap-2 bg-[#007AFF] text-white px-6 py-3 rounded-xl hover:bg-[#0056D6] transition-colors font-medium shadow-sm mb-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] focus-visible:ring-offset-2 min-h-[44px]"
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-              </svg>
+              <Plus className="w-5 h-5" aria-hidden="true" />
               Create Your First Activity
             </button>
             <p className="text-xs text-gray-500">
@@ -196,7 +186,7 @@ export const ActivityList: React.FC<ActivityListProps> = ({
       ) : (
         <div className={
           viewMode === 'grid'
-            ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'
+            ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'
             : 'max-w-3xl mx-auto space-y-4'
         }>
           {filteredActivities.map((activity) => (
@@ -214,14 +204,19 @@ export const ActivityList: React.FC<ActivityListProps> = ({
       {/* Delete Confirmation Modal */}
       {deleteConfirm && (
         <div
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-200"
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 motion-safe:animate-in motion-safe:fade-in motion-safe:duration-200"
           onClick={(e) => {
             if (e.target === e.currentTarget) {
               setDeleteConfirm(null);
             }
           }}
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') {
+              setDeleteConfirm(null);
+            }
+          }}
         >
-          <div className="bg-white/95 backdrop-blur-sm rounded-xl p-6 max-w-md w-full shadow-xl animate-in zoom-in-95 duration-200 border border-gray-200">
+          <div className="bg-white/95 backdrop-blur-sm rounded-xl p-6 max-w-md w-full shadow-xl motion-safe:animate-in motion-safe:zoom-in-95 motion-safe:duration-200 border border-gray-200">
             <h3 className="text-xl font-bold text-gray-900 mb-3">Delete Activity</h3>
             <p className="text-gray-600 mb-6 leading-relaxed">
               Are you sure you want to delete <span className="font-semibold text-gray-900">"{deleteConfirm.name}"</span>? This action cannot be undone.
@@ -229,13 +224,13 @@ export const ActivityList: React.FC<ActivityListProps> = ({
             <div className="flex gap-3 justify-end">
               <button
                 onClick={() => setDeleteConfirm(null)}
-                className="px-5 py-2.5 text-gray-700 font-medium border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                className="px-5 py-2.5 text-gray-700 font-medium border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] focus-visible:ring-offset-2 min-h-[44px]"
               >
                 Cancel
               </button>
               <button
                 onClick={() => handleDelete(deleteConfirm)}
-                className="px-5 py-2.5 bg-red-500 text-white font-medium rounded-lg hover:bg-red-600 transition-colors shadow-sm hover:shadow-md"
+                className="px-5 py-2.5 bg-red-500 text-white font-medium rounded-lg hover:bg-red-600 transition-colors shadow-sm hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 min-h-[44px]"
               >
                 Delete
               </button>

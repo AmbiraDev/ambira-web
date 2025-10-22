@@ -103,7 +103,7 @@ export const PostInteractions: React.FC<PostInteractionsProps> = ({
             />
           </svg>
           <span className="text-sm">
-            Comment {commentCount > 0 && `(${commentCount})`}
+            {commentCount === 1 ? 'Comment' : 'Comments'} {commentCount > 0 && `(${commentCount})`}
           </span>
         </button>
       </div>

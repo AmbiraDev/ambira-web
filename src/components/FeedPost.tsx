@@ -93,7 +93,7 @@ function FeedPost({
             <div className="w-6 h-6 bg-blue-400 rounded-full border-2 border-white"></div>
             <div className="w-6 h-6 bg-green-400 rounded-full border-2 border-white"></div>
           </div>
-          <span className="text-sm text-gray-600">{kudosCount} kudos • {commentCount} comment</span>
+          <span className="text-sm text-gray-600">{kudosCount} kudos • {commentCount} {commentCount === 1 ? 'comment' : 'comments'}</span>
         </div>
         <div className="flex items-center space-x-4">
           <button className="text-gray-400 hover:text-[#007AFF] transition-colors">

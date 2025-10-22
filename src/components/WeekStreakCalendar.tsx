@@ -124,16 +124,20 @@ export const WeekStreakCalendar: React.FC<WeekStreakCalendarProps> = ({ userId }
     <div className="flex justify-between gap-0.5">
       {weekDays.map((day, index) => (
         <div key={index} className="flex flex-col items-center flex-1">
-          <div className="text-xs font-medium text-gray-400 mb-1.5">{day.dayOfWeek}</div>
+          <div className={`text-xs font-medium mb-1.5 ${day.isToday ? 'text-[#007AFF] font-bold' : 'text-gray-400'}`}>
+            {day.dayOfWeek}
+          </div>
           <div className="h-6 w-6 flex items-center justify-center">
             {day.hasActivity ? (
               // Completed day - orange circle with white checkmark
-              <div className="w-6 h-6 rounded-full flex items-center justify-center bg-orange-400">
+              <div className={`w-6 h-6 rounded-full flex items-center justify-center bg-orange-400 ${
+                day.isToday ? 'ring-2 ring-[#007AFF] ring-offset-1' : ''
+              }`}>
                 <Check className="w-3.5 h-3.5 text-white stroke-[3]" />
               </div>
             ) : day.isToday ? (
-              // Today (not completed) - grey circle with white checkmark
-              <div className="w-6 h-6 rounded-full flex items-center justify-center bg-gray-300">
+              // Today (not completed) - Electric Blue ring with grey circle and white checkmark
+              <div className="w-6 h-6 rounded-full flex items-center justify-center bg-gray-300 ring-2 ring-[#007AFF] ring-offset-1">
                 <Check className="w-3.5 h-3.5 text-white stroke-[3]" />
               </div>
             ) : (
@@ -143,7 +147,9 @@ export const WeekStreakCalendar: React.FC<WeekStreakCalendarProps> = ({ userId }
               </div>
             )}
           </div>
-          <div className="text-[10px] font-medium text-gray-500 mt-0.5">{day.dayNumber}</div>
+          <div className={`text-[10px] font-medium mt-0.5 ${day.isToday ? 'text-[#007AFF] font-bold' : 'text-gray-500'}`}>
+            {day.dayNumber}
+          </div>
         </div>
       ))}
     </div>

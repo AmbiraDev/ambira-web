@@ -125,3 +125,69 @@ jest.mock('axios', () => {
     create: jest.fn(() => mockAxios),
   }
 })
+
+// Mock Firebase
+jest.mock('@/lib/firebase', () => ({
+  auth: {
+    currentUser: null,
+    onAuthStateChanged: jest.fn(),
+    signInWithEmailAndPassword: jest.fn(),
+    signOut: jest.fn(),
+  },
+  db: {
+    collection: jest.fn(),
+  },
+  storage: {
+    ref: jest.fn(),
+  },
+}))
+
+// Mock Firebase API
+jest.mock('@/lib/firebaseApi', () => ({
+  firebaseApi: {
+    getSessions: jest.fn(() => Promise.resolve({ sessions: [], nextCursor: null })),
+    getSession: jest.fn(() => Promise.resolve(null)),
+    createSession: jest.fn(() => Promise.resolve({ id: 'mock-session' })),
+    updateSession: jest.fn(() => Promise.resolve()),
+    deleteSession: jest.fn(() => Promise.resolve()),
+  },
+}))
+
+// Mock React Query
+jest.mock('@tanstack/react-query', () => {
+  const actual = jest.requireActual('@tanstack/react-query')
+  return {
+    ...actual,
+    QueryClient: jest.fn().mockImplementation(() => ({
+      invalidateQueries: jest.fn(),
+      setQueryData: jest.fn(),
+      getQueryData: jest.fn(),
+      cancelQueries: jest.fn(),
+      clear: jest.fn(),
+    })),
+  }
+})
+
+// Mock queryClient
+jest.mock('@/lib/queryClient', () => ({
+  queryClient: {
+    invalidateQueries: jest.fn(),
+    setQueryData: jest.fn(),
+    getQueryData: jest.fn(),
+    cancelQueries: jest.fn(),
+    clear: jest.fn(),
+  },
+  CACHE_KEYS: {
+    USER_STATS: (userId) => ['user', 'stats', userId],
+    USER_PROFILE: (userId) => ['user', 'profile', userId],
+    FEED_SESSIONS: (limit, cursor, filters) => ['feed', 'sessions', limit, cursor, filters],
+    SESSION: (sessionId) => ['session', sessionId],
+    COMMENTS: (sessionId) => ['comments', sessionId],
+  },
+  CACHE_TIMES: {
+    REAL_TIME: 30 * 1000,
+    SHORT: 1 * 60 * 1000,
+    MEDIUM: 5 * 60 * 1000,
+    LONG: 15 * 60 * 1000,
+  },
+}))

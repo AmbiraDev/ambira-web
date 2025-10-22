@@ -250,7 +250,7 @@ export const SessionInteractions: React.FC<SessionInteractionsProps> = ({
         <div className="px-4 py-2 flex items-center justify-between text-sm text-gray-600">
           <button
             onClick={onLikesClick}
-            className="hover:text-gray-900 transition-colors"
+            className="hover:text-gray-900 transition-colors min-h-[44px] flex items-center"
             disabled={supportCount === 0}
             aria-label={`View ${supportCount} ${supportCount === 1 ? 'person who liked this' : 'people who liked this'}`}
           >
@@ -258,7 +258,7 @@ export const SessionInteractions: React.FC<SessionInteractionsProps> = ({
           </button>
           <button
             onClick={onCommentClick}
-            className="hover:text-gray-900 transition-colors"
+            className="hover:text-gray-900 transition-colors min-h-[44px] flex items-center"
             aria-label={`View ${commentCount} ${commentCount === 1 ? 'comment' : 'comments'}`}
           >
             {commentCount} {commentCount === 1 ? 'comment' : 'comments'}
@@ -272,7 +272,7 @@ export const SessionInteractions: React.FC<SessionInteractionsProps> = ({
             <button
               onClick={handleSupport}
               disabled={isSupporting}
-              className={`flex flex-col items-center justify-center py-2 rounded hover:bg-gray-50 transition-colors ${
+              className={`flex flex-col items-center justify-center py-2 rounded hover:bg-gray-50 transition-colors min-h-[44px] ${
                 isSupporting ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
               }`}
               aria-label={isSupported ? `Unlike session (${supportCount} ${supportCount === 1 ? 'like' : 'likes'})` : `Like session (${supportCount} ${supportCount === 1 ? 'like' : 'likes'})`}
@@ -291,7 +291,7 @@ export const SessionInteractions: React.FC<SessionInteractionsProps> = ({
             {/* Comment button */}
             <button
               onClick={onCommentClick}
-              className="flex flex-col items-center justify-center py-2 rounded hover:bg-gray-50 transition-colors"
+              className="flex flex-col items-center justify-center py-2 rounded hover:bg-gray-50 transition-colors min-h-[44px]"
               aria-label={`View and add comments (${commentCount} ${commentCount === 1 ? 'comment' : 'comments'})`}
             >
               <MessageSquare
@@ -306,7 +306,7 @@ export const SessionInteractions: React.FC<SessionInteractionsProps> = ({
               <button
                 onClick={() => setShowShareMenu(!showShareMenu)}
                 disabled={isSharing}
-                className={`flex flex-col items-center justify-center py-2 rounded hover:bg-gray-50 transition-colors w-full ${
+                className={`flex flex-col items-center justify-center py-2 rounded hover:bg-gray-50 transition-colors w-full min-h-[44px] ${
                   isSharing ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
                 }`}
                 aria-label="Share session"

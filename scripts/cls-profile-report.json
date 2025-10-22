@@ -1,0 +1,54 @@
+{
+  "url": "http://localhost:3009/feed",
+  "timestamp": "2025-10-22T23:40:48.661Z",
+  "layoutShifts": [],
+  "totalCLS": 0,
+  "maxCLS": 0,
+  "scenarios": {
+    "initialLoad": {
+      "loadTime": 9976,
+      "layoutShifts": [],
+      "totalCLS": 0,
+      "performanceMetrics": {
+        "navigationStart": 172.5,
+        "fontLoadStart": 171.70000004768372,
+        "fontLoadEnd": 233.89999997615814,
+        "imageLoadStart": 1053.5,
+        "imageLoadEnd": 1053.5
+      },
+      "webVitals": {
+        "CLS": 0,
+        "LCP": 1424,
+        "FID": 0,
+        "FCP": 248,
+        "TTFB": 119.70000004768372
+      },
+      "shiftCount": 0
+    },
+    "fontLoading": {
+      "layoutShifts": [],
+      "totalCLS": 0,
+      "fontLoadTime": 98.30000007152557,
+      "shiftCount": 0
+    },
+    "slowImageLoading": {
+      "layoutShifts": [],
+      "totalCLS": 0,
+      "imageLoadTime": 0,
+      "shiftCount": 0
+    },
+    "scrollInteraction": {
+      "layoutShifts": [],
+      "totalCLS": 0,
+      "shiftCount": 0
+    }
+  },
+  "imagesWithoutDimensions": [],
+  "topShiftingElements": [],
+  "summary": {
+    "totalCLS": 0,
+    "totalShifts": 0,
+    "grade": "Good",
+    "timestamp": "2025-10-22T23:40:48.661Z"
+  }
+}

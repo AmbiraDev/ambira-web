@@ -21,21 +21,23 @@ export const HeatmapCalendar: React.FC<HeatmapCalendarProps> = ({
   // Generate all days for the period
   const generateDays = () => {
     const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
     const startDate = new Date(today);
     startDate.setMonth(startDate.getMonth() - months);
     startDate.setDate(1);
 
-    const days: Array<{ date: string; value: number; dayOfWeek: number }> = [];
+    const days: Array<{ date: string; value: number; dayOfWeek: number; isToday: boolean }> = [];
     const currentDate = new Date(startDate);
 
     while (currentDate <= today) {
       const dateStr = currentDate.toISOString().split('T')[0];
       const dayData = data.find(d => d.date === dateStr);
-      
+
       days.push({
         date: dateStr,
         value: dayData?.value || 0,
-        dayOfWeek: currentDate.getDay()
+        dayOfWeek: currentDate.getDay(),
+        isToday: dateStr === todayStr
       });
 
       currentDate.setDate(currentDate.getDate() + 1);
@@ -45,21 +47,21 @@ export const HeatmapCalendar: React.FC<HeatmapCalendarProps> = ({
   };
 
   const days = generateDays();
-  
+
   // Group days by week
-  const weeks: Array<Array<{ date: string; value: number; dayOfWeek: number }>> = [];
-  let currentWeek: Array<{ date: string; value: number; dayOfWeek: number }> = [];
-  
+  const weeks: Array<Array<{ date: string; value: number; dayOfWeek: number; isToday: boolean }>> = [];
+  let currentWeek: Array<{ date: string; value: number; dayOfWeek: number; isToday: boolean }> = [];
+
   days.forEach((day, index) => {
     if (index === 0 && day.dayOfWeek !== 0) {
       // Fill in empty days at the start
       for (let i = 0; i < day.dayOfWeek; i++) {
-        currentWeek.push({ date: '', value: 0, dayOfWeek: i });
+        currentWeek.push({ date: '', value: 0, dayOfWeek: i, isToday: false });
       }
     }
-    
+
     currentWeek.push(day);
-    
+
     if (day.dayOfWeek === 6 || index === days.length - 1) {
       weeks.push(currentWeek);
       currentWeek = [];
@@ -97,9 +99,13 @@ export const HeatmapCalendar: React.FC<HeatmapCalendarProps> = ({
                 {week.map((day, dayIndex) => (
                   <div
                     key={dayIndex}
-                    className="w-3 h-3 rounded-sm transition-colors cursor-pointer hover:ring-2 hover:ring-gray-400"
+                    className={`w-3 h-3 rounded-sm transition-colors cursor-pointer ${
+                      day.isToday
+                        ? 'ring-2 ring-[#007AFF] ring-opacity-75 border-2 border-[#007AFF] font-bold'
+                        : 'hover:ring-2 hover:ring-gray-400'
+                    }`}
                     style={{ backgroundColor: day.date ? getColor(day.value) : 'transparent' }}
-                    title={day.date ? `${day.date}: ${day.value} hours` : ''}
+                    title={day.date ? `${day.date}: ${day.value} hours${day.isToday ? ' (Today)' : ''}` : ''}
                   />
                 ))}
               </div>

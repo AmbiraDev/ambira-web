@@ -9,12 +9,14 @@ interface ImageGalleryProps {
   images: string[];
   className?: string;
   variant?: 'carousel' | 'grid'; // carousel for editing, grid for feed
+  priority?: boolean; // Add priority prop for LCP optimization
 }
 
 export const ImageGallery: React.FC<ImageGalleryProps> = ({
   images,
   className = '',
-  variant = 'grid'
+  variant = 'grid',
+  priority = false
 }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [touchStart, setTouchStart] = useState<number | null>(null);
@@ -83,7 +85,8 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
               className="object-cover"
               sizes="(max-width: 768px) 100vw, 600px"
               quality={90}
-              priority={currentIndex === 0}
+              priority={priority && currentIndex === 0}
+              loading={priority && currentIndex === 0 ? 'eager' : 'lazy'}
             />
 
             {/* Navigation Arrows - Desktop */}
@@ -95,7 +98,7 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
                       e.stopPropagation();
                       goToPrevious();
                     }}
-                    className="hidden md:flex absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 items-center justify-center bg-white/90 hover:bg-white rounded-full shadow-lg transition-all z-10"
+                    className="hidden md:flex absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 items-center justify-center bg-white/90 hover:bg-white rounded-full shadow-lg transition-colors duration-200 z-10"
                     aria-label="Previous image"
                   >
                     <ChevronLeft className="w-5 h-5 text-gray-800" />
@@ -107,7 +110,7 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
                       e.stopPropagation();
                       goToNext();
                     }}
-                    className="hidden md:flex absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 items-center justify-center bg-white/90 hover:bg-white rounded-full shadow-lg transition-all z-10"
+                    className="hidden md:flex absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 items-center justify-center bg-white/90 hover:bg-white rounded-full shadow-lg transition-colors duration-200 z-10"
                     aria-label="Next image"
                   >
                     <ChevronRight className="w-5 h-5 text-gray-800" />
@@ -124,7 +127,7 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
                 <button
                   key={index}
                   onClick={() => setCurrentIndex(index)}
-                  className={`w-1.5 h-1.5 rounded-full transition-all ${
+                  className={`w-1.5 h-1.5 rounded-full transition-colors duration-200 ${
                     index === currentIndex
                       ? 'bg-[#007AFF] w-3'
                       : 'bg-gray-300 hover:bg-gray-400'
@@ -165,7 +168,8 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
               className="object-cover"
               sizes="(max-width: 768px) 100vw, 600px"
               quality={90}
-              priority
+              priority={priority}
+              loading={priority ? 'eager' : 'lazy'}
             />
           </div>
         )}
@@ -186,7 +190,8 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
                   className="object-cover"
                   sizes="(max-width: 768px) 50vw, 300px"
                   quality={90}
-                  priority={index === 0}
+                  priority={priority && index === 0}
+                  loading={priority && index === 0 ? 'eager' : 'lazy'}
                 />
               </div>
             ))}
@@ -208,7 +213,8 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
                 className="object-cover"
                 sizes="(max-width: 768px) 50vw, 300px"
                 quality={90}
-                priority
+                priority={priority}
+                loading={priority ? 'eager' : 'lazy'}
               />
             </div>
 
@@ -226,6 +232,7 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
                   className="object-cover"
                   sizes="(max-width: 768px) 50vw, 300px"
                   quality={90}
+                  loading="lazy"
                 />
                 {/* Show +N overlay on last visible image if there are more */}
                 {index === 1 && images.length > 3 && (

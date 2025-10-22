@@ -80,13 +80,13 @@ export const FeedFilterDropdown: React.FC<FeedFilterDropdownProps> = ({
       {/* Dropdown Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between px-4 py-2.5 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+        className="w-full flex items-center justify-between px-4 py-2.5 bg-[#007AFF] text-white rounded-lg hover:bg-[#0051D5] transition-colors duration-200 shadow-sm min-h-[44px]"
       >
-        <span className="font-medium text-gray-900">
+        <span className="font-semibold">
           {selectedFilter.label}
         </span>
         <ChevronDown
-          className={`w-4 h-4 text-gray-500 transition-transform ${
+          className={`w-4 h-4 transition-transform ${
             isOpen ? 'transform rotate-180' : ''
           }`}
         />
@@ -101,7 +101,7 @@ export const FeedFilterDropdown: React.FC<FeedFilterDropdownProps> = ({
               onClick={() =>
                 handleFilterSelect({ type: 'all', label: 'All' })
               }
-              className={`w-full flex items-center justify-between px-4 py-3 transition-colors ${
+              className={`w-full flex items-center justify-between px-4 py-3 transition-colors duration-200 min-h-[44px] ${
                 isSelected({ type: 'all', label: 'All' })
                   ? 'bg-gray-50'
                   : 'hover:bg-gray-50'
@@ -124,7 +124,7 @@ export const FeedFilterDropdown: React.FC<FeedFilterDropdownProps> = ({
               onClick={() =>
                 handleFilterSelect({ type: 'following', label: 'Following' })
               }
-              className={`w-full flex items-center justify-between px-4 py-3 transition-colors ${
+              className={`w-full flex items-center justify-between px-4 py-3 transition-colors duration-200 min-h-[44px] ${
                 isSelected({ type: 'following', label: 'Following' })
                   ? 'bg-gray-50'
                   : 'hover:bg-gray-50'
@@ -147,7 +147,7 @@ export const FeedFilterDropdown: React.FC<FeedFilterDropdownProps> = ({
               onClick={() =>
                 handleFilterSelect({ type: 'user', label: 'My Activities' })
               }
-              className={`w-full flex items-center justify-between px-4 py-3 transition-colors ${
+              className={`w-full flex items-center justify-between px-4 py-3 transition-colors duration-200 min-h-[44px] ${
                 isSelected({ type: 'user', label: 'My Activities' })
                   ? 'bg-gray-50'
                   : 'hover:bg-gray-50'
@@ -190,7 +190,7 @@ export const FeedFilterDropdown: React.FC<FeedFilterDropdownProps> = ({
                       groupId: group.id
                     })
                   }
-                  className={`w-full flex items-center justify-between px-4 py-3 transition-colors ${
+                  className={`w-full flex items-center justify-between px-4 py-3 transition-colors duration-200 min-h-[44px] ${
                     isSelected({
                       type: 'group',
                       label: group.name,

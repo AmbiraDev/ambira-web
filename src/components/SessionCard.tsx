@@ -26,6 +26,8 @@ interface SessionCardProps {
   className?: string;
   showComments?: boolean;
   showGroupInfo?: boolean;
+  isAboveFold?: boolean; // Add prop to indicate if card is above the fold
+  priority?: boolean; // Add prop for image priority loading
 }
 
 export const SessionCard: React.FC<SessionCardProps> = ({
@@ -37,7 +39,9 @@ export const SessionCard: React.FC<SessionCardProps> = ({
   onEdit,
   className = '',
   showComments = false,
-  showGroupInfo = false
+  showGroupInfo = false,
+  isAboveFold = false,
+  priority = false
 }) => {
   const router = useRouter();
   const { user } = useAuth();
@@ -187,7 +191,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({
   };
 
   return (
-    <article className={`bg-white md:rounded-lg md:border md:border-gray-200 md:shadow-sm mb-0 md:mb-4 border-b-[6px] border-gray-200 md:border-b-0 ${className}`}>
+    <article className={`bg-white md:rounded-lg md:border md:border-gray-200 md:shadow-sm mb-0 md:mb-4 border-b-[6px] border-gray-200 md:border-b-0 hover:shadow-md transition-shadow ${className}`}>
       {/* Session Header */}
       <div className="flex items-center justify-between px-4 pt-4 pb-3">
         <PrefetchLink
@@ -206,6 +210,8 @@ export const SessionCard: React.FC<SessionCardProps> = ({
                 height={40}
                 quality={90}
                 className="w-full h-full object-cover"
+                priority={isAboveFold || priority}
+                loading={isAboveFold || priority ? 'eager' : 'lazy'}
               />
             </div>
           ) : (
@@ -225,7 +231,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({
                 <button
                   onClick={handleFollowToggle}
                   disabled={isFollowLoading}
-                  className={`md:hidden text-xs font-semibold transition-colors whitespace-nowrap flex-shrink-0 ${
+                  className={`md:hidden text-xs font-semibold transition-colors duration-200 whitespace-nowrap flex-shrink-0 ${
                     isFollowing
                       ? 'text-gray-600 hover:text-gray-900'
                       : 'text-[#007AFF] hover:text-[#0051D5]'
@@ -243,7 +249,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({
         <div className="relative" ref={menuRef}>
           <button
             onClick={() => setShowMenu(!showMenu)}
-            className="text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg p-2 transition-colors min-h-[44px] min-w-[44px]"
+            className="text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg p-2 transition-colors duration-200 min-h-[44px] min-w-[44px]"
             aria-label="Session options"
             aria-expanded={showMenu}
             aria-haspopup="true"
@@ -263,7 +269,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({
                     onEdit(session.id);
                     setShowMenu(false);
                   }}
-                  className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50"
+                  className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 transition-colors duration-200"
                   role="menuitem"
                 >
                   Edit session
@@ -275,7 +281,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({
                     onDelete(session.id);
                     setShowMenu(false);
                   }}
-                  className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-gray-50"
+                  className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-gray-50 transition-colors duration-200"
                   role="menuitem"
                 >
                   Delete session
@@ -288,7 +294,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({
 
       {/* Title and Description */}
       <Link href={`/sessions/${session.id}`} className="px-4 pb-3 block cursor-pointer">
-        <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 mb-1 leading-tight hover:text-[#007AFF] transition-colors">
+        <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 mb-1 leading-tight hover:text-[#007AFF] transition-colors duration-200">
           {session.title || 'Focus Session'}
         </h3>
         {session.description && (
@@ -302,7 +308,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({
                   e.preventDefault();
                   setIsExpanded(!isExpanded);
                 }}
-                className="text-[#007AFF] text-sm font-semibold mt-1 hover:underline min-h-[44px] flex items-center"
+                className="text-[#007AFF] text-sm font-semibold mt-1 hover:underline transition-colors duration-200 min-h-[44px] flex items-center"
                 aria-expanded={isExpanded}
                 aria-label={isExpanded ? 'Show less description' : 'Show more description'}
               >
@@ -316,12 +322,15 @@ export const SessionCard: React.FC<SessionCardProps> = ({
       {/* Image Gallery */}
       {session.images && session.images.length > 0 && (
         <div className="px-4 pb-4">
-          <ImageGallery images={session.images} />
+          <ImageGallery
+            images={session.images}
+            priority={isAboveFold || priority}
+          />
         </div>
       )}
 
       {/* Stats - Strava style */}
-      <Link href={`/sessions/${session.id}`} className="px-4 pb-2 block cursor-pointer hover:bg-gray-50/50 transition-colors">
+      <Link href={`/sessions/${session.id}`} className="px-4 pb-2 block cursor-pointer hover:bg-gray-50/50 transition-colors duration-200">
         <div className="grid grid-cols-2 gap-4">
           <div>
             <div className="text-xs text-gray-500 mb-1">Time</div>
@@ -329,7 +338,12 @@ export const SessionCard: React.FC<SessionCardProps> = ({
           </div>
           <div className="min-w-0">
             <div className="text-xs text-gray-500 mb-1">Activity</div>
-            <div className="text-base font-semibold text-gray-900 truncate">{session.activity?.name || session.project?.name || 'N/A'}</div>
+            <div
+              className="text-base font-semibold text-gray-900 truncate"
+              title={session.activity?.name || session.project?.name || 'N/A'}
+            >
+              {session.activity?.name || session.project?.name || 'N/A'}
+            </div>
           </div>
         </div>
       </Link>

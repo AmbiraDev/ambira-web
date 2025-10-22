@@ -190,7 +190,7 @@ export const TopComments: React.FC<TopCommentsProps> = ({
                 onClick={() => setIsExpanded(true)}
                 className="text-sm text-gray-500 hover:text-gray-900 font-medium py-2 transition-colors"
               >
-                See all {totalCommentCount} comments
+                See all {totalCommentCount} {totalCommentCount === 1 ? 'comment' : 'comments'}
               </button>
             )}
           </>
