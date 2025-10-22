@@ -126,6 +126,7 @@ export const SessionInteractions: React.FC<SessionInteractionsProps> = ({
               <button
                 onClick={onLikesClick}
                 className="hover:text-gray-900 hover:underline transition-colors font-medium"
+                aria-label={`View ${supportCount} ${supportCount === 1 ? 'person who liked this' : 'people who liked this'}`}
               >
                 {supportCount} {supportCount === 1 ? 'like' : 'likes'}
               </button>
@@ -143,7 +144,7 @@ export const SessionInteractions: React.FC<SessionInteractionsProps> = ({
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded hover:bg-gray-100 transition-colors ${
                 isSupporting ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
               }`}
-              title="Like"
+              aria-label={isSupported ? `Unlike session (${supportCount} ${supportCount === 1 ? 'like' : 'likes'})` : `Like session (${supportCount} ${supportCount === 1 ? 'like' : 'likes'})`}
             >
               <ThumbsUp
                 className={`w-5 h-5 transition-colors ${
@@ -152,10 +153,11 @@ export const SessionInteractions: React.FC<SessionInteractionsProps> = ({
                     : 'text-gray-600'
                 }`}
                 strokeWidth={1.5}
+                aria-hidden="true"
               />
               <span className={`text-sm font-medium ${
                 isSupported ? 'text-gray-700' : 'text-gray-600'
-              }`}>
+              }`} aria-hidden="true">
                 {supportCount > 0 ? supportCount : ''}
               </span>
             </button>
@@ -164,13 +166,14 @@ export const SessionInteractions: React.FC<SessionInteractionsProps> = ({
             <button
               onClick={onCommentClick}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded hover:bg-gray-100 transition-colors"
-              title="Comment"
+              aria-label={`View and add comments (${commentCount} ${commentCount === 1 ? 'comment' : 'comments'})`}
             >
               <MessageSquare
                 className="w-5 h-5 text-gray-600"
                 strokeWidth={1.5}
+                aria-hidden="true"
               />
-              <span className="text-sm font-medium text-gray-600">
+              <span className="text-sm font-medium text-gray-600" aria-hidden="true">
                 {commentCount > 0 ? commentCount : ''}
               </span>
             </button>
@@ -183,11 +186,14 @@ export const SessionInteractions: React.FC<SessionInteractionsProps> = ({
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded hover:bg-gray-100 transition-colors ${
                   isSharing ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
                 }`}
-                title="Share"
+                aria-label="Share session"
+                aria-expanded={showShareMenu}
+                aria-haspopup="true"
               >
                 <Share2
                   className="w-5 h-5 text-gray-600"
                   strokeWidth={1.5}
+                  aria-hidden="true"
                 />
               </button>
 
@@ -196,6 +202,7 @@ export const SessionInteractions: React.FC<SessionInteractionsProps> = ({
                 <div
                   className="absolute right-0 mt-2 w-52 bg-white rounded-lg shadow-2xl border-2 border-gray-300 py-2 z-50"
                   role="menu"
+                  aria-label="Share options"
                 >
                   {isOwnPost && onShareImage && (
                     <>
@@ -203,28 +210,31 @@ export const SessionInteractions: React.FC<SessionInteractionsProps> = ({
                         onClick={handleShareImage}
                         className="w-full px-4 py-2.5 text-left text-sm font-medium text-gray-900 hover:bg-blue-50 flex items-center gap-3"
                         role="menuitem"
+                        aria-label="Share session as image"
                       >
-                        <ImageIcon className="w-5 h-5 text-[#007AFF]" />
+                        <ImageIcon className="w-5 h-5 text-[#007AFF]" aria-hidden="true" />
                         Share as image
                       </button>
-                      <div className="border-t border-gray-200 my-1"></div>
+                      <div className="border-t border-gray-200 my-1" aria-hidden="true"></div>
                     </>
                   )}
                   <button
                     onClick={handleShare}
                     className="w-full px-4 py-2.5 text-left text-sm font-medium text-gray-900 hover:bg-blue-50 flex items-center gap-3"
                     role="menuitem"
+                    aria-label="Share session link"
                   >
-                    <LinkIcon className="w-5 h-5 text-[#007AFF]" />
+                    <LinkIcon className="w-5 h-5 text-[#007AFF]" aria-hidden="true" />
                     Share link
                   </button>
-                  <div className="border-t border-gray-200 my-1"></div>
+                  <div className="border-t border-gray-200 my-1" aria-hidden="true"></div>
                   <button
                     onClick={handleCopyLink}
                     className="w-full px-4 py-2.5 text-left text-sm font-medium text-gray-900 hover:bg-blue-50 flex items-center gap-3"
                     role="menuitem"
+                    aria-label="Copy session link to clipboard"
                   >
-                    <Copy className="w-5 h-5 text-[#007AFF]" />
+                    <Copy className="w-5 h-5 text-[#007AFF]" aria-hidden="true" />
                     Copy to clipboard
                   </button>
                 </div>
@@ -242,12 +252,14 @@ export const SessionInteractions: React.FC<SessionInteractionsProps> = ({
             onClick={onLikesClick}
             className="hover:text-gray-900 transition-colors"
             disabled={supportCount === 0}
+            aria-label={`View ${supportCount} ${supportCount === 1 ? 'person who liked this' : 'people who liked this'}`}
           >
             {supportCount} {supportCount === 1 ? 'like' : 'likes'}
           </button>
           <button
             onClick={onCommentClick}
             className="hover:text-gray-900 transition-colors"
+            aria-label={`View ${commentCount} ${commentCount === 1 ? 'comment' : 'comments'}`}
           >
             {commentCount} {commentCount === 1 ? 'comment' : 'comments'}
           </button>
@@ -263,7 +275,7 @@ export const SessionInteractions: React.FC<SessionInteractionsProps> = ({
               className={`flex flex-col items-center justify-center py-2 rounded hover:bg-gray-50 transition-colors ${
                 isSupporting ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
               }`}
-              title="Like"
+              aria-label={isSupported ? `Unlike session (${supportCount} ${supportCount === 1 ? 'like' : 'likes'})` : `Like session (${supportCount} ${supportCount === 1 ? 'like' : 'likes'})`}
             >
               <ThumbsUp
                 className={`w-6 h-6 transition-colors ${
@@ -272,6 +284,7 @@ export const SessionInteractions: React.FC<SessionInteractionsProps> = ({
                     : 'text-gray-600'
                 }`}
                 strokeWidth={1.5}
+                aria-hidden="true"
               />
             </button>
 
@@ -279,11 +292,12 @@ export const SessionInteractions: React.FC<SessionInteractionsProps> = ({
             <button
               onClick={onCommentClick}
               className="flex flex-col items-center justify-center py-2 rounded hover:bg-gray-50 transition-colors"
-              title="Comment"
+              aria-label={`View and add comments (${commentCount} ${commentCount === 1 ? 'comment' : 'comments'})`}
             >
               <MessageSquare
                 className="w-6 h-6 text-gray-600"
                 strokeWidth={1.5}
+                aria-hidden="true"
               />
             </button>
 
@@ -295,11 +309,14 @@ export const SessionInteractions: React.FC<SessionInteractionsProps> = ({
                 className={`flex flex-col items-center justify-center py-2 rounded hover:bg-gray-50 transition-colors w-full ${
                   isSharing ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
                 }`}
-                title="Share"
+                aria-label="Share session"
+                aria-expanded={showShareMenu}
+                aria-haspopup="true"
               >
                 <Share2
                   className="w-6 h-6 text-gray-600"
                   strokeWidth={1.5}
+                  aria-hidden="true"
                 />
               </button>
 
@@ -308,6 +325,7 @@ export const SessionInteractions: React.FC<SessionInteractionsProps> = ({
                 <div
                   className="absolute right-0 bottom-full mb-2 w-56 bg-white rounded-lg shadow-2xl border-2 border-gray-300 py-2 z-50"
                   role="menu"
+                  aria-label="Share options"
                 >
                   {isOwnPost && onShareImage && (
                     <>
@@ -315,28 +333,31 @@ export const SessionInteractions: React.FC<SessionInteractionsProps> = ({
                         onClick={handleShareImage}
                         className="w-full px-4 py-3 text-left text-base font-medium text-gray-900 hover:bg-blue-50 flex items-center gap-3"
                         role="menuitem"
+                        aria-label="Share session as image"
                       >
-                        <ImageIcon className="w-5 h-5 text-[#007AFF]" />
+                        <ImageIcon className="w-5 h-5 text-[#007AFF]" aria-hidden="true" />
                         Share as image
                       </button>
-                      <div className="border-t border-gray-200 my-1"></div>
+                      <div className="border-t border-gray-200 my-1" aria-hidden="true"></div>
                     </>
                   )}
                   <button
                     onClick={handleShare}
                     className="w-full px-4 py-3 text-left text-base font-medium text-gray-900 hover:bg-blue-50 flex items-center gap-3"
                     role="menuitem"
+                    aria-label="Share session link"
                   >
-                    <LinkIcon className="w-5 h-5 text-[#007AFF]" />
+                    <LinkIcon className="w-5 h-5 text-[#007AFF]" aria-hidden="true" />
                     Share link
                   </button>
-                  <div className="border-t border-gray-200 my-1"></div>
+                  <div className="border-t border-gray-200 my-1" aria-hidden="true"></div>
                   <button
                     onClick={handleCopyLink}
                     className="w-full px-4 py-3 text-left text-base font-medium text-gray-900 hover:bg-blue-50 flex items-center gap-3"
                     role="menuitem"
+                    aria-label="Copy session link to clipboard"
                   >
-                    <Copy className="w-5 h-5 text-[#007AFF]" />
+                    <Copy className="w-5 h-5 text-[#007AFF]" aria-hidden="true" />
                     Copy to clipboard
                   </button>
                 </div>
