@@ -6,7 +6,7 @@
 
 import { User } from '@/domain/entities/User';
 
-export type TimePeriod = 'today' | 'week' | 'month' | 'year';
+export type TimePeriod = 'today' | 'week' | 'month' | 'all-time';
 
 export interface LeaderboardEntry {
   user: User;

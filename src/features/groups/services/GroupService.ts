@@ -7,6 +7,8 @@
 
 import { Group } from '@/domain/entities/Group';
 import { GroupRepository } from '@/infrastructure/firebase/repositories/GroupRepository';
+import { UserRepository } from '@/infrastructure/firebase/repositories/UserRepository';
+import { SessionRepository } from '@/infrastructure/firebase/repositories/SessionRepository';
 import { LeaderboardCalculator } from '../domain/LeaderboardCalculator';
 import { LeaderboardEntry, TimePeriod, GroupStats } from '../types/groups.types';
 
@@ -16,10 +18,14 @@ import { LeaderboardEntry, TimePeriod, GroupStats } from '../types/groups.types'
  */
 export class GroupService {
   private readonly groupRepo: GroupRepository;
+  private readonly userRepo: UserRepository;
+  private readonly sessionRepo: SessionRepository;
   private readonly leaderboardCalc: LeaderboardCalculator;
 
   constructor() {
     this.groupRepo = new GroupRepository();
+    this.userRepo = new UserRepository();
+    this.sessionRepo = new SessionRepository();
     this.leaderboardCalc = new LeaderboardCalculator();
   }
 
@@ -95,9 +101,6 @@ export class GroupService {
 
   /**
    * Get group leaderboard
-   *
-   * Note: This needs SessionRepository and UserRepository which we'll create next.
-   * For now, this is a placeholder that shows the structure.
    */
   async getGroupLeaderboard(
     groupId: string,
@@ -109,13 +112,58 @@ export class GroupService {
       throw new Error('Group not found');
     }
 
-    // TODO: Implement when SessionRepository and UserRepository are ready
-    // const sessions = await sessionRepo.findByUserIdsAndPeriod(group.memberIds, period);
-    // const users = await userRepo.findByIds(group.memberIds);
-    // return this.leaderboardCalc.calculate(users, sessions, period);
+    // Fetch all members (convert readonly array to mutable)
+    const memberIds = Array.from(group.memberIds);
+    const users = await this.userRepo.findByIds(memberIds);
 
-    // Placeholder return
-    return [];
+    // Calculate date range based on period
+    const dateRange = this.getDateRangeForPeriod(period);
+
+    // Fetch sessions for all group members in the date range
+    const sessions = await this.sessionRepo.findByUserIds(memberIds, {
+      groupId: groupId,
+      startDate: dateRange.start,
+      endDate: dateRange.end
+    });
+
+    // Calculate leaderboard using domain service
+    return this.leaderboardCalc.calculate(users, sessions, period);
+  }
+
+  /**
+   * Helper method to get date range for a time period
+   */
+  private getDateRangeForPeriod(period: TimePeriod): { start: Date; end: Date } {
+    const now = new Date();
+    const end = now;
+    let start: Date;
+
+    switch (period) {
+      case 'today':
+        start = new Date(now);
+        start.setHours(0, 0, 0, 0);
+        break;
+
+      case 'week':
+        start = new Date(now);
+        start.setDate(start.getDate() - 7);
+        break;
+
+      case 'month':
+        start = new Date(now);
+        start.setMonth(start.getMonth() - 1);
+        break;
+
+      case 'all-time':
+        start = new Date(0); // Beginning of time
+        break;
+
+      default:
+        start = new Date(now);
+        start.setDate(start.getDate() - 7);
+    }
+
+    return { start, end };
   }
 
   /**
@@ -128,13 +176,26 @@ export class GroupService {
       throw new Error('Group not found');
     }
 
-    // TODO: Implement when SessionRepository is ready
-    // For now return basic stats
+    // Fetch all sessions for this group
+    const allSessions = await this.sessionRepo.findByGroupId(groupId, 1000);
+
+    // Calculate total hours
+    const totalSeconds = allSessions.reduce((sum, session) => sum + session.duration, 0);
+    const totalHours = totalSeconds / 3600;
+
+    // Get sessions from the last week
+    const weekAgo = new Date();
+    weekAgo.setDate(weekAgo.getDate() - 7);
+    const recentSessions = allSessions.filter(s => s.createdAt >= weekAgo);
+
+    // Count unique active members this week
+    const activeMemberIds = new Set(recentSessions.map(s => s.userId));
+
     return {
       memberCount: group.getMemberCount(),
-      totalSessions: 0,
-      totalHours: 0,
-      activeMembersThisWeek: 0
+      totalSessions: allSessions.length,
+      totalHours: Math.round(totalHours * 10) / 10, // Round to 1 decimal
+      activeMembersThisWeek: activeMemberIds.size
     };
   }
 

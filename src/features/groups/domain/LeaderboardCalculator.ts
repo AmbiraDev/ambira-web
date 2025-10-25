@@ -92,10 +92,9 @@ export class LeaderboardCalculator {
         start.setDate(1);
         return start;
 
-      case 'year':
-        // Start of this year
-        start.setMonth(0, 1);
-        return start;
+      case 'all-time':
+        // Beginning of time
+        return new Date(0);
 
       default:
         return start;
