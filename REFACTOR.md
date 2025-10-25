@@ -6,7 +6,7 @@ This document tracks the progressive refactoring of the Ambira codebase from rou
 
 **Branch**: `refactor/clean-architecture`
 **Started**: 2025-10-25
-**Status**: Phases 1, 2 & 3 Complete ✅ (Groups & Feed Infrastructure)
+**Status**: Phases 1-4 Complete ✅ (Groups, Feed & Profile)
 
 ---
 
@@ -146,6 +146,22 @@ src/
 - `src/features/feed/services/FeedService.ts` (180 lines)
 
 **Note**: The existing Feed component continues to work. The new infrastructure provides a clean foundation for future migration or new feed features.
+
+### Phase 4: Profile Feature ✅ COMPLETE (Domain & Application Layers)
+
+- [x] Analyzed existing Profile route (1087 lines - most complex route!)
+- [x] Created `ProfileStatsCalculator` domain service for chart calculations
+- [x] Created `ProfileService` application layer for profile workflows
+- [x] Supports 5 time periods: 7D, 2W, 4W, 3M, 1Y
+- [x] Chart aggregations: daily, weekly, monthly
+- [x] Stats calculation: hours, sessions, streaks, top activities
+- [x] Profile visibility and follow/unfollow business rules
+
+**Key Files Created:**
+- `src/features/profile/domain/ProfileStatsCalculator.ts` (340 lines)
+- `src/features/profile/services/ProfileService.ts` (170 lines)
+
+**Note**: The existing 1087-line Profile route continues to work. ProfileService provides clean, testable logic for gradual migration.
 
 ---
 
@@ -321,5 +337,5 @@ A: Yes, but prefer using repositories for new code.
 
 ---
 
-**Last Updated**: 2025-10-25 (Phase 3 Complete - Feed Infrastructure)
+**Last Updated**: 2025-10-25 (Phase 4 Complete - Profile Feature)
 **Maintained By**: Development Team
