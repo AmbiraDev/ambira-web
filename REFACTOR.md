@@ -6,7 +6,7 @@ This document tracks the progressive refactoring of the Ambira codebase from rou
 
 **Branch**: `refactor/clean-architecture`
 **Started**: 2025-10-25
-**Status**: Phases 1-4 Complete ✅ (Groups, Feed & Profile)
+**Status**: Phases 1-5 Complete ✅ (Groups, Feed, Profile & Timer)
 
 ---
 
@@ -162,6 +162,24 @@ src/
 - `src/features/profile/services/ProfileService.ts` (170 lines)
 
 **Note**: The existing 1087-line Profile route continues to work. ProfileService provides clean, testable logic for gradual migration.
+
+### Phase 5: Timer Feature ✅ COMPLETE
+
+- [x] Analyzed existing TimerContext (576 lines with mixed concerns)
+- [x] Created `ActiveSession` domain entity for timer state
+- [x] Created `ActiveSessionMapper` for Firestore conversion
+- [x] Created `ActiveSessionRepository` for data access
+- [x] Created `TimerService` application layer for timer workflows
+- [x] Operations: start, pause, resume, complete, stop, auto-save
+- [x] Business rules: 24h max, auto-complete stale sessions, pause duration tracking
+
+**Key Files Created:**
+- `src/domain/entities/ActiveSession.ts` (220 lines)
+- `src/infrastructure/firebase/mappers/ActiveSessionMapper.ts` (75 lines)
+- `src/infrastructure/firebase/repositories/ActiveSessionRepository.ts` (110 lines)
+- `src/features/timer/services/TimerService.ts` (230 lines)
+
+**Note**: The existing 576-line TimerContext continues to work. TimerService provides clean, testable timer logic for gradual migration.
 
 ---
 
@@ -337,5 +355,5 @@ A: Yes, but prefer using repositories for new code.
 
 ---
 
-**Last Updated**: 2025-10-25 (Phase 4 Complete - Profile Feature)
+**Last Updated**: 2025-10-25 (Phase 5 Complete - Timer Feature)
 **Maintained By**: Development Team
