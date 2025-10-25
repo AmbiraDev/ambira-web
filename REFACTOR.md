@@ -6,7 +6,7 @@ This document tracks the progressive refactoring of the Ambira codebase from rou
 
 **Branch**: `refactor/clean-architecture`
 **Started**: 2025-10-25
-**Status**: Phase 1 & 2 Partially Complete (Groups Feature)
+**Status**: Phase 1 & 2 Complete ✅ (Groups Feature Fully Implemented)
 
 ---
 
@@ -106,21 +106,28 @@ src/
 - `src/infrastructure/firebase/repositories/GroupRepository.ts` (170 lines)
 - `src/domain/entities/__tests__/Group.test.ts` (350+ lines)
 
-### Phase 2: Groups Feature (Partial) ✅
+### Phase 2: Groups Feature ✅ COMPLETE
 
 - [x] Created `LeaderboardCalculator` domain service
-- [x] Created `GroupService` application layer
+- [x] Created `GroupService` application layer with full leaderboard implementation
 - [x] Created `useGroupDetails` React hook
 - [x] Created `GroupDetailPage` presentation component
 - [x] Created simplified route file (`page-clean.tsx`)
-- [x] Unit tests for `LeaderboardCalculator` (9 test cases)
+- [x] Created `UserRepository` with batch fetching support
+- [x] Created `SessionRepository` with date range filtering
+- [x] Created `UserMapper` and `SessionMapper` for Firestore conversion
+- [x] Unit tests for `LeaderboardCalculator` (10 test cases)
 
 **Key Files Created:**
 - `src/features/groups/domain/LeaderboardCalculator.ts` (140 lines)
-- `src/features/groups/services/GroupService.ts` (140 lines)
+- `src/features/groups/services/GroupService.ts` (220 lines) - FULLY IMPLEMENTED
 - `src/features/groups/components/GroupDetailPage.tsx` (200+ lines)
 - `src/features/groups/hooks/useGroupDetails.ts` (45 lines)
 - `src/app/groups/[id]/page-clean.tsx` (27 lines)
+- `src/infrastructure/firebase/repositories/UserRepository.ts` (210 lines)
+- `src/infrastructure/firebase/repositories/SessionRepository.ts` (300 lines)
+- `src/infrastructure/firebase/mappers/UserMapper.ts` (87 lines)
+- `src/infrastructure/firebase/mappers/SessionMapper.ts` (90 lines)
 - `src/features/groups/domain/__tests__/LeaderboardCalculator.test.ts` (250+ lines)
 
 ---
@@ -141,10 +148,10 @@ src/
 ### Test Coverage
 
 **Domain Layer**:
-- `Group` entity: 15 test cases covering all business rules
-- `LeaderboardCalculator`: 9 test cases covering calculation logic
+- `Group` entity: 22 test cases covering all business rules
+- `LeaderboardCalculator`: 10 test cases covering calculation logic
 
-**Total Tests**: 24 unit tests
+**Total Tests**: 32 unit tests (all passing)
 **Speed**: <10ms per test (no Firebase dependencies)
 **Maintainability**: High (pure functions, no mocks needed)
 
@@ -202,11 +209,12 @@ expect(leaderboard[0].rank).toBe(1);
 
 ### Immediate (This Week)
 
-- [ ] Create `SessionRepository` and `UserRepository`
-- [ ] Complete `GroupService.getGroupLeaderboard()` implementation
+- [x] Create `SessionRepository` and `UserRepository` ✅
+- [x] Complete `GroupService.getGroupLeaderboard()` implementation ✅
 - [ ] Replace old `app/groups/[id]/page.tsx` with `page-clean.tsx`
-- [ ] Run tests: `npm test`
-- [ ] Run type check: `npm run type-check`
+- [x] Run tests: `npm test` ✅
+- [x] Run type check: `npm run type-check` ✅
+- [ ] Start Phase 3: Refactor Feed feature
 
 ### Short Term (Next 2 Weeks)
 
@@ -296,5 +304,5 @@ A: Yes, but prefer using repositories for new code.
 
 ---
 
-**Last Updated**: 2025-10-25
+**Last Updated**: 2025-10-25 (Phase 2 Complete)
 **Maintained By**: Development Team
