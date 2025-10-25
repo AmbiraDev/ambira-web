@@ -6,6 +6,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Ambira is a social productivity tracking application inspired by Strava - a "Strava for Productivity". Users track work sessions on projects, build streaks, follow friends, join groups, and compete in challenges. Built with Next.js 15, TypeScript, Tailwind CSS, and Firebase.
 
+## Package Manager
+
+**This project uses npm exclusively.** Do not use Yarn or any other package manager.
+
+- Use `npm install` to install dependencies
+- Use `npm run <script>` to run scripts
+- Only `package-lock.json` should exist (no `yarn.lock` or `pnpm-lock.yaml`)
+
 ## Commands
 
 ### Development
