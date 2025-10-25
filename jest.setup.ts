@@ -2,23 +2,31 @@ import '@testing-library/jest-dom'
 
 // Mock global Response, Request, Headers for Firebase Auth compatibility
 if (typeof global.Response === 'undefined') {
-  global.Response = class Response {
-    constructor(body, init) {
+  (global as any).Response = class Response {
+    body: any
+    init: any
+
+    constructor(body: any, init: any) {
       this.body = body
       this.init = init
     }
-    json() {
+
+    json(): Promise<any> {
       return Promise.resolve(typeof this.body === 'string' ? JSON.parse(this.body) : this.body)
     }
-    text() {
+
+    text(): Promise<string> {
       return Promise.resolve(typeof this.body === 'string' ? this.body : JSON.stringify(this.body))
     }
   }
 }
 
 if (typeof global.Request === 'undefined') {
-  global.Request = class Request {
-    constructor(url, init) {
+  (global as any).Request = class Request {
+    url: string
+    init: any
+
+    constructor(url: string, init: any) {
       this.url = url
       this.init = init
     }
@@ -26,20 +34,26 @@ if (typeof global.Request === 'undefined') {
 }
 
 if (typeof global.Headers === 'undefined') {
-  global.Headers = class Headers {
+  (global as any).Headers = class Headers {
+    headers: Map<string, string>
+
     constructor() {
       this.headers = new Map()
     }
-    append(name, value) {
+
+    append(name: string, value: string): void {
       this.headers.set(name.toLowerCase(), value)
     }
-    get(name) {
+
+    get(name: string): string | null {
       return this.headers.get(name.toLowerCase()) || null
     }
-    has(name) {
+
+    has(name: string): boolean {
       return this.headers.has(name.toLowerCase())
     }
-    set(name, value) {
+
+    set(name: string, value: string): void {
       this.headers.set(name.toLowerCase(), value)
     }
   }
@@ -68,17 +82,19 @@ jest.mock('next/dynamic', () => () => {
 })
 
 // Mock window.location - simplified
-if (typeof window !== 'undefined' && !window.location) {
-  window.location = {
+if (typeof window !== 'undefined' && !(window as any).location) {
+  (window as any).location = {
     href: 'http://localhost:3000',
     assign: jest.fn(),
     replace: jest.fn(),
     reload: jest.fn(),
-  };
+  }
 }
 
 // Mock localStorage
-const localStorageMock = {
+const localStorageMock: Storage = {
+  length: 0,
+  key: jest.fn(),
   getItem: jest.fn(),
   setItem: jest.fn(),
   removeItem: jest.fn(),
@@ -89,7 +105,9 @@ Object.defineProperty(window, 'localStorage', {
 })
 
 // Mock sessionStorage
-const sessionStorageMock = {
+const sessionStorageMock: Storage = {
+  length: 0,
+  key: jest.fn(),
   getItem: jest.fn(),
   setItem: jest.fn(),
   removeItem: jest.fn(),
@@ -101,7 +119,7 @@ Object.defineProperty(window, 'sessionStorage', {
 
 // Provide a minimal global fetch for libraries that expect it in Node test env
 if (typeof global.fetch === 'undefined') {
-  global.fetch = jest.fn(async () => ({
+  (global as any).fetch = jest.fn(async () => ({
     ok: true,
     status: 200,
     json: async () => ({}),
@@ -178,11 +196,11 @@ jest.mock('@/lib/queryClient', () => ({
     clear: jest.fn(),
   },
   CACHE_KEYS: {
-    USER_STATS: (userId) => ['user', 'stats', userId],
-    USER_PROFILE: (userId) => ['user', 'profile', userId],
-    FEED_SESSIONS: (limit, cursor, filters) => ['feed', 'sessions', limit, cursor, filters],
-    SESSION: (sessionId) => ['session', sessionId],
-    COMMENTS: (sessionId) => ['comments', sessionId],
+    USER_STATS: (userId: string) => ['user', 'stats', userId],
+    USER_PROFILE: (userId: string) => ['user', 'profile', userId],
+    FEED_SESSIONS: (limit: number, cursor: string | null, filters: any) => ['feed', 'sessions', limit, cursor, filters],
+    SESSION: (sessionId: string) => ['session', sessionId],
+    COMMENTS: (sessionId: string) => ['comments', sessionId],
   },
   CACHE_TIMES: {
     REAL_TIME: 30 * 1000,
