@@ -5602,6 +5602,19 @@ const firebaseGroupApi = {
         throw new Error('Group not found');
       }
 
+      // Get active members from groupMemberships collection
+      const membershipsQuery = query(
+        collection(db, 'groupMemberships'),
+        where('groupId', '==', groupId),
+        where('status', '==', 'active')
+      );
+      const membershipsSnapshot = await getDocs(membershipsQuery);
+      const memberIds = membershipsSnapshot.docs.map(doc => doc.data().userId);
+
+      if (memberIds.length === 0) {
+        return [];
+      }
+
       // Calculate date range based on time period
       const now = new Date();
       let startDate: Date;
@@ -5625,10 +5638,6 @@ const firebaseGroupApi = {
       }
 
       // Firestore 'in' queries are limited to 10 items, so we need to batch
-      const memberIds = group.memberIds || [];
-      if (memberIds.length === 0) {
-        return [];
-      }
 
       const userHoursMap = new Map<
         string,

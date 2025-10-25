@@ -10,7 +10,7 @@ import Header from '@/components/HeaderComponent';
 import { useUserSessions, useUserStats, useUserProfile, useUserFollowers, useUserFollowing, useProjects } from '@/hooks/useCache';
 import Link from 'next/link';
 import Image from 'next/image';
-import { User as UserIcon, Users, Settings, Clock, Target, Calendar, Heart, LogOut, Edit, TrendingUp, BarChart3, ChevronDown } from 'lucide-react';
+import { User as UserIcon, Users, Settings, Clock, Target, Calendar, Heart, LogOut, Edit, TrendingUp, BarChart3, ChevronDown, BarChart2, MapPin } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip, Area, ComposedChart, BarChart, Bar } from 'recharts';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Feed from '@/components/Feed';
@@ -372,7 +372,10 @@ export default function ProfilePage() {
                   <div className="relative">
                     <button
                       onClick={() => setShowSettingsMenu(!showSettingsMenu)}
-                      className="p-1.5 md:p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors"
+                      className="p-1.5 md:p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:ring-offset-2"
+                      aria-label="Open settings menu"
+                      aria-expanded={showSettingsMenu}
+                      aria-haspopup="true"
                     >
                       <Settings className="w-4 h-4 md:w-5 md:h-5" />
                     </button>
@@ -437,7 +440,10 @@ export default function ProfilePage() {
 
                     {/* Location */}
                     {(userProfile?.location || user.location) && (
-                      <p className="text-gray-500 text-xs md:text-sm mb-3 md:mb-4">📍 {userProfile?.location || user.location}</p>
+                      <p className="text-gray-500 text-xs md:text-sm mb-3 md:mb-4 flex items-center gap-1">
+                        <MapPin className="w-3 h-3 md:w-4 md:h-4" aria-hidden="true" />
+                        {userProfile?.location || user.location}
+                      </p>
                     )}
 
                     {/* Edit Profile Button */}
@@ -456,7 +462,8 @@ export default function ProfilePage() {
                           setActiveTab('followers');
                           router.push('/profile?tab=followers');
                         }}
-                        className="hover:underline"
+                        className="hover:underline focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:ring-offset-2 rounded px-1"
+                        aria-label={`View ${followers.length} followers`}
                       >
                         <span className="font-bold text-gray-900 text-sm md:text-base">{followers.length}</span>{' '}
                         <span className="text-gray-600 text-xs md:text-sm">Followers</span>
@@ -466,7 +473,8 @@ export default function ProfilePage() {
                           setActiveTab('following');
                           router.push('/profile?tab=following');
                         }}
-                        className="hover:underline"
+                        className="hover:underline focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:ring-offset-2 rounded px-1"
+                        aria-label={`View ${following.length} following`}
                       >
                         <span className="font-bold text-gray-900 text-sm md:text-base">{following.length}</span>{' '}
                         <span className="text-gray-600 text-xs md:text-sm">Following</span>
@@ -477,7 +485,7 @@ export default function ProfilePage() {
                   {/* Right Column - This Week Stats */}
                   <div className="md:w-64 border-t md:border-t-0 md:border-l border-gray-200 pt-4 md:pt-0 md:pl-8">
                     <div className="flex items-center gap-2 mb-3 md:mb-4">
-                      <div className="w-4 h-4 md:w-5 md:h-5 text-[#FC4C02]">📊</div>
+                      <BarChart2 className="w-4 h-4 md:w-5 md:h-5 text-[#FC4C02]" aria-hidden="true" />
                       <h2 className="text-sm md:text-base font-bold">This week</h2>
                     </div>
 
@@ -502,17 +510,21 @@ export default function ProfilePage() {
               {/* Tabs */}
               <div className="sticky top-12 md:top-14 bg-white md:bg-gray-50 z-30 -mx-4 md:mx-0">
                 <div className="bg-white md:bg-gray-50 border-b border-gray-200">
-                  <div className="flex md:gap-8 px-4 md:px-0 overflow-x-auto scrollbar-hide">
+                  <div className="flex md:gap-8 px-4 md:px-0 overflow-x-auto scrollbar-hide" role="tablist" aria-label="Profile sections">
                     <button
                       onClick={() => {
                         setActiveTab('progress');
                         router.push('/profile?tab=progress');
                       }}
-                      className={`flex-1 md:flex-initial py-3 md:py-4 px-1 text-sm md:text-base font-medium border-b-2 transition-colors whitespace-nowrap ${
+                      className={`flex-1 md:flex-initial py-3 md:py-4 px-1 text-sm md:text-base font-medium border-b-2 transition-colors whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:ring-offset-2 ${
                         activeTab === 'progress'
                           ? 'border-[#007AFF] text-[#007AFF]'
                           : 'border-transparent text-gray-500 md:text-gray-600 hover:text-gray-700 md:hover:text-gray-900'
                       }`}
+                      role="tab"
+                      aria-selected={activeTab === 'progress'}
+                      aria-controls="progress-panel"
+                      id="progress-tab"
                     >
                       Progress
                     </button>
@@ -521,11 +533,15 @@ export default function ProfilePage() {
                         setActiveTab('sessions');
                         router.push('/profile?tab=sessions');
                       }}
-                      className={`flex-1 md:flex-initial py-3 md:py-4 px-1 text-sm md:text-base font-medium border-b-2 transition-colors whitespace-nowrap ${
+                      className={`flex-1 md:flex-initial py-3 md:py-4 px-1 text-sm md:text-base font-medium border-b-2 transition-colors whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:ring-offset-2 ${
                         activeTab === 'sessions'
                           ? 'border-[#007AFF] text-[#007AFF]'
                           : 'border-transparent text-gray-500 md:text-gray-600 hover:text-gray-700 md:hover:text-gray-900'
                       }`}
+                      role="tab"
+                      aria-selected={activeTab === 'sessions'}
+                      aria-controls="sessions-panel"
+                      id="sessions-tab"
                     >
                       Sessions
                     </button>
@@ -535,11 +551,15 @@ export default function ProfilePage() {
                         setActiveTab('activities');
                         router.push('/profile?tab=activities');
                       }}
-                      className={`hidden md:flex flex-1 md:flex-initial py-3 md:py-4 px-1 text-sm md:text-base font-medium border-b-2 transition-colors whitespace-nowrap ${
+                      className={`hidden md:flex flex-1 md:flex-initial py-3 md:py-4 px-1 text-sm md:text-base font-medium border-b-2 transition-colors whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:ring-offset-2 ${
                         activeTab === 'activities'
                           ? 'border-[#007AFF] text-[#007AFF]'
                           : 'border-transparent text-gray-500 md:text-gray-600 hover:text-gray-700 md:hover:text-gray-900'
                       }`}
+                      role="tab"
+                      aria-selected={activeTab === 'activities'}
+                      aria-controls="activities-panel"
+                      id="activities-tab"
                     >
                       Activities
                     </button>
@@ -548,11 +568,15 @@ export default function ProfilePage() {
                         setActiveTab('followers');
                         router.push('/profile?tab=followers');
                       }}
-                      className={`flex-1 md:flex-initial py-3 md:py-4 px-1 text-sm md:text-base font-medium border-b-2 transition-colors whitespace-nowrap ${
+                      className={`flex-1 md:flex-initial py-3 md:py-4 px-1 text-sm md:text-base font-medium border-b-2 transition-colors whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:ring-offset-2 ${
                         activeTab === 'followers'
                           ? 'border-[#007AFF] text-[#007AFF]'
                           : 'border-transparent text-gray-500 md:text-gray-600 hover:text-gray-700 md:hover:text-gray-900'
                       }`}
+                      role="tab"
+                      aria-selected={activeTab === 'followers'}
+                      aria-controls="followers-panel"
+                      id="followers-tab"
                     >
                       Followers
                     </button>
@@ -561,11 +585,15 @@ export default function ProfilePage() {
                         setActiveTab('following');
                         router.push('/profile?tab=following');
                       }}
-                      className={`flex-1 md:flex-initial py-3 md:py-4 px-1 text-sm md:text-base font-medium border-b-2 transition-colors whitespace-nowrap ${
+                      className={`flex-1 md:flex-initial py-3 md:py-4 px-1 text-sm md:text-base font-medium border-b-2 transition-colors whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:ring-offset-2 ${
                         activeTab === 'following'
                           ? 'border-[#007AFF] text-[#007AFF]'
                           : 'border-transparent text-gray-500 md:text-gray-600 hover:text-gray-700 md:hover:text-gray-900'
                       }`}
+                      role="tab"
+                      aria-selected={activeTab === 'following'}
+                      aria-controls="following-panel"
+                      id="following-tab"
                     >
                       Following
                     </button>
@@ -583,7 +611,10 @@ export default function ProfilePage() {
                       <div className="relative flex-shrink-0">
                         <button
                           onClick={() => setShowActivityDropdown(!showActivityDropdown)}
-                          className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-700 bg-white border border-gray-300 rounded-full hover:bg-gray-50 transition-colors whitespace-nowrap"
+                          className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-700 bg-white border border-gray-300 rounded-full hover:bg-gray-50 transition-colors whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:ring-offset-2 min-h-[44px]"
+                          aria-label="Filter by activity"
+                          aria-expanded={showActivityDropdown}
+                          aria-haspopup="listbox"
                         >
                           <span className="font-medium">
                             {selectedActivityId === 'all'
@@ -645,11 +676,13 @@ export default function ProfilePage() {
                             <button
                               key={period}
                               onClick={() => setTimePeriod(period)}
-                              className={`px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-medium rounded-full transition-colors whitespace-nowrap flex-shrink-0 ${
+                              className={`px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-medium rounded-full transition-colors whitespace-nowrap flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:ring-offset-2 min-h-[44px] ${
                                 timePeriod === period
                                   ? 'bg-gray-900 text-white'
                                   : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
                               }`}
+                              aria-label={`Show ${period} time period`}
+                              aria-pressed={timePeriod === period}
                             >
                               {period}
                             </button>
@@ -660,15 +693,18 @@ export default function ProfilePage() {
                         <div className="relative flex-shrink-0">
                           <button
                             onClick={() => setShowChartTypeDropdown(!showChartTypeDropdown)}
-                            className="flex items-center gap-1 px-2 md:px-3 py-1.5 md:py-2 text-xs md:text-sm text-gray-700 bg-white border border-gray-300 rounded-full hover:bg-gray-50 transition-colors whitespace-nowrap"
+                            className="flex items-center gap-1 px-2 md:px-3 py-1.5 md:py-2 text-xs md:text-sm text-gray-700 bg-white border border-gray-300 rounded-full hover:bg-gray-50 transition-colors whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:ring-offset-2 min-h-[44px]"
+                            aria-label={`Chart type: ${chartType}`}
+                            aria-expanded={showChartTypeDropdown}
+                            aria-haspopup="listbox"
                           >
                             {chartType === 'bar' ? (
-                              <BarChart3 className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                              <BarChart3 className="w-3.5 h-3.5 md:w-4 md:h-4" aria-hidden="true" />
                             ) : (
-                              <TrendingUp className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                              <TrendingUp className="w-3.5 h-3.5 md:w-4 md:h-4" aria-hidden="true" />
                             )}
                             <span className="capitalize hidden sm:inline">{chartType}</span>
-                            <ChevronDown className="w-3 h-3" />
+                            <ChevronDown className="w-3 h-3" aria-hidden="true" />
                           </button>
 
                           {/* Chart Type Dropdown */}
@@ -738,14 +774,14 @@ export default function ProfilePage() {
                                   width={40}
                                 />
                                 <Tooltip content={<CustomTooltip />} />
-                                <Bar dataKey="hours" fill="#1D9BF0" radius={[4, 4, 0, 0]} name="Hours" />
+                                <Bar dataKey="hours" fill="#007AFF" radius={[4, 4, 0, 0]} name="Hours" />
                               </BarChart>
                             ) : (
                               <ComposedChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                                 <defs>
                                   <linearGradient id="colorHours" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#1D9BF0" stopOpacity={0.3}/>
-                                    <stop offset="95%" stopColor="#1D9BF0" stopOpacity={0}/>
+                                    <stop offset="5%" stopColor="#007AFF" stopOpacity={0.3}/>
+                                    <stop offset="95%" stopColor="#007AFF" stopOpacity={0}/>
                                   </linearGradient>
                                 </defs>
                                 <XAxis
@@ -764,7 +800,7 @@ export default function ProfilePage() {
                                 <Area
                                   type="monotone"
                                   dataKey="hours"
-                                  stroke="#1D9BF0"
+                                  stroke="#007AFF"
                                   strokeWidth={2}
                                   fill="url(#colorHours)"
                                   name="Hours"
@@ -790,14 +826,14 @@ export default function ProfilePage() {
                                 <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#666' }} axisLine={false} tickLine={false} />
                                 <YAxis tick={{ fontSize: 11, fill: '#666' }} axisLine={false} tickLine={false} />
                                 <Tooltip content={<CustomTooltip />} />
-                                <Bar dataKey="value" fill="#00BA7C" radius={[4, 4, 0, 0]} name="Minutes" />
+                                <Bar dataKey="value" fill="#34C759" radius={[4, 4, 0, 0]} name="Minutes" />
                               </BarChart>
                             ) : (
                               <ComposedChart data={avgDurationData} margin={{ top: 5, right: 5, left: -30, bottom: 0 }}>
                                 <defs>
                                   <linearGradient id="colorAvgDuration" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#00BA7C" stopOpacity={0.3}/>
-                                    <stop offset="95%" stopColor="#00BA7C" stopOpacity={0}/>
+                                    <stop offset="5%" stopColor="#34C759" stopOpacity={0.3}/>
+                                    <stop offset="95%" stopColor="#34C759" stopOpacity={0}/>
                                   </linearGradient>
                                 </defs>
                                 <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#666' }} axisLine={false} tickLine={false} />
@@ -806,7 +842,7 @@ export default function ProfilePage() {
                                 <Area
                                   type="monotone"
                                   dataKey="value"
-                                  stroke="#00BA7C"
+                                  stroke="#34C759"
                                   strokeWidth={2}
                                   fill="url(#colorAvgDuration)"
                                   name="Minutes"
@@ -829,14 +865,14 @@ export default function ProfilePage() {
                                 <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#666' }} axisLine={false} tickLine={false} />
                                 <YAxis tick={{ fontSize: 11, fill: '#666' }} axisLine={false} tickLine={false} />
                                 <Tooltip content={<CustomTooltip />} />
-                                <Bar dataKey="sessions" fill="#00BA7C" radius={[4, 4, 0, 0]} name="Sessions" />
+                                <Bar dataKey="sessions" fill="#34C759" radius={[4, 4, 0, 0]} name="Sessions" />
                               </BarChart>
                             ) : (
                               <ComposedChart data={chartData} margin={{ top: 5, right: 5, left: -30, bottom: 0 }}>
                                 <defs>
                                   <linearGradient id="colorSessionsSmall" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#00BA7C" stopOpacity={0.3}/>
-                                    <stop offset="95%" stopColor="#00BA7C" stopOpacity={0}/>
+                                    <stop offset="5%" stopColor="#34C759" stopOpacity={0.3}/>
+                                    <stop offset="95%" stopColor="#34C759" stopOpacity={0}/>
                                   </linearGradient>
                                 </defs>
                                 <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#666' }} axisLine={false} tickLine={false} />
@@ -845,7 +881,7 @@ export default function ProfilePage() {
                                 <Area
                                   type="monotone"
                                   dataKey="sessions"
-                                  stroke="#00BA7C"
+                                  stroke="#34C759"
                                   strokeWidth={2}
                                   fill="url(#colorSessionsSmall)"
                                   name="Sessions"

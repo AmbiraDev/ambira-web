@@ -10,7 +10,7 @@ import Header from '@/components/HeaderComponent';
 import MobileHeader from '@/components/MobileHeader';
 import BottomNavigation from '@/components/BottomNavigation';
 import { Button } from '@/components/ui/button';
-import { UserX, User as UserIcon, Users, ChevronDown } from 'lucide-react';
+import { UserX, User as UserIcon, Users, ChevronDown, BarChart2, MapPin } from 'lucide-react';
 import { toast } from 'sonner';
 import Link from 'next/link';
 import { XAxis, YAxis, ResponsiveContainer, Tooltip, Area, ComposedChart, BarChart, Bar } from 'recharts';
@@ -522,7 +522,10 @@ export default function ProfilePage() {
 
                     {/* Location */}
                     {profile.location && (
-                      <p className="text-gray-500 text-xs md:text-sm mb-3 md:mb-4">📍 {profile.location}</p>
+                      <p className="text-gray-500 text-xs md:text-sm mb-3 md:mb-4 flex items-center gap-1">
+                        <MapPin className="w-3 h-3 md:w-4 md:h-4" aria-hidden="true" />
+                        {profile.location}
+                      </p>
                     )}
 
                     {/* Follow Button - Only for other users' profiles */}
@@ -579,7 +582,7 @@ export default function ProfilePage() {
                   {/* Right Column - This Week Stats */}
                   <div className="md:w-64 border-t md:border-t-0 md:border-l border-gray-200 pt-4 md:pt-0 md:pl-8">
                     <div className="flex items-center gap-2 mb-3 md:mb-4">
-                      <div className="w-4 h-4 md:w-5 md:h-5 text-[#FC4C02]">📊</div>
+                      <BarChart2 className="w-4 h-4 md:w-5 md:h-5 text-[#FC4C02]" aria-hidden="true" />
                       <h2 className="text-sm md:text-base font-bold">This week</h2>
                     </div>
 
@@ -807,14 +810,14 @@ export default function ProfilePage() {
                                     width={40}
                                   />
                                   <Tooltip content={<CustomTooltip />} />
-                                  <Bar dataKey="hours" fill="#1D9BF0" radius={[4, 4, 0, 0]} name="Hours" />
+                                  <Bar dataKey="hours" fill="#007AFF" radius={[4, 4, 0, 0]} name="Hours" />
                                 </BarChart>
                               ) : (
                                 <ComposedChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                                   <defs>
                                     <linearGradient id="colorHours" x1="0" y1="0" x2="0" y2="1">
-                                      <stop offset="5%" stopColor="#1D9BF0" stopOpacity={0.3}/>
-                                      <stop offset="95%" stopColor="#1D9BF0" stopOpacity={0}/>
+                                      <stop offset="5%" stopColor="#007AFF" stopOpacity={0.3}/>
+                                      <stop offset="95%" stopColor="#007AFF" stopOpacity={0}/>
                                     </linearGradient>
                                   </defs>
                                   <XAxis
@@ -833,7 +836,7 @@ export default function ProfilePage() {
                                   <Area
                                     type="monotone"
                                     dataKey="hours"
-                                    stroke="#1D9BF0"
+                                    stroke="#007AFF"
                                     strokeWidth={2}
                                     fill="url(#colorHours)"
                                     name="Hours"
@@ -859,14 +862,14 @@ export default function ProfilePage() {
                                   <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#666' }} axisLine={false} tickLine={false} />
                                   <YAxis tick={{ fontSize: 11, fill: '#666' }} axisLine={false} tickLine={false} />
                                   <Tooltip content={<CustomTooltip />} />
-                                  <Bar dataKey="value" fill="#00BA7C" radius={[4, 4, 0, 0]} name="Minutes" />
+                                  <Bar dataKey="value" fill="#34C759" radius={[4, 4, 0, 0]} name="Minutes" />
                                 </BarChart>
                               ) : (
                                 <ComposedChart data={avgDurationData} margin={{ top: 5, right: 5, left: -30, bottom: 0 }}>
                                   <defs>
                                     <linearGradient id="colorAvgDuration" x1="0" y1="0" x2="0" y2="1">
-                                      <stop offset="5%" stopColor="#00BA7C" stopOpacity={0.3}/>
-                                      <stop offset="95%" stopColor="#00BA7C" stopOpacity={0}/>
+                                      <stop offset="5%" stopColor="#34C759" stopOpacity={0.3}/>
+                                      <stop offset="95%" stopColor="#34C759" stopOpacity={0}/>
                                     </linearGradient>
                                   </defs>
                                   <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#666' }} axisLine={false} tickLine={false} />
@@ -875,7 +878,7 @@ export default function ProfilePage() {
                                   <Area
                                     type="monotone"
                                     dataKey="value"
-                                    stroke="#00BA7C"
+                                    stroke="#34C759"
                                     strokeWidth={2}
                                     fill="url(#colorAvgDuration)"
                                     name="Minutes"
@@ -898,14 +901,14 @@ export default function ProfilePage() {
                                   <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#666' }} axisLine={false} tickLine={false} />
                                   <YAxis tick={{ fontSize: 11, fill: '#666' }} axisLine={false} tickLine={false} />
                                   <Tooltip content={<CustomTooltip />} />
-                                  <Bar dataKey="sessions" fill="#00BA7C" radius={[4, 4, 0, 0]} name="Sessions" />
+                                  <Bar dataKey="sessions" fill="#34C759" radius={[4, 4, 0, 0]} name="Sessions" />
                                 </BarChart>
                               ) : (
                                 <ComposedChart data={chartData} margin={{ top: 5, right: 5, left: -30, bottom: 0 }}>
                                   <defs>
                                     <linearGradient id="colorSessionsSmall" x1="0" y1="0" x2="0" y2="1">
-                                      <stop offset="5%" stopColor="#00BA7C" stopOpacity={0.3}/>
-                                      <stop offset="95%" stopColor="#00BA7C" stopOpacity={0}/>
+                                      <stop offset="5%" stopColor="#34C759" stopOpacity={0.3}/>
+                                      <stop offset="95%" stopColor="#34C759" stopOpacity={0}/>
                                     </linearGradient>
                                   </defs>
                                   <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#666' }} axisLine={false} tickLine={false} />
@@ -914,7 +917,7 @@ export default function ProfilePage() {
                                   <Area
                                     type="monotone"
                                     dataKey="sessions"
-                                    stroke="#00BA7C"
+                                    stroke="#34C759"
                                     strokeWidth={2}
                                     fill="url(#colorSessionsSmall)"
                                     name="Sessions"

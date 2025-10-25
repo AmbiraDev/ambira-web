@@ -1,5 +1,0 @@
----
-inclusion: always
----
-
-After completing a task, please navigate to @specs/todo.md and mark the task and any others that were completed as completed.

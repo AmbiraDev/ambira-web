@@ -34,8 +34,13 @@ export default function GroupDetailPage() {
   const [isLoadingLeaderboard, setIsLoadingLeaderboard] = useState(false);
   const [showPeriodDropdown, setShowPeriodDropdown] = useState(false);
   const [showInviteModal, setShowInviteModal] = useState(false);
+  const [failedImages, setFailedImages] = useState<Set<string>>(new Set());
 
   const groupId = params.id as string;
+
+  const handleImageError = (userId: string) => {
+    setFailedImages(prev => new Set(prev).add(userId));
+  };
 
   useEffect(() => {
     if (groupId && user) {
@@ -532,12 +537,13 @@ export default function GroupDetailPage() {
                                 <div className="flex items-center gap-3 min-w-0">
                                   {/* Profile Picture with Medal Outline */}
                                   <div className={`flex-shrink-0 rounded-full ${getMedalOutline(entry.rank)}`}>
-                                    {entry.user.profilePicture ? (
+                                    {entry.user.profilePicture && !failedImages.has(entry.user.id) ? (
                                       <div className="w-12 h-12 rounded-full overflow-hidden bg-white">
                                         <img
                                           src={entry.user.profilePicture}
                                           alt={entry.user.name}
                                           className="w-full h-full object-cover"
+                                          onError={() => handleImageError(entry.user.id)}
                                         />
                                       </div>
                                     ) : (
@@ -615,12 +621,13 @@ export default function GroupDetailPage() {
                                 <div className="flex items-center gap-2 min-w-0">
                                   {/* Profile Picture with Medal Outline */}
                                   <div className={`flex-shrink-0 rounded-full ${getMedalOutline(entry.rank)}`}>
-                                    {entry.user.profilePicture ? (
+                                    {entry.user.profilePicture && !failedImages.has(entry.user.id) ? (
                                       <div className="w-10 h-10 rounded-full overflow-hidden bg-white">
                                         <img
                                           src={entry.user.profilePicture}
                                           alt={entry.user.name}
                                           className="w-full h-full object-cover"
+                                          onError={() => handleImageError(entry.user.id)}
                                         />
                                       </div>
                                     ) : (
