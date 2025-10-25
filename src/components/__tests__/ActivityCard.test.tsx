@@ -53,7 +53,10 @@ describe('ActivityCard Component', () => {
   const mockStats: ActivityStats = {
     weeklyHours: 5.5,
     totalHours: 42.3,
-    totalSessions: 15,
+    sessionCount: 15,
+    currentStreak: 0,
+    weeklyProgressPercentage: 0,
+    totalProgressPercentage: 0,
     averageSessionDuration: 2.82,
   };
 
@@ -385,7 +388,10 @@ describe('ActivityCard Component', () => {
       const zeroStats: ActivityStats = {
         weeklyHours: 0,
         totalHours: 0,
-        totalSessions: 0,
+        sessionCount: 0,
+        currentStreak: 0,
+        weeklyProgressPercentage: 0,
+        totalProgressPercentage: 0,
         averageSessionDuration: 0,
       };
       render(<ActivityCard activity={mockActivity} stats={zeroStats} {...mockHandlers} />);
@@ -398,7 +404,10 @@ describe('ActivityCard Component', () => {
       const overStats: ActivityStats = {
         weeklyHours: 15, // Exceeds 10h target
         totalHours: 150, // Exceeds 100h target
-        totalSessions: 50,
+        sessionCount: 50,
+        currentStreak: 0,
+        weeklyProgressPercentage: 0,
+        totalProgressPercentage: 0,
         averageSessionDuration: 3,
       };
       render(<ActivityCard activity={mockActivity} stats={overStats} {...mockHandlers} />);
