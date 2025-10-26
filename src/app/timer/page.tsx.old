@@ -1,17 +1,10 @@
-/**
- * Timer Route (Clean Architecture)
- *
- * This route file ONLY handles routing concerns.
- * All timer logic is delegated to SessionTimerEnhanced component.
- */
-
 'use client';
 
 import React from 'react';
+import { SessionTimerEnhanced } from '@/components/SessionTimerEnhanced';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import Header from '@/components/HeaderComponent';
 import BottomNavigation from '@/components/BottomNavigation';
-import TimerPageContent from './page-content';
 
 export default function TimerPage() {
   return (
@@ -22,8 +15,9 @@ export default function TimerPage() {
           <Header />
         </div>
 
-        {/* Timer Content */}
-        <TimerPageContent />
+        <div className="md:pt-20">
+          <SessionTimerEnhanced projectId="" />
+        </div>
 
         {/* Bottom Navigation - only on desktop */}
         <div className="hidden md:block">
