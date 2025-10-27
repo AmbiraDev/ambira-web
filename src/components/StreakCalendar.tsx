@@ -11,7 +11,7 @@ interface StreakCalendarProps {
 
 export const StreakCalendar: React.FC<StreakCalendarProps> = ({
   userId,
-  months = 3
+  months = 3,
 }) => {
   const [streakData, setStreakData] = useState<StreakData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -42,29 +42,34 @@ export const StreakCalendar: React.FC<StreakCalendarProps> = ({
   // Generate calendar grid for the last N months
   const generateCalendarDays = () => {
     const today = new Date();
-    const days: Array<{ date: string; hasActivity: boolean; isToday: boolean; isFuture: boolean }> = [];
-    
+    const days: Array<{
+      date: string;
+      hasActivity: boolean;
+      isToday: boolean;
+      isFuture: boolean;
+    }> = [];
+
     // Calculate start date (N months ago)
     const startDate = new Date(today);
     startDate.setMonth(startDate.getMonth() - months);
     startDate.setDate(1);
-    
+
     // Generate all days from start to today
     const currentDate = new Date(startDate);
     while (currentDate <= today) {
       const dateStr = currentDate.toISOString().split('T')[0];
       const streakDay = streakData.streakHistory.find(d => d.date === dateStr);
-      
+
       days.push({
-        date: dateStr,
+        date: dateStr || '',
         hasActivity: streakDay?.hasActivity || false,
         isToday: dateStr === today.toISOString().split('T')[0],
-        isFuture: false
+        isFuture: false,
       });
-      
+
       currentDate.setDate(currentDate.getDate() + 1);
     }
-    
+
     return days;
   };
 
@@ -72,8 +77,10 @@ export const StreakCalendar: React.FC<StreakCalendarProps> = ({
   const weeks = Math.ceil(days.length / 7);
 
   const getActivityColor = (hasActivity: boolean, isToday: boolean) => {
-    if (isToday && !hasActivity) return 'bg-yellow-200 border-2 border-[#007AFF] ring-2 ring-[#007AFF] ring-opacity-50';
-    if (isToday && hasActivity) return 'bg-green-500 border-2 border-[#007AFF] ring-2 ring-[#007AFF] ring-opacity-50 font-bold';
+    if (isToday && !hasActivity)
+      return 'bg-yellow-200 border-2 border-[#007AFF] ring-2 ring-[#007AFF] ring-opacity-50';
+    if (isToday && hasActivity)
+      return 'bg-green-500 border-2 border-[#007AFF] ring-2 ring-[#007AFF] ring-opacity-50 font-bold';
     if (hasActivity) return 'bg-green-500';
     return 'bg-gray-200';
   };
@@ -93,14 +100,18 @@ export const StreakCalendar: React.FC<StreakCalendarProps> = ({
           </div>
         </div>
       </div>
-      
-      <div className="grid gap-1" style={{ gridTemplateColumns: `repeat(${weeks}, 1fr)` }}>
+
+      <div
+        className="grid gap-1"
+        style={{ gridTemplateColumns: `repeat(${weeks}, 1fr)` }}
+      >
         {Array.from({ length: weeks }).map((_, weekIndex) => (
           <div key={weekIndex} className="flex flex-col gap-1">
             {Array.from({ length: 7 }).map((_, dayIndex) => {
               const dayData = days[weekIndex + dayIndex * weeks];
-              if (!dayData) return <div key={dayIndex} className="w-3 h-3"></div>;
-              
+              if (!dayData)
+                return <div key={dayIndex} className="w-3 h-3"></div>;
+
               return (
                 <div
                   key={dayIndex}
@@ -112,10 +123,11 @@ export const StreakCalendar: React.FC<StreakCalendarProps> = ({
           </div>
         ))}
       </div>
-      
+
       <div className="mt-4 text-sm text-gray-600">
         <p>
-          <span className="font-semibold">{streakData.totalStreakDays}</span> total active days
+          <span className="font-semibold">{streakData.totalStreakDays}</span>{' '}
+          total active days
         </p>
       </div>
     </div>

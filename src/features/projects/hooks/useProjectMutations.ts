@@ -15,6 +15,22 @@ import { Project, CreateProjectData, UpdateProjectData } from '@/types';
 
 const projectService = new ProjectService();
 
+// Context types for mutation rollbacks
+type CreateProjectContext = { previousProjects: unknown };
+type UpdateProjectContext = {
+  previousProject: unknown;
+  previousProjects: unknown;
+};
+type DeleteProjectContext = { previousProjects: unknown };
+type ArchiveProjectContext = {
+  previousProject: unknown;
+  previousProjects: unknown;
+};
+type RestoreProjectContext = {
+  previousProject: unknown;
+  previousProjects: unknown;
+};
+
 /**
  * Create a new project
  *
@@ -29,11 +45,13 @@ const projectService = new ProjectService();
  * });
  */
 export function useCreateProject(
-  options?: Partial<UseMutationOptions<Project, Error, CreateProjectData>>
+  options?: Partial<
+    UseMutationOptions<Project, Error, CreateProjectData, CreateProjectContext>
+  >
 ) {
   const queryClient = useQueryClient();
 
-  return useMutation<Project, Error, CreateProjectData>({
+  return useMutation<Project, Error, CreateProjectData, CreateProjectContext>({
     mutationFn: data => projectService.createProject(data),
 
     onMutate: async newProject => {
@@ -65,10 +83,9 @@ export function useCreateProject(
       return { previousProjects };
     },
 
-    onError: (error, variables, context: unknown) => {
+    onError: (error, variables, context) => {
       if (
         context &&
-        typeof context === 'object' &&
         'previousProjects' in context &&
         context.previousProjects
       ) {
@@ -99,7 +116,8 @@ export function useUpdateProject(
     UseMutationOptions<
       Project,
       Error,
-      { projectId: string; data: UpdateProjectData }
+      { projectId: string; data: UpdateProjectData },
+      UpdateProjectContext
     >
   >
 ) {
@@ -108,7 +126,8 @@ export function useUpdateProject(
   return useMutation<
     Project,
     Error,
-    { projectId: string; data: UpdateProjectData }
+    { projectId: string; data: UpdateProjectData },
+    UpdateProjectContext
   >({
     mutationFn: ({ projectId, data }) =>
       projectService.updateProject(projectId, data),
@@ -146,13 +165,8 @@ export function useUpdateProject(
       return { previousProject, previousProjects };
     },
 
-    onError: (error, { projectId }, context: unknown) => {
-      if (
-        context &&
-        typeof context === 'object' &&
-        'previousProject' in context &&
-        context.previousProject
-      ) {
+    onError: (error, { projectId }, context) => {
+      if (context && 'previousProject' in context && context.previousProject) {
         queryClient.setQueryData(
           PROJECT_KEYS.detail(projectId),
           context.previousProject
@@ -160,7 +174,6 @@ export function useUpdateProject(
       }
       if (
         context &&
-        typeof context === 'object' &&
         'previousProjects' in context &&
         context.previousProjects
       ) {
@@ -190,11 +203,13 @@ export function useUpdateProject(
  * deleteMutation.mutate('project-123');
  */
 export function useDeleteProject(
-  options?: Partial<UseMutationOptions<void, Error, string>>
+  options?: Partial<
+    UseMutationOptions<void, Error, string, DeleteProjectContext>
+  >
 ) {
   const queryClient = useQueryClient();
 
-  return useMutation<void, Error, string>({
+  return useMutation<void, Error, string, DeleteProjectContext>({
     mutationFn: projectId => projectService.deleteProject(projectId),
 
     onMutate: async projectId => {
@@ -211,10 +226,9 @@ export function useDeleteProject(
       return { previousProjects };
     },
 
-    onError: (error, projectId, context: unknown) => {
+    onError: (error, projectId, context) => {
       if (
         context &&
-        typeof context === 'object' &&
         'previousProjects' in context &&
         context.previousProjects
       ) {
@@ -244,11 +258,13 @@ export function useDeleteProject(
  * archiveMutation.mutate('project-123');
  */
 export function useArchiveProject(
-  options?: Partial<UseMutationOptions<Project, Error, string>>
+  options?: Partial<
+    UseMutationOptions<Project, Error, string, ArchiveProjectContext>
+  >
 ) {
   const queryClient = useQueryClient();
 
-  return useMutation<Project, Error, string>({
+  return useMutation<Project, Error, string, ArchiveProjectContext>({
     mutationFn: projectId => projectService.archiveProject(projectId),
 
     onMutate: async projectId => {
@@ -285,14 +301,18 @@ export function useArchiveProject(
       return { previousProject, previousProjects };
     },
 
-    onError: (error, projectId, context: unknown) => {
-      if (context && typeof context === 'object' && 'previousProject' in context && context.previousProject) {
+    onError: (error, projectId, context) => {
+      if (context && 'previousProject' in context && context.previousProject) {
         queryClient.setQueryData(
           PROJECT_KEYS.detail(projectId),
           context.previousProject
         );
       }
-      if (context && typeof context === 'object' && 'previousProjects' in context && context.previousProjects) {
+      if (
+        context &&
+        'previousProjects' in context &&
+        context.previousProjects
+      ) {
         queryClient.setQueryData(PROJECT_KEYS.list(), context.previousProjects);
       }
     },
@@ -316,11 +336,13 @@ export function useArchiveProject(
  * restoreMutation.mutate('project-123');
  */
 export function useRestoreProject(
-  options?: Partial<UseMutationOptions<Project, Error, string>>
+  options?: Partial<
+    UseMutationOptions<Project, Error, string, RestoreProjectContext>
+  >
 ) {
   const queryClient = useQueryClient();
 
-  return useMutation<Project, Error, string>({
+  return useMutation<Project, Error, string, RestoreProjectContext>({
     mutationFn: projectId => projectService.restoreProject(projectId),
 
     onMutate: async projectId => {
@@ -353,14 +375,18 @@ export function useRestoreProject(
       return { previousProject, previousProjects };
     },
 
-    onError: (error, projectId, context: unknown) => {
-      if (context && typeof context === 'object' && 'previousProject' in context && context.previousProject) {
+    onError: (error, projectId, context) => {
+      if (context && 'previousProject' in context && context.previousProject) {
         queryClient.setQueryData(
           PROJECT_KEYS.detail(projectId),
           context.previousProject
         );
       }
-      if (context && typeof context === 'object' && 'previousProjects' in context && context.previousProjects) {
+      if (
+        context &&
+        'previousProjects' in context &&
+        context.previousProjects
+      ) {
         queryClient.setQueryData(PROJECT_KEYS.list(), context.previousProjects);
       }
     },

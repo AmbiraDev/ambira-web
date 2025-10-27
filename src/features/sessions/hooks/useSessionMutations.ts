@@ -143,7 +143,7 @@ export function useSupportSession(
       }
     },
 
-    onMutate: async ({ sessionId, action }) => {
+    onMutate: async ({ sessionId, action }): Promise<SupportSessionContext> => {
       // Cancel outgoing queries
       await queryClient.cancelQueries({ queryKey: ['feed'] });
       await queryClient.cancelQueries({
@@ -288,7 +288,7 @@ export function useUpdateSession(
     mutationFn: ({ sessionId, data }) =>
       sessionService.updateSession(sessionId, data),
 
-    onMutate: async ({ sessionId, data }) => {
+    onMutate: async ({ sessionId, data }): Promise<UpdateSessionContext> => {
       await queryClient.cancelQueries({
         queryKey: SESSION_KEYS.detail(sessionId),
       });

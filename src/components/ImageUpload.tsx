@@ -10,7 +10,11 @@ interface DeleteConfirmProps {
   onDelete: () => void;
 }
 
-const DeleteConfirm: React.FC<DeleteConfirmProps> = ({ isOpen, onClose, onDelete }) => {
+const DeleteConfirm: React.FC<DeleteConfirmProps> = ({
+  isOpen,
+  onClose,
+  onDelete,
+}) => {
   if (!isOpen) return null;
 
   return (
@@ -23,7 +27,7 @@ const DeleteConfirm: React.FC<DeleteConfirmProps> = ({ isOpen, onClose, onDelete
         {/* Modal */}
         <div
           className="bg-white rounded-lg p-5 w-full max-w-sm shadow-xl"
-          onClick={(e) => e.stopPropagation()}
+          onClick={e => e.stopPropagation()}
         >
           <h3 className="text-lg font-semibold text-gray-900 mb-2">
             Delete Image?
@@ -89,7 +93,14 @@ interface ImageUploadProps {
 export const ImageUpload: React.FC<ImageUploadProps> = ({
   maxImages = 3,
   maxSizeMB = 5,
-  acceptedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/heic', 'image/heif'],
+  acceptedTypes = [
+    'image/jpeg',
+    'image/png',
+    'image/gif',
+    'image/webp',
+    'image/heic',
+    'image/heif',
+  ],
   showTypeHint = true,
   images = [],
   previewUrls = [],
@@ -131,12 +142,17 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
     }
 
     // Check file type
-    const isHeic = file.type === 'image/heic' ||
-                   file.type === 'image/heif' ||
-                   file.name.toLowerCase().endsWith('.heic') ||
-                   file.name.toLowerCase().endsWith('.heif');
+    const isHeic =
+      file.type === 'image/heic' ||
+      file.type === 'image/heif' ||
+      file.name.toLowerCase().endsWith('.heic') ||
+      file.name.toLowerCase().endsWith('.heif');
 
-    if (!acceptedTypes.includes(file.type) && !isHeic && !file.type.startsWith('image/')) {
+    if (
+      !acceptedTypes.includes(file.type) &&
+      !isHeic &&
+      !file.type.startsWith('image/')
+    ) {
       return {
         valid: false,
         error: `"${file.name}" is not a supported file type. Please use ${formatFileTypes()}.`,
@@ -151,7 +167,9 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
     setError('');
 
     if (files.length + images.length > effectiveMaxImages) {
-      setError(`Maximum ${effectiveMaxImages} ${effectiveMaxImages === 1 ? 'image' : 'images'} allowed`);
+      setError(
+        `Maximum ${effectiveMaxImages} ${effectiveMaxImages === 1 ? 'image' : 'images'} allowed`
+      );
       return;
     }
 
@@ -229,7 +247,10 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
     const newPreviewUrls = previewUrls.filter((_, i) => {
       if (i === index) {
         // Revoke object URL to free memory
-        URL.revokeObjectURL(previewUrls[i]);
+        const url = previewUrls[i];
+        if (url) {
+          URL.revokeObjectURL(url);
+        }
         return false;
       }
       return true;
@@ -264,7 +285,9 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
 
       {/* Image Previews */}
       {previewUrls.length > 0 && (
-        <div className={`grid gap-2 ${singleImage ? 'grid-cols-1' : 'grid-cols-3'}`}>
+        <div
+          className={`grid gap-2 ${singleImage ? 'grid-cols-1' : 'grid-cols-3'}`}
+        >
           {previewUrls.map((url, index) => (
             <div
               key={index}
@@ -290,7 +313,9 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
                     onClick={() => handleRemoveImage(index)}
                     className="hidden md:block absolute top-1 right-1 p-0.5 text-white hover:text-red-500 transition-colors"
                     aria-label="Remove image"
-                    style={{ filter: 'drop-shadow(0 1px 2px rgb(0 0 0 / 0.9))' }}
+                    style={{
+                      filter: 'drop-shadow(0 1px 2px rgb(0 0 0 / 0.9))',
+                    }}
                   >
                     <X className="w-5 h-5" strokeWidth={3} />
                   </button>
@@ -356,7 +381,9 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
           {isUploading ? (
             <>
               <Loader2 className="w-8 h-8 text-blue-500 animate-spin" />
-              <span className="text-sm font-medium text-blue-600">Uploading...</span>
+              <span className="text-sm font-medium text-blue-600">
+                Uploading...
+              </span>
             </>
           ) : (
             <>
@@ -379,11 +406,13 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
       )}
 
       {/* Helper text for max images */}
-      {!singleImage && previewUrls.length > 0 && previewUrls.length < effectiveMaxImages && (
-        <p className="text-xs text-gray-500 text-center">
-          {previewUrls.length} of {effectiveMaxImages} images selected
-        </p>
-      )}
+      {!singleImage &&
+        previewUrls.length > 0 &&
+        previewUrls.length < effectiveMaxImages && (
+          <p className="text-xs text-gray-500 text-center">
+            {previewUrls.length} of {effectiveMaxImages} images selected
+          </p>
+        )}
     </div>
   );
 };

@@ -13,7 +13,7 @@ export const HeatmapCalendar: React.FC<HeatmapCalendarProps> = ({
   data,
   maxValue,
   months = 12,
-  colorScale = ['#ebedf0', '#9be9a8', '#40c463', '#30a14e', '#216e39']
+  colorScale = ['#ebedf0', '#9be9a8', '#40c463', '#30a14e', '#216e39'],
 }) => {
   // Calculate max value if not provided
   const max = maxValue || Math.max(...data.map(d => d.value), 1);
@@ -26,7 +26,12 @@ export const HeatmapCalendar: React.FC<HeatmapCalendarProps> = ({
     startDate.setMonth(startDate.getMonth() - months);
     startDate.setDate(1);
 
-    const days: Array<{ date: string; value: number; dayOfWeek: number; isToday: boolean }> = [];
+    const days: Array<{
+      date: string;
+      value: number;
+      dayOfWeek: number;
+      isToday: boolean;
+    }> = [];
     const currentDate = new Date(startDate);
 
     while (currentDate <= today) {
@@ -34,10 +39,10 @@ export const HeatmapCalendar: React.FC<HeatmapCalendarProps> = ({
       const dayData = data.find(d => d.date === dateStr);
 
       days.push({
-        date: dateStr,
+        date: dateStr || '',
         value: dayData?.value || 0,
         dayOfWeek: currentDate.getDay(),
-        isToday: dateStr === todayStr
+        isToday: dateStr === todayStr,
       });
 
       currentDate.setDate(currentDate.getDate() + 1);
@@ -49,8 +54,15 @@ export const HeatmapCalendar: React.FC<HeatmapCalendarProps> = ({
   const days = generateDays();
 
   // Group days by week
-  const weeks: Array<Array<{ date: string; value: number; dayOfWeek: number; isToday: boolean }>> = [];
-  let currentWeek: Array<{ date: string; value: number; dayOfWeek: number; isToday: boolean }> = [];
+  const weeks: Array<
+    Array<{ date: string; value: number; dayOfWeek: number; isToday: boolean }>
+  > = [];
+  let currentWeek: Array<{
+    date: string;
+    value: number;
+    dayOfWeek: number;
+    isToday: boolean;
+  }> = [];
 
   days.forEach((day, index) => {
     if (index === 0 && day.dayOfWeek !== 0) {
@@ -104,8 +116,16 @@ export const HeatmapCalendar: React.FC<HeatmapCalendarProps> = ({
                         ? 'ring-2 ring-[#007AFF] ring-opacity-75 border-2 border-[#007AFF] font-bold'
                         : 'hover:ring-2 hover:ring-gray-400'
                     }`}
-                    style={{ backgroundColor: day.date ? getColor(day.value) : 'transparent' }}
-                    title={day.date ? `${day.date}: ${day.value} hours${day.isToday ? ' (Today)' : ''}` : ''}
+                    style={{
+                      backgroundColor: day.date
+                        ? getColor(day.value)
+                        : 'transparent',
+                    }}
+                    title={
+                      day.date
+                        ? `${day.date}: ${day.value} hours${day.isToday ? ' (Today)' : ''}`
+                        : ''
+                    }
                   />
                 ))}
               </div>

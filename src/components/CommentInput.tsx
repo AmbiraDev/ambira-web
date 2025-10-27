@@ -26,14 +26,16 @@ export const CommentInput: React.FC<CommentInputProps> = ({
   onSubmit,
   onCancel,
   autoFocus = false,
-  initialValue = ''
+  initialValue = '',
 }) => {
   const maxCharacters = 1000;
   const [content, setContent] = useState(initialValue);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showMentions, setShowMentions] = useState(false);
   const [mentionQuery, setMentionQuery] = useState('');
-  const [mentionSuggestions, setMentionSuggestions] = useState<UserSearchResult[]>([]);
+  const [mentionSuggestions, setMentionSuggestions] = useState<
+    UserSearchResult[]
+  >([]);
   const [selectedMentionIndex, setSelectedMentionIndex] = useState(0);
   const [mentionStartPos, setMentionStartPos] = useState<number | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -89,10 +91,10 @@ export const CommentInput: React.FC<CommentInputProps> = ({
     // Check for @ mentions
     const textBeforeCursor = value.slice(0, cursorPos);
     const lastAtIndex = textBeforeCursor.lastIndexOf('@');
-    
+
     if (lastAtIndex !== -1) {
       const textAfterAt = textBeforeCursor.slice(lastAtIndex + 1);
-      
+
       // Check if there's a space after @
       if (!textAfterAt.includes(' ') && textAfterAt.length < 20) {
         setShowMentions(true);
@@ -134,17 +136,20 @@ export const CommentInput: React.FC<CommentInputProps> = ({
     if (showMentions && mentionSuggestions.length > 0) {
       if (e.key === 'ArrowDown') {
         e.preventDefault();
-        setSelectedMentionIndex((prev) => 
+        setSelectedMentionIndex(prev =>
           prev < mentionSuggestions.length - 1 ? prev + 1 : 0
         );
       } else if (e.key === 'ArrowUp') {
         e.preventDefault();
-        setSelectedMentionIndex((prev) => 
+        setSelectedMentionIndex(prev =>
           prev > 0 ? prev - 1 : mentionSuggestions.length - 1
         );
       } else if (e.key === 'Enter' && !e.shiftKey) {
         e.preventDefault();
-        insertMention(mentionSuggestions[selectedMentionIndex]);
+        const selectedUser = mentionSuggestions[selectedMentionIndex];
+        if (selectedUser) {
+          insertMention(selectedUser);
+        }
       } else if (e.key === 'Escape') {
         setShowMentions(false);
       }
@@ -191,7 +196,7 @@ export const CommentInput: React.FC<CommentInputProps> = ({
           rows={1}
           style={{
             scrollbarWidth: 'none',
-            msOverflowStyle: 'none'
+            msOverflowStyle: 'none',
           }}
           aria-label="Comment input"
           aria-describedby="comment-help-text"
@@ -241,7 +246,12 @@ export const CommentInput: React.FC<CommentInputProps> = ({
               ) : (
                 <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center">
                   <span className="text-xs font-semibold text-white">
-                    {user.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                    {user.name
+                      .split(' ')
+                      .map(n => n[0])
+                      .join('')
+                      .slice(0, 2)
+                      .toUpperCase()}
                   </span>
                 </div>
               )}
@@ -262,4 +272,3 @@ export const CommentInput: React.FC<CommentInputProps> = ({
 };
 
 export default CommentInput;
-

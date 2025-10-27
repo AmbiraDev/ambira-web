@@ -251,7 +251,9 @@ export function GroupDetailPage({ groupId }: GroupDetailPageProps) {
                 {/* Member Count */}
                 <div className="text-sm text-gray-600">
                   {group.memberCount || group.memberIds.length} member
-                  {group.getMemberCount() !== 1 ? 's' : ''}
+                  {(group.memberCount || group.memberIds.length) !== 1
+                    ? 's'
+                    : ''}
                 </div>
               </div>
             </div>

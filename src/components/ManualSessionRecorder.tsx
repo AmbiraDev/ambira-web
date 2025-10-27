@@ -21,7 +21,11 @@ interface DeleteConfirmProps {
   onDelete: () => void;
 }
 
-const DeleteConfirm: React.FC<DeleteConfirmProps> = ({ isOpen, onClose, onDelete }) => {
+const DeleteConfirm: React.FC<DeleteConfirmProps> = ({
+  isOpen,
+  onClose,
+  onDelete,
+}) => {
   if (!isOpen) return null;
 
   return (
@@ -34,7 +38,7 @@ const DeleteConfirm: React.FC<DeleteConfirmProps> = ({ isOpen, onClose, onDelete
         {/* Modal */}
         <div
           className="bg-white rounded-lg p-5 w-full max-w-sm shadow-xl"
-          onClick={(e) => e.stopPropagation()}
+          onClick={e => e.stopPropagation()}
         >
           <h3 className="text-lg font-semibold text-gray-900 mb-2">
             Delete Image?
@@ -79,11 +83,15 @@ export default function ManualSessionRecorder() {
   const [projectId, setProjectId] = useState('');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [visibility, setVisibility] = useState<'everyone' | 'followers' | 'private'>('everyone');
+  const [visibility, setVisibility] = useState<
+    'everyone' | 'followers' | 'private'
+  >('everyone');
   const [privateNotes, setPrivateNotes] = useState('');
-  
+
   // Manual time inputs
-  const [sessionDate, setSessionDate] = useState(new Date().toISOString().split('T')[0]);
+  const [sessionDate, setSessionDate] = useState(
+    new Date().toISOString().split('T')[0]
+  );
   const [startTime, setStartTime] = useState(() => {
     const now = new Date();
     const hours = String(now.getHours()).padStart(2, '0');
@@ -93,7 +101,7 @@ export default function ManualSessionRecorder() {
   const [endTime, setEndTime] = useState('10:00');
   const [manualDurationHours, setManualDurationHours] = useState('1');
   const [manualDurationMinutes, setManualDurationMinutes] = useState('0');
-  
+
   // Image upload state
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
   const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
@@ -104,7 +112,7 @@ export default function ManualSessionRecorder() {
   useEffect(() => {
     const loadProjects = async () => {
       if (!user) return;
-      
+
       try {
         const projectList = await firebaseApi.project.getProjects();
         setProjects(projectList);
@@ -121,20 +129,22 @@ export default function ManualSessionRecorder() {
     if (!title && projectId) {
       const project = projects.find(p => p.id === projectId);
       const hour = new Date().getHours();
-      
+
       let timeOfDay = '';
       if (hour < 12) timeOfDay = 'Morning';
       else if (hour < 17) timeOfDay = 'Afternoon';
       else timeOfDay = 'Evening';
-      
-      const smartTitle = project ? `${timeOfDay} ${project.name} Session` : `${timeOfDay} Work Session`;
+
+      const smartTitle = project
+        ? `${timeOfDay} ${project.name} Session`
+        : `${timeOfDay} Work Session`;
       setTitle(smartTitle);
     }
   }, [projectId, projects]);
 
   const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    
+
     if (files.length + selectedImages.length > 3) {
       alert('Maximum 3 images allowed');
       return;
@@ -147,34 +157,47 @@ export default function ManualSessionRecorder() {
       try {
         // Convert HEIC to JPEG first
         let processedFile = file;
-        
+
         // Check if it's HEIC and convert
-        const isHeic = file.name.toLowerCase().endsWith('.heic') || 
-                      file.name.toLowerCase().endsWith('.heif') ||
-                      file.type === 'image/heic' || 
-                      file.type === 'image/heif';
-        
+        const isHeic =
+          file.name.toLowerCase().endsWith('.heic') ||
+          file.name.toLowerCase().endsWith('.heif') ||
+          file.type === 'image/heic' ||
+          file.type === 'image/heif';
+
         if (isHeic) {
           try {
             // Dynamically import heic2any - handle both default and named exports
             const heic2anyModule = await import('heic2any');
             const heic2any = heic2anyModule.default || heic2anyModule;
-            
+
             const convertedBlob = await heic2any({
               blob: file,
               toType: 'image/jpeg',
-              quality: 0.9
+              quality: 0.9,
             });
-            const blob = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob;
+            const blob = Array.isArray(convertedBlob)
+              ? convertedBlob[0]
+              : convertedBlob;
+
+            if (!blob) {
+              throw new Error('Failed to convert HEIC file');
+            }
+
             processedFile = new File(
               [blob],
               file.name.replace(/\.heic$/i, '.jpg').replace(/\.heif$/i, '.jpg'),
               { type: 'image/jpeg' }
             );
           } catch (error) {
-            debug.error('ManualSessionRecorder - Error converting HEIC:', error);
+            debug.error(
+              'ManualSessionRecorder - Error converting HEIC:',
+              error
+            );
             // More helpful error message
-            alert(`HEIC conversion is currently unavailable. Please convert ${file.name} to JPG or PNG before uploading, or try refreshing the page.`);
+            alert(
+              `HEIC conversion is currently unavailable. Please convert ${file.name} to JPG or PNG before uploading, or try refreshing the page.`
+            );
             continue;
           }
         }
@@ -205,7 +228,10 @@ export default function ManualSessionRecorder() {
   };
 
   const handleRemoveImage = (index: number) => {
-    URL.revokeObjectURL(imagePreviewUrls[index]);
+    const imageUrl = imagePreviewUrls[index];
+    if (imageUrl) {
+      URL.revokeObjectURL(imageUrl);
+    }
     setSelectedImages(prev => prev.filter((_, i) => i !== index));
     setImagePreviewUrls(prev => prev.filter((_, i) => i !== index));
   };
@@ -214,7 +240,7 @@ export default function ManualSessionRecorder() {
     // Use manual duration input
     const hours = parseInt(manualDurationHours) || 0;
     const minutes = parseInt(manualDurationMinutes) || 0;
-    return (hours * 3600) + (minutes * 60);
+    return hours * 3600 + minutes * 60;
   };
 
   const validateForm = (): boolean => {
@@ -243,7 +269,7 @@ export default function ManualSessionRecorder() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm() || !user) {
       return;
     }
@@ -255,6 +281,11 @@ export default function ManualSessionRecorder() {
 
       // Parse the session date and start time in local timezone
       // NOTE: Using parseLocalDateTime to avoid UTC interpretation issues
+      if (!sessionDate || !startTime) {
+        setErrors({ sessionDate: 'Date and time are required' });
+        setIsLoading(false);
+        return;
+      }
       const sessionDateTime = parseLocalDateTime(sessionDate, startTime);
 
       // Upload images first if any
@@ -265,7 +296,10 @@ export default function ManualSessionRecorder() {
           const uploadResults = await uploadImages(selectedImages);
           imageUrls = uploadResults.map(result => result.url);
         } catch (error) {
-          debug.error('ManualSessionRecorder - Failed to upload images:', error);
+          debug.error(
+            'ManualSessionRecorder - Failed to upload images:',
+            error
+          );
           setErrors({ submit: 'Failed to upload images. Please try again.' });
           setIsUploadingImages(false);
           setIsLoading(false);
@@ -273,7 +307,7 @@ export default function ManualSessionRecorder() {
         }
         setIsUploadingImages(false);
       }
-      
+
       const formData: CreateSessionData = {
         activityId: '',
         projectId,
@@ -288,11 +322,17 @@ export default function ManualSessionRecorder() {
       };
 
       // Create session with post
-      await firebaseApi.session.createSessionWithPost(formData, description, visibility);
+      await firebaseApi.session.createSessionWithPost(
+        formData,
+        description,
+        visibility
+      );
 
       // Invalidate caches to refresh UI immediately
       if (user) {
-        queryClient.invalidateQueries({ queryKey: ['user', 'sessions', user.id] });
+        queryClient.invalidateQueries({
+          queryKey: ['user', 'sessions', user.id],
+        });
         queryClient.invalidateQueries({ queryKey: ['user', 'stats', user.id] });
         queryClient.invalidateQueries({ queryKey: ['streak', user.id] });
         queryClient.invalidateQueries({ queryKey: ['feed'] });
@@ -305,7 +345,10 @@ export default function ManualSessionRecorder() {
       // Redirect to home feed
       router.push('/');
     } catch (error) {
-      debug.error('ManualSessionRecorder - Failed to create manual session:', error);
+      debug.error(
+        'ManualSessionRecorder - Failed to create manual session:',
+        error
+      );
       toast.error('Failed to create session. Please try again.');
       setErrors({ submit: 'Failed to create session. Please try again.' });
     } finally {
@@ -340,12 +383,11 @@ export default function ManualSessionRecorder() {
       {/* Form */}
       <div className="max-w-2xl mx-auto px-4 sm:px-6">
         <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
-
           {/* Session Title */}
           <input
             type="text"
             value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            onChange={e => setTitle(e.target.value)}
             className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] text-base ${
               errors.title ? 'border-red-500' : 'border-gray-300'
             }`}
@@ -359,7 +401,7 @@ export default function ManualSessionRecorder() {
           {/* Description */}
           <textarea
             value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            onChange={e => setDescription(e.target.value)}
             rows={3}
             className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] text-base"
             placeholder="How'd it go? Share more about your session."
@@ -369,14 +411,14 @@ export default function ManualSessionRecorder() {
           {/* Project Selection */}
           <select
             value={projectId}
-            onChange={(e) => setProjectId(e.target.value)}
+            onChange={e => setProjectId(e.target.value)}
             className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] bg-white text-base ${
               errors.projectId ? 'border-red-500' : 'border-gray-300'
             }`}
             disabled={isLoading}
           >
             <option value="">Select an activity</option>
-            {projects.map((project) => (
+            {projects.map(project => (
               <option key={project.id} value={project.id}>
                 {project.name}
               </option>
@@ -393,7 +435,10 @@ export default function ManualSessionRecorder() {
               {imagePreviewUrls.length > 0 && (
                 <div className="grid grid-cols-3 gap-2">
                   {imagePreviewUrls.map((url, index) => (
-                    <div key={index} className="relative aspect-square rounded-lg overflow-hidden bg-gray-100">
+                    <div
+                      key={index}
+                      className="relative aspect-square rounded-lg overflow-hidden bg-gray-100"
+                    >
                       <Image
                         src={url}
                         alt={`Preview ${index + 1}`}
@@ -410,9 +455,15 @@ export default function ManualSessionRecorder() {
                         onClick={() => handleRemoveImage(index)}
                         className="hidden md:block absolute top-1 right-1 p-0.5 text-white hover:text-red-500 transition-colors"
                         aria-label="Remove image"
-                        style={{ filter: 'drop-shadow(0 1px 2px rgb(0 0 0 / 0.9))' }}
+                        style={{
+                          filter: 'drop-shadow(0 1px 2px rgb(0 0 0 / 0.9))',
+                        }}
                       >
-                        <X className="w-5 h-5" strokeWidth={3} aria-hidden="true" />
+                        <X
+                          className="w-5 h-5"
+                          strokeWidth={3}
+                          aria-hidden="true"
+                        />
                       </button>
                     </div>
                   ))}
@@ -436,7 +487,9 @@ export default function ManualSessionRecorder() {
                 <label className="flex flex-col items-center justify-center gap-2 px-8 py-8 border-[3px] border-dashed border-[#007AFF] rounded-lg cursor-pointer hover:border-[#0051D5] hover:bg-gray-50 transition-colors max-w-[240px]">
                   <ImageIcon className="w-8 h-8 text-[#007AFF]" />
                   <span className="text-sm font-medium text-[#007AFF]">
-                    {imagePreviewUrls.length === 0 ? 'Add images' : `Add ${3 - imagePreviewUrls.length} more`}
+                    {imagePreviewUrls.length === 0
+                      ? 'Add images'
+                      : `Add ${3 - imagePreviewUrls.length} more`}
                   </span>
                   <input
                     type="file"
@@ -465,7 +518,7 @@ export default function ManualSessionRecorder() {
                 <input
                   type="date"
                   value={sessionDate}
-                  onChange={(e) => setSessionDate(e.target.value)}
+                  onChange={e => setSessionDate(e.target.value)}
                   max={new Date().toISOString().split('T')[0]}
                   className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] text-sm ${
                     errors.sessionDate ? 'border-red-500' : 'border-gray-300'
@@ -474,7 +527,9 @@ export default function ManualSessionRecorder() {
                   required
                 />
                 {errors.sessionDate && (
-                  <p className="text-red-500 text-sm mt-1">{errors.sessionDate}</p>
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.sessionDate}
+                  </p>
                 )}
               </div>
 
@@ -486,7 +541,7 @@ export default function ManualSessionRecorder() {
                 <input
                   type="time"
                   value={startTime}
-                  onChange={(e) => setStartTime(e.target.value)}
+                  onChange={e => setStartTime(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] text-sm"
                   disabled={isLoading}
                 />
@@ -504,7 +559,7 @@ export default function ManualSessionRecorder() {
                       min="0"
                       max="23"
                       value={manualDurationHours}
-                      onChange={(e) => setManualDurationHours(e.target.value)}
+                      onChange={e => setManualDurationHours(e.target.value)}
                       className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] text-sm ${
                         errors.duration ? 'border-red-500' : 'border-gray-300'
                       }`}
@@ -518,7 +573,7 @@ export default function ManualSessionRecorder() {
                       min="0"
                       max="59"
                       value={manualDurationMinutes}
-                      onChange={(e) => setManualDurationMinutes(e.target.value)}
+                      onChange={e => setManualDurationMinutes(e.target.value)}
                       className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] text-sm ${
                         errors.duration ? 'border-red-500' : 'border-gray-300'
                       }`}
@@ -541,10 +596,15 @@ export default function ManualSessionRecorder() {
             </label>
             <select
               value={visibility}
-              onChange={(e) => setVisibility(e.target.value as 'everyone' | 'followers' | 'private')}
+              onChange={e =>
+                setVisibility(
+                  e.target.value as 'everyone' | 'followers' | 'private'
+                )
+              }
               className="w-full pl-3 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] appearance-none bg-white min-h-[44px]"
               style={{
-                backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 9L1 4h10z'/%3E%3C/svg%3E\")",
+                backgroundImage:
+                  "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 9L1 4h10z'/%3E%3C/svg%3E\")",
                 backgroundRepeat: 'no-repeat',
                 backgroundPosition: 'right 0.75rem center',
               }}
@@ -569,7 +629,11 @@ export default function ManualSessionRecorder() {
             className="w-full px-4 py-3 bg-[#007AFF] text-white rounded-lg hover:bg-[#0051D5] transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-base mt-4"
             disabled={isLoading || isUploadingImages}
           >
-            {isUploadingImages ? 'Uploading...' : isLoading ? 'Creating...' : 'Create Session'}
+            {isUploadingImages
+              ? 'Uploading...'
+              : isLoading
+                ? 'Creating...'
+                : 'Create Session'}
           </button>
         </form>
       </div>

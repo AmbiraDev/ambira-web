@@ -39,6 +39,7 @@ export const firebaseGroupApi = {
       }
 
       const data = docSnap.data();
+      const memberIds = data.memberIds || [];
       return {
         id: docSnap.id,
         name: data.name,
@@ -49,7 +50,9 @@ export const firebaseGroupApi = {
         privacySetting: data.privacySetting,
         location: data.location,
         adminUserIds: data.adminUserIds || [],
-        memberIds: data.memberIds || [],
+        memberIds: memberIds,
+        memberCount: data.memberCount ?? memberIds.length,
+        createdByUserId: data.createdByUserId,
         createdAt: convertTimestamp(data.createdAt),
         updatedAt: convertTimestamp(data.updatedAt),
       } as Group;
@@ -76,6 +79,8 @@ export const firebaseGroupApi = {
         ...removeUndefinedFields(groupData),
         adminUserIds: [userId],
         memberIds: [userId],
+        memberCount: 1,
+        createdByUserId: userId,
         createdAt: now,
         updatedAt: now,
       };
@@ -88,6 +93,8 @@ export const firebaseGroupApi = {
         ...groupData,
         adminUserIds: [userId],
         memberIds: [userId],
+        memberCount: 1,
+        createdByUserId: userId,
         createdAt: new Date(),
         updatedAt: new Date(),
       } as Group;
@@ -190,28 +197,81 @@ export const firebaseGroupApi = {
   },
 
   /**
-   * Join a group (alias for addMember)
+   * Join a group
    */
   joinGroup: async (groupId: string, userId: string): Promise<void> => {
-    return firebaseGroupApi.addMember(groupId, userId);
+    try {
+      // Use GroupService for business logic
+      const { GroupService } = await import(
+        '@/features/groups/services/GroupService'
+      );
+      const groupService = new GroupService();
+      await groupService.joinGroup(groupId, userId);
+    } catch (error) {
+      console.error('Error joining group:', error);
+      throw new Error(
+        typeof error === 'string'
+          ? error
+          : error instanceof Error
+            ? error.message
+            : 'Failed to join group'
+      );
+    }
   },
 
   /**
-   * Leave a group (alias for removeMember)
+   * Leave a group
    */
   leaveGroup: async (groupId: string, userId: string): Promise<void> => {
-    return firebaseGroupApi.removeMember(groupId, userId);
+    try {
+      // Use GroupService for business logic
+      const { GroupService } = await import(
+        '@/features/groups/services/GroupService'
+      );
+      const groupService = new GroupService();
+      await groupService.leaveGroup(groupId, userId);
+    } catch (error) {
+      console.error('Error leaving group:', error);
+      throw new Error(
+        typeof error === 'string'
+          ? error
+          : error instanceof Error
+            ? error.message
+            : 'Failed to leave group'
+      );
+    }
   },
 
   /**
    * Get all groups for a user
    */
-  getUserGroups: async (userId: string): Promise<Group[]> => {
+  getUserGroups: async (userId: string, limit?: number): Promise<Group[]> => {
     try {
-      const groupsRef = doc(db, 'groups');
-      // Note: This is a simplified version. For production, consider implementing
-      // a more efficient query that filters groups by memberIds array-contains
-      return [];
+      // Use GroupService for business logic
+      const { GroupService } = await import(
+        '@/features/groups/services/GroupService'
+      );
+      const groupService = new GroupService();
+      const domainGroups = await groupService.getUserGroups(userId, limit);
+
+      // Convert domain Group entities to API Group interface
+      return domainGroups.map(g => ({
+        id: g.id,
+        name: g.name,
+        description: g.description,
+        imageUrl: g.imageUrl,
+        category: g.category,
+        type: 'other' as const, // Default type, not in domain entity
+        privacySetting:
+          g.privacy === 'approval-required' ? 'approval-required' : 'public',
+        location: g.location,
+        adminUserIds: Array.from(g.adminUserIds),
+        memberIds: Array.from(g.memberIds),
+        memberCount: g.getMemberCount(),
+        createdByUserId: g.createdByUserId,
+        createdAt: g.createdAt,
+        updatedAt: g.createdAt, // Use createdAt as fallback
+      }));
     } catch (error) {
       console.error('Error getting user groups:', error);
       throw new Error('Failed to get user groups');

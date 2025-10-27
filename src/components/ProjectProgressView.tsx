@@ -2,7 +2,14 @@
 
 import React, { useState, useEffect } from 'react';
 import { Clock, Target, Calendar, Heart, ChevronDown } from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  ResponsiveContainer,
+  Tooltip,
+} from 'recharts';
 import { firebaseSessionApi } from '@/lib/api';
 import { Session } from '@/types';
 
@@ -17,7 +24,9 @@ interface ChartDataPoint {
   hours: number;
 }
 
-export const ProjectProgressView: React.FC<ProjectProgressViewProps> = ({ projectId }) => {
+export const ProjectProgressView: React.FC<ProjectProgressViewProps> = ({
+  projectId,
+}) => {
   const [timePeriod, setTimePeriod] = useState<TimePeriod>('week');
   const [showTimePeriodDropdown, setShowTimePeriodDropdown] = useState(false);
   const [sessions, setSessions] = useState<Session[]>([]);
@@ -35,7 +44,9 @@ export const ProjectProgressView: React.FC<ProjectProgressViewProps> = ({ projec
   const loadSessions = async () => {
     try {
       setIsLoading(true);
-      const response = await firebaseSessionApi.getSessions(1, 500, { projectId });
+      const response = await firebaseSessionApi.getSessions(1, 500, {
+        projectId,
+      });
       setSessions(response.sessions);
     } catch (error) {
       console.error('Failed to load sessions:', error);
@@ -56,13 +67,18 @@ export const ProjectProgressView: React.FC<ProjectProgressViewProps> = ({ projec
         hour.setHours(hour.getHours() - i);
         const hourLabel = hour.getHours().toString().padStart(2, '0');
 
-        const hoursWorked = sessions.length > 0 ? sessions
-          .filter(s => {
-            const sessionDate = new Date(s.startTime);
-            return sessionDate.getHours() === hour.getHours() &&
-                   sessionDate.toDateString() === hour.toDateString();
-          })
-          .reduce((sum, s) => sum + s.duration / 3600, 0) : 0;
+        const hoursWorked =
+          sessions.length > 0
+            ? sessions
+                .filter(s => {
+                  const sessionDate = new Date(s.startTime);
+                  return (
+                    sessionDate.getHours() === hour.getHours() &&
+                    sessionDate.toDateString() === hour.toDateString()
+                  );
+                })
+                .reduce((sum, s) => sum + s.duration / 3600, 0)
+            : 0;
 
         data.push({ name: hourLabel, hours: Number(hoursWorked.toFixed(2)) });
       }
@@ -73,13 +89,19 @@ export const ProjectProgressView: React.FC<ProjectProgressViewProps> = ({ projec
         const day = new Date(now);
         day.setDate(day.getDate() - i);
 
-        const hoursWorked = sessions.length > 0 ? sessions
-          .filter(s => new Date(s.startTime).toDateString() === day.toDateString())
-          .reduce((sum, s) => sum + s.duration / 3600, 0) : 0;
+        const hoursWorked =
+          sessions.length > 0
+            ? sessions
+                .filter(
+                  s =>
+                    new Date(s.startTime).toDateString() === day.toDateString()
+                )
+                .reduce((sum, s) => sum + s.duration / 3600, 0)
+            : 0;
 
         data.push({
-          name: dayNames[(7 - i) % 7],
-          hours: Number(hoursWorked.toFixed(2))
+          name: dayNames[(7 - i) % 7] || '',
+          hours: Number(hoursWorked.toFixed(2)),
         });
       }
     } else if (timePeriod === 'month') {
@@ -88,38 +110,59 @@ export const ProjectProgressView: React.FC<ProjectProgressViewProps> = ({ projec
         const weekStart = new Date(now);
         weekStart.setDate(weekStart.getDate() - (i * 7 + 6));
         const weekEnd = new Date(now);
-        weekEnd.setDate(weekEnd.getDate() - (i * 7));
+        weekEnd.setDate(weekEnd.getDate() - i * 7);
 
-        const hoursWorked = sessions.length > 0 ? sessions
-          .filter(s => {
-            const sessionDate = new Date(s.startTime);
-            return sessionDate >= weekStart && sessionDate <= weekEnd;
-          })
-          .reduce((sum, s) => sum + s.duration / 3600, 0) : 0;
+        const hoursWorked =
+          sessions.length > 0
+            ? sessions
+                .filter(s => {
+                  const sessionDate = new Date(s.startTime);
+                  return sessionDate >= weekStart && sessionDate <= weekEnd;
+                })
+                .reduce((sum, s) => sum + s.duration / 3600, 0)
+            : 0;
 
         data.push({
           name: `Week ${4 - i}`,
-          hours: Number(hoursWorked.toFixed(2))
+          hours: Number(hoursWorked.toFixed(2)),
         });
       }
     } else if (timePeriod === 'year') {
       // Last 12 months
-      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const monthNames = [
+        'Jan',
+        'Feb',
+        'Mar',
+        'Apr',
+        'May',
+        'Jun',
+        'Jul',
+        'Aug',
+        'Sep',
+        'Oct',
+        'Nov',
+        'Dec',
+      ];
       for (let i = 11; i >= 0; i--) {
         const month = new Date(now);
         month.setMonth(month.getMonth() - i);
 
-        const hoursWorked = sessions.length > 0 ? sessions
-          .filter(s => {
-            const sessionDate = new Date(s.startTime);
-            return sessionDate.getMonth() === month.getMonth() &&
-                   sessionDate.getFullYear() === month.getFullYear();
-          })
-          .reduce((sum, s) => sum + s.duration / 3600, 0) : 0;
+        const hoursWorked =
+          sessions.length > 0
+            ? sessions
+                .filter(s => {
+                  const sessionDate = new Date(s.startTime);
+                  return (
+                    sessionDate.getMonth() === month.getMonth() &&
+                    sessionDate.getFullYear() === month.getFullYear()
+                  );
+                })
+                .reduce((sum, s) => sum + s.duration / 3600, 0)
+            : 0;
 
         data.push({
-          name: monthNames[month.getMonth()],
-          hours: Number(hoursWorked.toFixed(2))
+          name: monthNames[month.getMonth()] || '',
+          hours: Number(hoursWorked.toFixed(2)),
         });
       }
     }
@@ -136,8 +179,10 @@ export const ProjectProgressView: React.FC<ProjectProgressViewProps> = ({ projec
   sessions.forEach(s => {
     const date = new Date(s.startTime);
     date.setHours(0, 0, 0, 0);
-    const dateStr = date.toISOString().split('T')[0];
-    sessionsByDate.set(dateStr, true);
+    const dateStr = date.toISOString().split('T')[0] ?? '';
+    if (dateStr) {
+      sessionsByDate.set(dateStr, true);
+    }
   });
 
   let currentStreak = 0;
@@ -146,16 +191,18 @@ export const ProjectProgressView: React.FC<ProjectProgressViewProps> = ({ projec
   const checkDate = new Date(today);
 
   while (true) {
-    const dateStr = checkDate.toISOString().split('T')[0];
-    if (sessionsByDate.has(dateStr)) {
-      currentStreak++;
-      checkDate.setDate(checkDate.getDate() - 1);
-    } else {
+    const dateStr: string = checkDate.toISOString().split('T')[0] ?? '';
+    if (!sessionsByDate.has(dateStr)) {
       break;
     }
+    currentStreak++;
+    checkDate.setDate(checkDate.getDate() - 1);
   }
 
-  const avgPerDay = totalHours > 0 && sessions.length > 0 ? (totalHours / 30).toFixed(1) : '0.0';
+  const avgPerDay =
+    totalHours > 0 && sessions.length > 0
+      ? (totalHours / 30).toFixed(1)
+      : '0.0';
 
   if (isLoading) {
     return (
@@ -219,9 +266,7 @@ export const ProjectProgressView: React.FC<ProjectProgressViewProps> = ({ projec
             </div>
             <span className="text-sm text-gray-600">Avg/Day</span>
           </div>
-          <div className="text-2xl font-bold text-gray-900">
-            {avgPerDay}h
-          </div>
+          <div className="text-2xl font-bold text-gray-900">{avgPerDay}h</div>
         </div>
       </div>
 
@@ -244,20 +289,24 @@ export const ProjectProgressView: React.FC<ProjectProgressViewProps> = ({ projec
             </button>
             {showTimePeriodDropdown && (
               <div className="absolute right-0 mt-2 w-32 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
-                {(['day', 'week', 'month', 'year'] as TimePeriod[]).map((period) => (
-                  <button
-                    key={period}
-                    onClick={() => {
-                      setTimePeriod(period);
-                      setShowTimePeriodDropdown(false);
-                    }}
-                    className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 ${
-                      timePeriod === period ? 'text-[#007AFF] font-medium' : 'text-gray-700'
-                    }`}
-                  >
-                    {period.charAt(0).toUpperCase() + period.slice(1)}
-                  </button>
-                ))}
+                {(['day', 'week', 'month', 'year'] as TimePeriod[]).map(
+                  period => (
+                    <button
+                      key={period}
+                      onClick={() => {
+                        setTimePeriod(period);
+                        setShowTimePeriodDropdown(false);
+                      }}
+                      className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 ${
+                        timePeriod === period
+                          ? 'text-[#007AFF] font-medium'
+                          : 'text-gray-700'
+                      }`}
+                    >
+                      {period.charAt(0).toUpperCase() + period.slice(1)}
+                    </button>
+                  )
+                )}
               </div>
             )}
           </div>
@@ -285,7 +334,7 @@ export const ProjectProgressView: React.FC<ProjectProgressViewProps> = ({ projec
                   backgroundColor: '#fff',
                   border: '1px solid #e5e7eb',
                   borderRadius: '8px',
-                  fontSize: '12px'
+                  fontSize: '12px',
                 }}
                 formatter={(value: number) => [`${value}h`, 'Hours']}
               />

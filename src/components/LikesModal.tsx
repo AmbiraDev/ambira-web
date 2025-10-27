@@ -21,12 +21,14 @@ export const LikesModal: React.FC<LikesModalProps> = ({
   isOpen,
   onClose,
   userIds,
-  totalLikes
+  totalLikes,
 }) => {
   const { user: currentUser } = useAuth();
   const [users, setUsers] = useState<UserWithFollowStatus[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [followingStates, setFollowingStates] = useState<Record<string, boolean>>({});
+  const [followingStates, setFollowingStates] = useState<
+    Record<string, boolean>
+  >({});
 
   useEffect(() => {
     if (isOpen && userIds.length > 0) {
@@ -69,9 +71,12 @@ export const LikesModal: React.FC<LikesModalProps> = ({
       if (currentUser) {
         const followStatuses: Record<string, boolean> = {};
         await Promise.all(
-          validUsers.map(async (user) => {
+          validUsers.map(async user => {
             try {
-              const isFollowing = await firebaseApi.user.isFollowing(currentUser.id, user.id);
+              const isFollowing = await firebaseApi.user.isFollowing(
+                currentUser.id,
+                user.id
+              );
               followStatuses[user.id] = isFollowing;
             } catch (error) {
               followStatuses[user.id] = false;
@@ -92,12 +97,12 @@ export const LikesModal: React.FC<LikesModalProps> = ({
   const handleFollowToggle = async (userId: string) => {
     if (!currentUser) return;
 
-    const isCurrentlyFollowing = followingStates[userId];
+    const isCurrentlyFollowing = followingStates[userId] || false;
 
     // Optimistic update
     setFollowingStates(prev => ({
       ...prev,
-      [userId]: !isCurrentlyFollowing
+      [userId]: !isCurrentlyFollowing,
     }));
 
     try {
@@ -109,24 +114,30 @@ export const LikesModal: React.FC<LikesModalProps> = ({
     } catch (error) {
       console.error('Failed to toggle follow:', error);
       // Revert on error
-      setFollowingStates(prev => ({
-        ...prev,
-        [userId]: isCurrentlyFollowing
-      }));
+      setFollowingStates(prev => {
+        const newState: Record<string, boolean> = { ...prev };
+        newState[userId] = isCurrentlyFollowing ?? false;
+        return newState;
+      });
     }
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60" onClick={onClose}>
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+      onClick={onClose}
+    >
       <div
         className="bg-white rounded-2xl w-full max-w-md max-h-[70vh] flex flex-col"
-        onClick={(e) => e.stopPropagation()}
+        onClick={e => e.stopPropagation()}
       >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
-          <h2 className="text-gray-900 font-semibold text-center flex-1">Likes</h2>
+          <h2 className="text-gray-900 font-semibold text-center flex-1">
+            Likes
+          </h2>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-900 transition-colors"
@@ -143,14 +154,12 @@ export const LikesModal: React.FC<LikesModalProps> = ({
               <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
             </div>
           ) : users.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              No likes yet
-            </div>
+            <div className="text-center py-8 text-gray-500">No likes yet</div>
           ) : (
             <div className="divide-y divide-gray-100">
-              {users.map((user) => {
+              {users.map(user => {
                 const isOwnProfile = currentUser?.id === user.id;
-                const isFollowing = followingStates[user.id];
+                const isFollowing = followingStates[user.id] ?? false;
 
                 return (
                   <div

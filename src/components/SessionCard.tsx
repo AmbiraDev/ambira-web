@@ -13,7 +13,15 @@ import { PrefetchLink } from './PrefetchLink';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { firebaseApi } from '@/lib/api';
-import { MoreVertical, Heart, MessageCircle, Share2, Clock, ListTodo, Tag } from 'lucide-react';
+import {
+  MoreVertical,
+  Heart,
+  MessageCircle,
+  Share2,
+  Clock,
+  ListTodo,
+  Tag,
+} from 'lucide-react';
 import Link from 'next/link';
 import { cn, isEmpty } from '@/lib/utils';
 import { COLORS } from '@/config/constants';
@@ -45,7 +53,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({
   showComments = false,
   showGroupInfo = false,
   isAboveFold = false,
-  priority = false
+  priority = false,
 }) => {
   const router = useRouter();
   const { user } = useAuth();
@@ -53,7 +61,9 @@ export const SessionCard: React.FC<SessionCardProps> = ({
   const [isFollowing, setIsFollowing] = useState(false);
   const [isFollowLoading, setIsFollowLoading] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
-  const [localCommentCount, setLocalCommentCount] = useState(session.commentCount || 0);
+  const [localCommentCount, setLocalCommentCount] = useState(
+    session.commentCount || 0
+  );
   const [showCommentInput, setShowCommentInput] = useState(false);
   const [showLikesModal, setShowLikesModal] = useState(false);
   const [showCommentsModal, setShowCommentsModal] = useState(false);
@@ -66,7 +76,10 @@ export const SessionCard: React.FC<SessionCardProps> = ({
     const checkFollowStatus = async () => {
       if (user && session.userId !== user.id && showGroupInfo) {
         try {
-          const isUserFollowing = await firebaseApi.user.isFollowing(user.id, session.userId);
+          const isUserFollowing = await firebaseApi.user.isFollowing(
+            user.id,
+            session.userId
+          );
           setIsFollowing(isUserFollowing);
         } catch (error) {
           console.error('Error checking follow status:', error);
@@ -124,12 +137,13 @@ export const SessionCard: React.FC<SessionCardProps> = ({
     };
   }, [showMenu]);
 
-
   return (
-    <article className={cn(
-      'bg-white md:rounded-lg md:border md:border-gray-200 md:shadow-sm mb-0 md:mb-4 border-b-[6px] border-gray-200 md:border-b-0 hover:shadow-md transition-shadow',
-      className
-    )}>
+    <article
+      className={cn(
+        'bg-white md:rounded-lg md:border md:border-gray-200 md:shadow-sm mb-0 md:mb-4 border-b-[6px] border-gray-200 md:border-b-0 hover:shadow-md transition-shadow',
+        className
+      )}
+    >
       {/* Session Header */}
       <div className="flex items-center justify-between px-4 pt-4 pb-3">
         <PrefetchLink
@@ -163,7 +177,9 @@ export const SessionCard: React.FC<SessionCardProps> = ({
           {/* User Info */}
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
-              <span className="font-semibold text-gray-900 text-sm md:text-base hover:underline truncate">{session.user.name}</span>
+              <span className="font-semibold text-gray-900 text-sm md:text-base hover:underline truncate">
+                {session.user.name}
+              </span>
               {/* Follow button - Mobile only when showGroupInfo is true */}
               {showGroupInfo && user && session.userId !== user.id && (
                 <button
@@ -180,7 +196,9 @@ export const SessionCard: React.FC<SessionCardProps> = ({
                 </button>
               )}
             </div>
-            <div className="text-xs text-gray-500">{formatSessionDate(session.createdAt)}</div>
+            <div className="text-xs text-gray-500">
+              {formatSessionDate(session.createdAt)}
+            </div>
           </div>
         </PrefetchLink>
 
@@ -232,27 +250,38 @@ export const SessionCard: React.FC<SessionCardProps> = ({
       </div>
 
       {/* Title and Description */}
-      <Link href={`/sessions/${session.id}`} className="px-4 pb-3 block cursor-pointer">
+      <Link
+        href={`/sessions/${session.id}`}
+        className="px-4 pb-3 block cursor-pointer"
+      >
         <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 mb-1 leading-tight hover:text-[#007AFF] transition-colors duration-200">
           {session.title || 'Focus Session'}
         </h3>
         {session.description && (
           <div>
-            <p className={cn(
-              'text-gray-600 text-sm md:text-base whitespace-pre-wrap break-words',
-              !isExpanded && session.description.length > 280 && 'line-clamp-3 sm:line-clamp-4'
-            )}>
-              {session.description.length > 1000 ? session.description.slice(0, 1000) : session.description}
+            <p
+              className={cn(
+                'text-gray-600 text-sm md:text-base whitespace-pre-wrap break-words',
+                !isExpanded &&
+                  session.description.length > 280 &&
+                  'line-clamp-3 sm:line-clamp-4'
+              )}
+            >
+              {session.description.length > 1000
+                ? session.description.slice(0, 1000)
+                : session.description}
             </p>
             {session.description.length > 280 && (
               <button
-                onClick={(e) => {
+                onClick={e => {
                   e.preventDefault();
                   setIsExpanded(!isExpanded);
                 }}
                 className="text-[#007AFF] text-sm font-semibold mt-1 hover:underline transition-colors duration-200 min-h-[44px] flex items-center"
                 aria-expanded={isExpanded}
-                aria-label={isExpanded ? 'Show less description' : 'Show more description'}
+                aria-label={
+                  isExpanded ? 'Show less description' : 'Show more description'
+                }
               >
                 {isExpanded ? 'Show less' : 'Show more'}
               </button>
@@ -265,18 +294,23 @@ export const SessionCard: React.FC<SessionCardProps> = ({
       {!isEmpty(session.images) && (
         <div className="px-4 pb-4">
           <ImageGallery
-            images={session.images}
+            images={session.images || []}
             priority={isAboveFold || priority}
           />
         </div>
       )}
 
       {/* Stats - Strava style */}
-      <Link href={`/sessions/${session.id}`} className="px-4 pb-2 block cursor-pointer hover:bg-gray-50/50 transition-colors duration-200">
+      <Link
+        href={`/sessions/${session.id}`}
+        className="px-4 pb-2 block cursor-pointer hover:bg-gray-50/50 transition-colors duration-200"
+      >
         <div className="grid grid-cols-2 gap-4">
           <div>
             <div className="text-xs text-gray-500 mb-1">Time</div>
-            <div className="text-base font-semibold text-gray-900">{formatDuration(session.duration)}</div>
+            <div className="text-base font-semibold text-gray-900">
+              {formatDuration(session.duration)}
+            </div>
           </div>
           <div className="min-w-0">
             <div className="text-xs text-gray-500 mb-1">Activity</div>
@@ -335,7 +369,6 @@ export const SessionCard: React.FC<SessionCardProps> = ({
         totalCommentCount={localCommentCount}
         onCommentCountChange={setLocalCommentCount}
       />
-
     </article>
   );
 };

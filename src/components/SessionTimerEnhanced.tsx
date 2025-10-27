@@ -143,7 +143,10 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
 
   const handleStartTimer = async () => {
     // Validate activity is selected and exists
-    if (!selectedActivityId || !allActivities.find(a => a.id === selectedActivityId)) {
+    if (
+      !selectedActivityId ||
+      !allActivities.find(a => a.id === selectedActivityId)
+    ) {
       // Show error state and open activity picker
       setShowActivityError(true);
       setShowActivityPicker(true);
@@ -190,7 +193,16 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
 
   // Handle start time change
   const handleStartTimeChange = (timeString: string) => {
-    const [hours, minutes] = timeString.split(':').map(Number);
+    const parts = timeString.split(':');
+    if (parts.length !== 2) return;
+
+    const hours = Number(parts[0]);
+    const minutes = Number(parts[1]);
+
+    // Validate the parsed values are valid numbers
+    if (isNaN(hours) || isNaN(minutes)) return;
+    if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) return;
+
     const newStartTime = new Date(startTime);
     newStartTime.setHours(hours, minutes, 0, 0);
 
@@ -200,8 +212,12 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
 
   // Handle duration slider change
   const handleDurationSliderChange = (value: number | number[]) => {
-    const val = typeof value === 'number' ? value : value[0];
+    // Extract numeric value from slider (handle both single value and array)
+    const val = typeof value === 'number' ? value : (value[0] ?? 0);
     const max = getElapsedTime();
+
+    // Validate we have valid numeric values
+    if (isNaN(val) || isNaN(max)) return;
 
     // Allow snapping to max even if not divisible by 900
     const newDuration = val >= max - 450 ? max : val;
@@ -662,9 +678,13 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
               <>
                 <button
                   onClick={handleStartTimer}
-                  disabled={!selectedActivityId || !allActivities.find(a => a.id === selectedActivityId)}
+                  disabled={
+                    !selectedActivityId ||
+                    !allActivities.find(a => a.id === selectedActivityId)
+                  }
                   className={`inline-flex items-center justify-center gap-3 px-10 py-4 rounded-xl text-lg font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation ${
-                    (selectedActivityId && allActivities.find(a => a.id === selectedActivityId))
+                    selectedActivityId &&
+                    allActivities.find(a => a.id === selectedActivityId)
                       ? 'bg-[#007AFF] hover:bg-[#0051D5] text-white focus-visible:ring-[#007AFF]'
                       : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                   }`}
@@ -717,7 +737,12 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
         {/* Activity Dropdown */}
         <div className="w-full max-w-xl relative">
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Activity {showActivityError && <span className="text-red-600 ml-1">- Please select an activity</span>}
+            Activity{' '}
+            {showActivityError && (
+              <span className="text-red-600 ml-1">
+                - Please select an activity
+              </span>
+            )}
           </label>
           <button
             onClick={() => setShowActivityPicker(!showActivityPicker)}
@@ -851,7 +876,8 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
               Create your first activity to get started
             </h3>
             <p className="text-sm text-gray-600 mb-4">
-              Activities help you organize your work sessions. You'll need at least one activity before you can start tracking time.
+              Activities help you organize your work sessions. You'll need at
+              least one activity before you can start tracking time.
             </p>
             <Link
               href="/activities/new"

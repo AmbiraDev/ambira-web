@@ -1,7 +1,14 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Clock, Target, CheckSquare, Flame, Calendar, TrendingUp } from 'lucide-react';
+import {
+  Clock,
+  Target,
+  CheckSquare,
+  Flame,
+  Calendar,
+  TrendingUp,
+} from 'lucide-react';
 import { StatsCard } from './StatsCard';
 import { ActivityChart } from './ActivityChart';
 import { HeatmapCalendar } from './HeatmapCalendar';
@@ -20,14 +27,15 @@ const PERIODS: AnalyticsPeriod[] = [
   { label: '3 Months', value: '3m', days: 90 },
   { label: '6 Months', value: '6m', days: 180 },
   { label: '1 Year', value: '1y', days: 365 },
-  { label: 'All Time', value: 'all', days: 9999 }
+  { label: 'All Time', value: 'all', days: 9999 },
 ];
 
-export const PersonalAnalyticsDashboard: React.FC<PersonalAnalyticsDashboardProps> = ({
-  userId,
-  projectId
-}) => {
-  const [selectedPeriod, setSelectedPeriod] = useState<AnalyticsPeriod>(PERIODS[1]); // Default to 1 month
+export const PersonalAnalyticsDashboard: React.FC<
+  PersonalAnalyticsDashboardProps
+> = ({ userId, projectId }) => {
+  const [selectedPeriod, setSelectedPeriod] = useState<AnalyticsPeriod>(
+    PERIODS[1]!
+  ); // Default to 1 month
   const [isLoading, setIsLoading] = useState(true);
   const [sessions, setSessions] = useState<Session[]>([]);
 
@@ -47,14 +55,15 @@ export const PersonalAnalyticsDashboard: React.FC<PersonalAnalyticsDashboardProp
 
       // Filter by selected period
       const cutoffDate = new Date();
-      if (selectedPeriod.value !== 'all') {
-        cutoffDate.setDate(cutoffDate.getDate() - selectedPeriod.days);
+      if (selectedPeriod?.value !== 'all') {
+        cutoffDate.setDate(cutoffDate.getDate() - (selectedPeriod?.days || 0));
       } else {
         cutoffDate.setFullYear(2000); // Get all sessions
       }
 
-      const filteredSessions = response.sessions.filter(session =>
-        new Date(session.createdAt) >= cutoffDate && session.userId === userId
+      const filteredSessions = response.sessions.filter(
+        session =>
+          new Date(session.createdAt) >= cutoffDate && session.userId === userId
       );
 
       setSessions(filteredSessions);
@@ -67,7 +76,10 @@ export const PersonalAnalyticsDashboard: React.FC<PersonalAnalyticsDashboardProp
 
   const calculateAnalytics = () => {
     // Calculate total hours
-    const totalSeconds = sessions.reduce((sum, s) => sum + (s.duration || 0), 0);
+    const totalSeconds = sessions.reduce(
+      (sum, s) => sum + (s.duration || 0),
+      0
+    );
     const totalHours = totalSeconds / 3600;
 
     // Calculate sessions
@@ -77,11 +89,13 @@ export const PersonalAnalyticsDashboard: React.FC<PersonalAnalyticsDashboardProp
     const totalTasks = 0;
 
     // Calculate average session duration in minutes
-    const averageSessionDuration = totalSessions > 0 ? totalSeconds / totalSessions / 60 : 0;
+    const averageSessionDuration =
+      totalSessions > 0 ? totalSeconds / totalSessions / 60 : 0;
 
     // Calculate streak
-    const sortedSessions = [...sessions].sort((a, b) =>
-      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    const sortedSessions = [...sessions].sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     );
 
     let currentStreak = 0;
@@ -94,14 +108,14 @@ export const PersonalAnalyticsDashboard: React.FC<PersonalAnalyticsDashboardProp
     sortedSessions.forEach(s => {
       const date = new Date(s.createdAt);
       date.setHours(0, 0, 0, 0);
-      const dateStr = date.toISOString().split('T')[0];
+      const dateStr = date.toISOString().split('T')[0] || '';
       sessionsByDate.set(dateStr, true);
     });
 
     // Calculate current streak
     const checkDate = new Date(today);
     while (true) {
-      const dateStr = checkDate.toISOString().split('T')[0];
+      const dateStr = checkDate.toISOString().split('T')[0] || '';
       if (sessionsByDate.has(dateStr)) {
         currentStreak++;
         checkDate.setDate(checkDate.getDate() - 1);
@@ -120,7 +134,9 @@ export const PersonalAnalyticsDashboard: React.FC<PersonalAnalyticsDashboardProp
       if (!lastDate) {
         tempStreak = 1;
       } else {
-        const diffDays = Math.round((lastDate.getTime() - date.getTime()) / (1000 * 60 * 60 * 24));
+        const diffDays = Math.round(
+          (lastDate.getTime() - date.getTime()) / (1000 * 60 * 60 * 24)
+        );
         if (diffDays === 1) {
           tempStreak++;
         } else {
@@ -140,33 +156,39 @@ export const PersonalAnalyticsDashboard: React.FC<PersonalAnalyticsDashboardProp
       { day: 'Wed', hours: 0, sessions: 0 },
       { day: 'Thu', hours: 0, sessions: 0 },
       { day: 'Fri', hours: 0, sessions: 0 },
-      { day: 'Sat', hours: 0, sessions: 0 }
+      { day: 'Sat', hours: 0, sessions: 0 },
     ];
 
     sessions.forEach(s => {
       const dayOfWeek = new Date(s.createdAt).getDay();
-      activityByDay[dayOfWeek].hours += (s.duration || 0) / 3600;
-      activityByDay[dayOfWeek].sessions += 1;
+      if (activityByDay[dayOfWeek]) {
+        activityByDay[dayOfWeek].hours += (s.duration || 0) / 3600;
+        activityByDay[dayOfWeek].sessions += 1;
+      }
     });
 
     // Calculate activity by hour
     const activityByHour = Array.from({ length: 24 }, (_, i) => ({
       hour: i,
-      sessions: 0
+      sessions: 0,
     }));
 
     sessions.forEach(s => {
       const hour = new Date(s.createdAt).getHours();
-      activityByHour[hour].sessions += 1;
+      if (activityByHour[hour]) {
+        activityByHour[hour].sessions += 1;
+      }
     });
 
     // Most productive day
     const maxDayActivity = Math.max(...activityByDay.map(d => d.hours));
-    const mostProductiveDay = activityByDay.find(d => d.hours === maxDayActivity)?.day || 'N/A';
+    const mostProductiveDay =
+      activityByDay.find(d => d.hours === maxDayActivity)?.day || 'N/A';
 
     // Most productive hour
     const maxHourActivity = Math.max(...activityByHour.map(h => h.sessions));
-    const mostProductiveHour = activityByHour.find(h => h.sessions === maxHourActivity)?.hour || 0;
+    const mostProductiveHour =
+      activityByHour.find(h => h.sessions === maxHourActivity)?.hour || 0;
 
     // Generate heatmap data
     const heatmapData: Array<{ date: string; value: number }> = [];
@@ -176,14 +198,16 @@ export const PersonalAnalyticsDashboard: React.FC<PersonalAnalyticsDashboardProp
     for (let i = 0; i < 90; i++) {
       const date = new Date(startDate);
       date.setDate(date.getDate() + i);
-      const dateStr = date.toISOString().split('T')[0];
+      const dateStr = date.toISOString().split('T')[0] || '';
 
       const daySessions = sessions.filter(s => {
-        const sessionDate = new Date(s.createdAt).toISOString().split('T')[0];
+        const sessionDate =
+          new Date(s.createdAt).toISOString().split('T')[0] || '';
         return sessionDate === dateStr;
       });
 
-      const dayHours = daySessions.reduce((sum, s) => sum + (s.duration || 0), 0) / 3600;
+      const dayHours =
+        daySessions.reduce((sum, s) => sum + (s.duration || 0), 0) / 3600;
       heatmapData.push({ date: dateStr, value: dayHours });
     }
 
@@ -193,13 +217,16 @@ export const PersonalAnalyticsDashboard: React.FC<PersonalAnalyticsDashboardProp
     const previousTasks = Math.floor(totalTasks * 0.9);
 
     const hoursChange = totalHours - previousHours;
-    const hoursChangePercent = previousHours > 0 ? (hoursChange / previousHours) * 100 : 0;
+    const hoursChangePercent =
+      previousHours > 0 ? (hoursChange / previousHours) * 100 : 0;
 
     const sessionsChange = totalSessions - previousSessions;
-    const sessionsChangePercent = previousSessions > 0 ? (sessionsChange / previousSessions) * 100 : 0;
+    const sessionsChangePercent =
+      previousSessions > 0 ? (sessionsChange / previousSessions) * 100 : 0;
 
     const tasksChange = totalTasks - previousTasks;
-    const tasksChangePercent = previousTasks > 0 ? (tasksChange / previousTasks) * 100 : 0;
+    const tasksChangePercent =
+      previousTasks > 0 ? (tasksChange / previousTasks) * 100 : 0;
 
     return {
       totalHours: {
@@ -207,21 +234,21 @@ export const PersonalAnalyticsDashboard: React.FC<PersonalAnalyticsDashboardProp
         previous: previousHours,
         change: hoursChange,
         changePercent: hoursChangePercent,
-        isPositive: hoursChange >= 0
+        isPositive: hoursChange >= 0,
       },
       totalSessions: {
         current: totalSessions,
         previous: previousSessions,
         change: sessionsChange,
         changePercent: sessionsChangePercent,
-        isPositive: sessionsChange >= 0
+        isPositive: sessionsChange >= 0,
       },
       totalTasks: {
         current: totalTasks,
         previous: previousTasks,
         change: tasksChange,
         changePercent: tasksChangePercent,
-        isPositive: tasksChange >= 0
+        isPositive: tasksChange >= 0,
       },
       averageSessionDuration,
       currentStreak,
@@ -230,7 +257,7 @@ export const PersonalAnalyticsDashboard: React.FC<PersonalAnalyticsDashboardProp
       mostProductiveHour,
       activityByDay,
       activityByHour,
-      heatmapData
+      heatmapData,
     };
   };
 
@@ -241,7 +268,10 @@ export const PersonalAnalyticsDashboard: React.FC<PersonalAnalyticsDashboardProp
       <div className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="h-32 bg-gray-100 rounded-lg animate-pulse"></div>
+            <div
+              key={i}
+              className="h-32 bg-gray-100 rounded-lg animate-pulse"
+            ></div>
           ))}
         </div>
       </div>
@@ -253,12 +283,18 @@ export const PersonalAnalyticsDashboard: React.FC<PersonalAnalyticsDashboardProp
       {/* Header with period selector */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">{projectId ? 'Project Analytics' : 'Personal Analytics'}</h2>
-          <p className="text-gray-600">{projectId ? 'Track your project progress and activity' : 'Track your productivity and progress'}</p>
+          <h2 className="text-2xl font-bold text-gray-900">
+            {projectId ? 'Project Analytics' : 'Personal Analytics'}
+          </h2>
+          <p className="text-gray-600">
+            {projectId
+              ? 'Track your project progress and activity'
+              : 'Track your productivity and progress'}
+          </p>
         </div>
-        
+
         <div className="flex gap-2">
-          {PERIODS.map((period) => (
+          {PERIODS.map(period => (
             <button
               key={period.value}
               onClick={() => setSelectedPeriod(period)}
@@ -282,35 +318,35 @@ export const PersonalAnalyticsDashboard: React.FC<PersonalAnalyticsDashboardProp
           icon={Clock}
           trend={{
             value: mockData.totalHours.changePercent,
-            isPositive: mockData.totalHours.isPositive
+            isPositive: mockData.totalHours.isPositive,
           }}
-          subtitle={`${mockData.totalHours.change}h more than last period`}
+          subtitle={`${mockData.totalHours.change.toFixed(1)}h more than last period`}
           color="blue"
         />
-        
+
         <StatsCard
           title="Sessions"
           value={mockData.totalSessions.current}
           icon={Target}
           trend={{
             value: mockData.totalSessions.changePercent,
-            isPositive: mockData.totalSessions.isPositive
+            isPositive: mockData.totalSessions.isPositive,
           }}
-          subtitle={`Avg ${mockData.averageSessionDuration} min per session`}
+          subtitle={`Avg ${mockData.averageSessionDuration.toFixed(0)} min per session`}
           color="green"
         />
-        
+
         <StatsCard
           title="Tasks Completed"
           value={mockData.totalTasks.current}
           icon={CheckSquare}
           trend={{
             value: mockData.totalTasks.changePercent,
-            isPositive: mockData.totalTasks.isPositive
+            isPositive: mockData.totalTasks.isPositive,
           }}
           color="purple"
         />
-        
+
         <StatsCard
           title="Current Streak"
           value={`${mockData.currentStreak} days`}
@@ -322,7 +358,9 @@ export const PersonalAnalyticsDashboard: React.FC<PersonalAnalyticsDashboardProp
 
       {/* Activity heatmap */}
       <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Activity Overview</h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+          Activity Overview
+        </h3>
         <HeatmapCalendar data={mockData.heatmapData} months={3} />
       </div>
 
@@ -330,16 +368,18 @@ export const PersonalAnalyticsDashboard: React.FC<PersonalAnalyticsDashboardProp
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Activity by day */}
         <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Activity by Day</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            Activity by Day
+          </h3>
           <ActivityChart
             data={mockData.activityByDay.map(d => ({
               label: d.day,
               value: d.hours,
-              secondaryValue: d.sessions
+              secondaryValue: d.sessions,
             }))}
             type="bar"
             height={200}
-            valueFormatter={(v) => `${v}h`}
+            valueFormatter={v => `${v}h`}
           />
           <div className="flex items-center justify-center gap-6 mt-4 text-sm">
             <div className="flex items-center gap-2">
@@ -355,17 +395,19 @@ export const PersonalAnalyticsDashboard: React.FC<PersonalAnalyticsDashboardProp
 
         {/* Activity by hour */}
         <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Activity by Hour</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            Activity by Hour
+          </h3>
           <ActivityChart
             data={mockData.activityByHour
               .filter(d => d.sessions > 0)
               .map(d => ({
                 label: `${d.hour}:00`,
-                value: d.sessions
+                value: d.sessions,
               }))}
             type="line"
             height={200}
-            valueFormatter={(v) => `${v} sessions`}
+            valueFormatter={v => `${v} sessions`}
           />
         </div>
       </div>
@@ -377,7 +419,9 @@ export const PersonalAnalyticsDashboard: React.FC<PersonalAnalyticsDashboardProp
             <Calendar className="w-6 h-6 text-blue-600" />
             <h3 className="font-semibold text-gray-900">Most Productive Day</h3>
           </div>
-          <p className="text-2xl font-bold text-blue-600">{mockData.mostProductiveDay}</p>
+          <p className="text-2xl font-bold text-blue-600">
+            {mockData.mostProductiveDay}
+          </p>
           <p className="text-sm text-gray-600 mt-1">
             You tend to be most productive on {mockData.mostProductiveDay}s
           </p>
@@ -389,7 +433,8 @@ export const PersonalAnalyticsDashboard: React.FC<PersonalAnalyticsDashboardProp
             <h3 className="font-semibold text-gray-900">Peak Hours</h3>
           </div>
           <p className="text-2xl font-bold text-purple-600">
-            {mockData.mostProductiveHour}:00 - {mockData.mostProductiveHour + 1}:00
+            {mockData.mostProductiveHour}:00 - {mockData.mostProductiveHour + 1}
+            :00
           </p>
           <p className="text-sm text-gray-600 mt-1">
             Your most productive time of day

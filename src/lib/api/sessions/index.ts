@@ -70,6 +70,7 @@ import type {
   User,
   Project,
   Post,
+  Activity,
 } from '@/types';
 
 // ============================================================================
@@ -118,7 +119,7 @@ async function withTimeout<T>(
 ): Promise<T> {
   return Promise.race([
     queryPromise,
-    createTimeout(timeoutMs, TIMEOUT_ERRORS.FIREBASE_QUERY)
+    createTimeout(timeoutMs, TIMEOUT_ERRORS.FIREBASE_QUERY),
   ]);
 }
 
@@ -246,13 +247,11 @@ export const firebaseSessionApi = {
     visibility: 'everyone' | 'followers' | 'private'
   ): Promise<{ session: Session; post?: Post }> => {
     try {
-
       // Create session first with the correct visibility
       const session = await firebaseSessionApi.createSession({
         ...sessionData,
         visibility,
       });
-
 
       let post: Post | undefined;
 
@@ -331,7 +330,6 @@ export const firebaseSessionApi = {
         lastUpdated: serverTimestamp(),
         createdAt: serverTimestamp(),
       });
-
     } catch (error) {
       const apiError = handleError(error, 'Save active session');
       throw new Error(apiError.userMessage);
@@ -424,7 +422,6 @@ export const firebaseSessionApi = {
       // Delete the document immediately to prevent race conditions
       // This is atomic and prevents any in-flight auto-save from restoring the session
       await deleteDoc(activeSessionRef);
-
 
       // Broadcast cancellation to other tabs using localStorage event
       try {
@@ -760,7 +757,8 @@ export const firebaseSessionApi = {
       if (data.images !== undefined) updateData.images = data.images;
       if (data.allowComments !== undefined)
         updateData.allowComments = data.allowComments;
-      if (data.startTime !== undefined) updateData.startTime = Timestamp.fromDate(data.startTime);
+      if (data.startTime !== undefined)
+        updateData.startTime = Timestamp.fromDate(data.startTime);
       if (data.duration !== undefined) updateData.duration = data.duration;
 
       // Remove undefined values
@@ -873,7 +871,9 @@ export const firebaseSessionApi = {
    * @returns Promise resolving to the session with user, project, and support status
    * @throws Error if user is not authenticated, session not found, or permission denied
    */
-  getSessionWithDetails: async (sessionId: string) => {
+  getSessionWithDetails: async (
+    sessionId: string
+  ): Promise<SessionWithDetails> => {
     try {
       if (!auth.currentUser) {
         throw new Error('User not authenticated');
@@ -892,31 +892,29 @@ export const firebaseSessionApi = {
       const userData = await fetchUserDataForSocialContext(data.userId);
 
       // Get project data
-      let project = null;
-      if (data.projectId) {
-        const projectRef = doc(
+      let activity: Activity | null = null;
+      if (data.projectId || data.activityId) {
+        const activityId = data.activityId || data.projectId;
+        const activityRef = doc(
           db,
           'projects',
           data.userId,
           'userProjects',
-          data.projectId
+          activityId
         );
-        const projectDoc = await getDoc(projectRef);
-        if (projectDoc.exists()) {
-          const projectData = projectDoc.data();
-          project = {
-            id: projectDoc.id,
+        const activityDoc = await getDoc(activityRef);
+        if (activityDoc.exists()) {
+          const activityData = activityDoc.data();
+          activity = {
+            id: activityDoc.id,
             userId: data.userId,
-            name: projectData.name,
-            description: projectData.description || '',
-            color: projectData.color || '#007AFF',
-            icon: projectData.icon || 'FolderIcon',
-            status: normalizeStatus(projectData.status),
-            totalTime: projectData.totalTime || 0,
-            sessionCount: projectData.sessionCount || 0,
-            isArchived: projectData.isArchived || false,
-            createdAt: convertTimestamp(projectData.createdAt),
-            updatedAt: convertTimestamp(projectData.updatedAt),
+            name: activityData.name,
+            description: activityData.description || '',
+            color: activityData.color || '#007AFF',
+            icon: activityData.icon || 'FolderIcon',
+            status: normalizeStatus(activityData.status),
+            createdAt: convertTimestamp(activityData.createdAt),
+            updatedAt: convertTimestamp(activityData.updatedAt),
           };
         }
       }
@@ -924,6 +922,19 @@ export const firebaseSessionApi = {
       // Check if current user has supported this session
       const supportedBy = data.supportedBy || [];
       const isSupported = supportedBy.includes(auth.currentUser.uid);
+
+      // Create default activity object
+      const defaultActivity: Activity = {
+        id: '',
+        userId: data.userId,
+        name: 'No Activity',
+        description: '',
+        color: '#007AFF',
+        icon: 'FolderIcon',
+        status: 'active' as const,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
 
       return {
         id: sessionDoc.id,
@@ -956,38 +967,11 @@ export const firebaseSessionApi = {
           profilePicture: userData?.profilePicture,
           bio: userData?.bio,
           location: userData?.location,
-          totalHours: userData?.totalHours || 0,
-          profileVisibility: userData?.profileVisibility || 'everyone',
-          activityVisibility: userData?.activityVisibility || 'everyone',
-          projectVisibility: userData?.projectVisibility || 'everyone',
           createdAt: userData?.createdAt || new Date(),
           updatedAt: userData?.updatedAt || new Date(),
         },
-        project: project || {
-          id: '',
-          userId: data.userId,
-          name: 'No Project',
-          description: '',
-          color: '#007AFF',
-          icon: 'FolderIcon',
-          status: 'active',
-          totalTime: 0,
-          sessionCount: 0,
-          isArchived: false,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-        activity: project || {
-          id: '',
-          userId: data.userId,
-          name: 'No Project',
-          description: '',
-          color: '#007AFF',
-          icon: 'FolderIcon',
-          status: 'active',
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
+        activity: activity || defaultActivity,
+        project: activity || defaultActivity,
       };
     } catch (error) {
       // Don't log permission errors - these are expected for private/restricted sessions

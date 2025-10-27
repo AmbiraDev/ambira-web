@@ -250,7 +250,7 @@ export default function AnalyticsPage() {
       currentStreak: stats?.currentStreak ?? 0,
       longestStreak: stats?.longestStreak ?? 0,
       activeDays: currentActiveDays,
-      activities: activities?.length || 0,
+      activities: (activities && activities.length) || 0,
 
       // Percentage changes
       hoursChange,
@@ -286,8 +286,9 @@ export default function AnalyticsPage() {
               60
             : 0;
         const dayIndex = day.getDay();
+        const dayName = dayNames[dayIndex]?.slice(0, 3) ?? 'Day';
         data.push({
-          name: `${dayNames[dayIndex]?.slice(0, 3) ?? 'Day'} ${day.getDate()}`,
+          name: `${dayName} ${day.getDate()}`,
           hours: Number(hoursWorked.toFixed(2)),
           sessions: daySessions.length,
           avgDuration: Math.round(avgDuration),
@@ -312,8 +313,9 @@ export default function AnalyticsPage() {
               60
             : 0;
         const dayIndex = day.getDay();
+        const dayName = dayNames[dayIndex]?.slice(0, 3) ?? 'Day';
         data.push({
-          name: `${dayNames[dayIndex]?.slice(0, 3) ?? 'Day'} ${day.getDate()}`,
+          name: `${dayName} ${day.getDate()}`,
           hours: safeNumber(hoursWorked.toFixed(2)),
           sessions: daySessions.length,
           avgDuration: Math.round(avgDuration),
@@ -383,8 +385,9 @@ export default function AnalyticsPage() {
               60
             : 0;
         const monthIndex = month.getMonth();
+        const monthName = monthNames[monthIndex] ?? 'Month';
         data.push({
-          name: monthNames[monthIndex] ?? 'Month',
+          name: monthName,
           hours: safeNumber(hoursWorked.toFixed(2)),
           sessions: monthSessions.length,
           avgDuration: Math.round(avgDuration),

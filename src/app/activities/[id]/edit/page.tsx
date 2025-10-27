@@ -403,14 +403,14 @@ function EditActivityContent({ activityId }: { activityId: string }) {
     }
   };
 
-  // Get current icon string
-  const selectedIconData =
+  // Get current icon string - always has a fallback to first icon
+  const iconData =
     AVAILABLE_ICONS.find(i => i.icon === formData.icon) ||
     AVAILABLE_ICONS.find(i => i.name === formData.icon) ||
     AVAILABLE_ICONS[0]!;
 
-  // Get current color
-  const selectedColorData =
+  // Get current color - always has a fallback to first color
+  const colorData =
     AVAILABLE_COLORS.find(
       c => c.name === formData.color || c.hex === formData.color
     ) || AVAILABLE_COLORS[0]!;
@@ -476,9 +476,9 @@ function EditActivityContent({ activityId }: { activityId: string }) {
             <div className="flex items-center gap-4">
               <div
                 className="w-16 h-16 rounded-xl flex items-center justify-center shadow-lg p-2"
-                style={{ backgroundColor: selectedColorData.hex }}
+                style={{ backgroundColor: colorData?.hex }}
               >
-                <Icon icon={selectedIconData.icon} width={48} height={48} />
+                <Icon icon={iconData?.icon} width={48} height={48} />
               </div>
               <div className="flex-1">
                 <h2 className="text-xl font-bold text-gray-900">

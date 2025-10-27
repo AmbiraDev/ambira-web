@@ -16,19 +16,34 @@ interface ColorSelectorProps {
   className?: string;
 }
 
-export function ColorSelector({ colors, value, onChange, className = '' }: ColorSelectorProps) {
+export function ColorSelector({
+  colors,
+  value,
+  onChange,
+  className = '',
+}: ColorSelectorProps) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Support both name and hex value
   // Ensure selectedColor is always defined with a fallback
-  const DEFAULT_COLOR: ColorOption = { name: 'gray', hex: '#6B7280', label: 'Gray' };
-  const selectedColor = colors.find(c => c.name === value || c.hex === value) || colors[0] || DEFAULT_COLOR;
+  const DEFAULT_COLOR: ColorOption = {
+    name: 'gray',
+    hex: '#6B7280',
+    label: 'Gray',
+  };
+  const selectedColor =
+    colors.find(c => c.name === value || c.hex === value) ||
+    colors[0] ||
+    DEFAULT_COLOR;
 
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     };
@@ -62,15 +77,18 @@ export function ColorSelector({ colors, value, onChange, className = '' }: Color
           />
           <span className="text-gray-900">{selectedColor.label}</span>
         </div>
-        <Icons.ChevronDown className={`w-5 h-5 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <Icons.ChevronDown
+          className={`w-5 h-5 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+        />
       </button>
 
       {/* Dropdown with Color Grid */}
       {isOpen && (
         <div className="absolute z-50 w-full mt-2 bg-white border border-gray-300 rounded-lg shadow-lg p-4">
           <div className="grid grid-cols-6 sm:grid-cols-9 gap-2">
-            {colors.map((colorData) => {
-              const isSelected = colorData.name === value || colorData.hex === value;
+            {colors.map(colorData => {
+              const isSelected =
+                colorData.name === value || colorData.hex === value;
 
               return (
                 <button

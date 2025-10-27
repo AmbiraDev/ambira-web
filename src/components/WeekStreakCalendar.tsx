@@ -16,7 +16,9 @@ const toLocalYMD = (d: Date) => {
   return `${year}-${month}-${day}`;
 };
 
-export const WeekStreakCalendar: React.FC<WeekStreakCalendarProps> = ({ userId }) => {
+export const WeekStreakCalendar: React.FC<WeekStreakCalendarProps> = ({
+  userId,
+}) => {
   const [isLoading, setIsLoading] = useState(true);
   const [activeDates, setActiveDates] = useState<Set<string>>(new Set());
 
@@ -42,14 +44,13 @@ export const WeekStreakCalendar: React.FC<WeekStreakCalendarProps> = ({ userId }
         // Fetch a generous amount and filter client-side by week range
         const res = await firebaseApi.session.getSessions(1, 100, {} as any);
 
-        const withinWeek = res.sessions.filter((s) => {
+        const withinWeek = res.sessions.filter(s => {
           const dt = new Date(s.startTime);
           return dt >= weekStart && dt <= weekEnd;
         });
 
-
         const dateSet = new Set<string>();
-        withinWeek.forEach((s) => {
+        withinWeek.forEach(s => {
           const localKey = toLocalYMD(new Date(s.startTime));
           dateSet.add(localKey);
         });
@@ -103,13 +104,14 @@ export const WeekStreakCalendar: React.FC<WeekStreakCalendarProps> = ({ userId }
       const isToday = toLocalYMD(today) === localKey;
       const hasActivity = activeDates.has(localKey);
 
+      const dayOfWeek = dayLabels[date.getDay()] || 'S';
       const dayInfo = {
-        dayOfWeek: dayLabels[date.getDay()],
+        dayOfWeek,
         dayNumber: date.getDate(),
         hasActivity,
         isToday,
         localKey,
-        isPast: date < today && !isToday
+        isPast: date < today && !isToday,
       };
 
       days.push(dayInfo);
@@ -124,15 +126,19 @@ export const WeekStreakCalendar: React.FC<WeekStreakCalendarProps> = ({ userId }
     <div className="flex justify-between gap-0.5">
       {weekDays.map((day, index) => (
         <div key={index} className="flex flex-col items-center flex-1">
-          <div className={`text-xs font-medium mb-1.5 ${day.isToday ? 'text-[#007AFF] font-bold' : 'text-gray-400'}`}>
+          <div
+            className={`text-xs font-medium mb-1.5 ${day.isToday ? 'text-[#007AFF] font-bold' : 'text-gray-400'}`}
+          >
             {day.dayOfWeek}
           </div>
           <div className="h-6 w-6 flex items-center justify-center">
             {day.hasActivity ? (
               // Completed day - orange circle with white checkmark
-              <div className={`w-6 h-6 rounded-full flex items-center justify-center bg-orange-400 ${
-                day.isToday ? 'ring-2 ring-[#007AFF] ring-offset-1' : ''
-              }`}>
+              <div
+                className={`w-6 h-6 rounded-full flex items-center justify-center bg-orange-400 ${
+                  day.isToday ? 'ring-2 ring-[#007AFF] ring-offset-1' : ''
+                }`}
+              >
                 <Check className="w-3.5 h-3.5 text-white stroke-[3]" />
               </div>
             ) : day.isToday ? (
@@ -147,7 +153,9 @@ export const WeekStreakCalendar: React.FC<WeekStreakCalendarProps> = ({ userId }
               </div>
             )}
           </div>
-          <div className={`text-[10px] font-medium mt-0.5 ${day.isToday ? 'text-[#007AFF] font-bold' : 'text-gray-500'}`}>
+          <div
+            className={`text-[10px] font-medium mt-0.5 ${day.isToday ? 'text-[#007AFF] font-bold' : 'text-gray-500'}`}
+          >
             {day.dayNumber}
           </div>
         </div>

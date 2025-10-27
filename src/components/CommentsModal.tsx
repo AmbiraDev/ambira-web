@@ -33,7 +33,7 @@ export const CommentsModal: React.FC<CommentsModalProps> = ({
   sessionId,
   session,
   totalCommentCount,
-  onCommentCountChange
+  onCommentCountChange,
 }) => {
   const { user } = useAuth();
   const [currentPage, setCurrentPage] = useState(1);
@@ -42,7 +42,7 @@ export const CommentsModal: React.FC<CommentsModalProps> = ({
   const {
     data: commentsResponse,
     isLoading,
-    refetch
+    refetch,
   } = useSessionComments(sessionId, 100, {
     enabled: isOpen, // Only fetch when modal is open
   });
@@ -52,7 +52,7 @@ export const CommentsModal: React.FC<CommentsModalProps> = ({
       if (onCommentCountChange) {
         onCommentCountChange(totalCommentCount + 1);
       }
-    }
+    },
   });
 
   const deleteCommentMutation = useDeleteComment({
@@ -60,7 +60,7 @@ export const CommentsModal: React.FC<CommentsModalProps> = ({
       if (onCommentCountChange) {
         onCommentCountChange(Math.max(0, totalCommentCount - 1));
       }
-    }
+    },
   });
 
   const likeMutation = useCommentLike(sessionId);
@@ -103,7 +103,7 @@ export const CommentsModal: React.FC<CommentsModalProps> = ({
     try {
       await createCommentMutation.mutateAsync({
         sessionId,
-        content
+        content,
       });
     } catch (err: any) {
       debug.error('CommentsModal - Failed to create comment:', err);
@@ -139,7 +139,8 @@ export const CommentsModal: React.FC<CommentsModalProps> = ({
     if (diffInHours < 24) return `${diffInHours}h`;
 
     const diffInDays = Math.floor(diffInHours / 24);
-    if (diffInDays < 7) return `${diffInDays} day${diffInDays === 1 ? '' : 's'} ago`;
+    if (diffInDays < 7)
+      return `${diffInDays} day${diffInDays === 1 ? '' : 's'} ago`;
 
     const diffInWeeks = Math.floor(diffInDays / 7);
     if (diffInWeeks < 4) return `${diffInWeeks}w`;
@@ -155,7 +156,7 @@ export const CommentsModal: React.FC<CommentsModalProps> = ({
     return date.toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
-      year: 'numeric'
+      year: 'numeric',
     });
   };
 
@@ -178,13 +179,16 @@ export const CommentsModal: React.FC<CommentsModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-white sm:bg-black/60 sm:flex sm:items-center sm:justify-center sm:p-4" onClick={(e) => {
-      // Only close on backdrop click for desktop
-      if (e.target === e.currentTarget) onClose();
-    }}>
+    <div
+      className="fixed inset-0 z-50 bg-white sm:bg-black/60 sm:flex sm:items-center sm:justify-center sm:p-4"
+      onClick={e => {
+        // Only close on backdrop click for desktop
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
       <div
         className="bg-white w-full h-full sm:rounded-2xl sm:max-w-2xl sm:h-auto sm:max-h-[85vh] flex flex-col"
-        onClick={(e) => e.stopPropagation()}
+        onClick={e => e.stopPropagation()}
       >
         {/* Navigation Header */}
         <div className="flex items-center justify-between px-4 py-2.5 border-b border-gray-200 flex-shrink-0">
@@ -210,7 +214,10 @@ export const CommentsModal: React.FC<CommentsModalProps> = ({
                 {session.title || 'Focus Session'}
               </h2>
               <div className="flex items-center gap-2 text-sm text-gray-600">
-                <Link href={`/profile/${session.user.username}`} className="flex items-center gap-2 hover:text-gray-900">
+                <Link
+                  href={`/profile/${session.user.username}`}
+                  className="flex items-center gap-2 hover:text-gray-900"
+                >
                   {session.user.profilePicture ? (
                     <Image
                       src={session.user.profilePicture}
@@ -254,7 +261,7 @@ export const CommentsModal: React.FC<CommentsModalProps> = ({
               </div>
             ) : (
               <div className="space-y-5">
-                {comments.map((comment) => (
+                {comments.map(comment => (
                   <CommentItem
                     key={comment.id}
                     comment={comment}
@@ -287,7 +294,9 @@ export const CommentsModal: React.FC<CommentsModalProps> = ({
             </span>
 
             <button
-              onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+              onClick={() =>
+                setCurrentPage(prev => Math.min(totalPages, prev + 1))
+              }
               disabled={currentPage === totalPages}
               className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
               aria-label="Next page"

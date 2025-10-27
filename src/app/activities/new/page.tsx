@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Header from '@/components/HeaderComponent';
-import { CreateProjectData } from '@/types';
+import { CreateActivityData } from '@/types';
 import { useCreateActivity } from '@/hooks/useActivitiesQuery';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { IconSelector } from '@/components/IconSelector';
@@ -266,12 +266,12 @@ const AVAILABLE_COLORS = [
   { name: 'forest', hex: '#2d6a4f', label: 'Forest' },
 ];
 
-function CreateProjectContent() {
+function CreateActivityContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectPath = searchParams.get('redirect');
-  const createProject = useCreateActivity();
-  const [formData, setFormData] = useState<CreateProjectData>({
+  const createActivity = useCreateActivity();
+  const [formData, setFormData] = useState<CreateActivityData>({
     name: '',
     description: '',
     icon: 'briefcase',
@@ -281,12 +281,12 @@ function CreateProjectContent() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<
-    Partial<Record<keyof CreateProjectData, string>>
+    Partial<Record<keyof CreateActivityData, string>>
   >({});
   const [successMessage, setSuccessMessage] = useState('');
 
   const validateForm = (): boolean => {
-    const newErrors: Partial<Record<keyof CreateProjectData, string>> = {};
+    const newErrors: Partial<Record<keyof CreateActivityData, string>> = {};
 
     if (!formData.name.trim()) {
       newErrors.name = 'Activity name is required';
@@ -345,11 +345,11 @@ function CreateProjectContent() {
         c => c.name === formData.color
       );
 
-      if (!createProject) {
-        throw new Error('Create project function is not available');
+      if (!createActivity) {
+        throw new Error('Create activity function is not available');
       }
 
-      const project = await createProject.mutateAsync({
+      const activity = await createActivity.mutateAsync({
         ...formData,
         name: formData.name.trim(),
         description: formData.description.trim(),
@@ -379,7 +379,7 @@ function CreateProjectContent() {
     }
   };
 
-  const handleInputChange = (field: keyof CreateProjectData, value: any) => {
+  const handleInputChange = (field: keyof CreateActivityData, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: undefined }));
@@ -389,14 +389,14 @@ function CreateProjectContent() {
     }
   };
 
-  // Get current icon string
-  const selectedIconData =
-    AVAILABLE_ICONS.find(i => i.name === formData.icon) || AVAILABLE_ICONS[0];
+  // Get current icon string - always has a fallback to first icon
+  const iconData =
+    AVAILABLE_ICONS.find(i => i.name === formData.icon) || AVAILABLE_ICONS[0]!;
 
-  // Get current color
-  const selectedColorData =
+  // Get current color - always has a fallback to first color
+  const colorData =
     AVAILABLE_COLORS.find(c => c.name === formData.color) ||
-    AVAILABLE_COLORS[0];
+    AVAILABLE_COLORS[0]!;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -457,10 +457,10 @@ function CreateProjectContent() {
             <div className="flex items-center gap-3 md:gap-4">
               <div
                 className="w-14 h-14 md:w-16 md:h-16 rounded-xl flex items-center justify-center shadow-lg p-2"
-                style={{ backgroundColor: selectedColorData?.hex || '#f97316' }}
+                style={{ backgroundColor: colorData?.hex }}
               >
                 <Icon
-                  icon={selectedIconData?.icon || 'flat-color-icons:briefcase'}
+                  icon={iconData?.icon}
                   width={40}
                   height={40}
                   className="md:w-12 md:h-12"
@@ -665,10 +665,10 @@ function CreateProjectContent() {
   );
 }
 
-export default function CreateProjectPage() {
+export default function CreateActivityPage() {
   return (
     <ProtectedRoute>
-      <CreateProjectContent />
+      <CreateActivityContent />
     </ProtectedRoute>
   );
 }

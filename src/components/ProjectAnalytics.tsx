@@ -20,7 +20,7 @@ const PERIODS: AnalyticsPeriod[] = [
   { label: '3M', value: '3m', days: 90 },
   { label: '6M', value: '6m', days: 180 },
   { label: '1Y', value: '1y', days: 365 },
-  { label: 'All', value: 'all', days: 9999 }
+  { label: 'All', value: 'all', days: 9999 },
 ];
 
 interface ProjectAnalyticsData {
@@ -40,23 +40,27 @@ interface ProjectAnalyticsData {
 
 export const ProjectAnalytics: React.FC<ProjectAnalyticsProps> = ({
   projectId,
-  projectName
+  projectName,
 }) => {
   const { user } = useAuth();
-  const [selectedPeriod, setSelectedPeriod] = useState<AnalyticsPeriod>(PERIODS[1]);
+  const defaultPeriod: AnalyticsPeriod = PERIODS[1] ||
+    PERIODS[0] || { label: '7D', value: '7d' as const, days: 7 };
+  const [selectedPeriod, setSelectedPeriod] =
+    useState<AnalyticsPeriod>(defaultPeriod);
   const [isLoading, setIsLoading] = useState(true);
-  const [analyticsData, setAnalyticsData] = useState<ProjectAnalyticsData | null>(null);
+  const [analyticsData, setAnalyticsData] =
+    useState<ProjectAnalyticsData | null>(null);
 
   const loadAnalyticsData = async () => {
     if (!user) return;
-    
+
     try {
       setIsLoading(true);
-      
+
       // Get sessions for this project within the selected period
       const endDate = new Date();
       const startDate = new Date();
-      startDate.setDate(endDate.getDate() - selectedPeriod.days);
+      startDate.setDate(endDate.getDate() - (selectedPeriod?.days || 0));
 
       // TODO: Implement getSessionsByProject(projectId, startDate, endDate) in src/lib/api/sessions/
       // This should filter sessions by projectId and date range for analytics
@@ -65,25 +69,31 @@ export const ProjectAnalytics: React.FC<ProjectAnalyticsProps> = ({
       // Calculate cumulative hours data
       const dailyHours: Record<string, number> = {};
       let cumulativeTotal = 0;
-      
+
       sessions.forEach(session => {
         const sessionDate = new Date(session.createdAt);
         const dateKey = sessionDate.toISOString().split('T')[0];
-        dailyHours[dateKey] = (dailyHours[dateKey] || 0) + (session.duration / 3600);
+        if (dateKey) {
+          dailyHours[dateKey] =
+            (dailyHours[dateKey] || 0) + session.duration / 3600;
+        }
       });
 
       // Generate cumulative hours chart data
       const cumulativeHours = [];
-      for (let i = selectedPeriod.days - 1; i >= 0; i--) {
+      for (let i = (selectedPeriod?.days || 0) - 1; i >= 0; i--) {
         const date = new Date();
         date.setDate(date.getDate() - i);
         const dateKey = date.toISOString().split('T')[0];
-        const dailyHour = dailyHours[dateKey] || 0;
+        const dailyHour = dateKey ? dailyHours[dateKey] || 0 : 0;
         cumulativeTotal += dailyHour;
-        
+
         cumulativeHours.push({
-          label: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-          value: Math.round(cumulativeTotal * 10) / 10
+          label: date.toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+          }),
+          value: Math.round(cumulativeTotal * 10) / 10,
         });
       }
 
@@ -94,7 +104,9 @@ export const ProjectAnalytics: React.FC<ProjectAnalyticsProps> = ({
         const weekStart = new Date(sessionDate);
         weekStart.setDate(sessionDate.getDate() - sessionDate.getDay());
         const weekKey = weekStart.toISOString().split('T')[0];
-        weeklyData[weekKey] = (weeklyData[weekKey] || 0) + 1;
+        if (weekKey) {
+          weeklyData[weekKey] = (weeklyData[weekKey] || 0) + 1;
+        }
       });
 
       const sessionFrequency = Object.entries(weeklyData)
@@ -102,12 +114,16 @@ export const ProjectAnalytics: React.FC<ProjectAnalyticsProps> = ({
         .slice(-12) // Last 12 weeks
         .map(([weekKey, count], index) => ({
           label: `Week ${index + 1}`,
-          value: count
+          value: count,
         }));
 
       // Calculate stats from sessions
-      const totalHours = sessions.reduce((sum, s) => sum + (s.duration / 3600), 0);
-      const weeklyHours = Math.round((totalHours / selectedPeriod.days) * 7 * 10) / 10;
+      const totalHours = sessions.reduce(
+        (sum, s) => sum + s.duration / 3600,
+        0
+      );
+      const periodDays = selectedPeriod?.days || 1;
+      const weeklyHours = Math.round((totalHours / periodDays) * 7 * 10) / 10;
 
       // Calculate goal progress (you would get target from project settings)
       const target = null; // TODO: Add hourGoal field to Project type and fetch from project data
@@ -115,25 +131,40 @@ export const ProjectAnalytics: React.FC<ProjectAnalyticsProps> = ({
         current: totalHours,
         target,
         percentage: target ? (totalHours / target) * 100 : 0,
-        estimatedCompletion: target && weeklyHours > 0
-          ? new Date(Date.now() + ((target - totalHours) / weeklyHours) * 7 * 24 * 60 * 60 * 1000)
-          : null
+        estimatedCompletion:
+          target && weeklyHours > 0
+            ? new Date(
+                Date.now() +
+                  ((target - totalHours) / weeklyHours) *
+                    7 *
+                    24 *
+                    60 *
+                    60 *
+                    1000
+              )
+            : null,
       };
 
       setAnalyticsData({
         totalHours: Math.round(totalHours * 10) / 10,
         weeklyAverage: weeklyHours,
         sessionCount: sessions.length,
-        averageSessionDuration: sessions.length > 0
-          ? Math.round((sessions.reduce((sum, s) => sum + s.duration, 0) / sessions.length / 60) * 10) / 10
-          : 0,
+        averageSessionDuration:
+          sessions.length > 0
+            ? Math.round(
+                (sessions.reduce((sum, s) => sum + s.duration, 0) /
+                  sessions.length /
+                  60) *
+                  10
+              ) / 10
+            : 0,
         goalProgress,
         cumulativeHours,
-        sessionFrequency: sessionFrequency.length > 0 ? sessionFrequency : [
-          { label: 'This Week', value: sessions.length }
-        ]
+        sessionFrequency:
+          sessionFrequency.length > 0
+            ? sessionFrequency
+            : [{ label: 'This Week', value: sessions.length }],
       });
-
     } catch (error) {
       debug.error('ProjectAnalytics - Failed to load analytics data:', error);
       // Fallback to basic data
@@ -142,9 +173,14 @@ export const ProjectAnalytics: React.FC<ProjectAnalyticsProps> = ({
         weeklyAverage: 0,
         sessionCount: 0,
         averageSessionDuration: 0,
-        goalProgress: { current: 0, target: null, percentage: 0, estimatedCompletion: null },
+        goalProgress: {
+          current: 0,
+          target: null,
+          percentage: 0,
+          estimatedCompletion: null,
+        },
         cumulativeHours: [{ label: 'Today', value: 0 }],
-        sessionFrequency: [{ label: 'This Week', value: 0 }]
+        sessionFrequency: [{ label: 'This Week', value: 0 }],
       });
     } finally {
       setIsLoading(false);
@@ -161,7 +197,10 @@ export const ProjectAnalytics: React.FC<ProjectAnalyticsProps> = ({
         <div className="h-8 bg-gray-200 rounded animate-pulse mb-4"></div>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="h-24 bg-gray-200 rounded animate-pulse"></div>
+            <div
+              key={i}
+              className="h-24 bg-gray-200 rounded animate-pulse"
+            ></div>
           ))}
         </div>
         <div className="h-64 bg-gray-200 rounded animate-pulse"></div>
@@ -182,7 +221,11 @@ export const ProjectAnalytics: React.FC<ProjectAnalyticsProps> = ({
   }
 
   const daysUntilGoal = analyticsData.goalProgress.estimatedCompletion
-    ? Math.ceil((analyticsData.goalProgress.estimatedCompletion.getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+    ? Math.ceil(
+        (analyticsData.goalProgress.estimatedCompletion.getTime() -
+          Date.now()) /
+          (1000 * 60 * 60 * 24)
+      )
     : null;
 
   return (
@@ -190,12 +233,16 @@ export const ProjectAnalytics: React.FC<ProjectAnalyticsProps> = ({
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">{projectName} Analytics</h2>
-          <p className="text-gray-600">Detailed project insights and progress</p>
+          <h2 className="text-2xl font-bold text-gray-900">
+            {projectName} Analytics
+          </h2>
+          <p className="text-gray-600">
+            Detailed project insights and progress
+          </p>
         </div>
-        
+
         <div className="flex gap-1">
-          {PERIODS.map((period) => (
+          {PERIODS.map(period => (
             <button
               key={period.value}
               onClick={() => setSelectedPeriod(period)}
@@ -216,9 +263,13 @@ export const ProjectAnalytics: React.FC<ProjectAnalyticsProps> = ({
         <div className="bg-white rounded-lg border border-gray-200 p-4">
           <div className="flex items-center gap-2 mb-2">
             <Clock className="w-5 h-5 text-gray-600" />
-            <span className="text-sm font-medium text-gray-600">Total Hours</span>
+            <span className="text-sm font-medium text-gray-600">
+              Total Hours
+            </span>
           </div>
-          <p className="text-3xl font-bold text-gray-900">{analyticsData.totalHours}</p>
+          <p className="text-3xl font-bold text-gray-900">
+            {analyticsData.totalHours}
+          </p>
           <p className="text-xs text-gray-500 mt-1">
             {analyticsData.weeklyAverage}h per week avg
           </p>
@@ -229,7 +280,9 @@ export const ProjectAnalytics: React.FC<ProjectAnalyticsProps> = ({
             <BarChart3 className="w-5 h-5 text-gray-600" />
             <span className="text-sm font-medium text-gray-600">Sessions</span>
           </div>
-          <p className="text-3xl font-bold text-gray-900">{analyticsData.sessionCount}</p>
+          <p className="text-3xl font-bold text-gray-900">
+            {analyticsData.sessionCount}
+          </p>
           <p className="text-xs text-gray-500 mt-1">
             {analyticsData.averageSessionDuration}min avg duration
           </p>
@@ -238,22 +291,32 @@ export const ProjectAnalytics: React.FC<ProjectAnalyticsProps> = ({
         <div className="bg-white rounded-lg border border-gray-200 p-4">
           <div className="flex items-center gap-2 mb-2">
             <Target className="w-5 h-5 text-gray-600" />
-            <span className="text-sm font-medium text-gray-600">Goal Progress</span>
+            <span className="text-sm font-medium text-gray-600">
+              Goal Progress
+            </span>
           </div>
           <p className="text-3xl font-bold text-gray-900">
-            {analyticsData.goalProgress.target ? `${Math.round(analyticsData.goalProgress.percentage)}%` : 'No Goal'}
+            {analyticsData.goalProgress.target
+              ? `${Math.round(analyticsData.goalProgress.percentage)}%`
+              : 'No Goal'}
           </p>
           <p className="text-xs text-gray-500 mt-1">
-            {analyticsData.goalProgress.target ? `${analyticsData.goalProgress.current}h / ${analyticsData.goalProgress.target}h` : 'Set a target goal'}
+            {analyticsData.goalProgress.target
+              ? `${analyticsData.goalProgress.current}h / ${analyticsData.goalProgress.target}h`
+              : 'Set a target goal'}
           </p>
         </div>
 
         <div className="bg-white rounded-lg border border-gray-200 p-4">
           <div className="flex items-center gap-2 mb-2">
             <TrendingUp className="w-5 h-5 text-gray-600" />
-            <span className="text-sm font-medium text-gray-600">Weekly Avg</span>
+            <span className="text-sm font-medium text-gray-600">
+              Weekly Avg
+            </span>
           </div>
-          <p className="text-3xl font-bold text-gray-900">{analyticsData.weeklyAverage}</p>
+          <p className="text-3xl font-bold text-gray-900">
+            {analyticsData.weeklyAverage}
+          </p>
           <p className="text-xs text-gray-500 mt-1">hours per week</p>
         </div>
       </div>
@@ -263,19 +326,24 @@ export const ProjectAnalytics: React.FC<ProjectAnalyticsProps> = ({
         <div className="bg-white rounded-lg border border-gray-200 p-6">
           <div className="flex items-start justify-between">
             <div className="flex-1">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Goal Progress</h3>
-              
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                Goal Progress
+              </h3>
+
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
                   <p className="text-sm text-gray-600 mb-1">Current Progress</p>
                   <p className="text-2xl font-bold text-gray-900">
-                    {analyticsData.goalProgress.current}h / {analyticsData.goalProgress.target}h
+                    {analyticsData.goalProgress.current}h /{' '}
+                    {analyticsData.goalProgress.target}h
                   </p>
                 </div>
-                
+
                 {daysUntilGoal && daysUntilGoal > 0 && (
                   <div>
-                    <p className="text-sm text-gray-600 mb-1">Estimated Completion</p>
+                    <p className="text-sm text-gray-600 mb-1">
+                      Estimated Completion
+                    </p>
                     <p className="text-2xl font-bold text-gray-900">
                       {daysUntilGoal} days
                     </p>
@@ -284,16 +352,21 @@ export const ProjectAnalytics: React.FC<ProjectAnalyticsProps> = ({
                     </p>
                   </div>
                 )}
-                
+
                 <div>
                   <p className="text-sm text-gray-600 mb-1">Hours Remaining</p>
                   <p className="text-2xl font-bold text-gray-900">
-                    {Math.max(0, analyticsData.goalProgress.target - analyticsData.goalProgress.current)}h
+                    {Math.max(
+                      0,
+                      analyticsData.goalProgress.target -
+                        analyticsData.goalProgress.current
+                    )}
+                    h
                   </p>
                 </div>
               </div>
             </div>
-            
+
             <div className="ml-6">
               <ProgressRing
                 progress={Math.min(analyticsData.goalProgress.percentage, 100)}
@@ -310,7 +383,9 @@ export const ProjectAnalytics: React.FC<ProjectAnalyticsProps> = ({
         {/* Cumulative hours */}
         <div className="bg-white rounded-lg border border-gray-200 p-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">Cumulative Hours</h3>
+            <h3 className="text-lg font-semibold text-gray-900">
+              Cumulative Hours
+            </h3>
             {analyticsData.goalProgress.target && (
               <div className="text-sm text-gray-500">
                 Goal: {analyticsData.goalProgress.target}h
@@ -322,35 +397,47 @@ export const ProjectAnalytics: React.FC<ProjectAnalyticsProps> = ({
             type="line"
             height={240}
             color="#374151"
-            valueFormatter={(v) => `${v}h`}
+            valueFormatter={v => `${v}h`}
           />
-          {analyticsData.goalProgress.target && daysUntilGoal && daysUntilGoal > 0 && (
-            <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-              <p className="text-sm text-gray-700">
-                At your current pace, you'll reach your goal in <span className="font-semibold">{daysUntilGoal} days</span>.
-              </p>
-            </div>
-          )}
+          {analyticsData.goalProgress.target &&
+            daysUntilGoal &&
+            daysUntilGoal > 0 && (
+              <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                <p className="text-sm text-gray-700">
+                  At your current pace, you'll reach your goal in{' '}
+                  <span className="font-semibold">{daysUntilGoal} days</span>.
+                </p>
+              </div>
+            )}
         </div>
 
         {/* Session frequency */}
         <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Session Frequency</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            Session Frequency
+          </h3>
           <ActivityChart
             data={analyticsData.sessionFrequency}
             type="bar"
             height={240}
             color="#6B7280"
-            valueFormatter={(v) => `${v} sessions`}
+            valueFormatter={v => `${v} sessions`}
           />
           <div className="mt-4 p-3 bg-gray-50 rounded-lg">
             <p className="text-sm text-gray-700">
-              Average of <span className="font-semibold">
-                {analyticsData.sessionFrequency.length > 0 
-                  ? (analyticsData.sessionFrequency.reduce((sum, d) => sum + d.value, 0) / analyticsData.sessionFrequency.length).toFixed(1)
-                  : '0'
-                } sessions
-              </span> per week
+              Average of{' '}
+              <span className="font-semibold">
+                {analyticsData.sessionFrequency.length > 0
+                  ? (
+                      analyticsData.sessionFrequency.reduce(
+                        (sum, d) => sum + d.value,
+                        0
+                      ) / analyticsData.sessionFrequency.length
+                    ).toFixed(1)
+                  : '0'}{' '}
+                sessions
+              </span>{' '}
+              per week
             </p>
           </div>
         </div>

@@ -83,7 +83,9 @@ export function usePauseTimer(
   >({
     mutationFn: userId => timerService.pauseTimer(userId),
 
-    onMutate: async userId => {
+    onMutate: async (
+      userId
+    ): Promise<{ previousSession: ActiveSession | undefined }> => {
       // Cancel outgoing queries
       await queryClient.cancelQueries({ queryKey: TIMER_KEYS.active(userId) });
 
@@ -150,7 +152,9 @@ export function useResumeTimer(
   >({
     mutationFn: userId => timerService.resumeTimer(userId),
 
-    onMutate: async userId => {
+    onMutate: async (
+      userId
+    ): Promise<{ previousSession: ActiveSession | undefined }> => {
       await queryClient.cancelQueries({ queryKey: TIMER_KEYS.active(userId) });
 
       const previousSession = queryClient.getQueryData<ActiveSession>(

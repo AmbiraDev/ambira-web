@@ -2,7 +2,16 @@
 
 import { useState, useEffect } from 'react';
 import { ChevronDown } from 'lucide-react';
-import { LineChart, Line, ResponsiveContainer, XAxis, YAxis, Tooltip, Area, ComposedChart } from 'recharts';
+import {
+  LineChart,
+  Line,
+  ResponsiveContainer,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Area,
+  ComposedChart,
+} from 'recharts';
 import { useAuth } from '@/hooks/useAuth';
 import { firebaseSessionApi } from '@/lib/api';
 import { Session } from '@/types';
@@ -64,7 +73,7 @@ function SidebarActivityGraph() {
         const hoursWorked =
           sessions.length > 0
             ? sessions
-                .filter((s) => {
+                .filter(s => {
                   const sessionDate = new Date(s.createdAt);
                   sessionDate.setHours(0, 0, 0, 0);
                   return sessionDate.getTime() === day.getTime();
@@ -73,7 +82,7 @@ function SidebarActivityGraph() {
             : 0;
 
         data.push({
-          name: dayNames[day.getDay()],
+          name: dayNames[day.getDay()] || '',
           hours: Number(hoursWorked.toFixed(1)),
           isToday: i === 0,
         });
@@ -91,7 +100,7 @@ function SidebarActivityGraph() {
         const hoursWorked =
           sessions.length > 0
             ? sessions
-                .filter((s) => {
+                .filter(s => {
                   const sessionDate = new Date(s.createdAt);
                   return sessionDate >= weekStart && sessionDate <= weekEnd;
                 })
@@ -122,7 +131,9 @@ function SidebarActivityGraph() {
             className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-700 bg-white rounded-lg hover:bg-gray-100 transition-colors border border-gray-200"
           >
             {timePeriod === 'week' ? 'Week' : 'Month'}
-            <ChevronDown className={`w-4 h-4 transition-transform ${showDropdown ? 'rotate-180' : ''}`} />
+            <ChevronDown
+              className={`w-4 h-4 transition-transform ${showDropdown ? 'rotate-180' : ''}`}
+            />
           </button>
           {showDropdown && (
             <div className="absolute right-0 mt-2 w-28 bg-white rounded-xl shadow-lg border border-gray-200 py-1 z-50">
@@ -132,7 +143,9 @@ function SidebarActivityGraph() {
                   setShowDropdown(false);
                 }}
                 className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors ${
-                  timePeriod === 'week' ? 'text-[#007AFF] font-semibold bg-blue-50' : 'text-gray-700'
+                  timePeriod === 'week'
+                    ? 'text-[#007AFF] font-semibold bg-blue-50'
+                    : 'text-gray-700'
                 }`}
               >
                 Week
@@ -143,7 +156,9 @@ function SidebarActivityGraph() {
                   setShowDropdown(false);
                 }}
                 className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors ${
-                  timePeriod === 'month' ? 'text-[#007AFF] font-semibold bg-blue-50' : 'text-gray-700'
+                  timePeriod === 'month'
+                    ? 'text-[#007AFF] font-semibold bg-blue-50'
+                    : 'text-gray-700'
                 }`}
               >
                 Month
@@ -159,11 +174,14 @@ function SidebarActivityGraph() {
       ) : (
         <div className="h-52">
           <ResponsiveContainer width="100%" height="100%">
-            <ComposedChart data={chartData} margin={{ top: 10, right: 10, left: -10, bottom: 5 }}>
+            <ComposedChart
+              data={chartData}
+              margin={{ top: 10, right: 10, left: -10, bottom: 5 }}
+            >
               <defs>
                 <linearGradient id="colorHours" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#007AFF" stopOpacity={0.1}/>
-                  <stop offset="95%" stopColor="#007AFF" stopOpacity={0}/>
+                  <stop offset="5%" stopColor="#007AFF" stopOpacity={0.1} />
+                  <stop offset="95%" stopColor="#007AFF" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <XAxis
@@ -179,7 +197,7 @@ function SidebarActivityGraph() {
                 tickLine={false}
                 width={35}
                 domain={[0, 'dataMax + 0.5']}
-                tickFormatter={(value) => value.toFixed(1)}
+                tickFormatter={value => value.toFixed(1)}
               />
               <Tooltip
                 contentStyle={{
@@ -188,11 +206,15 @@ function SidebarActivityGraph() {
                   borderRadius: '8px',
                   padding: '8px 12px',
                   fontSize: '12px',
-                  color: 'white'
+                  color: 'white',
                 }}
                 labelStyle={{ color: 'white', marginBottom: '4px' }}
                 formatter={(value: any) => [`${value.toFixed(1)} hrs`, 'Time']}
-                cursor={{ stroke: '#e5e7eb', strokeWidth: 1, strokeDasharray: '3 3' }}
+                cursor={{
+                  stroke: '#e5e7eb',
+                  strokeWidth: 1,
+                  strokeDasharray: '3 3',
+                }}
               />
               <Area
                 type="monotone"
@@ -210,7 +232,7 @@ function SidebarActivityGraph() {
                   r: 8,
                   fill: '#007AFF',
                   stroke: 'white',
-                  strokeWidth: 3
+                  strokeWidth: 3,
                 }}
               />
             </ComposedChart>

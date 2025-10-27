@@ -66,7 +66,7 @@ function RightSidebar() {
           () => firebaseUserApi.getSuggestedUsers(5),
           {
             memoryTtl: 60 * 60 * 1000, // 1 hour in memory
-            localTtl: 60 * 60 * 1000,  // 1 hour in localStorage
+            localTtl: 60 * 60 * 1000, // 1 hour in localStorage
             sessionCache: true,
             dedupe: true,
           }
@@ -85,15 +85,17 @@ function RightSidebar() {
         // Get all groups with caching
         const allGroups = await cachedQuery(
           `suggested_groups_all`,
-          () => firebaseApi.group.searchGroups({}, 15),
+          () => firebaseApi.group.searchGroups(''),
           {
             memoryTtl: 60 * 60 * 1000, // 1 hour in memory
-            localTtl: 60 * 60 * 1000,  // 1 hour in localStorage
+            localTtl: 60 * 60 * 1000, // 1 hour in localStorage
             sessionCache: true,
             dedupe: true,
           }
         );
-        const filteredGroups = allGroups.filter(group => !userGroupIds.has(group.id));
+        const filteredGroups = allGroups.filter(
+          group => !userGroupIds.has(group.id)
+        );
         setSuggestedGroups(filteredGroups.slice(0, 5));
       } catch (error) {
         console.error('Failed to load suggested groups:', error);
@@ -145,19 +147,26 @@ function RightSidebar() {
   };
 
   return (
-    <aside className="hidden xl:block w-[320px] flex-shrink-0" aria-label="Suggestions and groups sidebar">
+    <aside
+      className="hidden xl:block w-[320px] flex-shrink-0"
+      aria-label="Suggestions and groups sidebar"
+    >
       <div className="space-y-4 h-full overflow-y-auto scrollbar-hide pt-20 pb-6">
-
         {/* Suggested Friends - Redesigned */}
         <div className="px-2">
           <div className="flex items-center justify-between mb-3 px-2">
-            <h3 className="text-lg font-semibold text-gray-900">Suggested for you</h3>
+            <h3 className="text-lg font-semibold text-gray-900">
+              Suggested for you
+            </h3>
           </div>
 
           {isLoading ? (
             <div className="space-y-2">
               {[1, 2, 3, 4, 5].map(i => (
-                <div key={i} className="flex items-center gap-3 animate-pulse p-3 bg-white rounded-lg">
+                <div
+                  key={i}
+                  className="flex items-center gap-3 animate-pulse p-3 bg-white rounded-lg"
+                >
                   <div className="w-12 h-12 bg-gray-200 rounded-full"></div>
                   <div className="flex-1">
                     <div className="h-4 bg-gray-200 rounded w-24 mb-2"></div>
@@ -192,7 +201,12 @@ function RightSidebar() {
                     ) : (
                       <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0">
                         <span className="text-gray-600 font-semibold text-sm">
-                          {suggestedUser.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                          {suggestedUser.name
+                            .split(' ')
+                            .map(n => n[0])
+                            .join('')
+                            .slice(0, 2)
+                            .toUpperCase()}
                         </span>
                       </div>
                     )}
@@ -205,7 +219,7 @@ function RightSidebar() {
                       </p>
                     </div>
                     <button
-                      onClick={(e) => {
+                      onClick={e => {
                         e.preventDefault();
                         e.stopPropagation();
                         handleFollowToggle(suggestedUser.id);
@@ -215,10 +229,16 @@ function RightSidebar() {
                           ? 'text-gray-600 hover:text-gray-900'
                           : 'text-[#007AFF] hover:text-[#0051D5]'
                       }`}
-                      aria-label={followingUsers.has(suggestedUser.id) ? `Unfollow ${suggestedUser.name}` : `Follow ${suggestedUser.name}`}
+                      aria-label={
+                        followingUsers.has(suggestedUser.id)
+                          ? `Unfollow ${suggestedUser.name}`
+                          : `Follow ${suggestedUser.name}`
+                      }
                       aria-pressed={followingUsers.has(suggestedUser.id)}
                     >
-                      {followingUsers.has(suggestedUser.id) ? 'Following' : 'Follow'}
+                      {followingUsers.has(suggestedUser.id)
+                        ? 'Following'
+                        : 'Follow'}
                     </button>
                   </div>
                 </Link>
@@ -230,13 +250,18 @@ function RightSidebar() {
         {/* Clubs - Redesigned */}
         <div className="px-2">
           <div className="flex items-center justify-between mb-3 px-2">
-            <h3 className="text-lg font-semibold text-gray-900">Suggested Groups</h3>
+            <h3 className="text-lg font-semibold text-gray-900">
+              Suggested Groups
+            </h3>
           </div>
 
           {isLoading ? (
             <div className="space-y-2">
               {[1, 2, 3, 4, 5].map(i => (
-                <div key={i} className="flex items-center gap-3 animate-pulse p-3 bg-white rounded-lg">
+                <div
+                  key={i}
+                  className="flex items-center gap-3 animate-pulse p-3 bg-white rounded-lg"
+                >
                   <div className="w-12 h-12 bg-gray-200 rounded-lg"></div>
                   <div className="flex-1">
                     <div className="h-4 bg-gray-200 rounded w-24 mb-2"></div>
@@ -268,11 +293,12 @@ function RightSidebar() {
                         {group.name}
                       </p>
                       <div className="text-xs text-gray-500">
-                        {group.memberCount || 0} {group.memberCount === 1 ? 'member' : 'members'}
+                        {group.memberCount || 0}{' '}
+                        {group.memberCount === 1 ? 'member' : 'members'}
                       </div>
                     </div>
                     <button
-                      onClick={async (e) => {
+                      onClick={async e => {
                         e.preventDefault();
                         e.stopPropagation();
                         if (!user || joiningGroups.has(group.id)) return;
@@ -281,7 +307,9 @@ function RightSidebar() {
                         try {
                           await firebaseApi.group.joinGroup(group.id, user.id);
                           // Remove from suggestions after joining
-                          setSuggestedGroups(prev => prev.filter(g => g.id !== group.id));
+                          setSuggestedGroups(prev =>
+                            prev.filter(g => g.id !== group.id)
+                          );
                         } catch (error) {
                           // Error joining group - silently fail for suggestions
                         } finally {
@@ -303,7 +331,6 @@ function RightSidebar() {
             </div>
           )}
         </div>
-
       </div>
 
       {/* Modals */}

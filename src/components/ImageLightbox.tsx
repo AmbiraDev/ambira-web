@@ -13,7 +13,7 @@ interface ImageLightboxProps {
 export const ImageLightbox: React.FC<ImageLightboxProps> = ({
   images,
   initialIndex = 0,
-  onClose
+  onClose,
 }) => {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
 
@@ -60,7 +60,7 @@ export const ImageLightbox: React.FC<ImageLightboxProps> = ({
     >
       {/* Close button */}
       <button
-        onClick={(e) => {
+        onClick={e => {
           e.stopPropagation();
           onClose();
         }}
@@ -81,7 +81,7 @@ export const ImageLightbox: React.FC<ImageLightboxProps> = ({
           onClick={onClose}
         >
           <Image
-            src={images[currentIndex]}
+            src={images[currentIndex] || ''}
             alt={`Image ${currentIndex + 1} of ${images.length}`}
             fill
             className="object-contain pointer-events-none"
@@ -94,7 +94,7 @@ export const ImageLightbox: React.FC<ImageLightboxProps> = ({
         {/* Left arrow */}
         {currentIndex > 0 && (
           <button
-            onClick={(e) => {
+            onClick={e => {
               e.stopPropagation();
               goToPrevious();
             }}
@@ -108,7 +108,7 @@ export const ImageLightbox: React.FC<ImageLightboxProps> = ({
         {/* Right arrow */}
         {currentIndex < images.length - 1 && (
           <button
-            onClick={(e) => {
+            onClick={e => {
               e.stopPropagation();
               goToNext();
             }}

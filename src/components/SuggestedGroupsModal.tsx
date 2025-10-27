@@ -15,7 +15,10 @@ interface SuggestedGroupsModalProps {
 const GROUPS_PER_PAGE = 10;
 const TOTAL_GROUPS_TO_FETCH = 100;
 
-export default function SuggestedGroupsModal({ isOpen, onClose }: SuggestedGroupsModalProps) {
+export default function SuggestedGroupsModal({
+  isOpen,
+  onClose,
+}: SuggestedGroupsModalProps) {
   const { user } = useAuth();
   const [allSuggestedGroups, setAllSuggestedGroups] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -57,8 +60,10 @@ export default function SuggestedGroupsModal({ isOpen, onClose }: SuggestedGroup
       const userGroupIds = new Set(userGroups.map(g => g.id));
 
       // Get all groups and filter out ones user is already in
-      const allGroups = await firebaseApi.group.searchGroups({}, TOTAL_GROUPS_TO_FETCH);
-      const filteredGroups = allGroups.filter(group => !userGroupIds.has(group.id));
+      const allGroups = await firebaseApi.group.searchGroups('');
+      const filteredGroups = allGroups.filter(
+        group => !userGroupIds.has(group.id)
+      );
       setAllSuggestedGroups(filteredGroups);
     } catch (error) {
       console.error('Error loading groups:', error);
@@ -117,7 +122,7 @@ export default function SuggestedGroupsModal({ isOpen, onClose }: SuggestedGroup
     >
       <div
         className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[80vh] flex flex-col"
-        onClick={(e) => e.stopPropagation()}
+        onClick={e => e.stopPropagation()}
       >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
@@ -142,8 +147,12 @@ export default function SuggestedGroupsModal({ isOpen, onClose }: SuggestedGroup
               <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <Users className="w-8 h-8 text-green-600" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">No groups available</h3>
-              <p className="text-gray-600">Check back later for groups to join</p>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                No groups available
+              </h3>
+              <p className="text-gray-600">
+                Check back later for groups to join
+              </p>
             </div>
           ) : (
             <div className="divide-y divide-gray-100">
@@ -171,13 +180,16 @@ export default function SuggestedGroupsModal({ isOpen, onClose }: SuggestedGroup
                             {group.name}
                           </h3>
                         </Link>
-                        <p className="text-sm text-gray-600 mt-0.5 line-clamp-2">{group.description}</p>
+                        <p className="text-sm text-gray-600 mt-0.5 line-clamp-2">
+                          {group.description}
+                        </p>
 
                         {/* Meta Info */}
                         <div className="flex items-center gap-3 mt-2 text-xs text-gray-500">
                           <span className="flex items-center gap-1">
                             <Users className="w-3.5 h-3.5" />
-                            {group.memberCount || 0} {group.memberCount === 1 ? 'member' : 'members'}
+                            {group.memberCount || 0}{' '}
+                            {group.memberCount === 1 ? 'member' : 'members'}
                           </span>
                           {group.location && (
                             <span className="flex items-center gap-1">
@@ -190,7 +202,7 @@ export default function SuggestedGroupsModal({ isOpen, onClose }: SuggestedGroup
 
                       {/* Join Button */}
                       <button
-                        onClick={(e) => handleJoinGroup(group.id, e)}
+                        onClick={e => handleJoinGroup(group.id, e)}
                         disabled={isJoining}
                         className={`text-sm font-semibold transition-colors flex-shrink-0 ${
                           isJoining

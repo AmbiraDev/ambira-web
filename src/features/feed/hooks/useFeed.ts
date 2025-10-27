@@ -8,7 +8,13 @@
  * Components → useFeed hooks (React Query) → FeedService → Repositories → Firebase
  */
 
-import { useInfiniteQuery, useQuery, UseQueryOptions, UseInfiniteQueryOptions } from '@tanstack/react-query';
+import {
+  useInfiniteQuery,
+  useQuery,
+  UseQueryOptions,
+  UseInfiniteQueryOptions,
+  InfiniteData,
+} from '@tanstack/react-query';
 import { FeedService, FeedFilters, FeedOptions } from '../services/FeedService';
 import { Session } from '@/domain/entities/Session';
 import { STANDARD_CACHE_TIMES } from '@/lib/react-query';
@@ -17,6 +23,13 @@ import { STANDARD_CACHE_TIMES } from '@/lib/react-query';
 const feedService = new FeedService();
 
 // ==================== TYPES ====================
+
+// Type for infinite query options without 'select' property
+// Infinite queries must return InfiniteData, so select cannot transform to FeedResult
+type InfiniteQueryOptions<TData, TError> = Omit<
+  Partial<UseInfiniteQueryOptions<TData, TError, InfiniteData<TData, unknown>>>,
+  'select'
+>;
 
 export interface FeedResult {
   sessions: Session[];
@@ -63,7 +76,7 @@ export const FEED_KEYS = {
 export function useFeedInfinite(
   currentUserId: string,
   filters: FeedFilters = {},
-  options?: Partial<UseInfiniteQueryOptions<FeedResult, Error>>
+  options?: InfiniteQueryOptions<FeedResult, Error>
 ) {
   return useInfiniteQuery<FeedResult, Error>({
     queryKey: FEED_KEYS.list(currentUserId, filters),
@@ -72,7 +85,7 @@ export function useFeedInfinite(
         limit: 20,
         cursor: pageParam as string | undefined,
       }),
-    getNextPageParam: (lastPage) => {
+    getNextPageParam: lastPage => {
       return lastPage.hasMore ? lastPage.nextCursor : undefined;
     },
     initialPageParam: undefined as string | undefined,
@@ -167,7 +180,7 @@ export function useGroupFeed(
  */
 export function useFollowingFeedInfinite(
   currentUserId: string,
-  options?: Partial<UseInfiniteQueryOptions<FeedResult, Error>>
+  options?: InfiniteQueryOptions<FeedResult, Error>
 ) {
   return useFeedInfinite(currentUserId, { type: 'following' }, options);
 }
@@ -186,7 +199,7 @@ export function useFollowingFeedInfinite(
  */
 export function usePublicFeedInfinite(
   currentUserId: string,
-  options?: Partial<UseInfiniteQueryOptions<FeedResult, Error>>
+  options?: InfiniteQueryOptions<FeedResult, Error>
 ) {
   return useFeedInfinite(currentUserId, { type: 'all' }, options);
 }

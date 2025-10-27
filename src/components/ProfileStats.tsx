@@ -3,23 +3,34 @@
 import React, { useState, useEffect } from 'react';
 import { ActivityData, WeeklyActivity, ProjectBreakdown } from '@/types';
 import { firebaseUserApi } from '@/lib/api';
-import { BarChart3, PieChart, TrendingUp, Clock, Target, Activity } from 'lucide-react';
+import {
+  BarChart3,
+  PieChart,
+  TrendingUp,
+  Clock,
+  Target,
+  Activity,
+} from 'lucide-react';
 
 interface ProfileStatsProps {
   userId: string;
   isOwnProfile?: boolean;
 }
 
-export const ProfileStats: React.FC<ProfileStatsProps> = ({ 
-  userId, 
-  isOwnProfile = false 
+export const ProfileStats: React.FC<ProfileStatsProps> = ({
+  userId,
+  isOwnProfile = false,
 }) => {
-  const [activeTab, setActiveTab] = useState<'daily' | 'weekly' | 'projects'>('daily');
+  const [activeTab, setActiveTab] = useState<'daily' | 'weekly' | 'projects'>(
+    'daily'
+  );
   const [activityData, setActivityData] = useState<ActivityData[]>([]);
   const [weeklyData, setWeeklyData] = useState<WeeklyActivity[]>([]);
   const [projectData, setProjectData] = useState<ProjectBreakdown[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedPeriod, setSelectedPeriod] = useState<'30d' | '90d' | 'year'>('30d');
+  const [selectedPeriod, setSelectedPeriod] = useState<'30d' | '90d' | 'year'>(
+    '30d'
+  );
 
   useEffect(() => {
     loadActivityData();
@@ -95,11 +106,13 @@ export const ProfileStats: React.FC<ProfileStatsProps> = ({
           <TrendingUp className="w-5 h-5" />
           Activity Analytics
         </h2>
-        
+
         {activeTab === 'daily' && (
           <select
             value={selectedPeriod}
-            onChange={(e) => setSelectedPeriod(e.target.value as '30d' | '90d' | 'year')}
+            onChange={e =>
+              setSelectedPeriod(e.target.value as '30d' | '90d' | 'year')
+            }
             className="px-3 py-1 border border-border rounded-md bg-background text-foreground"
           >
             <option value="30d">Last 30 days</option>
@@ -111,7 +124,7 @@ export const ProfileStats: React.FC<ProfileStatsProps> = ({
 
       {/* Tab Navigation */}
       <div className="flex space-x-1 mb-6 border-b border-border">
-        {tabs.map((tab) => {
+        {tabs.map(tab => {
           const Icon = tab.icon;
           return (
             <button
@@ -119,9 +132,10 @@ export const ProfileStats: React.FC<ProfileStatsProps> = ({
               onClick={() => setActiveTab(tab.id as any)}
               className={`
                 flex items-center gap-2 px-4 py-2 rounded-none border-b-2 transition-all
-                ${activeTab === tab.id 
-                  ? 'border-primary text-primary' 
-                  : 'border-transparent text-muted-foreground hover:text-foreground'
+                ${
+                  activeTab === tab.id
+                    ? 'border-primary text-primary'
+                    : 'border-transparent text-muted-foreground hover:text-foreground'
                 }
               `}
             >
@@ -140,7 +154,7 @@ export const ProfileStats: React.FC<ProfileStatsProps> = ({
       ) : (
         <>
           {activeTab === 'daily' && (
-            <DailyActivityChart 
+            <DailyActivityChart
               data={activityData}
               selectedPeriod={selectedPeriod}
               formatHours={formatHours}
@@ -148,14 +162,11 @@ export const ProfileStats: React.FC<ProfileStatsProps> = ({
           )}
 
           {activeTab === 'weekly' && (
-            <WeeklyChart 
-              data={weeklyData}
-              formatHours={formatHours}
-            />
+            <WeeklyChart data={weeklyData} formatHours={formatHours} />
           )}
 
           {activeTab === 'projects' && (
-            <ProjectBreakdownChart 
+            <ProjectBreakdownChart
               data={projectData}
               formatHours={formatHours}
             />
@@ -173,10 +184,10 @@ interface DailyActivityChartProps {
   formatHours: (hours: number) => string;
 }
 
-const DailyActivityChart: React.FC<DailyActivityChartProps> = ({ 
+const DailyActivityChart: React.FC<DailyActivityChartProps> = ({
   data,
   selectedPeriod,
-  formatHours 
+  formatHours,
 }) => {
   // Filter data based on selected period
   const getDaysCount = (period: '30d' | '90d' | 'year'): number => {
@@ -202,7 +213,8 @@ const DailyActivityChart: React.FC<DailyActivityChartProps> = ({
 
   // Calculate statistics
   const totalHours = filteredData.reduce((sum, d) => sum + d.hours, 0);
-  const averageHours = filteredData.length > 0 ? totalHours / filteredData.length : 0;
+  const averageHours =
+    filteredData.length > 0 ? totalHours / filteredData.length : 0;
   const activeDays = filteredData.filter(d => d.hours > 0).length;
 
   if (filteredData.length === 0) {
@@ -242,15 +254,15 @@ const DailyActivityChart: React.FC<DailyActivityChartProps> = ({
             <Target className="w-4 h-4" />
             <span className="text-sm font-medium">Active Days</span>
           </div>
-          <div className="text-2xl font-bold text-foreground">
-            {activeDays}
-          </div>
+          <div className="text-2xl font-bold text-foreground">{activeDays}</div>
         </div>
       </div>
 
       {/* Line Chart */}
       <div className="bg-white rounded-lg p-6 border border-border shadow-sm">
-        <h3 className="text-sm font-semibold text-foreground mb-4">Daily Activity Trend</h3>
+        <h3 className="text-sm font-semibold text-foreground mb-4">
+          Daily Activity Trend
+        </h3>
         <div className="relative h-64">
           {/* Y-axis labels */}
           <div className="absolute left-0 top-0 bottom-8 flex flex-col justify-between text-xs text-muted-foreground w-12">
@@ -265,7 +277,7 @@ const DailyActivityChart: React.FC<DailyActivityChartProps> = ({
           <div className="absolute left-14 right-0 top-0 bottom-8">
             {/* Grid lines */}
             <div className="absolute inset-0 flex flex-col justify-between">
-              {[0, 1, 2, 3, 4].map((i) => (
+              {[0, 1, 2, 3, 4].map(i => (
                 <div key={i} className="border-t border-border" />
               ))}
             </div>
@@ -275,7 +287,7 @@ const DailyActivityChart: React.FC<DailyActivityChartProps> = ({
               {filteredData.map((day, index) => {
                 const height = (day.hours / maxHours) * 100;
                 const isHovered = hoveredIndex === index;
-                
+
                 return (
                   <div
                     key={day.date}
@@ -286,22 +298,30 @@ const DailyActivityChart: React.FC<DailyActivityChartProps> = ({
                     <div
                       className={`
                         w-full rounded-t transition-all duration-200
-                        ${day.hours > 0 
-                          ? isHovered 
-                            ? 'bg-primary' 
-                            : 'bg-primary/70 hover:bg-primary'
-                          : 'bg-gray-100 border border-border'
+                        ${
+                          day.hours > 0
+                            ? isHovered
+                              ? 'bg-primary'
+                              : 'bg-primary/70 hover:bg-primary'
+                            : 'bg-gray-100 border border-border'
                         }
                       `}
                       style={{ height: `${height}%` }}
                     />
-                    
+
                     {/* Tooltip */}
                     {isHovered && (
                       <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-foreground text-background text-xs rounded-lg shadow-lg whitespace-nowrap z-10">
-                        <div className="font-semibold">{new Date(day.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</div>
+                        <div className="font-semibold">
+                          {new Date(day.date).toLocaleDateString('en-US', {
+                            month: 'short',
+                            day: 'numeric',
+                          })}
+                        </div>
                         <div>{formatHours(day.hours)}</div>
-                        <div className="opacity-70">{day.sessions} session{day.sessions !== 1 ? 's' : ''}</div>
+                        <div className="opacity-70">
+                          {day.sessions} session{day.sessions !== 1 ? 's' : ''}
+                        </div>
                         <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-foreground" />
                       </div>
                     )}
@@ -313,20 +333,56 @@ const DailyActivityChart: React.FC<DailyActivityChartProps> = ({
 
           {/* X-axis */}
           <div className="absolute left-14 right-0 bottom-0 h-6 flex justify-between text-xs text-muted-foreground">
-            {selectedPeriod === '30d' && filteredData.length > 0 && filteredData[0] && (
-              <>
-                <span>{new Date(filteredData[0].date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
-                <span>{new Date(filteredData[Math.floor(filteredData.length / 2)]!.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
-                <span>{new Date(filteredData[filteredData.length - 1]!.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
-              </>
-            )}
-            {selectedPeriod === '90d' && filteredData.length > 0 && filteredData[0] && (
-              <>
-                <span>{new Date(filteredData[0].date).toLocaleDateString('en-US', { month: 'short' })}</span>
-                <span>{new Date(filteredData[Math.floor(filteredData.length / 2)]!.date).toLocaleDateString('en-US', { month: 'short' })}</span>
-                <span>{new Date(filteredData[filteredData.length - 1]!.date).toLocaleDateString('en-US', { month: 'short' })}</span>
-              </>
-            )}
+            {selectedPeriod === '30d' &&
+              filteredData.length > 0 &&
+              filteredData[0] && (
+                <>
+                  <span>
+                    {new Date(filteredData[0].date).toLocaleDateString(
+                      'en-US',
+                      { month: 'short', day: 'numeric' }
+                    )}
+                  </span>
+                  <span>
+                    {new Date(
+                      filteredData[Math.floor(filteredData.length / 2)]!.date
+                    ).toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: 'numeric',
+                    })}
+                  </span>
+                  <span>
+                    {new Date(
+                      filteredData[filteredData.length - 1]!.date
+                    ).toLocaleDateString('en-US', {
+                      month: 'short',
+                      day: 'numeric',
+                    })}
+                  </span>
+                </>
+              )}
+            {selectedPeriod === '90d' &&
+              filteredData.length > 0 &&
+              filteredData[0] && (
+                <>
+                  <span>
+                    {new Date(filteredData[0].date).toLocaleDateString(
+                      'en-US',
+                      { month: 'short' }
+                    )}
+                  </span>
+                  <span>
+                    {new Date(
+                      filteredData[Math.floor(filteredData.length / 2)]!.date
+                    ).toLocaleDateString('en-US', { month: 'short' })}
+                  </span>
+                  <span>
+                    {new Date(
+                      filteredData[filteredData.length - 1]!.date
+                    ).toLocaleDateString('en-US', { month: 'short' })}
+                  </span>
+                </>
+              )}
             {selectedPeriod === 'year' && filteredData.length > 0 && (
               <>
                 <span>Jan</span>
@@ -369,7 +425,10 @@ const WeeklyChart: React.FC<WeeklyChartProps> = ({ data, formatHours }) => {
     const diff = firstDay.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
     const monday = new Date(firstDay.setDate(diff));
 
-    return monday.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    return monday.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+    });
   };
 
   const getWeekRange = (weekStr: string): string => {
@@ -394,7 +453,10 @@ const WeeklyChart: React.FC<WeeklyChartProps> = ({ data, formatHours }) => {
   // Calculate statistics
   const totalHours = data.reduce((sum, w) => sum + w.hours, 0);
   const averageHours = data.length > 0 ? totalHours / data.length : 0;
-  const bestWeek = data.reduce((max, w) => w.hours > max.hours ? w : max, data[0] || { hours: 0, week: '', sessions: 0 });
+  const bestWeek = data.reduce(
+    (max, w) => (w.hours > max.hours ? w : max),
+    data[0] || { hours: 0, week: '', sessions: 0 }
+  );
 
   if (data.length === 0) {
     return (
@@ -450,7 +512,9 @@ const WeeklyChart: React.FC<WeeklyChartProps> = ({ data, formatHours }) => {
 
       {/* Bar Chart */}
       <div className="bg-white rounded-lg p-6 border border-border shadow-sm">
-        <h3 className="text-sm font-semibold text-foreground mb-4">Weekly Activity Comparison</h3>
+        <h3 className="text-sm font-semibold text-foreground mb-4">
+          Weekly Activity Comparison
+        </h3>
         <div className="relative h-80">
           {/* Y-axis labels */}
           <div className="absolute left-0 top-0 bottom-12 flex flex-col justify-between text-xs text-muted-foreground w-12">
@@ -465,7 +529,7 @@ const WeeklyChart: React.FC<WeeklyChartProps> = ({ data, formatHours }) => {
           <div className="absolute left-14 right-0 top-0 bottom-12">
             {/* Grid lines */}
             <div className="absolute inset-0 flex flex-col justify-between">
-              {[0, 1, 2, 3, 4].map((i) => (
+              {[0, 1, 2, 3, 4].map(i => (
                 <div key={i} className="border-t border-border" />
               ))}
             </div>
@@ -475,7 +539,7 @@ const WeeklyChart: React.FC<WeeklyChartProps> = ({ data, formatHours }) => {
               {data.map((week, index) => {
                 const height = (week.hours / maxHours) * 100;
                 const isHovered = hoveredIndex === index;
-                
+
                 return (
                   <div
                     key={week.week}
@@ -486,22 +550,28 @@ const WeeklyChart: React.FC<WeeklyChartProps> = ({ data, formatHours }) => {
                     <div
                       className={`
                         w-full rounded-t-lg transition-all duration-300
-                        ${week.hours > 0 
-                          ? isHovered 
-                            ? 'bg-primary shadow-lg' 
-                            : 'bg-primary/80 hover:bg-primary hover:shadow-lg'
-                          : 'bg-gray-100 border border-border'
+                        ${
+                          week.hours > 0
+                            ? isHovered
+                              ? 'bg-primary shadow-lg'
+                              : 'bg-primary/80 hover:bg-primary hover:shadow-lg'
+                            : 'bg-gray-100 border border-border'
                         }
                       `}
                       style={{ height: `${Math.max(height, 2)}%` }}
                     />
-                    
+
                     {/* Tooltip */}
                     {isHovered && (
                       <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-3 px-3 py-2 bg-foreground text-background text-xs rounded-lg shadow-xl whitespace-nowrap z-10">
-                        <div className="font-semibold">{getWeekRange(week.week)}</div>
+                        <div className="font-semibold">
+                          {getWeekRange(week.week)}
+                        </div>
                         <div className="mt-1">{formatHours(week.hours)}</div>
-                        <div className="opacity-70">{week.sessions} session{week.sessions !== 1 ? 's' : ''}</div>
+                        <div className="opacity-70">
+                          {week.sessions} session
+                          {week.sessions !== 1 ? 's' : ''}
+                        </div>
                         <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-foreground" />
                       </div>
                     )}
@@ -515,8 +585,9 @@ const WeeklyChart: React.FC<WeeklyChartProps> = ({ data, formatHours }) => {
           <div className="absolute left-14 right-0 bottom-0 h-10 flex justify-between text-xs text-muted-foreground items-start pt-2">
             {data.map((week, index) => {
               // Show every other label for better readability
-              if (data.length > 8 && index % 2 !== 0) return <div key={week.week} className="flex-1" />;
-              
+              if (data.length > 8 && index % 2 !== 0)
+                return <div key={week.week} className="flex-1" />;
+
               return (
                 <div key={week.week} className="flex-1 text-center">
                   <div>{getWeekLabel(week.week)}</div>
@@ -536,7 +607,10 @@ interface ProjectBreakdownChartProps {
   formatHours: (hours: number) => string;
 }
 
-const ProjectBreakdownChart: React.FC<ProjectBreakdownChartProps> = ({ data, formatHours }) => {
+const ProjectBreakdownChart: React.FC<ProjectBreakdownChartProps> = ({
+  data,
+  formatHours,
+}) => {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   if (data.length === 0) {
@@ -590,7 +664,9 @@ const ProjectBreakdownChart: React.FC<ProjectBreakdownChartProps> = ({ data, for
 
       {/* Horizontal Bar Chart */}
       <div className="bg-white rounded-lg p-6 border border-border shadow-sm">
-        <h3 className="text-sm font-semibold text-foreground mb-4">Time Distribution by Project</h3>
+        <h3 className="text-sm font-semibold text-foreground mb-4">
+          Time Distribution by Project
+        </h3>
         <div className="space-y-4">
           {data.map((project, index) => {
             const widthPercentage = (project.hours / maxHours) * 100;
@@ -614,7 +690,8 @@ const ProjectBreakdownChart: React.FC<ProjectBreakdownChartProps> = ({ data, for
                     </span>
                   </div>
                   <div className="text-sm text-muted-foreground">
-                    {formatHours(project.hours)} ({project.percentage.toFixed(1)}%)
+                    {formatHours(project.hours)} (
+                    {project.percentage.toFixed(1)}%)
                   </div>
                 </div>
                 <div className="relative">

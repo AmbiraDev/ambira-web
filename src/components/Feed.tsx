@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { SessionWithDetails, FeedFilters } from '@/types';
 import { firebaseApi } from '@/lib/api';
 import SessionCard from './SessionCard';
-import { useFeedInfinite } from '@/features/feed/hooks';
+import { useFeedInfinite, FeedResult } from '@/features/feed/hooks';
 import { useSupportSession, useDeleteSession } from '@/features/sessions/hooks';
 import { useAuth } from '@/hooks/useAuth';
 import ConfirmDialog from './ConfirmDialog';
@@ -66,7 +66,7 @@ export const Feed: React.FC<FeedProps> = ({
   className = '',
   initialLimit = 10,
   showEndMessage = true,
-  showGroupInfo = false
+  showGroupInfo = false,
 }) => {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -74,7 +74,9 @@ export const Feed: React.FC<FeedProps> = ({
   const queryClient = useQueryClient();
   const [hasNewSessions, setHasNewSessions] = useState(false);
   const [newSessionsCount, setNewSessionsCount] = useState(0);
-  const [deleteConfirmSession, setDeleteConfirmSession] = useState<string | null>(null);
+  const [deleteConfirmSession, setDeleteConfirmSession] = useState<
+    string | null
+  >(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
   // Ref for infinite scroll trigger element
@@ -88,7 +90,7 @@ export const Feed: React.FC<FeedProps> = ({
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
-    refetch
+    refetch,
   } = useFeedInfinite(user?.id || '', filters);
 
   // Flatten pages into allSessions
@@ -97,10 +99,10 @@ export const Feed: React.FC<FeedProps> = ({
   // where each page is a FeedResult with sessions: Session[] property
   const allSessions = useMemo(() => {
     if (!data?.pages) return [];
-    return data.pages.flatMap((page) => {
-      // Each page is a FeedResult with sessions property
-      return (page as any).sessions || [];
-    }) as SessionWithDetails[];
+    // TypeScript can't infer the page type from useInfiniteQuery, so we cast
+    return (data.pages as FeedResult[]).flatMap(page => {
+      return page.sessions || [];
+    }) as unknown as SessionWithDetails[];
   }, [data]);
 
   const hasMore = hasNextPage || false;
@@ -150,19 +152,31 @@ export const Feed: React.FC<FeedProps> = ({
 
       try {
         // Use queryClient to check cache first, then fetch if stale
-        const cachedData = queryClient.getQueryData(['feed', 'sessions', 5, undefined, filters]);
+        const cachedData = queryClient.getQueryData([
+          'feed',
+          'sessions',
+          5,
+          undefined,
+          filters,
+        ]);
 
         let response;
         if (cachedData) {
           response = cachedData as { sessions: any[] };
         } else {
-          response = await firebaseApi.post.getFeedSessions(5, undefined, filters);
+          response = await firebaseApi.post.getFeedSessions(
+            5,
+            undefined,
+            filters
+          );
         }
 
         const newSessionIds = response.sessions.map(s => s.id);
         const currentSessionIds = allSessions.slice(0, 5).map(s => s.id);
 
-        const newCount = newSessionIds.filter(id => !currentSessionIds.includes(id)).length;
+        const newCount = newSessionIds.filter(
+          id => !currentSessionIds.includes(id)
+        ).length;
         if (newCount > 0) {
           setHasNewSessions(true);
           setNewSessionsCount(newCount);
@@ -193,14 +207,20 @@ export const Feed: React.FC<FeedProps> = ({
   }, [allSessions, filters, queryClient]);
 
   // Handle support with optimistic updates via React Query
-  const handleSupport = useCallback(async (sessionId: string) => {
-    supportMutation.mutate({ sessionId, action: 'support' });
-  }, [supportMutation]);
+  const handleSupport = useCallback(
+    async (sessionId: string) => {
+      supportMutation.mutate({ sessionId, action: 'support' });
+    },
+    [supportMutation]
+  );
 
   // Handle remove support with optimistic updates via React Query
-  const handleRemoveSupport = useCallback(async (sessionId: string) => {
-    supportMutation.mutate({ sessionId, action: 'unsupport' });
-  }, [supportMutation]);
+  const handleRemoveSupport = useCallback(
+    async (sessionId: string) => {
+      supportMutation.mutate({ sessionId, action: 'unsupport' });
+    },
+    [supportMutation]
+  );
 
   // Handle share
   const handleShare = useCallback(async (sessionId: string) => {
@@ -212,7 +232,7 @@ export const Feed: React.FC<FeedProps> = ({
         await navigator.share({
           title: 'Check out this session on Ambira',
           text: 'Look at this productive session!',
-          url: sessionUrl
+          url: sessionUrl,
         });
       } else {
         // Fallback to clipboard
@@ -251,7 +271,10 @@ export const Feed: React.FC<FeedProps> = ({
   // This prevents useEffect from re-running when sessions array changes but top 10 IDs remain same
   const top10SessionIdsString = useMemo(() => {
     const MAX_LISTENERS = 10;
-    return allSessions.slice(0, MAX_LISTENERS).map(session => session.id).join(',');
+    return allSessions
+      .slice(0, MAX_LISTENERS)
+      .map(session => session.id)
+      .join(',');
   }, [allSessions]);
 
   // Real-time updates for support counts (throttled to reduce reads)
@@ -267,10 +290,13 @@ export const Feed: React.FC<FeedProps> = ({
 
     // Register listener but don't update state directly
     // React Query mutations handle support count updates via cache invalidation
-    const unsubscribe = firebaseApi.post.listenToSessionUpdates(sessionIds, (updates) => {
-      // Updates are handled by React Query's optimistic updates in supportMutation
-      // This listener can be used for real-time notifications in the future
-    });
+    const unsubscribe = firebaseApi.post.listenToSessionUpdates(
+      sessionIds,
+      updates => {
+        // Updates are handled by React Query's optimistic updates in supportMutation
+        // This listener can be used for real-time notifications in the future
+      }
+    );
 
     return unsubscribe;
   }, [top10SessionIdsString]); // Only re-run when top 10 IDs change
@@ -281,7 +307,7 @@ export const Feed: React.FC<FeedProps> = ({
     if (!trigger) return;
 
     const observer = new IntersectionObserver(
-      (entries) => {
+      entries => {
         const entry = entries[0];
         if (!entry) return;
 
@@ -317,22 +343,33 @@ export const Feed: React.FC<FeedProps> = ({
 
   if (error) {
     const errorMessage = String(error);
-    const isPermissionError = errorMessage.includes('permission') || errorMessage.includes('insufficient');
+    const isPermissionError =
+      errorMessage.includes('permission') ||
+      errorMessage.includes('insufficient');
 
     return (
-      <div className={`text-center py-8 px-4 ${className}`} role="alert" aria-live="polite">
+      <div
+        className={`text-center py-8 px-4 ${className}`}
+        role="alert"
+        aria-live="polite"
+      >
         <div className="text-red-600 mb-4">
-          <AlertTriangle className="w-12 h-12 mx-auto mb-2" aria-hidden="true" />
-          <p className="font-medium text-sm sm:text-base">Failed to load sessions</p>
+          <AlertTriangle
+            className="w-12 h-12 mx-auto mb-2"
+            aria-hidden="true"
+          />
+          <p className="font-medium text-sm sm:text-base">
+            Failed to load sessions
+          </p>
           <p className="text-sm text-gray-600 mt-1">
             {isPermissionError
               ? 'There was a permissions issue loading the feed. This may be due to security rules that need updating.'
-              : errorMessage
-            }
+              : errorMessage}
           </p>
           {isPermissionError && (
             <p className="text-xs text-gray-500 mt-2">
-              If you're the app administrator, try deploying the latest Firestore security rules.
+              If you're the app administrator, try deploying the latest
+              Firestore security rules.
             </p>
           )}
         </div>
@@ -352,31 +389,35 @@ export const Feed: React.FC<FeedProps> = ({
 
     let emptyStateContent = {
       title: 'Your feed is empty',
-      message: 'Follow people to see their productive sessions in your feed and get inspired by their work!',
+      message:
+        'Follow people to see their productive sessions in your feed and get inspired by their work!',
       buttonText: 'Find People to Follow',
-      buttonAction: () => router.push('/discover/people')
+      buttonAction: () => router.push('/discover/people'),
     };
 
     if (feedType === 'group-members-unfollowed') {
       emptyStateContent = {
         title: 'No sessions yet',
-        message: 'When group members you don\'t follow post sessions, they\'ll appear here!',
+        message:
+          "When group members you don't follow post sessions, they'll appear here!",
         buttonText: 'Discover Groups',
-        buttonAction: () => router.push('/groups')
+        buttonAction: () => router.push('/groups'),
       };
     } else if (feedType === 'user') {
       emptyStateContent = {
         title: 'No sessions yet',
-        message: 'Start tracking your productive sessions to build your profile!',
+        message:
+          'Start tracking your productive sessions to build your profile!',
         buttonText: 'Start a Session',
-        buttonAction: () => router.push('/timer')
+        buttonAction: () => router.push('/timer'),
       };
     } else if (feedType === 'following') {
       emptyStateContent = {
         title: 'Your feed is empty',
-        message: 'Follow people to see their productive sessions in your feed and get inspired by their work!',
+        message:
+          'Follow people to see their productive sessions in your feed and get inspired by their work!',
         buttonText: 'Find People to Follow',
-        buttonAction: () => router.push('/discover/people')
+        buttonAction: () => router.push('/discover/people'),
       };
     }
 
@@ -385,7 +426,9 @@ export const Feed: React.FC<FeedProps> = ({
         <div className="max-w-md mx-auto">
           <div className="text-gray-500 mb-8">
             <Users className="w-20 h-20 mx-auto mb-4 text-gray-400" />
-            <h3 className="font-bold text-xl text-gray-900 mb-2">{emptyStateContent.title}</h3>
+            <h3 className="font-bold text-xl text-gray-900 mb-2">
+              {emptyStateContent.title}
+            </h3>
             <p className="text-base text-gray-600 leading-relaxed">
               {emptyStateContent.message}
             </p>
@@ -416,7 +459,9 @@ export const Feed: React.FC<FeedProps> = ({
           >
             <ChevronUp className="w-5 h-5 flex-shrink-0" aria-hidden="true" />
             <span className="truncate">
-              {newSessionsCount} new {newSessionsCount === 1 ? 'session' : 'sessions'} - Click to refresh
+              {newSessionsCount} new{' '}
+              {newSessionsCount === 1 ? 'session' : 'sessions'} - Click to
+              refresh
             </span>
           </button>
         </div>
@@ -435,7 +480,11 @@ export const Feed: React.FC<FeedProps> = ({
               onSupport={handleSupport}
               onRemoveSupport={handleRemoveSupport}
               onShare={handleShare}
-              onEdit={isOwnSession ? (sessionId) => router.push(`/sessions/${sessionId}/edit`) : undefined}
+              onEdit={
+                isOwnSession
+                  ? sessionId => router.push(`/sessions/${sessionId}/edit`)
+                  : undefined
+              }
               onDelete={isOwnSession ? handleDelete : undefined}
               showGroupInfo={showGroupInfo}
               isAboveFold={isAboveFold}
@@ -454,7 +503,10 @@ export const Feed: React.FC<FeedProps> = ({
       {isLoadingMore && (
         <div className="text-center py-4" role="status" aria-live="polite">
           <div className="inline-flex items-center space-x-2 text-gray-600">
-            <div className="w-4 h-4 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin" aria-hidden="true"></div>
+            <div
+              className="w-4 h-4 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin"
+              aria-hidden="true"
+            ></div>
             <span className="text-sm">Loading more sessions...</span>
           </div>
         </div>

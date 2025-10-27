@@ -28,7 +28,7 @@ export const TopComments: React.FC<TopCommentsProps> = ({
   totalCommentCount,
   onCommentCountChange,
   autoFocus = false,
-  initialExpanded = false
+  initialExpanded = false,
 }) => {
   const { user } = useAuth();
   const [isExpanded, setIsExpanded] = useState(initialExpanded);
@@ -39,7 +39,7 @@ export const TopComments: React.FC<TopCommentsProps> = ({
   const {
     data: commentsResponse,
     isLoading,
-    refetch
+    refetch,
   } = useSessionComments(sessionId, limit);
 
   const createCommentMutation = useCreateComment({
@@ -47,7 +47,7 @@ export const TopComments: React.FC<TopCommentsProps> = ({
       if (onCommentCountChange) {
         onCommentCountChange(totalCommentCount + 1);
       }
-    }
+    },
   });
 
   const deleteCommentMutation = useDeleteComment({
@@ -55,7 +55,7 @@ export const TopComments: React.FC<TopCommentsProps> = ({
       if (onCommentCountChange) {
         onCommentCountChange(Math.max(0, totalCommentCount - 1));
       }
-    }
+    },
   });
 
   const likeMutation = useCommentLike(sessionId);
@@ -80,7 +80,7 @@ export const TopComments: React.FC<TopCommentsProps> = ({
     try {
       await createCommentMutation.mutateAsync({
         sessionId,
-        content
+        content,
       });
     } catch (err: any) {
       console.error('Failed to create comment:', err);
@@ -90,7 +90,10 @@ export const TopComments: React.FC<TopCommentsProps> = ({
 
   const handleDelete = async (commentId: string) => {
     try {
-      await deleteCommentMutation.mutateAsync({ commentId, sessionId: session.id });
+      await deleteCommentMutation.mutateAsync({
+        commentId,
+        sessionId,
+      });
     } catch (err: any) {
       console.error('Failed to delete comment:', err);
       throw err;
@@ -104,7 +107,7 @@ export const TopComments: React.FC<TopCommentsProps> = ({
   if (isLoading && !isExpanded) {
     return (
       <div className="border-t border-gray-100 px-4 py-3 space-y-3">
-        {[1, 2].map((i) => (
+        {[1, 2].map(i => (
           <div key={i} className="flex gap-3 animate-pulse">
             <div className="w-8 h-8 rounded-full bg-gray-200" />
             <div className="flex-1 space-y-2">
@@ -122,12 +125,18 @@ export const TopComments: React.FC<TopCommentsProps> = ({
   }
 
   return (
-    <div className={(isExpanded || (comments.length > 0 && !isExpanded)) ? 'hidden md:block md:border-t md:border-gray-100' : ''}>
+    <div
+      className={
+        isExpanded || (comments.length > 0 && !isExpanded)
+          ? 'hidden md:block md:border-t md:border-gray-100'
+          : ''
+      }
+    >
       <div className="px-4 py-2 space-y-2">
         {/* Comments List - Only show in collapsed view if there are comments (hidden on mobile) */}
         {!isExpanded && comments.length > 0 && (
           <>
-            {comments.map((comment) => (
+            {comments.map(comment => (
               <CommentItem
                 key={comment.id}
                 comment={comment}
@@ -144,17 +153,17 @@ export const TopComments: React.FC<TopCommentsProps> = ({
                 onClick={() => setIsExpanded(true)}
                 className="text-sm text-gray-500 hover:text-gray-900 font-medium py-2 transition-colors"
               >
-                See all {totalCommentCount} {totalCommentCount === 1 ? 'comment' : 'comments'}
+                See all {totalCommentCount}{' '}
+                {totalCommentCount === 1 ? 'comment' : 'comments'}
               </button>
             )}
           </>
         )}
 
-
         {/* Expanded Comments */}
         {isExpanded && (
           <>
-            {comments.map((comment) => (
+            {comments.map(comment => (
               <CommentItem
                 key={comment.id}
                 comment={comment}
@@ -169,7 +178,9 @@ export const TopComments: React.FC<TopCommentsProps> = ({
 
         {/* Comment Input - Only show when expanded or autoFocus */}
         {(isExpanded || autoFocus) && (
-          <div className={`${isExpanded ? 'pt-2 border-t border-gray-100' : ''}`}>
+          <div
+            className={`${isExpanded ? 'pt-2 border-t border-gray-100' : ''}`}
+          >
             <CommentInput
               sessionId={sessionId}
               placeholder="Add a comment..."
@@ -196,7 +207,9 @@ export const TopComments: React.FC<TopCommentsProps> = ({
             </span>
 
             <button
-              onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+              onClick={() =>
+                setCurrentPage(prev => Math.min(totalPages, prev + 1))
+              }
               disabled={currentPage === totalPages}
               className="p-2 rounded-lg hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
               aria-label="Next page"

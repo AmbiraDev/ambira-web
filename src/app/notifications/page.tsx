@@ -168,7 +168,7 @@ function SwipeableNotificationItem({
             {notification.actorProfilePicture ? (
               <img
                 src={notification.actorProfilePicture}
-                alt={notification.actorName || ''}
+                alt={notification.actorName ?? ''}
                 className="w-12 h-12 rounded-full object-cover"
               />
             ) : (
@@ -190,11 +190,13 @@ function SwipeableNotificationItem({
                 <p className="text-sm text-gray-600 mt-1">
                   {notification.message}
                 </p>
-                <p className="text-xs text-gray-500 mt-2">
-                  {formatDistanceToNow(notification.createdAt, {
-                    addSuffix: true,
-                  })}
-                </p>
+                {notification.createdAt && (
+                  <p className="text-xs text-gray-500 mt-2">
+                    {formatDistanceToNow(notification.createdAt, {
+                      addSuffix: true,
+                    })}
+                  </p>
+                )}
               </div>
             </div>
           </div>

@@ -208,11 +208,11 @@ export default function ProfilePageContent({
   // Compute loading and error states
   const isLoading = isLoadingProfile || isLoadingStats || isLoadingSessions;
   const error = profileError
-    ? profileError.message?.includes('not found')
+    ? (profileError.message as string | undefined)?.includes('not found')
       ? 'User not found'
-      : profileError.message?.includes('private')
+      : (profileError.message as string | undefined)?.includes('private')
         ? 'This profile is private'
-        : profileError.message?.includes('followers')
+        : (profileError.message as string | undefined)?.includes('followers')
           ? 'This profile is only visible to followers'
           : 'Failed to load profile'
     : null;
@@ -291,8 +291,9 @@ export default function ProfilePageContent({
               60
             : 0;
 
+        const dayName = dayNames[day.getDay()] || 'Day';
         data.push({
-          name: `${(dayNames[day.getDay()] || 'Day').slice(0, 3)} ${day.getDate()}`,
+          name: `${dayName.slice(0, 3)} ${day.getDate()}`,
           hours: Number(hoursWorked.toFixed(2)),
           sessions: daySessions.length,
           avgDuration: Math.round(avgDuration),
@@ -319,8 +320,9 @@ export default function ProfilePageContent({
               60
             : 0;
 
+        const dayName = dayNames[day.getDay()] || 'Day';
         data.push({
-          name: `${(dayNames[day.getDay()] || 'Day').slice(0, 3)} ${day.getDate()}`,
+          name: `${dayName.slice(0, 3)} ${day.getDate()}`,
           hours: Number(hoursWorked.toFixed(2)),
           sessions: daySessions.length,
           avgDuration: Math.round(avgDuration),

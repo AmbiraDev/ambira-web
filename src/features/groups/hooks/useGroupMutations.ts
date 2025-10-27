@@ -67,7 +67,12 @@ export function useJoinGroup(
 
     onError: (error, variables, context: unknown) => {
       // Rollback on error
-      if (context && typeof context === 'object' && 'previousGroup' in context && context.previousGroup) {
+      if (
+        context &&
+        typeof context === 'object' &&
+        'previousGroup' in context &&
+        context.previousGroup
+      ) {
         queryClient.setQueryData(
           GROUPS_KEYS.detail(variables.groupId),
           context.previousGroup
@@ -154,7 +159,12 @@ export function useLeaveGroup(
 
     onError: (error, variables, context: unknown) => {
       // Rollback on error
-      if (context && typeof context === 'object' && 'previousGroup' in context && context.previousGroup) {
+      if (
+        context &&
+        typeof context === 'object' &&
+        'previousGroup' in context &&
+        context.previousGroup
+      ) {
         queryClient.setQueryData(
           GROUPS_KEYS.detail(variables.groupId),
           context.previousGroup

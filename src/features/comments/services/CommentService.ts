@@ -44,7 +44,10 @@ export class CommentService {
   /**
    * Update a comment
    */
-  async updateComment(commentId: string, data: UpdateCommentData): Promise<void> {
+  async updateComment(
+    commentId: string,
+    data: UpdateCommentData
+  ): Promise<void> {
     await firebaseApi.comment.updateComment(commentId, data);
   }
 
