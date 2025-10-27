@@ -34,6 +34,10 @@ test.describe('Feed Page - Smoke Tests', () => {
     const mainContent = page.locator(
       'main, [role="main"], section, article, [role="region"]'
     );
+
+    // Wait for at least one element to appear (10s timeout for mobile)
+    await expect(mainContent.first()).toBeAttached({ timeout: 10000 });
+
     const mainCount = await mainContent.count();
     expect(mainCount).toBeGreaterThanOrEqual(1);
 

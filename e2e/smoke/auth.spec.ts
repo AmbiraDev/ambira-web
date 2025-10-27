@@ -225,7 +225,13 @@ test.describe('Authentication Pages - Smoke Tests', () => {
 
       for (const route of protectedRoutes) {
         // Navigate and wait for initial load
-        await page.goto(route, { waitUntil: 'domcontentloaded' });
+        // Use try-catch because ProtectedRoute may redirect before domcontentloaded
+        try {
+          await page.goto(route, { waitUntil: 'domcontentloaded' });
+        } catch (error) {
+          // Redirect happened before domcontentloaded - this is expected
+          // Continue with the test to verify we landed on the correct page
+        }
 
         // Wait a moment for the component to load and evaluate authentication state
         await page.waitForTimeout(500);
