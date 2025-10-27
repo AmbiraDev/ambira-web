@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { Activity, ActivityStats } from '@/types';
 import { useActivityStats } from '@/hooks/useActivitiesQuery';
-import { useToast } from '@/contexts/ToastContext';
+// ActivityCard doesn't actually use toast
 import { IconRenderer } from '@/components/IconRenderer';
 
 interface ActivityCardProps {
@@ -27,7 +27,6 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
   onArchive,
 }) => {
   const [showMenu, setShowMenu] = useState(false);
-  const toast = useToast();
   const menuRef = useRef<HTMLDivElement>(null);
 
   // Use React Query to fetch stats with 1hr cache

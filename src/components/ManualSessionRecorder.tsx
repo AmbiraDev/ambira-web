@@ -6,7 +6,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { SessionFormData, Project, CreateSessionData } from '@/types';
 import { firebaseApi } from '@/lib/api';
 import { useAuth } from '@/hooks/useAuth';
-import { useToast } from '@/contexts/ToastContext';
+import { toast } from 'sonner';
 import { ArrowLeft, Check, Image as ImageIcon, X } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -69,7 +69,6 @@ const DeleteConfirm: React.FC<DeleteConfirmProps> = ({ isOpen, onClose, onDelete
 export default function ManualSessionRecorder() {
   const router = useRouter();
   const { user } = useAuth();
-  const { success, error: showError } = useToast();
   const queryClient = useQueryClient();
 
   const [projects, setProjects] = useState<Project[]>([]);
@@ -301,13 +300,13 @@ export default function ManualSessionRecorder() {
       }
 
       // Show success message
-      success('Session created successfully!');
+      toast.success('Session created successfully!');
 
       // Redirect to home feed
       router.push('/');
     } catch (error) {
       debug.error('ManualSessionRecorder - Failed to create manual session:', error);
-      showError('Failed to create session. Please try again.');
+      toast.error('Failed to create session. Please try again.');
       setErrors({ submit: 'Failed to create session. Please try again.' });
     } finally {
       setIsLoading(false);

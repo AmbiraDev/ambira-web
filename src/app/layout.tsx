@@ -3,7 +3,7 @@ import { Inter } from 'next/font/google';
 import './globals.css';
 import { AuthInitializer } from '@/components/AuthInitializer';
 import { QueryProvider } from '@/providers/QueryProvider';
-import { ToastProvider } from '@/contexts/ToastContext';
+import { Toaster } from 'sonner';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import PWAInstaller from '@/components/PWAInstaller';
 import { Analytics } from '@vercel/analytics/react';
@@ -88,9 +88,8 @@ export default function RootLayout({
           <PWAInstaller />
           <QueryProvider>
             <AuthInitializer>
-              <ToastProvider>
-                {children}
-              </ToastProvider>
+              {children}
+              <Toaster position="bottom-right" expand={false} richColors closeButton />
             </AuthInitializer>
           </QueryProvider>
           <Analytics />

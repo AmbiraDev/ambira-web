@@ -12,7 +12,7 @@ import {
   useArchiveActivity,
   useRestoreActivity,
 } from '@/hooks/useActivitiesQuery';
-import { useToast } from '@/contexts/ToastContext';
+import { toast } from 'sonner';
 import { cn, isEmpty } from '@/lib/utils';
 
 interface ActivityListProps {
@@ -30,7 +30,6 @@ export const ActivityList: React.FC<ActivityListProps> = ({
   const deleteActivityMutation = useDeleteActivity();
   const archiveActivityMutation = useArchiveActivity();
   const restoreActivityMutation = useRestoreActivity();
-  const toast = useToast();
   const [deleteConfirm, setDeleteConfirm] = useState<Activity | null>(null);
 
   // View mode is always 'grid' - list view has been removed for consistency

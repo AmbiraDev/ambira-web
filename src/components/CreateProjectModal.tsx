@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { CreateProjectData } from '@/types';
 import { useCreateActivity } from '@/hooks/useActivitiesQuery';
-import { useToast } from '@/contexts/ToastContext';
+import { toast } from 'sonner';
 
 interface CreateProjectModalProps {
   isOpen: boolean;
@@ -17,7 +17,6 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
   onSuccess,
 }) => {
   const createProject = useCreateActivity();
-  const { success, error: showError } = useToast();
   const [formData, setFormData] = useState<CreateProjectData>({
     name: '',
     description: '',
@@ -96,7 +95,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
     }
 
     if (!createProject) {
-      showError('Create project function is not available');
+      toast.error('Create project function is not available');
       return;
     }
 
@@ -111,7 +110,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
       });
 
       // Show success message
-      success(`Project "${project.name}" created!`);
+      toast.success(`Project "${project.name}" created!`);
 
       // Reset form
       setFormData({
@@ -128,7 +127,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
       onClose();
     } catch (error) {
       console.error('Failed to create project:', error);
-      showError('Failed to create project. Please try again.');
+      toast.error('Failed to create project. Please try again.');
       setErrors({ name: 'Failed to create project. Please try again.' });
     } finally {
       setIsSubmitting(false);
