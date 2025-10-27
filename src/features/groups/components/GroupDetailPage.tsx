@@ -9,7 +9,7 @@
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { useGroupDetails } from '../hooks/useGroupDetails';
 import { Users, Settings, ArrowLeft } from 'lucide-react';
 
@@ -74,6 +74,73 @@ export function GroupDetailPage({ groupId }: GroupDetailPageProps) {
 
   const isJoined = group.isMember(user.id);
   const isAdmin = group.isAdmin(user.id);
+
+  // Dynamic metadata using useEffect for client component
+  React.useEffect(() => {
+    if (group) {
+      document.title = `${group.name} - Ambira`;
+
+      const description = group.description || `Join ${group.name} group and connect with others`;
+
+      let metaDescription = document.querySelector('meta[name="description"]');
+      if (!metaDescription) {
+        metaDescription = document.createElement('meta');
+        metaDescription.setAttribute('name', 'description');
+        document.head.appendChild(metaDescription);
+      }
+      metaDescription.setAttribute('content', description);
+
+      // Open Graph tags
+      let ogTitle = document.querySelector('meta[property="og:title"]');
+      if (!ogTitle) {
+        ogTitle = document.createElement('meta');
+        ogTitle.setAttribute('property', 'og:title');
+        document.head.appendChild(ogTitle);
+      }
+      ogTitle.setAttribute('content', `${group.name} - Ambira`);
+
+      let ogDescription = document.querySelector('meta[property="og:description"]');
+      if (!ogDescription) {
+        ogDescription = document.createElement('meta');
+        ogDescription.setAttribute('property', 'og:description');
+        document.head.appendChild(ogDescription);
+      }
+      ogDescription.setAttribute('content', description);
+
+      let ogType = document.querySelector('meta[property="og:type"]');
+      if (!ogType) {
+        ogType = document.createElement('meta');
+        ogType.setAttribute('property', 'og:type');
+        document.head.appendChild(ogType);
+      }
+      ogType.setAttribute('content', 'website');
+
+      // Twitter card tags
+      let twitterCard = document.querySelector('meta[name="twitter:card"]');
+      if (!twitterCard) {
+        twitterCard = document.createElement('meta');
+        twitterCard.setAttribute('name', 'twitter:card');
+        document.head.appendChild(twitterCard);
+      }
+      twitterCard.setAttribute('content', 'summary');
+
+      let twitterTitle = document.querySelector('meta[name="twitter:title"]');
+      if (!twitterTitle) {
+        twitterTitle = document.createElement('meta');
+        twitterTitle.setAttribute('name', 'twitter:title');
+        document.head.appendChild(twitterTitle);
+      }
+      twitterTitle.setAttribute('content', `${group.name} - Ambira`);
+
+      let twitterDescription = document.querySelector('meta[name="twitter:description"]');
+      if (!twitterDescription) {
+        twitterDescription = document.createElement('meta');
+        twitterDescription.setAttribute('name', 'twitter:description');
+        document.head.appendChild(twitterDescription);
+      }
+      twitterDescription.setAttribute('content', description);
+    }
+  }, [group]);
 
   // Get category icon
   const getCategoryIcon = () => {

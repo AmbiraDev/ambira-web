@@ -1,343 +1,531 @@
 # Scripts
 
-## Vercel Deployment
+This directory contains utility scripts organized by purpose. Scripts are organized into two main categories:
 
-### Initial Setup (One-time)
-
-#### 1. Link Project to Vercel
-
-```bash
-vercel link
-```
-
-**Prompts you'll see:**
-- **Set up and deploy?** → Press Enter (Yes)
-- **Which scope?** → Select `hughgramel` (your account) → Press Enter
-- **Link to existing project?** → Choose `N` for new project → Press Enter
-- **Project name?** → Type `ambira-web` (or your preferred name) → Press Enter
-- **In which directory is your code located?** → Press Enter (uses `./`)
-
-**What this does:**
-- Creates `.vercel/project.json` with your project ID and org ID
-- Links your local repo to a Vercel project
-- Sets up deployment configuration
+- **dev/** - Development and scaffolding tools
+- **ops/** - Operations and data management scripts (often destructive)
 
 ---
 
-#### 2. Push Environment Variables
+## Directory Structure
 
-```bash
-./scripts/push-env-to-vercel.sh
 ```
-
-**What this does:**
-- Reads all `NEXT_PUBLIC_*` variables from `.env.local`
-- Pushes them to Vercel production environment
-- Required for Firebase configuration in production
-
-**Manual alternative** (if you prefer):
-```bash
-vercel env add NEXT_PUBLIC_FIREBASE_API_KEY production
-vercel env add NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN production
-# ... repeat for each variable
+scripts/
+├── README.md (this file)
+├── dev/
+│   ├── create-feature.js          # Scaffold new feature folders
+│   ├── finish-activity-refactor.sh # Automation helper for refactoring
+│   ├── cls-profiler.js            # Performance profiling tool
+│   └── cls-profile-report.json    # Output from cls-profiler
+└── ops/
+    ├── deleteUser.ts              # Delete user and all associated data
+    ├── migrate-profile-visibility.js # Update user profile visibility settings
+    └── push-env-to-vercel.sh       # Push environment variables to Vercel
 ```
 
 ---
 
-#### 3. Configure GitHub Integration
+## Development Scripts (scripts/dev/)
 
-In Vercel Dashboard (run `vercel open` to open):
-1. Go to **Project Settings** → **Git**
-2. Enable **"Require CI checks to pass before deploying"**
-3. Set **Production Branch** to `main`
-4. Enable **"Auto-deploy on push"** (should be default)
+Development scripts are safe to run and used for scaffolding and automation tasks.
 
-**What this does:**
-- Vercel waits for GitHub Actions CI to pass before deploying
-- Ensures type-check, lint, and build succeed before production deployment
-- Automatically deploys when you push to `main` branch
+### create-feature.js
+
+Scaffolds a new feature with the standardized React Query pattern.
+
+**Usage:**
+```bash
+npm run create-feature <feature-name>
+npm run create-feature sessions
+```
+
+**Creates:**
+```
+src/features/<feature>/
+  ├── services/<Feature>Service.ts
+  ├── hooks/use<Feature>.ts
+  ├── hooks/use<Feature>Mutations.ts
+  ├── hooks/index.ts
+  └── types/<feature>.types.ts (optional)
+```
+
+**Requirements:**
+- No special permissions needed
+- Node.js 16+ required
 
 ---
 
-### Deployment Options
+### finish-activity-refactor.sh
 
-#### Option 1: Deploy via Git Push (Recommended)
+Automation script to complete the projects -> activities refactor.
 
+**Usage:**
 ```bash
-git add .
-git commit -m "Your commit message"
-git push origin main
+bash scripts/dev/finish-activity-refactor.sh
 ```
 
-**What happens:**
-1. GitHub Actions CI runs (type-check, lint, build)
-2. If CI passes → Vercel automatically deploys to production
-3. If CI fails → Vercel won't deploy (prevents broken code in production)
+**What it does:**
+1. Updates text labels from "Project" to "Activity"
+2. Updates variable names in SessionTimerEnhanced.tsx
+3. Creates /activities route from /projects
+4. Provides next steps for manual completion
+
+**Requirements:**
+- Bash shell
+- sed command
+- No special permissions needed
 
 ---
 
-#### Option 2: Manual Deploy via CLI
+### cls-profiler.js
 
+Performance profiling tool for analyzing Cumulative Layout Shift (CLS) metrics.
+
+**Usage:**
 ```bash
-# Deploy to production
-vercel --prod
-
-# Deploy preview (test before production)
-vercel
+npm run profile:cls
 ```
 
-**When to use:**
-- Quick hotfixes
-- Testing deployments before pushing to Git
-- Deploying from a feature branch
+**Output:**
+- Performance metrics
+- JSON report saved to `scripts/dev/cls-profile-report.json`
+
+**Requirements:**
+- No special permissions needed
+- Generates performance data for optimization analysis
 
 ---
 
-### Monitoring Deployments
+## Operations Scripts (scripts/ops/)
 
-```bash
-# Check deployment status
-vercel ls
+**IMPORTANT**: Operations scripts interact with Firebase and Vercel. They may be destructive, so always test with `--dry-run` first.
 
-# View deployment logs
-vercel logs
-
-# Open project in browser
-vercel open
-```
+All ops scripts support a `--dry-run` flag to preview changes without modifying data.
 
 ---
 
-### Environment Variables Management
+### deleteUser.ts
 
+Safely deletes a user and all their associated data from Firebase.
+
+**Firebase IAM Roles Required:**
+- `roles/firebase.admin` (primary option)
+- OR `roles/firebasedatabase.admin` + `roles/datastore.owner`
+
+**Service Account Permissions Required:**
+- `firebase.auth.users.delete`
+- `datastore.databases.update`
+- `datastore.databases.get`
+- `datastore.entities.delete`
+- `datastore.entities.get`
+- `datastore.entities.update`
+
+**Verify Service Account Access:**
 ```bash
-# View production environment variables
-vercel env ls production
-
-# Add a new variable
-vercel env add VARIABLE_NAME production
-
-# Remove a variable
-vercel env rm VARIABLE_NAME production
-
-# Pull variables to local
-vercel env pull .env.production
+gcloud projects get-iam-policy PROJECT_ID \
+  --flatten="bindings[].members" \
+  --format="table(bindings.role)" \
+  --filter="bindings.members:serviceAccount:YOUR_SA@PROJECT_ID.iam.gserviceaccount.com"
 ```
 
----
-
-### Firestore Rules Deployment
-
-**Important:** Vercel deploys your Next.js app, but Firestore rules need separate deployment:
-
+**Usage:**
 ```bash
-# Deploy rules
-npx firebase-tools deploy --only firestore:rules --non-interactive
+# Preview what would be deleted (recommended first step)
+npx ts-node scripts/ops/deleteUser.ts <userId> --dry-run
+
+# Actually delete the user
+npx ts-node scripts/ops/deleteUser.ts <userId>
 ```
 
-**Note:** Always deploy Firestore rules separately when you modify `firestore.rules`. They are NOT deployed by Vercel.
-
----
-
-### Complete Deployment Flow
-
+**Example:**
 ```bash
-# 1. Test locally
-npm run type-check && npm run lint && npm run build
-
-# 2. Commit and push
-git add .
-git commit -m "feat: your feature"
-git push origin main
-
-# 3. Deploy Firestore rules (if modified)
-npx firebase-tools deploy --only firestore:rules --non-interactive
-
-# 4. Monitor
-vercel logs --follow
+npx ts-node scripts/ops/deleteUser.ts abc123xyz --dry-run
+npx ts-node scripts/ops/deleteUser.ts abc123xyz
 ```
 
----
+**Prerequisites:**
+1. Firebase Admin SDK service account key:
+   - Go to [Firebase Console](https://console.firebase.google.com/)
+   - Select your project
+   - Project Settings → Service Accounts
+   - Click "Generate New Private Key"
+   - Save as `serviceAccountKey.json` in project root
 
-### Troubleshooting
-
-**Deployment fails with "Missing environment variables":**
-```bash
-./scripts/push-env-to-vercel.sh
-```
-
-**Can't find project after linking:**
-```bash
-cat .vercel/project.json  # Check project link
-rm -rf .vercel && vercel link  # Re-link if needed
-```
-
-**CI passes but Vercel doesn't deploy:**
-- Check Vercel Dashboard → Deployments for errors
-- Ensure GitHub integration is enabled in Vercel Dashboard
-- Check if manual approval is required (Settings → Git)
-
----
-
-## Database Scripts
-
-## User Deletion Script
-
-### Overview
-The `deleteUser.ts` script safely deletes a user and all their associated data from Firebase. It handles all collections, subcollections, and properly updates related documents.
-
-### What Gets Deleted
-
-The script will delete:
-- ✅ User profile document
-- ✅ Firebase Authentication account
-- ✅ All projects and their tasks
-- ✅ All sessions (work sessions)
-- ✅ All comments on any sessions
-- ✅ All supports (likes) on any sessions
-- ✅ All follow relationships (as follower and following)
-- ✅ Streak data
-- ✅ Challenge participations
-- ✅ Group memberships (removes user from groups)
-- ✅ All notifications
-- ✅ Active session data (timer persistence)
-
-### Prerequisites
-
-1. **Install ts-node** (if not already installed):
+2. Install ts-node (if not already installed):
    ```bash
    npm install -D ts-node
    ```
 
-2. **Get Firebase Admin SDK Service Account Key**:
-   - Go to [Firebase Console](https://console.firebase.google.com/)
-   - Select your project
-   - Go to Project Settings (gear icon) → Service Accounts
-   - Click "Generate New Private Key"
-   - Save the JSON file as `serviceAccountKey.json` in the root directory of this project
+3. Add `serviceAccountKey.json` to `.gitignore` (should already be there)
 
-3. **Security**: Add `serviceAccountKey.json` to `.gitignore` (it should already be there):
-   ```bash
-   echo "serviceAccountKey.json" >> .gitignore
-   ```
+**What Gets Deleted:**
+- User profile document
+- Firebase Authentication account
+- All projects and their tasks
+- All sessions (work sessions)
+- All comments on any sessions
+- All supports (likes) on any sessions
+- All follow relationships (as follower and following)
+- Streak data
+- Challenge participations
+- Group memberships (removes user from groups)
+- All notifications
+- Active session data (timer persistence)
 
-### Usage
+**Safety Features:**
+- Verification: Script verifies user exists before proceeding
+- Comprehensive: Handles all related data and updates counts properly
+- Atomic Operations: Uses batched writes for consistency
+- Clear Reporting: Shows exactly what was deleted with a summary
+- Dry Run: Preview mode shows all changes without making them
 
-#### Basic Usage
-```bash
-npx ts-node scripts/deleteUser.ts <userId>
+**Dry Run Output Example:**
 ```
+[DRY RUN] Starting deletion process for user: abc123xyz
 
-#### Example
-```bash
-npx ts-node scripts/deleteUser.ts abc123xyz456
-```
-
-### How to Find a User ID
-
-There are several ways to get a user's ID:
-
-1. **From Firebase Console**:
-   - Go to Firestore Database
-   - Navigate to the `users` collection
-   - Find the user by their username or email
-   - The document ID is the user ID
-
-2. **From the Application**:
-   - Log in as the user
-   - Open browser DevTools → Console
-   - Run: `firebase.auth().currentUser.uid`
-
-3. **Using Firebase Auth Console**:
-   - Go to Authentication → Users
-   - Find the user by email
-   - The UID column shows the user ID
-
-### Sample Output
-
-```
-🚀 Starting deletion process for user: abc123xyz456
-
-📋 User found: johndoe (abc123xyz456)
+[DRY RUN] User found: johndoe (abc123xyz)
    Followers: 25
    Following: 42
 
-⚠️  This will permanently delete:
-   - User profile
-   - All projects and tasks
+DRY RUN MODE - No changes will be made
+
+[DRY RUN] This will permanently delete:
    ...
 
-🔄 Deleting active session...
-   ✅ Deleted 1 active session records
+[DRY RUN] Deleting active session...
+   Would delete 1 active session records
 
-🔄 Deleting projects and tasks...
-   ✅ Deleted 5 projects and 23 tasks
+[DRY RUN] Deleting projects and tasks...
+   Would delete 5 projects and 23 tasks
 
 ...
 
-✅ DELETION COMPLETE
+✅ DRY RUN COMPLETE
 
 📊 Summary:
    User Document: ✅
    Auth Account: ✅
    Projects: 5
-   Tasks: 23
-   Sessions: 142
-   Comments: 37
-   Supports: 89
-   Follows: 67
-   Streaks: 1
-   Challenge Participations: 3
-   Group Memberships: 2
-   Notifications: 54
-   Active Session Records: 1
+   ...
+
+To execute this deletion, run without the --dry-run flag.
 ```
 
-### Safety Features
+**Important Notes:**
+- This operation is irreversible! Once deleted, data cannot be recovered.
+- Follower/Following Counts: Script automatically decrements counts on related users
+- Group Counts: Script automatically decrements member counts in groups
+- Session Visibility: Sessions created by user are deleted and removed from feeds
 
-- **Verification**: The script verifies the user exists before proceeding
-- **Comprehensive**: Handles all related data and updates counts properly
-- **Atomic Operations**: Uses batched writes where possible for consistency
-- **Clear Reporting**: Shows exactly what was deleted with a summary
+---
 
-### Important Notes
+### migrate-profile-visibility.js
 
-⚠️ **This operation is irreversible!** Once a user is deleted, their data cannot be recovered.
+Updates profile visibility settings for users who don't have them set.
 
-⚠️ **Follower/Following Counts**: The script automatically decrements follower and following counts on related users.
+**Firebase IAM Roles Required:**
+- `roles/datastore.owner` (primary option)
+- OR `roles/firebase.admin`
 
-⚠️ **Group Counts**: The script automatically decrements member counts in groups the user was part of.
+**Service Account Permissions Required:**
+- `datastore.databases.update`
+- `datastore.databases.get`
+- `datastore.entities.get`
+- `datastore.entities.update`
 
-⚠️ **Session Visibility**: Sessions created by the user are deleted, so they will no longer appear in feeds.
+**Verify Service Account Access:**
+```bash
+gcloud projects get-iam-policy PROJECT_ID \
+  --flatten="bindings[].members" \
+  --format="table(bindings.role)" \
+  --filter="bindings.members:serviceAccount:YOUR_SA@PROJECT_ID.iam.gserviceaccount.com"
+```
 
-### Troubleshooting
+**Usage:**
+```bash
+# Preview what would be updated (recommended first step)
+node scripts/ops/migrate-profile-visibility.js --dry-run
 
-**Error: "Cannot find module 'serviceAccountKey.json'"**
-- Make sure you've downloaded and saved the service account key file in the project root
+# Execute the migration
+node scripts/ops/migrate-profile-visibility.js
 
-**Error: "User with ID X does not exist"**
+# Show help
+node scripts/ops/migrate-profile-visibility.js --help
+```
+
+**Prerequisites:**
+1. Firebase Admin SDK service account key:
+   - Go to [Firebase Console](https://console.firebase.google.com/)
+   - Select your project
+   - Project Settings → Service Accounts
+   - Click "Generate New Private Key"
+   - Save as `serviceAccountKey.json` in project root
+
+2. Add `serviceAccountKey.json` to `.gitignore` (should already be there)
+
+**What Gets Updated:**
+For each user without `profileVisibility` set:
+- Sets `profileVisibility: 'everyone'`
+- Sets `activityVisibility` to existing value or 'everyone'
+- Sets `projectVisibility` to existing value or 'everyone'
+- Updates `updatedAt` timestamp
+
+**Dry Run Output Example:**
+```
+[DRY RUN] Starting profile visibility migration...
+
+DRY RUN MODE - No changes will be made
+
+Users that would be updated: 42
+
+First 10 users to be updated (showing sample):
+  - alice_smith (user123)
+    Current: profileVisibility=not set, activityVisibility=not set, projectVisibility=not set
+    Proposed: profileVisibility=everyone, activityVisibility=everyone, projectVisibility=everyone
+  - bob_jones (user456)
+    Current: profileVisibility=not set, activityVisibility=followers, projectVisibility=not set
+    Proposed: profileVisibility=everyone, activityVisibility=followers, projectVisibility=everyone
+  ...and 8 more
+
+✅ DRY RUN complete!
+Total users: 100
+Would update: 42
+Already set: 58
+
+To execute this migration, run without the --dry-run flag.
+```
+
+---
+
+### push-env-to-vercel.sh
+
+Pushes environment variables from `.env.local` to Vercel production environment.
+
+**Vercel Permissions Required:**
+- Vercel CLI must be authenticated: `vercel login`
+- You must be a member of the Vercel project
+- Project must be linked via `.vercel/project.json` (created with: `vercel link`)
+
+**Verify Vercel Access:**
+```bash
+vercel env ls production
+```
+
+**Usage:**
+```bash
+./scripts/ops/push-env-to-vercel.sh
+```
+
+**Prerequisites:**
+1. Vercel CLI installed globally:
+   ```bash
+   npm install -g vercel
+   ```
+
+2. Authenticate with Vercel:
+   ```bash
+   vercel login
+   ```
+
+3. Link project to Vercel:
+   ```bash
+   vercel link
+   ```
+
+4. Create `.env.local` with your environment variables:
+   ```bash
+   NEXT_PUBLIC_FIREBASE_API_KEY=your_key
+   NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_domain.firebaseapp.com
+   # ... other variables
+   ```
+
+**What Gets Pushed:**
+- All `NEXT_PUBLIC_*` variables from `.env.local`
+- Variables are pushed to production environment
+- Existing variables are overwritten
+
+**Output Example:**
+```
+🚀 Pushing environment variables to Vercel...
+
+📤 Pushing: NEXT_PUBLIC_FIREBASE_API_KEY
+📤 Pushing: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+📤 Pushing: NEXT_PUBLIC_FIREBASE_PROJECT_ID
+📤 Pushing: NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
+📤 Pushing: NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
+📤 Pushing: NEXT_PUBLIC_FIREBASE_APP_ID
+
+✅ All environment variables pushed to Vercel production!
+
+Next steps:
+1. Run 'vercel --prod' to deploy to production
+2. Or push to GitHub 'main' branch for automatic deployment
+```
+
+---
+
+## Firebase Configuration and Permissions
+
+### Setting Up Firebase Service Account
+
+For ops scripts that interact with Firebase, you need a service account key:
+
+1. Go to [Firebase Console](https://console.firebase.google.com/)
+2. Select your project
+3. Go to **Project Settings** (gear icon) → **Service Accounts**
+4. Click **Generate New Private Key**
+5. Save the JSON file as `serviceAccountKey.json` in the project root
+6. Add to `.gitignore` (should already be included):
+   ```bash
+   echo "serviceAccountKey.json" >> .gitignore
+   ```
+
+### IAM Roles Explained
+
+**roles/firebase.admin**
+- Full access to all Firebase services
+- Use when you need complete Firebase control
+- Recommended for development/testing environments
+
+**roles/datastore.owner**
+- Full access to Firestore
+- Includes read, write, and delete permissions
+- Use when you only need Firestore access
+
+**roles/firebasedatabase.admin**
+- Full access to Realtime Database
+- Add to your service account if using Realtime Database
+
+---
+
+## Safety Guidelines for Operations Scripts
+
+1. **Always Test with --dry-run First**
+   ```bash
+   npx ts-node scripts/ops/deleteUser.ts <userId> --dry-run
+   node scripts/ops/migrate-profile-visibility.js --dry-run
+   ```
+
+2. **Verify Your Target**
+   - Double-check usernames and IDs before executing
+   - For migrations, review the sample output
+
+3. **Have a Backup**
+   - Create a backup of your Firestore data before major operations
+   - Use Firebase Console → Firestore → Exports to create backup
+
+4. **Check Timestamps**
+   - Verify you're using the correct Firebase project
+   - Check that your service account is configured for the right project
+
+5. **Log Changes**
+   - Review the summary output
+   - Keep logs of any major operations for auditing
+
+---
+
+## Environment Variables Reference
+
+### Firebase Configuration
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `NEXT_PUBLIC_FIREBASE_API_KEY` | Yes | Firebase API key |
+| `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN` | Yes | Firebase auth domain |
+| `NEXT_PUBLIC_FIREBASE_PROJECT_ID` | Yes | Firebase project ID |
+| `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET` | Yes | Firebase storage bucket |
+| `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID` | Yes | Firebase messaging sender ID |
+| `NEXT_PUBLIC_FIREBASE_APP_ID` | Yes | Firebase app ID |
+| `NEXT_PUBLIC_MEASUREMENT_ID` | No | Google Analytics measurement ID |
+
+### Service Account Setup
+- `serviceAccountKey.json` (file in project root, NOT in git)
+- Obtain from Firebase Console → Project Settings → Service Accounts
+- Add to `.gitignore`
+
+---
+
+## Troubleshooting
+
+### "serviceAccountKey.json not found"
+- Download from Firebase Console → Project Settings → Service Accounts
+- Save in project root directory
+- Verify file path matches script requirements
+
+### "Insufficient permissions" Error
+- Check IAM roles assigned to service account
+- Run verification command to list roles
+- May need to request additional permissions from project admin
+
+### "User with ID X does not exist"
 - Double-check the user ID
 - Verify you're using the correct Firebase project
+- Check Firebase Console → Authentication to find correct UID
 
-**Error: "Insufficient permissions"**
-- Ensure the service account has appropriate permissions
-- The service account should have "Firebase Admin SDK Administrator Service Agent" role
+### "Cannot connect to Vercel"
+- Run `vercel login` to authenticate
+- Run `vercel link` to link project
+- Check `.vercel/project.json` exists with correct project ID
 
-**TypeScript errors**
-- Make sure all dependencies are installed: `npm install`
-- If you still get errors, try: `npm install -D @types/node`
+### Script hangs or times out
+- Large migrations may take time
+- Check your internet connection
+- Ensure service account has sufficient permissions
+- Try running on a smaller dataset first (use --dry-run to see scale)
 
-### Testing the Script
+---
 
-Before running on a production database, consider:
+## Command Reference
 
-1. **Test on a development database** with a test user
-2. **Create a backup** of your Firestore data
-3. **Verify the user ID** is correct before running
+### Development Scripts
+```bash
+npm run create-feature <name>    # Scaffold new feature
+bash scripts/dev/finish-activity-refactor.sh  # Complete refactor
+npm run profile:cls              # Run performance profiler
+```
 
-### Additional Considerations
+### Operations Scripts
+```bash
+# User Deletion
+npx ts-node scripts/ops/deleteUser.ts <userId> --dry-run
+npx ts-node scripts/ops/deleteUser.ts <userId>
 
-If you need to:
-- **Export user data before deletion**: Create a separate script to export data first
-- **Soft delete instead of hard delete**: Modify the script to set a `deleted: true` flag instead
-- **Transfer ownership**: Reassign projects/sessions to another user before deletion
+# Profile Visibility Migration
+node scripts/ops/migrate-profile-visibility.js --dry-run
+node scripts/ops/migrate-profile-visibility.js
+
+# Vercel Environment Variables
+./scripts/ops/push-env-to-vercel.sh
+```
+
+---
+
+## Best Practices
+
+1. **Always Preview First**: Use `--dry-run` before executing destructive operations
+2. **Test in Development**: Run against development Firebase project first
+3. **Document Changes**: Keep records of what was changed and why
+4. **Version Control**: Commit relevant changes before running ops scripts
+5. **Team Communication**: Notify team before major data operations
+6. **Monitor Afterwards**: Check logs and verify results after execution
+
+---
+
+## Related Documentation
+
+- [Firebase Console](https://console.firebase.google.com/)
+- [Vercel Dashboard](https://vercel.com/dashboard)
+- [Firebase CLI Documentation](https://firebase.google.com/docs/cli)
+- [Vercel CLI Documentation](https://vercel.com/docs/cli)
+
+---
+
+## Contributing
+
+When adding new scripts:
+
+1. Place in appropriate directory (dev/ or ops/)
+2. Add comprehensive header comments with usage
+3. Document Firebase/Vercel permissions if applicable
+4. Support `--dry-run` for destructive operations
+5. Add help text with examples
+6. Update this README with full documentation

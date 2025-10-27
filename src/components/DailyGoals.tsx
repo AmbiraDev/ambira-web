@@ -1,7 +1,7 @@
 'use client';
 
-import { useAuth } from '@/contexts/AuthContext';
-import { useActivities } from '@/contexts/ActivitiesContext';
+import { useAuth } from '@/hooks/useAuth';
+import { useActivities } from '@/hooks/useActivitiesQuery';
 import { useState, useEffect } from 'react';
 import { IconRenderer } from './IconRenderer';
 import { Activity } from '@/types';
@@ -15,7 +15,7 @@ interface DailyGoalProgress {
 
 function DailyGoals() {
   const { user } = useAuth();
-  const { activities } = useActivities();
+  const { data: activities = [], isLoading: activitiesLoading } = useActivities();
   const [goals, setGoals] = useState<DailyGoalProgress[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 

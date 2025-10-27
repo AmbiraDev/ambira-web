@@ -3,8 +3,8 @@
 import React, { useState } from 'react';
 import { ArrowLeft, Trash2, UserPlus, Heart, MessageCircle, Reply, AtSign, Users, Trophy, Bell } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/contexts/AuthContext';
-import { useNotifications } from '@/contexts/NotificationsContext';
+import { useAuth } from '@/hooks/useAuth';
+import { useNotifications, useUnreadCount, useMarkNotificationRead, useMarkAllNotificationsRead, useDeleteNotification } from '@/hooks/useNotifications';
 import MobileHeader from '@/components/MobileHeader';
 import Header from '@/components/HeaderComponent';
 import BottomNavigation from '@/components/BottomNavigation';
@@ -176,12 +176,16 @@ function SwipeableNotificationItem({
 export default function NotificationsPage() {
   const router = useRouter();
   const { user } = useAuth();
-  const { notifications, unreadCount, markAsRead, markAllAsRead, deleteNotification } = useNotifications();
+  const { data: notifications = [], isLoading } = useNotifications({ realtime: true });
+  const unreadCount = useUnreadCount();
+  const markAsReadMutation = useMarkNotificationRead();
+  const markAllAsReadMutation = useMarkAllNotificationsRead();
+  const deleteNotificationMutation = useDeleteNotification();
 
   const handleNotificationClick = (notification: Notification) => {
     // Mark as read
     if (!notification.isRead) {
-      markAsRead(notification.id);
+      markAsReadMutation.mutate(notification.id);
     }
 
     // Navigate to link if available
@@ -191,15 +195,15 @@ export default function NotificationsPage() {
   };
 
   const handleDelete = (id: string) => {
-    deleteNotification(id);
+    deleteNotificationMutation.mutate(id);
   };
 
   const handleMarkRead = (id: string) => {
-    markAsRead(id);
+    markAsReadMutation.mutate(id);
   };
 
   const handleMarkAllRead = () => {
-    markAllAsRead();
+    markAllAsReadMutation.mutate();
   };
 
   if (!user) {

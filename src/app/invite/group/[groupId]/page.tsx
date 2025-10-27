@@ -1,5 +1,5 @@
 import { Metadata } from 'next';
-import { firebaseApi } from '@/lib/firebaseApi';
+import { firebaseApi } from '@/lib/api';
 import GroupInviteLanding from '@/components/GroupInviteLanding';
 
 type Props = {

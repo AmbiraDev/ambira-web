@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { SignupCredentials } from '@/types';
-import { firebaseAuthApi } from '@/lib/firebaseApi';
+import { firebaseAuthApi } from '@/lib/api';
 
 export const SignupForm: React.FC = () => {
   const [formData, setFormData] = useState<SignupCredentials>({

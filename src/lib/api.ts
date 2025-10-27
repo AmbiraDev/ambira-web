@@ -406,4 +406,109 @@ export const userApi = {
   },
 };
 
+// ============================================================================
+// FIREBASE API RE-EXPORTS
+// ============================================================================
+// Re-export Firebase API modules for backward compatibility.
+// The @/lib/api path alias resolves to this file, so we re-export the
+// Firebase modules here so components can import from '@/lib/api'.
+//
+// Import the modules from /api/index.ts (Firebase API)
+export {
+  // Auth Module
+  firebaseAuthApi,
+  // User Module
+  firebaseUserApi,
+  // Projects Module
+  firebaseProjectApi,
+  // Sessions Module
+  firebaseSessionApi,
+  populateSessionsWithDetails,
+  // Posts Module (Legacy - sessions ARE posts)
+  firebasePostApi,
+  // Social Modules
+  updateSocialGraph,
+  fetchUserDataForSocialContext,
+  buildCommentUserDetails,
+  firebaseCommentApi,
+  // Challenges Module
+  firebaseChallengeApi,
+  // Streaks Module
+  firebaseStreakApi,
+  // Achievements Module
+  firebaseAchievementApi,
+  ACHIEVEMENT_DEFINITIONS,
+  // Notifications Module
+  firebaseNotificationApi,
+  challengeNotifications,
+  // Shared Utilities
+  convertTimestamp,
+  convertToTimestamp,
+  removeUndefinedFields,
+  getErrorMessage,
+  PRIVATE_USER_FALLBACK_NAME,
+  PRIVATE_USER_USERNAME_PREFIX,
+  // Combined API object
+  firebaseApi,
+  // Activity API
+  firebaseActivityApi,
+  // Types
+  type AuthResponse,
+  type LoginCredentials,
+  type SignupCredentials,
+  type AuthUser,
+  type User,
+  type UserProfile,
+  type UserStats,
+  type ActivityData,
+  type WeeklyActivity,
+  type ProjectBreakdown,
+  type PrivacySettings,
+  type UserSearchResult,
+  type SuggestedUser,
+  type Project,
+  type Activity,
+  type CreateProjectData,
+  type UpdateProjectData,
+  type ProjectStats,
+  type Session,
+  type SessionWithDetails,
+  type CreateSessionData,
+  type SessionFormData,
+  type SessionFilters,
+  type SessionSort,
+  type SessionListResponse,
+  type Post,
+  type PostWithDetails,
+  type CreatePostData,
+  type UpdatePostData,
+  type PostSupport,
+  type FeedResponse,
+  type FeedFilters,
+  type Comment,
+  type CommentWithDetails,
+  type CreateCommentData,
+  type UpdateCommentData,
+  type CommentLike,
+  type CommentsResponse,
+  type Notification,
+  type Group,
+  type CreateGroupData,
+  type UpdateGroupData,
+  type GroupFilters,
+  type GroupMembership,
+  type GroupStats,
+  type GroupLeaderboard,
+  type GroupLeaderboardEntry,
+  type Challenge,
+  type CreateChallengeData,
+  type UpdateChallengeData,
+  type ChallengeFilters,
+  type ChallengeParticipant,
+  type ChallengeProgress,
+  type ChallengeLeaderboard,
+  type ChallengeLeaderboardEntry,
+  type ChallengeStats,
+} from './api/index';
+
 export default api;

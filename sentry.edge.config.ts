@@ -4,16 +4,31 @@
 // https://docs.sentry.io/platforms/javascript/guides/nextjs/
 
 import * as Sentry from '@sentry/nextjs';
+import { getSentryConfig } from './src/lib/sentry-config';
 
-Sentry.init({
-  dsn: 'https://ed3a3b2694c1196510e5643f71acb2a0@o4510184604434432.ingest.us.sentry.io/4510184605483008',
+const config = getSentryConfig();
 
-  // Define how likely traces are sampled. Adjust this value in production, or use tracesSampler for greater control.
-  tracesSampleRate: 1,
+// Only initialize Sentry if enabled
+if (config.enabled && config.dsn) {
+  Sentry.init({
+    dsn: config.dsn,
 
-  // Enable logs to be sent to Sentry
-  enableLogs: true,
+    // Performance monitoring sample rate
+    tracesSampleRate: config.tracesSampleRate,
 
-  // Setting this option to true will print useful information to the console while you're setting up Sentry.
-  debug: false,
-});
+    // Enable logs to be sent to Sentry
+    enableLogs: true,
+
+    // Debug mode configuration
+    debug: config.debug,
+
+    // Environment name
+    environment: config.environment,
+
+    // Enable/disable based on configuration
+    enabled: config.enabled,
+
+    // Capture 100% of errors (we sample traces, not errors)
+    sampleRate: 1.0,
+  });
+}

@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { Activity, ActivityStats } from '@/types';
-import { useProjects } from '@/contexts/ProjectsContext';
+import { useActivityStats } from '@/hooks/useActivitiesQuery';
 import { useToast } from '@/contexts/ToastContext';
 import { IconRenderer } from '@/components/IconRenderer';
 
@@ -27,11 +27,13 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
   onArchive,
 }) => {
   const [showMenu, setShowMenu] = useState(false);
-  const [isLoadingStats, setIsLoadingStats] = useState(false);
-  const [activityStats, setActivityStats] = useState<ActivityStats | undefined>(stats);
-  const { getProjectStats } = useProjects();
   const toast = useToast();
   const menuRef = useRef<HTMLDivElement>(null);
+
+  // Use React Query to fetch stats with 1hr cache
+  const { data: fetchedStats, isLoading: isLoadingStats } = useActivityStats(activity.id, {
+    enabled: !stats, // Only fetch if stats not provided as prop
+  });
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -50,29 +52,7 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
     };
   }, [showMenu]);
 
-  // Load stats if not provided
-  React.useEffect(() => {
-    if (!stats && !activityStats) {
-      loadStats();
-    }
-  }, [activity.id]);
-
-  const loadStats = async () => {
-    try {
-      setIsLoadingStats(true);
-      if (getProjectStats) {
-        const fetchedStats = await getProjectStats(activity.id);
-        setActivityStats(fetchedStats);
-      }
-    } catch (error) {
-      console.error('Failed to load activity stats:', error);
-      toast.error('Failed to load activity statistics. Please refresh the page.');
-    } finally {
-      setIsLoadingStats(false);
-    }
-  };
-
-  const currentStats = stats || activityStats;
+  const currentStats = stats || fetchedStats;
 
   // Consolidated color mapping with both Tailwind classes and hex values
   // Tailwind classes are used for progress bars, hex values for icon backgrounds

@@ -44,7 +44,7 @@ export default function GroupAnalytics({ groupId, stats }: GroupAnalyticsProps) 
   const loadAnalytics = async () => {
     try {
       setIsLoading(true);
-      const { firebaseApi } = await import('@/lib/firebaseApi');
+      const { firebaseApi } = await import('@/lib/api');
       const data = await firebaseApi.group.getGroupAnalytics(groupId, timeRange);
       setAnalyticsData(data);
     } catch (error) {

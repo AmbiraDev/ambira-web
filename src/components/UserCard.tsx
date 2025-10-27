@@ -4,8 +4,8 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { UserSearchResult, SuggestedUser } from '@/types';
-import { firebaseUserApi } from '@/lib/firebaseApi';
-import { useAuth } from '@/contexts/AuthContext';
+import { firebaseUserApi } from '@/lib/api';
+import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { UserPlus, Check, Users, MapPin } from 'lucide-react';
@@ -104,6 +104,7 @@ export const UserCard: React.FC<UserCardProps> = ({
               width={48}
               height={48}
               className="rounded-full object-cover border border-border"
+              loading="lazy"
             />
           ) : (
             <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center text-gray-600 font-semibold">
@@ -271,6 +272,7 @@ export const UserCardCompact: React.FC<UserCardProps> = ({
             width={32}
             height={32}
             className="rounded-full object-cover border border-border"
+            loading="lazy"
           />
         ) : (
           <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-gray-600 text-sm font-semibold">

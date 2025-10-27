@@ -1,12 +1,13 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { firebaseChallengeApi } from '@/lib/firebaseApi';
+import { useAuth } from '@/hooks/useAuth';
 import { ChallengeFilters } from '@/types';
-import { useChallenges, useChallengesProgress } from '@/hooks/useCache';
-import { useQueryClient } from '@tanstack/react-query';
-import { CACHE_KEYS } from '@/lib/queryClient';
+import {
+  useChallenges,
+  useJoinChallenge,
+  useLeaveChallenge
+} from '@/features/challenges/hooks';
 import Header from '@/components/HeaderComponent';
 import ChallengeCard from '@/components/ChallengeCard';
 import { Button } from '@/components/ui/button';
@@ -35,7 +36,6 @@ const challengeTypeFilters = [
 
 export default function ChallengesPage() {
   const { user } = useAuth();
-  const queryClient = useQueryClient();
   const [activeFilter, setActiveFilter] = useState<'all' | 'active' | 'upcoming' | 'participating'>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -59,38 +59,20 @@ export default function ChallengesPage() {
     return filterObj;
   }, [activeFilter, typeFilter]);
 
-  // Fetch challenges with caching
-  const { data: challenges = [], isLoading: isLoadingChallenges } = useChallenges(filters);
+  // Use new challenge hooks
+  const { data: challenges = [], isLoading } = useChallenges(filters);
+  const joinChallengeMutation = useJoinChallenge();
+  const leaveChallengeMutation = useLeaveChallenge();
 
-  // Extract challenge IDs for batch progress loading
-  const challengeIds = useMemo(() => challenges.map(c => c.id), [challenges]);
-
-  // Batch fetch all challenge progress in a single query
-  const { data: userProgress = {}, isLoading: isLoadingProgress } = useChallengesProgress(
-    challengeIds,
-    user?.id,
-    { enabled: !!user && challengeIds.length > 0 }
-  );
-
-  const isLoading = isLoadingChallenges || (user && isLoadingProgress);
-
-  // Calculate participating challenges set
+  // Note: Participating challenges logic simplified
+  // The challenge data already includes participation info from the filter
   const participatingChallenges = useMemo(() => {
-    const set = new Set<string>();
-    Object.entries(userProgress).forEach(([challengeId, progress]) => {
-      if (progress) {
-        set.add(challengeId);
-      }
-    });
-    return set;
-  }, [userProgress]);
+    return new Set(challenges.filter(c => c.isParticipating).map(c => c.id));
+  }, [challenges]);
 
   const handleJoinChallenge = async (challengeId: string) => {
     try {
-      await firebaseChallengeApi.joinChallenge(challengeId);
-      // Invalidate relevant caches to refetch data
-      queryClient.invalidateQueries({ queryKey: CACHE_KEYS.CHALLENGES(filters) });
-      queryClient.invalidateQueries({ queryKey: ['challenges', 'progress', 'batch'] });
+      await joinChallengeMutation.mutateAsync(challengeId);
     } catch (error) {
       console.error('Failed to join challenge:', error);
       alert('Failed to join challenge. Please try again.');
@@ -99,10 +81,7 @@ export default function ChallengesPage() {
 
   const handleLeaveChallenge = async (challengeId: string) => {
     try {
-      await firebaseChallengeApi.leaveChallenge(challengeId);
-      // Invalidate relevant caches to refetch data
-      queryClient.invalidateQueries({ queryKey: CACHE_KEYS.CHALLENGES(filters) });
-      queryClient.invalidateQueries({ queryKey: ['challenges', 'progress', 'batch'] });
+      await leaveChallengeMutation.mutateAsync(challengeId);
     } catch (error) {
       console.error('Failed to leave challenge:', error);
       alert('Failed to leave challenge. Please try again.');
@@ -204,7 +183,7 @@ export default function ChallengesPage() {
                 key={challenge.id}
                 challenge={challenge}
                 isParticipating={participatingChallenges.has(challenge.id)}
-                userProgress={userProgress[challenge.id]?.currentValue || 0}
+                userProgress={challenge.userProgress?.currentValue || 0}
                 onJoin={() => handleJoinChallenge(challenge.id)}
                 onLeave={() => handleLeaveChallenge(challenge.id)}
                 showActions={!!user}

@@ -2,8 +2,8 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useAuth } from '@/contexts/AuthContext';
-import { useTimer } from '@/contexts/TimerContext';
+import { useAuth } from '@/hooks/useAuth';
+import { useTimer } from '@/features/timer/hooks';
 import {
   Home,
   Compass,
@@ -84,8 +84,9 @@ export default function BottomNavigation() {
               <button
                 onClick={() => setShowMoreMenu(false)}
                 className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+                aria-label="Close menu"
               >
-                <X className="w-5 h-5 text-gray-500" />
+                <X className="w-5 h-5 text-gray-500" aria-hidden="true" />
               </button>
             </div>
 
@@ -97,6 +98,7 @@ export default function BottomNavigation() {
                 className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors ${
                   isActive('/profile') ? 'bg-blue-50' : ''
                 }`}
+                aria-label="View my profile"
               >
                 {user?.profilePicture ? (
                   <div className="w-10 h-10 rounded-full overflow-hidden ring-2 ring-white">
@@ -131,6 +133,7 @@ export default function BottomNavigation() {
                 className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors ${
                   isActive('/activities') ? 'bg-blue-50' : ''
                 }`}
+                aria-label="View activities"
               >
                 <div
                   className={`w-10 h-10 rounded-full flex items-center justify-center ${
@@ -159,6 +162,7 @@ export default function BottomNavigation() {
                 className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors ${
                   isActive('/analytics') ? 'bg-blue-50' : ''
                 }`}
+                aria-label="View analytics"
               >
                 <div
                   className={`w-10 h-10 rounded-full flex items-center justify-center ${
@@ -187,6 +191,7 @@ export default function BottomNavigation() {
                 className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors ${
                   isActive('/settings') ? 'bg-blue-50' : ''
                 }`}
+                aria-label="View settings"
               >
                 <div
                   className={`w-10 h-10 rounded-full flex items-center justify-center ${
@@ -224,8 +229,10 @@ export default function BottomNavigation() {
             className={`flex flex-col items-center justify-center space-y-0.5 px-3 py-1 transition-colors ${
               isActive('/') ? 'text-[#007AFF]' : 'text-gray-500'
             }`}
+            aria-label="View feed"
+            aria-current={isActive('/') ? 'page' : undefined}
           >
-            <Home className="w-6 h-6" strokeWidth={isActive('/') ? 2.5 : 2} />
+            <Home className="w-6 h-6" strokeWidth={isActive('/') ? 2.5 : 2} aria-hidden="true" />
             <span className="text-[10px] font-medium">Feed</span>
           </Link>
 
@@ -235,10 +242,13 @@ export default function BottomNavigation() {
             className={`flex flex-col items-center justify-center space-y-0.5 px-3 py-1 transition-colors ${
               isActive('/search') ? 'text-[#007AFF]' : 'text-gray-500'
             }`}
+            aria-label="Discover people, groups, and challenges"
+            aria-current={isActive('/search') ? 'page' : undefined}
           >
             <Compass
               className="w-6 h-6"
               strokeWidth={isActive('/search') ? 2.5 : 2}
+              aria-hidden="true"
             />
             <span className="text-[10px] font-medium">Discovery</span>
           </Link>
@@ -249,12 +259,15 @@ export default function BottomNavigation() {
             className={`flex flex-col items-center justify-center space-y-0.5 px-3 py-1 transition-colors ${
               hasActiveSession || isActive('/timer') ? 'text-[#007AFF]' : 'text-gray-500'
             }`}
+            aria-label={hasActiveSession ? 'View active session' : 'Start session timer'}
+            aria-current={isActive('/timer') ? 'page' : undefined}
           >
             <div className={`relative p-0.5 rounded-full ${hasActiveSession ? 'ring-2 ring-[#007AFF]' : ''}`}>
               <PlayCircle
                 className="w-6 h-6"
                 strokeWidth={hasActiveSession || isActive('/timer') ? 2.5 : 2}
                 fill={hasActiveSession || isActive('/timer') ? 'currentColor' : 'none'}
+                aria-hidden="true"
               />
             </div>
             <span className="text-[10px] font-medium">
@@ -268,10 +281,13 @@ export default function BottomNavigation() {
             className={`flex flex-col items-center justify-center space-y-0.5 px-3 py-1 transition-colors ${
               isActive('/groups') ? 'text-[#007AFF]' : 'text-gray-500'
             }`}
+            aria-label="View groups"
+            aria-current={isActive('/groups') ? 'page' : undefined}
           >
             <Users
               className="w-6 h-6"
               strokeWidth={isActive('/groups') ? 2.5 : 2}
+              aria-hidden="true"
             />
             <span className="text-[10px] font-medium">Groups</span>
           </Link>
@@ -282,10 +298,14 @@ export default function BottomNavigation() {
             className={`flex flex-col items-center justify-center space-y-0.5 px-3 py-1 transition-colors ${
               isMoreActive || showMoreMenu ? 'text-[#007AFF]' : 'text-gray-500'
             }`}
+            aria-label="Open more options menu"
+            aria-expanded={showMoreMenu}
+            aria-haspopup="true"
           >
             <MoreHorizontal
               className="w-6 h-6"
               strokeWidth={isMoreActive || showMoreMenu ? 2.5 : 2}
+              aria-hidden="true"
             />
             <span className="text-[10px] font-medium">More</span>
           </button>

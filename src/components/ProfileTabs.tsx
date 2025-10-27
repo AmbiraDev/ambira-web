@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { firebaseSessionApi, firebaseApi, firebaseUserApi, firebasePostApi } from '@/lib/firebaseApi';
+import { firebaseSessionApi, firebaseApi, firebaseUserApi, firebasePostApi } from '@/lib/api';
 import { Session, User, Project, SessionWithDetails } from '@/types';
 import SessionCard from './SessionCard';
 import ConfirmDialog from './ConfirmDialog';
@@ -17,6 +17,8 @@ import {
   Award,
   Clock
 } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { debug } from '@/lib/debug';
 
 export type ProfileTab = 'overview' | 'achievements' | 'followers' | 'following' | 'posts';
 
@@ -88,14 +90,13 @@ export const ProfileTabs: React.FC<ProfileTabsProps> = ({
             variant={activeTab === tab.id ? "default" : "ghost"}
             onClick={() => !tab.disabled && onTabChange(tab.id)}
             disabled={tab.disabled}
-            className={`
-              flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-2 rounded-none border-b-2 transition-all flex-shrink-0
-              ${activeTab === tab.id
+            className={cn(
+              'flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-2 rounded-none border-b-2 transition-all flex-shrink-0',
+              activeTab === tab.id
                 ? 'border-primary text-primary bg-primary/5'
-                : 'border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground/50'
-              }
-              ${tab.disabled ? 'opacity-50 cursor-not-allowed' : ''}
-            `}
+                : 'border-transparent text-muted-foreground hover:text-foreground hover:border-muted-foreground/50',
+              tab.disabled && 'opacity-50 cursor-not-allowed'
+            )}
           >
             {tab.icon}
             <span className="hidden md:inline whitespace-nowrap text-sm md:text-base">{tab.label}</span>
@@ -121,7 +122,7 @@ interface TabContentProps {
 }
 
 export const TabContent: React.FC<TabContentProps> = ({ children, className = "" }) => (
-  <div className={`py-6 ${className}`}>
+  <div className={cn('py-6', className)}>
     {children}
   </div>
 );
@@ -301,9 +302,9 @@ export const FollowListContent: React.FC<FollowListContentProps> = ({ userId, ty
           setUsers(following);
         }
       } catch (err: any) {
-        console.error(`Failed to load ${type}:`, err);
+        debug.error(`ProfileTabs - Failed to load ${type}:`, err);
         setError(err.message || `Failed to load ${type}`);
-      } finally {
+      } finally{
         setIsLoading(false);
       }
     };
@@ -416,7 +417,7 @@ export const PostsContent: React.FC<PostsContentProps> = ({ userId, isOwnProfile
         }));
         setSessions(sessionsWithActivity);
       } catch (err: any) {
-        console.error('Failed to load sessions:', err);
+        debug.error('ProfileTabs - Failed to load sessions:', err);
         setError(err.message || 'Failed to load posts');
       } finally {
         setIsLoadingSessions(false);
@@ -436,7 +437,7 @@ export const PostsContent: React.FC<PostsContentProps> = ({ userId, isOwnProfile
           : s
       ));
     } catch (err: any) {
-      console.error('Failed to support session:', err);
+      debug.error('ProfileTabs - Failed to support session:', err);
     }
   }, []);
 
@@ -449,7 +450,7 @@ export const PostsContent: React.FC<PostsContentProps> = ({ userId, isOwnProfile
           : s
       ));
     } catch (err: any) {
-      console.error('Failed to remove support:', err);
+      debug.error('ProfileTabs - Failed to remove support:', err);
     }
   }, []);
 
@@ -460,7 +461,7 @@ export const PostsContent: React.FC<PostsContentProps> = ({ userId, isOwnProfile
       await navigator.clipboard.writeText(shareUrl);
       // You could add a toast notification here
     } catch (err: any) {
-      console.error('Failed to share session:', err);
+      debug.error('ProfileTabs - Failed to share session:', err);
     }
   }, []);
 
@@ -478,7 +479,7 @@ export const PostsContent: React.FC<PostsContentProps> = ({ userId, isOwnProfile
       setSessions(prev => prev.filter(session => session.id !== deleteConfirmSession));
       setDeleteConfirmSession(null);
     } catch (err: any) {
-      console.error('Failed to delete session:', err);
+      debug.error('ProfileTabs - Failed to delete session:', err);
     } finally {
       setIsDeleting(false);
     }

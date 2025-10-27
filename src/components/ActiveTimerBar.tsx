@@ -2,8 +2,9 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { useTimer } from '@/contexts/TimerContext';
+import { useTimer } from '@/features/timer/hooks';
 import { TimerDisplay } from './TimerDisplay';
+import { debug } from '@/lib/debug';
 
 interface ActiveTimerBarProps {
   className?: string;
@@ -46,12 +47,12 @@ export const ActiveTimerBar: React.FC<ActiveTimerBarProps> = ({ className = '' }
               {/* Quick controls */}
               <div className="flex items-center space-x-2">
                 {timerState.isRunning ? (
-                  <button 
+                  <button
                     onClick={async () => {
                       try {
                         await pauseTimer();
                       } catch (error) {
-                        console.error('Failed to pause timer:', error);
+                        debug.error('ActiveTimerBar - Failed to pause timer:', error);
                       }
                     }}
                     className="p-1 text-gray-600 hover:text-yellow-600 transition-colors"
@@ -62,12 +63,12 @@ export const ActiveTimerBar: React.FC<ActiveTimerBarProps> = ({ className = '' }
                     </svg>
                   </button>
                 ) : (
-                  <button 
+                  <button
                     onClick={async () => {
                       try {
                         await resumeTimer();
                       } catch (error) {
-                        console.error('Failed to resume timer:', error);
+                        debug.error('ActiveTimerBar - Failed to resume timer:', error);
                       }
                     }}
                     className="p-1 text-gray-600 hover:text-green-600 transition-colors"

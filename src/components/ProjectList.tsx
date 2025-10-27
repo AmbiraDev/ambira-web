@@ -4,7 +4,13 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Project } from '@/types';
 import { ProjectCard } from './ProjectCard';
-import { useProjects } from '@/contexts/ProjectsContext';
+import { useAuth } from '@/hooks/useAuth';
+import {
+  useActivities,
+  useDeleteActivity,
+  useArchiveActivity,
+  useRestoreActivity,
+} from '@/hooks/useActivitiesQuery';
 
 interface ProjectListProps {
   onCreateProject?: () => void;
@@ -18,7 +24,11 @@ export const ProjectList: React.FC<ProjectListProps> = ({
   onEditProject,
 }) => {
   const router = useRouter();
-  const { projects, isLoading, error, deleteProject, archiveProject } = useProjects();
+  const { user } = useAuth();
+  const { data: projects = [], isLoading, error } = useActivities(user?.id);
+  const deleteProjectMutation = useDeleteActivity();
+  const archiveProjectMutation = useArchiveActivity();
+  const restoreProjectMutation = useRestoreActivity();
   // const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [deleteConfirm, setDeleteConfirm] = useState<Project | null>(null);
 
@@ -37,13 +47,11 @@ export const ProjectList: React.FC<ProjectListProps> = ({
   // };
 
   // Show all projects
-  const filteredProjects = projects || [];
+  const filteredProjects = projects;
 
   const handleDelete = async (project: Project) => {
-    if (!deleteProject) return;
-
     try {
-      await deleteProject(project.id);
+      await deleteProjectMutation.mutateAsync(project.id);
       setDeleteConfirm(null);
     } catch (error) {
       console.error('Failed to delete project:', error);
@@ -51,12 +59,14 @@ export const ProjectList: React.FC<ProjectListProps> = ({
   };
 
   const handleArchive = async (project: Project) => {
-    if (!archiveProject) return;
-
     try {
-      await archiveProject(project.id);
+      if (project.status === 'archived') {
+        await restoreProjectMutation.mutateAsync(project.id);
+      } else {
+        await archiveProjectMutation.mutateAsync(project.id);
+      }
     } catch (error) {
-      console.error('Failed to archive project:', error);
+      console.error('Failed to archive/restore project:', error);
     }
   };
 

@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { Flame, TrendingUp, Calendar, Target } from 'lucide-react';
-import { firebaseApi } from '@/lib/firebaseApi';
+import { firebaseApi } from '@/lib/api';
 import { StreakStats as StreakStatsType } from '@/types';
 
 interface StreakStatsProps {

@@ -2,6 +2,7 @@ import { initializeApp } from 'firebase/app';
 import { getAuth, setPersistence, browserLocalPersistence } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
+import { debug } from './debug';
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY!,
@@ -24,7 +25,7 @@ export const storage = getStorage(app);
 // Set auth persistence for mobile
 if (typeof window !== 'undefined') {
   setPersistence(auth, browserLocalPersistence).catch((error) => {
-    console.error('[Firebase] Failed to set persistence:', error);
+    debug.error('[Firebase] Failed to set persistence:', error);
   });
 }
 

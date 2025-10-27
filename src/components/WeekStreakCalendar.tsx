@@ -2,7 +2,7 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import { Check } from 'lucide-react';
-import { firebaseApi } from '@/lib/firebaseApi';
+import { firebaseApi } from '@/lib/api';
 
 interface WeekStreakCalendarProps {
   userId: string;

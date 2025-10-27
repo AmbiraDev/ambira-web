@@ -4,11 +4,12 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 import { SessionWithDetails } from '@/types';
-import { firebaseApi } from '@/lib/firebaseApi';
-import { useAuth } from '@/contexts/AuthContext';
+import { firebaseApi } from '@/lib/api';
+import { useAuth } from '@/hooks/useAuth';
 import SessionCard from '@/components/SessionCard';
 import Header from '@/components/HeaderComponent';
 import MobileHeader from '@/components/MobileHeader';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 interface SessionDetailPageProps {
   params: Promise<{
@@ -111,6 +112,75 @@ function SessionDetailContent({ sessionId }: { sessionId: string }) {
     }
   };
 
+  // Dynamic metadata using useEffect for client component
+  // MUST be called before any conditional returns
+  React.useEffect(() => {
+    if (session) {
+      const title = session.title || 'Session';
+      document.title = `${title} by ${session.user?.name || 'User'} - Ambira`;
+
+      const description = session.description || `Check out this productive session on Ambira`;
+
+      let metaDescription = document.querySelector('meta[name="description"]');
+      if (!metaDescription) {
+        metaDescription = document.createElement('meta');
+        metaDescription.setAttribute('name', 'description');
+        document.head.appendChild(metaDescription);
+      }
+      metaDescription.setAttribute('content', description);
+
+      // Open Graph tags
+      let ogTitle = document.querySelector('meta[property="og:title"]');
+      if (!ogTitle) {
+        ogTitle = document.createElement('meta');
+        ogTitle.setAttribute('property', 'og:title');
+        document.head.appendChild(ogTitle);
+      }
+      ogTitle.setAttribute('content', `${title} - Ambira`);
+
+      let ogDescription = document.querySelector('meta[property="og:description"]');
+      if (!ogDescription) {
+        ogDescription = document.createElement('meta');
+        ogDescription.setAttribute('property', 'og:description');
+        document.head.appendChild(ogDescription);
+      }
+      ogDescription.setAttribute('content', description);
+
+      let ogType = document.querySelector('meta[property="og:type"]');
+      if (!ogType) {
+        ogType = document.createElement('meta');
+        ogType.setAttribute('property', 'og:type');
+        document.head.appendChild(ogType);
+      }
+      ogType.setAttribute('content', 'article');
+
+      // Twitter card tags
+      let twitterCard = document.querySelector('meta[name="twitter:card"]');
+      if (!twitterCard) {
+        twitterCard = document.createElement('meta');
+        twitterCard.setAttribute('name', 'twitter:card');
+        document.head.appendChild(twitterCard);
+      }
+      twitterCard.setAttribute('content', 'summary_large_image');
+
+      let twitterTitle = document.querySelector('meta[name="twitter:title"]');
+      if (!twitterTitle) {
+        twitterTitle = document.createElement('meta');
+        twitterTitle.setAttribute('name', 'twitter:title');
+        document.head.appendChild(twitterTitle);
+      }
+      twitterTitle.setAttribute('content', `${title} - Ambira`);
+
+      let twitterDescription = document.querySelector('meta[name="twitter:description"]');
+      if (!twitterDescription) {
+        twitterDescription = document.createElement('meta');
+        twitterDescription.setAttribute('name', 'twitter:description');
+        document.head.appendChild(twitterDescription);
+      }
+      twitterDescription.setAttribute('content', description);
+    }
+  }, [session]);
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50">
@@ -173,34 +243,55 @@ function SessionDetailContent({ sessionId }: { sessionId: string }) {
   const isOwnSession = user && session.userId === user.id;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="hidden md:block">
-        <Header />
-      </div>
-      <MobileHeader title="Session" />
+    <ErrorBoundary
+      fallback={
+        <div className="min-h-screen bg-gray-50">
+          <div className="hidden md:block">
+            <Header />
+          </div>
+          <MobileHeader title="Session" />
+          <div className="max-w-[600px] mx-auto px-4 py-6 text-center">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Error loading session</h2>
+            <p className="text-gray-600 mb-6">Something went wrong while loading this session.</p>
+            <button
+              onClick={() => router.push('/')}
+              className="px-4 py-2 bg-[#007AFF] text-white rounded-lg hover:bg-[#0051D5] transition-colors"
+            >
+              Back to Feed
+            </button>
+          </div>
+        </div>
+      }
+    >
+      <div className="min-h-screen bg-gray-50">
+        <div className="hidden md:block">
+          <Header />
+        </div>
+        <MobileHeader title="Session" />
 
-      <div className="max-w-[600px] mx-auto md:px-4 md:py-6">
-        {/* Back button for desktop */}
-        <button
-          onClick={() => router.back()}
-          className="hidden md:flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4 transition-colors"
-        >
-          <ArrowLeft className="w-5 h-5" />
-          <span>Back</span>
-        </button>
+        <div className="max-w-[600px] mx-auto md:px-4 md:py-6">
+          {/* Back button for desktop */}
+          <button
+            onClick={() => router.back()}
+            className="hidden md:flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4 transition-colors"
+          >
+            <ArrowLeft className="w-5 h-5" />
+            <span>Back</span>
+          </button>
 
-        {/* Session Card */}
-        <SessionCard
-          session={session}
-          onSupport={handleSupport}
-          onRemoveSupport={handleRemoveSupport}
-          onShare={handleShare}
-          onEdit={isOwnSession ? (sessionId) => router.push(`/sessions/${sessionId}/edit`) : undefined}
-          onDelete={isOwnSession ? handleDelete : undefined}
-          showComments={true}
-        />
+          {/* Session Card */}
+          <SessionCard
+            session={session}
+            onSupport={handleSupport}
+            onRemoveSupport={handleRemoveSupport}
+            onShare={handleShare}
+            onEdit={isOwnSession ? (sessionId) => router.push(`/sessions/${sessionId}/edit`) : undefined}
+            onDelete={isOwnSession ? handleDelete : undefined}
+            showComments={true}
+          />
+        </div>
       </div>
-    </div>
+    </ErrorBoundary>
   );
 }
 

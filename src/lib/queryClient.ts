@@ -35,11 +35,14 @@ export const CACHE_KEYS = {
   
   // Session data
   SESSION: (sessionId: string) => ['session', sessionId],
+  SESSIONS: (userId: string) => ['sessions', userId],
   SESSIONS_FEED: (filters?: any) => ['sessions', 'feed', filters],
+  ACTIVE_SESSION: (userId: string) => ['active-session', userId],
   
   // Project data
   PROJECTS: (userId: string) => ['projects', userId],
   PROJECT: (projectId: string) => ['project', projectId],
+  ACTIVITY_STATS: (activityId: string) => ['activity', 'stats', activityId],
   
   // Task data
   TASKS: (userId: string) => ['tasks', userId],
@@ -74,6 +77,9 @@ export const CACHE_KEYS = {
   // Analytics data (longer cache time)
   ANALYTICS_CHART: (userId: string, period: string) => ['analytics', 'chart', userId, period],
   ANALYTICS_CATEGORIES: (userId: string, period: string) => ['analytics', 'categories', userId, period],
+
+  // Notifications
+  NOTIFICATIONS: (userId: string) => ['notifications', userId],
 };
 
 // Cache time configurations for different data types

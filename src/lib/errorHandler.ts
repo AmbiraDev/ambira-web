@@ -4,6 +4,7 @@
  */
 
 import { FirebaseError } from 'firebase/app';
+import { debug, isDevelopment } from './debug';
 
 /**
  * Standard error response interface
@@ -156,12 +157,12 @@ export function logError(
   additionalContext?: Record<string, unknown>
 ): void {
   // Only log errors in development or for critical errors
-  if (process.env.NODE_ENV === 'development' || severity === ErrorSeverity.CRITICAL) {
+  if (isDevelopment || severity === ErrorSeverity.CRITICAL) {
     const logMethod = severity === ErrorSeverity.ERROR || severity === ErrorSeverity.CRITICAL
-      ? console.error
+      ? debug.error
       : severity === ErrorSeverity.WARNING
-      ? console.warn
-      : console.log;
+      ? debug.warn
+      : debug.log;
 
     // Log as a single string to avoid object logging which triggers intercept-console-error
     const errorMessage = `[API Error] ${JSON.stringify({
@@ -179,7 +180,7 @@ export function logError(
       const originalErrorMsg = apiError.originalError instanceof Error
         ? apiError.originalError.message
         : String(apiError.originalError);
-      console.error(`[Original Error] ${originalErrorMsg}`);
+      debug.error(`[Original Error] ${originalErrorMsg}`);
     }
   }
 }
@@ -292,8 +293,6 @@ export async function withNullOnError<T>(
       (options.nullOnNotFound && isNotFoundError(error));
 
     if (shouldReturnNull) {
-      if (!options.silent && process.env.NODE_ENV === 'development') {
-      }
       return null;
     }
 

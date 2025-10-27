@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { Trophy, Lock } from 'lucide-react';
-import { firebaseApi } from '@/lib/firebaseApi';
+import { firebaseApi } from '@/lib/api';
 import { Achievement, AchievementProgress } from '@/types';
 import { AchievementCard } from './AchievementCard';
 

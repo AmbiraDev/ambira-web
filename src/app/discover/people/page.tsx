@@ -5,8 +5,8 @@ import { useRouter } from 'next/navigation';
 import Header from '@/components/HeaderComponent';
 import MobileHeader from '@/components/MobileHeader';
 import BottomNavigation from '@/components/BottomNavigation';
-import { firebaseUserApi } from '@/lib/firebaseApi';
-import { useAuth } from '@/contexts/AuthContext';
+import { firebaseUserApi } from '@/lib/api';
+import { useAuth } from '@/hooks/useAuth';
 import { UserCardCompact } from '@/components/UserCard';
 import { ArrowLeft, Users as UsersIcon } from 'lucide-react';
 

@@ -7,6 +7,9 @@ import {
 } from 'firebase/storage';
 import { auth } from './firebase';
 import { checkRateLimit } from './rateLimit';
+import { debug } from './debug';
+import { TIMEOUTS } from '@/config/constants';
+import { TIMEOUT_ERRORS } from '@/config/errorMessages';
 
 export interface ImageUploadResult {
   url: string;
@@ -33,7 +36,7 @@ async function isActuallyHeic(file: File): Promise<boolean> {
       signature.startsWith('ftypmif1')
     ); // mif1 is also used for HEIF
   } catch (error) {
-    console.error('Error checking file signature:', error);
+    debug.error('Error checking file signature:', error);
     return false;
   }
 }
@@ -80,7 +83,7 @@ async function convertHeicToJpeg(file: File): Promise<File> {
 
     return convertedFile;
   } catch (error) {
-    console.error('❌ Failed to convert HEIC:', error);
+    debug.error('Failed to convert HEIC:', error);
     throw new Error(
       'Failed to convert HEIC image. Please use JPG or PNG format.'
     );
@@ -88,7 +91,18 @@ async function convertHeicToJpeg(file: File): Promise<File> {
 }
 
 /**
- * Upload an image to Firebase Storage
+ * Create a timeout promise that rejects after a specified duration
+ * @param ms - Timeout duration in milliseconds
+ * @param errorMessage - Error message to throw
+ */
+function createTimeout(ms: number, errorMessage: string): Promise<never> {
+  return new Promise((_, reject) => {
+    setTimeout(() => reject(new Error(errorMessage)), ms);
+  });
+}
+
+/**
+ * Upload an image to Firebase Storage with timeout protection
  * @param file - The image file to upload
  * @param folder - The storage folder (e.g., 'session-images')
  * @returns The download URL and storage path
@@ -124,7 +138,7 @@ export async function uploadImage(
     try {
       processedFile = await compressToSize(processedFile, 5);
     } catch (error: any) {
-      console.error('❌ Compression failed:', error);
+      debug.error('Compression failed:', error);
       throw new Error('Failed to compress image. Please try a smaller file.');
     }
   }
@@ -142,18 +156,30 @@ export async function uploadImage(
   );
 
   try {
-    // Upload the processed file (not the original)
-    const snapshot = await uploadBytes(storageRef, processedFile);
+    // Upload with timeout protection (30 seconds)
+    const uploadPromise = (async () => {
+      // Upload the processed file (not the original)
+      const snapshot = await uploadBytes(storageRef, processedFile);
+      // Get download URL
+      const url = await getDownloadURL(storageRef);
+      return { url, path: storageRef.fullPath };
+    })();
 
-    // Get download URL
-    const url = await getDownloadURL(storageRef);
+    // Race between upload and timeout
+    const result = await Promise.race([
+      uploadPromise,
+      createTimeout(TIMEOUTS.IMAGE_UPLOAD, TIMEOUT_ERRORS.IMAGE_UPLOAD)
+    ]);
 
-    return {
-      url,
-      path: storageRef.fullPath,
-    };
+    return result;
   } catch (error: any) {
-    console.error('❌ Error uploading image:', error);
+    debug.error('Error uploading image:', error);
+
+    // Check if this is a timeout error
+    if (error.message === TIMEOUT_ERRORS.IMAGE_UPLOAD) {
+      throw error; // Re-throw timeout errors with user-friendly message
+    }
+
     if (error.code === 'storage/unauthorized') {
       throw new Error('Permission denied. Please make sure you are logged in.');
     }
@@ -192,7 +218,7 @@ export async function deleteImage(path: string): Promise<void> {
     const storageRef = ref(storage, path);
     await deleteObject(storageRef);
   } catch (error) {
-    console.error('Error deleting image:', error);
+    debug.error('Error deleting image:', error);
     throw new Error('Failed to delete image');
   }
 }
@@ -341,8 +367,8 @@ async function compressToSize(
   }
 
   // If still too large after all attempts, return the smallest version
-  console.warn(
-    `⚠️ Could not compress to under ${maxSizeMB}MB, using smallest version (${(compressedFile.size / 1024 / 1024).toFixed(2)}MB)`
+  debug.warn(
+    `Could not compress to under ${maxSizeMB}MB, using smallest version (${(compressedFile.size / 1024 / 1024).toFixed(2)}MB)`
   );
   return compressedFile;
 }

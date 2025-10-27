@@ -5,8 +5,9 @@ import { Clock, Target, TrendingUp, BarChart3 } from 'lucide-react';
 import { ActivityChart } from './ActivityChart';
 import { ProgressRing } from './ProgressRing';
 import { AnalyticsPeriod, ProjectStats } from '@/types';
-import { firebaseProjectApi, firebaseSessionApi } from '@/lib/firebaseApi';
-import { useAuth } from '@/contexts/AuthContext';
+import { firebaseProjectApi, firebaseSessionApi } from '@/lib/api';
+import { useAuth } from '@/hooks/useAuth';
+import { debug } from '@/lib/debug';
 
 interface ProjectAnalyticsProps {
   projectId: string;
@@ -57,7 +58,8 @@ export const ProjectAnalytics: React.FC<ProjectAnalyticsProps> = ({
       const startDate = new Date();
       startDate.setDate(endDate.getDate() - selectedPeriod.days);
 
-      // TODO: Implement getSessionsByProject method in firebaseSessionApi
+      // TODO: Implement getSessionsByProject(projectId, startDate, endDate) in src/lib/api/sessions/
+      // This should filter sessions by projectId and date range for analytics
       const sessions: any[] = [];
 
       // Calculate cumulative hours data
@@ -108,7 +110,7 @@ export const ProjectAnalytics: React.FC<ProjectAnalyticsProps> = ({
       const weeklyHours = Math.round((totalHours / selectedPeriod.days) * 7 * 10) / 10;
 
       // Calculate goal progress (you would get target from project settings)
-      const target = null; // TODO: Get from project settings
+      const target = null; // TODO: Add hourGoal field to Project type and fetch from project data
       const goalProgress = {
         current: totalHours,
         target,
@@ -131,9 +133,9 @@ export const ProjectAnalytics: React.FC<ProjectAnalyticsProps> = ({
           { label: 'This Week', value: sessions.length }
         ]
       });
-      
+
     } catch (error) {
-      console.error('Failed to load analytics data:', error);
+      debug.error('ProjectAnalytics - Failed to load analytics data:', error);
       // Fallback to basic data
       setAnalyticsData({
         totalHours: 0,

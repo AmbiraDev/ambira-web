@@ -2,9 +2,13 @@
 
 import React, { useState, useEffect } from 'react';
 import { CommentWithDetails } from '@/types';
-import { firebaseCommentApi } from '@/lib/firebaseApi';
-import { useAuth } from '@/contexts/AuthContext';
-import { useCommentLikeMutation } from '@/hooks/useMutations';
+import { useAuth } from '@/hooks/useAuth';
+import {
+  useSessionComments,
+  useCreateComment,
+  useDeleteComment,
+  useCommentLike,
+} from '@/features/comments/hooks';
 import CommentItem from './CommentItem';
 import CommentInput from './CommentInput';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
@@ -27,88 +31,57 @@ export const TopComments: React.FC<TopCommentsProps> = ({
   initialExpanded = false
 }) => {
   const { user } = useAuth();
-  const [comments, setComments] = useState<CommentWithDetails[]>([]);
-  const [allComments, setAllComments] = useState<CommentWithDetails[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const [isExpanded, setIsExpanded] = useState(initialExpanded);
   const [currentPage, setCurrentPage] = useState(1);
 
-  const totalPages = Math.ceil(totalCommentCount / COMMENTS_PER_PAGE);
-  const likeMutation = useCommentLikeMutation(sessionId);
+  // Fetch comments - use limit of 2 for top comments, or 100 when expanded
+  const limit = isExpanded ? 100 : 2;
+  const {
+    data: commentsResponse,
+    isLoading,
+    refetch
+  } = useSessionComments(sessionId, limit);
 
-  useEffect(() => {
-    loadTopComments();
-  }, [sessionId]);
-
-  useEffect(() => {
-    if (isExpanded) {
-      loadAllComments();
-    }
-  }, [isExpanded, sessionId]);
-
-  // Reload comments when totalCommentCount changes (e.g., from CommentsModal)
-  useEffect(() => {
-    if (isExpanded) {
-      loadAllComments();
-    } else {
-      loadTopComments();
-    }
-  }, [totalCommentCount]);
-
-  useEffect(() => {
-    if (isExpanded && allComments.length > 0) {
-      updateDisplayedComments();
-    }
-  }, [currentPage, allComments, isExpanded]);
-
-  const loadTopComments = async () => {
-    try {
-      setIsLoading(true);
-      const topComments = await firebaseCommentApi.getTopComments(sessionId, 2);
-      setComments(topComments);
-    } catch (err: any) {
-      console.error('Failed to load top comments:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const loadAllComments = async () => {
-    try {
-      setIsLoading(true);
-      const response = await firebaseCommentApi.getSessionComments(sessionId, 100);
-      setAllComments(response.comments);
-      updateDisplayedComments();
-    } catch (err: any) {
-      console.error('Failed to load all comments:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const updateDisplayedComments = () => {
-    const startIndex = (currentPage - 1) * COMMENTS_PER_PAGE;
-    const endIndex = startIndex + COMMENTS_PER_PAGE;
-    setComments(allComments.slice(startIndex, endIndex));
-  };
-
-  const handleCreateComment = async (content: string) => {
-    try {
-      const newComment = await firebaseCommentApi.createComment({
-        sessionId,
-        content
-      });
-
-      if (isExpanded) {
-        setAllComments([newComment, ...allComments]);
-        setComments([newComment, ...comments.slice(0, COMMENTS_PER_PAGE - 1)]);
-      } else {
-        setComments([newComment, ...comments.slice(0, 1)]);
-      }
-
+  const createCommentMutation = useCreateComment({
+    onSuccess: () => {
       if (onCommentCountChange) {
         onCommentCountChange(totalCommentCount + 1);
       }
+    }
+  });
+
+  const deleteCommentMutation = useDeleteComment({
+    onSuccess: () => {
+      if (onCommentCountChange) {
+        onCommentCountChange(Math.max(0, totalCommentCount - 1));
+      }
+    }
+  });
+
+  const likeMutation = useCommentLike(sessionId);
+
+  const allComments = commentsResponse?.comments || [];
+  const totalPages = Math.ceil(allComments.length / COMMENTS_PER_PAGE);
+
+  // Calculate paginated comments when expanded
+  const comments = isExpanded
+    ? allComments.slice(
+        (currentPage - 1) * COMMENTS_PER_PAGE,
+        currentPage * COMMENTS_PER_PAGE
+      )
+    : allComments;
+
+  // Refetch when expanded state changes
+  useEffect(() => {
+    refetch();
+  }, [isExpanded]);
+
+  const handleCreateComment = async (content: string) => {
+    try {
+      await createCommentMutation.mutateAsync({
+        sessionId,
+        content
+      });
     } catch (err: any) {
       console.error('Failed to create comment:', err);
       throw err;
@@ -117,26 +90,7 @@ export const TopComments: React.FC<TopCommentsProps> = ({
 
   const handleDelete = async (commentId: string) => {
     try {
-      await firebaseCommentApi.deleteComment(commentId);
-
-      const removeComment = (items: CommentWithDetails[]): CommentWithDetails[] => {
-        return items.filter(comment => {
-          if (comment.id === commentId) return false;
-          if (comment.replies) {
-            comment.replies = removeComment(comment.replies);
-          }
-          return true;
-        });
-      };
-
-      setComments(removeComment(comments));
-      if (isExpanded) {
-        setAllComments(removeComment(allComments));
-      }
-
-      if (onCommentCountChange) {
-        onCommentCountChange(totalCommentCount - 1);
-      }
+      await deleteCommentMutation.mutateAsync(commentId);
     } catch (err: any) {
       console.error('Failed to delete comment:', err);
       throw err;
@@ -258,7 +212,6 @@ export const TopComments: React.FC<TopCommentsProps> = ({
             onClick={() => {
               setIsExpanded(false);
               setCurrentPage(1);
-              loadTopComments();
             }}
             className="text-sm text-gray-600 hover:text-gray-900 font-medium py-1"
           >

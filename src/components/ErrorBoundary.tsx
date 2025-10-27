@@ -2,6 +2,7 @@
 
 import React, { Component, ReactNode } from 'react';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
+import * as Sentry from '@sentry/nextjs';
 
 interface Props {
   children: ReactNode;
@@ -13,13 +14,15 @@ interface State {
   hasError: boolean;
   error: Error | null;
   errorInfo: React.ErrorInfo | null;
+  eventId: string | null;
 }
 
 /**
  * Error Boundary Component
  *
- * Catches JavaScript errors in child components, logs them, and displays a fallback UI.
- * Follows React Error Boundary pattern with recovery strategies.
+ * Catches JavaScript errors in child components, logs them to Sentry,
+ * and displays a fallback UI. Follows React Error Boundary pattern
+ * with recovery strategies.
  */
 export class ErrorBoundary extends Component<Props, State> {
   constructor(props: Props) {
@@ -28,6 +31,7 @@ export class ErrorBoundary extends Component<Props, State> {
       hasError: false,
       error: null,
       errorInfo: null,
+      eventId: null,
     };
   }
 
@@ -37,14 +41,25 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    // Log error details for debugging
+    // Log error details for debugging (allowed in error boundary)
     console.error('ErrorBoundary caught an error:', error);
     console.error('Error info:', errorInfo);
 
-    // Store error info in state
+    // Capture error with Sentry
+    const eventId = Sentry.captureException(error, {
+      contexts: {
+        react: {
+          componentStack: errorInfo.componentStack,
+        },
+      },
+      level: 'error',
+    });
+
+    // Store error info and event ID in state
     this.setState({
       error,
       errorInfo,
+      eventId,
     });
 
     // Call optional error callback

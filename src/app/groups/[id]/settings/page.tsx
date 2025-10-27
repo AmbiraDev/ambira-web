@@ -2,11 +2,11 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import Header from '@/components/HeaderComponent';
 import { ImageUpload } from '@/components/ImageUpload';
 import { Group, UpdateGroupData } from '@/types';
-import { firebaseApi } from '@/lib/firebaseApi';
+import { firebaseApi } from '@/lib/api';
 import { uploadImage } from '@/lib/imageUpload';
 import { Upload } from 'lucide-react';
 

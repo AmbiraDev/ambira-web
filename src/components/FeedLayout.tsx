@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { firebaseApi } from '@/lib/firebaseApi';
+import { useAuth } from '@/hooks/useAuth';
+import { firebaseApi } from '@/lib/api';
 import { UserStats, SuggestedUser, FeedFilters } from '@/types';
 import Feed from './Feed';
 import SuggestedUsers from './SuggestedUsers';

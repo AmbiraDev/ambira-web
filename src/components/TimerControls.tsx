@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useTimer } from '@/contexts/TimerContext';
+import { useTimer } from '@/features/timer/hooks';
 
 interface TimerControlsProps {
   className?: string;

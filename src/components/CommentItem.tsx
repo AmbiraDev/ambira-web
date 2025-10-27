@@ -4,6 +4,8 @@ import React, { useState, useRef, useEffect } from 'react';
 import { CommentWithDetails } from '@/types';
 import Link from 'next/link';
 import { Trash2, Heart, MoreVertical } from 'lucide-react';
+import { formatTimeAgo } from '@/lib/formatters';
+import { getUserInitials } from '@/lib/userUtils';
 
 interface CommentItemProps {
   comment: CommentWithDetails;
@@ -52,59 +54,6 @@ export const CommentItem: React.FC<CommentItemProps> = ({
 
   const isOwner = currentUserId === comment.userId;
   const canDelete = isOwner && !!onDelete;
-
-  const formatTimeAgo = (date: Date): string => {
-    const now = new Date();
-    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
-
-    // Less than 1 minute
-    if (diffInSeconds < 60) {
-      return 'just now';
-    }
-
-    // Less than 1 hour
-    const diffInMinutes = Math.floor(diffInSeconds / 60);
-    if (diffInMinutes < 60) {
-      return `${diffInMinutes}m`;
-    }
-
-    // Less than 1 day
-    const diffInHours = Math.floor(diffInMinutes / 60);
-    if (diffInHours < 24) {
-      return `${diffInHours}h`;
-    }
-
-    // Less than 7 days
-    const diffInDays = Math.floor(diffInHours / 24);
-    if (diffInDays < 7) {
-      return `${diffInDays} day${diffInDays === 1 ? '' : 's'} ago`;
-    }
-
-    // Less than 4 weeks
-    const diffInWeeks = Math.floor(diffInDays / 7);
-    if (diffInWeeks < 4) {
-      return `${diffInWeeks}w`;
-    }
-
-    // Otherwise show months or date
-    const diffInMonths = Math.floor(diffInDays / 30);
-    if (diffInMonths < 12) {
-      return `${diffInMonths}mo`;
-    }
-
-    // More than a year
-    const diffInYears = Math.floor(diffInDays / 365);
-    return `${diffInYears}y`;
-  };
-
-  const getUserInitials = (name: string): string => {
-    return name
-      .split(' ')
-      .map(word => word.charAt(0))
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
-  };
 
   const renderContent = (text: string) => {
     // Highlight mentions
@@ -210,9 +159,11 @@ export const CommentItem: React.FC<CommentItemProps> = ({
               <button
                 onClick={() => setIsMenuOpen(!isMenuOpen)}
                 className="text-gray-400 hover:text-gray-600 p-1 rounded-full hover:bg-gray-100 transition-colors"
-                title="More options"
+                aria-label="More options"
+                aria-expanded={isMenuOpen}
+                aria-haspopup="true"
               >
-                <MoreVertical className="w-4 h-4" />
+                <MoreVertical className="w-4 h-4" aria-hidden="true" />
               </button>
 
               {/* Dropdown Menu */}
@@ -221,8 +172,10 @@ export const CommentItem: React.FC<CommentItemProps> = ({
                   <button
                     onClick={handleDelete}
                     className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-50 transition-colors flex items-center gap-2"
+                    role="menuitem"
+                    aria-label="Delete comment"
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className="w-4 h-4" aria-hidden="true" />
                     Delete
                   </button>
                 </div>
@@ -247,9 +200,11 @@ export const CommentItem: React.FC<CommentItemProps> = ({
                   : 'text-gray-500 hover:text-red-600'
               } ${isLiking ? 'opacity-70' : ''}`}
               disabled={!onLike || isLiking}
+              aria-label={optimisticLiked ? `Unlike comment (${optimisticLikeCount} ${optimisticLikeCount === 1 ? 'like' : 'likes'})` : `Like comment (${optimisticLikeCount} ${optimisticLikeCount === 1 ? 'like' : 'likes'})`}
             >
               <Heart
                 className={`w-4 h-4 ${optimisticLiked ? 'fill-current' : ''}`}
+                aria-hidden="true"
               />
               {optimisticLikeCount > 0 && (
                 <span className="text-xs font-medium">{optimisticLikeCount > 1 ? `${optimisticLikeCount} like${optimisticLikeCount > 1 ? 's' : ''}` : '1 like'}</span>

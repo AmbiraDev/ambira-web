@@ -1,12 +1,19 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Plus, FileText } from 'lucide-react';
 import { Activity } from '@/types';
 import { ActivityCard } from './ActivityCard';
-import { useProjects } from '@/contexts/ProjectsContext';
+import { useAuth } from '@/hooks/useAuth';
+import {
+  useActivities,
+  useDeleteActivity,
+  useArchiveActivity,
+  useRestoreActivity,
+} from '@/hooks/useActivitiesQuery';
 import { useToast } from '@/contexts/ToastContext';
+import { cn, isEmpty } from '@/lib/utils';
 
 interface ActivityListProps {
   onCreateActivity?: () => void;
@@ -18,7 +25,11 @@ export const ActivityList: React.FC<ActivityListProps> = ({
   onEditActivity,
 }) => {
   const router = useRouter();
-  const { projects: activities, isLoading, error, deleteProject, archiveProject } = useProjects();
+  const { user } = useAuth();
+  const { data: activities = [], isLoading, error } = useActivities(user?.id);
+  const deleteActivityMutation = useDeleteActivity();
+  const archiveActivityMutation = useArchiveActivity();
+  const restoreActivityMutation = useRestoreActivity();
   const toast = useToast();
   const [deleteConfirm, setDeleteConfirm] = useState<Activity | null>(null);
 
@@ -26,14 +37,12 @@ export const ActivityList: React.FC<ActivityListProps> = ({
   const viewMode = 'grid';
 
   // Display all activities without filtering (no active filters applied)
-  const filteredActivities = activities || [];
+  const filteredActivities = activities;
 
   const handleDelete = async (activity: Activity) => {
     try {
-      if (deleteProject) {
-        await deleteProject(activity.id);
-        toast.success(`Activity "${activity.name}" deleted successfully`);
-      }
+      await deleteActivityMutation.mutateAsync(activity.id);
+      toast.success(`Activity "${activity.name}" deleted successfully`);
       setDeleteConfirm(null);
     } catch (error) {
       console.error('Failed to delete activity:', error);
@@ -43,10 +52,8 @@ export const ActivityList: React.FC<ActivityListProps> = ({
 
   const handleArchive = async (activity: Activity) => {
     try {
-      if (archiveProject) {
-        await archiveProject(activity.id);
-        toast.success(`Activity "${activity.name}" archived successfully`);
-      }
+      await archiveActivityMutation.mutateAsync(activity.id);
+      toast.success(`Activity "${activity.name}" archived successfully`);
     } catch (error) {
       console.error('Failed to archive activity:', error);
       toast.error('Failed to archive activity. Please try again.');
@@ -55,10 +62,8 @@ export const ActivityList: React.FC<ActivityListProps> = ({
 
   const handleRestore = async (activity: Activity) => {
     try {
-      if (archiveProject) {
-        await archiveProject(activity.id); // This will toggle the status
-        toast.success(`Activity "${activity.name}" restored successfully`);
-      }
+      await restoreActivityMutation.mutateAsync(activity.id);
+      toast.success(`Activity "${activity.name}" restored successfully`);
     } catch (error) {
       console.error('Failed to restore activity:', error);
       toast.error('Failed to restore activity. Please try again.');
@@ -122,7 +127,7 @@ export const ActivityList: React.FC<ActivityListProps> = ({
     return (
       <div className="text-center py-12">
         <div className="text-red-500 text-lg mb-4">Error loading activities</div>
-        <p className="text-gray-600 mb-4">{error}</p>
+        <p className="text-gray-600 mb-4">{error instanceof Error ? error.message : 'Unknown error'}</p>
         <button
           onClick={() => window.location.reload()}
           className="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors"
@@ -158,7 +163,7 @@ export const ActivityList: React.FC<ActivityListProps> = ({
       </div>
 
       {/* Activities Grid/List */}
-      {filteredActivities.length === 0 ? (
+      {isEmpty(filteredActivities) ? (
         <div className="bg-transparent rounded-xl border border-gray-200/60 p-8 md:p-12">
           <div className="max-w-md mx-auto text-center">
             <div className="w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-[#007AFF] to-[#0051D5] rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm">
@@ -184,11 +189,11 @@ export const ActivityList: React.FC<ActivityListProps> = ({
           </div>
         </div>
       ) : (
-        <div className={
+        <div className={cn(
           viewMode === 'grid'
             ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'
             : 'max-w-3xl mx-auto space-y-4'
-        }>
+        )}>
           {filteredActivities.map((activity) => (
             <ActivityCard
               key={activity.id}

@@ -3,8 +3,8 @@
 import React, { useEffect, useState } from 'react';
 import { X } from 'lucide-react';
 import { User } from '@/types';
-import { firebaseApi } from '@/lib/firebaseApi';
-import { useAuth } from '@/contexts/AuthContext';
+import { firebaseApi } from '@/lib/api';
+import { useAuth } from '@/hooks/useAuth';
 
 interface LikesModalProps {
   isOpen: boolean;
@@ -130,8 +130,9 @@ export const LikesModal: React.FC<LikesModalProps> = ({
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-900 transition-colors"
+            aria-label="Close likes modal"
           >
-            <X className="w-6 h-6" />
+            <X className="w-6 h-6" aria-hidden="true" />
           </button>
         </div>
 

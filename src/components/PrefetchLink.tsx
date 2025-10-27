@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react';
 import Link from 'next/link';
 import { useQueryClient } from '@tanstack/react-query';
-import { firebaseUserApi } from '@/lib/firebaseApi';
+import { firebaseUserApi } from '@/lib/api';
 import { CACHE_KEYS } from '@/lib/queryClient';
 
 interface PrefetchLinkProps extends React.ComponentProps<typeof Link> {

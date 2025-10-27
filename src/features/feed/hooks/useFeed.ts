@@ -1,0 +1,192 @@
+/**
+ * Feed Query Hooks - React Query Boundary
+ *
+ * This is the ONLY place where React Query should be used for feed.
+ * All components should use these hooks instead of direct React Query or firebaseApi calls.
+ *
+ * Architecture:
+ * Components → useFeed hooks (React Query) → FeedService → Repositories → Firebase
+ */
+
+import { useInfiniteQuery, useQuery, UseQueryOptions, UseInfiniteQueryOptions } from '@tanstack/react-query';
+import { FeedService, FeedFilters, FeedOptions } from '../services/FeedService';
+import { Session } from '@/domain/entities/Session';
+import { STANDARD_CACHE_TIMES } from '@/lib/react-query';
+
+// Singleton service instance
+const feedService = new FeedService();
+
+// ==================== TYPES ====================
+
+export interface FeedResult {
+  sessions: Session[];
+  hasMore: boolean;
+  nextCursor?: string;
+}
+
+export interface FeedPage {
+  sessions: Session[];
+  hasMore: boolean;
+  nextCursor?: string;
+}
+
+// ==================== CACHE KEYS ====================
+// Hierarchical cache keys for efficient invalidation
+
+export const FEED_KEYS = {
+  all: () => ['feed'] as const,
+  lists: () => [...FEED_KEYS.all(), 'list'] as const,
+  list: (userId: string, filters: FeedFilters) =>
+    [...FEED_KEYS.lists(), userId, filters] as const,
+  user: (userId: string) => [...FEED_KEYS.all(), 'user', userId] as const,
+  group: (groupId: string) => [...FEED_KEYS.all(), 'group', groupId] as const,
+};
+
+// ==================== QUERY HOOKS ====================
+
+/**
+ * Get paginated feed with infinite scroll support
+ *
+ * This is the primary hook for feed functionality with pagination.
+ *
+ * @example
+ * const {
+ *   data,
+ *   fetchNextPage,
+ *   hasNextPage,
+ *   isFetchingNextPage
+ * } = useFeedInfinite(userId, { type: 'following' });
+ *
+ * // Access all pages:
+ * const allSessions = data?.pages.flatMap(page => page.sessions) || [];
+ */
+export function useFeedInfinite(
+  currentUserId: string,
+  filters: FeedFilters = {},
+  options?: Partial<UseInfiniteQueryOptions<FeedResult, Error>>
+) {
+  return useInfiniteQuery<FeedResult, Error>({
+    queryKey: FEED_KEYS.list(currentUserId, filters),
+    queryFn: ({ pageParam }) =>
+      feedService.getFeed(currentUserId, filters, {
+        limit: 20,
+        cursor: pageParam as string | undefined,
+      }),
+    getNextPageParam: (lastPage) => {
+      return lastPage.hasMore ? lastPage.nextCursor : undefined;
+    },
+    initialPageParam: undefined as string | undefined,
+    staleTime: STANDARD_CACHE_TIMES.SHORT, // 1 minute - feed data changes frequently
+    enabled: !!currentUserId,
+    ...options,
+  });
+}
+
+/**
+ * Get initial feed page (non-paginated)
+ *
+ * Use this for simple feed displays without infinite scroll.
+ *
+ * @example
+ * const { data: feedData, isLoading, error } = useFeed(userId, { type: 'all' });
+ */
+export function useFeed(
+  currentUserId: string,
+  filters: FeedFilters = {},
+  limit: number = 20,
+  options?: Partial<UseQueryOptions<FeedResult, Error>>
+) {
+  return useQuery<FeedResult, Error>({
+    queryKey: [...FEED_KEYS.list(currentUserId, filters), limit],
+    queryFn: () => feedService.getFeed(currentUserId, filters, { limit }),
+    staleTime: STANDARD_CACHE_TIMES.SHORT, // 1 minute
+    enabled: !!currentUserId,
+    ...options,
+  });
+}
+
+/**
+ * Get user-specific feed
+ *
+ * Shows sessions from a specific user (for profile pages).
+ *
+ * @example
+ * const { data: userFeed } = useUserFeed(currentUserId, targetUserId);
+ */
+export function useUserFeed(
+  currentUserId: string,
+  userId: string,
+  limit: number = 20,
+  options?: Partial<UseQueryOptions<FeedResult, Error>>
+) {
+  return useQuery<FeedResult, Error>({
+    queryKey: [...FEED_KEYS.user(userId), limit],
+    queryFn: () =>
+      feedService.getFeed(currentUserId, { type: 'user', userId }, { limit }),
+    staleTime: STANDARD_CACHE_TIMES.MEDIUM, // 5 minutes
+    enabled: !!currentUserId && !!userId,
+    ...options,
+  });
+}
+
+/**
+ * Get group-specific feed
+ *
+ * Shows sessions from a specific group.
+ *
+ * @example
+ * const { data: groupFeed } = useGroupFeed(currentUserId, groupId);
+ */
+export function useGroupFeed(
+  currentUserId: string,
+  groupId: string,
+  limit: number = 20,
+  options?: Partial<UseQueryOptions<FeedResult, Error>>
+) {
+  return useQuery<FeedResult, Error>({
+    queryKey: [...FEED_KEYS.group(groupId), limit],
+    queryFn: () =>
+      feedService.getFeed(currentUserId, { type: 'group', groupId }, { limit }),
+    staleTime: STANDARD_CACHE_TIMES.MEDIUM, // 5 minutes
+    enabled: !!currentUserId && !!groupId,
+    ...options,
+  });
+}
+
+/**
+ * Get following feed (infinite scroll version)
+ *
+ * Shows sessions from users the current user follows.
+ *
+ * @example
+ * const {
+ *   data,
+ *   fetchNextPage,
+ *   hasNextPage
+ * } = useFollowingFeedInfinite(userId);
+ */
+export function useFollowingFeedInfinite(
+  currentUserId: string,
+  options?: Partial<UseInfiniteQueryOptions<FeedResult, Error>>
+) {
+  return useFeedInfinite(currentUserId, { type: 'following' }, options);
+}
+
+/**
+ * Get public/all feed (infinite scroll version)
+ *
+ * Shows all public sessions.
+ *
+ * @example
+ * const {
+ *   data,
+ *   fetchNextPage,
+ *   hasNextPage
+ * } = usePublicFeedInfinite(userId);
+ */
+export function usePublicFeedInfinite(
+  currentUserId: string,
+  options?: Partial<UseInfiniteQueryOptions<FeedResult, Error>>
+) {
+  return useFeedInfinite(currentUserId, { type: 'all' }, options);
+}

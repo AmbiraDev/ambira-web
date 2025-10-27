@@ -5,15 +5,15 @@ import { useRouter } from 'next/navigation';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import Header from '@/components/HeaderComponent';
 import { IconRenderer } from '@/components/IconRenderer';
-import { useProjects } from '@/contexts/ProjectsContext';
-import { useAuth } from '@/contexts/AuthContext';
-import { firebaseApi } from '@/lib/firebaseApi';
+import { useAuth } from '@/hooks/useAuth';
+import { useActivities, useActivityStats } from '@/hooks/useActivitiesQuery';
+import { firebaseApi } from '@/lib/api';
 import { Project, ProjectStats, SessionWithDetails } from '@/types';
 import Link from 'next/link';
 import { ArrowLeft, Clock, Calendar, TrendingUp, Settings, ChevronDown, Play } from 'lucide-react';
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip, ComposedChart, Area } from 'recharts';
 import { SessionCard } from '@/components/SessionCard';
-import { firebaseApi as api } from '@/lib/firebaseApi';
+import { firebaseApi as api } from '@/lib/api';
 
 interface ProjectDetailPageProps {
   params: Promise<{
@@ -34,13 +34,12 @@ interface ChartDataPoint {
 function ProjectDetailContent({ projectId }: { projectId: string }) {
   const router = useRouter();
   const { user } = useAuth();
-  const { projects, getProjectStats } = useProjects();
+  const { data: projects = [] } = useActivities(user?.id);
+  const { data: stats, isLoading: isLoadingStats } = useActivityStats(projectId);
 
   const [project, setProject] = useState<Project | null>(null);
-  const [stats, setStats] = useState<ProjectStats | null>(null);
   const [sessions, setSessions] = useState<SessionWithDetails[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [isLoadingStats, setIsLoadingStats] = useState(true);
   const [isLoadingSessions, setIsLoadingSessions] = useState(true);
   const [activeTab, setActiveTab] = useState<ActivityTab>('analytics');
   const [timePeriod, setTimePeriod] = useState<TimePeriod>('7D');
@@ -79,19 +78,6 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
       const foundProject = projects?.find(p => p.id === projectId);
       if (foundProject) {
         setProject(foundProject);
-      }
-
-      // Load stats
-      setIsLoadingStats(true);
-      try {
-        if (getProjectStats) {
-          const projectStats = await getProjectStats(projectId);
-          setStats(projectStats);
-        }
-      } catch (error) {
-        console.error('Error loading project stats:', error);
-      } finally {
-        setIsLoadingStats(false);
       }
 
       // Load sessions

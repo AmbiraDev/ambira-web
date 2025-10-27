@@ -3,8 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useAuth } from '@/contexts/AuthContext';
-import { firebaseUserApi, firebaseApi } from '@/lib/firebaseApi';
+import { useAuth } from '@/hooks/useAuth';
+import { firebaseUserApi, firebaseApi } from '@/lib/api';
 import { cachedQuery } from '@/lib/cache';
 import GroupAvatar from '@/components/GroupAvatar';
 import SuggestedPeopleModal from '@/components/SuggestedPeopleModal';
@@ -283,12 +283,7 @@ function RightSidebar() {
                           // Remove from suggestions after joining
                           setSuggestedGroups(prev => prev.filter(g => g.id !== group.id));
                         } catch (error) {
-                          // Log error message only to avoid console object logging
-                          if (error instanceof Error) {
-                            console.warn('Failed to join group:', error.message);
-                          } else {
-                            console.warn('Failed to join group: Unknown error');
-                          }
+                          // Error joining group - silently fail for suggestions
                         } finally {
                           setJoiningGroups(prev => {
                             const next = new Set(prev);

@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { PrivacySettings as PrivacySettingsType, UserProfile } from '@/types';
-import { firebaseUserApi } from '@/lib/firebaseApi';
-import { useAuth } from '@/contexts/AuthContext';
+import { firebaseUserApi } from '@/lib/api';
+import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import {
   SettingsSection,
@@ -52,7 +52,8 @@ export const PrivacySettings: React.FC<PrivacySettingsProps> = ({
   const loadSettings = async () => {
     try {
       setIsLoading(true);
-      // TODO: Replace with real API call when backend is available
+      // TODO: Implement privacy settings fetching when Firebase getPrivacySettings() is available
+      // Currently uses firebaseUserApi.getPrivacySettings() - verify implementation status
         const settings = await firebaseUserApi.getPrivacySettings();
         setSettings(settings);
     } catch (error) {
@@ -93,7 +94,8 @@ export const PrivacySettings: React.FC<PrivacySettingsProps> = ({
 
   const handleUnblockUser = async (userId: string) => {
     try {
-      // TODO: Replace with real API call when backend is available
+      // TODO: Implement unblock user API endpoint in firebaseUserApi
+      // Need to add unblockUser() method to handle Firebase user blocking/unblocking
       setBlockedUsers(prev => prev.filter(user => user.id !== userId));
       setSettings(prev => ({
         ...prev,

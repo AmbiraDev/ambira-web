@@ -4,7 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/HeaderComponent';
 import { UpdateActivityData } from '@/types';
-import { useProjects } from '@/contexts/ProjectsContext';
+import { useAuth } from '@/hooks/useAuth';
+import { useActivities, useUpdateActivity } from '@/hooks/useActivitiesQuery';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { IconSelector } from '@/components/IconSelector';
 import { ColorSelector } from '@/components/ColorSelector';
@@ -160,7 +161,9 @@ interface EditActivityPageProps {
 
 function EditActivityContent({ activityId }: { activityId: string }) {
   const router = useRouter();
-  const { projects, updateProject } = useProjects();
+  const { user } = useAuth();
+  const { data: projects = [] } = useActivities(user?.id);
+  const updateProject = useUpdateActivity();
   const [isLoading, setIsLoading] = useState(true);
   const [formData, setFormData] = useState<UpdateActivityData>({
     name: '',

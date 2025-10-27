@@ -2,11 +2,11 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import Header from '@/components/HeaderComponent';
 import { SessionWithDetails, CommentWithDetails } from '@/types';
-import { firebaseApi } from '@/lib/firebaseApi';
+import { firebaseApi } from '@/lib/api';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Heart, MessageCircle, Eye, TrendingUp, BarChart3, Users } from 'lucide-react';

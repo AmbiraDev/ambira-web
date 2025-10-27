@@ -1,13 +1,14 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useTimer } from '@/contexts/TimerContext';
-import { useAuth } from '@/contexts/AuthContext';
+import { useTimer } from '@/features/timer/hooks';
+import { useAuth } from '@/hooks/useAuth';
 import { Project, CreateSessionData } from '@/types';
 import { TimerDisplay } from './TimerDisplay';
 import { TimerControls } from './TimerControls';
 import { SaveSession } from './SaveSession';
-import { firebaseApi } from '@/lib/firebaseApi';
+import { firebaseApi } from '@/lib/api';
+import { cn } from '@/lib/utils';
 
 interface SessionTimerProps {
   className?: string;
@@ -73,7 +74,7 @@ export const SessionTimer: React.FC<SessionTimerProps> = ({ className = '' }) =>
   const isActive = timerState.isRunning || timerState.pausedDuration > 0;
 
   return (
-    <div className={`max-w-4xl mx-auto p-6 ${className}`}>
+    <div className={cn('max-w-4xl mx-auto p-6', className)}>
       <div className="bg-white rounded-lg shadow-lg p-8">
         {/* Header */}
         <div className="text-center mb-8">
@@ -267,7 +268,7 @@ const CustomTimerControls: React.FC<CustomTimerControlsProps> = ({
   const isActive = timerState.isRunning || timerState.pausedDuration > 0;
 
   return (
-    <div className={`flex items-center justify-center space-x-3 ${className}`}>
+    <div className={cn('flex items-center justify-center space-x-3', className)}>
       {!isActive ? (
         <button
           onClick={handleStart}

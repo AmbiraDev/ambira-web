@@ -7,7 +7,7 @@
 
 'use client';
 
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
 import MobileHeader from '@/components/MobileHeader';
 import LeftSidebar from '@/components/LeftSidebar';
@@ -26,7 +26,6 @@ export function FeedPageContent() {
     label: 'Following'
   });
 
-  console.log('[Home Page] Auth State:', { isAuthenticated, isLoading });
 
   // Show loading spinner while checking authentication
   if (isLoading) {

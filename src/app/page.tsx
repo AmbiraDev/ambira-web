@@ -7,7 +7,7 @@
 
 'use client';
 
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import Header from '@/components/HeaderComponent';
 import { FeedPageContent } from '@/features/feed/components/FeedPageContent';
 import { LandingPageContent } from '@/features/feed/components/LandingPageContent';

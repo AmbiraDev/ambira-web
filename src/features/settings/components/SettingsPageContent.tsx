@@ -28,9 +28,9 @@ import {
   LogOut,
   Trash2
 } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import Image from 'next/image';
-import { firebaseUserApi } from '@/lib/firebaseApi';
+import { firebaseUserApi } from '@/lib/api';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 import ConfirmDialog from '@/components/ConfirmDialog';

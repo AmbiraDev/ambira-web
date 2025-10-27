@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { UserSearchResult } from '@/types';
-import { firebaseUserApi } from '@/lib/firebaseApi';
+import { firebaseUserApi } from '@/lib/api';
 import { UserCard, UserCardCompact } from './UserCard';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';

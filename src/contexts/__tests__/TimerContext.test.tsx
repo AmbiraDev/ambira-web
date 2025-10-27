@@ -1,12 +1,12 @@
 import React from 'react';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { TimerProvider, useTimer } from '../TimerContext';
-import { firebaseSessionApi } from '@/lib/firebaseApi';
+import { firebaseSessionApi } from '@/lib/api';
 import { useAuth } from '../AuthContext';
 import { useProjects } from '../ProjectsContext';
 
 // Mock dependencies
-jest.mock('@/lib/firebaseApi', () => ({
+jest.mock('@/lib/api', () => ({
   firebaseSessionApi: {
     getActiveSession: jest.fn(),
     clearActiveSession: jest.fn(),

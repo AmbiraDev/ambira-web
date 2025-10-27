@@ -3,7 +3,7 @@
  * Functions to check for challenges that need notifications
  */
 
-import { firebaseChallengeApi, challengeNotifications } from './firebaseApi';
+import { firebaseChallengeApi, challengeNotifications } from './api';
 import { Challenge } from '@/types';
 
 /**

@@ -1,9 +1,10 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { useProjects } from '@/contexts/ProjectsContext';
-import { firebaseChallengeApi } from '@/lib/firebaseApi';
+import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/hooks/useAuth';
+import { useActivities } from '@/hooks/useActivitiesQuery';
+import { firebaseChallengeApi } from '@/lib/api';
 import { Challenge, ChallengeProgress, Group } from '@/types';
 import ChallengeCard from './ChallengeCard';
 import CreateChallengeModal from './CreateChallengeModal';
@@ -25,7 +26,8 @@ interface GroupChallengesProps {
 
 export default function GroupChallenges({ group, isAdmin }: GroupChallengesProps) {
   const { user } = useAuth();
-  const { projects } = useProjects();
+  const { user } = useAuth();
+  const { data: projects = [] } = useActivities(user?.id);
   const [challenges, setChallenges] = useState<Challenge[]>([]);
   const [userProgress, setUserProgress] = useState<Record<string, ChallengeProgress>>({});
   const [participatingChallenges, setParticipatingChallenges] = useState<Set<string>>(new Set());

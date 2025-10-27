@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Session, Project, SessionFilters, SessionSort } from '@/types';
-import { firebaseProjectApi, firebaseSessionApi } from '@/lib/firebaseApi';
+import { firebaseProjectApi, firebaseSessionApi } from '@/lib/api';
 import { MoreVertical } from 'lucide-react';
 import ConfirmDialog from './ConfirmDialog';
 

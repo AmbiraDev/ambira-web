@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { ChevronDown, Check } from 'lucide-react';
-import { useAuth } from '@/contexts/AuthContext';
-import { firebaseApi } from '@/lib/firebaseApi';
+import { useAuth } from '@/hooks/useAuth';
+import { firebaseApi } from '@/lib/api';
 import { Group } from '@/types';
 
 export interface FeedFilterOption {
@@ -80,7 +80,16 @@ export const FeedFilterDropdown: React.FC<FeedFilterDropdownProps> = ({
       {/* Dropdown Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            setIsOpen(!isOpen);
+          }
+        }}
         className="w-full flex items-center justify-between px-4 py-2.5 bg-[#007AFF] text-white rounded-lg hover:bg-[#0051D5] transition-colors duration-200 shadow-sm min-h-[44px]"
+        aria-label={`Filter feed by ${selectedFilter.label}`}
+        aria-expanded={isOpen}
+        aria-haspopup="listbox"
       >
         <span className="font-semibold">
           {selectedFilter.label}
@@ -89,23 +98,36 @@ export const FeedFilterDropdown: React.FC<FeedFilterDropdownProps> = ({
           className={`w-4 h-4 transition-transform ${
             isOpen ? 'transform rotate-180' : ''
           }`}
+          aria-hidden="true"
         />
       </button>
 
       {/* Dropdown Menu */}
       {isOpen && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 overflow-hidden">
+        <div
+          className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 overflow-hidden"
+          role="listbox"
+          aria-label="Feed filter options"
+        >
           <div className="py-1">
             {/* All */}
             <button
               onClick={() =>
                 handleFilterSelect({ type: 'all', label: 'All' })
               }
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  handleFilterSelect({ type: 'all', label: 'All' });
+                }
+              }}
               className={`w-full flex items-center justify-between px-4 py-3 transition-colors duration-200 min-h-[44px] ${
                 isSelected({ type: 'all', label: 'All' })
                   ? 'bg-gray-50'
                   : 'hover:bg-gray-50'
               }`}
+              role="option"
+              aria-selected={isSelected({ type: 'all', label: 'All' })}
             >
               <span className={`${
                 isSelected({ type: 'all', label: 'All' })
@@ -124,11 +146,19 @@ export const FeedFilterDropdown: React.FC<FeedFilterDropdownProps> = ({
               onClick={() =>
                 handleFilterSelect({ type: 'following', label: 'Following' })
               }
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  handleFilterSelect({ type: 'following', label: 'Following' });
+                }
+              }}
               className={`w-full flex items-center justify-between px-4 py-3 transition-colors duration-200 min-h-[44px] ${
                 isSelected({ type: 'following', label: 'Following' })
                   ? 'bg-gray-50'
                   : 'hover:bg-gray-50'
               }`}
+              role="option"
+              aria-selected={isSelected({ type: 'following', label: 'Following' })}
             >
               <span className={`${
                 isSelected({ type: 'following', label: 'Following' })
@@ -147,11 +177,19 @@ export const FeedFilterDropdown: React.FC<FeedFilterDropdownProps> = ({
               onClick={() =>
                 handleFilterSelect({ type: 'user', label: 'My Activities' })
               }
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  handleFilterSelect({ type: 'user', label: 'My Activities' });
+                }
+              }}
               className={`w-full flex items-center justify-between px-4 py-3 transition-colors duration-200 min-h-[44px] ${
                 isSelected({ type: 'user', label: 'My Activities' })
                   ? 'bg-gray-50'
                   : 'hover:bg-gray-50'
               }`}
+              role="option"
+              aria-selected={isSelected({ type: 'user', label: 'My Activities' })}
             >
               <span className={`${
                 isSelected({ type: 'user', label: 'My Activities' })
@@ -190,6 +228,16 @@ export const FeedFilterDropdown: React.FC<FeedFilterDropdownProps> = ({
                       groupId: group.id
                     })
                   }
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      handleFilterSelect({
+                        type: 'group',
+                        label: group.name,
+                        groupId: group.id
+                      });
+                    }
+                  }}
                   className={`w-full flex items-center justify-between px-4 py-3 transition-colors duration-200 min-h-[44px] ${
                     isSelected({
                       type: 'group',
@@ -199,6 +247,12 @@ export const FeedFilterDropdown: React.FC<FeedFilterDropdownProps> = ({
                       ? 'bg-gray-50'
                       : 'hover:bg-gray-50'
                   }`}
+                  role="option"
+                  aria-selected={isSelected({
+                    type: 'group',
+                    label: group.name,
+                    groupId: group.id
+                  })}
                 >
                   <span className={`truncate ${
                     isSelected({

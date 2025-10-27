@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { UserSearchResult } from '@/types';
-import { firebaseUserApi } from '@/lib/firebaseApi';
+import { firebaseUserApi } from '@/lib/api';
 
 interface CommentInputProps {
   sessionId: string;

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { firebaseApi } from './firebaseApi';
+import { firebaseApi } from './api';
 import { Session, Achievement } from '@/types';
 
 export const useSessionCompletion = () => {

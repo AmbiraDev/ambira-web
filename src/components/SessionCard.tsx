@@ -11,10 +11,14 @@ import LikesModal from './LikesModal';
 import CommentsModal from './CommentsModal';
 import { PrefetchLink } from './PrefetchLink';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/contexts/AuthContext';
-import { firebaseApi } from '@/lib/firebaseApi';
+import { useAuth } from '@/hooks/useAuth';
+import { firebaseApi } from '@/lib/api';
 import { MoreVertical, Heart, MessageCircle, Share2, Clock, ListTodo, Tag } from 'lucide-react';
 import Link from 'next/link';
+import { cn, isEmpty } from '@/lib/utils';
+import { COLORS } from '@/config/constants';
+import { formatSessionDate, formatDuration } from '@/lib/formatters';
+import { getUserInitials, getUserColor } from '@/lib/userUtils';
 
 interface SessionCardProps {
   session: SessionWithDetails;
@@ -120,78 +124,12 @@ export const SessionCard: React.FC<SessionCardProps> = ({
     };
   }, [showMenu]);
 
-  const formatTimeAgo = (date: Date): string => {
-    const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
-
-    const sessionDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-
-    // Format time as "h:mm am/pm"
-    const timeStr = date.toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true
-    });
-
-    // Check if today
-    if (sessionDate.getTime() === today.getTime()) {
-      return `Today at ${timeStr}`;
-    }
-
-    // Check if yesterday
-    if (sessionDate.getTime() === yesterday.getTime()) {
-      return `Yesterday at ${timeStr}`;
-    }
-
-    // Otherwise show full date: "Month Day, Year at h:mm am/pm"
-    const dateStr = date.toLocaleDateString('en-US', {
-      month: 'long',
-      day: 'numeric',
-      year: 'numeric'
-    });
-
-    return `${dateStr} at ${timeStr}`;
-  };
-
-  const getUserInitials = (user: User): string => {
-    return user.name
-      .split(' ')
-      .map(word => word.charAt(0))
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
-  };
-
-  const getUserColor = (userId: string): string => {
-    // Generate consistent color based on user ID
-    const colors = [
-      'bg-gradient-to-br from-orange-400 to-orange-600',
-      'bg-gradient-to-br from-blue-400 to-blue-600',
-      'bg-gradient-to-br from-green-400 to-green-600',
-      'bg-gradient-to-br from-purple-400 to-purple-600',
-      'bg-gradient-to-br from-pink-400 to-pink-600',
-      'bg-gradient-to-br from-indigo-400 to-indigo-600',
-      'bg-gradient-to-br from-teal-400 to-teal-600',
-      'bg-gradient-to-br from-cyan-400 to-cyan-600'
-    ];
-    const hash = userId.split('').reduce((a, b) => a + b.charCodeAt(0), 0);
-    return colors[hash % colors.length];
-  };
-
-  const formatTime = (seconds: number): string => {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-
-    if (hours > 0) {
-      return `${hours}h ${minutes}m`;
-    }
-    return `${minutes}m`;
-  };
 
   return (
-    <article className={`bg-white md:rounded-lg md:border md:border-gray-200 md:shadow-sm mb-0 md:mb-4 border-b-[6px] border-gray-200 md:border-b-0 hover:shadow-md transition-shadow ${className}`}>
+    <article className={cn(
+      'bg-white md:rounded-lg md:border md:border-gray-200 md:shadow-sm mb-0 md:mb-4 border-b-[6px] border-gray-200 md:border-b-0 hover:shadow-md transition-shadow',
+      className
+    )}>
       {/* Session Header */}
       <div className="flex items-center justify-between px-4 pt-4 pb-3">
         <PrefetchLink
@@ -217,7 +155,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({
           ) : (
             <div className="w-10 h-10 min-w-[2.5rem] aspect-square bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0 ring-2 ring-white">
               <span className="text-gray-600 font-semibold text-sm">
-                {getUserInitials(session.user)}
+                {getUserInitials(session.user.name)}
               </span>
             </div>
           )}
@@ -231,17 +169,18 @@ export const SessionCard: React.FC<SessionCardProps> = ({
                 <button
                   onClick={handleFollowToggle}
                   disabled={isFollowLoading}
-                  className={`md:hidden text-xs font-semibold transition-colors duration-200 whitespace-nowrap flex-shrink-0 ${
+                  className={cn(
+                    'md:hidden text-xs font-semibold transition-colors duration-200 whitespace-nowrap flex-shrink-0',
                     isFollowing
                       ? 'text-gray-600 hover:text-gray-900'
                       : 'text-[#007AFF] hover:text-[#0051D5]'
-                  }`}
+                  )}
                 >
                   {isFollowing ? 'Following' : 'Follow'}
                 </button>
               )}
             </div>
-            <div className="text-xs text-gray-500">{formatTimeAgo(session.createdAt)}</div>
+            <div className="text-xs text-gray-500">{formatSessionDate(session.createdAt)}</div>
           </div>
         </PrefetchLink>
 
@@ -299,7 +238,10 @@ export const SessionCard: React.FC<SessionCardProps> = ({
         </h3>
         {session.description && (
           <div>
-            <p className={`text-gray-600 text-sm md:text-base whitespace-pre-wrap break-words ${!isExpanded && session.description.length > 280 ? 'line-clamp-3 sm:line-clamp-4' : ''}`}>
+            <p className={cn(
+              'text-gray-600 text-sm md:text-base whitespace-pre-wrap break-words',
+              !isExpanded && session.description.length > 280 && 'line-clamp-3 sm:line-clamp-4'
+            )}>
               {session.description.length > 1000 ? session.description.slice(0, 1000) : session.description}
             </p>
             {session.description.length > 280 && (
@@ -320,7 +262,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({
       </Link>
 
       {/* Image Gallery */}
-      {session.images && session.images.length > 0 && (
+      {!isEmpty(session.images) && (
         <div className="px-4 pb-4">
           <ImageGallery
             images={session.images}
@@ -334,7 +276,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({
         <div className="grid grid-cols-2 gap-4">
           <div>
             <div className="text-xs text-gray-500 mb-1">Time</div>
-            <div className="text-base font-semibold text-gray-900">{formatTime(session.duration)}</div>
+            <div className="text-base font-semibold text-gray-900">{formatDuration(session.duration)}</div>
           </div>
           <div className="min-w-0">
             <div className="text-xs text-gray-500 mb-1">Activity</div>

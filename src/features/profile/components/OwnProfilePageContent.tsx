@@ -8,12 +8,19 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import Header from '@/components/HeaderComponent';
 import MobileHeader from '@/components/MobileHeader';
 import BottomNavigation from '@/components/BottomNavigation';
 import Footer from '@/components/Footer';
-import { useUserSessions, useUserStats, useUserProfile, useUserFollowers, useUserFollowing, useProjects } from '@/hooks/useCache';
+import {
+  useProfileById,
+  useProfileStats,
+  useFollowers,
+  useFollowing
+} from '@/features/profile/hooks';
+import { useUserSessions } from '@/features/sessions/hooks';
+import { useProjects } from '@/features/projects/hooks';
 import Link from 'next/link';
 import Image from 'next/image';
 import { User as UserIcon, Users, Settings, Clock, Target, Calendar, Heart, LogOut, Edit, TrendingUp, BarChart3, ChevronDown, BarChart2, MapPin } from 'lucide-react';
@@ -53,20 +60,20 @@ export function OwnProfilePageContent() {
   const [selectedActivityId, setSelectedActivityId] = useState<string>('all');
   const [showActivityDropdown, setShowActivityDropdown] = useState(false);
 
-  // Use React Query hooks for data with automatic caching
+  // Use new feature hooks for data with automatic caching
   const { data: sessions = [], isLoading: sessionsLoading } = useUserSessions(user?.id || '', 50, {
     enabled: !!user?.id,
   });
-  const { data: stats = null, isLoading: statsLoading } = useUserStats(user?.id || '', {
+  const { data: stats = null, isLoading: statsLoading } = useProfileStats(user?.id || '', {
     enabled: !!user?.id,
   });
-  const { data: userProfile = null } = useUserProfile(user?.id || '', {
+  const { data: userProfile = null } = useProfileById(user?.id || '', {
     enabled: !!user?.id,
   });
-  const { data: followers = [] } = useUserFollowers(user?.id || '', {
+  const { data: followers = [] } = useFollowers(user?.id || '', {
     enabled: !!user?.id,
   });
-  const { data: following = [] } = useUserFollowing(user?.id || '', {
+  const { data: following = [] } = useFollowing(user?.id || '', {
     enabled: !!user?.id,
   });
   const { data: activities = [] } = useProjects(user?.id || '', {

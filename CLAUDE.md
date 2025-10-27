@@ -34,9 +34,17 @@ npm run type-check    # Run TypeScript type checking without emitting files
 
 ### Testing
 ```bash
+# Unit & Integration Tests (Jest)
 npm test              # Run Jest tests
 npm run test:watch    # Run tests in watch mode
 npm run test:coverage # Generate test coverage report
+
+# End-to-End Tests (Playwright)
+npm run test:e2e       # Run all E2E tests
+npm run test:smoke     # Run smoke tests only
+npm run test:e2e:ui    # Run tests in UI mode (interactive)
+npm run test:e2e:debug # Run tests in debug mode
+npm run test:e2e:report # View last test report
 ```
 
 ### Firebase
@@ -46,6 +54,13 @@ npx firebase-tools deploy --only firestore:rules --non-interactive
 ```
 
 ## Architecture
+
+**📚 For comprehensive architecture documentation, see [/docs/architecture/](./docs/architecture/README.md)**
+
+Key architectural patterns:
+- **Caching**: React Query at feature boundaries - see [CACHING_STRATEGY.md](./docs/architecture/CACHING_STRATEGY.md)
+- **Feature Structure**: Clean architecture with Services, Hooks, and Repositories
+- **Examples**: Complete implementations in [EXAMPLES.md](./docs/architecture/EXAMPLES.md)
 
 ### Sessions-Only Model (Strava-like)
 **Critical**: Sessions ARE the primary content type, not posts. There is NO separate Post type or posts collection in active use.
@@ -250,7 +265,7 @@ import { Something } from '@/components/Something'
 
 ### Environment Variables
 
-Firebase configuration required in `.env.local`:
+**Required** - Firebase configuration in `.env.local`:
 - `NEXT_PUBLIC_FIREBASE_API_KEY`
 - `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`
 - `NEXT_PUBLIC_FIREBASE_PROJECT_ID`
@@ -259,13 +274,61 @@ Firebase configuration required in `.env.local`:
 - `NEXT_PUBLIC_FIREBASE_APP_ID`
 - `NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID` (optional)
 
+**Optional** - Sentry error tracking configuration:
+- `NEXT_PUBLIC_SENTRY_DSN` - Public DSN for error reporting (leave empty to disable Sentry)
+- `SENTRY_AUTH_TOKEN` - Secret token for uploading source maps (production deployments only)
+
+See `.env.example` for detailed setup instructions and required scopes.
+
 ## Testing
+
+### Unit & Integration Tests (Jest)
 
 Jest configured with:
 - Setup file: `jest.setup.js`
 - Test environment: jsdom
 - Coverage thresholds: 80% for branches, functions, lines, statements
 - Path alias mapping: `@/*` → `src/*`
+
+```bash
+npm test              # Run all Jest tests
+npm run test:watch    # Run tests in watch mode
+npm run test:coverage # Generate coverage report
+```
+
+See [Test Suite Documentation](./src/__tests__/README.md) for more details.
+
+### End-to-End Tests (Playwright)
+
+Playwright smoke tests verify critical user paths with accessibility checks:
+
+```bash
+npm run test:e2e       # Run all E2E tests
+npm run test:smoke     # Run only smoke tests
+npm run test:e2e:ui    # Run tests in UI mode (interactive)
+npm run test:e2e:debug # Run tests in debug mode
+```
+
+**Smoke Test Coverage**:
+- Feed page loading and navigation
+- Timer page functionality
+- Authentication flows
+- Accessibility compliance (WCAG 2.0/2.1 Level AA)
+- Mobile responsiveness
+- Keyboard navigation
+
+**CI Integration**:
+- Smoke tests run automatically on every PR and push to main
+- Tests run in Chromium browser
+- Produces HTML reports with screenshots/videos on failure
+- See [Playwright CI Setup](./docs/testing/playwright-ci-setup.md) for details
+
+**First Time Setup**:
+```bash
+npx playwright install  # Install browser binaries
+```
+
+See [E2E Test Documentation](./e2e/README.md) for comprehensive guide.
 
 Run tests before commits. The project expects high test coverage.
 

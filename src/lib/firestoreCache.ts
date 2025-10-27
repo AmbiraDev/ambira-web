@@ -19,6 +19,7 @@ import {
 } from 'firebase/firestore';
 import { db } from './firebase';
 import { cachedQuery, invalidateCache, MemoryCache, QueryDeduplicator } from './cache';
+import { CACHE_TIMES } from '@/config/constants';
 
 // ==================== CACHED DOCUMENT READS ====================
 
@@ -40,7 +41,7 @@ export async function getCachedDoc(
     cacheKey,
     () => getDoc(docRef),
     {
-      memoryTtl: options.memoryTtl ?? 5 * 60 * 1000, // 5 minutes
+      memoryTtl: options.memoryTtl ?? CACHE_TIMES.MEDIUM, // 5 minutes
       sessionCache: options.sessionCache ?? true,
       localTtl: options.localTtl ?? 0,
       dedupe: options.dedupe ?? true,
@@ -59,7 +60,7 @@ export async function getCachedDocs(
     dedupe?: boolean;
   } = {}
 ): Promise<DocumentSnapshot[]> {
-  const memoryTtl = options.memoryTtl ?? 5 * 60 * 1000;
+  const memoryTtl = options.memoryTtl ?? CACHE_TIMES.MEDIUM;
 
   // Check cache for each document
   const results: (DocumentSnapshot | null)[] = [];
@@ -123,7 +124,7 @@ export async function getCachedQuery<T>(
     `query:${cacheKey}`,
     () => getDocs(query),
     {
-      memoryTtl: options.memoryTtl ?? 1 * 60 * 1000, // 1 minute default for queries
+      memoryTtl: options.memoryTtl ?? CACHE_TIMES.SHORT, // 1 minute default for queries
       sessionCache: options.sessionCache ?? false,
       localTtl: options.localTtl ?? 0,
       dedupe: options.dedupe ?? true,
@@ -192,7 +193,7 @@ export class OptimisticUpdateManager {
    */
   static apply<T>(key: string, optimisticData: T): void {
     this.pendingUpdates.set(key, optimisticData);
-    MemoryCache.set(key, optimisticData, 5 * 60 * 1000);
+    MemoryCache.set(key, optimisticData, CACHE_TIMES.MEDIUM);
   }
 
   /**
@@ -207,7 +208,7 @@ export class OptimisticUpdateManager {
    */
   static rollback<T>(key: string, originalData: T): void {
     this.pendingUpdates.delete(key);
-    MemoryCache.set(key, originalData, 5 * 60 * 1000);
+    MemoryCache.set(key, originalData, CACHE_TIMES.MEDIUM);
     invalidateCache(key);
   }
 
@@ -228,11 +229,11 @@ export async function prefetchDocs(docRefs: DocumentReference[]): Promise<void> 
   // Use low priority to not interfere with user actions
   if ('requestIdleCallback' in window) {
     (window as Window & { requestIdleCallback: (callback: () => void) => void }).requestIdleCallback(() => {
-      getCachedDocs(docRefs, { memoryTtl: 10 * 60 * 1000 });
+      getCachedDocs(docRefs, { memoryTtl: CACHE_TIMES.LONG });
     });
   } else {
     setTimeout(() => {
-      getCachedDocs(docRefs, { memoryTtl: 10 * 60 * 1000 });
+      getCachedDocs(docRefs, { memoryTtl: CACHE_TIMES.LONG });
     }, 100);
   }
 }
@@ -246,11 +247,11 @@ export async function prefetchQuery<T>(
 ): Promise<void> {
   if ('requestIdleCallback' in window) {
     (window as Window & { requestIdleCallback: (callback: () => void) => void }).requestIdleCallback(() => {
-      getCachedQuery(query, cacheKey, { memoryTtl: 10 * 60 * 1000 });
+      getCachedQuery(query, cacheKey, { memoryTtl: CACHE_TIMES.LONG });
     });
   } else {
     setTimeout(() => {
-      getCachedQuery(query, cacheKey, { memoryTtl: 10 * 60 * 1000 });
+      getCachedQuery(query, cacheKey, { memoryTtl: CACHE_TIMES.LONG });
     }, 100);
   }
 }

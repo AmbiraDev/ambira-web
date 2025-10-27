@@ -1,8 +1,8 @@
 'use client';
 
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { useState, useEffect } from 'react';
-import { firebaseApi } from '@/lib/firebaseApi';
+import { firebaseApi } from '@/lib/api';
 import { UserProfile, UserStats } from '@/types';
 import { WeekStreakCalendar } from './WeekStreakCalendar';
 import { ChevronRight } from 'lucide-react';

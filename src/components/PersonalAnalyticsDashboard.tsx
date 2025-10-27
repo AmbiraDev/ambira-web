@@ -7,7 +7,7 @@ import { ActivityChart } from './ActivityChart';
 import { HeatmapCalendar } from './HeatmapCalendar';
 import { StreakDisplay } from './StreakDisplay';
 import { AnalyticsPeriod, Session } from '@/types';
-import { firebaseSessionApi } from '@/lib/firebaseApi';
+import { firebaseSessionApi } from '@/lib/api';
 
 interface PersonalAnalyticsDashboardProps {
   userId: string;

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { ActivityData, WeeklyActivity, ProjectBreakdown } from '@/types';
-import { firebaseUserApi } from '@/lib/firebaseApi';
+import { firebaseUserApi } from '@/lib/api';
 import { BarChart3, PieChart, TrendingUp, Clock, Target, Activity } from 'lucide-react';
 
 interface ProfileStatsProps {

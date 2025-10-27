@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Image from 'next/image';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { ImageLightbox } from './ImageLightbox';
+import { isEmpty } from '@/lib/utils';
 
 interface ImageGalleryProps {
   images: string[];
@@ -24,7 +25,7 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxStartIndex, setLightboxStartIndex] = useState(0);
 
-  if (!images || images.length === 0) return null;
+  if (isEmpty(images)) return null;
 
   const openLightbox = (index: number) => {
     setLightboxStartIndex(index);

@@ -4,8 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import { SessionFormData, Project, CreateSessionData } from '@/types';
-import { firebaseApi } from '@/lib/firebaseApi';
-import { useAuth } from '@/contexts/AuthContext';
+import { firebaseApi } from '@/lib/api';
+import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/contexts/ToastContext';
 import { ArrowLeft, Check, Image as ImageIcon, X } from 'lucide-react';
 import Link from 'next/link';
@@ -13,6 +13,7 @@ import Image from 'next/image';
 import { uploadImages, compressImage } from '@/lib/imageUpload';
 import { parseLocalDateTime } from '@/lib/utils';
 import Header from '@/components/HeaderComponent';
+import { debug } from '@/lib/debug';
 
 interface DeleteConfirmProps {
   isOpen: boolean;
@@ -109,7 +110,7 @@ export default function ManualSessionRecorder() {
         const projectList = await firebaseApi.project.getProjects();
         setProjects(projectList);
       } catch (error) {
-        console.error('Failed to load projects:', error);
+        debug.error('ManualSessionRecorder - Failed to load projects:', error);
       }
     };
 
@@ -172,7 +173,7 @@ export default function ManualSessionRecorder() {
               { type: 'image/jpeg' }
             );
           } catch (error) {
-            console.error('Error converting HEIC:', error);
+            debug.error('ManualSessionRecorder - Error converting HEIC:', error);
             // More helpful error message
             alert(`HEIC conversion is currently unavailable. Please convert ${file.name} to JPG or PNG before uploading, or try refreshing the page.`);
             continue;
@@ -193,7 +194,7 @@ export default function ManualSessionRecorder() {
         const previewUrl = URL.createObjectURL(processedFile);
         previewUrls.push(previewUrl);
       } catch (error) {
-        console.error('Error processing image:', error);
+        debug.error('ManualSessionRecorder - Error processing image:', error);
         alert(`Failed to process ${file.name}`);
       }
     }
@@ -265,7 +266,7 @@ export default function ManualSessionRecorder() {
           const uploadResults = await uploadImages(selectedImages);
           imageUrls = uploadResults.map(result => result.url);
         } catch (error) {
-          console.error('Failed to upload images:', error);
+          debug.error('ManualSessionRecorder - Failed to upload images:', error);
           setErrors({ submit: 'Failed to upload images. Please try again.' });
           setIsUploadingImages(false);
           setIsLoading(false);
@@ -305,7 +306,7 @@ export default function ManualSessionRecorder() {
       // Redirect to home feed
       router.push('/');
     } catch (error) {
-      console.error('Failed to create manual session:', error);
+      debug.error('ManualSessionRecorder - Failed to create manual session:', error);
       showError('Failed to create session. Please try again.');
       setErrors({ submit: 'Failed to create session. Please try again.' });
     } finally {
@@ -412,7 +413,7 @@ export default function ManualSessionRecorder() {
                         aria-label="Remove image"
                         style={{ filter: 'drop-shadow(0 1px 2px rgb(0 0 0 / 0.9))' }}
                       >
-                        <X className="w-5 h-5" strokeWidth={3} />
+                        <X className="w-5 h-5" strokeWidth={3} aria-hidden="true" />
                       </button>
                     </div>
                   ))}

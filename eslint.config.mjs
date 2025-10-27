@@ -1,6 +1,7 @@
 import { dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { FlatCompat } from '@eslint/eslintrc';
+import tanstackQuery from '@tanstack/eslint-plugin-query';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -17,14 +18,11 @@ const eslintConfig = [
       'out/**',
       'build/**',
       'next-env.d.ts',
-      '**/__tests__/**',
-      '**/*.test.ts',
-      '**/*.test.tsx',
-      '**/jest.setup.js',
-      '**/jest.config.js',
     ],
   },
   ...compat.extends('next/core-web-vitals', 'next/typescript', 'prettier'),
+  // React Query ESLint rules
+  ...tanstackQuery.configs['flat/recommended'],
   {
     rules: {
       'prefer-const': 'warn', // Changed to warn for builds
@@ -39,6 +37,10 @@ const eslintConfig = [
       'react/display-name': 'warn', // Downgrade missing display name
       'react/jsx-no-undef': 'warn', // Downgrade undefined component warnings
       'react-hooks/exhaustive-deps': 'warn',
+      // React Query specific rules
+      '@tanstack/query/exhaustive-deps': 'warn',
+      '@tanstack/query/no-rest-destructuring': 'warn',
+      '@tanstack/query/stable-query-client': 'error',
     },
   },
 ];

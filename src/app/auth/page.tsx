@@ -1,6 +1,6 @@
 'use client';
 
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { LandingPage } from '@/components/LandingPage';
 
 export default function AuthPage() {

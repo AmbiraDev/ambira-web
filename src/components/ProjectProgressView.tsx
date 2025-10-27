@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Clock, Target, Calendar, Heart, ChevronDown } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip } from 'recharts';
-import { firebaseSessionApi } from '@/lib/firebaseApi';
+import { firebaseSessionApi } from '@/lib/api';
 import { Session } from '@/types';
 
 interface ProjectProgressViewProps {

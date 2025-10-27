@@ -3,22 +3,22 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { UserProfile } from '@/types';
-import { firebaseUserApi } from '@/lib/firebaseApi';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { UserX, User as UserIcon, Users, ChevronDown, BarChart2, MapPin } from 'lucide-react';
 import { toast } from 'sonner';
 import Link from 'next/link';
 import { XAxis, YAxis, ResponsiveContainer, Tooltip, Area, ComposedChart, BarChart, Bar } from 'recharts';
 import {
-  useUserProfileByUsername,
-  useUserStats,
-  useUserSessions,
-  useUserFollowers,
-  useUserFollowing,
-  useProjects
-} from '@/hooks/useCache';
-import { useQueryClient } from '@tanstack/react-query';
+  useProfileByUsername,
+  useProfileStats,
+  useFollowers,
+  useFollowing,
+  useFollowUser,
+  useUnfollowUser
+} from '@/features/profile/hooks';
+import { useUserSessions } from '@/features/sessions/hooks';
+import { useProjects } from '@/features/projects/hooks';
 import Feed from '@/components/Feed';
 
 type YouTab = 'progress' | 'sessions' | 'followers' | 'following';
@@ -54,19 +54,86 @@ export default function ProfilePageContent({ username }: ProfilePageContentProps
   const [selectedActivityId, setSelectedActivityId] = useState<string>('all');
   const [showActivityDropdown, setShowActivityDropdown] = useState(false);
 
-  // Use React Query hooks for all data fetching with automatic caching
+  // Use new profile and session hooks for all data fetching
   const {
     data: profile,
     isLoading: isLoadingProfile,
     error: profileError
-  } = useUserProfileByUsername(username);
+  } = useProfileByUsername(username);
 
   const isOwnProfile = currentUser?.username === username;
+
+  // Dynamic metadata using useEffect for client component
+  React.useEffect(() => {
+    if (profile) {
+      document.title = `${profile.name} (@${profile.username}) - Ambira`;
+
+      const description = profile.bio || `View ${profile.name}'s productivity profile on Ambira`;
+
+      let metaDescription = document.querySelector('meta[name="description"]');
+      if (!metaDescription) {
+        metaDescription = document.createElement('meta');
+        metaDescription.setAttribute('name', 'description');
+        document.head.appendChild(metaDescription);
+      }
+      metaDescription.setAttribute('content', description);
+
+      // Open Graph tags
+      let ogTitle = document.querySelector('meta[property="og:title"]');
+      if (!ogTitle) {
+        ogTitle = document.createElement('meta');
+        ogTitle.setAttribute('property', 'og:title');
+        document.head.appendChild(ogTitle);
+      }
+      ogTitle.setAttribute('content', `${profile.name} (@${profile.username}) - Ambira`);
+
+      let ogDescription = document.querySelector('meta[property="og:description"]');
+      if (!ogDescription) {
+        ogDescription = document.createElement('meta');
+        ogDescription.setAttribute('property', 'og:description');
+        document.head.appendChild(ogDescription);
+      }
+      ogDescription.setAttribute('content', description);
+
+      let ogType = document.querySelector('meta[property="og:type"]');
+      if (!ogType) {
+        ogType = document.createElement('meta');
+        ogType.setAttribute('property', 'og:type');
+        document.head.appendChild(ogType);
+      }
+      ogType.setAttribute('content', 'profile');
+
+      // Twitter card tags
+      let twitterCard = document.querySelector('meta[name="twitter:card"]');
+      if (!twitterCard) {
+        twitterCard = document.createElement('meta');
+        twitterCard.setAttribute('name', 'twitter:card');
+        document.head.appendChild(twitterCard);
+      }
+      twitterCard.setAttribute('content', 'summary');
+
+      let twitterTitle = document.querySelector('meta[name="twitter:title"]');
+      if (!twitterTitle) {
+        twitterTitle = document.createElement('meta');
+        twitterTitle.setAttribute('name', 'twitter:title');
+        document.head.appendChild(twitterTitle);
+      }
+      twitterTitle.setAttribute('content', `${profile.name} (@${profile.username}) - Ambira`);
+
+      let twitterDescription = document.querySelector('meta[name="twitter:description"]');
+      if (!twitterDescription) {
+        twitterDescription = document.createElement('meta');
+        twitterDescription.setAttribute('name', 'twitter:description');
+        document.head.appendChild(twitterDescription);
+      }
+      twitterDescription.setAttribute('content', description);
+    }
+  }, [profile]);
 
   const {
     data: stats,
     isLoading: isLoadingStats
-  } = useUserStats(profile?.id || '', {
+  } = useProfileStats(profile?.id || '', {
     enabled: !!profile?.id,
   });
 
@@ -77,17 +144,21 @@ export default function ProfilePageContent({ username }: ProfilePageContentProps
     enabled: !!profile?.id,
   });
 
-  const { data: followers = [] } = useUserFollowers(profile?.id || '', {
+  const { data: followers = [] } = useFollowers(profile?.id || '', {
     enabled: !!profile?.id,
   });
 
-  const { data: following = [] } = useUserFollowing(profile?.id || '', {
+  const { data: following = [] } = useFollowing(profile?.id || '', {
     enabled: !!profile?.id,
   });
 
   const { data: activities = [] } = useProjects(profile?.id || '', {
     enabled: !!profile?.id,
   });
+
+  // Use follow/unfollow mutations
+  const followUserMutation = useFollowUser();
+  const unfollowUserMutation = useUnfollowUser();
 
   // Compute loading and error states
   const isLoading = isLoadingProfile || isLoadingStats || isLoadingSessions;
@@ -381,10 +452,6 @@ export default function ProfilePageContent({ username }: ProfilePageContentProps
     return null;
   };
 
-  const handleProfileUpdate = (updatedProfile: UserProfile) => {
-    // Invalidate profile cache to refetch with updated data
-    queryClient.invalidateQueries({ queryKey: ['user', 'profile', 'username', username] });
-  };
 
   if (isLoading) {
     return (
@@ -509,23 +576,27 @@ export default function ProfilePageContent({ username }: ProfilePageContentProps
                     onClick={async () => {
                       try {
                         if (profile.isFollowing) {
-                          await firebaseUserApi.unfollowUser(profile.id);
-                          handleProfileUpdate({ ...profile, isFollowing: false });
+                          await unfollowUserMutation.mutateAsync(profile.id);
                         } else {
-                          await firebaseUserApi.followUser(profile.id);
-                          handleProfileUpdate({ ...profile, isFollowing: true });
+                          await followUserMutation.mutateAsync(profile.id);
                         }
+                        // Automatic cache invalidation handled by mutations
                       } catch (error) {
                         console.error('Follow error:', error);
                       }
                     }}
-                    className={`inline-flex items-center gap-2 mb-3 md:mb-4 px-3 md:px-4 py-2 md:py-2.5 rounded-lg transition-colors font-semibold text-xs md:text-sm ${
+                    disabled={followUserMutation.isPending || unfollowUserMutation.isPending}
+                    className={`inline-flex items-center gap-2 mb-3 md:mb-4 px-3 md:px-4 py-2 md:py-2.5 rounded-lg transition-colors font-semibold text-xs md:text-sm disabled:opacity-50 disabled:cursor-not-allowed ${
                       profile.isFollowing
                         ? 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                         : 'bg-[#007AFF] text-white hover:bg-[#0056D6]'
                     }`}
                   >
-                    {profile.isFollowing ? 'Following' : 'Follow'}
+                    {followUserMutation.isPending || unfollowUserMutation.isPending
+                      ? 'Loading...'
+                      : profile.isFollowing
+                      ? 'Following'
+                      : 'Follow'}
                   </button>
                 )}
 

@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { PersonalAnalyticsDashboard } from './PersonalAnalyticsDashboard';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 
 interface ProjectAnalyticsDashboardProps {
   projectId: string;

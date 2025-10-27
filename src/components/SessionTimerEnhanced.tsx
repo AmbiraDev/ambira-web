@@ -1,8 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useTimer } from '@/contexts/TimerContext';
-import { useProjects } from '@/contexts/ProjectsContext';
+import { useTimer } from '@/features/timer/hooks';
+import { useAuth } from '@/hooks/useAuth';
+import { useActivities } from '@/hooks/useActivitiesQuery';
 import {
   Play,
   Pause,
@@ -39,7 +40,8 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
     finishTimer,
     resetTimer,
   } = useTimer();
-  const { projects } = useProjects();
+  const { user } = useAuth();
+  const { data: projects = [] } = useActivities(user?.id);
   const [showFinishModal, setShowFinishModal] = useState(false);
   const [sessionTitle, setSessionTitle] = useState('');
   const [sessionDescription, setSessionDescription] = useState('');

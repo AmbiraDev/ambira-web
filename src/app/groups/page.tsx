@@ -1,17 +1,19 @@
 'use client';
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { useUserGroups, useGroups, useGroupSearch } from '@/hooks/useCache';
-import { useQueryClient } from '@tanstack/react-query';
-import { CACHE_KEYS } from '@/lib/queryClient';
+import { useAuth } from '@/hooks/useAuth';
+import {
+  useUserGroups,
+  useGroups,
+  useGroupSearch,
+  useJoinGroup
+} from '@/features/groups/hooks';
 import Header from '@/components/HeaderComponent';
 import MobileHeader from '@/components/MobileHeader';
 import BottomNavigation from '@/components/BottomNavigation';
 import GroupCard from '@/components/GroupCard';
 import { GroupListItem } from '@/components/GroupListItem';
 import { Group } from '@/types';
-import { firebaseApi } from '@/lib/firebaseApi';
 import { Users, Search, ChevronLeft, ChevronRight, Loader2, X } from 'lucide-react';
 import Link from 'next/link';
 
@@ -36,10 +38,8 @@ const MY_GROUPS_GRID_COLS = {
 
 export default function GroupsPage() {
   const { user } = useAuth();
-  const queryClient = useQueryClient();
   const [searchResults, setSearchResults] = useState<Group[]>([]);
   const [isSearching, setIsSearching] = useState(false);
-  const [joiningGroups, setJoiningGroups] = useState<Set<string>>(new Set());
   const [currentPage, setCurrentPage] = useState(0);
   const [hasSearched, setHasSearched] = useState(false);
   const [searchStatus, setSearchStatus] = useState('');
@@ -51,26 +51,25 @@ export default function GroupsPage() {
     category: '',
   });
 
-  // Use React Query hooks for cached data fetching
+  // Use new group hooks
   const { data: userGroups = [], isLoading: isLoadingUserGroups } = useUserGroups(user?.id || '', {
     enabled: !!user?.id,
   });
 
-  // Fetch all groups for discovery with caching
   const { data: allSuggestedGroups = [], isLoading: isLoadingSuggested } = useGroups({}, {
     enabled: !!user,
   });
 
-  // Use search hook with caching - only when filters are set
   const hasActiveFilters = !!(searchFilters.name || searchFilters.location || searchFilters.category);
   const { data: cachedSearchResults = [], refetch: refetchSearch } = useGroupSearch(
     searchFilters,
     SEARCH_RESULTS_LIMIT,
     {
-      enabled: false, // We'll manually trigger the search
+      enabled: false,
     }
   );
 
+  const joinGroupMutation = useJoinGroup();
   const isLoading = isLoadingUserGroups || isLoadingSuggested;
 
   // Update search results when cached results change
@@ -160,7 +159,7 @@ export default function GroupsPage() {
 
   /**
    * Handles joining a group for the current user.
-   * Prevents duplicate join requests and updates the user's groups cache on success.
+   * Uses the new joinGroupMutation hook for automatic cache invalidation.
    * @param groupId - The ID of the group to join
    * @param e - The click event (prevented to avoid navigation)
    */
@@ -168,21 +167,13 @@ export default function GroupsPage() {
     e.preventDefault();
     e.stopPropagation();
 
-    if (!user || joiningGroups.has(groupId)) return;
+    if (!user) return;
 
-    setJoiningGroups(prev => new Set(prev).add(groupId));
     try {
-      await firebaseApi.group.joinGroup(groupId, user.id);
-      // Invalidate user groups cache to refetch
-      queryClient.invalidateQueries({ queryKey: CACHE_KEYS.USER_GROUPS(user.id) });
+      await joinGroupMutation.mutateAsync({ groupId, userId: user.id });
+      // Automatic cache invalidation handled by mutation
     } catch (error) {
       console.error('Failed to join group:', error);
-    } finally {
-      setJoiningGroups(prev => {
-        const next = new Set(prev);
-        next.delete(groupId);
-        return next;
-      });
     }
   };
 
@@ -407,14 +398,13 @@ export default function GroupsPage() {
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Search Results</h2>
             <div className="space-y-4">
               {searchResults.map((group) => {
-                const isJoining = joiningGroups.has(group.id);
                 const isJoined = userGroups.some(g => g.id === group.id);
                 return (
                   <GroupListItem
                     key={group.id}
                     group={group}
                     isJoined={isJoined}
-                    isJoining={isJoining}
+                    isJoining={joinGroupMutation.isPending}
                     onJoinGroup={handleJoinGroup}
                   />
                 );
@@ -433,14 +423,13 @@ export default function GroupsPage() {
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Discover Groups</h2>
             <div className="space-y-4">
               {paginatedGroups.map((group) => {
-                const isJoining = joiningGroups.has(group.id);
                 const isJoined = userGroups.some(g => g.id === group.id);
                 return (
                   <GroupListItem
                     key={group.id}
                     group={group}
                     isJoined={isJoined}
-                    isJoining={isJoining}
+                    isJoining={joinGroupMutation.isPending}
                     onJoinGroup={handleJoinGroup}
                   />
                 );

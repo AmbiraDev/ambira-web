@@ -1,8 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { firebaseUserApi } from '@/lib/firebaseApi';
-import { useAuth } from '@/contexts/AuthContext';
+import { firebaseUserApi } from '@/lib/api';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function MigrateUsersPage() {
   const { user } = useAuth();

@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { LineChart, Line, ResponsiveContainer, XAxis, YAxis, Tooltip, Area, ComposedChart } from 'recharts';
-import { useAuth } from '@/contexts/AuthContext';
-import { firebaseSessionApi } from '@/lib/firebaseApi';
+import { useAuth } from '@/hooks/useAuth';
+import { firebaseSessionApi } from '@/lib/api';
 import { Session } from '@/types';
 
 type TimePeriod = 'week' | 'month';

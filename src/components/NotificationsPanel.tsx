@@ -1,7 +1,14 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useNotifications } from '@/contexts/NotificationsContext';
+import {
+  useNotifications,
+  useUnreadCount,
+  useMarkNotificationRead,
+  useMarkAllNotificationsRead,
+  useDeleteNotification,
+  useClearAllNotifications,
+} from '@/hooks/useNotifications';
 import { useRouter } from 'next/navigation';
 import { formatDistanceToNow } from 'date-fns';
 import {
@@ -49,8 +56,13 @@ const getNotificationIcon = (type: Notification['type']) => {
 
 
 export default function NotificationsPanel({ isOpen, onClose }: NotificationsPanelProps) {
-  const { notifications, unreadCount, markAsRead, markAllAsRead, deleteNotification, clearAllNotifications } =
-    useNotifications();
+  // Enable real-time updates for notifications panel
+  const { data: notifications = [], isLoading } = useNotifications({ realtime: true });
+  const unreadCount = useUnreadCount();
+  const markAsReadMutation = useMarkNotificationRead();
+  const markAllAsReadMutation = useMarkAllNotificationsRead();
+  const deleteNotificationMutation = useDeleteNotification();
+  const clearAllNotificationsMutation = useClearAllNotifications();
   const router = useRouter();
   const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
   const [hoveredId, setHoveredId] = useState<string | null>(null);
@@ -64,11 +76,9 @@ export default function NotificationsPanel({ isOpen, onClose }: NotificationsPan
       router.push(notification.linkUrl);
     }
 
-    // Mark as read in the background (don't await)
+    // Mark as read in the background (don't await) - using React Query mutation
     if (!notification.isRead) {
-      markAsRead(notification.id).catch((error) => {
-        console.error('Failed to mark notification as read:', error);
-      });
+      markAsReadMutation.mutate(notification.id);
     }
   };
 
@@ -79,7 +89,10 @@ export default function NotificationsPanel({ isOpen, onClose }: NotificationsPan
     const mouseY = e.clientY;
 
     setDeletingIds((prev) => new Set(prev).add(notificationId));
-    await deleteNotification(notificationId);
+
+    // Use React Query mutation with optimistic updates
+    await deleteNotificationMutation.mutateAsync(notificationId);
+
     setDeletingIds((prev) => {
       const next = new Set(prev);
       next.delete(notificationId);
@@ -98,11 +111,11 @@ export default function NotificationsPanel({ isOpen, onClose }: NotificationsPan
   };
 
   const handleMarkAllRead = async () => {
-    await markAllAsRead();
+    await markAllAsReadMutation.mutateAsync();
   };
 
   const handleClearAll = async () => {
-    await clearAllNotifications();
+    await clearAllNotificationsMutation.mutateAsync();
   };
 
   if (!isOpen) return null;

@@ -2,8 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { SessionFormData, Project } from '@/types';
-import { firebaseApi } from '@/lib/firebaseApi';
-import { useAuth } from '@/contexts/AuthContext';
+import { firebaseApi } from '@/lib/api';
+import { useAuth } from '@/hooks/useAuth';
+import { ERROR_MESSAGES } from '@/config/errorMessages';
+import { debug } from '@/lib/debug';
 
 interface SaveSessionProps {
   onSave: (data: SessionFormData) => Promise<void>;
@@ -64,7 +66,7 @@ export const SaveSession: React.FC<SaveSessionProps> = ({
           setFormData(prev => ({ ...prev, projectId: initialData.projectId! }));
         }
       } catch (error) {
-        console.error('Failed to load projects:', error);
+        debug.error('SaveSession - Failed to load projects:', error);
       }
     };
 
@@ -141,8 +143,8 @@ export const SaveSession: React.FC<SaveSessionProps> = ({
       // The parent component (SessionTimer/ManualEntry) will handle creating the post
       // using firebaseApi.session.createSessionWithPost if visibility !== 'private'
     } catch (error) {
-      console.error('Failed to save session:', error);
-      setErrors({ submit: 'Failed to save session. Please try again.' });
+      debug.error('SaveSession - Failed to save session:', error);
+      setErrors({ submit: ERROR_MESSAGES.SESSION_SAVE_FAILED });
     }
   };
 

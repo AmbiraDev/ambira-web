@@ -8,6 +8,9 @@
  * 4. Query deduplication to prevent duplicate concurrent requests
  */
 
+import { debug } from './debug';
+import { CACHE_TIMES } from '@/config/constants';
+
 // ==================== STORAGE UTILITIES ====================
 
 const STORAGE_PREFIX = 'ambira_';
@@ -31,7 +34,7 @@ function getStorage(type: 'local' | 'session'): Storage | null {
     storage.removeItem(testKey);
     return storage;
   } catch (e) {
-    console.warn(`${type}Storage is not available:`, e);
+    debug.warn(`${type}Storage is not available:`, e);
     return null;
   }
 }
@@ -42,7 +45,7 @@ function getStorage(type: 'local' | 'session'): Storage | null {
 export class LocalCache {
   private static readonly PREFIX = `${STORAGE_PREFIX}${CACHE_VERSION}_`;
 
-  static set<T>(key: string, data: T, ttlMs: number = 24 * 60 * 60 * 1000): void {
+  static set<T>(key: string, data: T, ttlMs: number = CACHE_TIMES.DAILY): void {
     const storage = getStorage('local');
     if (!storage) return;
 
@@ -64,12 +67,12 @@ export class LocalCache {
         };
         storage.setItem(`${this.PREFIX}${key}`, JSON.stringify(item));
       } catch (e2) {
-        console.warn('Failed to cache data:', e2);
+        debug.warn('Failed to cache data:', e2);
       }
     }
   }
 
-  static get<T>(key: string, ttlMs: number = 24 * 60 * 60 * 1000): T | null {
+  static get<T>(key: string, ttlMs: number = CACHE_TIMES.DAILY): T | null {
     const storage = getStorage('local');
     if (!storage) return null;
 
@@ -94,7 +97,7 @@ export class LocalCache {
 
       return item.data;
     } catch (e) {
-      console.warn('Failed to retrieve cached data:', e);
+      debug.warn('Failed to retrieve cached data:', e);
       return null;
     }
   }
@@ -117,7 +120,7 @@ export class LocalCache {
         }
       });
     } catch (e) {
-      console.warn('Failed to clear cache:', e);
+      debug.warn('Failed to clear cache:', e);
     }
   }
 
@@ -138,7 +141,7 @@ export class LocalCache {
 
           const item: CacheItem<unknown> = JSON.parse(itemStr);
           // Remove items older than 7 days
-          if (now - item.timestamp > 7 * 24 * 60 * 60 * 1000) {
+          if (now - item.timestamp > CACHE_TIMES.WEEKLY) {
             storage.removeItem(key);
           }
         } catch (e) {
@@ -147,7 +150,7 @@ export class LocalCache {
         }
       });
     } catch (e) {
-      console.warn('Failed to clear expired cache:', e);
+      debug.warn('Failed to clear expired cache:', e);
     }
   }
 }
@@ -170,7 +173,7 @@ export class SessionCache {
       };
       storage.setItem(`${this.PREFIX}${key}`, JSON.stringify(item));
     } catch (e) {
-      console.warn('Failed to cache data in session:', e);
+      debug.warn('Failed to cache data in session:', e);
     }
   }
 
@@ -192,7 +195,7 @@ export class SessionCache {
 
       return item.data;
     } catch (e) {
-      console.warn('Failed to retrieve cached data from session:', e);
+      debug.warn('Failed to retrieve cached data from session:', e);
       return null;
     }
   }
@@ -215,7 +218,7 @@ export class SessionCache {
         }
       });
     } catch (e) {
-      console.warn('Failed to clear session cache:', e);
+      debug.warn('Failed to clear session cache:', e);
     }
   }
 }
@@ -234,7 +237,7 @@ export class MemoryCache {
   private static cache = new Map<string, MemoryCacheItem<any>>();
   private static readonly MAX_SIZE = 100; // Prevent memory leaks
 
-  static set<T>(key: string, data: T, ttlMs: number = 5 * 60 * 1000): void {
+  static set<T>(key: string, data: T, ttlMs: number = CACHE_TIMES.MEDIUM): void {
     // If cache is too large, remove oldest items
     if (this.cache.size >= this.MAX_SIZE) {
       const oldestKey = this.cache.keys().next().value as string | undefined;
@@ -249,7 +252,7 @@ export class MemoryCache {
     });
   }
 
-  static get<T>(key: string, ttlMs: number = 5 * 60 * 1000): T | null {
+  static get<T>(key: string, ttlMs: number = CACHE_TIMES.MEDIUM): T | null {
     const item = this.cache.get(key);
     if (!item) return null;
 
@@ -270,7 +273,7 @@ export class MemoryCache {
     this.cache.clear();
   }
 
-  static clearExpired(ttlMs: number = 5 * 60 * 1000): void {
+  static clearExpired(ttlMs: number = CACHE_TIMES.MEDIUM): void {
     const now = Date.now();
     for (const [key, item] of this.cache.entries()) {
       if (now - item.timestamp > ttlMs) {
@@ -350,7 +353,7 @@ export async function cachedQuery<T>(
   } = {}
 ): Promise<T> {
   const {
-    memoryTtl = 1 * 60 * 1000, // 1 minute in memory
+    memoryTtl = CACHE_TIMES.SHORT, // 1 minute in memory
     sessionCache = false,
     localTtl = 0, // 0 = no localStorage caching
     dedupe = true,
@@ -443,5 +446,5 @@ if (typeof window !== 'undefined') {
   setInterval(() => {
     MemoryCache.clearExpired();
     LocalCache.clearExpired();
-  }, 5 * 60 * 1000); // Every 5 minutes
+  }, CACHE_TIMES.MEDIUM); // Every 5 minutes
 }

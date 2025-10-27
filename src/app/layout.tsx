@@ -1,12 +1,10 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
-import { AuthProvider } from '@/contexts/AuthContext';
-import { ProjectsProvider } from '@/contexts/ProjectsContext';
-import { TimerProvider } from '@/contexts/TimerContext';
-import { NotificationsProvider } from '@/contexts/NotificationsContext';
+import { AuthInitializer } from '@/components/AuthInitializer';
 import { QueryProvider } from '@/providers/QueryProvider';
 import { ToastProvider } from '@/contexts/ToastContext';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import PWAInstaller from '@/components/PWAInstaller';
 import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/next';
@@ -86,20 +84,18 @@ export default function RootLayout({
         className={`${inter.variable} antialiased`}
         suppressHydrationWarning
       >
-        <PWAInstaller />
-        <QueryProvider>
-          <AuthProvider>
-            <ToastProvider>
-              <NotificationsProvider>
-                <ProjectsProvider>
-                  <TimerProvider>{children}</TimerProvider>
-                </ProjectsProvider>
-              </NotificationsProvider>
-            </ToastProvider>
-          </AuthProvider>
-        </QueryProvider>
-        <Analytics />
-        <SpeedInsights />
+        <ErrorBoundary>
+          <PWAInstaller />
+          <QueryProvider>
+            <AuthInitializer>
+              <ToastProvider>
+                {children}
+              </ToastProvider>
+            </AuthInitializer>
+          </QueryProvider>
+          <Analytics />
+          <SpeedInsights />
+        </ErrorBoundary>
       </body>
     </html>
   );

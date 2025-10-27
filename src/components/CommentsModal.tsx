@@ -2,14 +2,19 @@
 
 import React, { useEffect, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { CommentWithDetails, SessionWithDetails } from '@/types';
-import { firebaseCommentApi } from '@/lib/firebaseApi';
-import { useAuth } from '@/contexts/AuthContext';
-import { useCommentLikeMutation } from '@/hooks/useMutations';
+import { SessionWithDetails } from '@/types';
+import { useAuth } from '@/hooks/useAuth';
+import {
+  useSessionComments,
+  useCreateComment,
+  useDeleteComment,
+  useCommentLike,
+} from '@/features/comments/hooks';
 import CommentItem from './CommentItem';
 import CommentInput from './CommentInput';
 import Link from 'next/link';
 import Image from 'next/image';
+import { debug } from '@/lib/debug';
 
 interface CommentsModalProps {
   isOpen: boolean;
@@ -31,25 +36,51 @@ export const CommentsModal: React.FC<CommentsModalProps> = ({
   onCommentCountChange
 }) => {
   const { user } = useAuth();
-  const [comments, setComments] = useState<CommentWithDetails[]>([]);
-  const [allComments, setAllComments] = useState<CommentWithDetails[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
 
-  const totalPages = Math.ceil(totalCommentCount / COMMENTS_PER_PAGE);
-  const likeMutation = useCommentLikeMutation(sessionId);
+  // Fetch comments when modal is open
+  const {
+    data: commentsResponse,
+    isLoading,
+    refetch
+  } = useSessionComments(sessionId, 100, {
+    enabled: isOpen, // Only fetch when modal is open
+  });
 
+  const createCommentMutation = useCreateComment({
+    onSuccess: () => {
+      if (onCommentCountChange) {
+        onCommentCountChange(totalCommentCount + 1);
+      }
+    }
+  });
+
+  const deleteCommentMutation = useDeleteComment({
+    onSuccess: () => {
+      if (onCommentCountChange) {
+        onCommentCountChange(Math.max(0, totalCommentCount - 1));
+      }
+    }
+  });
+
+  const likeMutation = useCommentLike(sessionId);
+
+  const allComments = commentsResponse?.comments || [];
+  const totalPages = Math.ceil(allComments.length / COMMENTS_PER_PAGE);
+
+  // Calculate paginated comments
+  const comments = allComments.slice(
+    (currentPage - 1) * COMMENTS_PER_PAGE,
+    currentPage * COMMENTS_PER_PAGE
+  );
+
+  // Refetch when modal opens
   useEffect(() => {
     if (isOpen) {
-      loadAllComments();
+      refetch();
+      setCurrentPage(1); // Reset to first page
     }
   }, [isOpen, sessionId]);
-
-  useEffect(() => {
-    if (allComments.length > 0) {
-      updateDisplayedComments();
-    }
-  }, [currentPage, allComments]);
 
   // Handle ESC key to close modal
   useEffect(() => {
@@ -68,68 +99,23 @@ export const CommentsModal: React.FC<CommentsModalProps> = ({
     };
   }, [isOpen, onClose]);
 
-  const loadAllComments = async () => {
-    try {
-      setIsLoading(true);
-      const response = await firebaseCommentApi.getSessionComments(sessionId, 100);
-      setAllComments(response.comments);
-      updateDisplayedComments();
-    } catch {
-      // Permission errors are handled gracefully in firebaseApi
-      // Real errors will still surface but won't spam console
-      setAllComments([]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const updateDisplayedComments = () => {
-    const startIndex = (currentPage - 1) * COMMENTS_PER_PAGE;
-    const endIndex = startIndex + COMMENTS_PER_PAGE;
-    setComments(allComments.slice(startIndex, endIndex));
-  };
-
   const handleCreateComment = async (content: string) => {
     try {
-      const newComment = await firebaseCommentApi.createComment({
+      await createCommentMutation.mutateAsync({
         sessionId,
         content
       });
-
-      setAllComments([newComment, ...allComments]);
-      setComments([newComment, ...comments.slice(0, COMMENTS_PER_PAGE - 1)]);
-
-      if (onCommentCountChange) {
-        onCommentCountChange(totalCommentCount + 1);
-      }
     } catch (err: any) {
-      console.error('Failed to create comment:', err);
+      debug.error('CommentsModal - Failed to create comment:', err);
       throw err;
     }
   };
 
   const handleDelete = async (commentId: string) => {
     try {
-      await firebaseCommentApi.deleteComment(commentId);
-
-      const removeComment = (items: CommentWithDetails[]): CommentWithDetails[] => {
-        return items.filter(comment => {
-          if (comment.id === commentId) return false;
-          if (comment.replies) {
-            comment.replies = removeComment(comment.replies);
-          }
-          return true;
-        });
-      };
-
-      setComments(removeComment(comments));
-      setAllComments(removeComment(allComments));
-
-      if (onCommentCountChange) {
-        onCommentCountChange(totalCommentCount - 1);
-      }
+      await deleteCommentMutation.mutateAsync(commentId);
     } catch (err: any) {
-      console.error('Failed to delete comment:', err);
+      debug.error('CommentsModal - Failed to delete comment:', err);
       throw err;
     }
   };
@@ -205,9 +191,9 @@ export const CommentsModal: React.FC<CommentsModalProps> = ({
           <button
             onClick={onClose}
             className="flex items-center gap-1.5 -ml-2 p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
-            aria-label="Go back to home"
+            aria-label="Close comments and return to home"
           >
-            <ChevronLeft className="w-6 h-6 text-gray-900" />
+            <ChevronLeft className="w-6 h-6 text-gray-900" aria-hidden="true" />
             <span className="text-base font-medium text-gray-900">Home</span>
           </button>
           <h1 className="text-base font-semibold text-gray-900 absolute left-1/2 transform -translate-x-1/2">
@@ -290,8 +276,9 @@ export const CommentsModal: React.FC<CommentsModalProps> = ({
               onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
               disabled={currentPage === 1}
               className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              aria-label="Previous page"
             >
-              <ChevronLeft className="w-5 h-5" />
+              <ChevronLeft className="w-5 h-5" aria-hidden="true" />
               <span className="text-sm font-medium">Previous</span>
             </button>
 
@@ -303,9 +290,10 @@ export const CommentsModal: React.FC<CommentsModalProps> = ({
               onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
               disabled={currentPage === totalPages}
               className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              aria-label="Next page"
             >
               <span className="text-sm font-medium">Next</span>
-              <ChevronRight className="w-5 h-5" />
+              <ChevronRight className="w-5 h-5" aria-hidden="true" />
             </button>
           </div>
         )}

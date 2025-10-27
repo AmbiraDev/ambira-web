@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { Project, ProjectStats } from '@/types';
-import { useProjects } from '@/contexts/ProjectsContext';
+import { useActivityStats } from '@/hooks/useActivitiesQuery';
 import { IconRenderer } from '@/components/IconRenderer';
 
 interface ProjectCardProps {
@@ -22,10 +22,12 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
   onArchive,
 }) => {
   const [showMenu, setShowMenu] = useState(false);
-  const [isLoadingStats, setIsLoadingStats] = useState(false);
-  const [projectStats, setProjectStats] = useState<ProjectStats | undefined>(stats);
-  const { getProjectStats } = useProjects();
   const menuRef = useRef<HTMLDivElement>(null);
+
+  // Use React Query to fetch stats with 1hr cache
+  const { data: fetchedStats, isLoading: isLoadingStats } = useActivityStats(project.id, {
+    enabled: !stats, // Only fetch if stats not provided as prop
+  });
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -44,28 +46,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
     };
   }, [showMenu]);
 
-  // Load stats if not provided
-  React.useEffect(() => {
-    if (!stats && !projectStats) {
-      loadStats();
-    }
-  }, [project.id]);
-
-  const loadStats = async () => {
-    if (!getProjectStats) return;
-
-    try {
-      setIsLoadingStats(true);
-      const fetchedStats = await getProjectStats(project.id);
-      setProjectStats(fetchedStats);
-    } catch (error) {
-      console.error('Failed to load project stats:', error);
-    } finally {
-      setIsLoadingStats(false);
-    }
-  };
-
-  const currentStats = stats || projectStats;
+  const currentStats = stats || fetchedStats;
 
   // Color mapping for project colors
   const colorClasses = {

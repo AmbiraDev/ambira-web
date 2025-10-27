@@ -3,14 +3,55 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { SessionWithDetails, FeedFilters } from '@/types';
-import { firebaseApi } from '@/lib/firebaseApi';
+import { firebaseApi } from '@/lib/api';
 import SessionCard from './SessionCard';
-import { useFeedSessions, useFeedSessionsPaginated } from '@/hooks/useCache';
-import { useAuth } from '@/contexts/AuthContext';
+import { useFeedInfinite } from '@/features/feed/hooks';
+import { useSupportSession, useDeleteSession } from '@/features/sessions/hooks';
+import { useAuth } from '@/hooks/useAuth';
 import ConfirmDialog from './ConfirmDialog';
-import { useSupportMutation, useDeleteSessionMutation } from '@/hooks/useMutations';
 import { useQueryClient } from '@tanstack/react-query';
 import { AlertTriangle, Users, Search, ChevronUp } from 'lucide-react';
+
+// Session Card Skeleton Component
+const SessionCardSkeleton: React.FC = () => (
+  <div className="bg-white border-b md:border md:border-gray-200 md:rounded-lg p-4 animate-pulse">
+    {/* Header - User Info */}
+    <div className="flex items-center space-x-3 mb-4">
+      <div className="w-10 h-10 bg-gray-200 rounded-full flex-shrink-0"></div>
+      <div className="flex-1 space-y-2">
+        <div className="h-4 bg-gray-200 rounded w-32"></div>
+        <div className="h-3 bg-gray-200 rounded w-24"></div>
+      </div>
+    </div>
+
+    {/* Session Title */}
+    <div className="mb-3">
+      <div className="h-5 bg-gray-200 rounded w-3/4 mb-2"></div>
+    </div>
+
+    {/* Description */}
+    <div className="space-y-2 mb-4">
+      <div className="h-4 bg-gray-200 rounded w-full"></div>
+      <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+    </div>
+
+    {/* Stats Bar */}
+    <div className="flex items-center gap-4 py-3 mb-3 border-t border-b border-gray-100">
+      <div className="h-4 bg-gray-200 rounded w-20"></div>
+      <div className="h-4 bg-gray-200 rounded w-24"></div>
+      <div className="h-4 bg-gray-200 rounded w-16"></div>
+    </div>
+
+    {/* Action Buttons */}
+    <div className="flex items-center justify-between">
+      <div className="flex gap-4">
+        <div className="h-8 bg-gray-200 rounded w-16"></div>
+        <div className="h-8 bg-gray-200 rounded w-20"></div>
+      </div>
+      <div className="h-8 bg-gray-200 rounded w-12"></div>
+    </div>
+  </div>
+);
 
 interface FeedProps {
   filters?: FeedFilters;
@@ -31,66 +72,41 @@ export const Feed: React.FC<FeedProps> = ({
   const searchParams = useSearchParams();
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const [nextCursor, setNextCursor] = useState<string | undefined>();
   const [hasNewSessions, setHasNewSessions] = useState(false);
   const [newSessionsCount, setNewSessionsCount] = useState(0);
-  const [allSessions, setAllSessions] = useState<SessionWithDetails[]>([]);
   const [deleteConfirmSession, setDeleteConfirmSession] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [shouldLoadMore, setShouldLoadMore] = useState(false);
 
   // Ref for infinite scroll trigger element
   const loadMoreTriggerRef = React.useRef<HTMLDivElement>(null);
 
-  // Use React Query for initial feed load with caching
-  const { data, isLoading, error, refetch, isFetching } = useFeedSessions(initialLimit, undefined, filters, {
-    enabled: true,
-  });
+  // Use new infinite scroll hook
+  const {
+    data,
+    isLoading,
+    error,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    refetch
+  } = useFeedInfinite(user?.id || '', filters, initialLimit);
 
-  // Use React Query for pagination with caching
-  const { data: paginatedData, isLoading: isLoadingMore, isFetching: isFetchingMore } = useFeedSessionsPaginated(
-    initialLimit,
-    shouldLoadMore ? nextCursor : undefined,
-    filters,
-    {
-      enabled: shouldLoadMore && !!nextCursor,
-    }
-  );
+  // Flatten pages into allSessions
+  const allSessions = useMemo(() => {
+    return data?.pages.flatMap(page => page.sessions) || [];
+  }, [data]);
 
+  const hasMore = hasNextPage || false;
+  const isLoadingMore = isFetchingNextPage;
 
-  const [hasMore, setHasMore] = useState(true);
-
-  // Optimistic mutations
-  const supportMutation = useSupportMutation(user?.id);
-  const deleteSessionMutation = useDeleteSessionMutation();
-
-  // Update sessions when initial data changes
-  useEffect(() => {
-    if (data) {
-      setAllSessions(data.sessions);
-      setHasMore(data.hasMore);
-      setNextCursor(data.nextCursor);
-      setShouldLoadMore(false); // Reset load more trigger
-    }
-  }, [data, filters]);
-
-  // Handle paginated data
-  useEffect(() => {
-    if (paginatedData && shouldLoadMore) {
-      setAllSessions(prev => [...prev, ...paginatedData.sessions]);
-      setHasMore(paginatedData.hasMore);
-      setNextCursor(paginatedData.nextCursor);
-      setShouldLoadMore(false); // Reset load more trigger
-    }
-  }, [paginatedData, shouldLoadMore]);
+  // New mutations using feature hooks
+  const supportMutation = useSupportSession(user?.id);
+  const deleteSessionMutation = useDeleteSession();
 
   // Refresh sessions and invalidate cache
   const refreshSessions = useCallback(() => {
-    setAllSessions([]);
-    setNextCursor(undefined);
     setHasNewSessions(false);
     setNewSessionsCount(0);
-    setShouldLoadMore(false);
     // Invalidate all feed caches to force refetch
     queryClient.invalidateQueries({ queryKey: ['feed'] });
     refetch();
@@ -107,12 +123,12 @@ export const Feed: React.FC<FeedProps> = ({
     }
   }, [searchParams, router, refreshSessions]);
 
-  // Load more sessions - now uses React Query hook
+  // Load more sessions - now uses React Query infinite scroll
   const loadMore = useCallback(() => {
-    if (!isLoadingMore && hasMore && nextCursor) {
-      setShouldLoadMore(true);
+    if (!isLoadingMore && hasMore) {
+      fetchNextPage();
     }
-  }, [isLoadingMore, hasMore, nextCursor]);
+  }, [isLoadingMore, hasMore, fetchNextPage]);
 
   // Check for new sessions periodically - only when page is visible
   useEffect(() => {
@@ -266,7 +282,7 @@ export const Feed: React.FC<FeedProps> = ({
       (entries) => {
         const [entry] = entries;
 
-        if (entry.isIntersecting && hasMore && !isLoadingMore && nextCursor) {
+        if (entry.isIntersecting && hasMore && !isLoadingMore) {
           loadMore();
         }
       },
@@ -284,25 +300,13 @@ export const Feed: React.FC<FeedProps> = ({
         observer.unobserve(trigger);
       }
     };
-  }, [loadMore, hasMore, isLoadingMore, nextCursor]);
+  }, [loadMore, hasMore, isLoadingMore]);
 
   if (isLoading) {
     return (
       <div className={`space-y-4 ${className}`}>
         {[...Array(3)].map((_, i) => (
-          <div key={i} className="bg-white border border-gray-200 rounded-lg p-4 animate-pulse">
-            <div className="flex items-center space-x-3 mb-4">
-              <div className="w-10 h-10 bg-gray-300 rounded-full"></div>
-              <div className="space-y-2">
-                <div className="h-4 bg-gray-300 rounded w-32"></div>
-                <div className="h-3 bg-gray-300 rounded w-24"></div>
-              </div>
-            </div>
-            <div className="space-y-3">
-              <div className="h-4 bg-gray-300 rounded w-full"></div>
-              <div className="h-4 bg-gray-300 rounded w-3/4"></div>
-            </div>
-          </div>
+          <SessionCardSkeleton key={i} />
         ))}
       </div>
     );

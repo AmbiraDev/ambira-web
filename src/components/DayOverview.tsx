@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { firebaseSessionApi, firebaseUserApi } from '@/lib/firebaseApi';
+import { useAuth } from '@/hooks/useAuth';
+import { firebaseSessionApi, firebaseUserApi } from '@/lib/api';
 import { Clock, Flame, Target, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
 

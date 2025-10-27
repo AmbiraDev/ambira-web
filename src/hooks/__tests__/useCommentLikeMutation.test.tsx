@@ -1,12 +1,11 @@
 import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useCommentLikeMutation } from '../useMutations';
-import { firebaseApi } from '@/lib/firebaseApi';
-import { CACHE_KEYS } from '@/lib/queryClient';
+import { useCommentLike, COMMENT_KEYS } from '@/features/comments/hooks';
+import { firebaseApi } from '@/lib/api';
 import React from 'react';
 
 // Mock the firebaseApi
-jest.mock('@/lib/firebaseApi', () => ({
+jest.mock('@/lib/api', () => ({
   firebaseApi: {
     comment: {
       likeComment: jest.fn(),
@@ -15,7 +14,7 @@ jest.mock('@/lib/firebaseApi', () => ({
   },
 }));
 
-describe('useCommentLikeMutation', () => {
+describe('useCommentLike', () => {
   let queryClient: QueryClient;
   const sessionId = 'session-123';
   const commentId = 'comment-456';
@@ -39,7 +38,7 @@ describe('useCommentLikeMutation', () => {
   describe('Like Comment', () => {
     it('should call likeComment API when action is "like"', async () => {
       const { result } = renderHook(
-        () => useCommentLikeMutation(sessionId),
+        () => useCommentLike(sessionId),
         { wrapper }
       );
 
@@ -70,10 +69,10 @@ describe('useCommentLikeMutation', () => {
         hasMore: false,
       };
 
-      queryClient.setQueryData(CACHE_KEYS.COMMENTS(sessionId), initialComments);
+      queryClient.setQueryData(COMMENT_KEYS.list(sessionId), initialComments);
 
       const { result } = renderHook(
-        () => useCommentLikeMutation(sessionId),
+        () => useCommentLike(sessionId),
         { wrapper }
       );
 
@@ -84,7 +83,7 @@ describe('useCommentLikeMutation', () => {
 
       // Check optimistic update
       await waitFor(() => {
-        const updatedData = queryClient.getQueryData(CACHE_KEYS.COMMENTS(sessionId)) as any;
+        const updatedData = queryClient.getQueryData(COMMENT_KEYS.list(sessionId)) as any;
         expect(updatedData.comments[0].isLiked).toBe(true);
         expect(updatedData.comments[0].likeCount).toBe(6);
         // Other comment should remain unchanged
@@ -97,7 +96,7 @@ describe('useCommentLikeMutation', () => {
       const invalidateQueriesSpy = jest.spyOn(queryClient, 'invalidateQueries');
 
       const { result } = renderHook(
-        () => useCommentLikeMutation(sessionId),
+        () => useCommentLike(sessionId),
         { wrapper }
       );
 
@@ -107,7 +106,7 @@ describe('useCommentLikeMutation', () => {
 
       await waitFor(() => {
         expect(invalidateQueriesSpy).toHaveBeenCalledWith({
-          queryKey: CACHE_KEYS.COMMENTS(sessionId),
+          queryKey: COMMENT_KEYS.list(sessionId),
         });
       });
     });
@@ -116,7 +115,7 @@ describe('useCommentLikeMutation', () => {
   describe('Unlike Comment', () => {
     it('should call unlikeComment API when action is "unlike"', async () => {
       const { result } = renderHook(
-        () => useCommentLikeMutation(sessionId),
+        () => useCommentLike(sessionId),
         { wrapper }
       );
 
@@ -141,10 +140,10 @@ describe('useCommentLikeMutation', () => {
         hasMore: false,
       };
 
-      queryClient.setQueryData(CACHE_KEYS.COMMENTS(sessionId), initialComments);
+      queryClient.setQueryData(COMMENT_KEYS.list(sessionId), initialComments);
 
       const { result } = renderHook(
-        () => useCommentLikeMutation(sessionId),
+        () => useCommentLike(sessionId),
         { wrapper }
       );
 
@@ -154,7 +153,7 @@ describe('useCommentLikeMutation', () => {
 
       // Check optimistic update
       await waitFor(() => {
-        const updatedData = queryClient.getQueryData(CACHE_KEYS.COMMENTS(sessionId)) as any;
+        const updatedData = queryClient.getQueryData(COMMENT_KEYS.list(sessionId)) as any;
         expect(updatedData.comments[0].isLiked).toBe(false);
         expect(updatedData.comments[0].likeCount).toBe(5);
       });
@@ -174,10 +173,10 @@ describe('useCommentLikeMutation', () => {
         hasMore: false,
       };
 
-      queryClient.setQueryData(CACHE_KEYS.COMMENTS(sessionId), initialComments);
+      queryClient.setQueryData(COMMENT_KEYS.list(sessionId), initialComments);
 
       const { result } = renderHook(
-        () => useCommentLikeMutation(sessionId),
+        () => useCommentLike(sessionId),
         { wrapper }
       );
 
@@ -186,7 +185,7 @@ describe('useCommentLikeMutation', () => {
       result.current.mutate({ commentId, action: 'unlike' });
 
       await waitFor(() => {
-        const updatedData = queryClient.getQueryData(CACHE_KEYS.COMMENTS(sessionId)) as any;
+        const updatedData = queryClient.getQueryData(COMMENT_KEYS.list(sessionId)) as any;
         expect(updatedData.comments[0].likeCount).toBe(0);
         expect(updatedData.comments[0].likeCount).toBeGreaterThanOrEqual(0);
       });
@@ -207,10 +206,10 @@ describe('useCommentLikeMutation', () => {
         hasMore: false,
       };
 
-      queryClient.setQueryData(CACHE_KEYS.COMMENTS(sessionId), initialComments);
+      queryClient.setQueryData(COMMENT_KEYS.list(sessionId), initialComments);
 
       const { result } = renderHook(
-        () => useCommentLikeMutation(sessionId),
+        () => useCommentLike(sessionId),
         { wrapper }
       );
 
@@ -227,14 +226,14 @@ describe('useCommentLikeMutation', () => {
       });
 
       // Data should be rolled back to original state
-      const finalData = queryClient.getQueryData(CACHE_KEYS.COMMENTS(sessionId)) as any;
+      const finalData = queryClient.getQueryData(COMMENT_KEYS.list(sessionId)) as any;
       expect(finalData.comments[0].isLiked).toBe(false);
       expect(finalData.comments[0].likeCount).toBe(5);
     });
 
     it('should handle missing comments data gracefully', async () => {
       const { result } = renderHook(
-        () => useCommentLikeMutation(sessionId),
+        () => useCommentLike(sessionId),
         { wrapper }
       );
 
@@ -265,10 +264,10 @@ describe('useCommentLikeMutation', () => {
         hasMore: false,
       };
 
-      queryClient.setQueryData(CACHE_KEYS.COMMENTS(sessionId), initialComments);
+      queryClient.setQueryData(COMMENT_KEYS.list(sessionId), initialComments);
 
       const { result } = renderHook(
-        () => useCommentLikeMutation(sessionId),
+        () => useCommentLike(sessionId),
         { wrapper }
       );
 
@@ -278,7 +277,7 @@ describe('useCommentLikeMutation', () => {
       // Like
       result.current.mutate({ commentId, action: 'like' });
       await waitFor(() => {
-        const data = queryClient.getQueryData(CACHE_KEYS.COMMENTS(sessionId)) as any;
+        const data = queryClient.getQueryData(COMMENT_KEYS.list(sessionId)) as any;
         expect(data.comments[0].isLiked).toBe(true);
         expect(data.comments[0].likeCount).toBe(6);
       });
@@ -286,7 +285,7 @@ describe('useCommentLikeMutation', () => {
       // Unlike
       result.current.mutate({ commentId, action: 'unlike' });
       await waitFor(() => {
-        const data = queryClient.getQueryData(CACHE_KEYS.COMMENTS(sessionId)) as any;
+        const data = queryClient.getQueryData(COMMENT_KEYS.list(sessionId)) as any;
         expect(data.comments[0].isLiked).toBe(false);
         expect(data.comments[0].likeCount).toBe(5);
       });
@@ -311,10 +310,10 @@ describe('useCommentLikeMutation', () => {
         hasMore: false,
       };
 
-      queryClient.setQueryData(CACHE_KEYS.COMMENTS(sessionId), initialComments);
+      queryClient.setQueryData(COMMENT_KEYS.list(sessionId), initialComments);
 
       const { result } = renderHook(
-        () => useCommentLikeMutation(sessionId),
+        () => useCommentLike(sessionId),
         { wrapper }
       );
 
@@ -324,7 +323,7 @@ describe('useCommentLikeMutation', () => {
       result.current.mutate({ commentId: 'comment-1', action: 'like' });
 
       await waitFor(() => {
-        const data = queryClient.getQueryData(CACHE_KEYS.COMMENTS(sessionId)) as any;
+        const data = queryClient.getQueryData(COMMENT_KEYS.list(sessionId)) as any;
         expect(data.comments[0].isLiked).toBe(true);
         expect(data.comments[0].likeCount).toBe(6);
         // Second comment should be unchanged
@@ -339,7 +338,7 @@ describe('useCommentLikeMutation', () => {
       const cancelQueriesSpy = jest.spyOn(queryClient, 'cancelQueries');
 
       const { result } = renderHook(
-        () => useCommentLikeMutation(sessionId),
+        () => useCommentLike(sessionId),
         { wrapper }
       );
 
@@ -349,7 +348,7 @@ describe('useCommentLikeMutation', () => {
 
       await waitFor(() => {
         expect(cancelQueriesSpy).toHaveBeenCalledWith({
-          queryKey: CACHE_KEYS.COMMENTS(sessionId),
+          queryKey: COMMENT_KEYS.list(sessionId),
         });
       });
     });

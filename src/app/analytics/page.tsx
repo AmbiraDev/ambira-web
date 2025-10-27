@@ -1,18 +1,20 @@
 'use client';
 
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { useProjects } from '@/contexts/ProjectsContext';
+import { useAuth } from '@/hooks/useAuth';
+import { useActivities } from '@/hooks/useActivitiesQuery';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import MobileHeader from '@/components/MobileHeader';
 import BottomNavigation from '@/components/BottomNavigation';
 import Footer from '@/components/Footer';
 import Header from '@/components/HeaderComponent';
-import { useUserSessions, useUserStats } from '@/hooks/useCache';
+import { useUserSessions } from '@/features/sessions/hooks';
+import { useProfileStats } from '@/features/profile/hooks';
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Tooltip, LineChart, Line, ComposedChart, Area } from 'recharts';
 import { ChevronDown, BarChart3, TrendingUp, Activity } from 'lucide-react';
 import { IconRenderer } from '@/components/IconRenderer';
 import { useRouter } from 'next/navigation';
+import { safeNumber } from '@/lib/utils';
 
 type TimePeriod = '7D' | '2W' | '4W' | '3M' | '1Y';
 
@@ -88,13 +90,14 @@ export default function AnalyticsPage() {
     };
   }, [showChartTypeDropdown]);
 
+  // Use new feature hooks for sessions and stats
   const { data: sessions = [], isLoading: sessionsLoading } = useUserSessions(user?.id || '', 100, {
     enabled: !!user?.id,
   });
-  const { data: stats = null, isLoading: statsLoading } = useUserStats(user?.id || '', {
+  const { data: stats = null, isLoading: statsLoading } = useProfileStats(user?.id || '', {
     enabled: !!user?.id,
   });
-  const { projects: activities } = useProjects();
+  const { data: activities = [] } = useActivities(user?.id);
 
   const isLoading = sessionsLoading || statsLoading;
 
@@ -248,7 +251,7 @@ export default function AnalyticsPage() {
           : 0;
         data.push({
           name: `${dayNames[day.getDay()].slice(0, 3)} ${day.getDate()}`,
-          hours: Number(hoursWorked.toFixed(2)),
+          hours: safeNumber(hoursWorked.toFixed(2)),
           sessions: daySessions.length,
           avgDuration: Math.round(avgDuration)
         });
@@ -267,7 +270,7 @@ export default function AnalyticsPage() {
         const avgDuration = weekSessions.length > 0
           ? weekSessions.reduce((sum, s) => sum + s.duration, 0) / weekSessions.length / 60
           : 0;
-        data.push({ name: `Week ${4 - i}`, hours: Number(hoursWorked.toFixed(2)), sessions: weekSessions.length, avgDuration: Math.round(avgDuration) });
+        data.push({ name: `Week ${4 - i}`, hours: safeNumber(hoursWorked.toFixed(2)), sessions: weekSessions.length, avgDuration: Math.round(avgDuration) });
       }
     } else if (timePeriod === '3M' || timePeriod === '1Y') {
       const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -283,7 +286,7 @@ export default function AnalyticsPage() {
         const avgDuration = monthSessions.length > 0
           ? monthSessions.reduce((sum, s) => sum + s.duration, 0) / monthSessions.length / 60
           : 0;
-        data.push({ name: monthNames[month.getMonth()], hours: Number(hoursWorked.toFixed(2)), sessions: monthSessions.length, avgDuration: Math.round(avgDuration) });
+        data.push({ name: monthNames[month.getMonth()], hours: safeNumber(hoursWorked.toFixed(2)), sessions: monthSessions.length, avgDuration: Math.round(avgDuration) });
       }
     }
     return data;

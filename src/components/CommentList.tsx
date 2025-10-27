@@ -1,10 +1,14 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { CommentWithDetails } from '@/types';
-import { firebaseCommentApi } from '@/lib/firebaseApi';
-import { useAuth } from '@/contexts/AuthContext';
-import { useCommentLikeMutation } from '@/hooks/useMutations';
+import { useAuth } from '@/hooks/useAuth';
+import {
+  useSessionComments,
+  useCreateComment,
+  useDeleteComment,
+  useCommentLike,
+} from '@/features/comments/hooks';
 import CommentInput from './CommentInput';
 import CommentItem from './CommentItem';
 
@@ -22,68 +26,47 @@ export const CommentList: React.FC<CommentListProps> = ({
   onCommentCountChange
 }) => {
   const { user } = useAuth();
-  const [comments, setComments] = useState<CommentWithDetails[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [hasMore, setHasMore] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [showInput, setShowInput] = useState(false);
 
-  const likeMutation = useCommentLikeMutation(sessionId);
+  // Use new React Query hooks
+  const {
+    data: commentsResponse,
+    isLoading,
+    error: queryError,
+    refetch
+  } = useSessionComments(sessionId, 20);
 
-  // Load initial comments
-  useEffect(() => {
-    loadComments();
-  }, [sessionId]);
-
-  const loadComments = async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      const response = await firebaseCommentApi.getSessionComments(sessionId, 10);
-      setComments(response.comments);
-      setHasMore(response.hasMore);
-    } catch (err: any) {
-      // Permission errors are handled gracefully in firebaseApi, so this should only catch real errors
-      setError(err.message || 'Failed to load comments');
-    } finally {
-      setIsLoading(false);
+  const createCommentMutation = useCreateComment({
+    onSuccess: () => {
+      setShowInput(false);
+      // Update parent component's count
+      if (onCommentCountChange && commentsResponse) {
+        onCommentCountChange(commentsResponse.comments.length + 1);
+      }
     }
-  };
+  });
 
-  const loadMoreComments = async () => {
-    if (!hasMore || isLoadingMore) return;
-
-    try {
-      setIsLoadingMore(true);
-      // In a real implementation, you'd pass the last document for pagination
-      // For now, this is a placeholder
-      const response = await firebaseCommentApi.getSessionComments(sessionId, 10);
-      setComments([...comments, ...response.comments]);
-      setHasMore(response.hasMore);
-    } catch (err: any) {
-      console.error('Failed to load more comments:', err);
-    } finally {
-      setIsLoadingMore(false);
+  const deleteCommentMutation = useDeleteComment({
+    onSuccess: () => {
+      // Update parent component's count
+      if (onCommentCountChange && commentsResponse) {
+        onCommentCountChange(Math.max(0, commentsResponse.comments.length - 1));
+      }
     }
-  };
+  });
+
+  const likeMutation = useCommentLike(sessionId);
+
+  const comments = commentsResponse?.comments || [];
+  const hasMore = commentsResponse?.hasMore || false;
+  const error = queryError?.message || null;
 
   const handleCreateComment = async (content: string) => {
     try {
-      const newComment = await firebaseCommentApi.createComment({
+      await createCommentMutation.mutateAsync({
         sessionId,
         content
       });
-
-      // Add to the beginning of the list with optimistic update
-      const newComments = [newComment, ...comments];
-      setComments(newComments);
-      setShowInput(false);
-
-      // Update parent component's count
-      if (onCommentCountChange) {
-        onCommentCountChange(newComments.length);
-      }
     } catch (err: any) {
       console.error('Failed to create comment:', err);
       throw err;
@@ -92,26 +75,7 @@ export const CommentList: React.FC<CommentListProps> = ({
 
   const handleDelete = async (commentId: string) => {
     try {
-      await firebaseCommentApi.deleteComment(commentId);
-
-      // Remove the comment from the list
-      const removeComment = (items: CommentWithDetails[]): CommentWithDetails[] => {
-        return items.filter(comment => {
-          if (comment.id === commentId) return false;
-          if (comment.replies) {
-            comment.replies = removeComment(comment.replies);
-          }
-          return true;
-        });
-      };
-
-      const newComments = removeComment(comments);
-      setComments(newComments);
-
-      // Update parent component's count
-      if (onCommentCountChange) {
-        onCommentCountChange(newComments.length);
-      }
+      await deleteCommentMutation.mutateAsync(commentId);
     } catch (err: any) {
       console.error('Failed to delete comment:', err);
       throw err;
@@ -146,7 +110,7 @@ export const CommentList: React.FC<CommentListProps> = ({
           {error}
         </div>
         <button
-          onClick={loadComments}
+          onClick={() => refetch()}
           className="w-full py-2 text-sm font-medium text-[#007AFF] hover:text-[#0051D5]"
         >
           Try again
@@ -178,15 +142,11 @@ export const CommentList: React.FC<CommentListProps> = ({
             />
           ))}
 
-          {/* Load More Button */}
+          {/* Load More indicator - pagination can be added later if needed */}
           {hasMore && (
-            <button
-              onClick={loadMoreComments}
-              disabled={isLoadingMore}
-              className="w-full py-2 text-sm font-medium text-gray-600 hover:text-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isLoadingMore ? 'Loading...' : 'Load more comments'}
-            </button>
+            <div className="text-center text-sm text-gray-500 py-2">
+              Showing first {comments.length} comments
+            </div>
           )}
         </div>
       ) : (

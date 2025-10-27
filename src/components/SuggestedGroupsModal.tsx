@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react';
 import { X, Users, ChevronLeft, ChevronRight, MapPin } from 'lucide-react';
 import Link from 'next/link';
-import { firebaseApi } from '@/lib/firebaseApi';
-import { useAuth } from '@/contexts/AuthContext';
+import { firebaseApi } from '@/lib/api';
+import { useAuth } from '@/hooks/useAuth';
 import GroupAvatar from '@/components/GroupAvatar';
 
 interface SuggestedGroupsModalProps {

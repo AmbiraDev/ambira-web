@@ -5,8 +5,9 @@ import Image from 'next/image';
 import { Session } from '@/types';
 import { X, XCircle, Image as ImageIcon } from 'lucide-react';
 import { uploadImages } from '@/lib/imageUpload';
-import { useProjects } from '@/contexts/ProjectsContext';
-import { parseLocalDateTime } from '@/lib/utils';
+import { useAuth } from '@/hooks/useAuth';
+import { useActivities } from '@/hooks/useActivitiesQuery';
+import { parseLocalDateTime, cn } from '@/lib/utils';
 
 interface EditSessionModalProps {
   session: Session;
@@ -31,7 +32,8 @@ export const EditSessionModal: React.FC<EditSessionModalProps> = ({
   onSave,
   isPage = false
 }) => {
-  const { projects } = useProjects();
+  const { user } = useAuth();
+  const { data: projects = [] } = useActivities(user?.id);
 
   const [title, setTitle] = useState(session.title || '');
   const [description, setDescription] = useState(session.description || '');
@@ -235,8 +237,9 @@ export const EditSessionModal: React.FC<EditSessionModalProps> = ({
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 transition-colors"
+            aria-label="Close modal"
           >
-            <X className="w-6 h-6" />
+            <X className="w-6 h-6" aria-hidden="true" />
           </button>
         </div>
       )}
@@ -247,7 +250,7 @@ export const EditSessionModal: React.FC<EditSessionModalProps> = ({
       )}
 
         {/* Content */}
-        <div className={`${isPage ? '' : ''} px-4 md:px-0 space-y-6`}>
+        <div className={cn('px-4 md:px-0 space-y-6')}>
           {/* Title */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -376,8 +379,9 @@ export const EditSessionModal: React.FC<EditSessionModalProps> = ({
                         type="button"
                         onClick={() => handleRemoveExistingImage(index)}
                         className="absolute top-2 right-2 w-6 h-6 flex items-center justify-center bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors shadow-md"
+                        aria-label="Remove image"
                       >
-                        <X className="w-4 h-4 flex-shrink-0" />
+                        <X className="w-4 h-4 flex-shrink-0" aria-hidden="true" />
                       </button>
                     </div>
                   ))}
@@ -397,8 +401,9 @@ export const EditSessionModal: React.FC<EditSessionModalProps> = ({
                         type="button"
                         onClick={() => handleRemoveNewImage(index)}
                         className="absolute top-2 right-2 w-6 h-6 flex items-center justify-center bg-red-500 text-white rounded-full hover:bg-red-600 transition-colors shadow-md"
+                        aria-label="Remove image"
                       >
-                        <X className="w-4 h-4 flex-shrink-0" />
+                        <X className="w-4 h-4 flex-shrink-0" aria-hidden="true" />
                       </button>
                     </div>
                   ))}
@@ -464,7 +469,10 @@ export const EditSessionModal: React.FC<EditSessionModalProps> = ({
         </div>
 
       {/* Footer */}
-      <div className={`${isPage ? 'px-4 md:px-0 py-6' : 'sticky bottom-0 bg-white border-t border-gray-200 px-6 py-4'} flex gap-3`}>
+      <div className={cn(
+        'flex gap-3',
+        isPage ? 'px-4 md:px-0 py-6' : 'sticky bottom-0 bg-white border-t border-gray-200 px-6 py-4'
+      )}>
         <button
           onClick={onClose}
           disabled={isSaving || isUploading}

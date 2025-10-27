@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { Flame } from 'lucide-react';
-import { firebaseApi } from '@/lib/firebaseApi';
+import { firebaseApi } from '@/lib/api';
 import { StreakStats } from '@/types';
 import Link from 'next/link';
 import { WeekStreakCalendar } from './WeekStreakCalendar';
@@ -24,30 +24,18 @@ export const StreakCard: React.FC<StreakCardProps> = ({
   useEffect(() => {
     const loadStreak = async () => {
       try {
-        console.log('=== STREAK CARD: Loading streak data ===');
-        console.log('User ID:', userId);
 
         const stats = await firebaseApi.streak.getStreakStats(userId);
 
-        console.log('=== STREAK CARD: Raw streak stats ===');
-        console.log('Current Streak:', stats.currentStreak);
-        console.log('Longest Streak:', stats.longestStreak);
-        console.log('Total Streak Days:', stats.totalStreakDays);
-        console.log('Last Activity Date:', stats.lastActivityDate);
-        console.log('Streak At Risk:', stats.streakAtRisk);
-        console.log('Next Milestone:', stats.nextMilestone);
 
         // Calculate and log time-based info
         if (stats.lastActivityDate) {
           const now = new Date();
           const lastActivity = new Date(stats.lastActivityDate);
           const daysSince = Math.floor((now.getTime() - lastActivity.getTime()) / (1000 * 60 * 60 * 24));
-          console.log('Days since last activity:', daysSince);
-          console.log('Last activity formatted:', lastActivity.toLocaleDateString());
         }
 
         // Fetch last 7 days of sessions for detailed logging
-        console.log('\n=== LAST 7 DAYS BREAKDOWN ===');
         const sessionsResponse = await firebaseApi.session.getSessions(1, 100, {} as any);
 
         // Get date 7 days ago at start of day
@@ -95,21 +83,12 @@ export const StreakCard: React.FC<StreakCardProps> = ({
           const date = new Date(dateKey);
           const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
 
-          console.log(`Day ${dayNum} (${dayName} ${dateKey}):`);
-          console.log(`  - Total hours: ${hours}h`);
-          console.log(`  - Day marked complete on streak map: ${isComplete}`);
-          console.log(`  - Session count: ${data.sessionCount}`);
           if (data.sessions.length > 0) {
-            console.log(`  - Sessions:`);
             data.sessions.forEach((s, i) => {
-              console.log(`    ${i + 1}. ${(s.duration / 60).toFixed(1)}h - ${new Date(s.startTime).toLocaleTimeString()}`);
             });
           }
-          console.log('');
         });
 
-        console.log('=== END LAST 7 DAYS BREAKDOWN ===\n');
-        console.log('=== END STREAK CARD DATA ===\n');
 
         setStreakStats(stats);
       } catch (error) {

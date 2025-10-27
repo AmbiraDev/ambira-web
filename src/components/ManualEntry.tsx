@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { SessionFormData, Project } from '@/types';
 import { parseLocalDateTime } from '@/lib/utils';
+import { ERROR_MESSAGES } from '@/config/errorMessages';
 
 interface ManualEntryProps {
   onSave: (data: SessionFormData) => Promise<void>;
@@ -156,7 +157,7 @@ export const ManualEntry: React.FC<ManualEntryProps> = ({
       await onSave(formData);
     } catch (error) {
       console.error('Failed to save session:', error);
-      setErrors({ submit: 'Failed to save session. Please try again.' });
+      setErrors({ submit: ERROR_MESSAGES.SESSION_SAVE_FAILED });
     }
   };
 

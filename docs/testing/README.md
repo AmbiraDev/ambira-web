@@ -1,0 +1,272 @@
+# Testing Documentation
+
+Comprehensive testing documentation for the Ambira application.
+
+## 📚 Documentation Index
+
+### Quick Start
+- **[Quick Start Guide](./QUICKSTART.md)** - Get started with E2E testing in 5 minutes
+
+### Detailed Guides
+- **[Playwright CI/CD Setup](./playwright-ci-setup.md)** - Complete CI/CD integration guide
+- **[E2E Test Suite](../../e2e/README.md)** - Comprehensive E2E testing documentation
+- **[Unit Test Suite](../../src/__tests__/README.md)** - Unit and integration testing guide
+
+## 🎯 Testing Strategy
+
+### Test Pyramid
+
+```
+           /\
+          /  \
+         / E2E \        (Smoke Tests - Critical Paths)
+        /------\
+       /        \
+      / Integration \   (Feature Workflows)
+     /------------\
+    /              \
+   /  Unit Tests    \  (Component & Function Tests)
+  /__________________\
+```
+
+### Coverage by Type
+
+1. **Unit Tests (Jest)**
+   - Component rendering and behavior
+   - Business logic and utilities
+   - Isolated function testing
+   - 80% coverage requirement
+
+2. **Integration Tests (Jest)**
+   - Multi-component workflows
+   - Firebase integration
+   - Authentication flows
+   - File upload/download
+
+3. **Smoke Tests (Playwright)**
+   - Critical user paths
+   - Accessibility compliance
+   - Mobile responsiveness
+   - Core functionality
+
+## 🚀 Running Tests
+
+### All Tests
+
+```bash
+# Unit and integration tests
+npm test
+
+# End-to-end smoke tests
+npm run test:smoke
+
+# All tests (unit + E2E)
+npm test && npm run test:e2e
+```
+
+### Development Workflow
+
+```bash
+# Watch mode for unit tests
+npm run test:watch
+
+# Interactive E2E testing
+npm run test:e2e:ui
+
+# Debug specific test
+npm run test:e2e:debug
+```
+
+### Pre-Commit Checklist
+
+Before committing code, run:
+
+```bash
+# 1. Run unit tests
+npm test
+
+# 2. Check types
+npm run type-check
+
+# 3. Lint code
+npm run lint
+
+# 4. Run smoke tests
+npm run test:smoke
+```
+
+## 📊 Test Coverage
+
+### Current Coverage
+
+- **Unit Tests**: 80% minimum (branches, functions, lines, statements)
+- **Critical Paths**: 100% (via smoke tests)
+- **Accessibility**: 100% WCAG 2.1 Level AA compliance
+
+### Viewing Coverage
+
+```bash
+# Generate coverage report
+npm run test:coverage
+
+# View HTML report
+open coverage/lcov-report/index.html
+
+# View E2E test report
+npm run test:e2e:report
+```
+
+## ♿ Accessibility Testing
+
+All critical pages are tested for:
+- WCAG 2.0 Level A & AA
+- WCAG 2.1 Level A & AA
+- Color contrast
+- ARIA attributes
+- Keyboard navigation
+- Screen reader compatibility
+
+### Tools Used
+
+- **axe-core**: Automated accessibility scanning
+- **Playwright**: Keyboard navigation and interaction testing
+- **Jest + Testing Library**: Component accessibility
+
+## 🔄 CI/CD Integration
+
+### Automated Testing
+
+Tests run automatically on:
+- Every pull request
+- Every push to main branch
+- Manual workflow dispatch
+
+### CI Workflow
+
+1. **Install Dependencies** (cached)
+2. **Lint & Type Check** (parallel)
+3. **Unit Tests** (parallel)
+4. **Build Application**
+5. **E2E Smoke Tests** (Chromium only)
+6. **Upload Artifacts** (on failure)
+
+### Test Reports
+
+Reports are available in GitHub Actions:
+- HTML test reports
+- Screenshots of failures
+- Video recordings
+- Accessibility scan results
+
+## 📖 Documentation Links
+
+### Getting Started
+- [Quick Start Guide](./QUICKSTART.md) - 5-minute setup
+- [E2E README](../../e2e/README.md) - Comprehensive E2E guide
+- [Unit Test README](../../src/__tests__/README.md) - Unit testing guide
+
+### CI/CD
+- [Playwright CI Setup](./playwright-ci-setup.md) - CI/CD integration
+- [Main CI Workflow](../../.github/workflows/ci.yml) - GitHub Actions config
+- [Playwright Workflow](../../.github/workflows/playwright.yml) - Standalone E2E workflow
+
+### Configuration
+- [Playwright Config](../../playwright.config.ts) - Playwright settings
+- [Jest Config](../../jest.config.js) - Jest settings
+- [Package Scripts](../../package.json) - Available npm scripts
+
+## 🎓 Best Practices
+
+### Writing Tests
+
+1. **Test behavior, not implementation**
+   ```typescript
+   // Good ✅
+   await page.getByRole('button', { name: 'Submit' }).click();
+
+   // Avoid ❌
+   await page.locator('.btn-submit').click();
+   ```
+
+2. **Include accessibility checks**
+   ```typescript
+   const results = await makeAxeBuilder().analyze();
+   expect(results.violations).toHaveLength(0);
+   ```
+
+3. **Test responsive design**
+   ```typescript
+   await page.setViewportSize({ width: 375, height: 667 });
+   // ... test mobile view
+   ```
+
+4. **Use descriptive test names**
+   ```typescript
+   test('should display error when email is invalid');
+   ```
+
+5. **Keep smoke tests fast**
+   - Test only critical paths
+   - Avoid unnecessary waits
+   - Use parallel execution when possible
+
+### Maintaining Tests
+
+1. **Update tests with features** - Add tests when adding features
+2. **Fix flaky tests immediately** - Don't ignore intermittent failures
+3. **Review test reports** - Check CI results on every PR
+4. **Monitor coverage** - Maintain 80%+ coverage
+5. **Document patterns** - Add examples for common test scenarios
+
+## 🐛 Troubleshooting
+
+### Common Issues
+
+**Tests pass locally but fail in CI**
+- Add explicit waits: `await page.waitForLoadState('networkidle')`
+- Check environment variables are set
+- Review CI logs for specific errors
+
+**Flaky tests**
+- Use Playwright's auto-waiting
+- Avoid fixed timeouts
+- Mock external dependencies
+
+**Accessibility violations**
+- Check HTML report for details
+- Review element markup
+- Fix ARIA attributes and labels
+
+**Slow tests**
+- Remove unnecessary waits
+- Run only critical tests in smoke suite
+- Optimize page load performance
+
+### Getting Help
+
+1. **Check test output** - Read error messages carefully
+2. **Use debug mode** - `npm run test:e2e:debug`
+3. **View traces** - Check HTML report for execution traces
+4. **Consult docs** - Review documentation links above
+5. **Ask team** - Reach out for help with specific issues
+
+## 📚 External Resources
+
+- [Playwright Documentation](https://playwright.dev/)
+- [Jest Documentation](https://jestjs.io/)
+- [Testing Library](https://testing-library.com/)
+- [axe-core Rules](https://github.com/dequelabs/axe-core/blob/develop/doc/rule-descriptions.md)
+- [WCAG Guidelines](https://www.w3.org/WAI/WCAG21/quickref/)
+- [GitHub Actions Docs](https://docs.github.com/en/actions)
+
+## 🤝 Contributing
+
+When adding tests:
+1. Choose appropriate test type (unit/integration/E2E)
+2. Follow existing patterns and conventions
+3. Include accessibility checks for UI tests
+4. Add documentation for new patterns
+5. Ensure tests pass locally before pushing
+6. Monitor CI results after pushing
+
+For questions or issues, consult the documentation or ask the team.

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { UserProfile } from '@/types';
-import { firebaseUserApi } from '@/lib/firebaseApi';
+import { firebaseUserApi } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -86,7 +86,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
         try {
           await firebaseUserApi.deleteProfilePicture(profile.profilePicture);
         } catch (error) {
-          console.warn('Failed to delete old profile picture:', error);
+          // Silently fail - old picture deletion is not critical
         }
       }
 

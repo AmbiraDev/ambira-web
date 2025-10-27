@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { CreateProjectData } from '@/types';
-import { useProjects } from '@/contexts/ProjectsContext';
+import { useCreateActivity } from '@/hooks/useActivitiesQuery';
 import { useToast } from '@/contexts/ToastContext';
 
 interface CreateProjectModalProps {
@@ -16,7 +16,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
   onClose,
   onSuccess,
 }) => {
-  const { createProject } = useProjects();
+  const createProject = useCreateActivity();
   const { success, error: showError } = useToast();
   const [formData, setFormData] = useState<CreateProjectData>({
     name: '',
@@ -102,7 +102,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
 
     try {
       setIsSubmitting(true);
-      const project = await createProject!({
+      const project = await createProject.mutateAsync({
         ...formData,
         name: formData.name.trim(),
         description: formData.description.trim(),

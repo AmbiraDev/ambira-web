@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { X, ChevronLeft, ChevronRight } from 'lucide-react';
-import { firebaseUserApi } from '@/lib/firebaseApi';
-import { useAuth } from '@/contexts/AuthContext';
+import { firebaseUserApi } from '@/lib/api';
+import { useAuth } from '@/hooks/useAuth';
 import { UserCardCompact } from '@/components/UserCard';
 
 interface SuggestedPeopleModalProps {
@@ -112,8 +112,9 @@ export default function SuggestedPeopleModal({ isOpen, onClose }: SuggestedPeopl
           <button
             onClick={onClose}
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            aria-label="Close suggested people modal"
           >
-            <X className="w-5 h-5 text-gray-600" />
+            <X className="w-5 h-5 text-gray-600" aria-hidden="true" />
           </button>
         </div>
 
@@ -156,7 +157,7 @@ export default function SuggestedPeopleModal({ isOpen, onClose }: SuggestedPeopl
               className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors text-sm font-medium text-gray-700"
               aria-label="Previous page"
             >
-              <ChevronLeft className="w-4 h-4" />
+              <ChevronLeft className="w-4 h-4" aria-hidden="true" />
               Previous
             </button>
 
@@ -167,7 +168,7 @@ export default function SuggestedPeopleModal({ isOpen, onClose }: SuggestedPeopl
               aria-label="Next page"
             >
               Next
-              <ChevronRight className="w-4 h-4" />
+              <ChevronRight className="w-4 h-4" aria-hidden="true" />
             </button>
           </div>
         )}

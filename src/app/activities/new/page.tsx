@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import Header from '@/components/HeaderComponent';
 import { CreateProjectData } from '@/types';
-import { useProjects } from '@/contexts/ProjectsContext';
+import { useCreateActivity } from '@/hooks/useActivitiesQuery';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { IconSelector } from '@/components/IconSelector';
 import { ColorSelector } from '@/components/ColorSelector';
@@ -158,7 +158,7 @@ function CreateProjectContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectPath = searchParams.get('redirect');
-  const { createProject } = useProjects();
+  const createProject = useCreateActivity();
   const [formData, setFormData] = useState<CreateProjectData>({
     name: '',
     description: '',
@@ -227,7 +227,7 @@ function CreateProjectContent() {
         throw new Error('Create project function is not available');
       }
 
-      const project = await createProject({
+      const project = await createProject.mutateAsync({
         ...formData,
         name: formData.name.trim(),
         description: formData.description.trim(),

@@ -3,9 +3,9 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/useAuth';
 import { SignupCredentials } from '@/types';
-import { firebaseUserApi } from '@/lib/firebaseApi';
+import { firebaseUserApi } from '@/lib/api';
 import Header from './HeaderComponent';
 import PWAInstallPrompt from './PWAInstallPrompt';
 
@@ -174,8 +174,6 @@ export const LandingPage: React.FC = () => {
         const available = await firebaseUserApi.checkUsernameAvailability(username);
         setUsernameAvailable(available);
       } catch (error: any) {
-        // Log error for debugging but don't show to user
-        console.warn('Username availability check failed:', error.message);
         // Set to null to indicate check couldn't be completed
         // Registration will still proceed with server-side validation
         setUsernameAvailable(null);
