@@ -1169,9 +1169,11 @@ export const firebaseUserApi = {
       );
       const outboundSnapshot = await getDocs(outboundRef);
       const followingIds = new Set(outboundSnapshot.docs.map(doc => doc.id));
+      followingIds.add(auth.currentUser.uid); // Also exclude current user
 
       // Also check old follows collection for backward compatibility if social_graph is empty
-      if (followingIds.size === 0) {
+      if (followingIds.size === 1) {
+        // Only current user in set
         const followingQuery = query(
           collection(db, 'follows'),
           where('followerId', '==', auth.currentUser.uid)
@@ -1185,51 +1187,44 @@ export const firebaseUserApi = {
         });
       }
 
-      // Get users with public profiles - fetch more to account for filtering
-      // Use a higher multiplier to ensure we get enough suggestions after filtering
+      // Query users ordered by popularity (follower count descending)
+      // This ensures we get the most popular users first
       const usersQuery = query(
         collection(db, 'users'),
         where('profileVisibility', '==', 'everyone'),
-        limitFn(Math.max(limitCount * 10, 50)) // Fetch more to ensure enough suggestions after filtering
+        orderBy('followersCount', 'desc'),
+        limitFn(100) // Fetch top 100 popular users, then filter client-side
       );
 
       const querySnapshot = await getDocs(usersQuery);
-      const allUsers: Array<{ id: string; data: any; followersCount: number }> =
-        [];
+      const suggestions: SuggestedUser[] = [];
 
-      // Collect all eligible users
-      querySnapshot.forEach(doc => {
-        const userData = doc.data();
-
-        // Skip current user and users we're already following
-        if (doc.id === auth.currentUser?.uid || followingIds.has(doc.id)) {
-          return;
+      // Filter and collect until we have enough suggestions
+      for (const doc of querySnapshot.docs) {
+        if (suggestions.length >= limitCount) {
+          break;
         }
 
-        allUsers.push({
+        // Skip users we're already following or current user
+        if (followingIds.has(doc.id)) {
+          continue;
+        }
+
+        const userData = doc.data();
+        suggestions.push({
           id: doc.id,
-          data: userData,
+          username: userData.username,
+          name: userData.name,
+          bio: userData.bio,
+          profilePicture: userData.profilePicture,
           followersCount: userData.followersCount || 0,
-        });
-      });
-
-      // Sort by followers count (popular users first) but include everyone
-      allUsers.sort((a, b) => b.followersCount - a.followersCount);
-
-      // Take only the limitFn we need
-      const suggestions: SuggestedUser[] = allUsers
-        .slice(0, limitCount)
-        .map((user, index) => ({
-          id: user.id,
-          username: user.data.username,
-          name: user.data.name,
-          bio: user.data.bio,
-          profilePicture: user.data.profilePicture,
-          followersCount: user.followersCount,
           reason:
-            user.followersCount > 10 ? 'popular_user' : 'similar_interests',
+            (userData.followersCount || 0) > 10
+              ? 'popular_user'
+              : 'similar_interests',
           isFollowing: false,
-        }));
+        });
+      }
 
       return suggestions;
     } catch (error) {
