@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { SessionWithDetails, User } from '@/types';
 import PostStats from './PostStats';
 import PostInteractions from './PostInteractions';
@@ -106,9 +107,11 @@ export const PostCard: React.FC<PostCardProps> = ({
           <div className="flex items-center space-x-3 flex-1 min-w-0">
             {/* User Avatar */}
             {post.user.profilePicture ? (
-              <img
+              <Image
                 src={post.user.profilePicture}
                 alt={post.user.name}
+                width={48}
+                height={48}
                 className="w-12 h-12 rounded-full object-cover border-2 border-gray-100"
               />
             ) : (

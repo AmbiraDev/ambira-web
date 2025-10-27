@@ -10,14 +10,6 @@ export const FeedCarousel: React.FC = () => {
     setCurrentSlide(index);
   };
 
-  const _handleSwipe = (direction: 'left' | 'right') => {
-    if (direction === 'left' && currentSlide < totalSlides - 1) {
-      setCurrentSlide(currentSlide + 1);
-    } else if (direction === 'right' && currentSlide > 0) {
-      setCurrentSlide(currentSlide - 1);
-    }
-  };
-
   return (
     <div className="mb-6">
       {/* Carousel Container */}

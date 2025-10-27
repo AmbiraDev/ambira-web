@@ -80,7 +80,7 @@ export const CommentsModal: React.FC<CommentsModalProps> = ({
       refetch();
       setCurrentPage(1); // Reset to first page
     }
-  }, [isOpen, sessionId]);
+  }, [isOpen, sessionId, refetch]);
 
   // Handle ESC key to close modal
   useEffect(() => {

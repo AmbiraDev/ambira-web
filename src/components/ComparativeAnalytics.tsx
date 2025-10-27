@@ -9,8 +9,9 @@ interface ComparativeAnalyticsProps {
 }
 
 export const ComparativeAnalytics: React.FC<ComparativeAnalyticsProps> = ({
-  userId,
+  userId: _userId,
 }) => {
+  // Project selection functionality not yet implemented
   const [_selectedProjects, _setSelectedProjects] = useState<string[]>([]);
 
   // Mock data
@@ -298,7 +299,7 @@ export const ComparativeAnalytics: React.FC<ComparativeAnalyticsProps> = ({
             </h4>
             <div className="space-y-2">
               {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'].map(
-                (day, index) => {
+                day => {
                   const percentage = 60 + Math.random() * 30;
                   return (
                     <div

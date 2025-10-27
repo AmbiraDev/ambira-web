@@ -11,7 +11,6 @@ import TimerStatus from './TimerStatus';
 import ProfileMenu from './ProfileMenu';
 import MobileMenu from './MobileMenu';
 import AuthButtons from './AuthButtons';
-import { DIMENSIONS } from './header.constants';
 
 /**
  * Header Component

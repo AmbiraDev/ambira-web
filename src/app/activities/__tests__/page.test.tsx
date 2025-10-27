@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, _waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import ActivitiesPage from '../page';
 import { Activity } from '@/types';
 
@@ -47,7 +47,7 @@ jest.mock('@/components/ErrorBoundary', () => ({
     _onError,
   }: {
     children: React.ReactNode;
-    onError?: (error: Error, errorInfo: any) => void;
+    onError?: (error: Error, errorInfo: React.ErrorInfo) => void;
   }) => <div data-testid="error-boundary">{children}</div>,
 }));
 
@@ -247,19 +247,25 @@ describe('Activities Page Integration', () => {
         .mockImplementation(() => {});
 
       // We need to access ErrorBoundary mock to verify it's called correctly
-      const _ErrorBoundaryMock =
-        require('@/components/ErrorBoundary').ErrorBoundary;
       const mockOnError = jest.fn();
 
       // Temporarily override the mock to capture onError
       jest
         .spyOn(require('@/components/ErrorBoundary'), 'ErrorBoundary')
-        .mockImplementation(({ children, onError }: any) => {
-          if (onError) {
-            mockOnError.mockImplementation(onError);
+        .mockImplementation(
+          ({
+            children,
+            onError,
+          }: {
+            children: React.ReactNode;
+            onError?: (error: Error, errorInfo: React.ErrorInfo) => void;
+          }) => {
+            if (onError) {
+              mockOnError.mockImplementation(onError);
+            }
+            return <div data-testid="error-boundary">{children}</div>;
           }
-          return <div data-testid="error-boundary">{children}</div>;
-        });
+        );
 
       render(<ActivitiesPage />);
 

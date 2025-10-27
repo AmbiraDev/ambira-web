@@ -3,7 +3,6 @@ import {
   Clock,
   Target,
   Users,
-  TrendingUp,
   Award,
   Calendar,
   CheckCircle,
@@ -108,8 +107,8 @@ export default function FeaturesPage() {
             </h1>
             <p className="text-xl sm:text-2xl text-blue-100 mb-8 max-w-3xl mx-auto">
               Track your work sessions, build streaks, compete with friends, and
-              celebrate productivity together - like Strava, but for getting things
-              done.
+              celebrate productivity together - like Strava, but for getting
+              things done.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
@@ -154,8 +153,8 @@ export default function FeaturesPage() {
             Everything You Need to Stay Productive
           </h2>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Powerful features designed to help you track, improve, and share your
-            productivity journey.
+            Powerful features designed to help you track, improve, and share
+            your productivity journey.
           </p>
         </div>
 
@@ -215,8 +214,8 @@ export default function FeaturesPage() {
                 Build Your Streak
               </h3>
               <p className="text-gray-600">
-                Log at least one session daily to maintain your streak. Watch your
-                momentum grow and beat your personal best.
+                Log at least one session daily to maintain your streak. Watch
+                your momentum grow and beat your personal best.
               </p>
             </div>
 
@@ -228,8 +227,8 @@ export default function FeaturesPage() {
                 Connect & Compete
               </h3>
               <p className="text-gray-600">
-                Follow friends, join groups, and participate in challenges. Share
-                your wins and support others in their journey.
+                Follow friends, join groups, and participate in challenges.
+                Share your wins and support others in their journey.
               </p>
             </div>
           </div>
@@ -244,8 +243,9 @@ export default function FeaturesPage() {
             Join the Productivity Revolution
           </h2>
           <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
-            Thousands of people are already tracking their work, building streaks,
-            and achieving their goals with Ambira. Be part of the community.
+            Thousands of people are already tracking their work, building
+            streaks, and achieving their goals with Ambira. Be part of the
+            community.
           </p>
           <Link
             href="/signup"

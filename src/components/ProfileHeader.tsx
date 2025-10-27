@@ -1,16 +1,13 @@
 'use client';
 
 import React, { useState } from 'react';
-import Image from 'next/image';
 import { UserProfile } from '@/types';
 import { firebaseUserApi } from '@/lib/api';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import {
   MapPin,
   Calendar,
-  _Users,
   Clock,
   Edit3,
   UserPlus,
@@ -102,6 +99,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
           <div className="flex-shrink-0">
             <div className="relative">
               {profile.profilePicture ? (
+                // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={profile.profilePicture}
                   alt={`${profile.name}'s profile picture`}

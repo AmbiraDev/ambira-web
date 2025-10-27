@@ -30,15 +30,23 @@
  */
 
 import { initializeApp, cert, ServiceAccount } from 'firebase-admin/app';
-import { getFirestore, FieldValue, QueryDocumentSnapshot, DocumentData } from 'firebase-admin/firestore';
+import {
+  getFirestore,
+  FieldValue,
+  QueryDocumentSnapshot,
+  DocumentData,
+} from 'firebase-admin/firestore';
 import { getAuth } from 'firebase-admin/auth';
 import * as path from 'path';
 
 // Initialize Firebase Admin
-const serviceAccount = require(path.join(__dirname, '../serviceAccountKey.json')) as ServiceAccount;
+// eslint-disable-next-line @typescript-eslint/no-require-imports -- Dynamic path resolution requires CommonJS require() for service account JSON
+const serviceAccount = require(
+  path.join(__dirname, '../serviceAccountKey.json')
+) as ServiceAccount;
 
 initializeApp({
-  credential: cert(serviceAccount)
+  credential: cert(serviceAccount),
 });
 
 const db = getFirestore();
@@ -64,9 +72,14 @@ interface DeletionOptions {
   dryRun: boolean;
 }
 
-async function deleteUser(userId: string, options: DeletionOptions): Promise<void> {
+async function deleteUser(
+  userId: string,
+  options: DeletionOptions
+): Promise<void> {
   const dryRunPrefix = options.dryRun ? '[DRY RUN] ' : '';
-  console.log(`${dryRunPrefix}🚀 Starting deletion process for user: ${userId}\n`);
+  console.log(
+    `${dryRunPrefix}🚀 Starting deletion process for user: ${userId}\n`
+  );
 
   const stats: DeletionStats = {
     user: false,
@@ -130,12 +143,16 @@ async function deleteUser(userId: string, options: DeletionOptions): Promise<voi
     stats.activeSession = activeSessionSnapshot.docs.length;
     if (!options.dryRun) {
       const activeSessionBatch = db.batch();
-      activeSessionSnapshot.docs.forEach((doc: QueryDocumentSnapshot<DocumentData>) => {
-        activeSessionBatch.delete(doc.ref);
-      });
+      activeSessionSnapshot.docs.forEach(
+        (doc: QueryDocumentSnapshot<DocumentData>) => {
+          activeSessionBatch.delete(doc.ref);
+        }
+      );
       await activeSessionBatch.commit();
     }
-    console.log(`   ✅ ${options.dryRun ? 'Would delete' : 'Deleted'} ${stats.activeSession} active session records\n`);
+    console.log(
+      `   ✅ ${options.dryRun ? 'Would delete' : 'Deleted'} ${stats.activeSession} active session records\n`
+    );
 
     // 2. Delete all projects and their tasks
     console.log(`${dryRunPrefix}🔄 Deleting projects and tasks...`);
@@ -152,9 +169,11 @@ async function deleteUser(userId: string, options: DeletionOptions): Promise<voi
 
       if (!options.dryRun) {
         const taskBatch = db.batch();
-        tasksSnapshot.docs.forEach((taskDoc: QueryDocumentSnapshot<DocumentData>) => {
-          taskBatch.delete(taskDoc.ref);
-        });
+        tasksSnapshot.docs.forEach(
+          (taskDoc: QueryDocumentSnapshot<DocumentData>) => {
+            taskBatch.delete(taskDoc.ref);
+          }
+        );
         await taskBatch.commit();
 
         // Delete project
@@ -167,7 +186,9 @@ async function deleteUser(userId: string, options: DeletionOptions): Promise<voi
       // Delete the projects document
       await db.collection('projects').doc(userId).delete();
     }
-    console.log(`   ✅ ${options.dryRun ? 'Would delete' : 'Deleted'} ${stats.projects} projects and ${stats.tasks} tasks\n`);
+    console.log(
+      `   ✅ ${options.dryRun ? 'Would delete' : 'Deleted'} ${stats.projects} projects and ${stats.tasks} tasks\n`
+    );
 
     // 3. Delete all sessions created by this user
     console.log(`${dryRunPrefix}🔄 Deleting sessions...`);
@@ -179,12 +200,16 @@ async function deleteUser(userId: string, options: DeletionOptions): Promise<voi
     stats.sessions = sessionsSnapshot.docs.length;
     if (!options.dryRun) {
       const sessionBatch = db.batch();
-      sessionsSnapshot.docs.forEach((doc: QueryDocumentSnapshot<DocumentData>) => {
-        sessionBatch.delete(doc.ref);
-      });
+      sessionsSnapshot.docs.forEach(
+        (doc: QueryDocumentSnapshot<DocumentData>) => {
+          sessionBatch.delete(doc.ref);
+        }
+      );
       await sessionBatch.commit();
     }
-    console.log(`   ✅ ${options.dryRun ? 'Would delete' : 'Deleted'} ${stats.sessions} sessions\n`);
+    console.log(
+      `   ✅ ${options.dryRun ? 'Would delete' : 'Deleted'} ${stats.sessions} sessions\n`
+    );
 
     // 4. Delete all comments by this user
     console.log(`${dryRunPrefix}🔄 Deleting comments...`);
@@ -196,12 +221,16 @@ async function deleteUser(userId: string, options: DeletionOptions): Promise<voi
     stats.comments = commentsSnapshot.docs.length;
     if (!options.dryRun) {
       const commentBatch = db.batch();
-      commentsSnapshot.docs.forEach((doc: QueryDocumentSnapshot<DocumentData>) => {
-        commentBatch.delete(doc.ref);
-      });
+      commentsSnapshot.docs.forEach(
+        (doc: QueryDocumentSnapshot<DocumentData>) => {
+          commentBatch.delete(doc.ref);
+        }
+      );
       await commentBatch.commit();
     }
-    console.log(`   ✅ ${options.dryRun ? 'Would delete' : 'Deleted'} ${stats.comments} comments\n`);
+    console.log(
+      `   ✅ ${options.dryRun ? 'Would delete' : 'Deleted'} ${stats.comments} comments\n`
+    );
 
     // 5. Delete all supports (likes) by this user
     console.log(`${dryRunPrefix}🔄 Deleting supports...`);
@@ -213,12 +242,16 @@ async function deleteUser(userId: string, options: DeletionOptions): Promise<voi
     stats.supports = supportsSnapshot.docs.length;
     if (!options.dryRun) {
       const supportBatch = db.batch();
-      supportsSnapshot.docs.forEach((doc: QueryDocumentSnapshot<DocumentData>) => {
-        supportBatch.delete(doc.ref);
-      });
+      supportsSnapshot.docs.forEach(
+        (doc: QueryDocumentSnapshot<DocumentData>) => {
+          supportBatch.delete(doc.ref);
+        }
+      );
       await supportBatch.commit();
     }
-    console.log(`   ✅ ${options.dryRun ? 'Would delete' : 'Deleted'} ${stats.supports} supports\n`);
+    console.log(
+      `   ✅ ${options.dryRun ? 'Would delete' : 'Deleted'} ${stats.supports} supports\n`
+    );
 
     // 6. Delete follow relationships and update counts
     console.log(`${dryRunPrefix}🔄 Deleting follow relationships...`);
@@ -234,9 +267,11 @@ async function deleteUser(userId: string, options: DeletionOptions): Promise<voi
       for (const doc of followingSnapshot.docs) {
         const followData = doc.data();
         // Decrement the following user's follower count
-        const followingUserRef = db.collection('users').doc(followData.followingId);
+        const followingUserRef = db
+          .collection('users')
+          .doc(followData.followingId);
         followBatch1.update(followingUserRef, {
-          followerCount: FieldValue.increment(-1)
+          followerCount: FieldValue.increment(-1),
         });
         followBatch1.delete(doc.ref);
       }
@@ -255,16 +290,20 @@ async function deleteUser(userId: string, options: DeletionOptions): Promise<voi
       for (const doc of followersSnapshot.docs) {
         const followData = doc.data();
         // Decrement the follower's following count
-        const followerUserRef = db.collection('users').doc(followData.followerId);
+        const followerUserRef = db
+          .collection('users')
+          .doc(followData.followerId);
         followBatch2.update(followerUserRef, {
-          followingCount: FieldValue.increment(-1)
+          followingCount: FieldValue.increment(-1),
         });
         followBatch2.delete(doc.ref);
       }
       await followBatch2.commit();
     }
     stats.follows += followersSnapshot.docs.length;
-    console.log(`   ✅ ${options.dryRun ? 'Would delete' : 'Deleted'} ${stats.follows} follow relationships\n`);
+    console.log(
+      `   ✅ ${options.dryRun ? 'Would delete' : 'Deleted'} ${stats.follows} follow relationships\n`
+    );
 
     // 7. Delete streak data
     console.log(`${dryRunPrefix}🔄 Deleting streak data...`);
@@ -276,7 +315,9 @@ async function deleteUser(userId: string, options: DeletionOptions): Promise<voi
       }
       stats.streaks = 1;
     }
-    console.log(`   ✅ ${options.dryRun ? 'Would delete' : 'Deleted'} ${stats.streaks} streak records\n`);
+    console.log(
+      `   ✅ ${options.dryRun ? 'Would delete' : 'Deleted'} ${stats.streaks} streak records\n`
+    );
 
     // 8. Delete challenge participations
     console.log(`${dryRunPrefix}🔄 Deleting challenge participations...`);
@@ -288,12 +329,16 @@ async function deleteUser(userId: string, options: DeletionOptions): Promise<voi
     stats.challengeParticipants = challengeParticipantsSnapshot.docs.length;
     if (!options.dryRun && challengeParticipantsSnapshot.docs.length > 0) {
       const challengeBatch = db.batch();
-      challengeParticipantsSnapshot.docs.forEach((doc: QueryDocumentSnapshot<DocumentData>) => {
-        challengeBatch.delete(doc.ref);
-      });
+      challengeParticipantsSnapshot.docs.forEach(
+        (doc: QueryDocumentSnapshot<DocumentData>) => {
+          challengeBatch.delete(doc.ref);
+        }
+      );
       await challengeBatch.commit();
     }
-    console.log(`   ✅ ${options.dryRun ? 'Would delete' : 'Deleted'} ${stats.challengeParticipants} challenge participations\n`);
+    console.log(
+      `   ✅ ${options.dryRun ? 'Would delete' : 'Deleted'} ${stats.challengeParticipants} challenge participations\n`
+    );
 
     // 9. Remove from group members
     console.log(`${dryRunPrefix}🔄 Removing from groups...`);
@@ -305,15 +350,19 @@ async function deleteUser(userId: string, options: DeletionOptions): Promise<voi
     stats.groupMembers = groupsSnapshot.docs.length;
     if (!options.dryRun && groupsSnapshot.docs.length > 0) {
       const groupBatch = db.batch();
-      groupsSnapshot.docs.forEach((doc: QueryDocumentSnapshot<DocumentData>) => {
-        groupBatch.update(doc.ref, {
-          members: FieldValue.arrayRemove(userId),
-          memberCount: FieldValue.increment(-1)
-        });
-      });
+      groupsSnapshot.docs.forEach(
+        (doc: QueryDocumentSnapshot<DocumentData>) => {
+          groupBatch.update(doc.ref, {
+            members: FieldValue.arrayRemove(userId),
+            memberCount: FieldValue.increment(-1),
+          });
+        }
+      );
       await groupBatch.commit();
     }
-    console.log(`   ✅ ${options.dryRun ? 'Would remove' : 'Removed'} from ${stats.groupMembers} groups\n`);
+    console.log(
+      `   ✅ ${options.dryRun ? 'Would remove' : 'Removed'} from ${stats.groupMembers} groups\n`
+    );
 
     // 10. Delete notifications for this user
     console.log(`${dryRunPrefix}🔄 Deleting notifications...`);
@@ -325,12 +374,16 @@ async function deleteUser(userId: string, options: DeletionOptions): Promise<voi
     stats.notifications = notificationsSnapshot.docs.length;
     if (!options.dryRun && notificationsSnapshot.docs.length > 0) {
       const notificationBatch = db.batch();
-      notificationsSnapshot.docs.forEach((doc: QueryDocumentSnapshot<DocumentData>) => {
-        notificationBatch.delete(doc.ref);
-      });
+      notificationsSnapshot.docs.forEach(
+        (doc: QueryDocumentSnapshot<DocumentData>) => {
+          notificationBatch.delete(doc.ref);
+        }
+      );
       await notificationBatch.commit();
     }
-    console.log(`   ✅ ${options.dryRun ? 'Would delete' : 'Deleted'} ${stats.notifications} notifications\n`);
+    console.log(
+      `   ✅ ${options.dryRun ? 'Would delete' : 'Deleted'} ${stats.notifications} notifications\n`
+    );
 
     // 11. Delete user document
     if (!options.dryRun) {
@@ -351,9 +404,16 @@ async function deleteUser(userId: string, options: DeletionOptions): Promise<voi
         await auth.deleteUser(userId);
         stats.auth = true;
         console.log('   ✅ Firebase Auth account deleted\n');
-      } catch (error: any) {
-        if (error.code === 'auth/user-not-found') {
-          console.log('   ⚠️  Auth account not found (may have been deleted already)\n');
+      } catch (error) {
+        if (
+          error &&
+          typeof error === 'object' &&
+          'code' in error &&
+          error.code === 'auth/user-not-found'
+        ) {
+          console.log(
+            '   ⚠️  Auth account not found (may have been deleted already)\n'
+          );
           stats.auth = true;
         } else {
           throw error;
@@ -366,7 +426,9 @@ async function deleteUser(userId: string, options: DeletionOptions): Promise<voi
     }
 
     // Print summary
-    const completionStatus = options.dryRun ? 'DRY RUN COMPLETE' : 'DELETION COMPLETE';
+    const completionStatus = options.dryRun
+      ? 'DRY RUN COMPLETE'
+      : 'DELETION COMPLETE';
     console.log(`✅ ${completionStatus}\n`);
     console.log('📊 Summary:');
     console.log(`   User Document: ${stats.user ? '✅' : '❌'}`);
@@ -384,9 +446,10 @@ async function deleteUser(userId: string, options: DeletionOptions): Promise<voi
     console.log(`   Active Session Records: ${stats.activeSession}\n`);
 
     if (options.dryRun) {
-      console.log('To execute this deletion, run without the --dry-run flag.\n');
+      console.log(
+        'To execute this deletion, run without the --dry-run flag.\n'
+      );
     }
-
   } catch (error) {
     console.error('❌ Error during deletion:', error);
     throw error;
@@ -408,7 +471,7 @@ if (!userId) {
 }
 
 const options: DeletionOptions = {
-  dryRun: dryRunFlag
+  dryRun: dryRunFlag,
 };
 
 deleteUser(userId, options)
@@ -416,7 +479,7 @@ deleteUser(userId, options)
     console.log('✅ Script completed successfully');
     process.exit(0);
   })
-  .catch((error) => {
+  .catch(error => {
     console.error('❌ Script failed:', error);
     process.exit(1);
   });

@@ -26,7 +26,9 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
     totalTarget: undefined,
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errors, setErrors] = useState<Partial<Record<keyof CreateProjectData, string>>>({});
+  const [errors, setErrors] = useState<
+    Partial<Record<keyof CreateProjectData, string>>
+  >({});
 
   // Handle ESC key to close modal
   React.useEffect(() => {
@@ -47,7 +49,16 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
 
   // Preset icons
   const availableIcons = [
-    '💻', '⚛️', '💪', '📚', '🎨', '🏃', '🎵', '🔬', '📝', '🚀'
+    '💻',
+    '⚛️',
+    '💪',
+    '📚',
+    '🎨',
+    '🏃',
+    '🎵',
+    '🔬',
+    '📝',
+    '🚀',
   ];
 
   // Preset colors
@@ -75,11 +86,17 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
       newErrors.description = 'Description must be less than 200 characters';
     }
 
-    if (formData.weeklyTarget && (formData.weeklyTarget < 0 || formData.weeklyTarget > 168)) {
+    if (
+      formData.weeklyTarget &&
+      (formData.weeklyTarget < 0 || formData.weeklyTarget > 168)
+    ) {
       newErrors.weeklyTarget = 'Weekly target must be between 0 and 168 hours';
     }
 
-    if (formData.totalTarget && (formData.totalTarget < 0 || formData.totalTarget > 10000)) {
+    if (
+      formData.totalTarget &&
+      (formData.totalTarget < 0 || formData.totalTarget > 10000)
+    ) {
       newErrors.totalTarget = 'Total target must be between 0 and 10,000 hours';
     }
 
@@ -134,7 +151,10 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
     }
   };
 
-  const handleInputChange = (field: keyof CreateProjectData, value: any) => {
+  const handleInputChange = (
+    field: keyof CreateProjectData,
+    value: string | number | undefined
+  ) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     // Clear error when user starts typing
     if (errors[field]) {
@@ -147,7 +167,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
   return (
     <div
       className="fixed inset-0 bg-gray-500 bg-opacity-30 flex items-center justify-center z-40 p-4"
-      onClick={(e) => {
+      onClick={e => {
         if (e.target === e.currentTarget) {
           onClose();
         }
@@ -160,14 +180,30 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
         <div className="p-4 sm:p-8">
           {/* Header */}
           <div className="flex justify-between items-center mb-6 sm:mb-8">
-            <h2 id="create-project-title" className="text-xl sm:text-2xl font-bold text-gray-900">Create New Project</h2>
+            <h2
+              id="create-project-title"
+              className="text-xl sm:text-2xl font-bold text-gray-900"
+            >
+              Create New Project
+            </h2>
             <button
               onClick={onClose}
               className="text-gray-400 hover:text-gray-600 transition-colors p-2 rounded-lg hover:bg-gray-100"
               aria-label="Close dialog"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                aria-hidden="true"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
           </div>
@@ -176,7 +212,9 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Project Preview */}
             <div className="flex flex-col items-center pb-6 border-b border-gray-200">
-              <div className={`w-24 h-24 ${availableColors.find(c => c.name === formData.color)?.class || 'bg-orange-500'} rounded-xl flex items-center justify-center text-white text-4xl mb-3 shadow-md`}>
+              <div
+                className={`w-24 h-24 ${availableColors.find(c => c.name === formData.color)?.class || 'bg-orange-500'} rounded-xl flex items-center justify-center text-white text-4xl mb-3 shadow-md`}
+              >
                 {formData.icon}
               </div>
               <h3 className="text-xl font-bold text-gray-900">
@@ -190,14 +228,17 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Name */}
               <div>
-                <label htmlFor="name" className="block text-sm font-semibold text-gray-900 mb-2">
+                <label
+                  htmlFor="name"
+                  className="block text-sm font-semibold text-gray-900 mb-2"
+                >
                   Project Name *
                 </label>
                 <input
                   type="text"
                   id="name"
                   value={formData.name}
-                  onChange={(e) => handleInputChange('name', e.target.value)}
+                  onChange={e => handleInputChange('name', e.target.value)}
                   className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] transition-colors ${
                     errors.name ? 'border-red-500' : 'border-gray-300'
                   }`}
@@ -209,19 +250,30 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
                   autoFocus
                 />
                 {errors.name && (
-                  <p id="name-error" className="mt-1 text-sm text-red-600" role="alert">{errors.name}</p>
+                  <p
+                    id="name-error"
+                    className="mt-1 text-sm text-red-600"
+                    role="alert"
+                  >
+                    {errors.name}
+                  </p>
                 )}
               </div>
 
               {/* Description */}
               <div>
-                <label htmlFor="description" className="block text-sm font-semibold text-gray-900 mb-2">
+                <label
+                  htmlFor="description"
+                  className="block text-sm font-semibold text-gray-900 mb-2"
+                >
                   Description
                 </label>
                 <textarea
                   id="description"
                   value={formData.description}
-                  onChange={(e) => handleInputChange('description', e.target.value)}
+                  onChange={e =>
+                    handleInputChange('description', e.target.value)
+                  }
                   className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] resize-none transition-colors ${
                     errors.description ? 'border-red-500' : 'border-gray-300'
                   }`}
@@ -230,7 +282,9 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
                   maxLength={200}
                 />
                 {errors.description && (
-                  <p className="mt-1 text-sm text-red-600">{errors.description}</p>
+                  <p className="mt-1 text-sm text-red-600">
+                    {errors.description}
+                  </p>
                 )}
                 <p className="mt-1 text-xs text-gray-500">
                   {formData.description.length}/200 characters
@@ -241,11 +295,18 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               {/* Icon Picker */}
               <div>
-                <label id="icon-picker-label" className="block text-sm font-semibold text-gray-900 mb-3">
+                <label
+                  id="icon-picker-label"
+                  className="block text-sm font-semibold text-gray-900 mb-3"
+                >
                   Icon
                 </label>
-                <div className="grid grid-cols-5 gap-3" role="radiogroup" aria-labelledby="icon-picker-label">
-                  {availableIcons.map((icon) => (
+                <div
+                  className="grid grid-cols-5 gap-3"
+                  role="radiogroup"
+                  aria-labelledby="icon-picker-label"
+                >
+                  {availableIcons.map(icon => (
                     <button
                       key={icon}
                       type="button"
@@ -267,11 +328,18 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
 
               {/* Color Picker */}
               <div>
-                <label id="color-picker-label" className="block text-sm font-semibold text-gray-900 mb-3">
+                <label
+                  id="color-picker-label"
+                  className="block text-sm font-semibold text-gray-900 mb-3"
+                >
                   Color
                 </label>
-                <div className="grid grid-cols-4 gap-3" role="radiogroup" aria-labelledby="color-picker-label">
-                  {availableColors.map((color) => (
+                <div
+                  className="grid grid-cols-4 gap-3"
+                  role="radiogroup"
+                  aria-labelledby="color-picker-label"
+                >
+                  {availableColors.map(color => (
                     <button
                       key={color.name}
                       type="button"
@@ -287,8 +355,17 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
                       aria-label={`Select ${color.name} color`}
                     >
                       {formData.color === color.name && (
-                        <svg className="w-6 h-6 text-white drop-shadow-md" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-                          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                        <svg
+                          className="w-6 h-6 text-white drop-shadow-md"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                          aria-hidden="true"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                            clipRule="evenodd"
+                          />
                         </svg>
                       )}
                     </button>
@@ -300,14 +377,22 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
             {/* Targets */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-gray-200">
               <div>
-                <label htmlFor="weeklyTarget" className="block text-sm font-semibold text-gray-900 mb-2">
+                <label
+                  htmlFor="weeklyTarget"
+                  className="block text-sm font-semibold text-gray-900 mb-2"
+                >
                   Weekly Target (hours)
                 </label>
                 <input
                   type="number"
                   id="weeklyTarget"
                   value={formData.weeklyTarget || ''}
-                  onChange={(e) => handleInputChange('weeklyTarget', e.target.value ? Number(e.target.value) : undefined)}
+                  onChange={e =>
+                    handleInputChange(
+                      'weeklyTarget',
+                      e.target.value ? Number(e.target.value) : undefined
+                    )
+                  }
                   className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] transition-colors ${
                     errors.weeklyTarget ? 'border-red-500' : 'border-gray-300'
                   }`}
@@ -317,20 +402,32 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
                   step="0.5"
                 />
                 {errors.weeklyTarget && (
-                  <p className="mt-1 text-sm text-red-600">{errors.weeklyTarget}</p>
+                  <p className="mt-1 text-sm text-red-600">
+                    {errors.weeklyTarget}
+                  </p>
                 )}
-                <p className="mt-1 text-xs text-gray-500">Set a weekly goal for this project</p>
+                <p className="mt-1 text-xs text-gray-500">
+                  Set a weekly goal for this project
+                </p>
               </div>
 
               <div>
-                <label htmlFor="totalTarget" className="block text-sm font-semibold text-gray-900 mb-2">
+                <label
+                  htmlFor="totalTarget"
+                  className="block text-sm font-semibold text-gray-900 mb-2"
+                >
                   Total Target (hours)
                 </label>
                 <input
                   type="number"
                   id="totalTarget"
                   value={formData.totalTarget || ''}
-                  onChange={(e) => handleInputChange('totalTarget', e.target.value ? Number(e.target.value) : undefined)}
+                  onChange={e =>
+                    handleInputChange(
+                      'totalTarget',
+                      e.target.value ? Number(e.target.value) : undefined
+                    )
+                  }
                   className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] transition-colors ${
                     errors.totalTarget ? 'border-red-500' : 'border-gray-300'
                   }`}
@@ -340,9 +437,13 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
                   step="1"
                 />
                 {errors.totalTarget && (
-                  <p className="mt-1 text-sm text-red-600">{errors.totalTarget}</p>
+                  <p className="mt-1 text-sm text-red-600">
+                    {errors.totalTarget}
+                  </p>
                 )}
-                <p className="mt-1 text-xs text-gray-500">Set an overall project goal</p>
+                <p className="mt-1 text-xs text-gray-500">
+                  Set an overall project goal
+                </p>
               </div>
             </div>
 

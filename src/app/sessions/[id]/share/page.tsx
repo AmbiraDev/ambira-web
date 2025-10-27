@@ -2,9 +2,8 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image';
 import { ArrowLeft, Download, Share2 } from 'lucide-react';
-import { SessionWithDetails, User } from '@/types';
+import { SessionWithDetails } from '@/types';
 import { firebaseApi } from '@/lib/api';
 import { useAuth } from '@/hooks/useAuth';
 import Header from '@/components/HeaderComponent';
@@ -386,11 +385,11 @@ function SessionShareContent({ sessionId }: { sessionId: string }) {
                   flexShrink: 0,
                 }}
               >
-                <img
+                <Image
                   src={session.user.profilePicture}
                   alt={session.user.name}
-                  width="88"
-                  height="88"
+                  width={88}
+                  height={88}
                   style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                 />
               </div>
@@ -526,9 +525,11 @@ function SessionShareContent({ sessionId }: { sessionId: string }) {
                   backgroundColor: '#f9fafb',
                 }}
               >
-                <img
+                <Image
                   src={session.images[0]}
                   alt="Session image"
+                  width={1080}
+                  height={480}
                   style={{
                     width: '100%',
                     height: '100%',

@@ -16,8 +16,7 @@ interface DailyGoalProgress {
 
 function DailyGoals() {
   const { user } = useAuth();
-  const { data: activities = [], isLoading: activitiesLoading } =
-    useActivities();
+  const { data: activities = [] } = useActivities();
   const [goals, setGoals] = useState<DailyGoalProgress[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 

@@ -36,11 +36,6 @@ const categoryOptions = [
 // Pagination and layout constants
 const GROUPS_PER_PAGE = 10;
 const SEARCH_RESULTS_LIMIT = 50;
-const _MY_GROUPS_GRID_COLS = {
-  mobile: 4,
-  tablet: 6,
-  desktop: 8,
-} as const;
 
 export default function GroupsPage() {
   const { user } = useAuth();
@@ -105,6 +100,13 @@ export default function GroupsPage() {
   useEffect(() => {
     if (hasSearched && filteredSearchResults.length >= 0) {
       setSearchResults(filteredSearchResults);
+      if (filteredSearchResults.length > 0) {
+        setSearchStatus(
+          `Found ${filteredSearchResults.length} ${filteredSearchResults.length === 1 ? 'group' : 'groups'}`
+        );
+      } else {
+        setSearchStatus('No groups found');
+      }
     }
   }, [filteredSearchResults, hasSearched]);
 

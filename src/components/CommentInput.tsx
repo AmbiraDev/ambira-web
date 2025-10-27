@@ -6,8 +6,6 @@ import { UserSearchResult } from '@/types';
 import { firebaseUserApi } from '@/lib/api';
 
 interface CommentInputProps {
-  sessionId: string;
-  parentId?: string;
   placeholder?: string;
   onSubmit: (content: string) => Promise<void>;
   onCancel?: () => void;
@@ -15,14 +13,7 @@ interface CommentInputProps {
   initialValue?: string;
 }
 
-interface MentionSuggestion {
-  user: UserSearchResult;
-  index: number;
-}
-
 export const CommentInput: React.FC<CommentInputProps> = ({
-  sessionId,
-  parentId,
   placeholder = 'Add a comment, @ to mention',
   onSubmit,
   onCancel,

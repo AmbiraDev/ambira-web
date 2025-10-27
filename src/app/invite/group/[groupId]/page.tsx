@@ -19,9 +19,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       };
     }
 
-    const _groupIcon = group.imageUrl || '💼';
-    const _baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://ambira.com';
-
     return {
       title: `Join ${group.name} on Ambira`,
       description: `${group.description.slice(0, 160)}`,

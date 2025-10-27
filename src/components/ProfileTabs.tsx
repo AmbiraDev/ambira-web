@@ -5,11 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import {
   firebaseSessionApi,
-  _firebaseApi,
   firebaseUserApi,
   firebasePostApi,
 } from '@/lib/api';
-import { _Session, User, _Project, SessionWithDetails } from '@/types';
+import { User, SessionWithDetails } from '@/types';
 import SessionCard from './SessionCard';
 import ConfirmDialog from './ConfirmDialog';
 import {
@@ -51,8 +50,8 @@ export const ProfileTabs: React.FC<ProfileTabsProps> = ({
   activeTab,
   onTabChange,
   stats,
-  showPrivateContent = false,
-  userId,
+  _showPrivateContent = false,
+  _userId,
 }) => {
   const tabs: Array<{
     id: ProfileTab;

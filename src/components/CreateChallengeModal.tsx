@@ -3,15 +3,12 @@
 import React, { useState } from 'react';
 import { CreateChallengeData, Project } from '@/types';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import {
   X,
   Target,
   TrendingUp,
   Zap,
   Timer,
-  Calendar,
-  Users,
   Award,
   Plus,
   Trash2,
@@ -140,7 +137,10 @@ export default function CreateChallengeModal({
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleInputChange = (field: string, value: any) => {
+  const handleInputChange = (
+    field: string,
+    value: string | Date | number | undefined | string[]
+  ) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     // Clear error when user starts typing
     if (errors[field]) {
@@ -180,7 +180,6 @@ export default function CreateChallengeModal({
   };
 
   const selectedType = challengeTypes.find(t => t.type === formData.type)!;
-  const _SelectedIcon = selectedType.icon;
 
   const addReward = () => {
     if (newReward.trim() && !formData.rewards?.includes(newReward.trim())) {

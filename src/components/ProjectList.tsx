@@ -20,7 +20,7 @@ interface ProjectListProps {
 // const STORAGE_KEY = 'projectViewMode';
 
 export const ProjectList: React.FC<ProjectListProps> = ({
-  onCreateProject,
+  _onCreateProject,
   onEditProject,
 }) => {
   const router = useRouter();

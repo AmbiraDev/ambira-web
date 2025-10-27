@@ -3,11 +3,7 @@
 import React, { useState } from 'react';
 import { Download, Calendar, FileText, Database } from 'lucide-react';
 
-interface DataExportProps {
-  userId: string;
-}
-
-export const DataExport: React.FC<DataExportProps> = ({ userId }) => {
+export const DataExport: React.FC = () => {
   const [exportType, setExportType] = useState<
     'sessions' | 'projects' | 'tasks' | 'all'
   >('all');

@@ -9,14 +9,7 @@ import ChallengeCard from './ChallengeCard';
 import CreateChallengeModal from './CreateChallengeModal';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import {
-  Plus,
-  Trophy,
-  Target,
-  Calendar,
-  Users,
-  TrendingUp,
-} from 'lucide-react';
+import { Plus, Trophy } from 'lucide-react';
 
 interface GroupChallengesProps {
   group: Group;
@@ -42,11 +35,7 @@ export default function GroupChallenges({
     'all' | 'active' | 'upcoming' | 'completed'
   >('all');
 
-  useEffect(() => {
-    loadGroupChallenges();
-  }, [group.id, activeFilter]);
-
-  const loadGroupChallenges = async () => {
+  const loadGroupChallenges = React.useCallback(async () => {
     try {
       setIsLoading(true);
 
@@ -81,9 +70,13 @@ export default function GroupChallenges({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [group.id, activeFilter, user]);
 
-  const handleCreateChallenge = async (data: any) => {
+  useEffect(() => {
+    loadGroupChallenges();
+  }, [loadGroupChallenges]);
+
+  const handleCreateChallenge = async (data: { [key: string]: unknown }) => {
     try {
       await firebaseChallengeApi.createChallenge({
         ...data,
@@ -217,7 +210,11 @@ export default function GroupChallenges({
         ].map(filter => (
           <button
             key={filter.key}
-            onClick={() => setActiveFilter(filter.key as any)}
+            onClick={() =>
+              setActiveFilter(
+                filter.key as 'all' | 'active' | 'upcoming' | 'completed'
+              )
+            }
             className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
               activeFilter === filter.key
                 ? 'bg-blue-100 text-blue-700 border border-blue-200'

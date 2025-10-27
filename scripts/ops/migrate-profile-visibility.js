@@ -21,11 +21,8 @@
  *   node scripts/ops/migrate-profile-visibility.js --dry-run
  */
 
-const admin = require('firebase-admin');
-const path = require('path');
-
-// Initialize Firebase Admin
-const serviceAccount = require(path.join(__dirname, '../../serviceAccountKey.json'));
+import admin from 'firebase-admin';
+import serviceAccount from '../../serviceAccountKey.json' with { type: 'json' };
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount)

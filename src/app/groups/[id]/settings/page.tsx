@@ -8,7 +8,6 @@ import { ImageUpload } from '@/components/ImageUpload';
 import { Group, UpdateGroupData } from '@/types';
 import { firebaseApi } from '@/lib/api';
 import { uploadImage } from '@/lib/imageUpload';
-import { Upload } from 'lucide-react';
 
 export default function GroupSettingsPage() {
   const params = useParams();
@@ -283,7 +282,15 @@ export default function GroupSettingsPage() {
               id="category"
               value={formData.category}
               onChange={e =>
-                setFormData({ ...formData, category: e.target.value as any })
+                setFormData({
+                  ...formData,
+                  category: e.target.value as
+                    | 'work'
+                    | 'study'
+                    | 'side-project'
+                    | 'learning'
+                    | 'other',
+                })
               }
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:border-transparent bg-white"
             >
@@ -307,7 +314,14 @@ export default function GroupSettingsPage() {
               id="type"
               value={formData.type}
               onChange={e =>
-                setFormData({ ...formData, type: e.target.value as any })
+                setFormData({
+                  ...formData,
+                  type: e.target.value as
+                    | 'just-for-fun'
+                    | 'professional'
+                    | 'competitive'
+                    | 'other',
+                })
               }
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:border-transparent bg-white"
             >

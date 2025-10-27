@@ -10,7 +10,6 @@ import {
   PlayCircle,
   Users,
   MoreHorizontal,
-  User,
   Activity,
   BarChart3,
   Settings,
@@ -48,7 +47,6 @@ export default function BottomNavigation() {
   const hasActiveSession =
     timerState.currentProject &&
     (timerState.isRunning || timerState.pausedDuration > 0);
-  const _isOnTimerPage = pathname.startsWith('/timer');
 
   // Close menu when pathname changes
   useEffect(() => {

@@ -1,15 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import {
-  Clock,
-  Target,
-  CheckSquare,
-  Flame,
-  _TrendingUp,
-  ArrowRight,
-} from 'lucide-react';
-import { StatsCard } from './StatsCard';
+import { Clock, Target, CheckSquare, Flame, ArrowRight } from 'lucide-react';
 import { ActivityChart } from './ActivityChart';
 import Link from 'next/link';
 

@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState } from 'react';
-import { CommentWithDetails } from '@/types';
 import { useAuth } from '@/hooks/useAuth';
 import {
   useSessionComments,
@@ -14,7 +13,6 @@ import CommentItem from './CommentItem';
 
 interface CommentListProps {
   sessionId: string;
-  initialCommentCount?: number;
   onCommentCountChange?: (count: number) => void;
   showPagination?: boolean;
   commentsPerPage?: number;
@@ -22,7 +20,6 @@ interface CommentListProps {
 
 export const CommentList: React.FC<CommentListProps> = ({
   sessionId,
-  initialCommentCount = 0,
   onCommentCountChange,
 }) => {
   const { user } = useAuth();
@@ -135,7 +132,6 @@ export const CommentList: React.FC<CommentListProps> = ({
             <CommentItem
               key={comment.id}
               comment={comment}
-              sessionId={sessionId}
               onDelete={handleDelete}
               onLike={handleLike}
               currentUserId={user?.id}

@@ -15,7 +15,9 @@ export default function DiscoverPeoplePage() {
   const { user } = useAuth();
   const [suggestedUsers, setSuggestedUsers] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [_followingUsers, setFollowingUsers] = useState<Set<string>>(new Set());
+  const [_followingUsers, _setFollowingUsers] = useState<Set<string>>(
+    new Set()
+  );
 
   useEffect(() => {
     const loadUsers = async () => {
@@ -31,7 +33,7 @@ export default function DiscoverPeoplePage() {
         try {
           const following = await firebaseUserApi.getFollowing(user.id);
           const followingIds = new Set(following.map(u => u.id));
-          setFollowingUsers(followingIds);
+          _setFollowingUsers(followingIds);
         } catch (error) {
           console.error('Failed to load following list:', error);
         }
@@ -54,7 +56,7 @@ export default function DiscoverPeoplePage() {
 
   const handleFollowChange = (userId: string, isFollowing: boolean) => {
     // Update following state
-    setFollowingUsers(prev => {
+    _setFollowingUsers(prev => {
       const next = new Set(prev);
       if (isFollowing) {
         next.add(userId);

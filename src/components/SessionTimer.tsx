@@ -5,7 +5,6 @@ import { useTimer } from '@/features/timer/hooks';
 import { useAuth } from '@/hooks/useAuth';
 import { Project, CreateSessionData } from '@/types';
 import { TimerDisplay } from './TimerDisplay';
-import { TimerControls } from './TimerControls';
 import { SaveSession } from './SaveSession';
 import { firebaseApi } from '@/lib/api';
 import { cn } from '@/lib/utils';
@@ -20,12 +19,6 @@ export const SessionTimer: React.FC<SessionTimerProps> = ({
   const { timerState, startTimer } = useTimer();
   const { user } = useAuth();
 
-  // TODO: Implement Firebase API calls
-  // Helper function to get auth token
-  const getAuthToken = (): string => {
-    // For now, return empty string since we're not using Firebase sessions yet
-    return '';
-  };
   const [projects, setProjects] = useState<Project[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
@@ -35,7 +28,6 @@ export const SessionTimer: React.FC<SessionTimerProps> = ({
   useEffect(() => {
     const loadProjects = async () => {
       try {
-        const _token = getAuthToken();
         // TODO: Load projects from Firebase
         const projectList: Project[] = []; // await mockProjectApi.getProjects(token);
         setProjects(projectList);
@@ -176,16 +168,14 @@ export const SessionTimer: React.FC<SessionTimerProps> = ({
               if (data.visibility !== 'private') {
                 // Show post creation modal for non-private sessions
                 // For now, we'll create the session with a basic post
-                const { _session, _post } =
-                  await firebaseApi.session.createSessionWithPost(
-                    sessionData,
-                    data.description || `Completed ${data.title}`,
-                    data.visibility
-                  );
+                await firebaseApi.session.createSessionWithPost(
+                  sessionData,
+                  data.description || `Completed ${data.title}`,
+                  data.visibility
+                );
               } else {
                 // Create private session only
-                const _session =
-                  await firebaseApi.session.createSession(sessionData);
+                await firebaseApi.session.createSession(sessionData);
               }
 
               setShowFinishModal(false);

@@ -13,15 +13,13 @@ import {
   useRestoreActivity,
 } from '@/hooks/useActivitiesQuery';
 import { toast } from 'sonner';
-import { cn, isEmpty } from '@/lib/utils';
+import { isEmpty } from '@/lib/utils';
 
 interface ActivityListProps {
-  onCreateActivity?: () => void;
   onEditActivity?: (activity: Activity) => void;
 }
 
 export const ActivityList: React.FC<ActivityListProps> = ({
-  onCreateActivity,
   onEditActivity,
 }) => {
   const router = useRouter();
@@ -31,9 +29,6 @@ export const ActivityList: React.FC<ActivityListProps> = ({
   const archiveActivityMutation = useArchiveActivity();
   const restoreActivityMutation = useRestoreActivity();
   const [deleteConfirm, setDeleteConfirm] = useState<Activity | null>(null);
-
-  // View mode is always 'grid' - list view has been removed for consistency
-  const viewMode = 'grid';
 
   // Display all activities without filtering (no active filters applied)
   const filteredActivities = activities;
@@ -125,8 +120,12 @@ export const ActivityList: React.FC<ActivityListProps> = ({
   if (error) {
     return (
       <div className="text-center py-12">
-        <div className="text-red-500 text-lg mb-4">Error loading activities</div>
-        <p className="text-gray-600 mb-4">{error instanceof Error ? error.message : 'Unknown error'}</p>
+        <div className="text-red-500 text-lg mb-4">
+          Error loading activities
+        </div>
+        <p className="text-gray-600 mb-4">
+          {error instanceof Error ? error.message : 'Unknown error'}
+        </p>
         <button
           onClick={() => window.location.reload()}
           className="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors"
@@ -143,9 +142,12 @@ export const ActivityList: React.FC<ActivityListProps> = ({
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-2">
           <div>
-            <h1 className="text-xl md:text-2xl font-bold text-gray-900 mb-1">Activities</h1>
+            <h1 className="text-xl md:text-2xl font-bold text-gray-900 mb-1">
+              Activities
+            </h1>
             <p className="text-gray-600 text-sm">
-              {filteredActivities.length} activit{filteredActivities.length !== 1 ? 'ies' : 'y'}
+              {filteredActivities.length} activit
+              {filteredActivities.length !== 1 ? 'ies' : 'y'}
             </p>
           </div>
           <div className="flex gap-2">
@@ -172,7 +174,8 @@ export const ActivityList: React.FC<ActivityListProps> = ({
               No activities yet
             </h3>
             <p className="text-sm md:text-base text-gray-600 mb-6">
-              Activities help you organize your work sessions and track progress over time. Create your first activity to get started!
+              Activities help you organize your work sessions and track progress
+              over time. Create your first activity to get started!
             </p>
             <button
               onClick={() => router.push('/activities/new')}
@@ -183,23 +186,22 @@ export const ActivityList: React.FC<ActivityListProps> = ({
               Create Your First Activity
             </button>
             <p className="text-xs text-gray-500">
-              Tip: You can assign tasks to activities and track time spent on each one
+              Tip: You can assign tasks to activities and track time spent on
+              each one
             </p>
           </div>
         </div>
       ) : (
-        <div className={cn(
-          viewMode === 'grid'
-            ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'
-            : 'max-w-3xl mx-auto space-y-4'
-        )}>
-          {filteredActivities.map((activity) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredActivities.map(activity => (
             <ActivityCard
               key={activity.id}
               activity={activity}
               onEdit={onEditActivity}
-              onDelete={(activity) => setDeleteConfirm(activity)}
-              onArchive={activity.status === 'active' ? handleArchive : handleRestore}
+              onDelete={activity => setDeleteConfirm(activity)}
+              onArchive={
+                activity.status === 'active' ? handleArchive : handleRestore
+              }
             />
           ))}
         </div>
@@ -209,21 +211,27 @@ export const ActivityList: React.FC<ActivityListProps> = ({
       {deleteConfirm && (
         <div
           className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 motion-safe:animate-in motion-safe:fade-in motion-safe:duration-200"
-          onClick={(e) => {
+          onClick={e => {
             if (e.target === e.currentTarget) {
               setDeleteConfirm(null);
             }
           }}
-          onKeyDown={(e) => {
+          onKeyDown={e => {
             if (e.key === 'Escape') {
               setDeleteConfirm(null);
             }
           }}
         >
           <div className="bg-white/95 backdrop-blur-sm rounded-xl p-6 max-w-md w-full shadow-xl motion-safe:animate-in motion-safe:zoom-in-95 motion-safe:duration-200 border border-gray-200">
-            <h3 className="text-xl font-bold text-gray-900 mb-3">Delete Activity</h3>
+            <h3 className="text-xl font-bold text-gray-900 mb-3">
+              Delete Activity
+            </h3>
             <p className="text-gray-600 mb-6 leading-relaxed">
-              Are you sure you want to delete <span className="font-semibold text-gray-900">"{deleteConfirm.name}"</span>? This action cannot be undone.
+              Are you sure you want to delete{' '}
+              <span className="font-semibold text-gray-900">
+                "{deleteConfirm.name}"
+              </span>
+              ? This action cannot be undone.
             </p>
             <div className="flex gap-3 justify-end">
               <button

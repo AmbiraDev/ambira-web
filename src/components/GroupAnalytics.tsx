@@ -2,13 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { GroupStats } from '@/types';
-import {
-  _BarChart3,
-  TrendingUp,
-  _Users,
-  _Clock,
-  _Calendar,
-} from 'lucide-react';
+import { TrendingUp } from 'lucide-react';
 import {
   LineChart,
   Line,
@@ -18,7 +12,6 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
   ResponsiveContainer,
   Area,
   AreaChart,
@@ -40,13 +33,9 @@ export default function GroupAnalytics({
     hoursData: Array<{ date: string; hours: number; members: number }>;
     membershipGrowth: Array<{ date: string; members: number }>;
   } | null>(null);
-  const [_isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    loadAnalytics();
-  }, [groupId, timeRange]);
-
-  const loadAnalytics = async () => {
+  const loadAnalytics = React.useCallback(async () => {
     try {
       setIsLoading(true);
       const { firebaseApi } = await import('@/lib/api');
@@ -60,7 +49,11 @@ export default function GroupAnalytics({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [groupId, timeRange]);
+
+  useEffect(() => {
+    loadAnalytics();
+  }, [loadAnalytics]);
 
   const hoursData = analyticsData?.hoursData || [];
   const membershipGrowth = analyticsData?.membershipGrowth || [];

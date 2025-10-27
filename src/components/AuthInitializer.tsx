@@ -23,7 +23,6 @@ import { useRouter } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import { firebaseAuthApi } from '@/lib/api/auth';
 import { AUTH_KEYS } from '@/lib/react-query/auth.queries';
-import type { AuthUser } from '@/types';
 
 interface AuthInitializerProps {
   children: ReactNode;

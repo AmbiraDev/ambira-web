@@ -308,7 +308,7 @@ function EditActivityContent({ activityId }: { activityId: string }) {
       // If activity not found and projects are loaded, redirect
       router.push('/activities');
     }
-  }, [activityId, projects]);
+  }, [activityId, projects, isLoading, router]);
 
   const validateForm = (): boolean => {
     const newErrors: Partial<Record<keyof UpdateActivityData, string>> = {};

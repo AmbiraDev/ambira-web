@@ -24,7 +24,10 @@ function SessionEditContent({ sessionId }: { sessionId: string }) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    loadSession();
+    if (sessionId) {
+      loadSession();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionId]);
 
   const loadSession = async () => {

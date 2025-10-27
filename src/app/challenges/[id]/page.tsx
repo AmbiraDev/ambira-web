@@ -4,7 +4,12 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { firebaseChallengeApi } from '@/lib/api';
-import { Challenge, ChallengeStats, ChallengeLeaderboard, ChallengeProgress } from '@/types';
+import {
+  Challenge,
+  ChallengeStats,
+  ChallengeLeaderboard,
+  ChallengeProgress,
+} from '@/types';
 import Header from '@/components/HeaderComponent';
 import ChallengeDetail from '@/components/ChallengeDetail';
 import { Button } from '@/components/ui/button';
@@ -19,17 +24,22 @@ export default function ChallengeDetailPage() {
 
   const [challenge, setChallenge] = useState<Challenge | null>(null);
   const [stats, setStats] = useState<ChallengeStats | null>(null);
-  const [leaderboard, setLeaderboard] = useState<ChallengeLeaderboard | null>(null);
-  const [userProgress, setUserProgress] = useState<ChallengeProgress | null>(null);
+  const [leaderboard, setLeaderboard] = useState<ChallengeLeaderboard | null>(
+    null
+  );
+  const [userProgress, setUserProgress] = useState<ChallengeProgress | null>(
+    null
+  );
   const [isParticipating, setIsParticipating] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
 
   useEffect(() => {
-    if (challengeId) {
+    if (challengeId && user) {
       loadChallengeData();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [challengeId, user]);
 
   const loadChallengeData = async () => {
@@ -37,20 +47,24 @@ export default function ChallengeDetailPage() {
       setIsLoading(true);
 
       // Load challenge details
-      const challengeData = await firebaseChallengeApi.getChallenge(challengeId);
+      const challengeData =
+        await firebaseChallengeApi.getChallenge(challengeId);
       setChallenge(challengeData);
 
       // Load challenge stats
-      const statsData = await firebaseChallengeApi.getChallengeStats(challengeId);
+      const statsData =
+        await firebaseChallengeApi.getChallengeStats(challengeId);
       setStats(statsData);
 
       // Load leaderboard
-      const leaderboardData = await firebaseChallengeApi.getChallengeLeaderboard(challengeId);
+      const leaderboardData =
+        await firebaseChallengeApi.getChallengeLeaderboard(challengeId);
       setLeaderboard(leaderboardData);
 
       // Check if user is participating and load progress
       if (user) {
-        const progressData = await firebaseChallengeApi.getChallengeProgress(challengeId);
+        const progressData =
+          await firebaseChallengeApi.getChallengeProgress(challengeId);
         if (progressData) {
           setUserProgress(progressData);
           setIsParticipating(true);
@@ -71,7 +85,7 @@ export default function ChallengeDetailPage() {
 
   const handleJoin = async () => {
     if (!user) return;
-    
+
     try {
       setActionLoading(true);
       await firebaseChallengeApi.joinChallenge(challengeId);
@@ -86,8 +100,10 @@ export default function ChallengeDetailPage() {
 
   const handleLeave = async () => {
     if (!user) return;
-    
-    const confirmed = confirm('Are you sure you want to leave this challenge? Your progress will be lost.');
+
+    const confirmed = confirm(
+      'Are you sure you want to leave this challenge? Your progress will be lost.'
+    );
     if (!confirmed) return;
 
     try {
@@ -108,7 +124,9 @@ export default function ChallengeDetailPage() {
   };
 
   const handleDelete = async () => {
-    const confirmed = confirm('Are you sure you want to delete this challenge? This action cannot be undone.');
+    const confirmed = confirm(
+      'Are you sure you want to delete this challenge? This action cannot be undone.'
+    );
     if (!confirmed) return;
 
     try {
@@ -130,7 +148,9 @@ export default function ChallengeDetailPage() {
       document.title = `${challenge.name} - Ambira`;
 
       // Update meta tags
-      const description = challenge.description || `Join the ${challenge.name} challenge and compete with others`;
+      const description =
+        challenge.description ||
+        `Join the ${challenge.name} challenge and compete with others`;
 
       let metaDescription = document.querySelector('meta[name="description"]');
       if (!metaDescription) {
@@ -149,7 +169,9 @@ export default function ChallengeDetailPage() {
       }
       ogTitle.setAttribute('content', `${challenge.name} - Ambira`);
 
-      let ogDescription = document.querySelector('meta[property="og:description"]');
+      let ogDescription = document.querySelector(
+        'meta[property="og:description"]'
+      );
       if (!ogDescription) {
         ogDescription = document.createElement('meta');
         ogDescription.setAttribute('property', 'og:description');
@@ -182,7 +204,9 @@ export default function ChallengeDetailPage() {
       }
       twitterTitle.setAttribute('content', `${challenge.name} - Ambira`);
 
-      let twitterDescription = document.querySelector('meta[name="twitter:description"]');
+      let twitterDescription = document.querySelector(
+        'meta[name="twitter:description"]'
+      );
       if (!twitterDescription) {
         twitterDescription = document.createElement('meta');
         twitterDescription.setAttribute('name', 'twitter:description');
@@ -211,8 +235,13 @@ export default function ChallengeDetailPage() {
         <Header />
         <div className="max-w-4xl mx-auto px-4 py-6">
           <div className="text-center py-12">
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Challenge Not Found</h2>
-            <p className="text-gray-600 mb-6">The challenge you're looking for doesn't exist or has been removed.</p>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              Challenge Not Found
+            </h2>
+            <p className="text-gray-600 mb-6">
+              The challenge you're looking for doesn't exist or has been
+              removed.
+            </p>
             <Button onClick={() => router.push('/challenges')}>
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Challenges
@@ -229,8 +258,12 @@ export default function ChallengeDetailPage() {
         <div className="min-h-screen bg-gray-50">
           <Header />
           <div className="max-w-4xl mx-auto px-4 py-6 text-center">
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Error loading challenge</h2>
-            <p className="text-gray-600 mb-6">Something went wrong while loading this challenge.</p>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              Error loading challenge
+            </h2>
+            <p className="text-gray-600 mb-6">
+              Something went wrong while loading this challenge.
+            </p>
             <Button onClick={() => router.push('/challenges')}>
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Challenges

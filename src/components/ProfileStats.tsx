@@ -19,7 +19,7 @@ interface ProfileStatsProps {
 
 export const ProfileStats: React.FC<ProfileStatsProps> = ({
   userId,
-  isOwnProfile = false,
+  _isOwnProfile = false,
 }) => {
   const [activeTab, setActiveTab] = useState<'daily' | 'weekly' | 'projects'>(
     'daily'
@@ -31,18 +31,6 @@ export const ProfileStats: React.FC<ProfileStatsProps> = ({
   const [selectedPeriod, setSelectedPeriod] = useState<'30d' | '90d' | 'year'>(
     '30d'
   );
-
-  useEffect(() => {
-    loadActivityData();
-  }, [userId, selectedPeriod]);
-
-  useEffect(() => {
-    if (activeTab === 'weekly') {
-      loadWeeklyData();
-    } else if (activeTab === 'projects') {
-      loadProjectData();
-    }
-  }, [activeTab, userId]);
 
   const loadActivityData = async () => {
     try {
@@ -84,6 +72,20 @@ export const ProfileStats: React.FC<ProfileStatsProps> = ({
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    loadActivityData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId, selectedPeriod]);
+
+  useEffect(() => {
+    if (activeTab === 'weekly') {
+      loadWeeklyData();
+    } else if (activeTab === 'projects') {
+      loadProjectData();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, userId]);
 
   const formatHours = (hours: number): string => {
     if (hours < 1) {
@@ -129,7 +131,9 @@ export const ProfileStats: React.FC<ProfileStatsProps> = ({
           return (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
+              onClick={() =>
+                setActiveTab(tab.id as 'daily' | 'weekly' | 'projects')
+              }
               className={`
                 flex items-center gap-2 px-4 py-2 rounded-none border-b-2 transition-all
                 ${
@@ -737,7 +741,7 @@ const ProjectBreakdownChart: React.FC<ProjectBreakdownChartProps> = ({
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {data.map((project, _index) => (
+            {data.map(project => (
               <tr
                 key={project.projectId}
                 className="hover:bg-gray-50 transition-colors"

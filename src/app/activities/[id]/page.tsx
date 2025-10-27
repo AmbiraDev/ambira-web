@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import Header from '@/components/HeaderComponent';
@@ -8,22 +8,11 @@ import { IconRenderer } from '@/components/IconRenderer';
 import { useAuth } from '@/hooks/useAuth';
 import { useActivities, useActivityStats } from '@/hooks/useActivitiesQuery';
 import { firebaseApi } from '@/lib/api';
-import { Activity, _ActivityStats, SessionWithDetails } from '@/types';
-import Link from 'next/link';
-import {
-  ArrowLeft,
-  Clock,
-  Calendar,
-  TrendingUp,
-  Settings,
-  ChevronDown,
-  Play,
-} from 'lucide-react';
+import { Activity, SessionWithDetails } from '@/types';
+import { ArrowLeft, Clock, Settings, ChevronDown } from 'lucide-react';
 import {
   BarChart,
   Bar,
-  LineChart,
-  Line,
   XAxis,
   YAxis,
   ResponsiveContainer,
@@ -32,7 +21,6 @@ import {
   Area,
 } from 'recharts';
 import { SessionCard } from '@/components/SessionCard';
-import { firebaseApi as api } from '@/lib/api';
 
 interface ProjectDetailPageProps {
   params: Promise<{
@@ -343,12 +331,26 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
   };
 
   // Custom tooltip formatter
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  interface TooltipPayloadItem {
+    name: string;
+    value: number;
+    color: string;
+  }
+
+  const CustomTooltip = ({
+    active,
+    payload,
+    label,
+  }: {
+    active?: boolean;
+    payload?: Array<TooltipPayloadItem>;
+    label?: string;
+  }) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-white border border-gray-200 rounded-lg shadow-lg p-3">
           <p className="text-sm font-medium text-gray-900 mb-2">{label}</p>
-          {payload.map((entry: any, index: number) => (
+          {payload.map((entry, index: number) => (
             <p key={index} className="text-sm" style={{ color: entry.color }}>
               <span className="font-semibold">{entry.name}</span>: {entry.value}
             </p>

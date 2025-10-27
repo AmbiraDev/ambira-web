@@ -10,7 +10,6 @@ import { getUserInitials } from '@/lib/userUtils';
 
 interface CommentItemProps {
   comment: CommentWithDetails;
-  sessionId: string;
   onDelete?: (commentId: string) => Promise<void>;
   onLike?: (commentId: string, action: 'like' | 'unlike') => void;
   currentUserId?: string;
@@ -18,7 +17,6 @@ interface CommentItemProps {
 
 export const CommentItem: React.FC<CommentItemProps> = ({
   comment,
-  sessionId,
   onDelete,
   onLike,
   currentUserId,

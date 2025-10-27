@@ -16,15 +16,9 @@ interface FeedLayoutProps {
 export const FeedLayout: React.FC<FeedLayoutProps> = ({ className = '' }) => {
   const { user } = useAuth();
   const [userStats, setUserStats] = useState<UserStats | null>(null);
-  const [_suggestedUsers, setSuggestedUsers] = useState<SuggestedUser[]>([]);
   const [isLoadingStats, setIsLoadingStats] = useState(true);
   const [feedType, setFeedType] = useState<FeedType>('recent');
   const [filters, setFilters] = useState<FeedFilters>({ type: 'recent' });
-
-  const _handleFeedTypeChange = (type: FeedType) => {
-    setFeedType(type);
-    setFilters({ type });
-  };
 
   // Load user stats and suggestions
   React.useEffect(() => {
@@ -32,13 +26,10 @@ export const FeedLayout: React.FC<FeedLayoutProps> = ({ className = '' }) => {
       if (!user) return;
 
       try {
-        const [stats, suggestions] = await Promise.all([
-          firebaseApi.user.getUserStats(user.id),
-          firebaseApi.user.getSuggestedUsers(5),
-        ]);
+        const stats = await firebaseApi.user.getUserStats(user.id);
+        await firebaseApi.user.getSuggestedUsers(5);
 
         setUserStats(stats);
-        setSuggestedUsers(suggestions);
       } catch (error) {
         console.error('Failed to load feed data:', error);
       } finally {

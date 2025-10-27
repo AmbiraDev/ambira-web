@@ -1,7 +1,7 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
-import { useState, _useEffect, Suspense, useMemo } from 'react';
+import { useState, Suspense, useMemo } from 'react';
 import Link from 'next/link';
 import Header from '@/components/HeaderComponent';
 import BottomNavigation from '@/components/BottomNavigation';
@@ -44,12 +44,12 @@ function SearchContent() {
   const debouncedQuery = useDebounce(query, 300);
 
   // Prefetch following list and user groups in parallel when page loads
-  const { followingIds, isLoading: isLoadingFollowing } = useFollowingList({
+  const { followingIds } = useFollowingList({
     userId: user?.id,
     enabled: !!user,
   });
 
-  const { groups: userGroups, isLoading: isLoadingUserGroups } = useUserGroups({
+  const { groups: userGroups } = useUserGroups({
     userId: user?.id,
     enabled: !!user && type === 'groups',
   });

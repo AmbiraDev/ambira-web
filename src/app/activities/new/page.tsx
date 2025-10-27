@@ -379,7 +379,10 @@ function CreateActivityContent() {
     }
   };
 
-  const handleInputChange = (field: keyof CreateActivityData, value: any) => {
+  const handleInputChange = (
+    field: keyof CreateActivityData,
+    value: string | number | undefined
+  ) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: undefined }));

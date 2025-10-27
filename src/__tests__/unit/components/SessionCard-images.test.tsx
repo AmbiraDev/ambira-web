@@ -20,18 +20,24 @@ jest.mock('@/lib/api', () => ({
 // Mock Next.js components
 jest.mock('next/image', () => ({
   __esModule: true,
-  default: (props: any) => {
-    return <img {...props} />;
+  default: (props: React.ImgHTMLAttributes<HTMLImageElement>) => {
+    return <img {...props} alt={props.alt || ''} />;
   },
 }));
 
 jest.mock('next/link', () => ({
   __esModule: true,
-  default: ({ children, href }: any) => <a href={href}>{children}</a>,
+  default: ({
+    children,
+    href,
+  }: {
+    children: React.ReactNode;
+    href: string;
+  }) => <a href={href}>{children}</a>,
 }));
 
 // Mock ImageGallery component
-jest.mock('../ImageGallery', () => ({
+jest.mock('@/components/ImageGallery', () => ({
   ImageGallery: ({ images }: { images: string[] }) => (
     <div data-testid="image-gallery">
       {images.map((img, idx) => (

@@ -23,7 +23,6 @@ import {
   useMarkAllNotificationsRead,
   useDeleteNotification,
 } from '@/hooks/useNotifications';
-import MobileHeader from '@/components/MobileHeader';
 import Header from '@/components/HeaderComponent';
 import BottomNavigation from '@/components/BottomNavigation';
 import { Notification } from '@/types';
@@ -33,12 +32,12 @@ import { formatDistanceToNow } from 'date-fns';
 function SwipeableNotificationItem({
   notification,
   onDelete,
-  onMarkRead,
+  _onMarkRead,
   onClick,
 }: {
   notification: Notification;
   onDelete: (id: string) => void;
-  onMarkRead: (id: string) => void;
+  _onMarkRead: (id: string) => void;
   onClick: (notification: Notification) => void;
 }) {
   const [touchStart, setTouchStart] = useState(0);
@@ -212,7 +211,7 @@ function SwipeableNotificationItem({
 export default function NotificationsPage() {
   const router = useRouter();
   const { user } = useAuth();
-  const { data: notifications = [], _isLoading } = useNotifications({
+  const { data: notifications = [] } = useNotifications({
     realtime: true,
   });
   const unreadCount = useUnreadCount();
@@ -236,7 +235,7 @@ export default function NotificationsPage() {
     deleteNotificationMutation.mutate(id);
   };
 
-  const handleMarkRead = (id: string) => {
+  const _handleMarkRead = (id: string) => {
     markAsReadMutation.mutate(id);
   };
 
@@ -305,7 +304,7 @@ export default function NotificationsPage() {
                     key={notification.id}
                     notification={notification}
                     onDelete={handleDelete}
-                    onMarkRead={handleMarkRead}
+                    _onMarkRead={_handleMarkRead}
                     onClick={handleNotificationClick}
                   />
                 ))
@@ -353,7 +352,7 @@ export default function NotificationsPage() {
                 key={notification.id}
                 notification={notification}
                 onDelete={handleDelete}
-                onMarkRead={handleMarkRead}
+                _onMarkRead={_handleMarkRead}
                 onClick={handleNotificationClick}
               />
             ))}

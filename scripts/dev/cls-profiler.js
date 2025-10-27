@@ -465,7 +465,7 @@ class CLSProfiler {
     let totalCLS = 0;
     let totalShifts = 0;
 
-    Object.entries(this.results.scenarios).forEach(([name, scenario]) => {
+    Object.entries(this.results.scenarios).forEach(([, scenario]) => {
       totalCLS += scenario.totalCLS || 0;
       totalShifts += scenario.shiftCount || 0;
     });

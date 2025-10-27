@@ -15,22 +15,26 @@ export const FABMenu: React.FC = () => {
     setIsOpen(false);
   };
 
-  const handleSaveSession = async (data: any) => {
+  const handleSaveSession = async (data: {
+    visibility: string;
+    description?: string;
+    title: string;
+    [key: string]: unknown;
+  }) => {
     try {
       setIsLoading(true);
 
       // Create session and post if visibility allows
       if (data.visibility !== 'private') {
         // Create session with post for non-private sessions
-        const { _session, _post } =
-          await firebaseApi.session.createSessionWithPost(
-            data,
-            data.description || `Completed ${data.title}`,
-            data.visibility
-          );
+        await firebaseApi.session.createSessionWithPost(
+          data,
+          data.description || `Completed ${data.title}`,
+          data.visibility
+        );
       } else {
         // Create private session only
-        const _session = await firebaseApi.session.createSession(data);
+        await firebaseApi.session.createSession(data);
       }
 
       setShowManualEntry(false);

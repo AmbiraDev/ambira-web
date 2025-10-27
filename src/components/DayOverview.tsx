@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { firebaseSessionApi, firebaseUserApi } from '@/lib/api';
 import { Clock, Flame, Target, TrendingUp } from 'lucide-react';
@@ -15,38 +15,40 @@ export default function DayOverview() {
   });
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    if (user) {
-      loadTodayStats();
-    }
-  }, [user]);
-
-  const loadTodayStats = async () => {
+  const loadTodayStats = useCallback(async () => {
     if (!user) return;
 
     try {
       setIsLoading(true);
-      
+
       // Get today's sessions
-      const sessions = await firebaseSessionApi.getUserSessions(user.id, 50, true);
+      const sessions = await firebaseSessionApi.getUserSessions(
+        user.id,
+        50,
+        true
+      );
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-      
+
       const todaySessions = sessions.filter(session => {
-        const sessionDate = session.createdAt instanceof Date
-          ? session.createdAt
-          : new Date(session.createdAt);
+        const sessionDate =
+          session.createdAt instanceof Date
+            ? session.createdAt
+            : new Date(session.createdAt);
         const sessionDay = new Date(sessionDate);
         sessionDay.setHours(0, 0, 0, 0);
         return sessionDay.getTime() === today.getTime();
       });
 
       // Calculate total time
-      const totalSeconds = todaySessions.reduce((sum, session) => sum + session.duration, 0);
-      
+      const totalSeconds = todaySessions.reduce(
+        (sum, session) => sum + session.duration,
+        0
+      );
+
       // Get streak
       const stats = await firebaseUserApi.getUserStats(user.id);
-      
+
       setTodayStats({
         totalTime: totalSeconds,
         sessionsCount: todaySessions.length,
@@ -57,12 +59,18 @@ export default function DayOverview() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (user) {
+      loadTodayStats();
+    }
+  }, [user, loadTodayStats]);
 
   const formatTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
-    
+
     if (hours > 0) {
       return `${hours}h ${minutes}m`;
     }
@@ -82,9 +90,14 @@ export default function DayOverview() {
   }
 
   return (
-    <Link href="/you?tab=progress" className="md:hidden block bg-white border-b border-gray-200 px-4 py-4">
+    <Link
+      href="/you?tab=progress"
+      className="md:hidden block bg-white border-b border-gray-200 px-4 py-4"
+    >
       <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-semibold text-gray-900">Today's Progress</h3>
+        <h3 className="text-sm font-semibold text-gray-900">
+          Today's Progress
+        </h3>
         <TrendingUp className="w-5 h-5 text-[#007AFF]" />
       </div>
 

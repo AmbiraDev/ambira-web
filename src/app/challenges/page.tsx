@@ -34,7 +34,7 @@ export default function ChallengesPage() {
   >('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [userProgressMap, _setUserProgressMap] = useState<
+  const [_userProgressMap, _setUserProgressMap] = useState<
     Record<string, number>
   >({});
 
@@ -51,7 +51,11 @@ export default function ChallengesPage() {
     }
 
     if (typeFilter !== 'all') {
-      filterObj.type = typeFilter as any;
+      filterObj.type = typeFilter as
+        | 'most-activity'
+        | 'fastest-effort'
+        | 'longest-session'
+        | 'group-goal';
     }
 
     return filterObj;
@@ -191,7 +195,7 @@ export default function ChallengesPage() {
                 key={challenge.id}
                 challenge={challenge}
                 isParticipating={participatingChallenges.has(challenge.id)}
-                userProgress={userProgressMap[challenge.id] || 0}
+                userProgress={_userProgressMap[challenge.id] || 0}
                 onJoin={() => handleJoinChallenge(challenge.id)}
                 onLeave={() => handleLeaveChallenge(challenge.id)}
                 showActions={!!user}

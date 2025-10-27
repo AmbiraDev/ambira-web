@@ -3,21 +3,10 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import {
-  ChallengeLeaderboard as ChallengeLeaderboardType,
-  _ChallengeLeaderboardEntry,
-} from '@/types';
+import { ChallengeLeaderboard as ChallengeLeaderboardType } from '@/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-  Trophy,
-  Medal,
-  Award,
-  Crown,
-  User,
-  MapPin,
-  CheckCircle,
-} from 'lucide-react';
+import { Trophy, Medal, Award, Crown, MapPin, CheckCircle } from 'lucide-react';
 
 interface ChallengeLeaderboardProps {
   leaderboard: ChallengeLeaderboardType;

@@ -58,7 +58,7 @@ export default function GroupInviteModal({
           text: `I'd like to invite you to join ${group.name} on Ambira!`,
           url: inviteLink,
         });
-      } catch (_err) {
+      } catch {
         // User cancelled or error occurred
       }
     } else {

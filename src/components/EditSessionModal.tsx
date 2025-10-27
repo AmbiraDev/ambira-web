@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Session } from '@/types';
-import { X, _XCircle, Image as ImageIcon } from 'lucide-react';
+import { X, Image as ImageIcon } from 'lucide-react';
 import { uploadImages } from '@/lib/imageUpload';
 import { useAuth } from '@/hooks/useAuth';
 import { useActivities } from '@/hooks/useActivitiesQuery';
@@ -89,7 +89,8 @@ export const EditSessionModal: React.FC<EditSessionModalProps> = ({
     setStartTime(`${hours}:${minutes}`);
     setDurationHours(String(Math.floor(session.duration / 3600)));
     setDurationMinutes(String(Math.floor((session.duration % 3600) / 60)));
-  }, [session.id]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session.id]); // Only reset form when session ID changes (new session loaded)
 
   // Handle ESC key to close modal
   useEffect(() => {

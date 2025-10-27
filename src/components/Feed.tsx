@@ -56,7 +56,6 @@ const SessionCardSkeleton: React.FC = () => (
 interface FeedProps {
   filters?: FeedFilters;
   className?: string;
-  initialLimit?: number;
   showEndMessage?: boolean;
   showGroupInfo?: boolean;
 }
@@ -64,7 +63,6 @@ interface FeedProps {
 export const Feed: React.FC<FeedProps> = ({
   filters = {},
   className = '',
-  initialLimit = 10,
   showEndMessage = true,
   showGroupInfo = false,
 }) => {
@@ -181,7 +179,7 @@ export const Feed: React.FC<FeedProps> = ({
           setHasNewSessions(true);
           setNewSessionsCount(newCount);
         }
-      } catch (_err) {
+      } catch {
         // Silently fail
       }
     };
@@ -239,9 +237,9 @@ export const Feed: React.FC<FeedProps> = ({
         await navigator.clipboard.writeText(sessionUrl);
         // Could show success toast here
       }
-    } catch (err: unknown) {
+    } catch (err: any) {
       // Silently ignore if user cancels the share dialog
-      if (err.name === 'AbortError') {
+      if (err?.name === 'AbortError') {
         return;
       }
       // Could show error toast here
@@ -260,7 +258,7 @@ export const Feed: React.FC<FeedProps> = ({
       setIsDeleting(true);
       await deleteSessionMutation.mutateAsync(deleteConfirmSession);
       setDeleteConfirmSession(null);
-    } catch (_err: any) {
+    } catch {
       // Could show error toast here
     } finally {
       setIsDeleting(false);
@@ -292,7 +290,7 @@ export const Feed: React.FC<FeedProps> = ({
     // React Query mutations handle support count updates via cache invalidation
     const unsubscribe = firebaseApi.post.listenToSessionUpdates(
       sessionIds,
-      updates => {
+      () => {
         // Updates are handled by React Query's optimistic updates in supportMutation
         // This listener can be used for real-time notifications in the future
       }

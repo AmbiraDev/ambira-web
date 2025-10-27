@@ -32,7 +32,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
     profilePicture: profile.profilePicture || '',
   });
   const [isLoading, setIsLoading] = useState(false);
-  const [profileVisibility, setProfileVisibility] = useState<
+  const [_profileVisibility, _setProfileVisibility] = useState<
     'everyone' | 'followers' | 'private'
   >('everyone');
   const [profileImageFile, setProfileImageFile] = useState<File[]>([]);
@@ -92,7 +92,7 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
       ) {
         try {
           await firebaseUserApi.deleteProfilePicture(profile.profilePicture);
-        } catch (_error) {
+        } catch {
           // Silently fail - old picture deletion is not critical
         }
       }

@@ -7,7 +7,6 @@
  * This component doesn't render anything - it just triggers data fetching.
  */
 
-import { useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useFollowingList } from '@/features/search/hooks/useFollowingList';
 

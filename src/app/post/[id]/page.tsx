@@ -9,14 +9,7 @@ import { SessionWithDetails, CommentWithDetails } from '@/types';
 import { firebaseApi } from '@/lib/api';
 import Link from 'next/link';
 import Image from 'next/image';
-import {
-  Heart,
-  MessageCircle,
-  Eye,
-  TrendingUp,
-  _BarChart3,
-  _Users,
-} from 'lucide-react';
+import { Heart, MessageCircle, Eye, TrendingUp } from 'lucide-react';
 
 type ActivityTab = 'overview' | 'comments';
 
@@ -42,6 +35,7 @@ function ActivityDetailContent({ activityId }: { activityId: string }) {
       loadSessionData();
       loadComments();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activityId, user]);
 
   const loadSessionData = async () => {
