@@ -5,14 +5,14 @@ import Link from 'next/link';
 import { Challenge, ChallengeStats } from '@/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { 
-  Trophy, 
-  Users, 
-  Calendar, 
+import {
+  Trophy,
+  Users,
+  Calendar,
   Target,
   Zap,
   Timer,
-  TrendingUp
+  TrendingUp,
 } from 'lucide-react';
 
 interface ChallengeCardProps {
@@ -31,26 +31,26 @@ const challengeTypeConfig = {
     label: 'Most Activity',
     icon: TrendingUp,
     color: 'bg-blue-100 text-blue-800',
-    description: 'Log the most hours'
+    description: 'Log the most hours',
   },
   'fastest-effort': {
     label: 'Fastest Effort',
     icon: Zap,
     color: 'bg-yellow-100 text-yellow-800',
-    description: 'Best tasks per hour ratio'
+    description: 'Best tasks per hour ratio',
   },
   'longest-session': {
     label: 'Longest Session',
     icon: Timer,
     color: 'bg-purple-100 text-purple-800',
-    description: 'Single longest work session'
+    description: 'Single longest work session',
   },
   'group-goal': {
     label: 'Group Goal',
     icon: Target,
     color: 'bg-green-100 text-green-800',
-    description: 'Collective target'
-  }
+    description: 'Collective target',
+  },
 };
 
 export default function ChallengeCard({
@@ -61,7 +61,7 @@ export default function ChallengeCard({
   onJoin,
   onLeave,
   isLoading = false,
-  showActions = true
+  showActions = true,
 }: ChallengeCardProps) {
   const typeConfig = challengeTypeConfig[challenge.type];
   const TypeIcon = typeConfig.icon;
@@ -78,16 +78,32 @@ export default function ChallengeCard({
 
   const getStatusBadge = () => {
     if (isUpcoming) {
-      return <Badge variant="secondary" className="bg-blue-100 text-blue-800">Upcoming</Badge>;
+      return (
+        <Badge variant="secondary" className="bg-blue-100 text-blue-800">
+          Upcoming
+        </Badge>
+      );
     }
     if (isActive) {
-      return <Badge variant="secondary" className="bg-green-100 text-green-800">Active</Badge>;
+      return (
+        <Badge variant="secondary" className="bg-green-100 text-green-800">
+          Active
+        </Badge>
+      );
     }
-    return <Badge variant="secondary" className="bg-gray-100 text-gray-800">Completed</Badge>;
+    return (
+      <Badge variant="secondary" className="bg-gray-100 text-gray-800">
+        Completed
+      </Badge>
+    );
   };
 
   const formatProgress = (progress: number) => {
-    if (challenge.type === 'most-activity' || challenge.type === 'group-goal' || challenge.type === 'longest-session') {
+    if (
+      challenge.type === 'most-activity' ||
+      challenge.type === 'group-goal' ||
+      challenge.type === 'longest-session'
+    ) {
       return `${progress.toFixed(1)}h`;
     }
     if (challenge.type === 'fastest-effort') {
@@ -107,13 +123,15 @@ export default function ChallengeCard({
         {/* Header */}
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-3 flex-1 min-w-0">
-            <div className={`p-2.5 rounded-lg ${typeConfig.color.replace('text-', 'bg-').replace('800', '500/10')} flex-shrink-0`}>
+            <div
+              className={`p-2.5 rounded-lg ${typeConfig.color.replace('text-', 'bg-').replace('800', '500/10')} flex-shrink-0`}
+            >
               <TypeIcon className="w-5 h-5 text-current" />
             </div>
             <div className="min-w-0 flex-1">
               <Link
                 href={`/challenges/${challenge.id}`}
-                className="text-lg font-bold text-gray-900 hover:text-[#007AFF] transition-colors block truncate"
+                className="text-lg font-bold text-gray-900 hover:text-[#0066CC] transition-colors block truncate"
               >
                 {challenge.name}
               </Link>
@@ -130,9 +148,7 @@ export default function ChallengeCard({
 
         {/* Challenge Type and Goal */}
         <div className="flex items-center gap-4 mb-4">
-          <Badge className={typeConfig.color}>
-            {typeConfig.label}
-          </Badge>
+          <Badge className={typeConfig.color}>{typeConfig.label}</Badge>
           {challenge.goalValue && (
             <div className="flex items-center gap-1 text-sm text-gray-600">
               <Target className="w-4 h-4" />
@@ -164,12 +180,13 @@ export default function ChallengeCard({
               <span className="text-gray-600">Your Progress</span>
               <span className="font-medium text-gray-900">
                 {formatProgress(userProgress)}
-                {challenge.goalValue && ` / ${formatProgress(challenge.goalValue)}`}
+                {challenge.goalValue &&
+                  ` / ${formatProgress(challenge.goalValue)}`}
               </span>
             </div>
             {challenge.goalValue && (
               <div className="w-full bg-gray-200 rounded-full h-2">
-                <div 
+                <div
                   className="bg-blue-500 h-2 rounded-full transition-all duration-300"
                   style={{ width: `${getProgressPercentage()}%` }}
                 />
@@ -187,7 +204,10 @@ export default function ChallengeCard({
             </div>
             <div className="space-y-1">
               {stats.topPerformers.slice(0, 3).map((performer, index) => (
-                <div key={performer.userId} className="flex items-center justify-between text-sm">
+                <div
+                  key={performer.userId}
+                  className="flex items-center justify-between text-sm"
+                >
                   <div className="flex items-center gap-2">
                     <span className="text-gray-400">#{index + 1}</span>
                     <span className="font-medium">{performer.user.name}</span>

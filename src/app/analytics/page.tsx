@@ -451,7 +451,7 @@ export default function AnalyticsPage() {
         <p className="text-sm md:text-base text-gray-600 mb-4">{description}</p>
         <button
           onClick={() => router.push('/timer')}
-          className="inline-flex items-center justify-center gap-2 px-4 md:px-6 py-2 md:py-3 bg-[#007AFF] text-white rounded-lg hover:bg-[#0051D5] transition-colors duration-200 font-semibold text-sm md:text-base shadow-md hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] focus-visible:ring-offset-2"
+          className="inline-flex items-center justify-center gap-2 px-4 md:px-6 py-2 md:py-3 bg-[#0066CC] text-white rounded-lg hover:bg-[#0051D5] transition-colors duration-200 font-semibold text-sm md:text-base shadow-md hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2"
           aria-label="Start tracking your first session"
         >
           <Activity className="w-4 h-4 md:w-5 md:h-5" aria-hidden="true" />
@@ -507,7 +507,7 @@ export default function AnalyticsPage() {
                   <button
                     ref={activityTriggerRef}
                     onClick={() => setShowProjectDropdown(!showProjectDropdown)}
-                    className="flex items-center gap-2 px-3 md:px-4 py-2 text-xs md:text-sm font-semibold border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] min-w-[140px] max-w-[200px]"
+                    className="flex items-center gap-2 px-3 md:px-4 py-2 text-xs md:text-sm font-semibold border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] min-w-[140px] max-w-[200px]"
                     aria-label="Select activity to filter analytics"
                     aria-expanded={showProjectDropdown}
                     aria-haspopup="listbox"
@@ -535,7 +535,7 @@ export default function AnalyticsPage() {
                             setSelectedProjectId('all');
                             setShowProjectDropdown(false);
                           }}
-                          className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:ring-inset focus:bg-blue-50 ${selectedProjectId === 'all' ? 'bg-blue-50 text-blue-600' : ''}`}
+                          className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:ring-inset focus:bg-blue-50 ${selectedProjectId === 'all' ? 'bg-blue-50 text-blue-600' : ''}`}
                           role="option"
                           aria-selected={selectedProjectId === 'all'}
                         >
@@ -553,7 +553,7 @@ export default function AnalyticsPage() {
                               setSelectedProjectId(activity.id);
                               setShowProjectDropdown(false);
                             }}
-                            className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:ring-inset focus:bg-blue-50 flex items-center gap-3 ${selectedProjectId === activity.id ? 'bg-blue-50 text-blue-600' : ''}`}
+                            className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:ring-inset focus:bg-blue-50 flex items-center gap-3 ${selectedProjectId === activity.id ? 'bg-blue-50 text-blue-600' : ''}`}
                             role="option"
                             aria-selected={selectedProjectId === activity.id}
                             aria-label={`Filter by ${activity.name}`}
@@ -582,7 +582,7 @@ export default function AnalyticsPage() {
                     onClick={() =>
                       setShowChartTypeDropdown(!showChartTypeDropdown)
                     }
-                    className="flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-2 text-xs md:text-sm font-semibold border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF]"
+                    className="flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-2 text-xs md:text-sm font-semibold border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC]"
                     aria-label="Select chart type for analytics visualization"
                     aria-expanded={showChartTypeDropdown}
                     aria-haspopup="listbox"
@@ -627,7 +627,7 @@ export default function AnalyticsPage() {
                             setChartType('bar');
                             setShowChartTypeDropdown(false);
                           }}
-                          className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:ring-inset focus:bg-blue-50 flex items-center gap-2 ${chartType === 'bar' ? 'bg-blue-50 text-blue-600' : ''}`}
+                          className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:ring-inset focus:bg-blue-50 flex items-center gap-2 ${chartType === 'bar' ? 'bg-blue-50 text-blue-600' : ''}`}
                           role="option"
                           aria-selected={chartType === 'bar'}
                           aria-label="Display charts as bar charts"
@@ -654,7 +654,7 @@ export default function AnalyticsPage() {
                             setChartType('line');
                             setShowChartTypeDropdown(false);
                           }}
-                          className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:ring-inset focus:bg-blue-50 flex items-center gap-2 ${chartType === 'line' ? 'bg-blue-50 text-blue-600' : ''}`}
+                          className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:ring-inset focus:bg-blue-50 flex items-center gap-2 ${chartType === 'line' ? 'bg-blue-50 text-blue-600' : ''}`}
                           role="option"
                           aria-selected={chartType === 'line'}
                           aria-label="Display charts as line charts"
@@ -699,10 +699,10 @@ export default function AnalyticsPage() {
                       <button
                         key={period}
                         onClick={() => setTimePeriod(period)}
-                        className={`flex-shrink-0 px-4 md:px-5 py-2 text-xs md:text-sm font-semibold rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-[#007AFF] ${
+                        className={`flex-shrink-0 px-4 md:px-5 py-2 text-xs md:text-sm font-semibold rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-[#0066CC] ${
                           timePeriod === period
                             ? 'bg-gray-900 text-white focus:ring-offset-2'
-                            : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 focus:border-[#007AFF]'
+                            : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 focus:border-[#0066CC]'
                         }`}
                         aria-label={ariaLabels[period]}
                         aria-pressed={timePeriod === period}
@@ -755,7 +755,7 @@ export default function AnalyticsPage() {
                           <Tooltip content={<CustomTooltip />} />
                           <Bar
                             dataKey="hours"
-                            fill="#007AFF"
+                            fill="#0066CC"
                             radius={[4, 4, 0, 0]}
                             name="Hours"
                           />
@@ -775,12 +775,12 @@ export default function AnalyticsPage() {
                             >
                               <stop
                                 offset="5%"
-                                stopColor="#007AFF"
+                                stopColor="#0066CC"
                                 stopOpacity={0.3}
                               />
                               <stop
                                 offset="95%"
-                                stopColor="#007AFF"
+                                stopColor="#0066CC"
                                 stopOpacity={0}
                               />
                             </linearGradient>
@@ -801,7 +801,7 @@ export default function AnalyticsPage() {
                           <Area
                             type="monotone"
                             dataKey="hours"
-                            stroke="#007AFF"
+                            stroke="#0066CC"
                             strokeWidth={2}
                             fill="url(#colorHours)"
                             name="Hours"

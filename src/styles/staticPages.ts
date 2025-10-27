@@ -28,13 +28,13 @@ export const staticPageStyles = {
   // Link styles
   links: {
     // Standard inline link (brand compliant with accessible contrast)
-    inline: 'text-[#007AFF] hover:text-[#0051D5] underline transition-colors',
+    inline: 'text-[#0066CC] hover:text-[#0051D5] underline transition-colors',
 
     // Link without underline (for cards/buttons)
-    plain: 'text-[#007AFF] hover:text-[#0051D5] transition-colors',
+    plain: 'text-[#0066CC] hover:text-[#0051D5] transition-colors',
 
     // Email link
-    email: 'text-[#007AFF] hover:text-[#0051D5] underline transition-colors',
+    email: 'text-[#0066CC] hover:text-[#0051D5] underline transition-colors',
   },
 
   // Container styles
@@ -73,7 +73,7 @@ export const staticPageStyles = {
     item: 'flex items-start',
 
     // Bullet
-    bullet: 'text-[#007AFF] mr-2 mt-1',
+    bullet: 'text-[#0066CC] mr-2 mt-1',
   },
 
   // Icon styles
@@ -88,13 +88,13 @@ export const staticPageStyles = {
     large: 'w-8 h-8',
 
     // Icon colors
-    primary: 'text-[#007AFF]',
+    primary: 'text-[#0066CC]',
     white: 'text-white',
   },
 
   // Colored backgrounds (for icon boxes)
   iconBackgrounds: {
-    blue: 'bg-[#007AFF]',
+    blue: 'bg-[#0066CC]',
     green: 'bg-[#34C759]',
     orange: 'bg-[#FF9500]',
     red: 'bg-[#FF3B30]',
@@ -116,7 +116,8 @@ export const staticPageStyles = {
   lastUpdated: 'text-sm text-gray-500',
 
   // Gradient CTA sections
-  gradientCta: 'bg-gradient-to-r from-[#007AFF] to-[#0051D5] text-white rounded-lg p-6 md:p-8',
+  gradientCta:
+    'bg-gradient-to-r from-[#0066CC] to-[#0051D5] text-white rounded-lg p-6 md:p-8',
 } as const;
 
 /**

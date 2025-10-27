@@ -15,45 +15,42 @@ import { LandingPageContent } from '@/features/feed/components/LandingPageConten
 export default function Home() {
   const { isAuthenticated, isLoading } = useAuth();
 
-  // Show loading spinner while checking authentication
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        {/* Skip to content link for keyboard navigation */}
-        <a
-          href="#main-content"
-          className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-white focus:text-[#007AFF] focus:rounded focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-[#007AFF]"
-        >
-          Skip to main content
-        </a>
-        <div id="main-content" className="flex flex-col items-center space-y-4">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#007AFF]"></div>
-          <p className="text-muted-foreground">Loading...</p>
+  return (
+    <>
+      {/* Skip to content link - keyboard navigation only (hidden on mobile) */}
+      <a
+        href={isAuthenticated ? '#main-feed' : '#hero-section'}
+        className="sr-only md:focus:not-sr-only md:focus:absolute md:focus:top-4 md:focus:left-4 md:focus:z-50 md:focus:px-4 md:focus:py-2 md:focus:bg-white md:focus:text-[#0066CC] md:focus:rounded md:focus:shadow-lg md:focus:outline-none md:focus:ring-2 md:focus:ring-[#0066CC]"
+      >
+        Skip to main content
+      </a>
+
+      {/* Show loading spinner while checking authentication */}
+      {isLoading && (
+        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+          <div
+            id="main-content"
+            className="flex flex-col items-center space-y-4"
+          >
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0066CC]"></div>
+            <p className="text-muted-foreground">Loading...</p>
+          </div>
         </div>
-      </div>
-    );
-  }
+      )}
 
-  // Show feed for authenticated users
-  if (isAuthenticated) {
-    return (
-      <>
-        {/* Skip to content link for keyboard navigation */}
-        <a
-          href="#main-feed"
-          className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-white focus:text-[#007AFF] focus:rounded focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-[#007AFF]"
-        >
-          Skip to main feed
-        </a>
-        {/* Desktop Header */}
-        <header className="hidden md:block">
-          <Header />
-        </header>
-        <FeedPageContent />
-      </>
-    );
-  }
+      {/* Show feed for authenticated users */}
+      {!isLoading && isAuthenticated && (
+        <>
+          {/* Desktop Header */}
+          <header className="hidden md:block">
+            <Header />
+          </header>
+          <FeedPageContent />
+        </>
+      )}
 
-  // Show landing page for unauthenticated users
-  return <LandingPageContent />;
+      {/* Show landing page for unauthenticated users */}
+      {!isLoading && !isAuthenticated && <LandingPageContent />}
+    </>
+  );
 }

@@ -8,7 +8,7 @@ export default function NotFound() {
         {/* Icon */}
         <div className="mb-8 flex justify-center">
           <svg
-            className="w-20 h-20 text-[#007AFF]"
+            className="w-20 h-20 text-[#0066CC]"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"

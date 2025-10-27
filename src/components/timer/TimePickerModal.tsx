@@ -63,7 +63,7 @@ export function TimePickerModal({
               )
                 .toISOString()
                 .slice(0, 16)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] text-base"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] text-base"
             />
           </div>
 
@@ -99,7 +99,7 @@ export function TimePickerModal({
           </button>
           <button
             onClick={onClose}
-            className="flex-1 px-4 py-3 bg-[#007AFF] text-white rounded-xl hover:bg-[#0051D5] transition-colors font-medium"
+            className="flex-1 px-4 py-3 bg-[#0066CC] text-white rounded-xl hover:bg-[#0051D5] transition-colors font-medium"
           >
             Done
           </button>

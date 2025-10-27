@@ -459,7 +459,7 @@ describe('Firebase Feed Images Integration', () => {
             data: () => ({
               name: 'Test Project',
               icon: '📝',
-              color: '#007AFF',
+              color: '#0066CC',
             }),
           });
         }

@@ -230,7 +230,7 @@ export const SessionInteractions: React.FC<SessionInteractionsProps> = ({
                         aria-label="Share session as image"
                       >
                         <ImageIcon
-                          className="w-5 h-5 text-[#007AFF]"
+                          className="w-5 h-5 text-[#0066CC]"
                           aria-hidden="true"
                         />
                         Share as image
@@ -248,7 +248,7 @@ export const SessionInteractions: React.FC<SessionInteractionsProps> = ({
                     aria-label="Share session link"
                   >
                     <LinkIcon
-                      className="w-5 h-5 text-[#007AFF]"
+                      className="w-5 h-5 text-[#0066CC]"
                       aria-hidden="true"
                     />
                     Share link
@@ -264,7 +264,7 @@ export const SessionInteractions: React.FC<SessionInteractionsProps> = ({
                     aria-label="Copy session link to clipboard"
                   >
                     <Copy
-                      className="w-5 h-5 text-[#007AFF]"
+                      className="w-5 h-5 text-[#0066CC]"
                       aria-hidden="true"
                     />
                     Copy to clipboard
@@ -372,7 +372,7 @@ export const SessionInteractions: React.FC<SessionInteractionsProps> = ({
                         aria-label="Share session as image"
                       >
                         <ImageIcon
-                          className="w-5 h-5 text-[#007AFF]"
+                          className="w-5 h-5 text-[#0066CC]"
                           aria-hidden="true"
                         />
                         Share as image
@@ -390,7 +390,7 @@ export const SessionInteractions: React.FC<SessionInteractionsProps> = ({
                     aria-label="Share session link"
                   >
                     <LinkIcon
-                      className="w-5 h-5 text-[#007AFF]"
+                      className="w-5 h-5 text-[#0066CC]"
                       aria-hidden="true"
                     />
                     Share link
@@ -406,7 +406,7 @@ export const SessionInteractions: React.FC<SessionInteractionsProps> = ({
                     aria-label="Copy session link to clipboard"
                   >
                     <Copy
-                      className="w-5 h-5 text-[#007AFF]"
+                      className="w-5 h-5 text-[#0066CC]"
                       aria-hidden="true"
                     />
                     Copy to clipboard

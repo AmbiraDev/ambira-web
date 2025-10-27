@@ -81,7 +81,7 @@ export default function GroupTabs({
                     flex-1 md:flex-initial flex items-center justify-center gap-2 py-3 md:py-4 px-1 text-sm md:text-base font-medium border-b-2 transition-colors whitespace-nowrap
                     ${
                       isActive
-                        ? 'border-[#007AFF] text-[#007AFF] md:text-gray-900'
+                        ? 'border-[#0066CC] text-[#0066CC] md:text-gray-900'
                         : 'border-transparent text-gray-500 md:text-gray-600 hover:text-gray-700 md:hover:text-gray-900'
                     }
                   `}

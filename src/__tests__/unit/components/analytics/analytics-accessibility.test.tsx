@@ -17,7 +17,7 @@ jest.mock('@/contexts/ProjectsContext', () => ({
         id: 'project-1',
         name: 'Test Project 1',
         icon: 'code',
-        color: '#007AFF',
+        color: '#0066CC',
       },
       {
         id: 'project-2',

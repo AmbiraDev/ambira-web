@@ -60,7 +60,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({
           autoComplete="email"
           value={loginData.email}
           onChange={onChange}
-          className={`w-full border rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] focus-visible:ring-offset-2 ${
+          className={`w-full border rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2 ${
             loginErrors.email ? 'border-red-300' : 'border-gray-300'
           } ${isMobile ? 'px-3 py-2.5 text-base' : 'px-4 py-4 text-lg'}`}
           placeholder={isMobile ? 'Email' : 'Enter your email'}
@@ -87,7 +87,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({
           autoComplete="current-password"
           value={loginData.password}
           onChange={onChange}
-          className={`w-full border rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] focus-visible:ring-offset-2 ${
+          className={`w-full border rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2 ${
             loginErrors.password ? 'border-red-300' : 'border-gray-300'
           } ${isMobile ? 'px-3 py-2.5 text-base' : 'px-4 py-4 text-lg'}`}
           placeholder={isMobile ? 'Password' : 'Enter your password'}
@@ -110,7 +110,7 @@ export const LoginForm: React.FC<LoginFormProps> = ({
       <button
         type="submit"
         disabled={isLoading}
-        className={`w-full bg-[#007AFF] text-white font-semibold rounded-lg hover:bg-[#0056D6] transition-colors ${
+        className={`w-full bg-[#0066CC] text-white font-semibold rounded-lg hover:bg-[#0051D5] transition-colors ${
           isMobile ? 'py-4 min-h-[44px]' : 'py-4 px-4 text-lg'
         } disabled:opacity-50 disabled:cursor-not-allowed`}
       >

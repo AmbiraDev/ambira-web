@@ -372,7 +372,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
           className={`flex flex-col items-center justify-center gap-2 px-8 py-8 border-[3px] border-dashed rounded-lg cursor-pointer transition-colors max-w-[240px] ${
             isUploading
               ? 'border-blue-300 bg-blue-50 cursor-not-allowed'
-              : 'border-[#007AFF] hover:border-[#0051D5] hover:bg-gray-50'
+              : 'border-[#0066CC] hover:border-[#0051D5] hover:bg-gray-50'
           }`}
         >
           {isUploading ? (
@@ -384,8 +384,8 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
             </>
           ) : (
             <>
-              <ImageIcon className="w-8 h-8 text-[#007AFF]" />
-              <span className="text-sm font-medium text-[#007AFF]">
+              <ImageIcon className="w-8 h-8 text-[#0066CC]" />
+              <span className="text-sm font-medium text-[#0066CC]">
                 {getPlaceholderText()}
               </span>
             </>

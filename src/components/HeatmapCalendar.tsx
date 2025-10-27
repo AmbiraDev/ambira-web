@@ -113,7 +113,7 @@ export const HeatmapCalendar: React.FC<HeatmapCalendarProps> = ({
                     key={dayIndex}
                     className={`w-3 h-3 rounded-sm transition-colors cursor-pointer ${
                       day.isToday
-                        ? 'ring-2 ring-[#007AFF] ring-opacity-75 border-2 border-[#007AFF] font-bold'
+                        ? 'ring-2 ring-[#0066CC] ring-opacity-75 border-2 border-[#0066CC] font-bold'
                         : 'hover:ring-2 hover:ring-gray-400'
                     }`}
                     style={{

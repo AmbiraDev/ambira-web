@@ -116,7 +116,7 @@ export const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({
             onClick={() => setActiveTab('ios')}
             className={`flex-1 py-3 text-sm font-medium border-b-2 transition-colors ${
               activeTab === 'ios'
-                ? 'border-[#007AFF] text-[#007AFF]'
+                ? 'border-[#0066CC] text-[#0066CC]'
                 : 'border-transparent text-gray-500 hover:text-gray-700'
             }`}
           >
@@ -126,7 +126,7 @@ export const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({
             onClick={() => setActiveTab('android')}
             className={`flex-1 py-3 text-sm font-medium border-b-2 transition-colors ${
               activeTab === 'android'
-                ? 'border-[#007AFF] text-[#007AFF]'
+                ? 'border-[#0066CC] text-[#0066CC]'
                 : 'border-transparent text-gray-500 hover:text-gray-700'
             }`}
           >
@@ -139,8 +139,8 @@ export const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({
           {activeTab === 'ios' ? (
             <div className="space-y-6">
               <div className="flex items-start gap-4">
-                <div className="flex-shrink-0 w-10 h-10 bg-[#007AFF]/10 rounded-full flex items-center justify-center">
-                  <span className="text-[#007AFF] font-semibold text-lg">
+                <div className="flex-shrink-0 w-10 h-10 bg-[#0066CC]/10 rounded-full flex items-center justify-center">
+                  <span className="text-[#0066CC] font-semibold text-lg">
                     1
                   </span>
                 </div>
@@ -159,8 +159,8 @@ export const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({
               </div>
 
               <div className="flex items-start gap-4">
-                <div className="flex-shrink-0 w-10 h-10 bg-[#007AFF]/10 rounded-full flex items-center justify-center">
-                  <span className="text-[#007AFF] font-semibold text-lg">
+                <div className="flex-shrink-0 w-10 h-10 bg-[#0066CC]/10 rounded-full flex items-center justify-center">
+                  <span className="text-[#0066CC] font-semibold text-lg">
                     2
                   </span>
                 </div>
@@ -176,8 +176,8 @@ export const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({
               </div>
 
               <div className="flex items-start gap-4">
-                <div className="flex-shrink-0 w-10 h-10 bg-[#007AFF]/10 rounded-full flex items-center justify-center">
-                  <span className="text-[#007AFF] font-semibold text-lg">
+                <div className="flex-shrink-0 w-10 h-10 bg-[#0066CC]/10 rounded-full flex items-center justify-center">
+                  <span className="text-[#0066CC] font-semibold text-lg">
                     3
                   </span>
                 </div>
@@ -194,8 +194,8 @@ export const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({
           ) : (
             <div className="space-y-6">
               <div className="flex items-start gap-4">
-                <div className="flex-shrink-0 w-10 h-10 bg-[#007AFF]/10 rounded-full flex items-center justify-center">
-                  <span className="text-[#007AFF] font-semibold text-lg">
+                <div className="flex-shrink-0 w-10 h-10 bg-[#0066CC]/10 rounded-full flex items-center justify-center">
+                  <span className="text-[#0066CC] font-semibold text-lg">
                     1
                   </span>
                 </div>
@@ -211,8 +211,8 @@ export const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({
               </div>
 
               <div className="flex items-start gap-4">
-                <div className="flex-shrink-0 w-10 h-10 bg-[#007AFF]/10 rounded-full flex items-center justify-center">
-                  <span className="text-[#007AFF] font-semibold text-lg">
+                <div className="flex-shrink-0 w-10 h-10 bg-[#0066CC]/10 rounded-full flex items-center justify-center">
+                  <span className="text-[#0066CC] font-semibold text-lg">
                     2
                   </span>
                 </div>
@@ -228,8 +228,8 @@ export const PWAInstallPrompt: React.FC<PWAInstallPromptProps> = ({
               </div>
 
               <div className="flex items-start gap-4">
-                <div className="flex-shrink-0 w-10 h-10 bg-[#007AFF]/10 rounded-full flex items-center justify-center">
-                  <span className="text-[#007AFF] font-semibold text-lg">
+                <div className="flex-shrink-0 w-10 h-10 bg-[#0066CC]/10 rounded-full flex items-center justify-center">
+                  <span className="text-[#0066CC] font-semibold text-lg">
                     3
                   </span>
                 </div>

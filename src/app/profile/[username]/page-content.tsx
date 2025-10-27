@@ -789,7 +789,7 @@ export default function ProfilePageContent({
                     className={`inline-flex items-center gap-2 mb-3 md:mb-4 px-3 md:px-4 py-2 md:py-2.5 rounded-lg transition-colors font-semibold text-xs md:text-sm disabled:opacity-50 disabled:cursor-not-allowed ${
                       isFollowing
                         ? 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                        : 'bg-[#007AFF] text-white hover:bg-[#0056D6]'
+                        : 'bg-[#0066CC] text-white hover:bg-[#0051D5]'
                     }`}
                   >
                     {followUserMutation.isPending ||
@@ -886,7 +886,7 @@ export default function ProfilePageContent({
                   }}
                   className={`flex-1 md:flex-initial py-3 md:py-4 px-1 text-sm md:text-base font-medium border-b-2 transition-colors whitespace-nowrap ${
                     activeTab === 'progress'
-                      ? 'border-[#007AFF] text-[#007AFF]'
+                      ? 'border-[#0066CC] text-[#0066CC]'
                       : 'border-transparent text-gray-500 md:text-gray-600 hover:text-gray-700 md:hover:text-gray-900'
                   }`}
                 >
@@ -899,7 +899,7 @@ export default function ProfilePageContent({
                   }}
                   className={`flex-1 md:flex-initial py-3 md:py-4 px-1 text-sm md:text-base font-medium border-b-2 transition-colors whitespace-nowrap ${
                     activeTab === 'sessions'
-                      ? 'border-[#007AFF] text-[#007AFF]'
+                      ? 'border-[#0066CC] text-[#0066CC]'
                       : 'border-transparent text-gray-500 md:text-gray-600 hover:text-gray-700 md:hover:text-gray-900'
                   }`}
                 >
@@ -912,7 +912,7 @@ export default function ProfilePageContent({
                   }}
                   className={`flex-1 md:flex-initial py-3 md:py-4 px-1 text-sm md:text-base font-medium border-b-2 transition-colors whitespace-nowrap ${
                     activeTab === 'followers'
-                      ? 'border-[#007AFF] text-[#007AFF]'
+                      ? 'border-[#0066CC] text-[#0066CC]'
                       : 'border-transparent text-gray-500 md:text-gray-600 hover:text-gray-700 md:hover:text-gray-900'
                   }`}
                 >
@@ -925,7 +925,7 @@ export default function ProfilePageContent({
                   }}
                   className={`flex-1 md:flex-initial py-3 md:py-4 px-1 text-sm md:text-base font-medium border-b-2 transition-colors whitespace-nowrap ${
                     activeTab === 'following'
-                      ? 'border-[#007AFF] text-[#007AFF]'
+                      ? 'border-[#0066CC] text-[#0066CC]'
                       : 'border-transparent text-gray-500 md:text-gray-600 hover:text-gray-700 md:hover:text-gray-900'
                   }`}
                 >
@@ -1183,7 +1183,7 @@ export default function ProfilePageContent({
                               <Tooltip content={<CustomTooltip />} />
                               <Bar
                                 dataKey="hours"
-                                fill="#007AFF"
+                                fill="#0066CC"
                                 radius={[4, 4, 0, 0]}
                                 name="Hours"
                               />
@@ -1208,12 +1208,12 @@ export default function ProfilePageContent({
                                 >
                                   <stop
                                     offset="5%"
-                                    stopColor="#007AFF"
+                                    stopColor="#0066CC"
                                     stopOpacity={0.3}
                                   />
                                   <stop
                                     offset="95%"
-                                    stopColor="#007AFF"
+                                    stopColor="#0066CC"
                                     stopOpacity={0}
                                   />
                                 </linearGradient>
@@ -1234,7 +1234,7 @@ export default function ProfilePageContent({
                               <Area
                                 type="monotone"
                                 dataKey="hours"
-                                stroke="#007AFF"
+                                stroke="#0066CC"
                                 strokeWidth={2}
                                 fill="url(#colorHours)"
                                 name="Hours"

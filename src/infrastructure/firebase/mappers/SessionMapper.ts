@@ -121,7 +121,7 @@ export class SessionMapper {
               name: activityData.name || 'Unknown Activity',
               description: activityData.description || '',
               icon: activityData.icon || 'flat-color-icons:briefcase',
-              color: activityData.color || '#007AFF',
+              color: activityData.color || '#0066CC',
               status: activityData.status || 'active',
               isDefault: false,
               createdAt: this.timestampToDate(activityData.createdAt),

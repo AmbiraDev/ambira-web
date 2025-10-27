@@ -99,13 +99,13 @@ export default function DiscoverPeoplePage() {
         {/* Content */}
         {isLoading ? (
           <div className="p-12 text-center">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#007AFF]"></div>
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#0066CC]"></div>
             <p className="text-gray-600 mt-4">Finding people for you...</p>
           </div>
         ) : suggestedUsers.length === 0 ? (
           <div className="p-16 text-center">
             <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <UsersIcon className="w-10 h-10 text-[#007AFF]" />
+              <UsersIcon className="w-10 h-10 text-[#0066CC]" />
             </div>
             <h3 className="text-xl font-bold text-gray-900 mb-2">
               No suggestions yet

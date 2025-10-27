@@ -34,7 +34,7 @@ export const DIMENSIONS = {
  */
 export const COLORS = {
   /** Primary brand color */
-  PRIMARY: '#007AFF',
+  PRIMARY: '#0066CC',
   /** Primary hover state */
   PRIMARY_HOVER: '#0051D5',
   /** Discord brand color */
@@ -105,12 +105,15 @@ export const CLASS_NAMES = {
   /** Active nav link styles */
   NAV_LINK_ACTIVE: 'text-gray-900',
   /** Inactive nav link styles */
-  NAV_LINK_INACTIVE: 'text-gray-600 hover:text-[#007AFF]',
+  NAV_LINK_INACTIVE: 'text-gray-600 hover:text-[#0066CC]',
   /** Active nav indicator */
-  NAV_INDICATOR: 'absolute bottom-0 left-0 right-0 h-0.5 bg-[#007AFF]',
+  NAV_INDICATOR: 'absolute bottom-0 left-0 right-0 h-0.5 bg-[#0066CC]',
   /** Dropdown menu base */
-  DROPDOWN_MENU: 'absolute right-0 top-full mt-2 z-20 bg-white border border-gray-300 shadow-lg',
+  DROPDOWN_MENU:
+    'absolute right-0 top-full mt-2 z-20 bg-white border border-gray-300 shadow-lg',
   /** Button base styles */
-  BUTTON_PRIMARY: 'flex items-center gap-2 px-4 py-2 bg-[#007AFF] text-white hover:bg-[#0051D5] rounded-md transition-colors whitespace-nowrap font-semibold text-sm',
-  BUTTON_SECONDARY: 'flex items-center gap-2 px-4 py-2 bg-white text-gray-900 border border-gray-300 hover:bg-gray-50 rounded-md transition-colors whitespace-nowrap font-semibold text-sm',
+  BUTTON_PRIMARY:
+    'flex items-center gap-2 px-4 py-2 bg-[#0066CC] text-white hover:bg-[#0051D5] rounded-md transition-colors whitespace-nowrap font-semibold text-sm',
+  BUTTON_SECONDARY:
+    'flex items-center gap-2 px-4 py-2 bg-white text-gray-900 border border-gray-300 hover:bg-gray-50 rounded-md transition-colors whitespace-nowrap font-semibold text-sm',
 } as const;

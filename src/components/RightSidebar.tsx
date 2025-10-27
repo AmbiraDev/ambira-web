@@ -211,7 +211,7 @@ function RightSidebar() {
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-sm text-gray-900 hover:text-[#007AFF] truncate mb-0.5">
+                      <p className="font-semibold text-sm text-gray-900 hover:text-[#0066CC] truncate mb-0.5">
                         {suggestedUser.name}
                       </p>
                       <p className="text-xs text-gray-500 truncate">
@@ -227,7 +227,7 @@ function RightSidebar() {
                       className={`text-sm font-semibold transition-colors duration-200 whitespace-nowrap flex-shrink-0 ${
                         followingUsers.has(suggestedUser.id)
                           ? 'text-gray-600 hover:text-gray-900'
-                          : 'text-[#007AFF] hover:text-[#0051D5]'
+                          : 'text-[#0066CC] hover:text-[#0051D5]'
                       }`}
                       aria-label={
                         followingUsers.has(suggestedUser.id)
@@ -289,7 +289,7 @@ function RightSidebar() {
                       size="md"
                     />
                     <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-sm text-gray-900 hover:text-[#007AFF] truncate mb-0.5">
+                      <p className="font-semibold text-sm text-gray-900 hover:text-[#0066CC] truncate mb-0.5">
                         {group.name}
                       </p>
                       <div className="text-xs text-gray-500">
@@ -320,7 +320,7 @@ function RightSidebar() {
                           });
                         }
                       }}
-                      className="text-sm font-semibold text-[#007AFF] hover:text-[#0051D5] transition-colors duration-200 whitespace-nowrap flex-shrink-0"
+                      className="text-sm font-semibold text-[#0066CC] hover:text-[#0051D5] transition-colors duration-200 whitespace-nowrap flex-shrink-0"
                       disabled={joiningGroups.has(group.id)}
                     >
                       {joiningGroups.has(group.id) ? 'Joining...' : 'Join'}

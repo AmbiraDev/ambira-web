@@ -77,7 +77,7 @@ export function SearchLoadingSkeleton({
 export function SuggestionsLoadingSkeleton() {
   return (
     <div className="p-8 text-center">
-      <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#007AFF]" />
+      <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#0066CC]" />
       <p className="text-gray-600 mt-4">Loading suggestions...</p>
     </div>
   );

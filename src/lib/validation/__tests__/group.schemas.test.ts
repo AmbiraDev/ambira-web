@@ -45,7 +45,7 @@ describe('Group Schemas', () => {
         type: 'just-for-fun' as const,
         privacySetting: 'approval-required' as const,
         icon: '📚',
-        color: '#007AFF',
+        color: '#0066CC',
         location: 'San Francisco, CA',
         imageUrl: 'https://example.com/image.jpg',
         bannerUrl: 'https://example.com/banner.jpg',

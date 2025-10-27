@@ -76,7 +76,7 @@ export default function ProfileMenu({ user }: ProfileMenuProps) {
         {/* Profile Picture - Click to go to profile */}
         <Link
           href={ROUTES.PROFILE}
-          className="text-gray-600 hover:text-[#007AFF] transition-colors"
+          className="text-gray-600 hover:text-[#0066CC] transition-colors"
           aria-label="Go to profile"
         >
           {user.profilePicture ? (
@@ -102,7 +102,7 @@ export default function ProfileMenu({ user }: ProfileMenuProps) {
         {/* Dropdown Icon */}
         <button
           onClick={handleToggle}
-          className="p-1 text-gray-600 hover:text-[#007AFF] transition-colors"
+          className="p-1 text-gray-600 hover:text-[#0066CC] transition-colors"
           aria-label="Toggle profile menu"
           aria-expanded={isMenuOpen}
         >

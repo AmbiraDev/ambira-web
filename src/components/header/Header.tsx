@@ -86,7 +86,7 @@ export default function Header() {
 
             {/* Notifications - Only show when authenticated */}
             {user && (
-              <NotificationIcon className="hidden md:flex p-2 text-gray-600 hover:text-[#007AFF] transition-colors" />
+              <NotificationIcon className="hidden md:flex p-2 text-gray-600 hover:text-[#0066CC] transition-colors" />
             )}
 
             {/* Profile Menu - Only show when authenticated */}

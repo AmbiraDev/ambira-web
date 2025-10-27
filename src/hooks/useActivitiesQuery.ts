@@ -182,7 +182,7 @@ export function useCreateActivity() {
         name: newActivity.name,
         description: newActivity.description,
         icon: newActivity.icon || 'flat-color-icons:briefcase',
-        color: newActivity.color || '#007AFF',
+        color: newActivity.color || '#0066CC',
         status: 'active',
         weeklyTarget: newActivity.weeklyTarget,
         totalTarget: newActivity.totalTarget,

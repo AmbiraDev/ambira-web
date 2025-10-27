@@ -143,7 +143,7 @@ export function GroupDetailPage({ groupId }: GroupDetailPageProps) {
             </p>
             <button
               onClick={() => router.push('/groups')}
-              className="bg-[#007AFF] text-white px-4 py-2 rounded-lg hover:bg-[#0051D5]"
+              className="bg-[#0066CC] text-white px-4 py-2 rounded-lg hover:bg-[#0051D5]"
             >
               Back to Groups
             </button>
@@ -191,7 +191,7 @@ export function GroupDetailPage({ groupId }: GroupDetailPageProps) {
           <div className="mb-6">
             <div className="flex flex-col sm:flex-row items-start gap-4">
               {/* Group Avatar */}
-              <div className="w-20 h-20 sm:w-32 sm:h-32 bg-gradient-to-br from-[#007AFF] to-[#0051D5] rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden">
+              <div className="w-20 h-20 sm:w-32 sm:h-32 bg-gradient-to-br from-[#0066CC] to-[#0051D5] rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden">
                 {group.imageUrl ? (
                   <Image
                     src={group.imageUrl}

@@ -59,7 +59,7 @@ export function GroupLeaderboard({ groupId }: GroupLeaderboardProps) {
           onClick={() => setTimeframe('week')}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
             timeframe === 'week'
-              ? 'bg-[#007AFF] text-white'
+              ? 'bg-[#0066CC] text-white'
               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
           }`}
         >
@@ -69,7 +69,7 @@ export function GroupLeaderboard({ groupId }: GroupLeaderboardProps) {
           onClick={() => setTimeframe('month')}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
             timeframe === 'month'
-              ? 'bg-[#007AFF] text-white'
+              ? 'bg-[#0066CC] text-white'
               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
           }`}
         >
@@ -79,7 +79,7 @@ export function GroupLeaderboard({ groupId }: GroupLeaderboardProps) {
           onClick={() => setTimeframe('allTime')}
           className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
             timeframe === 'allTime'
-              ? 'bg-[#007AFF] text-white'
+              ? 'bg-[#0066CC] text-white'
               : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
           }`}
         >

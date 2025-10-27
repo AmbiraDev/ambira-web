@@ -93,7 +93,7 @@ export const FeedFilterDropdown: React.FC<FeedFilterDropdownProps> = ({
             setIsOpen(!isOpen);
           }
         }}
-        className="w-full flex items-center justify-between px-4 py-2.5 bg-[#007AFF] text-white rounded-lg hover:bg-[#0051D5] transition-colors duration-200 shadow-sm min-h-[44px]"
+        className="w-full flex items-center justify-between px-4 py-2.5 bg-[#0066CC] text-white rounded-lg hover:bg-[#0051D5] transition-colors duration-200 shadow-sm min-h-[44px]"
         aria-label={`Filter feed by ${selectedFilter.label}`}
         aria-expanded={isOpen}
         aria-haspopup="listbox"

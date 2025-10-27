@@ -449,7 +449,7 @@ export const Feed: React.FC<FeedProps> = ({
           {/* Action Button */}
           <button
             onClick={emptyStateContent.buttonAction}
-            className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#007AFF] text-white rounded-lg hover:bg-[#0051D5] transition-colors duration-200 font-semibold text-base shadow-md hover:shadow-lg"
+            className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#0066CC] text-white rounded-lg hover:bg-[#0051D5] transition-colors duration-200 font-semibold text-base shadow-md hover:shadow-lg"
           >
             <Search className="w-5 h-5" />
             {emptyStateContent.buttonText}
@@ -466,7 +466,7 @@ export const Feed: React.FC<FeedProps> = ({
         <div className="mb-4 sticky top-0 z-10">
           <button
             onClick={refreshSessions}
-            className="w-full py-3 px-3 sm:px-4 bg-gradient-to-r from-[#007AFF] to-[#0051D5] text-white rounded-lg shadow-lg hover:shadow-xl transition-colors duration-200 flex items-center justify-center gap-2 font-medium text-sm sm:text-base"
+            className="w-full py-3 px-3 sm:px-4 bg-gradient-to-r from-[#0066CC] to-[#0051D5] text-white rounded-lg shadow-lg hover:shadow-xl transition-colors duration-200 flex items-center justify-center gap-2 font-medium text-sm sm:text-base"
             aria-label={`${newSessionsCount} new sessions available, click to refresh`}
           >
             <ChevronUp className="w-5 h-5 flex-shrink-0" aria-hidden="true" />

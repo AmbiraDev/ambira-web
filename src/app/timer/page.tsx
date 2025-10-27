@@ -16,15 +16,15 @@ import TimerPageContent from './page-content';
 export default function TimerPage() {
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-white">
-        {/* Skip to main content link for keyboard navigation */}
-        <a
-          href="#timer-content"
-          className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-white focus:text-[#007AFF] focus:rounded focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-[#007AFF]"
-        >
-          Skip to timer
-        </a>
+      {/* Skip to main content link - keyboard navigation only (hidden on mobile) */}
+      <a
+        href="#timer-content"
+        className="sr-only md:focus:not-sr-only md:focus:absolute md:focus:top-4 md:focus:left-4 md:focus:z-50 md:focus:px-4 md:focus:py-2 md:focus:bg-white md:focus:text-[#0066CC] md:focus:rounded md:focus:shadow-lg md:focus:outline-none md:focus:ring-2 md:focus:ring-[#0066CC]"
+      >
+        Skip to timer
+      </a>
 
+      <div className="min-h-screen bg-white">
         {/* Header - hidden on mobile */}
         <header className="hidden md:block">
           <Header />

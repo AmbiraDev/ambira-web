@@ -134,7 +134,7 @@ export default function GroupInviteModal({
               onClick={() => setActiveTab('link')}
               className={`pb-3 px-1 text-sm font-medium border-b-2 transition-colors ${
                 activeTab === 'link'
-                  ? 'border-[#007AFF] text-[#007AFF]'
+                  ? 'border-[#0066CC] text-[#0066CC]'
                   : 'border-transparent text-gray-600 hover:text-gray-900'
               }`}
             >
@@ -147,7 +147,7 @@ export default function GroupInviteModal({
               onClick={() => setActiveTab('qr')}
               className={`pb-3 px-1 text-sm font-medium border-b-2 transition-colors ${
                 activeTab === 'qr'
-                  ? 'border-[#007AFF] text-[#007AFF]'
+                  ? 'border-[#0066CC] text-[#0066CC]'
                   : 'border-transparent text-gray-600 hover:text-gray-900'
               }`}
             >
@@ -160,7 +160,7 @@ export default function GroupInviteModal({
               onClick={() => setActiveTab('image')}
               className={`pb-3 px-1 text-sm font-medium border-b-2 transition-colors ${
                 activeTab === 'image'
-                  ? 'border-[#007AFF] text-[#007AFF]'
+                  ? 'border-[#0066CC] text-[#0066CC]'
                   : 'border-transparent text-gray-600 hover:text-gray-900'
               }`}
             >
@@ -176,7 +176,7 @@ export default function GroupInviteModal({
         <div className="p-6 space-y-6 overflow-y-auto">
           {/* Group Info */}
           <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
-            <div className="w-12 h-12 bg-gradient-to-br from-[#007AFF] to-[#0051D5] rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden">
+            <div className="w-12 h-12 bg-gradient-to-br from-[#0066CC] to-[#0051D5] rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden">
               {group.imageUrl ? (
                 <Image
                   src={group.imageUrl}
@@ -213,12 +213,12 @@ export default function GroupInviteModal({
                     type="text"
                     value={inviteLink}
                     readOnly
-                    className="flex-1 px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[#007AFF]"
+                    className="flex-1 px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-[#0066CC]"
                     onClick={e => e.currentTarget.select()}
                   />
                   <button
                     onClick={handleCopy}
-                    className="px-4 py-3 bg-[#007AFF] text-white rounded-lg hover:bg-[#0051D5] transition-colors flex items-center gap-2 font-medium whitespace-nowrap"
+                    className="px-4 py-3 bg-[#0066CC] text-white rounded-lg hover:bg-[#0051D5] transition-colors flex items-center gap-2 font-medium whitespace-nowrap"
                   >
                     {copied ? (
                       <>
@@ -287,7 +287,7 @@ export default function GroupInviteModal({
               {/* Download Button */}
               <button
                 onClick={handleDownloadQR}
-                className="w-full px-4 py-3 bg-[#007AFF] text-white rounded-lg hover:bg-[#0051D5] transition-colors flex items-center justify-center gap-2 font-medium"
+                className="w-full px-4 py-3 bg-[#0066CC] text-white rounded-lg hover:bg-[#0051D5] transition-colors flex items-center justify-center gap-2 font-medium"
               >
                 <Download className="w-4 h-4" />
                 Download QR Code
@@ -309,7 +309,7 @@ export default function GroupInviteModal({
               <div className="flex flex-col items-center">
                 <div
                   ref={inviteCardRef}
-                  className="w-full max-w-lg bg-gradient-to-br from-[#007AFF] to-[#0051D5] rounded-2xl p-8 text-white"
+                  className="w-full max-w-lg bg-gradient-to-br from-[#0066CC] to-[#0051D5] rounded-2xl p-8 text-white"
                 >
                   {/* Logo/Branding */}
                   <div className="text-center mb-6">
@@ -377,7 +377,7 @@ export default function GroupInviteModal({
               <div className="flex gap-3">
                 <button
                   onClick={handleDownloadInviteCard}
-                  className="flex-1 px-4 py-3 bg-[#007AFF] text-white rounded-lg hover:bg-[#0051D5] transition-colors flex items-center justify-center gap-2 font-medium"
+                  className="flex-1 px-4 py-3 bg-[#0066CC] text-white rounded-lg hover:bg-[#0051D5] transition-colors flex items-center justify-center gap-2 font-medium"
                 >
                   <Download className="w-4 h-4" />
                   Download Image

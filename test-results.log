@@ -1,0 +1,594 @@
+
+> temp-ambira-web@0.1.0 test:smoke
+> playwright test e2e/smoke
+
+
+Running 48 tests using 7 workers
+
+  ✓   1 [chromium] › e2e/smoke/auth.spec.ts:25:5 › Authentication Pages - Smoke Tests › Login Page › should display authentication elements (20.8s)
+  ✓   3 [chromium] › e2e/smoke/auth.spec.ts:39:5 › Authentication Pages - Smoke Tests › Login Page › should have proper page structure (21.0s)
+  ✓   7 [chromium] › e2e/smoke/auth.spec.ts:115:5 › Authentication Pages - Smoke Tests › Login Page › should have working keyboard navigation (20.7s)
+  ✓   2 [chromium] › e2e/smoke/auth.spec.ts:12:5 › Authentication Pages - Smoke Tests › Login Page › should load authentication interface (21.7s)
+Accessibility violations found:
+ 
+[SERIOUS] color-contrast: Elements must meet minimum color contrast ratio thresholds
+  Description: Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds
+  WCAG: wcag2aa, wcag143
+  Affected elements (3):
+    Target: .gap-3.flex.items-center > .py-2.rounded-md.whitespace-nowrap > span
+    HTML: <span>Sign In</span>
+
+    Target: .max-w-3xl > .inline-block.disabled\:opacity-50.disabled\:pointer-events-none
+    HTML: <a class="inline-block px-8 py..." href="/auth">
+
+    Target: .gap-4 > .inline-block.disabled\:opacity-50.disabled\:pointer-events-none
+    HTML: <a class="inline-block px-8 py..." href="/auth">
+  Learn more: https://dequeuniversity.com/rules/axe/4.11/color-contrast?application=playwright
+
+  ✘   6 [chromium] › e2e/smoke/auth.spec.ts:77:5 › Authentication Pages - Smoke Tests › Login Page › should pass accessibility audit (21.9s)
+  ✘   4 [chromium] › e2e/smoke/auth.spec.ts:51:5 › Authentication Pages - Smoke Tests › Login Page › should not have console errors on load (30.1s)
+  ✘   5 [chromium] › e2e/smoke/auth.spec.ts:96:5 › Authentication Pages - Smoke Tests › Login Page › should be responsive on mobile viewport (30.1s)
+  ✓   8 [chromium] › e2e/smoke/auth.spec.ts:131:5 › Authentication Pages - Smoke Tests › Login Page › should handle form validation gracefully (11.3s)
+  ✓  11 [chromium] › e2e/smoke/feed.spec.ts:20:3 › Feed Page - Smoke Tests › should display main navigation elements (11.1s)
+  ✓  10 [chromium] › e2e/smoke/feed.spec.ts:10:3 › Feed Page - Smoke Tests › should load the feed page successfully (11.9s)
+  ✓  12 [chromium] › e2e/smoke/feed.spec.ts:29:3 › Feed Page - Smoke Tests › should have proper page structure (10.4s)
+Accessibility violations found:
+ 
+[SERIOUS] color-contrast: Elements must meet minimum color contrast ratio thresholds
+  Description: Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds
+  WCAG: wcag2aa, wcag143
+  Affected elements (3):
+    Target: .gap-3.flex.items-center > .py-2.rounded-md.whitespace-nowrap > span
+    HTML: <span>Sign In</span>
+
+    Target: .max-w-3xl > .inline-block.disabled\:opacity-50.disabled\:pointer-events-none
+    HTML: <a class="inline-block px-8 py..." href="/auth">
+
+    Target: .gap-4 > .inline-block.disabled\:opacity-50.disabled\:pointer-events-none
+    HTML: <a class="inline-block px-8 py..." href="/auth">
+  Learn more: https://dequeuniversity.com/rules/axe/4.11/color-contrast?application=playwright
+
+  ✘  14 [chromium] › e2e/smoke/feed.spec.ts:69:3 › Feed Page - Smoke Tests › should pass accessibility audit (15.6s)
+  ✓  16 [chromium] › e2e/smoke/feed.spec.ts:115:3 › Feed Page - Smoke Tests › should have working keyboard navigation (15.4s)
+  ✓  18 [chromium] › e2e/smoke/timer.spec.ts:20:3 › Timer Page - Smoke Tests › should display timer interface (14.8s)
+  ✘   9 [chromium] › e2e/smoke/auth.spec.ts:178:5 › Authentication Pages - Smoke Tests › Protected Routes › should handle unauthenticated access appropriately (30.8s)
+  ✓  13 [chromium] › e2e/smoke/feed.spec.ts:44:3 › Feed Page - Smoke Tests › should not have console errors (28.0s)
+  ✓  17 [chromium] › e2e/smoke/timer.spec.ts:10:3 › Timer Page - Smoke Tests › should load the timer page successfully (27.0s)
+  ✓  15 [chromium] › e2e/smoke/feed.spec.ts:88:3 › Feed Page - Smoke Tests › should be responsive on mobile viewport (28.0s)
+  ✓  23 [chromium] › e2e/smoke/timer.spec.ts:120:3 › Timer Page - Smoke Tests › should have working keyboard navigation (6.3s)
+  ✓  19 [chromium] › e2e/smoke/timer.spec.ts:34:3 › Timer Page - Smoke Tests › should have proper page structure (18.0s)
+  ✓  24 [chromium] › e2e/smoke/timer.spec.ts:136:3 › Timer Page - Smoke Tests › should display timer controls when authenticated (5.9s)
+Accessibility violations found:
+ 
+[SERIOUS] color-contrast: Elements must meet minimum color contrast ratio thresholds
+  Description: Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds
+  WCAG: wcag2aa, wcag143
+  Affected elements (3):
+    Target: .gap-3.flex.items-center > .py-2.rounded-md.whitespace-nowrap > span
+    HTML: <span>Sign In</span>
+
+    Target: .max-w-3xl > .inline-block.disabled\:opacity-50.disabled\:pointer-events-none
+    HTML: <a class="inline-block px-8 py..." href="/auth">
+
+    Target: .gap-4 > .inline-block.disabled\:opacity-50.disabled\:pointer-events-none
+    HTML: <a class="inline-block px-8 py..." href="/auth">
+  Learn more: https://dequeuniversity.com/rules/axe/4.11/color-contrast?application=playwright
+
+  ✘  21 [chromium] › e2e/smoke/timer.spec.ts:74:3 › Timer Page - Smoke Tests › should pass accessibility audit (18.3s)
+  ✓  25 [mobile-chrome] › e2e/smoke/auth.spec.ts:12:5 › Authentication Pages - Smoke Tests › Login Page › should load authentication interface (6.3s)
+  ✓  26 [mobile-chrome] › e2e/smoke/auth.spec.ts:25:5 › Authentication Pages - Smoke Tests › Login Page › should display authentication elements (1.2s)
+  ✓  20 [chromium] › e2e/smoke/timer.spec.ts:49:3 › Timer Page - Smoke Tests › should not have console errors (19.5s)
+  ✘  27 [mobile-chrome] › e2e/smoke/auth.spec.ts:39:5 › Authentication Pages - Smoke Tests › Login Page › should have proper page structure (1.2s)
+  ✓  22 [chromium] › e2e/smoke/timer.spec.ts:93:3 › Timer Page - Smoke Tests › should be responsive on mobile viewport (14.7s)
+  ✘  31 [mobile-chrome] › e2e/smoke/auth.spec.ts:115:5 › Authentication Pages - Smoke Tests › Login Page › should have working keyboard navigation (1.9s)
+  ✓  33 [mobile-chrome] › e2e/smoke/auth.spec.ts:131:5 › Authentication Pages - Smoke Tests › Login Page › should handle form validation gracefully (1.4s)
+  ✘  35 [mobile-chrome] › e2e/smoke/feed.spec.ts:29:3 › Feed Page - Smoke Tests › should have proper page structure (1.4s)
+  ✓  28 [mobile-chrome] › e2e/smoke/auth.spec.ts:51:5 › Authentication Pages - Smoke Tests › Login Page › should not have console errors on load (4.8s)
+Accessibility violations found:
+ 
+[SERIOUS] color-contrast: Elements must meet minimum color contrast ratio thresholds
+  Description: Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds
+  WCAG: wcag2aa, wcag143
+  Affected elements (2):
+    Target: .max-w-3xl > .inline-block.disabled\:opacity-50.disabled\:pointer-events-none
+    HTML: <a class="inline-block px-8 py..." href="/auth">
+
+    Target: .gap-4 > .inline-block.disabled\:opacity-50.disabled\:pointer-events-none
+    HTML: <a class="inline-block px-8 py..." href="/auth">
+  Learn more: https://dequeuniversity.com/rules/axe/4.11/color-contrast?application=playwright
+
+  ✘  30 [mobile-chrome] › e2e/smoke/auth.spec.ts:77:5 › Authentication Pages - Smoke Tests › Login Page › should pass accessibility audit (4.1s)
+  ✓  36 [mobile-chrome] › e2e/smoke/feed.spec.ts:20:3 › Feed Page - Smoke Tests › should display main navigation elements (1.5s)
+  ✓  29 [mobile-chrome] › e2e/smoke/auth.spec.ts:96:5 › Authentication Pages - Smoke Tests › Login Page › should be responsive on mobile viewport (4.6s)
+  ✓  34 [mobile-chrome] › e2e/smoke/feed.spec.ts:10:3 › Feed Page - Smoke Tests › should load the feed page successfully (2.7s)
+  ✘  42 [mobile-chrome] › e2e/smoke/timer.spec.ts:20:3 › Timer Page - Smoke Tests › should display timer interface (1.1s)
+  ✓  39 [mobile-chrome] › e2e/smoke/feed.spec.ts:115:3 › Feed Page - Smoke Tests › should have working keyboard navigation (1.8s)
+  ✓  32 [mobile-chrome] › e2e/smoke/auth.spec.ts:178:5 › Authentication Pages - Smoke Tests › Protected Routes › should handle unauthenticated access appropriately (6.0s)
+Accessibility violations found:
+ 
+[SERIOUS] color-contrast: Elements must meet minimum color contrast ratio thresholds
+  Description: Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds
+  WCAG: wcag2aa, wcag143
+  Affected elements (2):
+    Target: .max-w-3xl > .inline-block.disabled\:opacity-50.disabled\:pointer-events-none
+    HTML: <a class="inline-block px-8 py..." href="/auth">
+
+    Target: .gap-4 > .inline-block.disabled\:opacity-50.disabled\:pointer-events-none
+    HTML: <a class="inline-block px-8 py..." href="/auth">
+  Learn more: https://dequeuniversity.com/rules/axe/4.11/color-contrast?application=playwright
+
+  ✘  37 [mobile-chrome] › e2e/smoke/feed.spec.ts:69:3 › Feed Page - Smoke Tests › should pass accessibility audit (3.3s)
+  ✘  44 [mobile-chrome] › e2e/smoke/timer.spec.ts:34:3 › Timer Page - Smoke Tests › should have proper page structure (7.6s)
+  ✓  40 [mobile-chrome] › e2e/smoke/timer.spec.ts:10:3 › Timer Page - Smoke Tests › should load the timer page successfully (9.9s)
+  ✓  38 [mobile-chrome] › e2e/smoke/feed.spec.ts:44:3 › Feed Page - Smoke Tests › should not have console errors (10.4s)
+  ✓  41 [mobile-chrome] › e2e/smoke/feed.spec.ts:88:3 › Feed Page - Smoke Tests › should be responsive on mobile viewport (10.1s)
+  ✓  47 [mobile-chrome] › e2e/smoke/timer.spec.ts:136:3 › Timer Page - Smoke Tests › should display timer controls when authenticated (1.3s)
+  ✘  48 [mobile-chrome] › e2e/smoke/timer.spec.ts:120:3 › Timer Page - Smoke Tests › should have working keyboard navigation (1.2s)
+  ✓  43 [mobile-chrome] › e2e/smoke/timer.spec.ts:49:3 › Timer Page - Smoke Tests › should not have console errors (10.3s)
+  ✓  46 [mobile-chrome] › e2e/smoke/timer.spec.ts:93:3 › Timer Page - Smoke Tests › should be responsive on mobile viewport (8.7s)
+Accessibility violations found:
+ 
+[SERIOUS] color-contrast: Elements must meet minimum color contrast ratio thresholds
+  Description: Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds
+  WCAG: wcag2aa, wcag143
+  Affected elements (2):
+    Target: .max-w-3xl > .inline-block.disabled\:opacity-50.disabled\:pointer-events-none
+    HTML: <a class="inline-block px-8 py..." href="/auth">
+
+    Target: .gap-4 > .inline-block.disabled\:opacity-50.disabled\:pointer-events-none
+    HTML: <a class="inline-block px-8 py..." href="/auth">
+  Learn more: https://dequeuniversity.com/rules/axe/4.11/color-contrast?application=playwright
+
+  ✘  45 [mobile-chrome] › e2e/smoke/timer.spec.ts:74:3 › Timer Page - Smoke Tests › should pass accessibility audit (9.7s)
+
+
+  1) [chromium] › e2e/smoke/auth.spec.ts:51:5 › Authentication Pages - Smoke Tests › Login Page › should not have console errors on load 
+
+    [31mTest timeout of 30000ms exceeded.[39m
+
+    Error: page.goto: Test timeout of 30000ms exceeded.
+    Call log:
+    [2m  - navigating to "http://localhost:3000/", waiting until "load"[22m
+
+
+      60 |
+      61 |       // Load the page
+    > 62 |       await page.goto('/');
+         |                  ^
+      63 |       await page.waitForLoadState('networkidle');
+      64 |
+      65 |       // Filter out known/expected errors
+        at /Users/hughgramelspacher/repos/ambira-main/ambira-web/e2e/smoke/auth.spec.ts:62:18
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/smoke-auth-Authentication--e805c-have-console-errors-on-load-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/smoke-auth-Authentication--e805c-have-console-errors-on-load-chromium/error-context.md
+
+  2) [chromium] › e2e/smoke/auth.spec.ts:77:5 › Authentication Pages - Smoke Tests › Login Page › should pass accessibility audit 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoHaveLength[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected length: [32m0[39m
+    Received length: [31m1[39m
+    Received array:  [31m[{"description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds", "help": "Elements must meet minimum color contrast ratio thresholds", "helpUrl": "https://dequeuniversity.com/rules/axe/4.11/color-contrast?application=playwright", "id": "color-contrast", "impact": "serious", "nodes": [{"all": [], "any": [{"data": {"bgColor": "#007aff", "contrastRatio": 4.01, "expectedContrastRatio": "4.5:1", "fgColor": "#ffffff", "fontSize": "10.5pt (14px)", "fontWeight": "normal", "messageKey": null}, "id": "color-contrast", "impact": "serious", "message": "Element has insufficient color contrast of 4.01 (foreground color: #ffffff, background color: #007aff, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1", "relatedNodes": [{"html": "<a class=\"flex items-center ga...\" href=\"/auth\">", "target": [".gap-3.flex.items-center > .py-2.rounded-md.whitespace-nowrap"]}]}], "failureSummary": "Fix any of the following:[39m
+    [31m  Element has insufficient color contrast of 4.01 (foreground color: #ffffff, background color: #007aff, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1", "html": "<span>Sign In</span>", "impact": "serious", "none": [], "target": [".gap-3.flex.items-center > .py-2.rounded-md.whitespace-nowrap > span"]}, {"all": [], "any": [{"data": {"bgColor": "#007aff", "contrastRatio": 4.01, "expectedContrastRatio": "4.5:1", "fgColor": "#ffffff", "fontSize": "13.5pt (18px)", "fontWeight": "normal", "messageKey": null}, "id": "color-contrast", "impact": "serious", "message": "Element has insufficient color contrast of 4.01 (foreground color: #ffffff, background color: #007aff, font size: 13.5pt (18px), font weight: normal). Expected contrast ratio of 4.5:1", "relatedNodes": [{"html": "<a class=\"inline-block px-8 py...\" href=\"/auth\">", "target": [".max-w-3xl > .inline-block.disabled\\:opacity-50.disabled\\:pointer-events-none"]}]}], "failureSummary": "Fix any of the following:[39m
+    [31m  Element has insufficient color contrast of 4.01 (foreground color: #ffffff, background color: #007aff, font size: 13.5pt (18px), font weight: normal). Expected contrast ratio of 4.5:1", "html": "<a class=\"inline-block px-8 py...\" href=\"/auth\">", "impact": "serious", "none": [], "target": [".max-w-3xl > .inline-block.disabled\\:opacity-50.disabled\\:pointer-events-none"]}, {"all": [], "any": [{"data": {"bgColor": "#007aff", "contrastRatio": 4.01, "expectedContrastRatio": "4.5:1", "fgColor": "#ffffff", "fontSize": "13.5pt (18px)", "fontWeight": "normal", "messageKey": null}, "id": "color-contrast", "impact": "serious", "message": "Element has insufficient color contrast of 4.01 (foreground color: #ffffff, background color: #007aff, font size: 13.5pt (18px), font weight: normal). Expected contrast ratio of 4.5:1", "relatedNodes": [{"html": "<a class=\"inline-block px-8 py...\" href=\"/auth\">", "target": [".gap-4 > .inline-block.disabled\\:opacity-50.disabled\\:pointer-events-none"]}]}], "failureSummary": "Fix any of the following:[39m
+    [31m  Element has insufficient color contrast of 4.01 (foreground color: #ffffff, background color: #007aff, font size: 13.5pt (18px), font weight: normal). Expected contrast ratio of 4.5:1", "html": "<a class=\"inline-block px-8 py...\" href=\"/auth\">", "impact": "serious", "none": [], "target": [".gap-4 > .inline-block.disabled\\:opacity-50.disabled\\:pointer-events-none"]}], "tags": ["cat.color", "wcag2aa", "wcag143", "TTv5", "TT13.c", "EN-301-549", "EN-9.1.4.3", "ACT", "RGAAv4", "RGAA-3.2.1"]}][39m
+
+      91 |
+      92 |       // Expect no violations
+    > 93 |       expect(violations).toHaveLength(0);
+         |                          ^
+      94 |     });
+      95 |
+      96 |     test('should be responsive on mobile viewport', async ({ page }) => {
+        at /Users/hughgramelspacher/repos/ambira-main/ambira-web/e2e/smoke/auth.spec.ts:93:26
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/smoke-auth-Authentication--8a740-ld-pass-accessibility-audit-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/smoke-auth-Authentication--8a740-ld-pass-accessibility-audit-chromium/video-1.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #3: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/smoke-auth-Authentication--8a740-ld-pass-accessibility-audit-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/smoke-auth-Authentication--8a740-ld-pass-accessibility-audit-chromium/error-context.md
+
+  3) [chromium] › e2e/smoke/auth.spec.ts:96:5 › Authentication Pages - Smoke Tests › Login Page › should be responsive on mobile viewport 
+
+    [31mTest timeout of 30000ms exceeded.[39m
+
+    Error: page.goto: Test timeout of 30000ms exceeded.
+    Call log:
+    [2m  - navigating to "http://localhost:3000/", waiting until "load"[22m
+
+
+       99 |
+      100 |       // Navigate to page
+    > 101 |       await page.goto('/');
+          |                  ^
+      102 |       await page.waitForLoadState('networkidle');
+      103 |
+      104 |       // Verify page content is visible
+        at /Users/hughgramelspacher/repos/ambira-main/ambira-web/e2e/smoke/auth.spec.ts:101:18
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/smoke-auth-Authentication--6223a-sponsive-on-mobile-viewport-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/smoke-auth-Authentication--6223a-sponsive-on-mobile-viewport-chromium/error-context.md
+
+  4) [chromium] › e2e/smoke/auth.spec.ts:178:5 › Authentication Pages - Smoke Tests › Protected Routes › should handle unauthenticated access appropriately 
+
+    [31mTest timeout of 30000ms exceeded.[39m
+
+    Error: page.goto: Test timeout of 30000ms exceeded.
+    Call log:
+    [2m  - navigating to "http://localhost:3000/profile", waiting until "load"[22m
+
+
+      181 |
+      182 |       for (const route of protectedRoutes) {
+    > 183 |         await page.goto(route);
+          |                    ^
+      184 |         await page.waitForLoadState('networkidle');
+      185 |
+      186 |         // The page should either:
+        at /Users/hughgramelspacher/repos/ambira-main/ambira-web/e2e/smoke/auth.spec.ts:183:20
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/smoke-auth-Authentication--b93d4-icated-access-appropriately-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/smoke-auth-Authentication--b93d4-icated-access-appropriately-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/smoke-auth-Authentication--b93d4-icated-access-appropriately-chromium/error-context.md
+
+  5) [chromium] › e2e/smoke/feed.spec.ts:69:3 › Feed Page - Smoke Tests › should pass accessibility audit 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoHaveLength[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected length: [32m0[39m
+    Received length: [31m1[39m
+    Received array:  [31m[{"description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds", "help": "Elements must meet minimum color contrast ratio thresholds", "helpUrl": "https://dequeuniversity.com/rules/axe/4.11/color-contrast?application=playwright", "id": "color-contrast", "impact": "serious", "nodes": [{"all": [], "any": [{"data": {"bgColor": "#007aff", "contrastRatio": 4.01, "expectedContrastRatio": "4.5:1", "fgColor": "#ffffff", "fontSize": "10.5pt (14px)", "fontWeight": "normal", "messageKey": null}, "id": "color-contrast", "impact": "serious", "message": "Element has insufficient color contrast of 4.01 (foreground color: #ffffff, background color: #007aff, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1", "relatedNodes": [{"html": "<a class=\"flex items-center ga...\" href=\"/auth\">", "target": [".gap-3.flex.items-center > .py-2.rounded-md.whitespace-nowrap"]}]}], "failureSummary": "Fix any of the following:[39m
+    [31m  Element has insufficient color contrast of 4.01 (foreground color: #ffffff, background color: #007aff, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1", "html": "<span>Sign In</span>", "impact": "serious", "none": [], "target": [".gap-3.flex.items-center > .py-2.rounded-md.whitespace-nowrap > span"]}, {"all": [], "any": [{"data": {"bgColor": "#007aff", "contrastRatio": 4.01, "expectedContrastRatio": "4.5:1", "fgColor": "#ffffff", "fontSize": "13.5pt (18px)", "fontWeight": "normal", "messageKey": null}, "id": "color-contrast", "impact": "serious", "message": "Element has insufficient color contrast of 4.01 (foreground color: #ffffff, background color: #007aff, font size: 13.5pt (18px), font weight: normal). Expected contrast ratio of 4.5:1", "relatedNodes": [{"html": "<a class=\"inline-block px-8 py...\" href=\"/auth\">", "target": [".max-w-3xl > .inline-block.disabled\\:opacity-50.disabled\\:pointer-events-none"]}]}], "failureSummary": "Fix any of the following:[39m
+    [31m  Element has insufficient color contrast of 4.01 (foreground color: #ffffff, background color: #007aff, font size: 13.5pt (18px), font weight: normal). Expected contrast ratio of 4.5:1", "html": "<a class=\"inline-block px-8 py...\" href=\"/auth\">", "impact": "serious", "none": [], "target": [".max-w-3xl > .inline-block.disabled\\:opacity-50.disabled\\:pointer-events-none"]}, {"all": [], "any": [{"data": {"bgColor": "#007aff", "contrastRatio": 4.01, "expectedContrastRatio": "4.5:1", "fgColor": "#ffffff", "fontSize": "13.5pt (18px)", "fontWeight": "normal", "messageKey": null}, "id": "color-contrast", "impact": "serious", "message": "Element has insufficient color contrast of 4.01 (foreground color: #ffffff, background color: #007aff, font size: 13.5pt (18px), font weight: normal). Expected contrast ratio of 4.5:1", "relatedNodes": [{"html": "<a class=\"inline-block px-8 py...\" href=\"/auth\">", "target": [".gap-4 > .inline-block.disabled\\:opacity-50.disabled\\:pointer-events-none"]}]}], "failureSummary": "Fix any of the following:[39m
+    [31m  Element has insufficient color contrast of 4.01 (foreground color: #ffffff, background color: #007aff, font size: 13.5pt (18px), font weight: normal). Expected contrast ratio of 4.5:1", "html": "<a class=\"inline-block px-8 py...\" href=\"/auth\">", "impact": "serious", "none": [], "target": [".gap-4 > .inline-block.disabled\\:opacity-50.disabled\\:pointer-events-none"]}], "tags": ["cat.color", "wcag2aa", "wcag143", "TTv5", "TT13.c", "EN-301-549", "EN-9.1.4.3", "ACT", "RGAAv4", "RGAA-3.2.1"]}][39m
+
+      83 |
+      84 |     // Expect no violations
+    > 85 |     expect(violations).toHaveLength(0);
+         |                        ^
+      86 |   });
+      87 |
+      88 |   test('should be responsive on mobile viewport', async ({ page }) => {
+        at /Users/hughgramelspacher/repos/ambira-main/ambira-web/e2e/smoke/feed.spec.ts:85:24
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/smoke-feed-Feed-Page---Smo-6a3e2-ld-pass-accessibility-audit-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/smoke-feed-Feed-Page---Smo-6a3e2-ld-pass-accessibility-audit-chromium/video-1.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #3: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/smoke-feed-Feed-Page---Smo-6a3e2-ld-pass-accessibility-audit-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/smoke-feed-Feed-Page---Smo-6a3e2-ld-pass-accessibility-audit-chromium/error-context.md
+
+  6) [chromium] › e2e/smoke/timer.spec.ts:74:3 › Timer Page - Smoke Tests › should pass accessibility audit 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoHaveLength[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected length: [32m0[39m
+    Received length: [31m1[39m
+    Received array:  [31m[{"description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds", "help": "Elements must meet minimum color contrast ratio thresholds", "helpUrl": "https://dequeuniversity.com/rules/axe/4.11/color-contrast?application=playwright", "id": "color-contrast", "impact": "serious", "nodes": [{"all": [], "any": [{"data": {"bgColor": "#007aff", "contrastRatio": 4.01, "expectedContrastRatio": "4.5:1", "fgColor": "#ffffff", "fontSize": "10.5pt (14px)", "fontWeight": "normal", "messageKey": null}, "id": "color-contrast", "impact": "serious", "message": "Element has insufficient color contrast of 4.01 (foreground color: #ffffff, background color: #007aff, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1", "relatedNodes": [{"html": "<a class=\"flex items-center ga...\" href=\"/auth\">", "target": [".gap-3.flex.items-center > .py-2.rounded-md.whitespace-nowrap"]}]}], "failureSummary": "Fix any of the following:[39m
+    [31m  Element has insufficient color contrast of 4.01 (foreground color: #ffffff, background color: #007aff, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1", "html": "<span>Sign In</span>", "impact": "serious", "none": [], "target": [".gap-3.flex.items-center > .py-2.rounded-md.whitespace-nowrap > span"]}, {"all": [], "any": [{"data": {"bgColor": "#007aff", "contrastRatio": 4.01, "expectedContrastRatio": "4.5:1", "fgColor": "#ffffff", "fontSize": "13.5pt (18px)", "fontWeight": "normal", "messageKey": null}, "id": "color-contrast", "impact": "serious", "message": "Element has insufficient color contrast of 4.01 (foreground color: #ffffff, background color: #007aff, font size: 13.5pt (18px), font weight: normal). Expected contrast ratio of 4.5:1", "relatedNodes": [{"html": "<a class=\"inline-block px-8 py...\" href=\"/auth\">", "target": [".max-w-3xl > .inline-block.disabled\\:opacity-50.disabled\\:pointer-events-none"]}]}], "failureSummary": "Fix any of the following:[39m
+    [31m  Element has insufficient color contrast of 4.01 (foreground color: #ffffff, background color: #007aff, font size: 13.5pt (18px), font weight: normal). Expected contrast ratio of 4.5:1", "html": "<a class=\"inline-block px-8 py...\" href=\"/auth\">", "impact": "serious", "none": [], "target": [".max-w-3xl > .inline-block.disabled\\:opacity-50.disabled\\:pointer-events-none"]}, {"all": [], "any": [{"data": {"bgColor": "#007aff", "contrastRatio": 4.01, "expectedContrastRatio": "4.5:1", "fgColor": "#ffffff", "fontSize": "13.5pt (18px)", "fontWeight": "normal", "messageKey": null}, "id": "color-contrast", "impact": "serious", "message": "Element has insufficient color contrast of 4.01 (foreground color: #ffffff, background color: #007aff, font size: 13.5pt (18px), font weight: normal). Expected contrast ratio of 4.5:1", "relatedNodes": [{"html": "<a class=\"inline-block px-8 py...\" href=\"/auth\">", "target": [".gap-4 > .inline-block.disabled\\:opacity-50.disabled\\:pointer-events-none"]}]}], "failureSummary": "Fix any of the following:[39m
+    [31m  Element has insufficient color contrast of 4.01 (foreground color: #ffffff, background color: #007aff, font size: 13.5pt (18px), font weight: normal). Expected contrast ratio of 4.5:1", "html": "<a class=\"inline-block px-8 py...\" href=\"/auth\">", "impact": "serious", "none": [], "target": [".gap-4 > .inline-block.disabled\\:opacity-50.disabled\\:pointer-events-none"]}], "tags": ["cat.color", "wcag2aa", "wcag143", "TTv5", "TT13.c", "EN-301-549", "EN-9.1.4.3", "ACT", "RGAAv4", "RGAA-3.2.1"]}][39m
+
+      88 |
+      89 |     // Expect no violations
+    > 90 |     expect(violations).toHaveLength(0);
+         |                        ^
+      91 |   });
+      92 |
+      93 |   test('should be responsive on mobile viewport', async ({ page }) => {
+        at /Users/hughgramelspacher/repos/ambira-main/ambira-web/e2e/smoke/timer.spec.ts:90:24
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/smoke-timer-Timer-Page---S-9aa5c-ld-pass-accessibility-audit-chromium/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/smoke-timer-Timer-Page---S-9aa5c-ld-pass-accessibility-audit-chromium/video-1.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #3: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/smoke-timer-Timer-Page---S-9aa5c-ld-pass-accessibility-audit-chromium/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/smoke-timer-Timer-Page---S-9aa5c-ld-pass-accessibility-audit-chromium/error-context.md
+
+  7) [mobile-chrome] › e2e/smoke/auth.spec.ts:39:5 › Authentication Pages - Smoke Tests › Login Page › should have proper page structure 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m0[39m
+    Received:   [31m0[39m
+
+      46 |       );
+      47 |       const count = await contentElements.count();
+    > 48 |       expect(count).toBeGreaterThan(0);
+         |                     ^
+      49 |     });
+      50 |
+      51 |     test('should not have console errors on load', async ({ page }) => {
+        at /Users/hughgramelspacher/repos/ambira-main/ambira-web/e2e/smoke/auth.spec.ts:48:21
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/smoke-auth-Authentication--fe18e--have-proper-page-structure-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/smoke-auth-Authentication--fe18e--have-proper-page-structure-mobile-chrome/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/smoke-auth-Authentication--fe18e--have-proper-page-structure-mobile-chrome/error-context.md
+
+  8) [mobile-chrome] › e2e/smoke/auth.spec.ts:77:5 › Authentication Pages - Smoke Tests › Login Page › should pass accessibility audit 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoHaveLength[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected length: [32m0[39m
+    Received length: [31m1[39m
+    Received array:  [31m[{"description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds", "help": "Elements must meet minimum color contrast ratio thresholds", "helpUrl": "https://dequeuniversity.com/rules/axe/4.11/color-contrast?application=playwright", "id": "color-contrast", "impact": "serious", "nodes": [{"all": [], "any": [{"data": {"bgColor": "#007aff", "contrastRatio": 4.01, "expectedContrastRatio": "4.5:1", "fgColor": "#ffffff", "fontSize": "13.5pt (18px)", "fontWeight": "normal", "messageKey": null}, "id": "color-contrast", "impact": "serious", "message": "Element has insufficient color contrast of 4.01 (foreground color: #ffffff, background color: #007aff, font size: 13.5pt (18px), font weight: normal). Expected contrast ratio of 4.5:1", "relatedNodes": [{"html": "<a class=\"inline-block px-8 py...\" href=\"/auth\">", "target": [".max-w-3xl > .inline-block.disabled\\:opacity-50.disabled\\:pointer-events-none"]}]}], "failureSummary": "Fix any of the following:[39m
+    [31m  Element has insufficient color contrast of 4.01 (foreground color: #ffffff, background color: #007aff, font size: 13.5pt (18px), font weight: normal). Expected contrast ratio of 4.5:1", "html": "<a class=\"inline-block px-8 py...\" href=\"/auth\">", "impact": "serious", "none": [], "target": [".max-w-3xl > .inline-block.disabled\\:opacity-50.disabled\\:pointer-events-none"]}, {"all": [], "any": [{"data": {"bgColor": "#007aff", "contrastRatio": 4.01, "expectedContrastRatio": "4.5:1", "fgColor": "#ffffff", "fontSize": "13.5pt (18px)", "fontWeight": "normal", "messageKey": null}, "id": "color-contrast", "impact": "serious", "message": "Element has insufficient color contrast of 4.01 (foreground color: #ffffff, background color: #007aff, font size: 13.5pt (18px), font weight: normal). Expected contrast ratio of 4.5:1", "relatedNodes": [{"html": "<a class=\"inline-block px-8 py...\" href=\"/auth\">", "target": [".gap-4 > .inline-block.disabled\\:opacity-50.disabled\\:pointer-events-none"]}]}], "failureSummary": "Fix any of the following:[39m
+    [31m  Element has insufficient color contrast of 4.01 (foreground color: #ffffff, background color: #007aff, font size: 13.5pt (18px), font weight: normal). Expected contrast ratio of 4.5:1", "html": "<a class=\"inline-block px-8 py...\" href=\"/auth\">", "impact": "serious", "none": [], "target": [".gap-4 > .inline-block.disabled\\:opacity-50.disabled\\:pointer-events-none"]}], "tags": ["cat.color", "wcag2aa", "wcag143", "TTv5", "TT13.c", "EN-301-549", "EN-9.1.4.3", "ACT", "RGAAv4", "RGAA-3.2.1"]}][39m
+
+      91 |
+      92 |       // Expect no violations
+    > 93 |       expect(violations).toHaveLength(0);
+         |                          ^
+      94 |     });
+      95 |
+      96 |     test('should be responsive on mobile viewport', async ({ page }) => {
+        at /Users/hughgramelspacher/repos/ambira-main/ambira-web/e2e/smoke/auth.spec.ts:93:26
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/smoke-auth-Authentication--8a740-ld-pass-accessibility-audit-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/smoke-auth-Authentication--8a740-ld-pass-accessibility-audit-mobile-chrome/video-1.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #3: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/smoke-auth-Authentication--8a740-ld-pass-accessibility-audit-mobile-chrome/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/smoke-auth-Authentication--8a740-ld-pass-accessibility-audit-mobile-chrome/error-context.md
+
+  9) [mobile-chrome] › e2e/smoke/auth.spec.ts:115:5 › Authentication Pages - Smoke Tests › Login Page › should have working keyboard navigation 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mnot[2m.[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+    Expected: not [32m"BODY"[39m
+
+      126 |
+      127 |       expect(focusedElement).toBeTruthy();
+    > 128 |       expect(focusedElement).not.toBe('BODY');
+          |                                  ^
+      129 |     });
+      130 |
+      131 |     test('should handle form validation gracefully', async ({ page }) => {
+        at /Users/hughgramelspacher/repos/ambira-main/ambira-web/e2e/smoke/auth.spec.ts:128:34
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/smoke-auth-Authentication--bd64f-working-keyboard-navigation-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/smoke-auth-Authentication--bd64f-working-keyboard-navigation-mobile-chrome/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/smoke-auth-Authentication--bd64f-working-keyboard-navigation-mobile-chrome/error-context.md
+
+  10) [mobile-chrome] › e2e/smoke/feed.spec.ts:29:3 › Feed Page - Smoke Tests › should have proper page structure 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThanOrEqual[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: >= [32m1[39m
+    Received:    [31m0[39m
+
+      34 |     const mainContent = page.locator('main, [role="main"], section, article, [role="region"]');
+      35 |     const mainCount = await mainContent.count();
+    > 36 |     expect(mainCount).toBeGreaterThanOrEqual(1);
+         |                       ^
+      37 |
+      38 |     // Verify main content is visible
+      39 |     if (mainCount > 0) {
+        at /Users/hughgramelspacher/repos/ambira-main/ambira-web/e2e/smoke/feed.spec.ts:36:23
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/smoke-feed-Feed-Page---Smo-f1d2c--have-proper-page-structure-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/smoke-feed-Feed-Page---Smo-f1d2c--have-proper-page-structure-mobile-chrome/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/smoke-feed-Feed-Page---Smo-f1d2c--have-proper-page-structure-mobile-chrome/error-context.md
+
+  11) [mobile-chrome] › e2e/smoke/feed.spec.ts:69:3 › Feed Page - Smoke Tests › should pass accessibility audit 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoHaveLength[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected length: [32m0[39m
+    Received length: [31m1[39m
+    Received array:  [31m[{"description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds", "help": "Elements must meet minimum color contrast ratio thresholds", "helpUrl": "https://dequeuniversity.com/rules/axe/4.11/color-contrast?application=playwright", "id": "color-contrast", "impact": "serious", "nodes": [{"all": [], "any": [{"data": {"bgColor": "#007aff", "contrastRatio": 4.01, "expectedContrastRatio": "4.5:1", "fgColor": "#ffffff", "fontSize": "13.5pt (18px)", "fontWeight": "normal", "messageKey": null}, "id": "color-contrast", "impact": "serious", "message": "Element has insufficient color contrast of 4.01 (foreground color: #ffffff, background color: #007aff, font size: 13.5pt (18px), font weight: normal). Expected contrast ratio of 4.5:1", "relatedNodes": [{"html": "<a class=\"inline-block px-8 py...\" href=\"/auth\">", "target": [".max-w-3xl > .inline-block.disabled\\:opacity-50.disabled\\:pointer-events-none"]}]}], "failureSummary": "Fix any of the following:[39m
+    [31m  Element has insufficient color contrast of 4.01 (foreground color: #ffffff, background color: #007aff, font size: 13.5pt (18px), font weight: normal). Expected contrast ratio of 4.5:1", "html": "<a class=\"inline-block px-8 py...\" href=\"/auth\">", "impact": "serious", "none": [], "target": [".max-w-3xl > .inline-block.disabled\\:opacity-50.disabled\\:pointer-events-none"]}, {"all": [], "any": [{"data": {"bgColor": "#007aff", "contrastRatio": 4.01, "expectedContrastRatio": "4.5:1", "fgColor": "#ffffff", "fontSize": "13.5pt (18px)", "fontWeight": "normal", "messageKey": null}, "id": "color-contrast", "impact": "serious", "message": "Element has insufficient color contrast of 4.01 (foreground color: #ffffff, background color: #007aff, font size: 13.5pt (18px), font weight: normal). Expected contrast ratio of 4.5:1", "relatedNodes": [{"html": "<a class=\"inline-block px-8 py...\" href=\"/auth\">", "target": [".gap-4 > .inline-block.disabled\\:opacity-50.disabled\\:pointer-events-none"]}]}], "failureSummary": "Fix any of the following:[39m
+    [31m  Element has insufficient color contrast of 4.01 (foreground color: #ffffff, background color: #007aff, font size: 13.5pt (18px), font weight: normal). Expected contrast ratio of 4.5:1", "html": "<a class=\"inline-block px-8 py...\" href=\"/auth\">", "impact": "serious", "none": [], "target": [".gap-4 > .inline-block.disabled\\:opacity-50.disabled\\:pointer-events-none"]}], "tags": ["cat.color", "wcag2aa", "wcag143", "TTv5", "TT13.c", "EN-301-549", "EN-9.1.4.3", "ACT", "RGAAv4", "RGAA-3.2.1"]}][39m
+
+      83 |
+      84 |     // Expect no violations
+    > 85 |     expect(violations).toHaveLength(0);
+         |                        ^
+      86 |   });
+      87 |
+      88 |   test('should be responsive on mobile viewport', async ({ page }) => {
+        at /Users/hughgramelspacher/repos/ambira-main/ambira-web/e2e/smoke/feed.spec.ts:85:24
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/smoke-feed-Feed-Page---Smo-6a3e2-ld-pass-accessibility-audit-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/smoke-feed-Feed-Page---Smo-6a3e2-ld-pass-accessibility-audit-mobile-chrome/video-1.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #3: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/smoke-feed-Feed-Page---Smo-6a3e2-ld-pass-accessibility-audit-mobile-chrome/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/smoke-feed-Feed-Page---Smo-6a3e2-ld-pass-accessibility-audit-mobile-chrome/error-context.md
+
+  12) [mobile-chrome] › e2e/smoke/timer.spec.ts:20:3 › Timer Page - Smoke Tests › should display timer interface 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: > [32m0[39m
+    Received:   [31m0[39m
+
+      29 |
+      30 |     // Expect at least some interactive elements
+    > 31 |     expect(count).toBeGreaterThan(0);
+         |                   ^
+      32 |   });
+      33 |
+      34 |   test('should have proper page structure', async ({ page }) => {
+        at /Users/hughgramelspacher/repos/ambira-main/ambira-web/e2e/smoke/timer.spec.ts:31:19
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/smoke-timer-Timer-Page---S-d7369-uld-display-timer-interface-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/smoke-timer-Timer-Page---S-d7369-uld-display-timer-interface-mobile-chrome/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/smoke-timer-Timer-Page---S-d7369-uld-display-timer-interface-mobile-chrome/error-context.md
+
+  13) [mobile-chrome] › e2e/smoke/timer.spec.ts:34:3 › Timer Page - Smoke Tests › should have proper page structure 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThanOrEqual[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: >= [32m1[39m
+    Received:    [31m0[39m
+
+      39 |     const mainContent = page.locator('main, [role="main"], section, article, [role="region"]');
+      40 |     const mainCount = await mainContent.count();
+    > 41 |     expect(mainCount).toBeGreaterThanOrEqual(1);
+         |                       ^
+      42 |
+      43 |     // Verify main content is visible
+      44 |     if (mainCount > 0) {
+        at /Users/hughgramelspacher/repos/ambira-main/ambira-web/e2e/smoke/timer.spec.ts:41:23
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/smoke-timer-Timer-Page---S-c5c29--have-proper-page-structure-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/smoke-timer-Timer-Page---S-c5c29--have-proper-page-structure-mobile-chrome/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/smoke-timer-Timer-Page---S-c5c29--have-proper-page-structure-mobile-chrome/error-context.md
+
+  14) [mobile-chrome] › e2e/smoke/timer.spec.ts:74:3 › Timer Page - Smoke Tests › should pass accessibility audit 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoHaveLength[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected length: [32m0[39m
+    Received length: [31m1[39m
+    Received array:  [31m[{"description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds", "help": "Elements must meet minimum color contrast ratio thresholds", "helpUrl": "https://dequeuniversity.com/rules/axe/4.11/color-contrast?application=playwright", "id": "color-contrast", "impact": "serious", "nodes": [{"all": [], "any": [{"data": {"bgColor": "#007aff", "contrastRatio": 4.01, "expectedContrastRatio": "4.5:1", "fgColor": "#ffffff", "fontSize": "13.5pt (18px)", "fontWeight": "normal", "messageKey": null}, "id": "color-contrast", "impact": "serious", "message": "Element has insufficient color contrast of 4.01 (foreground color: #ffffff, background color: #007aff, font size: 13.5pt (18px), font weight: normal). Expected contrast ratio of 4.5:1", "relatedNodes": [{"html": "<a class=\"inline-block px-8 py...\" href=\"/auth\">", "target": [".max-w-3xl > .inline-block.disabled\\:opacity-50.disabled\\:pointer-events-none"]}]}], "failureSummary": "Fix any of the following:[39m
+    [31m  Element has insufficient color contrast of 4.01 (foreground color: #ffffff, background color: #007aff, font size: 13.5pt (18px), font weight: normal). Expected contrast ratio of 4.5:1", "html": "<a class=\"inline-block px-8 py...\" href=\"/auth\">", "impact": "serious", "none": [], "target": [".max-w-3xl > .inline-block.disabled\\:opacity-50.disabled\\:pointer-events-none"]}, {"all": [], "any": [{"data": {"bgColor": "#007aff", "contrastRatio": 4.01, "expectedContrastRatio": "4.5:1", "fgColor": "#ffffff", "fontSize": "13.5pt (18px)", "fontWeight": "normal", "messageKey": null}, "id": "color-contrast", "impact": "serious", "message": "Element has insufficient color contrast of 4.01 (foreground color: #ffffff, background color: #007aff, font size: 13.5pt (18px), font weight: normal). Expected contrast ratio of 4.5:1", "relatedNodes": [{"html": "<a class=\"inline-block px-8 py...\" href=\"/auth\">", "target": [".gap-4 > .inline-block.disabled\\:opacity-50.disabled\\:pointer-events-none"]}]}], "failureSummary": "Fix any of the following:[39m
+    [31m  Element has insufficient color contrast of 4.01 (foreground color: #ffffff, background color: #007aff, font size: 13.5pt (18px), font weight: normal). Expected contrast ratio of 4.5:1", "html": "<a class=\"inline-block px-8 py...\" href=\"/auth\">", "impact": "serious", "none": [], "target": [".gap-4 > .inline-block.disabled\\:opacity-50.disabled\\:pointer-events-none"]}], "tags": ["cat.color", "wcag2aa", "wcag143", "TTv5", "TT13.c", "EN-301-549", "EN-9.1.4.3", "ACT", "RGAAv4", "RGAA-3.2.1"]}][39m
+
+      88 |
+      89 |     // Expect no violations
+    > 90 |     expect(violations).toHaveLength(0);
+         |                        ^
+      91 |   });
+      92 |
+      93 |   test('should be responsive on mobile viewport', async ({ page }) => {
+        at /Users/hughgramelspacher/repos/ambira-main/ambira-web/e2e/smoke/timer.spec.ts:90:24
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/smoke-timer-Timer-Page---S-9aa5c-ld-pass-accessibility-audit-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/smoke-timer-Timer-Page---S-9aa5c-ld-pass-accessibility-audit-mobile-chrome/video-1.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #3: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/smoke-timer-Timer-Page---S-9aa5c-ld-pass-accessibility-audit-mobile-chrome/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/smoke-timer-Timer-Page---S-9aa5c-ld-pass-accessibility-audit-mobile-chrome/error-context.md
+
+  15) [mobile-chrome] › e2e/smoke/timer.spec.ts:120:3 › Timer Page - Smoke Tests › should have working keyboard navigation 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mnot[2m.[22mtoBe[2m([22m[32mexpected[39m[2m) // Object.is equality[22m
+
+    Expected: not [32m"BODY"[39m
+
+      131 |
+      132 |     expect(focusedElement).toBeTruthy();
+    > 133 |     expect(focusedElement).not.toBe('BODY');
+          |                                ^
+      134 |   });
+      135 |
+      136 |   test('should display timer controls when authenticated', async ({ page }) => {
+        at /Users/hughgramelspacher/repos/ambira-main/ambira-web/e2e/smoke/timer.spec.ts:133:32
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/smoke-timer-Timer-Page---S-c9ad6-working-keyboard-navigation-mobile-chrome/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    attachment #2: video (video/webm) ──────────────────────────────────────────────────────────────
+    test-results/smoke-timer-Timer-Page---S-c9ad6-working-keyboard-navigation-mobile-chrome/video.webm
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/smoke-timer-Timer-Page---S-c9ad6-working-keyboard-navigation-mobile-chrome/error-context.md
+
+  15 failed
+    [chromium] › e2e/smoke/auth.spec.ts:51:5 › Authentication Pages - Smoke Tests › Login Page › should not have console errors on load 
+    [chromium] › e2e/smoke/auth.spec.ts:77:5 › Authentication Pages - Smoke Tests › Login Page › should pass accessibility audit 
+    [chromium] › e2e/smoke/auth.spec.ts:96:5 › Authentication Pages - Smoke Tests › Login Page › should be responsive on mobile viewport 
+    [chromium] › e2e/smoke/auth.spec.ts:178:5 › Authentication Pages - Smoke Tests › Protected Routes › should handle unauthenticated access appropriately 
+    [chromium] › e2e/smoke/feed.spec.ts:69:3 › Feed Page - Smoke Tests › should pass accessibility audit 
+    [chromium] › e2e/smoke/timer.spec.ts:74:3 › Timer Page - Smoke Tests › should pass accessibility audit 
+    [mobile-chrome] › e2e/smoke/auth.spec.ts:39:5 › Authentication Pages - Smoke Tests › Login Page › should have proper page structure 
+    [mobile-chrome] › e2e/smoke/auth.spec.ts:77:5 › Authentication Pages - Smoke Tests › Login Page › should pass accessibility audit 
+    [mobile-chrome] › e2e/smoke/auth.spec.ts:115:5 › Authentication Pages - Smoke Tests › Login Page › should have working keyboard navigation 
+    [mobile-chrome] › e2e/smoke/feed.spec.ts:29:3 › Feed Page - Smoke Tests › should have proper page structure 
+    [mobile-chrome] › e2e/smoke/feed.spec.ts:69:3 › Feed Page - Smoke Tests › should pass accessibility audit 
+    [mobile-chrome] › e2e/smoke/timer.spec.ts:20:3 › Timer Page - Smoke Tests › should display timer interface 
+    [mobile-chrome] › e2e/smoke/timer.spec.ts:34:3 › Timer Page - Smoke Tests › should have proper page structure 
+    [mobile-chrome] › e2e/smoke/timer.spec.ts:74:3 › Timer Page - Smoke Tests › should pass accessibility audit 
+    [mobile-chrome] › e2e/smoke/timer.spec.ts:120:3 › Timer Page - Smoke Tests › should have working keyboard navigation 
+  33 passed (1.4m)
+
+[36m  Serving HTML report at http://localhost:54131. Press Ctrl+C to quit.[39m

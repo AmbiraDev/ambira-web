@@ -28,7 +28,7 @@ export const COLORS = {
    */
   USER_AVATAR_HEX: [
     '#FC4C02', // Brand Orange
-    '#007AFF', // Electric Blue
+    '#0066CC', // Electric Blue
     '#34C759', // Success Green
     '#FF9500', // Warning Orange
     '#AF52DE', // Purple

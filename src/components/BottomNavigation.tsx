@@ -117,7 +117,7 @@ export default function BottomNavigation() {
                 )}
                 <div className="flex-1 text-left">
                   <div
-                    className={`font-medium ${isActive('/profile') ? 'text-[#007AFF]' : 'text-gray-900'}`}
+                    className={`font-medium ${isActive('/profile') ? 'text-[#0066CC]' : 'text-gray-900'}`}
                   >
                     My Profile
                   </div>
@@ -139,12 +139,12 @@ export default function BottomNavigation() {
                   }`}
                 >
                   <Activity
-                    className={`w-5 h-5 ${isActive('/activities') ? 'text-[#007AFF]' : 'text-gray-600'}`}
+                    className={`w-5 h-5 ${isActive('/activities') ? 'text-[#0066CC]' : 'text-gray-600'}`}
                   />
                 </div>
                 <div className="flex-1 text-left">
                   <div
-                    className={`font-medium ${isActive('/activities') ? 'text-[#007AFF]' : 'text-gray-900'}`}
+                    className={`font-medium ${isActive('/activities') ? 'text-[#0066CC]' : 'text-gray-900'}`}
                   >
                     Activities
                   </div>
@@ -168,12 +168,12 @@ export default function BottomNavigation() {
                   }`}
                 >
                   <BarChart3
-                    className={`w-5 h-5 ${isActive('/analytics') ? 'text-[#007AFF]' : 'text-gray-600'}`}
+                    className={`w-5 h-5 ${isActive('/analytics') ? 'text-[#0066CC]' : 'text-gray-600'}`}
                   />
                 </div>
                 <div className="flex-1 text-left">
                   <div
-                    className={`font-medium ${isActive('/analytics') ? 'text-[#007AFF]' : 'text-gray-900'}`}
+                    className={`font-medium ${isActive('/analytics') ? 'text-[#0066CC]' : 'text-gray-900'}`}
                   >
                     Analytics
                   </div>
@@ -197,12 +197,12 @@ export default function BottomNavigation() {
                   }`}
                 >
                   <Settings
-                    className={`w-5 h-5 ${isActive('/settings') ? 'text-[#007AFF]' : 'text-gray-600'}`}
+                    className={`w-5 h-5 ${isActive('/settings') ? 'text-[#0066CC]' : 'text-gray-600'}`}
                   />
                 </div>
                 <div className="flex-1 text-left">
                   <div
-                    className={`font-medium ${isActive('/settings') ? 'text-[#007AFF]' : 'text-gray-900'}`}
+                    className={`font-medium ${isActive('/settings') ? 'text-[#0066CC]' : 'text-gray-900'}`}
                   >
                     Settings
                   </div>
@@ -225,7 +225,7 @@ export default function BottomNavigation() {
           <Link
             href="/"
             className={`flex flex-col items-center justify-center space-y-0.5 px-3 py-1 transition-colors ${
-              isActive('/') ? 'text-[#007AFF]' : 'text-gray-500'
+              isActive('/') ? 'text-[#0066CC]' : 'text-gray-500'
             }`}
             aria-label="View feed"
             aria-current={isActive('/') ? 'page' : undefined}
@@ -242,7 +242,7 @@ export default function BottomNavigation() {
           <Link
             href="/search"
             className={`flex flex-col items-center justify-center space-y-0.5 px-3 py-1 transition-colors ${
-              isActive('/search') ? 'text-[#007AFF]' : 'text-gray-500'
+              isActive('/search') ? 'text-[#0066CC]' : 'text-gray-500'
             }`}
             aria-label="Discover people, groups, and challenges"
             aria-current={isActive('/search') ? 'page' : undefined}
@@ -260,7 +260,7 @@ export default function BottomNavigation() {
             href="/timer"
             className={`flex flex-col items-center justify-center space-y-0.5 px-3 py-1 transition-colors ${
               hasActiveSession || isActive('/timer')
-                ? 'text-[#007AFF]'
+                ? 'text-[#0066CC]'
                 : 'text-gray-500'
             }`}
             aria-label={
@@ -269,7 +269,7 @@ export default function BottomNavigation() {
             aria-current={isActive('/timer') ? 'page' : undefined}
           >
             <div
-              className={`relative p-0.5 rounded-full ${hasActiveSession ? 'ring-2 ring-[#007AFF]' : ''}`}
+              className={`relative p-0.5 rounded-full ${hasActiveSession ? 'ring-2 ring-[#0066CC]' : ''}`}
             >
               <PlayCircle
                 className="w-6 h-6"
@@ -291,7 +291,7 @@ export default function BottomNavigation() {
           <Link
             href="/groups"
             className={`flex flex-col items-center justify-center space-y-0.5 px-3 py-1 transition-colors ${
-              isActive('/groups') ? 'text-[#007AFF]' : 'text-gray-500'
+              isActive('/groups') ? 'text-[#0066CC]' : 'text-gray-500'
             }`}
             aria-label="View groups"
             aria-current={isActive('/groups') ? 'page' : undefined}
@@ -308,7 +308,7 @@ export default function BottomNavigation() {
           <button
             onClick={handleMoreClick}
             className={`flex flex-col items-center justify-center space-y-0.5 px-3 py-1 transition-colors ${
-              isMoreActive || showMoreMenu ? 'text-[#007AFF]' : 'text-gray-500'
+              isMoreActive || showMoreMenu ? 'text-[#0066CC]' : 'text-gray-500'
             }`}
             aria-label="Open more options menu"
             aria-expanded={showMoreMenu}

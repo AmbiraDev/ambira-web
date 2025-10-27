@@ -139,7 +139,7 @@ export default function SuggestedGroupsModal({
         <div className="flex-1 overflow-y-auto">
           {isLoading ? (
             <div className="p-12 text-center">
-              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#007AFF]"></div>
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#0066CC]"></div>
               <p className="text-gray-600 mt-4">Loading groups...</p>
             </div>
           ) : allSuggestedGroups.length === 0 ? (
@@ -176,7 +176,7 @@ export default function SuggestedGroupsModal({
                       {/* Group Info */}
                       <div className="flex-1 min-w-0">
                         <Link href={`/groups/${group.id}`}>
-                          <h3 className="font-semibold text-base text-gray-900 truncate hover:text-[#007AFF] transition-colors">
+                          <h3 className="font-semibold text-base text-gray-900 truncate hover:text-[#0066CC] transition-colors">
                             {group.name}
                           </h3>
                         </Link>
@@ -207,7 +207,7 @@ export default function SuggestedGroupsModal({
                         className={`text-sm font-semibold transition-colors flex-shrink-0 ${
                           isJoining
                             ? 'text-gray-400 cursor-not-allowed'
-                            : 'text-[#007AFF] hover:text-[#0051D5]'
+                            : 'text-[#0066CC] hover:text-[#0051D5]'
                         }`}
                       >
                         {isJoining ? 'Joining...' : 'Join'}

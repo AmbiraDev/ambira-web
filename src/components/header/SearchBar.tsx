@@ -77,7 +77,7 @@ export default function SearchBar({ isOpen, onToggle }: SearchBarProps) {
     return (
       <button
         onClick={onToggle}
-        className="p-2 text-gray-600 hover:text-[#007AFF] transition-colors"
+        className="p-2 text-gray-600 hover:text-[#0066CC] transition-colors"
         aria-label="Open search"
       >
         <Search className="w-5 h-5" />
@@ -121,7 +121,7 @@ export default function SearchBar({ isOpen, onToggle }: SearchBarProps) {
                   onClick={() => handleFilterSelect(value)}
                   className={`w-full text-left px-4 py-2 transition-colors ${
                     searchFilter === value
-                      ? 'bg-blue-50 text-[#007AFF]'
+                      ? 'bg-blue-50 text-[#0066CC]'
                       : 'text-gray-700 hover:bg-gray-50'
                   }`}
                 >
@@ -138,9 +138,9 @@ export default function SearchBar({ isOpen, onToggle }: SearchBarProps) {
             ref={searchInputRef}
             type="text"
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={e => setSearchQuery(e.target.value)}
             placeholder={`Search ${getSearchFilterLabel(searchFilter).toLowerCase()}...`}
-            className="w-full px-3 md:px-4 py-2 pr-8 md:pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:border-transparent text-xs md:text-sm"
+            className="w-full px-3 md:px-4 py-2 pr-8 md:pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:border-transparent text-xs md:text-sm"
             aria-label="Search query"
           />
           <Search className="w-3 h-3 md:w-4 md:h-4 absolute right-2 md:right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />

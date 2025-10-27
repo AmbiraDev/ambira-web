@@ -126,7 +126,7 @@ function DailyGoals() {
       <div className="flex justify-center mt-8 mr-4">
         <Link
           href="/activities/new"
-          className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#007AFF] text-white rounded-lg font-semibold text-sm hover:bg-[#0056D6] transition-colors shadow-md hover:shadow-lg"
+          className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#0066CC] text-white rounded-lg font-semibold text-sm hover:bg-[#0051D5] transition-colors shadow-md hover:shadow-lg"
         >
           <svg
             className="w-5 h-5"
@@ -200,7 +200,7 @@ function DailyGoals() {
                       cy="30"
                       r={radius}
                       fill="none"
-                      stroke="#007AFF"
+                      stroke="#0066CC"
                       strokeWidth="4.5"
                       strokeDasharray={circumference}
                       strokeDashoffset={strokeDashoffset}

@@ -140,7 +140,7 @@ export default function ChallengeDetail({
   return (
     <div className="max-w-4xl mx-auto">
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-[#007AFF] to-[#0051D5] text-white rounded-lg shadow-sm p-8 mb-8">
+      <div className="bg-gradient-to-r from-[#0066CC] to-[#0051D5] text-white rounded-lg shadow-sm p-8 mb-8">
         <div className="flex items-start justify-between mb-6">
           <div className="flex items-center gap-4 flex-1 min-w-0">
             <div className="p-3 bg-white/20 rounded-lg flex-shrink-0">
@@ -229,7 +229,7 @@ export default function ChallengeDetail({
               onClick={onJoin}
               disabled={isLoading}
               size="lg"
-              className="bg-white text-[#007AFF] hover:bg-gray-50 font-semibold"
+              className="bg-white text-[#0066CC] hover:bg-gray-50 font-semibold"
             >
               {isLoading ? 'Joining...' : 'Join Challenge'}
             </Button>
@@ -263,7 +263,7 @@ export default function ChallengeDetail({
             onClick={() => setActiveSection('overview')}
             className={`px-6 py-4 font-semibold text-sm border-b-2 transition-colors ${
               activeSection === 'overview'
-                ? 'border-[#007AFF] text-[#007AFF]'
+                ? 'border-[#0066CC] text-[#0066CC]'
                 : 'border-transparent text-gray-600 hover:text-gray-900'
             }`}
           >
@@ -273,7 +273,7 @@ export default function ChallengeDetail({
             onClick={() => setActiveSection('leaderboard')}
             className={`px-6 py-4 font-semibold text-sm border-b-2 transition-colors ${
               activeSection === 'leaderboard'
-                ? 'border-[#007AFF] text-[#007AFF]'
+                ? 'border-[#0066CC] text-[#0066CC]'
                 : 'border-transparent text-gray-600 hover:text-gray-900'
             }`}
           >

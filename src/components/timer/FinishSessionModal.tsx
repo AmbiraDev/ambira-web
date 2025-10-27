@@ -79,7 +79,7 @@ export function FinishSessionModal({
             <div className="flex justify-between items-center mb-6">
               <button
                 onClick={onResume}
-                className="text-[#007AFF] hover:text-[#0051D5] font-semibold text-base"
+                className="text-[#0066CC] hover:text-[#0051D5] font-semibold text-base"
               >
                 Resume
               </button>
@@ -95,7 +95,7 @@ export function FinishSessionModal({
                 type="text"
                 value={sessionTitle}
                 onChange={e => setSessionTitle(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] text-base"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] text-base"
                 placeholder="Afternoon Work Session"
               />
 
@@ -103,7 +103,7 @@ export function FinishSessionModal({
               <textarea
                 value={sessionDescription}
                 onChange={e => setSessionDescription(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] text-base"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] text-base"
                 rows={3}
                 placeholder="How'd it go? Share more about your session."
               />
@@ -112,7 +112,7 @@ export function FinishSessionModal({
               <div className="relative">
                 <button
                   onClick={() => setShowActivityPicker(!showActivityPicker)}
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] bg-white cursor-pointer text-base flex items-center gap-3 hover:border-gray-400 transition-colors min-h-[44px]"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] bg-white cursor-pointer text-base flex items-center gap-3 hover:border-gray-400 transition-colors min-h-[44px]"
                 >
                   {selectedActivity ? (
                     <>
@@ -151,7 +151,7 @@ export function FinishSessionModal({
                           </p>
                           <Link
                             href="/activities/new"
-                            className="inline-flex items-center gap-2 px-4 py-2 bg-[#007AFF] text-white rounded-lg hover:bg-[#0051D5] transition-colors text-sm font-medium"
+                            className="inline-flex items-center gap-2 px-4 py-2 bg-[#0066CC] text-white rounded-lg hover:bg-[#0051D5] transition-colors text-sm font-medium"
                           >
                             <svg
                               className="w-4 h-4"
@@ -212,7 +212,7 @@ export function FinishSessionModal({
                           >
                             <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 bg-blue-100">
                               <svg
-                                className="w-4 h-4 text-[#007AFF]"
+                                className="w-4 h-4 text-[#0066CC]"
                                 fill="none"
                                 stroke="currentColor"
                                 viewBox="0 0 24 24"
@@ -262,7 +262,7 @@ export function FinishSessionModal({
                       type="time"
                       value={formatTimeForInput(startTime)}
                       onChange={e => onStartTimeChange(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] text-sm"
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] text-sm"
                     />
                   </div>
 
@@ -273,11 +273,11 @@ export function FinishSessionModal({
                       step={900}
                       value={adjustedDuration}
                       onChange={onDurationChange}
-                      trackStyle={{ backgroundColor: '#007AFF', height: 6 }}
+                      trackStyle={{ backgroundColor: '#0066CC', height: 6 }}
                       railStyle={{ backgroundColor: '#E5E7EB', height: 6 }}
                       handleStyle={{
                         backgroundColor: 'white',
-                        border: '3px solid #007AFF',
+                        border: '3px solid #0066CC',
                         width: 20,
                         height: 20,
                         marginTop: -7,
@@ -306,7 +306,7 @@ export function FinishSessionModal({
                   onChange={e =>
                     setVisibility(e.target.value as typeof visibility)
                   }
-                  className="w-full pl-3 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] appearance-none bg-white min-h-[44px]"
+                  className="w-full pl-3 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] appearance-none bg-white min-h-[44px]"
                   style={{
                     backgroundImage:
                       "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 9L1 4h10z'/%3E%3C/svg%3E\")",
@@ -334,7 +334,7 @@ export function FinishSessionModal({
               <button
                 onClick={onSave}
                 disabled={!sessionTitle.trim() || isUploadingImages}
-                className="w-full px-4 py-3 bg-[#007AFF] text-white rounded-lg hover:bg-[#0051D5] transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-base"
+                className="w-full px-4 py-3 bg-[#0066CC] text-white rounded-lg hover:bg-[#0051D5] transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-base"
               >
                 {isUploadingImages ? 'Uploading...' : 'Save Session'}
               </button>

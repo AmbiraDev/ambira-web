@@ -17,28 +17,38 @@ export const CreateProjectSchema = v.object({
     v.string('Project name is required'),
     v.nonEmpty('Project name cannot be empty'),
     v.maxLength(100, 'Project name cannot exceed 100 characters'),
-    v.transform((str) => str.trim())
+    v.transform(str => str.trim())
   ),
   description: v.pipe(
     v.string('Description is required'),
     v.nonEmpty('Description cannot be empty'),
     v.maxLength(500, 'Description cannot exceed 500 characters'),
-    v.transform((str) => str.trim())
+    v.transform(str => str.trim())
   ),
   icon: NonEmptyStringSchema,
   color: v.pipe(
     v.string('Color is required'),
-    v.regex(/^#[0-9A-F]{6}$/i, 'Color must be a valid hex code (e.g., #007AFF)')
+    v.regex(/^#[0-9A-F]{6}$/i, 'Color must be a valid hex code (e.g., #0066CC)')
   ),
 
   // Optional fields
   weeklyTarget: v.optional(
-    v.pipe(v.number('Weekly target must be a number'), v.minValue(0, 'Weekly target cannot be negative'), v.maxValue(168, 'Weekly target cannot exceed 168 hours'))
+    v.pipe(
+      v.number('Weekly target must be a number'),
+      v.minValue(0, 'Weekly target cannot be negative'),
+      v.maxValue(168, 'Weekly target cannot exceed 168 hours')
+    )
   ),
   totalTarget: v.optional(
-    v.pipe(v.number('Total target must be a number'), v.minValue(0, 'Total target cannot be negative'), v.maxValue(10000, 'Total target cannot exceed 10000 hours'))
+    v.pipe(
+      v.number('Total target must be a number'),
+      v.minValue(0, 'Total target cannot be negative'),
+      v.maxValue(10000, 'Total target cannot exceed 10000 hours')
+    )
   ),
-  status: v.optional(v.picklist(['active', 'completed', 'archived'], 'Invalid status')),
+  status: v.optional(
+    v.picklist(['active', 'completed', 'archived'], 'Invalid status')
+  ),
 });
 
 /**
@@ -50,7 +60,7 @@ export const UpdateProjectSchema = v.object({
       v.string(),
       v.nonEmpty('Project name cannot be empty'),
       v.maxLength(100, 'Project name cannot exceed 100 characters'),
-      v.transform((str) => str.trim())
+      v.transform(str => str.trim())
     )
   ),
   description: v.optional(
@@ -58,11 +68,16 @@ export const UpdateProjectSchema = v.object({
       v.string(),
       v.nonEmpty('Description cannot be empty'),
       v.maxLength(500, 'Description cannot exceed 500 characters'),
-      v.transform((str) => str.trim())
+      v.transform(str => str.trim())
     )
   ),
   icon: v.optional(NonEmptyStringSchema),
-  color: v.optional(v.pipe(v.string(), v.regex(/^#[0-9A-F]{6}$/i, 'Color must be a valid hex code'))),
+  color: v.optional(
+    v.pipe(
+      v.string(),
+      v.regex(/^#[0-9A-F]{6}$/i, 'Color must be a valid hex code')
+    )
+  ),
   weeklyTarget: v.optional(v.pipe(v.number(), v.minValue(0), v.maxValue(168))),
   totalTarget: v.optional(v.pipe(v.number(), v.minValue(0), v.maxValue(10000))),
   status: v.optional(v.picklist(['active', 'completed', 'archived'])),

@@ -181,7 +181,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({
                     'md:hidden text-xs font-semibold transition-colors duration-200 whitespace-nowrap flex-shrink-0',
                     isFollowing
                       ? 'text-gray-600 hover:text-gray-900'
-                      : 'text-[#007AFF] hover:text-[#0051D5]'
+                      : 'text-[#0066CC] hover:text-[#0051D5]'
                   )}
                 >
                   {isFollowing ? 'Following' : 'Follow'}
@@ -246,7 +246,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({
         href={`/sessions/${session.id}`}
         className="px-4 pb-3 block cursor-pointer"
       >
-        <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 mb-1 leading-tight hover:text-[#007AFF] transition-colors duration-200">
+        <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-gray-900 mb-1 leading-tight hover:text-[#0066CC] transition-colors duration-200">
           {session.title || 'Focus Session'}
         </h3>
         {session.description && (
@@ -269,7 +269,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({
                   e.preventDefault();
                   setIsExpanded(!isExpanded);
                 }}
-                className="text-[#007AFF] text-sm font-semibold mt-1 hover:underline transition-colors duration-200 min-h-[44px] flex items-center"
+                className="text-[#0066CC] text-sm font-semibold mt-1 hover:underline transition-colors duration-200 min-h-[44px] flex items-center"
                 aria-expanded={isExpanded}
                 aria-label={
                   isExpanded ? 'Show less description' : 'Show more description'

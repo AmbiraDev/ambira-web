@@ -232,7 +232,7 @@ export default function CreateGroupPage() {
               value={formData.name}
               onChange={e => handleChange('name', e.target.value)}
               placeholder="e.g., Morning Productivity Club"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] bg-white transition-colors"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] bg-white transition-colors"
               maxLength={60}
               disabled={isSubmitting}
             />
@@ -255,7 +255,7 @@ export default function CreateGroupPage() {
               value={formData.location || ''}
               onChange={e => handleChange('location', e.target.value)}
               placeholder="e.g., San Francisco, CA"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] bg-white transition-colors"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] bg-white transition-colors"
               disabled={isSubmitting}
             />
           </div>
@@ -272,7 +272,7 @@ export default function CreateGroupPage() {
               id="category"
               value={formData.category}
               onChange={e => handleChange('category', e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] bg-white transition-colors"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] bg-white transition-colors"
               disabled={isSubmitting}
             >
               {categoryOptions.map(option => (
@@ -295,7 +295,7 @@ export default function CreateGroupPage() {
               id="type"
               value={formData.type}
               onChange={e => handleChange('type', e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] bg-white transition-colors"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] bg-white transition-colors"
               disabled={isSubmitting}
             >
               {typeOptions.map(option => (
@@ -320,7 +320,7 @@ export default function CreateGroupPage() {
               onChange={e => handleChange('description', e.target.value)}
               placeholder="Tell people what your group is about..."
               rows={4}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] bg-white transition-colors resize-none"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] bg-white transition-colors resize-none"
               maxLength={200}
               disabled={isSubmitting}
             />
@@ -342,7 +342,7 @@ export default function CreateGroupPage() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="flex-1 px-6 py-3 bg-[#007AFF] text-white text-sm font-semibold rounded-lg hover:bg-[#0056D6] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 px-6 py-3 bg-[#0066CC] text-white text-sm font-semibold rounded-lg hover:bg-[#0051D5] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? 'Creating Group...' : 'Create Group'}
             </button>

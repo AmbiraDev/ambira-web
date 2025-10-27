@@ -26,12 +26,16 @@ import { isActivePath } from './header.utils';
  * />
  * ```
  */
-export default function MobileMenu({ isOpen, onToggle, pathname }: MobileMenuProps) {
+export default function MobileMenu({
+  isOpen,
+  onToggle,
+  pathname,
+}: MobileMenuProps) {
   return (
     <>
       {/* Mobile Menu Toggle Button */}
       <button
-        className="md:hidden p-2 text-gray-600 hover:text-[#007AFF] transition-colors"
+        className="md:hidden p-2 text-gray-600 hover:text-[#0066CC] transition-colors"
         onClick={onToggle}
         aria-label="Toggle mobile menu"
         aria-expanded={isOpen}
@@ -52,8 +56,8 @@ export default function MobileMenu({ isOpen, onToggle, pathname }: MobileMenuPro
                   href={href}
                   className={`block px-4 py-2 transition-colors ${
                     isActive
-                      ? 'text-[#007AFF] bg-blue-50'
-                      : 'text-gray-600 hover:text-[#007AFF]'
+                      ? 'text-[#0066CC] bg-blue-50'
+                      : 'text-gray-600 hover:text-[#0066CC]'
                   }`}
                   aria-current={isActive ? 'page' : undefined}
                   onClick={onToggle}

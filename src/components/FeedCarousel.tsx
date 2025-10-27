@@ -25,7 +25,7 @@ export const FeedCarousel: React.FC = () => {
                 <h3 className="text-lg font-bold text-gray-900">
                   Your Weekly Snapshot
                 </h3>
-                <button className="text-[#007AFF] text-sm font-medium hover:text-[#0056D6]">
+                <button className="text-[#0066CC] text-sm font-medium hover:text-[#0056D6]">
                   View Details
                 </button>
               </div>
@@ -141,7 +141,7 @@ export const FeedCarousel: React.FC = () => {
                 <h3 className="text-lg font-bold text-gray-900">
                   Suggested Goal
                 </h3>
-                <button className="text-[#007AFF] text-sm font-medium hover:text-[#0056D6]">
+                <button className="text-[#0066CC] text-sm font-medium hover:text-[#0056D6]">
                   Customize
                 </button>
               </div>
@@ -175,7 +175,7 @@ export const FeedCarousel: React.FC = () => {
                 </div>
               </div>
 
-              <button className="w-full bg-[#007AFF] text-white font-semibold py-3 px-4 rounded-lg hover:bg-[#0056D6] transition-colors">
+              <button className="w-full bg-[#0066CC] text-white font-semibold py-3 px-4 rounded-lg hover:bg-[#0051D5] transition-colors">
                 Set Goal
               </button>
             </div>
@@ -190,7 +190,7 @@ export const FeedCarousel: React.FC = () => {
             key={index}
             onClick={() => handleDotClick(index)}
             className={`h-1.5 rounded-full transition-all duration-300 ${
-              currentSlide === index ? 'w-8 bg-[#007AFF]' : 'w-8 bg-gray-300'
+              currentSlide === index ? 'w-8 bg-[#0066CC]' : 'w-8 bg-gray-300'
             }`}
             aria-label={`Go to slide ${index + 1}`}
           />

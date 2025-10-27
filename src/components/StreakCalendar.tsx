@@ -78,9 +78,9 @@ export const StreakCalendar: React.FC<StreakCalendarProps> = ({
 
   const getActivityColor = (hasActivity: boolean, isToday: boolean) => {
     if (isToday && !hasActivity)
-      return 'bg-yellow-200 border-2 border-[#007AFF] ring-2 ring-[#007AFF] ring-opacity-50';
+      return 'bg-yellow-200 border-2 border-[#0066CC] ring-2 ring-[#0066CC] ring-opacity-50';
     if (isToday && hasActivity)
-      return 'bg-green-500 border-2 border-[#007AFF] ring-2 ring-[#007AFF] ring-opacity-50 font-bold';
+      return 'bg-green-500 border-2 border-[#0066CC] ring-2 ring-[#0066CC] ring-opacity-50 font-bold';
     if (hasActivity) return 'bg-green-500';
     return 'bg-gray-200';
   };

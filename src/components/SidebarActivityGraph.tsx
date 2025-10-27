@@ -143,7 +143,7 @@ function SidebarActivityGraph() {
                 }}
                 className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors ${
                   timePeriod === 'week'
-                    ? 'text-[#007AFF] font-semibold bg-blue-50'
+                    ? 'text-[#0066CC] font-semibold bg-blue-50'
                     : 'text-gray-700'
                 }`}
               >
@@ -156,7 +156,7 @@ function SidebarActivityGraph() {
                 }}
                 className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors ${
                   timePeriod === 'month'
-                    ? 'text-[#007AFF] font-semibold bg-blue-50'
+                    ? 'text-[#0066CC] font-semibold bg-blue-50'
                     : 'text-gray-700'
                 }`}
               >
@@ -179,8 +179,8 @@ function SidebarActivityGraph() {
             >
               <defs>
                 <linearGradient id="colorHours" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#007AFF" stopOpacity={0.1} />
-                  <stop offset="95%" stopColor="#007AFF" stopOpacity={0} />
+                  <stop offset="5%" stopColor="#0066CC" stopOpacity={0.1} />
+                  <stop offset="95%" stopColor="#0066CC" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <XAxis
@@ -227,12 +227,12 @@ function SidebarActivityGraph() {
               <Line
                 type="monotone"
                 dataKey="hours"
-                stroke="#007AFF"
+                stroke="#0066CC"
                 strokeWidth={3}
                 dot={false}
                 activeDot={{
                   r: 8,
-                  fill: '#007AFF',
+                  fill: '#0066CC',
                   stroke: 'white',
                   strokeWidth: 3,
                 }}

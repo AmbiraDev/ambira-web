@@ -163,7 +163,7 @@ export const ProjectList: React.FC<ProjectListProps> = ({ onEditProject }) => {
           <div className="flex gap-2">
             <button
               onClick={() => router.push('/activities/new')}
-              className="bg-[#007AFF] text-white px-5 py-2.5 rounded-lg hover:bg-[#0056D6] transition-colors flex items-center gap-2 font-medium shadow-sm hover:shadow-md"
+              className="bg-[#0066CC] text-white px-5 py-2.5 rounded-lg hover:bg-[#0051D5] transition-colors flex items-center gap-2 font-medium shadow-sm hover:shadow-md"
             >
               <svg
                 className="w-5 h-5"
@@ -189,7 +189,7 @@ export const ProjectList: React.FC<ProjectListProps> = ({ onEditProject }) => {
       {filteredProjects.length === 0 ? (
         <div className="bg-white rounded-xl border border-gray-200 p-8 md:p-12">
           <div className="max-w-md mx-auto text-center">
-            <div className="w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-[#007AFF] to-[#0051D5] rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm">
+            <div className="w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-[#0066CC] to-[#0051D5] rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm">
               <svg
                 className="w-8 h-8 md:w-10 md:h-10 text-white"
                 fill="none"
@@ -213,7 +213,7 @@ export const ProjectList: React.FC<ProjectListProps> = ({ onEditProject }) => {
             </p>
             <button
               onClick={() => router.push('/activities/new')}
-              className="inline-flex items-center gap-2 bg-[#007AFF] text-white px-6 py-3 rounded-xl hover:bg-[#0056D6] transition-colors font-medium shadow-sm mb-4"
+              className="inline-flex items-center gap-2 bg-[#0066CC] text-white px-6 py-3 rounded-xl hover:bg-[#0051D5] transition-colors font-medium shadow-sm mb-4"
             >
               <svg
                 className="w-5 h-5"

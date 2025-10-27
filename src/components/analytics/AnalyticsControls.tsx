@@ -90,7 +90,7 @@ export function AnalyticsControls({
           <button
             ref={activityTriggerRef}
             onClick={() => setShowProjectDropdown(!showProjectDropdown)}
-            className="flex items-center gap-2 px-3 md:px-4 py-2 text-xs md:text-sm font-semibold border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] min-w-[140px] max-w-[200px]"
+            className="flex items-center gap-2 px-3 md:px-4 py-2 text-xs md:text-sm font-semibold border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] min-w-[140px] max-w-[200px]"
             aria-label="Select activity to filter analytics"
             aria-expanded={showProjectDropdown}
             aria-haspopup="listbox"
@@ -118,7 +118,7 @@ export function AnalyticsControls({
                     onActivityChange('all');
                     setShowProjectDropdown(false);
                   }}
-                  className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:ring-inset focus:bg-blue-50 ${selectedActivityId === 'all' ? 'bg-blue-50 text-blue-600' : ''}`}
+                  className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:ring-inset focus:bg-blue-50 ${selectedActivityId === 'all' ? 'bg-blue-50 text-blue-600' : ''}`}
                   role="option"
                   aria-selected={selectedActivityId === 'all'}
                 >
@@ -136,7 +136,7 @@ export function AnalyticsControls({
                       onActivityChange(activity.id);
                       setShowProjectDropdown(false);
                     }}
-                    className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:ring-inset focus:bg-blue-50 flex items-center gap-3 ${selectedActivityId === activity.id ? 'bg-blue-50 text-blue-600' : ''}`}
+                    className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:ring-inset focus:bg-blue-50 flex items-center gap-3 ${selectedActivityId === activity.id ? 'bg-blue-50 text-blue-600' : ''}`}
                     role="option"
                     aria-selected={selectedActivityId === activity.id}
                     aria-label={`Filter by ${activity.name}`}
@@ -160,7 +160,7 @@ export function AnalyticsControls({
           <button
             ref={chartTypeTriggerRef}
             onClick={() => setShowChartTypeDropdown(!showChartTypeDropdown)}
-            className="flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-2 text-xs md:text-sm font-semibold border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF]"
+            className="flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-2 text-xs md:text-sm font-semibold border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC]"
             aria-label="Select chart type for analytics visualization"
             aria-expanded={showChartTypeDropdown}
             aria-haspopup="listbox"
@@ -205,7 +205,7 @@ export function AnalyticsControls({
                     onChartTypeChange('bar');
                     setShowChartTypeDropdown(false);
                   }}
-                  className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:ring-inset focus:bg-blue-50 flex items-center gap-2 ${chartType === 'bar' ? 'bg-blue-50 text-blue-600' : ''}`}
+                  className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:ring-inset focus:bg-blue-50 flex items-center gap-2 ${chartType === 'bar' ? 'bg-blue-50 text-blue-600' : ''}`}
                   role="option"
                   aria-selected={chartType === 'bar'}
                   aria-label="Display charts as bar charts"
@@ -226,7 +226,7 @@ export function AnalyticsControls({
                     onChartTypeChange('line');
                     setShowChartTypeDropdown(false);
                   }}
-                  className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:ring-inset focus:bg-blue-50 flex items-center gap-2 ${chartType === 'line' ? 'bg-blue-50 text-blue-600' : ''}`}
+                  className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:ring-inset focus:bg-blue-50 flex items-center gap-2 ${chartType === 'line' ? 'bg-blue-50 text-blue-600' : ''}`}
                   role="option"
                   aria-selected={chartType === 'line'}
                   aria-label="Display charts as line charts"
@@ -262,10 +262,10 @@ export function AnalyticsControls({
           <button
             key={period}
             onClick={() => onTimePeriodChange(period)}
-            className={`flex-shrink-0 px-4 md:px-5 py-2 text-xs md:text-sm font-semibold rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-[#007AFF] ${
+            className={`flex-shrink-0 px-4 md:px-5 py-2 text-xs md:text-sm font-semibold rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-[#0066CC] ${
               timePeriod === period
                 ? 'bg-gray-900 text-white focus:ring-offset-2'
-                : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 focus:border-[#007AFF]'
+                : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300 focus:border-[#0066CC]'
             }`}
             aria-label={timePeriodLabels[period]}
             aria-pressed={timePeriod === period}

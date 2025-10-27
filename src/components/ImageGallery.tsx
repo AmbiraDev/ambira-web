@@ -136,7 +136,7 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
                   onClick={() => setCurrentIndex(index)}
                   className={`w-1.5 h-1.5 rounded-full transition-colors duration-200 ${
                     index === currentIndex
-                      ? 'bg-[#007AFF] w-3'
+                      ? 'bg-[#0066CC] w-3'
                       : 'bg-gray-300 hover:bg-gray-400'
                   }`}
                   aria-label={`Go to image ${index + 1}`}

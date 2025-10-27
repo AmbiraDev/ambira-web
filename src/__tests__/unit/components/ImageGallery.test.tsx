@@ -135,15 +135,15 @@ describe('ImageGallery', () => {
     const secondDot = dots[1];
     if (!firstDot || !secondDot) return;
 
-    // First dot should be active (has bg-[#007AFF] class)
-    expect(firstDot).toHaveClass('bg-[#007AFF]');
+    // First dot should be active (has bg-[#0066CC] class)
+    expect(firstDot).toHaveClass('bg-[#0066CC]');
     expect(secondDot).toHaveClass('bg-gray-300');
 
     // Click second dot
     fireEvent.click(secondDot);
 
     // Second dot should now be active
-    expect(secondDot).toHaveClass('bg-[#007AFF]');
+    expect(secondDot).toHaveClass('bg-[#0066CC]');
     expect(firstDot).toHaveClass('bg-gray-300');
   });
 

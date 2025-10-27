@@ -480,7 +480,7 @@ describe('ActivityCard Component', () => {
       });
       expect(menuButton).toHaveClass('focus-visible:opacity-100');
       expect(menuButton).toHaveClass('focus-visible:ring-2');
-      expect(menuButton).toHaveClass('focus-visible:ring-[#007AFF]');
+      expect(menuButton).toHaveClass('focus-visible:ring-[#0066CC]');
     });
 
     it('should have visible focus indicator on menu items', () => {
@@ -500,7 +500,7 @@ describe('ActivityCard Component', () => {
       const menuItems = screen.getAllByRole('menuitem');
       menuItems.forEach(item => {
         expect(item).toHaveClass('focus-visible:ring-2');
-        expect(item).toHaveClass('focus-visible:ring-[#007AFF]');
+        expect(item).toHaveClass('focus-visible:ring-[#0066CC]');
       });
     });
   });

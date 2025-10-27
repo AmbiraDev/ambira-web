@@ -33,7 +33,7 @@ export default function AuthButtons({ isMobile = false }: AuthButtonsProps) {
         )}
         <Link
           href={ROUTES.AUTH}
-          className="flex items-center gap-2 px-4 py-2 bg-[#007AFF] text-white hover:bg-[#0051D5] rounded-md transition-colors whitespace-nowrap font-semibold text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] focus-visible:ring-offset-2 min-h-[44px] justify-center"
+          className="flex items-center gap-2 px-4 py-2 bg-[#0066CC] text-white hover:bg-[#0051D5] rounded-md transition-colors whitespace-nowrap font-semibold text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2 min-h-[44px] justify-center"
         >
           <span>Sign In</span>
         </Link>
@@ -44,7 +44,7 @@ export default function AuthButtons({ isMobile = false }: AuthButtonsProps) {
         href={EXTERNAL_LINKS.DISCORD_COMMUNITY}
         target="_blank"
         rel="noopener noreferrer"
-        className="flex items-center gap-2 px-4 py-2 bg-[#5865F2] text-white hover:bg-[#4752C4] rounded-md transition-colors whitespace-nowrap font-semibold text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] focus-visible:ring-offset-2 min-h-[44px] justify-center"
+        className="flex items-center gap-2 px-4 py-2 bg-[#5865F2] text-white hover:bg-[#4752C4] rounded-md transition-colors whitespace-nowrap font-semibold text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2 min-h-[44px] justify-center"
       >
         <svg
           width="20"

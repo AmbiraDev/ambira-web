@@ -228,7 +228,7 @@ function SearchContent() {
           {/* Group Info */}
           <div className="flex-1 min-w-0">
             <Link href={`/groups/${group.id}`}>
-              <p className="font-semibold text-sm text-gray-900 hover:text-[#007AFF] truncate mb-0.5 transition-colors">
+              <p className="font-semibold text-sm text-gray-900 hover:text-[#0066CC] truncate mb-0.5 transition-colors">
                 {group.name}
               </p>
             </Link>
@@ -247,7 +247,7 @@ function SearchContent() {
             className={`text-sm font-semibold transition-colors whitespace-nowrap flex-shrink-0 ${
               isJoined
                 ? 'text-gray-600 hover:text-gray-900'
-                : 'text-[#007AFF] hover:text-[#0051D5]'
+                : 'text-[#0066CC] hover:text-[#0051D5]'
             } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
             {isLoading ? 'Joining...' : isJoined ? 'Joined' : 'Join'}
@@ -316,7 +316,7 @@ function SearchContent() {
                   }
                   className={`flex-1 py-3 px-4 text-sm font-medium transition-all border-r border-gray-200 last:border-r-0 ${
                     type === 'people'
-                      ? 'bg-[#007AFF] text-white'
+                      ? 'bg-[#0066CC] text-white'
                       : 'text-gray-700 hover:bg-gray-50'
                   }`}
                 >
@@ -329,7 +329,7 @@ function SearchContent() {
                   }
                   className={`flex-1 py-3 px-4 text-sm font-medium transition-all ${
                     type === 'groups'
-                      ? 'bg-[#007AFF] text-white'
+                      ? 'bg-[#0066CC] text-white'
                       : 'text-gray-700 hover:bg-gray-50'
                   }`}
                 >
@@ -560,7 +560,7 @@ export default function SearchPage() {
     <Suspense
       fallback={
         <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#007AFF]"></div>
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#0066CC]"></div>
         </div>
       }
     >

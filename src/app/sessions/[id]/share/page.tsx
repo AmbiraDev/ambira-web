@@ -255,7 +255,7 @@ function SessionShareContent({ sessionId }: { sessionId: string }) {
             </div>
             <button
               onClick={() => router.push('/')}
-              className="px-4 py-2 bg-[#007AFF] text-white rounded-lg hover:bg-[#0051D5] transition-colors"
+              className="px-4 py-2 bg-[#0066CC] text-white rounded-lg hover:bg-[#0051D5] transition-colors"
             >
               Back to Feed
             </button>
@@ -297,7 +297,7 @@ function SessionShareContent({ sessionId }: { sessionId: string }) {
             </div>
             <button
               onClick={() => router.back()}
-              className="px-4 py-2 bg-[#007AFF] text-white rounded-lg hover:bg-[#0051D5] transition-colors"
+              className="px-4 py-2 bg-[#0066CC] text-white rounded-lg hover:bg-[#0051D5] transition-colors"
             >
               Go Back
             </button>
@@ -431,7 +431,7 @@ function SessionShareContent({ sessionId }: { sessionId: string }) {
             >
               <path
                 d="M 56.387 320.265 L 105.145 307.202 L 134.619 191.47 L 222.369 275.789 L 300.91 254.743 C 300.91 254.743 327.644 243.277 327.701 205.067 C 327.765 162.452 292.22 150.864 292.22 150.864 C 292.22 150.864 311.586 129.825 286.573 94.501 C 265.409 64.612 226.767 75.885 226.767 75.885 L 131.479 100.996 L 163.14 132.378 L 240.652 113.004 C 240.652 113.004 253.429 109.011 259.254 125.122 C 264.463 139.529 249.128 146.798 249.139 146.809 C 249.186 146.856 192.6 161.379 192.553 161.379 C 192.506 161.379 224.354 193.363 224.406 193.466 C 224.435 193.523 259.751 183.839 259.751 183.839 C 259.751 183.839 281.184 181.354 285.882 196.467 C 292.14 216.599 271.779 222.147 271.79 222.147 C 271.837 222.147 239.215 231.316 239.215 231.316 C 239.215 231.316 113.277 106.094 113.228 106.045 C 113.179 105.996 56.211 321.004 56.387 320.265 Z"
-                fill="#007AFF"
+                fill="#0066CC"
                 transform="matrix(0.96592605, 0.25881901, -0.25881901, 0.96592605, 57.2958925, -43.02296686)"
               />
             </svg>
@@ -672,7 +672,7 @@ function SessionShareContent({ sessionId }: { sessionId: string }) {
             >
               <path
                 d="M 56.387 320.265 L 105.145 307.202 L 134.619 191.47 L 222.369 275.789 L 300.91 254.743 C 300.91 254.743 327.644 243.277 327.701 205.067 C 327.765 162.452 292.22 150.864 292.22 150.864 C 292.22 150.864 311.586 129.825 286.573 94.501 C 265.409 64.612 226.767 75.885 226.767 75.885 L 131.479 100.996 L 163.14 132.378 L 240.652 113.004 C 240.652 113.004 253.429 109.011 259.254 125.122 C 264.463 139.529 249.128 146.798 249.139 146.809 C 249.186 146.856 192.6 161.379 192.553 161.379 C 192.506 161.379 224.354 193.363 224.406 193.466 C 224.435 193.523 259.751 183.839 259.751 183.839 C 259.751 183.839 281.184 181.354 285.882 196.467 C 292.14 216.599 271.779 222.147 271.79 222.147 C 271.837 222.147 239.215 231.316 239.215 231.316 C 239.215 231.316 113.277 106.094 113.228 106.045 C 113.179 105.996 56.211 321.004 56.387 320.265 Z"
-                fill="#007AFF"
+                fill="#0066CC"
                 transform="matrix(0.96592605, 0.25881901, -0.25881901, 0.96592605, 57.2958925, -43.02296686)"
               />
             </svg>
@@ -929,7 +929,7 @@ function SessionShareContent({ sessionId }: { sessionId: string }) {
             onClick={() => setSelectedLayout('minimal')}
             className={`relative rounded-lg overflow-hidden transition-all ${
               selectedLayout === 'minimal'
-                ? 'ring-4 ring-[#007AFF]'
+                ? 'ring-4 ring-[#0066CC]'
                 : 'ring-2 ring-gray-200 hover:ring-gray-300'
             }`}
             style={{ width: '420px', height: '420px' }}
@@ -946,7 +946,7 @@ function SessionShareContent({ sessionId }: { sessionId: string }) {
             onClick={() => setSelectedLayout('square')}
             className={`relative rounded-lg overflow-hidden transition-all ${
               selectedLayout === 'square'
-                ? 'ring-4 ring-[#007AFF]'
+                ? 'ring-4 ring-[#0066CC]'
                 : 'ring-2 ring-gray-200 hover:ring-gray-300'
             }`}
             style={{ width: '420px', height: '432px' }}
@@ -964,7 +964,7 @@ function SessionShareContent({ sessionId }: { sessionId: string }) {
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 max-w-md mx-auto">
             <button
               onClick={handleShare}
-              className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-[#007AFF] text-white rounded-lg hover:bg-[#0056b3] transition-all disabled:opacity-50 disabled:cursor-not-allowed font-semibold shadow-lg hover:shadow-xl active:scale-95"
+              className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-[#0066CC] text-white rounded-lg hover:bg-[#0056b3] transition-all disabled:opacity-50 disabled:cursor-not-allowed font-semibold shadow-lg hover:shadow-xl active:scale-95"
               disabled={isExporting}
             >
               <Share2 className="w-4 h-4" />

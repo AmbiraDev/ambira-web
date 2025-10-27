@@ -52,7 +52,7 @@ export default function MigrateUsersPage() {
             className={`px-6 py-3 rounded-lg font-medium ${
               isRunning || !user
                 ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                : 'bg-[#007AFF] text-white hover:bg-[#0056D6]'
+                : 'bg-[#0066CC] text-white hover:bg-[#0051D5]'
             }`}
           >
             {isRunning ? 'Running Migration...' : 'Run Migration'}

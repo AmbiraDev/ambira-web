@@ -536,7 +536,7 @@ export function OwnProfilePageContent() {
                   <div className="relative">
                     <button
                       onClick={() => setShowSettingsMenu(!showSettingsMenu)}
-                      className="p-1.5 md:p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:ring-offset-2"
+                      className="p-1.5 md:p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:ring-offset-2"
                       aria-label="Open settings menu"
                       aria-expanded={showSettingsMenu}
                       aria-haspopup="true"
@@ -639,7 +639,7 @@ export function OwnProfilePageContent() {
                           setActiveTab('followers');
                           router.push('/profile?tab=followers');
                         }}
-                        className="hover:underline focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:ring-offset-2 rounded px-1"
+                        className="hover:underline focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:ring-offset-2 rounded px-1"
                         aria-label={`View ${followers.length} followers`}
                       >
                         <span className="font-bold text-gray-900 text-sm md:text-base">
@@ -654,7 +654,7 @@ export function OwnProfilePageContent() {
                           setActiveTab('following');
                           router.push('/profile?tab=following');
                         }}
-                        className="hover:underline focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:ring-offset-2 rounded px-1"
+                        className="hover:underline focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:ring-offset-2 rounded px-1"
                         aria-label={`View ${following.length} following`}
                       >
                         <span className="font-bold text-gray-900 text-sm md:text-base">
@@ -714,9 +714,9 @@ export function OwnProfilePageContent() {
                         setActiveTab('progress');
                         router.push('/profile?tab=progress');
                       }}
-                      className={`flex-1 md:flex-initial py-3 md:py-4 px-1 text-sm md:text-base font-medium border-b-2 transition-colors whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:ring-offset-2 ${
+                      className={`flex-1 md:flex-initial py-3 md:py-4 px-1 text-sm md:text-base font-medium border-b-2 transition-colors whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:ring-offset-2 ${
                         activeTab === 'progress'
-                          ? 'border-[#007AFF] text-[#007AFF]'
+                          ? 'border-[#0066CC] text-[#0066CC]'
                           : 'border-transparent text-gray-500 md:text-gray-600 hover:text-gray-700 md:hover:text-gray-900'
                       }`}
                       role="tab"
@@ -731,9 +731,9 @@ export function OwnProfilePageContent() {
                         setActiveTab('sessions');
                         router.push('/profile?tab=sessions');
                       }}
-                      className={`flex-1 md:flex-initial py-3 md:py-4 px-1 text-sm md:text-base font-medium border-b-2 transition-colors whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:ring-offset-2 ${
+                      className={`flex-1 md:flex-initial py-3 md:py-4 px-1 text-sm md:text-base font-medium border-b-2 transition-colors whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:ring-offset-2 ${
                         activeTab === 'sessions'
-                          ? 'border-[#007AFF] text-[#007AFF]'
+                          ? 'border-[#0066CC] text-[#0066CC]'
                           : 'border-transparent text-gray-500 md:text-gray-600 hover:text-gray-700 md:hover:text-gray-900'
                       }`}
                       role="tab"
@@ -749,9 +749,9 @@ export function OwnProfilePageContent() {
                         setActiveTab('activities');
                         router.push('/profile?tab=activities');
                       }}
-                      className={`hidden md:flex flex-1 md:flex-initial py-3 md:py-4 px-1 text-sm md:text-base font-medium border-b-2 transition-colors whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:ring-offset-2 ${
+                      className={`hidden md:flex flex-1 md:flex-initial py-3 md:py-4 px-1 text-sm md:text-base font-medium border-b-2 transition-colors whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:ring-offset-2 ${
                         activeTab === 'activities'
-                          ? 'border-[#007AFF] text-[#007AFF]'
+                          ? 'border-[#0066CC] text-[#0066CC]'
                           : 'border-transparent text-gray-500 md:text-gray-600 hover:text-gray-700 md:hover:text-gray-900'
                       }`}
                       role="tab"
@@ -766,9 +766,9 @@ export function OwnProfilePageContent() {
                         setActiveTab('followers');
                         router.push('/profile?tab=followers');
                       }}
-                      className={`flex-1 md:flex-initial py-3 md:py-4 px-1 text-sm md:text-base font-medium border-b-2 transition-colors whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:ring-offset-2 ${
+                      className={`flex-1 md:flex-initial py-3 md:py-4 px-1 text-sm md:text-base font-medium border-b-2 transition-colors whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:ring-offset-2 ${
                         activeTab === 'followers'
-                          ? 'border-[#007AFF] text-[#007AFF]'
+                          ? 'border-[#0066CC] text-[#0066CC]'
                           : 'border-transparent text-gray-500 md:text-gray-600 hover:text-gray-700 md:hover:text-gray-900'
                       }`}
                       role="tab"
@@ -783,9 +783,9 @@ export function OwnProfilePageContent() {
                         setActiveTab('following');
                         router.push('/profile?tab=following');
                       }}
-                      className={`flex-1 md:flex-initial py-3 md:py-4 px-1 text-sm md:text-base font-medium border-b-2 transition-colors whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:ring-offset-2 ${
+                      className={`flex-1 md:flex-initial py-3 md:py-4 px-1 text-sm md:text-base font-medium border-b-2 transition-colors whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:ring-offset-2 ${
                         activeTab === 'following'
-                          ? 'border-[#007AFF] text-[#007AFF]'
+                          ? 'border-[#0066CC] text-[#0066CC]'
                           : 'border-transparent text-gray-500 md:text-gray-600 hover:text-gray-700 md:hover:text-gray-900'
                       }`}
                       role="tab"
@@ -811,7 +811,7 @@ export function OwnProfilePageContent() {
                           onClick={() =>
                             setShowActivityDropdown(!showActivityDropdown)
                           }
-                          className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-700 bg-white border border-gray-300 rounded-full hover:bg-gray-50 transition-colors whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:ring-offset-2 min-h-[44px]"
+                          className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-700 bg-white border border-gray-300 rounded-full hover:bg-gray-50 transition-colors whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:ring-offset-2 min-h-[44px]"
                           aria-label="Filter by activity"
                           aria-expanded={showActivityDropdown}
                           aria-haspopup="listbox"
@@ -842,12 +842,12 @@ export function OwnProfilePageContent() {
                                 }}
                                 className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors flex items-center gap-2 ${
                                   selectedActivityId === 'all'
-                                    ? 'text-[#007AFF] font-medium bg-blue-50'
+                                    ? 'text-[#0066CC] font-medium bg-blue-50'
                                     : 'text-gray-700'
                                 }`}
                               >
                                 {selectedActivityId === 'all' && (
-                                  <span className="text-[#007AFF]">✓</span>
+                                  <span className="text-[#0066CC]">✓</span>
                                 )}
                                 <span>All Activities</span>
                               </button>
@@ -860,12 +860,12 @@ export function OwnProfilePageContent() {
                                   }}
                                   className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors flex items-center gap-2 ${
                                     selectedActivityId === activity.id
-                                      ? 'text-[#007AFF] font-medium bg-blue-50'
+                                      ? 'text-[#0066CC] font-medium bg-blue-50'
                                       : 'text-gray-700'
                                   }`}
                                 >
                                   {selectedActivityId === activity.id && (
-                                    <span className="text-[#007AFF]">✓</span>
+                                    <span className="text-[#0066CC]">✓</span>
                                   )}
                                   <span className="flex items-center gap-2">
                                     <span style={{ color: activity.color }}>
@@ -888,7 +888,7 @@ export function OwnProfilePageContent() {
                               <button
                                 key={period}
                                 onClick={() => setTimePeriod(period)}
-                                className={`px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-medium rounded-full transition-colors whitespace-nowrap flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:ring-offset-2 min-h-[44px] ${
+                                className={`px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-medium rounded-full transition-colors whitespace-nowrap flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:ring-offset-2 min-h-[44px] ${
                                   timePeriod === period
                                     ? 'bg-gray-900 text-white'
                                     : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
@@ -908,7 +908,7 @@ export function OwnProfilePageContent() {
                             onClick={() =>
                               setShowChartTypeDropdown(!showChartTypeDropdown)
                             }
-                            className="flex items-center gap-1 px-2 md:px-3 py-1.5 md:py-2 text-xs md:text-sm text-gray-700 bg-white border border-gray-300 rounded-full hover:bg-gray-50 transition-colors whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:ring-offset-2 min-h-[44px]"
+                            className="flex items-center gap-1 px-2 md:px-3 py-1.5 md:py-2 text-xs md:text-sm text-gray-700 bg-white border border-gray-300 rounded-full hover:bg-gray-50 transition-colors whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:ring-offset-2 min-h-[44px]"
                             aria-label={`Chart type: ${chartType}`}
                             aria-expanded={showChartTypeDropdown}
                             aria-haspopup="listbox"
@@ -949,12 +949,12 @@ export function OwnProfilePageContent() {
                                   }}
                                   className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors flex items-center gap-2 ${
                                     chartType === 'bar'
-                                      ? 'text-[#007AFF] font-medium'
+                                      ? 'text-[#0066CC] font-medium'
                                       : 'text-gray-700'
                                   }`}
                                 >
                                   {chartType === 'bar' && (
-                                    <span className="text-[#007AFF]">✓</span>
+                                    <span className="text-[#0066CC]">✓</span>
                                   )}
                                   <BarChart3 className="w-4 h-4" />
                                   Bar
@@ -966,12 +966,12 @@ export function OwnProfilePageContent() {
                                   }}
                                   className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors flex items-center gap-2 ${
                                     chartType === 'line'
-                                      ? 'text-[#007AFF] font-medium'
+                                      ? 'text-[#0066CC] font-medium'
                                       : 'text-gray-700'
                                   }`}
                                 >
                                   {chartType === 'line' && (
-                                    <span className="text-[#007AFF]">✓</span>
+                                    <span className="text-[#0066CC]">✓</span>
                                   )}
                                   <TrendingUp className="w-4 h-4" />
                                   Line
@@ -1020,7 +1020,7 @@ export function OwnProfilePageContent() {
                                 <Tooltip content={<CustomTooltip />} />
                                 <Bar
                                   dataKey="hours"
-                                  fill="#007AFF"
+                                  fill="#0066CC"
                                   radius={[4, 4, 0, 0]}
                                   name="Hours"
                                 />
@@ -1045,12 +1045,12 @@ export function OwnProfilePageContent() {
                                   >
                                     <stop
                                       offset="5%"
-                                      stopColor="#007AFF"
+                                      stopColor="#0066CC"
                                       stopOpacity={0.3}
                                     />
                                     <stop
                                       offset="95%"
-                                      stopColor="#007AFF"
+                                      stopColor="#0066CC"
                                       stopOpacity={0}
                                     />
                                   </linearGradient>
@@ -1071,7 +1071,7 @@ export function OwnProfilePageContent() {
                                 <Area
                                   type="monotone"
                                   dataKey="hours"
-                                  stroke="#007AFF"
+                                  stroke="#0066CC"
                                   strokeWidth={2}
                                   fill="url(#colorHours)"
                                   name="Hours"

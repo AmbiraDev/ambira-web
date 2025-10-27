@@ -156,7 +156,7 @@ export const ShareSessionImage: React.FC<ShareSessionImageProps> = ({
           style={{ maxWidth: '600px' }}
         >
           {/* Ambira Header with Brand Color */}
-          <div className="bg-gradient-to-r from-[#007AFF] to-[#00C6FF] px-8 py-6">
+          <div className="bg-gradient-to-r from-[#0066CC] to-[#00C6FF] px-8 py-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 {/* Logo/Icon */}
@@ -188,7 +188,7 @@ export const ShareSessionImage: React.FC<ShareSessionImageProps> = ({
           <div className="px-8 py-6 border-b border-gray-200">
             <div className="flex items-center gap-4">
               {session.user.profilePicture ? (
-                <div className="w-16 h-16 rounded-full overflow-hidden ring-4 ring-[#007AFF]/20">
+                <div className="w-16 h-16 rounded-full overflow-hidden ring-4 ring-[#0066CC]/20">
                   <Image
                     src={session.user.profilePicture}
                     alt={session.user.name}
@@ -198,7 +198,7 @@ export const ShareSessionImage: React.FC<ShareSessionImageProps> = ({
                   />
                 </div>
               ) : (
-                <div className="w-16 h-16 bg-gradient-to-br from-[#FC4C02] to-[#FC4C02]/80 rounded-full flex items-center justify-center ring-4 ring-[#007AFF]/20">
+                <div className="w-16 h-16 bg-gradient-to-br from-[#FC4C02] to-[#FC4C02]/80 rounded-full flex items-center justify-center ring-4 ring-[#0066CC]/20">
                   <span className="text-white font-bold text-2xl">
                     {getUserInitials(session.user)}
                   </span>
@@ -250,7 +250,7 @@ export const ShareSessionImage: React.FC<ShareSessionImageProps> = ({
             <div className="grid grid-cols-2 gap-4 bg-gray-50 rounded-lg p-4 mb-4">
               <div>
                 <div className="text-xs text-gray-500 mb-1">Duration</div>
-                <div className="text-2xl font-bold text-[#007AFF]">
+                <div className="text-2xl font-bold text-[#0066CC]">
                   {formatTime(session.duration)}
                 </div>
               </div>
@@ -306,7 +306,7 @@ export const ShareSessionImage: React.FC<ShareSessionImageProps> = ({
           <div className="px-8 py-6 bg-gray-50 border-t border-gray-200">
             <div className="flex items-center justify-between">
               <div className="text-sm text-gray-600">Join me on Ambira</div>
-              <div className="text-sm font-semibold text-[#007AFF]">
+              <div className="text-sm font-semibold text-[#0066CC]">
                 ambira.app
               </div>
             </div>
@@ -336,7 +336,7 @@ export const ShareSessionImage: React.FC<ShareSessionImageProps> = ({
         </button>
         <button
           onClick={handleShare}
-          className="flex items-center gap-2 px-4 py-2 bg-[#007AFF] text-white rounded-lg hover:bg-[#0056b3] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex items-center gap-2 px-4 py-2 bg-[#0066CC] text-white rounded-lg hover:bg-[#0056b3] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           disabled={isExporting}
         >
           <Share2 className="w-4 h-4" />

@@ -154,7 +154,7 @@ export const ActivityList: React.FC<ActivityListProps> = ({
             <button
               onClick={() => router.push('/activities/new')}
               aria-label="Create new activity"
-              className="bg-[#007AFF] text-white px-5 py-2.5 rounded-lg hover:bg-[#0056D6] transition-colors flex items-center gap-2 font-medium shadow-sm hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] focus-visible:ring-offset-2"
+              className="bg-[#0066CC] text-white px-5 py-2.5 rounded-lg hover:bg-[#0051D5] transition-colors flex items-center gap-2 font-medium shadow-sm hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2"
             >
               <Plus className="w-5 h-5" aria-hidden="true" />
               New Activity
@@ -167,7 +167,7 @@ export const ActivityList: React.FC<ActivityListProps> = ({
       {isEmpty(filteredActivities) ? (
         <div className="bg-transparent rounded-xl border border-gray-200/60 p-8 md:p-12">
           <div className="max-w-md mx-auto text-center">
-            <div className="w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-[#007AFF] to-[#0051D5] rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm">
+            <div className="w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-[#0066CC] to-[#0051D5] rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm">
               <FileText className="w-8 h-8 md:w-10 md:h-10 text-white" />
             </div>
             <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-2">
@@ -180,7 +180,7 @@ export const ActivityList: React.FC<ActivityListProps> = ({
             <button
               onClick={() => router.push('/activities/new')}
               aria-label="Create your first activity"
-              className="inline-flex items-center gap-2 bg-[#007AFF] text-white px-6 py-3 rounded-xl hover:bg-[#0056D6] transition-colors font-medium shadow-sm mb-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] focus-visible:ring-offset-2 min-h-[44px]"
+              className="inline-flex items-center gap-2 bg-[#0066CC] text-white px-6 py-3 rounded-xl hover:bg-[#0051D5] transition-colors font-medium shadow-sm mb-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2 min-h-[44px]"
             >
               <Plus className="w-5 h-5" aria-hidden="true" />
               Create Your First Activity
@@ -236,7 +236,7 @@ export const ActivityList: React.FC<ActivityListProps> = ({
             <div className="flex gap-3 justify-end">
               <button
                 onClick={() => setDeleteConfirm(null)}
-                className="px-5 py-2.5 text-gray-700 font-medium border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] focus-visible:ring-offset-2 min-h-[44px]"
+                className="px-5 py-2.5 text-gray-700 font-medium border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2 min-h-[44px]"
               >
                 Cancel
               </button>

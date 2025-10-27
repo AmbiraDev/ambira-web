@@ -318,7 +318,7 @@ export default function NotificationsPage() {
           {unreadCount > 0 && (
             <button
               onClick={handleMarkAllRead}
-              className="text-[#007AFF] font-semibold text-sm hover:text-[#0051D5] transition-colors"
+              className="text-[#0066CC] font-semibold text-sm hover:text-[#0051D5] transition-colors"
             >
               Mark all read
             </button>

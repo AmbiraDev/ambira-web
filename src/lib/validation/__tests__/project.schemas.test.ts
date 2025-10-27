@@ -17,7 +17,7 @@ describe('Project Schemas', () => {
         name: 'Machine Learning Research',
         description: 'Deep learning research project for image classification',
         icon: '🧠',
-        color: '#007AFF',
+        color: '#0066CC',
       };
 
       const result = validate(CreateProjectSchema, input);
@@ -234,7 +234,7 @@ describe('Project Schemas', () => {
 
     it('should validate various valid hex color formats', () => {
       const validColors = [
-        '#007AFF',
+        '#0066CC',
         '#ff3b30',
         '#34C759',
         '#FFFFFF',

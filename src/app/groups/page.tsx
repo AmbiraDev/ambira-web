@@ -242,7 +242,7 @@ export default function GroupsPage() {
           <Link
             href="/groups/new"
             aria-label="Create a new group"
-            className="min-h-[44px] px-4 py-2 md:px-6 md:py-2.5 bg-[#007AFF] text-white text-sm font-semibold rounded-lg hover:bg-[#0051D5] transition-all duration-200 inline-flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] focus-visible:ring-offset-2"
+            className="min-h-[44px] px-4 py-2 md:px-6 md:py-2.5 bg-[#0066CC] text-white text-sm font-semibold rounded-lg hover:bg-[#0051D5] transition-all duration-200 inline-flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2"
           >
             Create a Group
           </Link>
@@ -300,7 +300,7 @@ export default function GroupsPage() {
                       discoverSection?.scrollIntoView({ behavior: 'smooth' });
                     }}
                     aria-label="Scroll to discover groups section"
-                    className="min-h-[44px] px-6 py-2.5 bg-[#007AFF] text-white text-sm font-semibold rounded-lg hover:bg-[#0051D5] transition-all duration-200 inline-flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] focus-visible:ring-offset-2"
+                    className="min-h-[44px] px-6 py-2.5 bg-[#0066CC] text-white text-sm font-semibold rounded-lg hover:bg-[#0051D5] transition-all duration-200 inline-flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2"
                   >
                     <Search className="w-4 h-4" aria-hidden="true" />
                     Explore Groups Below
@@ -332,7 +332,7 @@ export default function GroupsPage() {
               onChange={e =>
                 setSearchFilters({ ...searchFilters, name: e.target.value })
               }
-              className="min-h-[44px] px-4 py-2 border border-gray-300 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] focus-visible:ring-offset-2 bg-white"
+              className="min-h-[44px] px-4 py-2 border border-gray-300 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2 bg-white"
             />
             <input
               type="text"
@@ -342,7 +342,7 @@ export default function GroupsPage() {
               onChange={e =>
                 setSearchFilters({ ...searchFilters, location: e.target.value })
               }
-              className="min-h-[44px] px-4 py-2 border border-gray-300 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] focus-visible:ring-offset-2 bg-white"
+              className="min-h-[44px] px-4 py-2 border border-gray-300 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2 bg-white"
             />
             <select
               value={searchFilters.category}
@@ -350,7 +350,7 @@ export default function GroupsPage() {
                 setSearchFilters({ ...searchFilters, category: e.target.value })
               }
               aria-label="Filter by category"
-              className="min-h-[44px] px-4 py-2 border border-gray-300 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] focus-visible:ring-offset-2 bg-white"
+              className="min-h-[44px] px-4 py-2 border border-gray-300 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2 bg-white"
             >
               {categoryOptions.map(option => (
                 <option key={option.value} value={option.value}>
@@ -364,7 +364,7 @@ export default function GroupsPage() {
               aria-label={
                 isSearching ? 'Searching for groups' : 'Search groups'
               }
-              className="min-h-[44px] px-6 py-2 bg-[#007AFF] text-white text-sm font-semibold rounded-lg hover:bg-[#0051D5] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] focus-visible:ring-offset-2"
+              className="min-h-[44px] px-6 py-2 bg-[#0066CC] text-white text-sm font-semibold rounded-lg hover:bg-[#0051D5] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2"
             >
               {isSearching ? (
                 <>
@@ -390,7 +390,7 @@ export default function GroupsPage() {
                 Active filters:
               </span>
               {searchFilters.name && (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#007AFF] text-white text-xs font-semibold rounded-full transition-all duration-200 hover:bg-[#0051D5]">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#0066CC] text-white text-xs font-semibold rounded-full transition-all duration-200 hover:bg-[#0051D5]">
                   Name: {searchFilters.name}
                   <button
                     onClick={() => clearFilter('name')}
@@ -402,7 +402,7 @@ export default function GroupsPage() {
                 </span>
               )}
               {searchFilters.location && (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#007AFF] text-white text-xs font-semibold rounded-full transition-all duration-200 hover:bg-[#0051D5]">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#0066CC] text-white text-xs font-semibold rounded-full transition-all duration-200 hover:bg-[#0051D5]">
                   Location: {searchFilters.location}
                   <button
                     onClick={() => clearFilter('location')}
@@ -414,7 +414,7 @@ export default function GroupsPage() {
                 </span>
               )}
               {searchFilters.category && (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#007AFF] text-white text-xs font-semibold rounded-full transition-all duration-200 hover:bg-[#0051D5]">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#0066CC] text-white text-xs font-semibold rounded-full transition-all duration-200 hover:bg-[#0051D5]">
                   Category:{' '}
                   {
                     categoryOptions.find(
@@ -432,7 +432,7 @@ export default function GroupsPage() {
               )}
               <button
                 onClick={clearAllFilters}
-                className="text-xs text-gray-500 hover:text-gray-700 font-medium underline transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] focus-visible:ring-offset-2 rounded px-1"
+                className="text-xs text-gray-500 hover:text-gray-700 font-medium underline transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2 rounded px-1"
                 aria-label="Clear all filters"
               >
                 Clear all
@@ -521,7 +521,7 @@ export default function GroupsPage() {
                   <button
                     onClick={goToPreviousPage}
                     disabled={currentPage === 0}
-                    className="min-h-[44px] min-w-[44px] p-2 rounded-lg hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] focus-visible:ring-offset-2"
+                    className="min-h-[44px] min-w-[44px] p-2 rounded-lg hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2"
                     aria-label="Previous page"
                   >
                     <ChevronLeft
@@ -537,7 +537,7 @@ export default function GroupsPage() {
                   <button
                     onClick={goToNextPage}
                     disabled={currentPage >= totalPages - 1}
-                    className="min-h-[44px] min-w-[44px] p-2 rounded-lg hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] focus-visible:ring-offset-2"
+                    className="min-h-[44px] min-w-[44px] p-2 rounded-lg hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2"
                     aria-label="Next page"
                   >
                     <ChevronRight

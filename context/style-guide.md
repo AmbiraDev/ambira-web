@@ -7,33 +7,38 @@ This document provides specific implementation guidelines for Ambira's visual de
 ### Brand Colors
 
 #### Electric Blue (Primary)
+
 ```css
 /* Main brand color - use for primary actions, links, brand elements */
---electric-blue: #007AFF;
---electric-blue-dark: #0051D5;  /* Hover state */
---electric-blue-light: #66B3FF; /* Light accents */
+--electric-blue: #0066cc;
+--electric-blue-dark: #0051d5; /* Hover state */
+--electric-blue-light: #66b3ff; /* Light accents */
 ```
 
 **Usage:**
-- Primary buttons: `bg-[#007AFF] hover:bg-[#0051D5]`
-- Links: `text-[#007AFF] hover:underline`
-- Focus rings: `ring-[#007AFF]`
+
+- Primary buttons: `bg-[#0066CC] hover:bg-[#0051D5]`
+- Links: `text-[#0066CC] hover:underline`
+- Focus rings: `ring-[#0066CC]`
 - Active states, selected items, progress indicators
 
 **Tailwind Classes:**
+
 ```jsx
-className="text-[#007AFF]"
-className="bg-[#007AFF]"
-className="border-[#007AFF]"
-className="ring-[#007AFF]"
+className = 'text-[#0066CC]';
+className = 'bg-[#0066CC]';
+className = 'border-[#0066CC]';
+className = 'ring-[#0066CC]';
 ```
 
 #### Success Green
+
 ```css
---success-green: #34C759;
+--success-green: #34c759;
 ```
 
 **Usage:**
+
 - Positive metrics and trends
 - Success messages and confirmations
 - Streak indicators
@@ -42,12 +47,14 @@ className="ring-[#007AFF]"
 **Tailwind:** `text-[#34C759]`, `bg-[#34C759]`
 
 #### Destructive Red
+
 ```css
---destructive-red: #EF4444;
---destructive-red-dark: #DC2626; /* Hover state */
+--destructive-red: #ef4444;
+--destructive-red-dark: #dc2626; /* Hover state */
 ```
 
 **Usage:**
+
 - Delete buttons
 - Error messages
 - Warning states
@@ -58,21 +65,23 @@ className="ring-[#007AFF]"
 ### Neutral Colors
 
 #### Grays Scale
+
 ```css
 /* Use for text, borders, backgrounds */
---gray-50:  #f9fafb;  /* Light backgrounds */
---gray-100: #f3f4f6;  /* Subtle backgrounds */
---gray-200: #e5e7eb;  /* Borders, dividers */
---gray-300: #d1d5db;  /* Disabled states */
---gray-400: #9ca3af;  /* Placeholder text */
---gray-500: #6b7280;  /* Secondary text */
---gray-600: #4b5563;  /* Tertiary text */
---gray-700: #374151;  /* Body text alternative */
---gray-900: #1f2937;  /* Headings */
---black:    #000000;  /* Primary text */
+--gray-50: #f9fafb; /* Light backgrounds */
+--gray-100: #f3f4f6; /* Subtle backgrounds */
+--gray-200: #e5e7eb; /* Borders, dividers */
+--gray-300: #d1d5db; /* Disabled states */
+--gray-400: #9ca3af; /* Placeholder text */
+--gray-500: #6b7280; /* Secondary text */
+--gray-600: #4b5563; /* Tertiary text */
+--gray-700: #374151; /* Body text alternative */
+--gray-900: #1f2937; /* Headings */
+--black: #000000; /* Primary text */
 ```
 
 **Usage Guidelines:**
+
 - Primary text: `text-black` or `text-gray-900`
 - Secondary text: `text-gray-500` or `text-muted-foreground`
 - Borders: `border-gray-200` or `border-gray-300`
@@ -93,15 +102,17 @@ className="ring-[#007AFF]"
 ```
 
 **Tailwind Usage:**
+
 ```jsx
-className="bg-background text-foreground"
-className="bg-card border-border"
-className="text-muted-foreground"
+className = 'bg-background text-foreground';
+className = 'bg-card border-border';
+className = 'text-muted-foreground';
 ```
 
 ### Avatar Gradient Colors
 
 For user avatars without profile pictures:
+
 - `from-orange-400 to-orange-600`
 - `from-blue-400 to-blue-600`
 - `from-green-400 to-green-600`
@@ -112,6 +123,7 @@ For user avatars without profile pictures:
 - `from-cyan-400 to-cyan-600`
 
 **Implementation:**
+
 ```jsx
 <div className="bg-gradient-to-br from-blue-400 to-blue-600 rounded-full" />
 ```
@@ -120,7 +132,7 @@ For user avatars without profile pictures:
 
 ```jsx
 // Primary Button
-<button className="bg-[#007AFF] hover:bg-[#0051D5] text-white">
+<button className="bg-[#0066CC] hover:bg-[#0051D5] text-white">
   Start Session
 </button>
 
@@ -159,30 +171,31 @@ const inter = Inter({
 ```
 
 **CSS Variable:**
+
 ```css
 font-family: var(--font-inter), sans-serif;
 ```
 
 ### Font Sizes
 
-| Tailwind Class | Size | Usage |
-|----------------|------|-------|
-| `text-xs` | 12px | Metadata, timestamps, tiny labels |
-| `text-sm` | 14px | Secondary text, descriptions, helper text |
-| `text-base` | 16px | Body text, form inputs, default |
-| `text-lg` | 18px | Emphasized body, card titles |
-| `text-xl` | 20px | Section headings, prominent titles |
-| `text-2xl` | 24px | Page headings, card headers |
-| `text-3xl` | 30px | Large numbers, hero text |
+| Tailwind Class | Size | Usage                                     |
+| -------------- | ---- | ----------------------------------------- |
+| `text-xs`      | 12px | Metadata, timestamps, tiny labels         |
+| `text-sm`      | 14px | Secondary text, descriptions, helper text |
+| `text-base`    | 16px | Body text, form inputs, default           |
+| `text-lg`      | 18px | Emphasized body, card titles              |
+| `text-xl`      | 20px | Section headings, prominent titles        |
+| `text-2xl`     | 24px | Page headings, card headers               |
+| `text-3xl`     | 30px | Large numbers, hero text                  |
 
 ### Font Weights
 
-| Tailwind Class | Weight | Usage |
-|----------------|--------|-------|
-| `font-normal` | 400 | Body text, paragraphs |
-| `font-medium` | 500 | Labels, navigation items, subtle emphasis |
-| `font-semibold` | 600 | Buttons, subheadings, card titles |
-| `font-bold` | 700 | Major headings, numbers in stats, strong emphasis |
+| Tailwind Class  | Weight | Usage                                             |
+| --------------- | ------ | ------------------------------------------------- |
+| `font-normal`   | 400    | Body text, paragraphs                             |
+| `font-medium`   | 500    | Labels, navigation items, subtle emphasis         |
+| `font-semibold` | 600    | Buttons, subheadings, card titles                 |
+| `font-bold`     | 700    | Major headings, numbers in stats, strong emphasis |
 
 ### Line Heights
 
@@ -250,75 +263,75 @@ All spacing uses multiples of 4px (Tailwind's default scale).
 
 ### Common Spacing Values
 
-| Tailwind | Pixels | Usage |
-|----------|--------|-------|
-| `0.5` | 2px | Tight inline spacing |
-| `1` | 4px | Very tight |
-| `1.5` | 6px | Small gaps, tight lists |
-| `2` | 8px | Default small spacing |
-| `3` | 12px | Medium spacing, input padding |
-| `4` | 16px | Standard spacing, button padding |
-| `6` | 24px | Card padding, section spacing |
-| `8` | 32px | Large gaps, page padding |
-| `12` | 48px | XL spacing between major sections |
-| `16` | 64px | XXL spacing, hero sections |
-| `20` | 80px | Bottom nav height |
+| Tailwind | Pixels | Usage                             |
+| -------- | ------ | --------------------------------- |
+| `0.5`    | 2px    | Tight inline spacing              |
+| `1`      | 4px    | Very tight                        |
+| `1.5`    | 6px    | Small gaps, tight lists           |
+| `2`      | 8px    | Default small spacing             |
+| `3`      | 12px   | Medium spacing, input padding     |
+| `4`      | 16px   | Standard spacing, button padding  |
+| `6`      | 24px   | Card padding, section spacing     |
+| `8`      | 32px   | Large gaps, page padding          |
+| `12`     | 48px   | XL spacing between major sections |
+| `16`     | 64px   | XXL spacing, hero sections        |
+| `20`     | 80px   | Bottom nav height                 |
 
 ### Padding Patterns
 
 ```jsx
 // Card Padding
-className="p-6"  // 24px all sides
+className = 'p-6'; // 24px all sides
 
 // Button Padding
-className="px-4 py-2"  // 16px horizontal, 8px vertical
+className = 'px-4 py-2'; // 16px horizontal, 8px vertical
 
 // Large Button
-className="px-8 py-2"  // 32px horizontal, 8px vertical
+className = 'px-8 py-2'; // 32px horizontal, 8px vertical
 
 // Mobile Page Padding
-className="px-4 py-4"  // 16px all sides
+className = 'px-4 py-4'; // 16px all sides
 
 // Desktop Page Padding
-className="px-6 py-6 md:px-8"  // 24px mobile, 32px desktop
+className = 'px-6 py-6 md:px-8'; // 24px mobile, 32px desktop
 
 // Input Padding
-className="px-3 py-2"  // 12px horizontal, 8px vertical
+className = 'px-3 py-2'; // 12px horizontal, 8px vertical
 ```
 
 ### Gap & Space
 
 ```jsx
 // Flex/Grid Gap
-className="gap-2"     // 8px
-className="gap-4"     // 16px
-className="gap-6"     // 24px
-className="gap-8"     // 32px
+className = 'gap-2'; // 8px
+className = 'gap-4'; // 16px
+className = 'gap-6'; // 24px
+className = 'gap-8'; // 32px
 
 // Vertical Stack (Space Between)
-className="space-y-1.5"  // 6px between items
-className="space-y-2"    // 8px between items
-className="space-y-4"    // 16px between items
-className="space-y-6"    // 24px between items
+className = 'space-y-1.5'; // 6px between items
+className = 'space-y-2'; // 8px between items
+className = 'space-y-4'; // 16px between items
+className = 'space-y-6'; // 24px between items
 
 // Horizontal Stack
-className="space-x-2"    // 8px between items
-className="space-x-4"    // 16px between items
+className = 'space-x-2'; // 8px between items
+className = 'space-x-4'; // 16px between items
 ```
 
 ### Margin Examples
 
 ```jsx
 // Top margin for sections
-className="mt-6"  // 24px
-className="mt-8"  // 32px
+className = 'mt-6'; // 24px
+className = 'mt-8'; // 32px
 
 // Bottom margin for content
-className="mb-4"  // 16px
-className="mb-6"  // 24px
+className = 'mb-4'; // 16px
+className = 'mb-6'; // 24px
 
 // Auto-centering
-className="mx-auto"  // Center horizontally
+className = 'mx-auto'; // Center horizontally
 ```
 
 ## Component Styling
@@ -326,13 +339,15 @@ className="mx-auto"  // Center horizontally
 ### Buttons
 
 #### Default (Primary)
+
 ```jsx
-<button className="bg-[#007AFF] text-white hover:bg-[#0051D5] px-4 py-2 rounded-lg text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none min-h-[44px]">
+<button className="bg-[#0066CC] text-white hover:bg-[#0051D5] px-4 py-2 rounded-lg text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none min-h-[44px]">
   Primary Action
 </button>
 ```
 
 #### Destructive
+
 ```jsx
 <button className="bg-[#EF4444] text-white hover:bg-[#DC2626] px-4 py-2 rounded-lg text-sm font-semibold min-h-[44px]">
   Delete
@@ -340,6 +355,7 @@ className="mx-auto"  // Center horizontally
 ```
 
 #### Outline
+
 ```jsx
 <button className="border border-gray-300 bg-white hover:border-gray-400 hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg text-sm font-semibold min-h-[44px]">
   Secondary Action
@@ -347,6 +363,7 @@ className="mx-auto"  // Center horizontally
 ```
 
 #### Ghost
+
 ```jsx
 <button className="text-gray-500 hover:text-gray-700 hover:bg-gray-100 px-4 py-2 rounded-lg text-sm font-semibold min-h-[44px]">
   Ghost Action
@@ -354,6 +371,7 @@ className="mx-auto"  // Center horizontally
 ```
 
 #### Icon Button
+
 ```jsx
 <button className="w-10 h-10 min-w-[44px] min-h-[44px] p-2 rounded-lg hover:bg-gray-100 flex items-center justify-center">
   <MoreVertical className="w-5 h-5" />
@@ -361,8 +379,9 @@ className="mx-auto"  // Center horizontally
 ```
 
 #### Large Button
+
 ```jsx
-<button className="bg-[#007AFF] text-white hover:bg-[#0051D5] px-8 py-2 rounded-lg text-sm font-semibold min-h-[44px] h-11">
+<button className="bg-[#0066CC] text-white hover:bg-[#0051D5] px-8 py-2 rounded-lg text-sm font-semibold min-h-[44px] h-11">
   Large Action
 </button>
 ```
@@ -370,27 +389,23 @@ className="mx-auto"  // Center horizontally
 ### Cards
 
 #### Basic Card
+
 ```jsx
 <div className="rounded-lg border bg-card text-card-foreground shadow-sm">
   <div className="p-6">
     <h3 className="text-2xl font-semibold">Card Title</h3>
     <p className="text-sm text-muted-foreground">Card description</p>
   </div>
-  <div className="p-6 pt-0">
-    {/* Card content */}
-  </div>
+  <div className="p-6 pt-0">{/* Card content */}</div>
 </div>
 ```
 
 #### Session Card (Feed Item)
+
 ```jsx
 <div className="bg-white rounded-lg border border-gray-200 shadow-sm md:border-b-0 border-b-[6px]">
-  <div className="px-4 pt-4 pb-3">
-    {/* User info, avatar */}
-  </div>
-  <div className="px-4 pb-4">
-    {/* Session details */}
-  </div>
+  <div className="px-4 pt-4 pb-3">{/* User info, avatar */}</div>
+  <div className="px-4 pb-4">{/* Session details */}</div>
   <div className="border-t border-gray-200 px-4 py-3 flex items-center gap-6">
     {/* Social actions: support, comment, share */}
   </div>
@@ -400,15 +415,17 @@ className="mx-auto"  // Center horizontally
 ### Form Elements
 
 #### Input
+
 ```jsx
 <input
   type="text"
-  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 min-h-[44px]"
+  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 min-h-[44px]"
   placeholder="Enter text..."
 />
 ```
 
 #### Label
+
 ```jsx
 <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
   Label Text
@@ -416,13 +433,13 @@ className="mx-auto"  // Center horizontally
 ```
 
 #### Textarea
+
 ```jsx
-<textarea
-  className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-/>
+<textarea className="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" />
 ```
 
 #### Form Group
+
 ```jsx
 <div className="space-y-2">
   <label htmlFor="email" className="text-sm font-medium">
@@ -431,11 +448,9 @@ className="mx-auto"  // Center horizontally
   <input
     id="email"
     type="email"
-    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] min-h-[44px]"
+    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] min-h-[44px]"
   />
-  <p className="text-sm text-muted-foreground">
-    We'll never share your email.
-  </p>
+  <p className="text-sm text-muted-foreground">We'll never share your email.</p>
 </div>
 ```
 
@@ -448,7 +463,7 @@ className="mx-auto"  // Center horizontally
 </span>
 
 // Primary
-<span className="inline-flex items-center rounded-full border border-transparent bg-[#007AFF] text-white px-2.5 py-0.5 text-xs font-semibold">
+<span className="inline-flex items-center rounded-full border border-transparent bg-[#0066CC] text-white px-2.5 py-0.5 text-xs font-semibold">
   Active
 </span>
 
@@ -485,6 +500,7 @@ className="mx-auto"  // Center horizontally
 ## Icons (Lucide React)
 
 ### Import Pattern
+
 ```tsx
 import { Heart, MessageCircle, Share2, Clock, TrendingUp } from 'lucide-react';
 ```
@@ -540,33 +556,33 @@ import { Heart, MessageCircle, Share2, Clock, TrendingUp } from 'lucide-react';
 
 ### Common Icon Mappings
 
-| Purpose | Icon |
-|---------|------|
-| Support/Like | `Heart` |
-| Comment | `MessageCircle` |
-| Share | `Share2` |
-| Time/Duration | `Clock` |
-| Timer | `Timer` |
-| Trending Up | `TrendingUp` |
-| Trending Down | `TrendingDown` |
-| Users | `Users` |
-| Add User | `UserPlus` |
-| Settings | `Settings` |
-| Edit | `Edit3` or `Pencil` |
-| Delete | `Trash2` |
-| More Options | `MoreVertical` |
-| Close | `X` |
-| Search | `Search` |
-| Menu | `Menu` |
-| Check/Complete | `Check` or `CheckCircle` |
-| Trophy/Achievement | `Trophy` |
-| Target/Goal | `Target` |
-| Lightning/Streak | `Zap` |
-| Calendar | `Calendar` |
-| Project | `FolderOpen` or `ListTodo` |
-| Tag | `Tag` |
-| Lock | `Lock` |
-| Unlock | `Unlock` |
+| Purpose            | Icon                       |
+| ------------------ | -------------------------- |
+| Support/Like       | `Heart`                    |
+| Comment            | `MessageCircle`            |
+| Share              | `Share2`                   |
+| Time/Duration      | `Clock`                    |
+| Timer              | `Timer`                    |
+| Trending Up        | `TrendingUp`               |
+| Trending Down      | `TrendingDown`             |
+| Users              | `Users`                    |
+| Add User           | `UserPlus`                 |
+| Settings           | `Settings`                 |
+| Edit               | `Edit3` or `Pencil`        |
+| Delete             | `Trash2`                   |
+| More Options       | `MoreVertical`             |
+| Close              | `X`                        |
+| Search             | `Search`                   |
+| Menu               | `Menu`                     |
+| Check/Complete     | `Check` or `CheckCircle`   |
+| Trophy/Achievement | `Trophy`                   |
+| Target/Goal        | `Target`                   |
+| Lightning/Streak   | `Zap`                      |
+| Calendar           | `Calendar`                 |
+| Project            | `FolderOpen` or `ListTodo` |
+| Tag                | `Tag`                      |
+| Lock               | `Lock`                     |
+| Unlock             | `Unlock`                   |
 
 ## Layout Patterns
 
@@ -577,9 +593,7 @@ import { Heart, MessageCircle, Share2, Clock, TrendingUp } from 'lucide-react';
 <div className="min-h-screen bg-background">
   <Header />
   <main className="pb-20 md:pb-0">
-    <div className="max-w-2xl mx-auto px-4 py-6">
-      {/* Content */}
-    </div>
+    <div className="max-w-2xl mx-auto px-4 py-6">{/* Content */}</div>
   </main>
   <MobileNav />
 </div>
@@ -595,14 +609,10 @@ import { Heart, MessageCircle, Share2, Clock, TrendingUp } from 'lucide-react';
   </aside>
 
   {/* Main Feed */}
-  <main className="flex-1 max-w-2xl">
-    {/* Primary content */}
-  </main>
+  <main className="flex-1 max-w-2xl">{/* Primary content */}</main>
 
   {/* Right Sidebar */}
-  <aside className="w-80 sticky top-20 h-fit">
-    {/* Stats, suggestions */}
-  </aside>
+  <aside className="w-80 sticky top-20 h-fit">{/* Stats, suggestions */}</aside>
 </div>
 ```
 
@@ -634,37 +644,37 @@ import { Heart, MessageCircle, Share2, Clock, TrendingUp } from 'lucide-react';
 
 ### Tailwind Breakpoints
 
-| Prefix | Min Width | Usage |
-|--------|-----------|-------|
-| (none) | 0px | Mobile-first default |
-| `sm:` | 640px | Small tablets |
-| `md:` | 768px | Tablets, desktop transition |
-| `lg:` | 1024px | Desktop |
-| `xl:` | 1280px | Large desktop |
+| Prefix | Min Width | Usage                       |
+| ------ | --------- | --------------------------- |
+| (none) | 0px       | Mobile-first default        |
+| `sm:`  | 640px     | Small tablets               |
+| `md:`  | 768px     | Tablets, desktop transition |
+| `lg:`  | 1024px    | Desktop                     |
+| `xl:`  | 1280px    | Large desktop               |
 
 ### Common Responsive Patterns
 
 ```jsx
 // Hide on mobile, show on desktop
-className="hidden md:block"
+className = 'hidden md:block';
 
 // Show on mobile, hide on desktop
-className="block md:hidden"
+className = 'block md:hidden';
 
 // Responsive flex direction
-className="flex flex-col md:flex-row"
+className = 'flex flex-col md:flex-row';
 
 // Responsive grid columns
-className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
+className = 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3';
 
 // Responsive text size
-className="text-lg md:text-xl lg:text-2xl"
+className = 'text-lg md:text-xl lg:text-2xl';
 
 // Responsive padding
-className="px-4 md:px-6 lg:px-8"
+className = 'px-4 md:px-6 lg:px-8';
 
 // Responsive gap
-className="gap-4 md:gap-6 lg:gap-8"
+className = 'gap-4 md:gap-6 lg:gap-8';
 ```
 
 ## States & Interactions
@@ -673,51 +683,54 @@ className="gap-4 md:gap-6 lg:gap-8"
 
 ```jsx
 // Color change
-className="hover:text-[#007AFF]"
-className="hover:bg-gray-100"
+className = 'hover:text-[#0066CC]';
+className = 'hover:bg-gray-100';
 
 // Transform
-className="hover:scale-105 transition-transform"
+className = 'hover:scale-105 transition-transform';
 
 // Shadow
-className="hover:shadow-lg transition-shadow"
+className = 'hover:shadow-lg transition-shadow';
 
 // Border
-className="hover:border-[#007AFF] transition-colors"
+className = 'hover:border-[#0066CC] transition-colors';
 ```
 
 ### Focus States
 
 ```jsx
 // Standard focus ring (all interactive elements)
-className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] focus-visible:ring-offset-2"
+className =
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2';
 
 // Focus without offset (tight spaces)
-className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF]"
+className =
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC]';
 ```
 
 ### Active States
 
 ```jsx
 // Button press
-className="active:scale-95 transition-transform"
+className = 'active:scale-95 transition-transform';
 
 // Background change
-className="active:bg-[#0051D5]"
+className = 'active:bg-[#0051D5]';
 ```
 
 ### Disabled States
 
 ```jsx
 // Buttons and inputs
-className="disabled:opacity-50 disabled:pointer-events-none disabled:cursor-not-allowed"
+className =
+  'disabled:opacity-50 disabled:pointer-events-none disabled:cursor-not-allowed';
 ```
 
 ### Loading States
 
 ```jsx
 // Spinner
-<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#007AFF]" />
+<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0066CC]" />
 
 // Skeleton
 <div className="animate-pulse bg-gray-200 rounded-lg h-24 w-full" />
@@ -744,6 +757,7 @@ shadow-xl   /* High elevation */
 ```
 
 **Usage:**
+
 - Cards: `shadow-sm`
 - Dropdowns: `shadow-lg`
 - Modals: `shadow-xl`
@@ -762,6 +776,7 @@ rounded-full /* 50% - for avatars, badges, pills */
 ```
 
 **Usage:**
+
 - Cards: `rounded-lg`
 - Buttons: `rounded-lg`
 - Inputs: `rounded-md`
@@ -774,32 +789,32 @@ rounded-full /* 50% - for avatars, badges, pills */
 
 ```jsx
 // Color transitions (buttons, links)
-className="transition-colors duration-200"
+className = 'transition-colors duration-200';
 
 // All properties (use sparingly)
-className="transition-all duration-300"
+className = 'transition-all duration-300';
 
 // Transform (hover scale, etc.)
-className="transition-transform duration-200"
+className = 'transition-transform duration-200';
 
 // Shadow transitions
-className="transition-shadow duration-300"
+className = 'transition-shadow duration-300';
 ```
 
 ### Common Animations
 
 ```jsx
 // Fade in
-className="animate-in fade-in duration-200"
+className = 'animate-in fade-in duration-200';
 
 // Slide up (modals, toasts)
-className="animate-in slide-in-from-bottom duration-300"
+className = 'animate-in slide-in-from-bottom duration-300';
 
 // Spin (loading)
-className="animate-spin"
+className = 'animate-spin';
 
 // Pulse (loading skeleton)
-className="animate-pulse"
+className = 'animate-pulse';
 ```
 
 ### Custom Keyframe (from globals.css)
@@ -828,7 +843,8 @@ className="animate-pulse"
 
 ```jsx
 // Always include on interactive elements
-className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] focus-visible:ring-offset-2"
+className =
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2';
 ```
 
 ### ARIA Labels
@@ -874,13 +890,13 @@ className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#
 
 ```jsx
 // Minimum 44x44px for all tappable elements
-className="min-h-[44px] min-w-[44px]"
+className = 'min-h-[44px] min-w-[44px]';
 
 // Button
-className="h-10 min-h-[44px] px-4"
+className = 'h-10 min-h-[44px] px-4';
 
 // Icon button
-className="w-10 h-10 min-w-[44px] min-h-[44px]"
+className = 'w-10 h-10 min-w-[44px] min-h-[44px]';
 ```
 
 ## Utility Functions
@@ -896,16 +912,19 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 // Usage
-<div className={cn(
-  "base classes",
-  isActive && "active classes",
-  "override classes"
-)} />
+<div
+  className={cn(
+    'base classes',
+    isActive && 'active classes',
+    'override classes'
+  )}
+/>;
 ```
 
 ## Quick Reference
 
 ### Component Checklist
+
 - [ ] Uses shadcn/ui primitives from `/src/components/ui/`
 - [ ] Colors from defined palette (Electric Blue, grays, success green)
 - [ ] Lucide React icons (consistent sizing)
@@ -921,6 +940,7 @@ export function cn(...inputs: ClassValue[]) {
 - [ ] ARIA labels on icon-only buttons
 
 ### Mobile-First Checklist
+
 - [ ] Design for mobile viewport first
 - [ ] Use `md:` prefix for desktop styles
 - [ ] Single column mobile → three column desktop
@@ -930,6 +950,7 @@ export function cn(...inputs: ClassValue[]) {
 - [ ] Test on actual mobile device
 
 ### Strava-Inspired Checklist
+
 - [ ] Session cards look like activity cards
 - [ ] Social engagement visible (supports, comments)
 - [ ] Metrics and stats prominently displayed

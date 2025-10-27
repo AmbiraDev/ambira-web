@@ -129,7 +129,7 @@ export default function SuggestedPeopleModal({
         <div className="flex-1 overflow-y-auto">
           {isLoading ? (
             <div className="p-12 text-center">
-              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#007AFF]"></div>
+              <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#0066CC]"></div>
               <p className="text-gray-600 mt-4">Loading suggestions...</p>
             </div>
           ) : allSuggestedUsers.length === 0 ? (

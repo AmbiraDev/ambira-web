@@ -18,12 +18,12 @@ describe('Session Images Firestore Integration', () => {
         visibility: 'everyone',
         images: [
           'https://firebasestorage.googleapis.com/v0/b/project.appspot.com/o/session-images%2Fuser123%2Fimage1.jpg?alt=media&token=abc',
-          'https://firebasestorage.googleapis.com/v0/b/project.appspot.com/o/session-images%2Fuser123%2Fimage2.jpg?alt=media&token=def'
+          'https://firebasestorage.googleapis.com/v0/b/project.appspot.com/o/session-images%2Fuser123%2Fimage2.jpg?alt=media&token=def',
         ],
         supportCount: 0,
         commentCount: 0,
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
       };
 
       // Verify images field structure
@@ -42,7 +42,7 @@ describe('Session Images Firestore Integration', () => {
       const sessionData = {
         userId: 'user123',
         title: 'Session',
-        images: []
+        images: [],
       };
 
       expect(sessionData.images).toBeDefined();
@@ -52,7 +52,7 @@ describe('Session Images Firestore Integration', () => {
     it('should handle undefined images field as empty array', () => {
       const sessionData: any = {
         userId: 'user123',
-        title: 'Legacy Session'
+        title: 'Legacy Session',
         // No images field
       };
 
@@ -71,8 +71,8 @@ describe('Session Images Firestore Integration', () => {
         images: [
           'https://firebasestorage.googleapis.com/image1.jpg',
           'https://firebasestorage.googleapis.com/image2.jpg',
-          'https://firebasestorage.googleapis.com/image3.jpg'
-        ]
+          'https://firebasestorage.googleapis.com/image3.jpg',
+        ],
       };
 
       expect(firestoreDoc.images).toHaveLength(3);
@@ -83,11 +83,11 @@ describe('Session Images Firestore Integration', () => {
       const orderedImages = [
         'https://storage.url/first.jpg',
         'https://storage.url/second.jpg',
-        'https://storage.url/third.jpg'
+        'https://storage.url/third.jpg',
       ];
 
       const doc = {
-        images: orderedImages
+        images: orderedImages,
       };
 
       expect(doc.images[0]).toBe(orderedImages[0]);
@@ -99,7 +99,7 @@ describe('Session Images Firestore Integration', () => {
       const images = [
         'https://storage.url/1.jpg',
         'https://storage.url/2.jpg',
-        'https://storage.url/3.jpg'
+        'https://storage.url/3.jpg',
       ];
 
       expect(images).toHaveLength(3);
@@ -111,11 +111,13 @@ describe('Session Images Firestore Integration', () => {
     it('should validate Firebase Storage URL format', () => {
       const validUrls = [
         'https://firebasestorage.googleapis.com/v0/b/project.appspot.com/o/path?alt=media&token=abc',
-        'https://storage.googleapis.com/project.appspot.com/path/image.jpg'
+        'https://storage.googleapis.com/project.appspot.com/path/image.jpg',
       ];
 
       validUrls.forEach(url => {
-        expect(url).toMatch(/^https:\/\/(firebasestorage|storage)\.googleapis\.com/);
+        expect(url).toMatch(
+          /^https:\/\/(firebasestorage|storage)\.googleapis\.com/
+        );
       });
     });
 
@@ -124,7 +126,7 @@ describe('Session Images Firestore Integration', () => {
         'http://example.com/image.jpg',
         'blob:http://localhost/abc',
         'data:image/png;base64,...',
-        '/local/path/image.jpg'
+        '/local/path/image.jpg',
       ];
 
       invalidUrls.forEach(url => {
@@ -133,7 +135,8 @@ describe('Session Images Firestore Integration', () => {
     });
 
     it('should verify URL includes required parameters', () => {
-      const completeUrl = 'https://firebasestorage.googleapis.com/v0/b/project.appspot.com/o/session-images%2Fuser123%2Fimage.jpg?alt=media&token=abc123';
+      const completeUrl =
+        'https://firebasestorage.googleapis.com/v0/b/project.appspot.com/o/session-images%2Fuser123%2Fimage.jpg?alt=media&token=abc123';
 
       expect(completeUrl).toContain('firebasestorage.googleapis.com');
       expect(completeUrl).toContain('/o/'); // Object path
@@ -163,20 +166,20 @@ describe('Session Images Firestore Integration', () => {
         updatedAt: new Date(),
         images: [
           'https://firebasestorage.googleapis.com/image1.jpg',
-          'https://firebasestorage.googleapis.com/image2.jpg'
+          'https://firebasestorage.googleapis.com/image2.jpg',
         ],
         user: {
           id: 'user123',
           email: 'user@example.com',
           name: 'Test User',
-          username: 'testuser'
+          username: 'testuser',
         },
         project: {
           id: 'proj123',
           name: 'Test Project',
           icon: '📝',
-          color: '#007AFF'
-        }
+          color: '#0066CC',
+        },
       };
 
       expect(sessionWithDetails.images).toBeDefined();
@@ -189,7 +192,7 @@ describe('Session Images Firestore Integration', () => {
         title: 'New Session',
         duration: 3600,
         startTime: new Date(),
-        taskIds: []
+        taskIds: [],
         // images is optional
       };
 
@@ -205,11 +208,13 @@ describe('Session Images Firestore Integration', () => {
         { id: '1', title: 'With Images', images: ['url1.jpg', 'url2.jpg'] },
         { id: '2', title: 'No Images', images: [] },
         { id: '3', title: 'Also With Image', images: ['url3.jpg'] },
-        { id: '4', title: 'Legacy', images: undefined as any }
+        { id: '4', title: 'Legacy', images: undefined as any },
       ];
 
       const withImages = sessions.filter(s => s.images && s.images.length > 0);
-      const withoutImages = sessions.filter(s => !s.images || s.images.length === 0);
+      const withoutImages = sessions.filter(
+        s => !s.images || s.images.length === 0
+      );
 
       expect(withImages).toHaveLength(2);
       expect(withoutImages).toHaveLength(2);
@@ -220,7 +225,7 @@ describe('Session Images Firestore Integration', () => {
         { images: ['url1.jpg', 'url2.jpg'] },
         { images: ['url3.jpg'] },
         { images: [] },
-        { images: ['url4.jpg', 'url5.jpg', 'url6.jpg'] }
+        { images: ['url4.jpg', 'url5.jpg', 'url6.jpg'] },
       ];
 
       const totalImages = sessions.reduce((count, session) => {
@@ -236,10 +241,13 @@ describe('Session Images Firestore Integration', () => {
       const sessions = Array.from({ length: 100 }, (_, i) => ({
         id: `session${i}`,
         title: `Session ${i}`,
-        images: i % 3 === 0 ? [
-          `https://storage.url/img${i}_1.jpg`,
-          `https://storage.url/img${i}_2.jpg`
-        ] : []
+        images:
+          i % 3 === 0
+            ? [
+                `https://storage.url/img${i}_1.jpg`,
+                `https://storage.url/img${i}_2.jpg`,
+              ]
+            : [],
       }));
 
       expect(sessions).toHaveLength(100);
@@ -260,7 +268,7 @@ describe('Session Images Firestore Integration', () => {
         { images: ['valid-url.jpg'] },
         { images: null as any }, // Corrupt data
         { images: 'not-an-array' as any }, // Wrong type
-        { images: [] }
+        { images: [] },
       ];
 
       sessions.forEach(session => {

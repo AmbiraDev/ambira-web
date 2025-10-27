@@ -38,7 +38,7 @@ export function ActivityPicker({
         className={`w-full px-4 py-3 border rounded-lg focus:ring-2 bg-white cursor-pointer text-base flex items-center gap-3 transition-colors ${
           showError
             ? 'border-red-500 ring-2 ring-red-200 focus:ring-red-500 focus:border-red-500'
-            : 'border-gray-300 focus:ring-[#007AFF] focus:border-[#007AFF] hover:border-gray-400'
+            : 'border-gray-300 focus:ring-[#0066CC] focus:border-[#0066CC] hover:border-gray-400'
         }`}
       >
         {selectedActivity ? (
@@ -76,7 +76,7 @@ export function ActivityPicker({
                 <p className="text-sm text-gray-600 mb-3">No activities yet</p>
                 <Link
                   href="/activities/new"
-                  className="inline-flex items-center gap-2 px-4 py-2 bg-[#007AFF] text-white rounded-lg hover:bg-[#0051D5] transition-colors text-sm font-medium"
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-[#0066CC] text-white rounded-lg hover:bg-[#0051D5] transition-colors text-sm font-medium"
                 >
                   <svg
                     className="w-4 h-4"
@@ -130,7 +130,7 @@ export function ActivityPicker({
                 >
                   <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 bg-blue-100">
                     <svg
-                      className="w-4 h-4 text-[#007AFF]"
+                      className="w-4 h-4 text-[#0066CC]"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"

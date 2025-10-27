@@ -98,13 +98,13 @@ export default function DayOverview() {
         <h3 className="text-sm font-semibold text-gray-900">
           Today's Progress
         </h3>
-        <TrendingUp className="w-5 h-5 text-[#007AFF]" />
+        <TrendingUp className="w-5 h-5 text-[#0066CC]" />
       </div>
 
       <div className="grid grid-cols-3 gap-3">
         {/* Total Time */}
         <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
-          <Clock className="w-5 h-5 text-[#007AFF] mb-2" />
+          <Clock className="w-5 h-5 text-[#0066CC] mb-2" />
           <div className="text-lg font-bold text-gray-900">
             {formatTime(todayStats.totalTime)}
           </div>

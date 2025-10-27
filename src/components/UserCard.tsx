@@ -133,7 +133,7 @@ export const UserCard: React.FC<UserCardProps> = ({
                 <h3
                   className={
                     isSearchVariant
-                      ? 'font-semibold text-sm text-gray-900 hover:text-[#007AFF] truncate'
+                      ? 'font-semibold text-sm text-gray-900 hover:text-[#0066CC] truncate'
                       : 'font-semibold text-foreground hover:text-primary transition-colors truncate'
                   }
                 >
@@ -197,7 +197,7 @@ export const UserCard: React.FC<UserCardProps> = ({
                     className={`text-sm font-semibold transition-colors whitespace-nowrap ${
                       isFollowing
                         ? 'text-gray-600 hover:text-gray-900'
-                        : 'text-[#007AFF] hover:text-[#0051D5]'
+                        : 'text-[#0066CC] hover:text-[#0051D5]'
                     }`}
                   >
                     {isLoading ? '...' : isFollowing ? 'Following' : 'Follow'}

@@ -97,7 +97,7 @@ export function ColorSelector({
                   onClick={() => handleColorSelect(colorData.name)}
                   className={`aspect-square rounded-lg border-2 transition-all hover:scale-105 ${
                     isSelected
-                      ? 'border-[#007AFF] shadow-md'
+                      ? 'border-[#0066CC] shadow-md'
                       : 'border-transparent hover:border-gray-300'
                   }`}
                   title={colorData.label}

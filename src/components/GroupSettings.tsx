@@ -143,7 +143,7 @@ export default function GroupSettings({
         <button
           onClick={handleSave}
           disabled={isLoading}
-          className="px-4 py-2 bg-[#007AFF] text-white rounded-lg font-semibold text-sm hover:bg-[#0056D6] transition-colors disabled:opacity-50"
+          className="px-4 py-2 bg-[#0066CC] text-white rounded-lg font-semibold text-sm hover:bg-[#0051D5] transition-colors disabled:opacity-50"
         >
           Save
         </button>
@@ -165,7 +165,7 @@ export default function GroupSettings({
             <button
               onClick={handleSave}
               disabled={isLoading}
-              className="px-6 py-2.5 bg-[#007AFF] text-white rounded-xl font-semibold hover:bg-[#0056D6] transition-colors disabled:opacity-50"
+              className="px-6 py-2.5 bg-[#0066CC] text-white rounded-xl font-semibold hover:bg-[#0051D5] transition-colors disabled:opacity-50"
             >
               <Save className="w-4 h-4 inline mr-2" />
               Save Changes
@@ -224,7 +224,7 @@ export default function GroupSettings({
                   id="category"
                   value={formData.category || 'other'}
                   onChange={e => handleInputChange('category', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-transparent"
                 >
                   {categoryOptions.map(option => (
                     <option key={option.value} value={option.value}>
@@ -240,7 +240,7 @@ export default function GroupSettings({
                   id="type"
                   value={formData.type || 'just-for-fun'}
                   onChange={e => handleInputChange('type', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-transparent"
                 >
                   {typeOptions.map(option => (
                     <option key={option.value} value={option.value}>
@@ -260,7 +260,7 @@ export default function GroupSettings({
                 onChange={e =>
                   handleInputChange('privacySetting', e.target.value)
                 }
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-transparent"
               >
                 <option value="public">Public - Anyone can join</option>
                 <option value="approval-required">

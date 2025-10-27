@@ -279,7 +279,7 @@ export function SettingsPageContent() {
                       onClick={() => setActiveTab(tab.id)}
                       className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors ${
                         activeTab === tab.id
-                          ? 'bg-[#007AFF] text-white'
+                          ? 'bg-[#0066CC] text-white'
                           : 'text-gray-700 hover:bg-gray-50'
                       }`}
                     >
@@ -303,7 +303,7 @@ export function SettingsPageContent() {
                         onClick={() => setActiveTab(tab.id)}
                         className={`flex-shrink-0 flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
                           activeTab === tab.id
-                            ? 'border-[#007AFF] text-[#007AFF]'
+                            ? 'border-[#0066CC] text-[#0066CC]'
                             : 'border-transparent text-gray-600'
                         }`}
                       >
@@ -324,7 +324,7 @@ export function SettingsPageContent() {
                     <div className="bg-gray-50 rounded-xl border border-gray-200 p-4 md:p-6 space-y-6">
                       <div>
                         <h2 className="text-2xl font-bold text-gray-900 mb-2 flex items-center gap-2">
-                          <User className="w-6 h-6 text-[#007AFF]" />
+                          <User className="w-6 h-6 text-[#0066CC]" />
                           My Profile
                         </h2>
                         <p className="text-gray-600 text-sm">
@@ -373,7 +373,7 @@ export function SettingsPageContent() {
                             >
                               {isUploadingPhoto ? (
                                 <>
-                                  <div className="w-4 h-4 border-2 border-gray-300 border-t-[#007AFF] rounded-full animate-spin"></div>
+                                  <div className="w-4 h-4 border-2 border-gray-300 border-t-[#0066CC] rounded-full animate-spin"></div>
                                   Uploading...
                                 </>
                               ) : (
@@ -406,7 +406,7 @@ export function SettingsPageContent() {
                           onChange={e =>
                             setFormData({ ...formData, name: e.target.value })
                           }
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] outline-none"
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none"
                         />
                       </div>
 
@@ -457,7 +457,7 @@ export function SettingsPageContent() {
                           }
                           maxLength={60}
                           placeholder="Your headline or current status..."
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] outline-none"
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none"
                         />
                         <p className="text-sm text-gray-500 mt-1">
                           {formData.tagline.length}/60 • Appears below your name
@@ -485,7 +485,7 @@ export function SettingsPageContent() {
                           }
                           maxLength={20}
                           placeholder="e.g., she/her, he/him, they/them"
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] outline-none"
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none"
                         />
                       </div>
 
@@ -506,7 +506,7 @@ export function SettingsPageContent() {
                           rows={4}
                           maxLength={160}
                           placeholder="Tell us about yourself..."
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] outline-none resize-none"
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none resize-none"
                         />
                         <p className="text-sm text-gray-500 mt-1">
                           {formData.bio.length}/160
@@ -533,7 +533,7 @@ export function SettingsPageContent() {
                             })
                           }
                           placeholder="City, Country"
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] outline-none"
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none"
                         />
                       </div>
 
@@ -563,7 +563,7 @@ export function SettingsPageContent() {
                               })
                             }
                             placeholder="https://yourwebsite.com"
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] outline-none"
+                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none"
                           />
                         </div>
 
@@ -592,7 +592,7 @@ export function SettingsPageContent() {
                                   })
                                 }
                                 placeholder="username"
-                                className="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] outline-none"
+                                className="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none"
                               />
                             </div>
                           </div>
@@ -616,7 +616,7 @@ export function SettingsPageContent() {
                                 })
                               }
                               placeholder="username"
-                              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] outline-none"
+                              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none"
                             />
                           </div>
 
@@ -639,7 +639,7 @@ export function SettingsPageContent() {
                                 })
                               }
                               placeholder="username"
-                              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] outline-none"
+                              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none"
                             />
                           </div>
                         </div>
@@ -689,7 +689,7 @@ export function SettingsPageContent() {
                               ? 'bg-gray-400 cursor-not-allowed'
                               : saved
                                 ? 'bg-green-600 hover:bg-green-600'
-                                : 'bg-[#007AFF] hover:bg-[#0051D5]'
+                                : 'bg-[#0066CC] hover:bg-[#0051D5]'
                           }`}
                         >
                           {isSaving
@@ -707,7 +707,7 @@ export function SettingsPageContent() {
                   <div className="bg-gray-50 rounded-xl border border-gray-200 p-4 md:p-6 space-y-6">
                     <div>
                       <h2 className="text-2xl font-bold text-gray-900 mb-2 flex items-center gap-2">
-                        <Shield className="w-6 h-6 text-[#007AFF]" />
+                        <Shield className="w-6 h-6 text-[#0066CC]" />
                         Privacy Controls
                       </h2>
                       <p className="text-gray-600 text-sm">
@@ -718,7 +718,7 @@ export function SettingsPageContent() {
                     <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
                       <div className="px-6 py-4 border-b border-gray-200">
                         <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-                          <Globe className="w-5 h-5 text-[#007AFF]" />
+                          <Globe className="w-5 h-5 text-[#0066CC]" />
                           Profile Visibility
                         </h3>
                         <p className="text-sm text-gray-600 mt-1">
@@ -744,7 +744,7 @@ export function SettingsPageContent() {
                                 | 'private',
                             })
                           }
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] outline-none"
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none"
                         >
                           <option value="everyone">
                             🌐 Everyone - Your profile and sessions are visible
@@ -794,7 +794,7 @@ export function SettingsPageContent() {
                             ? 'bg-gray-400 cursor-not-allowed'
                             : saved
                               ? 'bg-[#34C759] hover:bg-[#34C759]'
-                              : 'bg-[#007AFF] hover:bg-[#0051D5]'
+                              : 'bg-[#0066CC] hover:bg-[#0051D5]'
                         }`}
                       >
                         {isSaving
@@ -813,7 +813,7 @@ export function SettingsPageContent() {
                   <div className="bg-gray-50 rounded-xl border border-gray-200 p-4 md:p-6 space-y-6">
                     <div>
                       <h2 className="text-2xl font-bold text-gray-900 mb-2 flex items-center gap-2">
-                        <Globe className="w-6 h-6 text-[#007AFF]" />
+                        <Globe className="w-6 h-6 text-[#0066CC]" />
                         Display Preferences
                       </h2>
                       <p className="text-gray-600 text-sm">

@@ -5,7 +5,7 @@ import { SessionTimerEnhanced } from '@/components/SessionTimerEnhanced';
 
 export default function TimerPageContent() {
   return (
-    <main id="timer-content" className="md:pt-20">
+    <main id="timer-content" role="main" className="md:pt-20">
       <SessionTimerEnhanced projectId="" />
     </main>
   );

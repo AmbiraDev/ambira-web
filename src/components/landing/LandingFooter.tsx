@@ -24,7 +24,7 @@ export const LandingFooter: React.FC<LandingFooterProps> = ({
                   height={32}
                 />
               </div>
-              <span className="text-xl font-bold text-[#007AFF]">Ambira</span>
+              <span className="text-xl font-bold text-[#0066CC]">Ambira</span>
             </div>
             <p className="text-sm text-gray-600 max-w-xs mb-4">
               Track focus sessions, hit goals, and share progress with friends.
@@ -67,7 +67,7 @@ export const LandingFooter: React.FC<LandingFooterProps> = ({
                 <li>
                   <Link
                     href="/features"
-                    className="text-gray-600 hover:text-[#007AFF]"
+                    className="text-gray-600 hover:text-[#0066CC]"
                   >
                     Features
                   </Link>
@@ -75,7 +75,7 @@ export const LandingFooter: React.FC<LandingFooterProps> = ({
                 <li>
                   <Link
                     href="/activities"
-                    className="text-gray-600 hover:text-[#007AFF]"
+                    className="text-gray-600 hover:text-[#0066CC]"
                   >
                     Activities
                   </Link>
@@ -83,7 +83,7 @@ export const LandingFooter: React.FC<LandingFooterProps> = ({
                 <li>
                   <Link
                     href="/groups"
-                    className="text-gray-600 hover:text-[#007AFF]"
+                    className="text-gray-600 hover:text-[#0066CC]"
                   >
                     Groups
                   </Link>
@@ -91,7 +91,7 @@ export const LandingFooter: React.FC<LandingFooterProps> = ({
                 <li>
                   <Link
                     href="/challenges"
-                    className="text-gray-600 hover:text-[#007AFF]"
+                    className="text-gray-600 hover:text-[#0066CC]"
                   >
                     Challenges
                   </Link>
@@ -105,7 +105,7 @@ export const LandingFooter: React.FC<LandingFooterProps> = ({
                 <li>
                   <Link
                     href="/about"
-                    className="text-gray-600 hover:text-[#007AFF]"
+                    className="text-gray-600 hover:text-[#0066CC]"
                   >
                     About
                   </Link>
@@ -113,7 +113,7 @@ export const LandingFooter: React.FC<LandingFooterProps> = ({
                 <li>
                   <Link
                     href="/feed"
-                    className="text-gray-600 hover:text-[#007AFF]"
+                    className="text-gray-600 hover:text-[#0066CC]"
                   >
                     Community
                   </Link>
@@ -121,7 +121,7 @@ export const LandingFooter: React.FC<LandingFooterProps> = ({
                 <li>
                   <Link
                     href="/sessions"
-                    className="text-gray-600 hover:text-[#007AFF]"
+                    className="text-gray-600 hover:text-[#0066CC]"
                   >
                     Sessions
                   </Link>
@@ -129,7 +129,7 @@ export const LandingFooter: React.FC<LandingFooterProps> = ({
                 <li>
                   <Link
                     href="/tasks"
-                    className="text-gray-600 hover:text-[#007AFF]"
+                    className="text-gray-600 hover:text-[#0066CC]"
                   >
                     Tasks
                   </Link>
@@ -143,7 +143,7 @@ export const LandingFooter: React.FC<LandingFooterProps> = ({
                 <li>
                   <Link
                     href="/help"
-                    className="text-gray-600 hover:text-[#007AFF]"
+                    className="text-gray-600 hover:text-[#0066CC]"
                   >
                     Help Center
                   </Link>
@@ -151,7 +151,7 @@ export const LandingFooter: React.FC<LandingFooterProps> = ({
                 <li>
                   <Link
                     href="/contact"
-                    className="text-gray-600 hover:text-[#007AFF]"
+                    className="text-gray-600 hover:text-[#0066CC]"
                   >
                     Contact
                   </Link>
@@ -159,7 +159,7 @@ export const LandingFooter: React.FC<LandingFooterProps> = ({
                 <li>
                   <Link
                     href="/status"
-                    className="text-gray-600 hover:text-[#007AFF]"
+                    className="text-gray-600 hover:text-[#0066CC]"
                   >
                     Status
                   </Link>
@@ -173,7 +173,7 @@ export const LandingFooter: React.FC<LandingFooterProps> = ({
                 <li>
                   <Link
                     href="/privacy"
-                    className="text-gray-600 hover:text-[#007AFF]"
+                    className="text-gray-600 hover:text-[#0066CC]"
                   >
                     Privacy
                   </Link>
@@ -181,7 +181,7 @@ export const LandingFooter: React.FC<LandingFooterProps> = ({
                 <li>
                   <Link
                     href="/terms"
-                    className="text-gray-600 hover:text-[#007AFF]"
+                    className="text-gray-600 hover:text-[#0066CC]"
                   >
                     Terms
                   </Link>
@@ -189,7 +189,7 @@ export const LandingFooter: React.FC<LandingFooterProps> = ({
                 <li>
                   <Link
                     href="/cookies"
-                    className="text-gray-600 hover:text-[#007AFF]"
+                    className="text-gray-600 hover:text-[#0066CC]"
                   >
                     Cookie Policy
                   </Link>
@@ -203,13 +203,13 @@ export const LandingFooter: React.FC<LandingFooterProps> = ({
         <div className="mt-10 pt-6 border-t border-gray-200 flex flex-col md:flex-row items-center justify-between text-sm text-gray-500">
           <span>&copy; {new Date().getFullYear()} Ambira, Inc.</span>
           <div className="space-x-4 mt-2 md:mt-0">
-            <Link href="/privacy" className="hover:text-[#007AFF]">
+            <Link href="/privacy" className="hover:text-[#0066CC]">
               Privacy
             </Link>
-            <Link href="/terms" className="hover:text-[#007AFF]">
+            <Link href="/terms" className="hover:text-[#0066CC]">
               Terms
             </Link>
-            <Link href="/contact" className="hover:text-[#007AFF]">
+            <Link href="/contact" className="hover:text-[#0066CC]">
               Contact
             </Link>
           </div>

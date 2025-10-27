@@ -97,7 +97,7 @@ export function IconSelector({
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 placeholder="Search icons..."
-                className="w-full pl-9 pr-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#007AFF] focus:border-[#007AFF] text-sm"
+                className="w-full pl-9 pr-3 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#0066CC] focus:border-[#0066CC] text-sm"
                 onClick={e => e.stopPropagation()}
               />
             </div>
@@ -117,7 +117,7 @@ export function IconSelector({
                       onClick={() => handleIconSelect(iconData.name)}
                       className={`p-2 rounded-lg transition-all hover:scale-105 flex items-center justify-center ${
                         isSelected
-                          ? 'ring-2 ring-[#007AFF] ring-offset-2 bg-blue-50'
+                          ? 'ring-2 ring-[#0066CC] ring-offset-2 bg-blue-50'
                           : 'hover:bg-gray-50'
                       }`}
                       title={iconData.label}

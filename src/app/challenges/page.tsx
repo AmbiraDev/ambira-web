@@ -135,7 +135,7 @@ export default function ChallengesPage() {
                   }
                   className={`flex items-center gap-2 px-4 py-2.5 rounded-lg font-semibold text-sm transition-colors min-h-[44px] ${
                     isActive
-                      ? 'bg-[#007AFF] text-white'
+                      ? 'bg-[#0066CC] text-white'
                       : 'bg-gray-50 text-gray-600 hover:bg-gray-100 border border-transparent'
                   }`}
                 >

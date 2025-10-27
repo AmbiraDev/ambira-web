@@ -225,7 +225,7 @@ export const ProjectProgressView: React.FC<ProjectProgressViewProps> = ({
       <div className="grid grid-cols-2 gap-4 mb-6">
         <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4">
           <div className="flex items-center gap-2 mb-2">
-            <div className="w-7 h-7 rounded-full bg-[#007AFF] flex items-center justify-center">
+            <div className="w-7 h-7 rounded-full bg-[#0066CC] flex items-center justify-center">
               <Clock className="w-4 h-4 text-white" />
             </div>
             <span className="text-sm text-gray-600">Total Time</span>
@@ -299,7 +299,7 @@ export const ProjectProgressView: React.FC<ProjectProgressViewProps> = ({
                       }}
                       className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-100 ${
                         timePeriod === period
-                          ? 'text-[#007AFF] font-medium'
+                          ? 'text-[#0066CC] font-medium'
                           : 'text-gray-700'
                       }`}
                     >
@@ -341,7 +341,7 @@ export const ProjectProgressView: React.FC<ProjectProgressViewProps> = ({
               <Line
                 type="monotone"
                 dataKey="hours"
-                stroke="#007AFF"
+                stroke="#0066CC"
                 strokeWidth={2}
                 isAnimationActive={false}
                 dot={(props: {
@@ -358,8 +358,8 @@ export const ProjectProgressView: React.FC<ProjectProgressViewProps> = ({
                       cx={cx}
                       cy={cy}
                       r={isLast ? 6 : 4}
-                      fill={isLast ? '#007AFF' : '#fff'}
-                      stroke="#007AFF"
+                      fill={isLast ? '#0066CC' : '#fff'}
+                      stroke="#0066CC"
                       strokeWidth={2}
                     />
                   );

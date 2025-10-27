@@ -357,7 +357,7 @@ export default function ManualSessionRecorder() {
         <div className="flex justify-between items-center mb-6">
           <button
             onClick={() => router.back()}
-            className="text-[#007AFF] hover:text-[#0051D5] font-semibold text-base"
+            className="text-[#0066CC] hover:text-[#0051D5] font-semibold text-base"
             disabled={isLoading}
           >
             Cancel
@@ -377,7 +377,7 @@ export default function ManualSessionRecorder() {
             type="text"
             value={title}
             onChange={e => setTitle(e.target.value)}
-            className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] text-base ${
+            className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] text-base ${
               errors.title ? 'border-red-500' : 'border-gray-300'
             }`}
             placeholder="Afternoon Work Session"
@@ -392,7 +392,7 @@ export default function ManualSessionRecorder() {
             value={description}
             onChange={e => setDescription(e.target.value)}
             rows={3}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] text-base"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] text-base"
             placeholder="How'd it go? Share more about your session."
             disabled={isLoading}
           />
@@ -401,7 +401,7 @@ export default function ManualSessionRecorder() {
           <select
             value={projectId}
             onChange={e => setProjectId(e.target.value)}
-            className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] bg-white text-base ${
+            className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] bg-white text-base ${
               errors.projectId ? 'border-red-500' : 'border-gray-300'
             }`}
             disabled={isLoading}
@@ -473,9 +473,9 @@ export default function ManualSessionRecorder() {
 
               {/* Upload Button */}
               {selectedImages.length < 3 && (
-                <label className="flex flex-col items-center justify-center gap-2 px-8 py-8 border-[3px] border-dashed border-[#007AFF] rounded-lg cursor-pointer hover:border-[#0051D5] hover:bg-gray-50 transition-colors max-w-[240px]">
-                  <ImageIcon className="w-8 h-8 text-[#007AFF]" />
-                  <span className="text-sm font-medium text-[#007AFF]">
+                <label className="flex flex-col items-center justify-center gap-2 px-8 py-8 border-[3px] border-dashed border-[#0066CC] rounded-lg cursor-pointer hover:border-[#0051D5] hover:bg-gray-50 transition-colors max-w-[240px]">
+                  <ImageIcon className="w-8 h-8 text-[#0066CC]" />
+                  <span className="text-sm font-medium text-[#0066CC]">
                     {imagePreviewUrls.length === 0
                       ? 'Add images'
                       : `Add ${3 - imagePreviewUrls.length} more`}
@@ -509,7 +509,7 @@ export default function ManualSessionRecorder() {
                   value={sessionDate}
                   onChange={e => setSessionDate(e.target.value)}
                   max={new Date().toISOString().split('T')[0]}
-                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] text-sm ${
+                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] text-sm ${
                     errors.sessionDate ? 'border-red-500' : 'border-gray-300'
                   }`}
                   disabled={isLoading}
@@ -531,7 +531,7 @@ export default function ManualSessionRecorder() {
                   type="time"
                   value={startTime}
                   onChange={e => setStartTime(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] text-sm"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] text-sm"
                   disabled={isLoading}
                 />
               </div>
@@ -549,7 +549,7 @@ export default function ManualSessionRecorder() {
                       max="23"
                       value={manualDurationHours}
                       onChange={e => setManualDurationHours(e.target.value)}
-                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] text-sm ${
+                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] text-sm ${
                         errors.duration ? 'border-red-500' : 'border-gray-300'
                       }`}
                       placeholder="Hours"
@@ -563,7 +563,7 @@ export default function ManualSessionRecorder() {
                       max="59"
                       value={manualDurationMinutes}
                       onChange={e => setManualDurationMinutes(e.target.value)}
-                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] text-sm ${
+                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] text-sm ${
                         errors.duration ? 'border-red-500' : 'border-gray-300'
                       }`}
                       placeholder="Minutes"
@@ -590,7 +590,7 @@ export default function ManualSessionRecorder() {
                   e.target.value as 'everyone' | 'followers' | 'private'
                 )
               }
-              className="w-full pl-3 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] appearance-none bg-white min-h-[44px]"
+              className="w-full pl-3 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] appearance-none bg-white min-h-[44px]"
               style={{
                 backgroundImage:
                   "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 9L1 4h10z'/%3E%3C/svg%3E\")",
@@ -615,7 +615,7 @@ export default function ManualSessionRecorder() {
           {/* Save Button */}
           <button
             type="submit"
-            className="w-full px-4 py-3 bg-[#007AFF] text-white rounded-lg hover:bg-[#0051D5] transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-base mt-4"
+            className="w-full px-4 py-3 bg-[#0066CC] text-white rounded-lg hover:bg-[#0051D5] transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-base mt-4"
             disabled={isLoading || isUploadingImages}
           >
             {isUploadingImages

@@ -111,7 +111,7 @@ export const DEFAULT_ACTIVITIES = [
     id: 'work',
     name: 'Work',
     icon: 'flat-color-icons:briefcase',
-    color: '#007AFF',
+    color: '#0066CC',
   },
   {
     id: 'study',

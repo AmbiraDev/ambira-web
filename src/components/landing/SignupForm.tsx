@@ -70,7 +70,7 @@ export const SignupForm: React.FC<SignupFormProps> = ({
           autoComplete="name"
           value={signupData.name}
           onChange={onChange}
-          className={`w-full border rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] focus-visible:ring-offset-2 ${
+          className={`w-full border rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2 ${
             signupErrors.name ? 'border-red-300' : 'border-gray-300'
           } ${isMobile ? 'px-4 py-3 text-base' : 'px-3 py-2 shadow-sm placeholder-gray-400'}`}
           placeholder={
@@ -102,7 +102,7 @@ export const SignupForm: React.FC<SignupFormProps> = ({
             autoComplete="username"
             value={signupData.username}
             onChange={onChange}
-            className={`w-full pr-10 border rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] focus-visible:ring-offset-2 ${
+            className={`w-full pr-10 border rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2 ${
               signupErrors.username
                 ? 'border-red-300'
                 : usernameAvailable === true
@@ -188,7 +188,7 @@ export const SignupForm: React.FC<SignupFormProps> = ({
           autoComplete="email"
           value={signupData.email}
           onChange={onChange}
-          className={`w-full border rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] focus-visible:ring-offset-2 ${
+          className={`w-full border rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2 ${
             signupErrors.email ? 'border-red-300' : 'border-gray-300'
           } ${isMobile ? 'px-4 py-3 text-base' : 'px-3 py-2 shadow-sm placeholder-gray-400'}`}
           placeholder="Enter your email"
@@ -217,7 +217,7 @@ export const SignupForm: React.FC<SignupFormProps> = ({
           autoComplete="new-password"
           value={signupData.password}
           onChange={onChange}
-          className={`w-full border rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] focus-visible:ring-offset-2 ${
+          className={`w-full border rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2 ${
             signupErrors.password ? 'border-red-300' : 'border-gray-300'
           } ${isMobile ? 'px-4 py-3 text-base' : 'px-3 py-2 shadow-sm placeholder-gray-400'}`}
           placeholder="Create a password"
@@ -248,7 +248,7 @@ export const SignupForm: React.FC<SignupFormProps> = ({
           autoComplete="new-password"
           value={confirmPassword}
           onChange={onChange}
-          className={`w-full border rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] focus-visible:ring-offset-2 ${
+          className={`w-full border rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2 ${
             signupErrors.confirmPassword ? 'border-red-300' : 'border-gray-300'
           } ${isMobile ? 'px-4 py-3 text-base' : 'px-3 py-2 shadow-sm placeholder-gray-400'}`}
           placeholder="Confirm your password"
@@ -266,10 +266,10 @@ export const SignupForm: React.FC<SignupFormProps> = ({
       <button
         type="submit"
         disabled={isLoading}
-        className={`w-full bg-[#007AFF] text-white font-semibold rounded-lg hover:bg-[#0056D6] transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+        className={`w-full bg-[#0066CC] text-white font-semibold rounded-lg hover:bg-[#0051D5] transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
           isMobile
             ? 'py-4 text-lg min-h-[44px]'
-            : 'py-3 px-4 text-sm border border-transparent shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#007AFF]'
+            : 'py-3 px-4 text-sm border border-transparent shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0066CC]'
         }`}
       >
         {isLoading ? (

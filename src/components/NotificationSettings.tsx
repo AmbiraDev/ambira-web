@@ -295,7 +295,7 @@ export const NotificationSettings: React.FC<NotificationSettingsProps> = ({
         <Button
           onClick={handleSave}
           disabled={isSaving}
-          className="min-w-[120px] bg-[#007AFF] hover:bg-[#0051D5]"
+          className="min-w-[120px] bg-[#0066CC] hover:bg-[#0051D5]"
         >
           {isSaving ? (
             <div className="flex items-center gap-2">

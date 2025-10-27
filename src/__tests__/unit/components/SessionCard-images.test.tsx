@@ -71,7 +71,7 @@ describe('SessionCard - Image Display', () => {
     name: 'Test Project',
     description: 'Test description',
     icon: '📝',
-    color: '#007AFF',
+    color: '#0066CC',
     status: 'active' as const,
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date('2024-01-01'),

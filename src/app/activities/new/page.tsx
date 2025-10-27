@@ -495,7 +495,7 @@ function CreateActivityContent() {
                 id="name"
                 value={formData.name}
                 onChange={e => handleInputChange('name', e.target.value)}
-                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] transition-colors ${
+                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] transition-colors ${
                   errors.name ? 'border-red-500' : 'border-gray-300'
                 }`}
                 placeholder="Enter activity name"
@@ -518,7 +518,7 @@ function CreateActivityContent() {
                 id="description"
                 value={formData.description}
                 onChange={e => handleInputChange('description', e.target.value)}
-                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] resize-none transition-colors ${
+                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] resize-none transition-colors ${
                   errors.description ? 'border-red-500' : 'border-gray-300'
                 }`}
                 placeholder="Describe your activity (optional)"
@@ -589,7 +589,7 @@ function CreateActivityContent() {
                     e.target.value ? Number(e.target.value) : undefined
                   )
                 }
-                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] transition-colors ${
+                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] transition-colors ${
                   errors.weeklyTarget ? 'border-red-500' : 'border-gray-300'
                 }`}
                 placeholder="Optional"
@@ -625,7 +625,7 @@ function CreateActivityContent() {
                     e.target.value ? Number(e.target.value) : undefined
                   )
                 }
-                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] transition-colors ${
+                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] transition-colors ${
                   errors.totalTarget ? 'border-red-500' : 'border-gray-300'
                 }`}
                 placeholder="Optional"
@@ -656,7 +656,7 @@ function CreateActivityContent() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="flex-1 px-6 py-3 bg-[#007AFF] text-white rounded-lg hover:bg-[#0056D6] transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-md"
+                className="flex-1 px-6 py-3 bg-[#0066CC] text-white rounded-lg hover:bg-[#0051D5] transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-md"
               >
                 {isSubmitting ? 'Creating...' : 'Create Activity'}
               </button>

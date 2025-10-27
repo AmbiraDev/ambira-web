@@ -279,7 +279,7 @@ export default function ContactPage() {
                   className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:border-transparent transition-colors ${
                     errors.name && touched.has('name')
                       ? 'border-red-500 focus:ring-red-200'
-                      : 'border-gray-300 focus:ring-[#007AFF]'
+                      : 'border-gray-300 focus:ring-[#0066CC]'
                   }`}
                   placeholder="Your name"
                   aria-invalid={
@@ -314,7 +314,7 @@ export default function ContactPage() {
                   className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:border-transparent transition-colors ${
                     errors.email && touched.has('email')
                       ? 'border-red-500 focus:ring-red-200'
-                      : 'border-gray-300 focus:ring-[#007AFF]'
+                      : 'border-gray-300 focus:ring-[#0066CC]'
                   }`}
                   placeholder="your@email.com"
                   aria-invalid={
@@ -345,7 +345,7 @@ export default function ContactPage() {
                 id="type"
                 value={formData.type}
                 onChange={e => handleChange('type', e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-transparent"
               >
                 <option value="general">General Question</option>
                 <option value="support">Technical Support</option>
@@ -374,7 +374,7 @@ export default function ContactPage() {
                 className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:border-transparent transition-colors ${
                   errors.subject && touched.has('subject')
                     ? 'border-red-500 focus:ring-red-200'
-                    : 'border-gray-300 focus:ring-[#007AFF]'
+                    : 'border-gray-300 focus:ring-[#0066CC]'
                 }`}
                 placeholder="Brief description of your inquiry"
                 aria-invalid={
@@ -409,7 +409,7 @@ export default function ContactPage() {
                 className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:border-transparent resize-none transition-colors ${
                   errors.message && touched.has('message')
                     ? 'border-red-500 focus:ring-red-200'
-                    : 'border-gray-300 focus:ring-[#007AFF]'
+                    : 'border-gray-300 focus:ring-[#0066CC]'
                 }`}
                 placeholder="Tell us more about your question or concern..."
                 aria-invalid={
@@ -445,7 +445,7 @@ export default function ContactPage() {
                     }
                   }}
                   onBlur={() => handleBlur('privacyAgree')}
-                  className={`mt-1 mr-2 h-4 w-4 rounded border-gray-300 text-[#007AFF] focus:ring-[#007AFF] ${
+                  className={`mt-1 mr-2 h-4 w-4 rounded border-gray-300 text-[#0066CC] focus:ring-[#0066CC] ${
                     errors.privacyAgree && touched.has('privacyAgree')
                       ? 'border-red-500'
                       : ''

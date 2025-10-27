@@ -330,7 +330,7 @@ export const LandingPage: React.FC = () => {
                 Already a Member?{' '}
                 <button
                   onClick={() => setShowLogin(true)}
-                  className="text-[#007AFF] font-semibold hover:text-[#0056D6] transition-colors"
+                  className="text-[#0066CC] font-semibold hover:text-[#0056D6] transition-colors"
                 >
                   Log In
                 </button>
@@ -370,7 +370,7 @@ export const LandingPage: React.FC = () => {
               <button
                 onClick={handleSignupWithEmail}
                 disabled={isLoading}
-                className="w-full flex items-center justify-center px-4 py-3 bg-[#007AFF] text-white font-semibold rounded-lg hover:bg-[#0056D6] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full flex items-center justify-center px-4 py-3 bg-[#0066CC] text-white font-semibold rounded-lg hover:bg-[#0051D5] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLoading ? (
                   <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
@@ -383,11 +383,11 @@ export const LandingPage: React.FC = () => {
             {/* Legal Text */}
             <p className="text-sm text-gray-600 text-center mt-6">
               By continuing, you are agreeing to our{' '}
-              <Link href="/terms" className="text-[#007AFF]">
+              <Link href="/terms" className="text-[#0066CC]">
                 Terms of Service
               </Link>{' '}
               and{' '}
-              <Link href="/privacy" className="text-[#007AFF]">
+              <Link href="/privacy" className="text-[#0066CC]">
                 Privacy Policy
               </Link>
               .
@@ -478,7 +478,7 @@ export const LandingPage: React.FC = () => {
                       type="email"
                       value={loginData.email}
                       onChange={handleLoginChange}
-                      className="w-full px-3 py-2.5 border border-gray-300 rounded-md text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] focus-visible:ring-offset-2"
+                      className="w-full px-3 py-2.5 border border-gray-300 rounded-md text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2"
                       placeholder="Email"
                     />
                   </div>
@@ -495,14 +495,14 @@ export const LandingPage: React.FC = () => {
                       type="password"
                       value={loginData.password}
                       onChange={handleLoginChange}
-                      className="w-full px-3 py-2.5 border border-gray-300 rounded-md text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] focus-visible:ring-offset-2"
+                      className="w-full px-3 py-2.5 border border-gray-300 rounded-md text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2"
                       placeholder="Password"
                     />
                   </div>
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full py-4 bg-[#007AFF] text-white font-semibold rounded-lg hover:bg-[#0056D6] transition-colors min-h-[44px]"
+                    className="w-full py-4 bg-[#0066CC] text-white font-semibold rounded-lg hover:bg-[#0051D5] transition-colors min-h-[44px]"
                   >
                     {isLoading ? 'Logging in...' : 'Log In'}
                   </button>
@@ -559,7 +559,7 @@ export const LandingPage: React.FC = () => {
                       autoComplete="name"
                       value={signupData.name}
                       onChange={handleSignupChange}
-                      className={`w-full px-4 py-3 border rounded-md text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] focus-visible:ring-offset-2 ${
+                      className={`w-full px-4 py-3 border rounded-md text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2 ${
                         signupErrors.name ? 'border-red-300' : 'border-gray-300'
                       }`}
                       placeholder="Enter your full name"
@@ -582,7 +582,7 @@ export const LandingPage: React.FC = () => {
                         autoComplete="username"
                         value={signupData.username}
                         onChange={handleSignupChange}
-                        className={`w-full px-4 py-3 pr-10 border rounded-md text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] focus-visible:ring-offset-2 ${
+                        className={`w-full px-4 py-3 pr-10 border rounded-md text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2 ${
                           signupErrors.username
                             ? 'border-red-300'
                             : usernameAvailable === true
@@ -659,7 +659,7 @@ export const LandingPage: React.FC = () => {
                       autoComplete="email"
                       value={signupData.email}
                       onChange={handleSignupChange}
-                      className={`w-full px-4 py-3 border rounded-md text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] focus-visible:ring-offset-2 ${
+                      className={`w-full px-4 py-3 border rounded-md text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2 ${
                         signupErrors.email
                           ? 'border-red-300'
                           : 'border-gray-300'
@@ -683,7 +683,7 @@ export const LandingPage: React.FC = () => {
                       autoComplete="new-password"
                       value={signupData.password}
                       onChange={handleSignupChange}
-                      className={`w-full px-4 py-3 border rounded-md text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] focus-visible:ring-offset-2 ${
+                      className={`w-full px-4 py-3 border rounded-md text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2 ${
                         signupErrors.password
                           ? 'border-red-300'
                           : 'border-gray-300'
@@ -707,7 +707,7 @@ export const LandingPage: React.FC = () => {
                       autoComplete="new-password"
                       value={confirmPassword}
                       onChange={handleSignupChange}
-                      className={`w-full px-4 py-3 border rounded-md text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] focus-visible:ring-offset-2 ${
+                      className={`w-full px-4 py-3 border rounded-md text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2 ${
                         signupErrors.confirmPassword
                           ? 'border-red-300'
                           : 'border-gray-300'
@@ -724,7 +724,7 @@ export const LandingPage: React.FC = () => {
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full py-4 bg-[#007AFF] text-white font-semibold text-lg rounded-lg hover:bg-[#0056D6] transition-colors disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px]"
+                    className="w-full py-4 bg-[#0066CC] text-white font-semibold text-lg rounded-lg hover:bg-[#0051D5] transition-colors disabled:opacity-50 disabled:cursor-not-allowed min-h-[44px]"
                   >
                     {isLoading ? (
                       <div className="flex items-center justify-center">
@@ -742,11 +742,11 @@ export const LandingPage: React.FC = () => {
             {/* Legal Text */}
             <p className="text-sm text-gray-600 text-center mt-6">
               By continuing, you are agreeing to our{' '}
-              <Link href="/terms" className="text-[#007AFF]">
+              <Link href="/terms" className="text-[#0066CC]">
                 Terms of Service
               </Link>{' '}
               and{' '}
-              <Link href="/privacy" className="text-[#007AFF]">
+              <Link href="/privacy" className="text-[#0066CC]">
                 Privacy Policy
               </Link>
               .
@@ -783,7 +783,7 @@ export const LandingPage: React.FC = () => {
                   Already a Member?{' '}
                   <button
                     onClick={() => setShowLogin(true)}
-                    className="text-[#007AFF] font-semibold hover:text-[#0056D6] transition-colors"
+                    className="text-[#0066CC] font-semibold hover:text-[#0056D6] transition-colors"
                   >
                     Log In
                   </button>
@@ -869,7 +869,7 @@ export const LandingPage: React.FC = () => {
                   <button
                     onClick={handleSignupWithEmail}
                     disabled={isLoading}
-                    className="w-full flex items-center justify-center px-6 py-4 bg-[#007AFF] text-white font-semibold text-lg rounded-lg hover:bg-[#0056D6] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full flex items-center justify-center px-6 py-4 bg-[#0066CC] text-white font-semibold text-lg rounded-lg hover:bg-[#0051D5] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isLoading ? (
                       <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
@@ -953,7 +953,7 @@ export const LandingPage: React.FC = () => {
                       autoComplete="email"
                       value={loginData.email}
                       onChange={handleLoginChange}
-                      className={`w-full px-4 py-4 text-lg border rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] focus-visible:ring-offset-2 ${loginErrors.email ? 'border-red-300' : 'border-gray-300'}`}
+                      className={`w-full px-4 py-4 text-lg border rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2 ${loginErrors.email ? 'border-red-300' : 'border-gray-300'}`}
                       placeholder="Enter your email"
                     />
                     {loginErrors.email && (
@@ -976,7 +976,7 @@ export const LandingPage: React.FC = () => {
                       autoComplete="current-password"
                       value={loginData.password}
                       onChange={handleLoginChange}
-                      className={`w-full px-4 py-4 text-lg border rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] focus-visible:ring-offset-2 ${loginErrors.password ? 'border-red-300' : 'border-gray-300'}`}
+                      className={`w-full px-4 py-4 text-lg border rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2 ${loginErrors.password ? 'border-red-300' : 'border-gray-300'}`}
                       placeholder="Enter your password"
                     />
                     {loginErrors.password && (
@@ -996,7 +996,7 @@ export const LandingPage: React.FC = () => {
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full flex justify-center py-4 px-4 rounded-lg text-lg font-semibold text-white bg-[#007AFF] hover:bg-[#0056D6] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#007AFF] disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full flex justify-center py-4 px-4 rounded-lg text-lg font-semibold text-white bg-[#0066CC] hover:bg-[#0051D5] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#0066CC] disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isLoading ? 'Signing in...' : 'Sign In'}
                   </button>
@@ -1043,7 +1043,7 @@ export const LandingPage: React.FC = () => {
                       autoComplete="name"
                       value={signupData.name}
                       onChange={handleSignupChange}
-                      className={`w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] focus-visible:ring-offset-2 ${
+                      className={`w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2 ${
                         signupErrors.name ? 'border-red-300' : 'border-gray-300'
                       }`}
                       placeholder="Enter your full name"
@@ -1070,7 +1070,7 @@ export const LandingPage: React.FC = () => {
                         autoComplete="username"
                         value={signupData.username}
                         onChange={handleSignupChange}
-                        className={`w-full px-3 py-2 pr-10 border rounded-md shadow-sm placeholder-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] focus-visible:ring-offset-2 ${
+                        className={`w-full px-3 py-2 pr-10 border rounded-md shadow-sm placeholder-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2 ${
                           signupErrors.username
                             ? 'border-red-300'
                             : usernameAvailable === true
@@ -1151,7 +1151,7 @@ export const LandingPage: React.FC = () => {
                       autoComplete="email"
                       value={signupData.email}
                       onChange={handleSignupChange}
-                      className={`w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] focus-visible:ring-offset-2 ${
+                      className={`w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2 ${
                         signupErrors.email
                           ? 'border-red-300'
                           : 'border-gray-300'
@@ -1179,7 +1179,7 @@ export const LandingPage: React.FC = () => {
                       autoComplete="new-password"
                       value={signupData.password}
                       onChange={handleSignupChange}
-                      className={`w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] focus-visible:ring-offset-2 ${
+                      className={`w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2 ${
                         signupErrors.password
                           ? 'border-red-300'
                           : 'border-gray-300'
@@ -1207,7 +1207,7 @@ export const LandingPage: React.FC = () => {
                       autoComplete="new-password"
                       value={confirmPassword}
                       onChange={handleSignupChange}
-                      className={`w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] focus-visible:ring-offset-2 ${
+                      className={`w-full px-3 py-2 border rounded-md shadow-sm placeholder-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2 ${
                         signupErrors.confirmPassword
                           ? 'border-red-300'
                           : 'border-gray-300'
@@ -1224,7 +1224,7 @@ export const LandingPage: React.FC = () => {
                   <button
                     type="submit"
                     disabled={isLoading}
-                    className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-[#007AFF] hover:bg-[#0056D6] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#007AFF] disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-[#0066CC] hover:bg-[#0051D5] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0066CC] disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isLoading ? (
                       <div className="flex items-center">
@@ -1243,11 +1243,11 @@ export const LandingPage: React.FC = () => {
           {/* Legal Text */}
           <p className="text-sm text-gray-900 text-center">
             By continuing, you are agreeing to our{' '}
-            <Link href="/terms" className="text-[#007AFF] hover:underline">
+            <Link href="/terms" className="text-[#0066CC] hover:underline">
               Terms of Service
             </Link>{' '}
             and{' '}
-            <Link href="/privacy" className="text-[#007AFF] hover:underline">
+            <Link href="/privacy" className="text-[#0066CC] hover:underline">
               Privacy Policy
             </Link>
             .
@@ -1273,7 +1273,7 @@ export const LandingPage: React.FC = () => {
                     height={32}
                   />
                 </div>
-                <span className="text-xl font-bold text-[#007AFF]">Ambira</span>
+                <span className="text-xl font-bold text-[#0066CC]">Ambira</span>
               </div>
               <p className="text-sm text-gray-600 max-w-xs mb-4">
                 Track focus sessions, hit goals, and share progress with
@@ -1317,7 +1317,7 @@ export const LandingPage: React.FC = () => {
                   <li>
                     <Link
                       href="/features"
-                      className="text-gray-600 hover:text-[#007AFF]"
+                      className="text-gray-600 hover:text-[#0066CC]"
                     >
                       Features
                     </Link>
@@ -1325,7 +1325,7 @@ export const LandingPage: React.FC = () => {
                   <li>
                     <Link
                       href="/activities"
-                      className="text-gray-600 hover:text-[#007AFF]"
+                      className="text-gray-600 hover:text-[#0066CC]"
                     >
                       Activities
                     </Link>
@@ -1333,7 +1333,7 @@ export const LandingPage: React.FC = () => {
                   <li>
                     <Link
                       href="/groups"
-                      className="text-gray-600 hover:text-[#007AFF]"
+                      className="text-gray-600 hover:text-[#0066CC]"
                     >
                       Groups
                     </Link>
@@ -1341,7 +1341,7 @@ export const LandingPage: React.FC = () => {
                   <li>
                     <Link
                       href="/challenges"
-                      className="text-gray-600 hover:text-[#007AFF]"
+                      className="text-gray-600 hover:text-[#0066CC]"
                     >
                       Challenges
                     </Link>
@@ -1355,7 +1355,7 @@ export const LandingPage: React.FC = () => {
                   <li>
                     <Link
                       href="/about"
-                      className="text-gray-600 hover:text-[#007AFF]"
+                      className="text-gray-600 hover:text-[#0066CC]"
                     >
                       About
                     </Link>
@@ -1363,7 +1363,7 @@ export const LandingPage: React.FC = () => {
                   <li>
                     <Link
                       href="/feed"
-                      className="text-gray-600 hover:text-[#007AFF]"
+                      className="text-gray-600 hover:text-[#0066CC]"
                     >
                       Community
                     </Link>
@@ -1371,7 +1371,7 @@ export const LandingPage: React.FC = () => {
                   <li>
                     <Link
                       href="/sessions"
-                      className="text-gray-600 hover:text-[#007AFF]"
+                      className="text-gray-600 hover:text-[#0066CC]"
                     >
                       Sessions
                     </Link>
@@ -1379,7 +1379,7 @@ export const LandingPage: React.FC = () => {
                   <li>
                     <Link
                       href="/tasks"
-                      className="text-gray-600 hover:text-[#007AFF]"
+                      className="text-gray-600 hover:text-[#0066CC]"
                     >
                       Tasks
                     </Link>
@@ -1393,7 +1393,7 @@ export const LandingPage: React.FC = () => {
                   <li>
                     <Link
                       href="/help"
-                      className="text-gray-600 hover:text-[#007AFF]"
+                      className="text-gray-600 hover:text-[#0066CC]"
                     >
                       Help Center
                     </Link>
@@ -1401,7 +1401,7 @@ export const LandingPage: React.FC = () => {
                   <li>
                     <Link
                       href="/contact"
-                      className="text-gray-600 hover:text-[#007AFF]"
+                      className="text-gray-600 hover:text-[#0066CC]"
                     >
                       Contact
                     </Link>
@@ -1409,7 +1409,7 @@ export const LandingPage: React.FC = () => {
                   <li>
                     <Link
                       href="/status"
-                      className="text-gray-600 hover:text-[#007AFF]"
+                      className="text-gray-600 hover:text-[#0066CC]"
                     >
                       Status
                     </Link>
@@ -1423,7 +1423,7 @@ export const LandingPage: React.FC = () => {
                   <li>
                     <Link
                       href="/privacy"
-                      className="text-gray-600 hover:text-[#007AFF]"
+                      className="text-gray-600 hover:text-[#0066CC]"
                     >
                       Privacy
                     </Link>
@@ -1431,7 +1431,7 @@ export const LandingPage: React.FC = () => {
                   <li>
                     <Link
                       href="/terms"
-                      className="text-gray-600 hover:text-[#007AFF]"
+                      className="text-gray-600 hover:text-[#0066CC]"
                     >
                       Terms
                     </Link>
@@ -1439,7 +1439,7 @@ export const LandingPage: React.FC = () => {
                   <li>
                     <Link
                       href="/cookies"
-                      className="text-gray-600 hover:text-[#007AFF]"
+                      className="text-gray-600 hover:text-[#0066CC]"
                     >
                       Cookie Policy
                     </Link>
@@ -1453,13 +1453,13 @@ export const LandingPage: React.FC = () => {
           <div className="mt-10 pt-6 border-t border-gray-200 flex flex-col md:flex-row items-center justify-between text-sm text-gray-500">
             <span>© {new Date().getFullYear()} Ambira, Inc.</span>
             <div className="space-x-4 mt-2 md:mt-0">
-              <Link href="/privacy" className="hover:text-[#007AFF]">
+              <Link href="/privacy" className="hover:text-[#0066CC]">
                 Privacy
               </Link>
-              <Link href="/terms" className="hover:text-[#007AFF]">
+              <Link href="/terms" className="hover:text-[#0066CC]">
                 Terms
               </Link>
-              <Link href="/contact" className="hover:text-[#007AFF]">
+              <Link href="/contact" className="hover:text-[#0066CC]">
                 Contact
               </Link>
             </div>

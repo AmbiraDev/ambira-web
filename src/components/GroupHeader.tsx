@@ -175,7 +175,7 @@ export default function GroupHeader({
                 {onInvite && (
                   <button
                     onClick={onInvite}
-                    className="py-3 px-4 bg-[#007AFF] hover:bg-[#0056D6] text-white rounded-xl font-semibold text-sm transition-colors flex items-center gap-2"
+                    className="py-3 px-4 bg-[#0066CC] hover:bg-[#0051D5] text-white rounded-xl font-semibold text-sm transition-colors flex items-center gap-2"
                   >
                     <UserPlus className="w-4 h-4" />
                     Invite
@@ -186,7 +186,7 @@ export default function GroupHeader({
               <button
                 onClick={handleJoin}
                 disabled={isLoading}
-                className="flex-1 py-3 px-4 bg-[#007AFF] hover:bg-[#0056D6] text-white rounded-xl font-semibold text-sm transition-colors disabled:opacity-50"
+                className="flex-1 py-3 px-4 bg-[#0066CC] hover:bg-[#0051D5] text-white rounded-xl font-semibold text-sm transition-colors disabled:opacity-50"
               >
                 {group.privacySetting === 'public'
                   ? 'Join Group'
@@ -204,7 +204,7 @@ export default function GroupHeader({
                 {onInvite && (
                   <button
                     onClick={onInvite}
-                    className="py-3 px-4 bg-[#007AFF] hover:bg-[#0056D6] text-white rounded-xl font-semibold text-sm transition-colors flex items-center gap-2"
+                    className="py-3 px-4 bg-[#0066CC] hover:bg-[#0051D5] text-white rounded-xl font-semibold text-sm transition-colors flex items-center gap-2"
                   >
                     <UserPlus className="w-4 h-4" />
                     Invite
@@ -220,7 +220,7 @@ export default function GroupHeader({
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4 md:px-0 px-6">
             <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4">
               <div className="flex items-center gap-2 mb-2">
-                <div className="w-7 h-7 rounded-full bg-[#007AFF] flex items-center justify-center">
+                <div className="w-7 h-7 rounded-full bg-[#0066CC] flex items-center justify-center">
                   <Users className="w-4 h-4 text-white" />
                 </div>
                 <span className="text-xs text-gray-600">Active Members</span>

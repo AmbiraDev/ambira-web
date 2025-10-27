@@ -108,7 +108,7 @@ export const CommentList: React.FC<CommentListProps> = ({
         <div className="text-center text-red-600 mb-4">{error}</div>
         <button
           onClick={() => refetch()}
-          className="w-full py-2 text-sm font-medium text-[#007AFF] hover:text-[#0051D5]"
+          className="w-full py-2 text-sm font-medium text-[#0066CC] hover:text-[#0051D5]"
         >
           Try again
         </button>
@@ -166,7 +166,7 @@ export const CommentList: React.FC<CommentListProps> = ({
         ) : (
           <button
             onClick={() => setShowInput(true)}
-            className="w-full text-left px-4 py-3 text-gray-500 border border-gray-300 rounded-lg hover:border-[#007AFF] transition-colors"
+            className="w-full text-left px-4 py-3 text-gray-500 border border-gray-300 rounded-lg hover:border-[#0066CC] transition-colors"
           >
             Add a comment, @ to mention
           </button>

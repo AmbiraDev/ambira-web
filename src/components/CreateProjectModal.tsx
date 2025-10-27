@@ -239,7 +239,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
                   id="name"
                   value={formData.name}
                   onChange={e => handleInputChange('name', e.target.value)}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] transition-colors ${
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] transition-colors ${
                     errors.name ? 'border-red-500' : 'border-gray-300'
                   }`}
                   placeholder="Enter project name"
@@ -274,7 +274,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
                   onChange={e =>
                     handleInputChange('description', e.target.value)
                   }
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] resize-none transition-colors ${
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] resize-none transition-colors ${
                     errors.description ? 'border-red-500' : 'border-gray-300'
                   }`}
                   placeholder="Describe your project (optional)"
@@ -315,7 +315,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
                       onClick={() => handleInputChange('icon', icon)}
                       className={`w-14 h-14 rounded-lg border-2 flex items-center justify-center text-2xl transition-all ${
                         formData.icon === icon
-                          ? 'border-[#007AFF] bg-blue-50 shadow-md'
+                          ? 'border-[#0066CC] bg-blue-50 shadow-md'
                           : 'border-gray-200 hover:border-gray-300 hover:shadow-sm'
                       }`}
                       aria-label={`Select ${icon} icon`}
@@ -393,7 +393,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
                       e.target.value ? Number(e.target.value) : undefined
                     )
                   }
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] transition-colors ${
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] transition-colors ${
                     errors.weeklyTarget ? 'border-red-500' : 'border-gray-300'
                   }`}
                   placeholder="Optional"
@@ -428,7 +428,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
                       e.target.value ? Number(e.target.value) : undefined
                     )
                   }
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] transition-colors ${
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] transition-colors ${
                     errors.totalTarget ? 'border-red-500' : 'border-gray-300'
                   }`}
                   placeholder="Optional"
@@ -460,7 +460,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="flex-1 px-6 py-3 bg-[#007AFF] text-white rounded-lg hover:bg-[#0056D6] transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-md"
+                className="flex-1 px-6 py-3 bg-[#0066CC] text-white rounded-lg hover:bg-[#0051D5] transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-medium shadow-md"
               >
                 {isSubmitting ? 'Creating...' : 'Create Project'}
               </button>

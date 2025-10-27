@@ -68,7 +68,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({
           <Link
             key={index}
             href={`/profile/${username}`}
-            className="text-[#007AFF] hover:text-[#0051D5] font-medium"
+            className="text-[#0066CC] hover:text-[#0051D5] font-medium"
           >
             {part}
           </Link>
@@ -151,7 +151,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({
         <div className="flex items-baseline justify-between gap-2">
           <div className="flex items-baseline gap-2 min-w-0">
             <Link href={`/profile/${comment.user.username}`}>
-              <span className="text-sm font-semibold text-gray-900 hover:text-[#007AFF] transition-colors">
+              <span className="text-sm font-semibold text-gray-900 hover:text-[#0066CC] transition-colors">
                 {comment.user.name}
               </span>
             </Link>

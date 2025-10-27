@@ -178,7 +178,7 @@ export default function GroupSettingsPage() {
             </h1>
             <button
               onClick={() => router.push('/groups')}
-              className="bg-[#007AFF] text-white px-4 py-2 rounded-lg hover:bg-[#0051D5]"
+              className="bg-[#0066CC] text-white px-4 py-2 rounded-lg hover:bg-[#0051D5]"
             >
               Back to Groups
             </button>
@@ -245,7 +245,7 @@ export default function GroupSettingsPage() {
               required
               value={formData.name}
               onChange={e => setFormData({ ...formData, name: e.target.value })}
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:border-transparent"
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:border-transparent"
               placeholder="Enter group name"
             />
           </div>
@@ -265,7 +265,7 @@ export default function GroupSettingsPage() {
               onChange={e =>
                 setFormData({ ...formData, location: e.target.value })
               }
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:border-transparent"
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:border-transparent"
               placeholder="Enter location"
             />
           </div>
@@ -292,7 +292,7 @@ export default function GroupSettingsPage() {
                     | 'other',
                 })
               }
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:border-transparent bg-white"
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:border-transparent bg-white"
             >
               <option value="work">Work</option>
               <option value="study">Study</option>
@@ -323,7 +323,7 @@ export default function GroupSettingsPage() {
                     | 'other',
                 })
               }
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:border-transparent bg-white"
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:border-transparent bg-white"
             >
               <option value="just-for-fun">Just For Fun</option>
               <option value="professional">Professional</option>
@@ -353,7 +353,7 @@ export default function GroupSettingsPage() {
               }}
               rows={4}
               maxLength={200}
-              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:border-transparent resize-none"
+              className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:border-transparent resize-none"
               placeholder="Describe your group"
             />
             <p className="text-xs text-gray-500 mt-1">

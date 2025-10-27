@@ -79,7 +79,7 @@ export default function GroupAnalytics({
                 onClick={() => setTimeRange(range)}
                 className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${
                   timeRange === range
-                    ? 'bg-[#007AFF] text-white'
+                    ? 'bg-[#0066CC] text-white'
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
               >
@@ -95,8 +95,8 @@ export default function GroupAnalytics({
             <AreaChart data={hoursData}>
               <defs>
                 <linearGradient id="colorHours" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#007AFF" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="#007AFF" stopOpacity={0} />
+                  <stop offset="5%" stopColor="#0066CC" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="#0066CC" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -117,7 +117,7 @@ export default function GroupAnalytics({
               <Area
                 type="monotone"
                 dataKey="hours"
-                stroke="#007AFF"
+                stroke="#0066CC"
                 strokeWidth={2}
                 fillOpacity={1}
                 fill="url(#colorHours)"

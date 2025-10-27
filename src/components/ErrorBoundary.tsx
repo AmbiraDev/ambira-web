@@ -129,7 +129,7 @@ export class ErrorBoundary extends Component<Props, State> {
               <div className="flex flex-col sm:flex-row gap-3 w-full">
                 <button
                   onClick={this.handleReset}
-                  className="flex-1 inline-flex items-center justify-center gap-2 bg-[#007AFF] text-white px-6 py-3 rounded-lg hover:bg-[#0056D6] transition-colors font-medium shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] focus-visible:ring-offset-2"
+                  className="flex-1 inline-flex items-center justify-center gap-2 bg-[#0066CC] text-white px-6 py-3 rounded-lg hover:bg-[#0051D5] transition-colors font-medium shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2"
                   aria-label="Try again"
                 >
                   <RefreshCw className="w-5 h-5" aria-hidden="true" />
@@ -137,7 +137,7 @@ export class ErrorBoundary extends Component<Props, State> {
                 </button>
                 <button
                   onClick={this.handleReload}
-                  className="flex-1 px-6 py-3 text-gray-700 font-medium border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] focus-visible:ring-offset-2"
+                  className="flex-1 px-6 py-3 text-gray-700 font-medium border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2"
                   aria-label="Reload page"
                 >
                   Reload Page

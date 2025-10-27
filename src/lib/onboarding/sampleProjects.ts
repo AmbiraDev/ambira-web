@@ -9,7 +9,7 @@ export const suggestedProjects: SuggestedProject[] = [
   {
     name: 'Work',
     description: 'Professional work and meetings',
-    color: '#007AFF',
+    color: '#0066CC',
     icon: 'flat-color-icons:briefcase',
   },
   {

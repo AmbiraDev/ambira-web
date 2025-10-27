@@ -131,7 +131,7 @@ export default function GroupInviteLanding({
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="w-12 h-12 animate-spin text-[#007AFF] mx-auto mb-4" />
+          <Loader2 className="w-12 h-12 animate-spin text-[#0066CC] mx-auto mb-4" />
           <p className="text-gray-600">Loading group...</p>
         </div>
       </div>
@@ -154,7 +154,7 @@ export default function GroupInviteLanding({
           </p>
           <button
             onClick={() => router.push('/')}
-            className="bg-[#007AFF] text-white px-6 py-3 rounded-lg hover:bg-[#0051D5] transition-colors font-medium"
+            className="bg-[#0066CC] text-white px-6 py-3 rounded-lg hover:bg-[#0051D5] transition-colors font-medium"
           >
             Go to Home
           </button>
@@ -168,7 +168,7 @@ export default function GroupInviteLanding({
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="w-12 h-12 animate-spin text-[#007AFF] mx-auto mb-4" />
+          <Loader2 className="w-12 h-12 animate-spin text-[#0066CC] mx-auto mb-4" />
           <p className="text-gray-600">Joining {group.name}...</p>
         </div>
       </div>
@@ -196,7 +196,7 @@ export default function GroupInviteLanding({
         {/* Group Card */}
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden mb-6">
           {/* Group Header */}
-          <div className="bg-gradient-to-r from-[#007AFF] to-[#0051D5] px-8 py-12 text-center">
+          <div className="bg-gradient-to-r from-[#0066CC] to-[#0051D5] px-8 py-12 text-center">
             {/* Group Avatar */}
             <div className="w-24 h-24 mx-auto mb-4 bg-white rounded-full flex items-center justify-center overflow-hidden">
               {group.imageUrl ? (
@@ -208,7 +208,7 @@ export default function GroupInviteLanding({
                   className="w-full h-full rounded-full object-cover"
                 />
               ) : (
-                <Users className="w-12 h-12 text-[#007AFF]" />
+                <Users className="w-12 h-12 text-[#0066CC]" />
               )}
             </div>
 
@@ -263,7 +263,7 @@ export default function GroupInviteLanding({
             <div className="space-y-3">
               <button
                 onClick={handleSignUp}
-                className="w-full bg-[#007AFF] text-white px-6 py-4 rounded-lg hover:bg-[#0051D5] transition-colors font-semibold text-lg shadow-md hover:shadow-lg"
+                className="w-full bg-[#0066CC] text-white px-6 py-4 rounded-lg hover:bg-[#0051D5] transition-colors font-semibold text-lg shadow-md hover:shadow-lg"
               >
                 Sign Up to Join {group.name}
               </button>
@@ -273,7 +273,7 @@ export default function GroupInviteLanding({
                   Already have an account?{' '}
                   <button
                     onClick={handleLogin}
-                    className="text-[#007AFF] hover:underline font-medium"
+                    className="text-[#0066CC] hover:underline font-medium"
                   >
                     Log in
                   </button>

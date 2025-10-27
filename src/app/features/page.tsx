@@ -99,7 +99,7 @@ export default function FeaturesPage() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-[#007AFF] to-[#0055CC] text-white">
+      <div className="bg-gradient-to-r from-[#0066CC] to-[#0055CC] text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
           <div className="text-center">
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold mb-6">
@@ -113,7 +113,7 @@ export default function FeaturesPage() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 href="/signup"
-                className="inline-flex items-center justify-center px-8 py-3 text-lg font-semibold bg-white text-[#007AFF] rounded-lg hover:bg-gray-100 transition-colors"
+                className="inline-flex items-center justify-center px-8 py-3 text-lg font-semibold bg-white text-[#0066CC] rounded-lg hover:bg-gray-100 transition-colors"
               >
                 Get Started Free
               </Link>
@@ -136,7 +136,7 @@ export default function FeaturesPage() {
               key={index}
               className="bg-white rounded-xl shadow-lg p-6 text-center transform hover:scale-105 transition-transform"
             >
-              <stat.icon className="w-8 h-8 mx-auto mb-3 text-[#007AFF]" />
+              <stat.icon className="w-8 h-8 mx-auto mb-3 text-[#0066CC]" />
               <div className="text-3xl font-bold text-gray-900 mb-1">
                 {stat.value}
               </div>
@@ -194,7 +194,7 @@ export default function FeaturesPage() {
 
           <div className="grid md:grid-cols-3 gap-12">
             <div className="text-center">
-              <div className="w-16 h-16 bg-[#007AFF] text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">
+              <div className="w-16 h-16 bg-[#0066CC] text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-4">
                 1
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-3">
@@ -237,7 +237,7 @@ export default function FeaturesPage() {
 
       {/* Social Proof Section */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-24">
-        <div className="bg-gradient-to-r from-[#007AFF] to-[#0055CC] rounded-2xl p-8 sm:p-12 text-white text-center">
+        <div className="bg-gradient-to-r from-[#0066CC] to-[#0055CC] rounded-2xl p-8 sm:p-12 text-white text-center">
           <Heart className="w-16 h-16 mx-auto mb-6" />
           <h2 className="text-3xl sm:text-4xl font-bold mb-4">
             Join the Productivity Revolution
@@ -249,7 +249,7 @@ export default function FeaturesPage() {
           </p>
           <Link
             href="/signup"
-            className="inline-flex items-center justify-center px-8 py-3 text-lg font-semibold bg-white text-[#007AFF] rounded-lg hover:bg-gray-100 transition-colors"
+            className="inline-flex items-center justify-center px-8 py-3 text-lg font-semibold bg-white text-[#0066CC] rounded-lg hover:bg-gray-100 transition-colors"
           >
             Start Tracking Free
           </Link>
@@ -261,11 +261,11 @@ export default function FeaturesPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center">
           <p className="text-gray-600 mb-4">
             Have questions?{' '}
-            <Link href="/help" className="text-[#007AFF] hover:underline">
+            <Link href="/help" className="text-[#0066CC] hover:underline">
               Visit our Help Center
             </Link>{' '}
             or{' '}
-            <Link href="/contact" className="text-[#007AFF] hover:underline">
+            <Link href="/contact" className="text-[#0066CC] hover:underline">
               Contact Us
             </Link>
           </p>

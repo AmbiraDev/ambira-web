@@ -141,7 +141,7 @@ export default function NotificationsPanel({
               Notifications
             </h3>
             {unreadCount > 0 && (
-              <span className="bg-[#007AFF] text-white text-xs font-semibold px-2 py-0.5 rounded-full">
+              <span className="bg-[#0066CC] text-white text-xs font-semibold px-2 py-0.5 rounded-full">
                 {unreadCount}
               </span>
             )}
@@ -150,7 +150,7 @@ export default function NotificationsPanel({
             {unreadCount > 0 && (
               <button
                 onClick={handleMarkAllRead}
-                className="text-xs text-[#007AFF] hover:text-[#0051D5] font-medium flex items-center gap-1"
+                className="text-xs text-[#0066CC] hover:text-[#0051D5] font-medium flex items-center gap-1"
               >
                 <Check className="w-3 h-3" />
                 Mark all read
@@ -223,7 +223,7 @@ export default function NotificationsPanel({
                         </button>
                       ) : (
                         !notification.isRead && (
-                          <div className="w-2 h-2 bg-[#007AFF] rounded-full mt-2" />
+                          <div className="w-2 h-2 bg-[#0066CC] rounded-full mt-2" />
                         )
                       )}
                     </div>

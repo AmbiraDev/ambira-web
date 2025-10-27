@@ -34,7 +34,7 @@ export function FeedPageContent() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="flex flex-col items-center space-y-4">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#007AFF]"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0066CC]"></div>
           <p className="text-muted-foreground">Loading...</p>
         </div>
       </div>
@@ -56,7 +56,7 @@ export function FeedPageContent() {
       {/* Main Content Area - Scrollable */}
       <div className="flex-1 overflow-hidden">
         <div className="h-full max-w-[1400px] mx-auto md:px-4 md:py-6">
-          <div className="h-full md:flex gap-4 justify-center">
+          <div className="h-full flex md:gap-4 md:justify-center">
             {/* Left Sidebar - Fixed, hidden on mobile */}
             <div className="hidden md:block flex-shrink-0">
               <LeftSidebar />
@@ -65,6 +65,7 @@ export function FeedPageContent() {
             {/* Main Feed - Scrollable Container */}
             <main
               id="main-feed"
+              role="main"
               className="flex-1 min-w-0 max-w-[600px] mx-auto h-full overflow-y-auto scrollbar-hide"
             >
               {/* Filter Dropdown - Desktop only */}
@@ -126,7 +127,7 @@ export function FeedPageContent() {
                       <div className="bg-white border-b-[6px] border-gray-200 p-4 mb-0">
                         <div className="flex items-center gap-2 mb-1">
                           <svg
-                            className="w-5 h-5 text-[#007AFF]"
+                            className="w-5 h-5 text-[#0066CC]"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -180,7 +181,7 @@ export function FeedPageContent() {
                         <div className="bg-white md:rounded-lg border md:border-gray-200 p-4 mb-4">
                           <div className="flex items-center gap-2 mb-1">
                             <svg
-                              className="w-5 h-5 text-[#007AFF]"
+                              className="w-5 h-5 text-[#0066CC]"
                               fill="none"
                               stroke="currentColor"
                               viewBox="0 0 24 24"

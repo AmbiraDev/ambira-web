@@ -127,7 +127,7 @@ export const WeekStreakCalendar: React.FC<WeekStreakCalendarProps> = ({
       {weekDays.map((day, index) => (
         <div key={index} className="flex flex-col items-center flex-1">
           <div
-            className={`text-xs font-medium mb-1.5 ${day.isToday ? 'text-[#007AFF] font-bold' : 'text-gray-400'}`}
+            className={`text-xs font-medium mb-1.5 ${day.isToday ? 'text-[#0066CC] font-bold' : 'text-gray-400'}`}
           >
             {day.dayOfWeek}
           </div>
@@ -136,14 +136,14 @@ export const WeekStreakCalendar: React.FC<WeekStreakCalendarProps> = ({
               // Completed day - orange circle with white checkmark
               <div
                 className={`w-6 h-6 rounded-full flex items-center justify-center bg-orange-400 ${
-                  day.isToday ? 'ring-2 ring-[#007AFF] ring-offset-1' : ''
+                  day.isToday ? 'ring-2 ring-[#0066CC] ring-offset-1' : ''
                 }`}
               >
                 <Check className="w-3.5 h-3.5 text-white stroke-[3]" />
               </div>
             ) : day.isToday ? (
               // Today (not completed) - Electric Blue ring with grey circle and white checkmark
-              <div className="w-6 h-6 rounded-full flex items-center justify-center bg-gray-300 ring-2 ring-[#007AFF] ring-offset-1">
+              <div className="w-6 h-6 rounded-full flex items-center justify-center bg-gray-300 ring-2 ring-[#0066CC] ring-offset-1">
                 <Check className="w-3.5 h-3.5 text-white stroke-[3]" />
               </div>
             ) : (
@@ -154,7 +154,7 @@ export const WeekStreakCalendar: React.FC<WeekStreakCalendarProps> = ({
             )}
           </div>
           <div
-            className={`text-[10px] font-medium mt-0.5 ${day.isToday ? 'text-[#007AFF] font-bold' : 'text-gray-500'}`}
+            className={`text-[10px] font-medium mt-0.5 ${day.isToday ? 'text-[#0066CC] font-bold' : 'text-gray-500'}`}
           >
             {day.dayNumber}
           </div>

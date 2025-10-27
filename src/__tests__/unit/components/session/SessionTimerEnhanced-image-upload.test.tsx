@@ -35,7 +35,7 @@ describe('SessionTimerEnhanced - Image Upload', () => {
   const mockGetFormattedTime = jest.fn((seconds: number) => '01:00:00');
 
   const mockProjects = [
-    { id: 'proj1', name: 'Test Project', icon: '📝', color: '#007AFF' },
+    { id: 'proj1', name: 'Test Project', icon: '📝', color: '#0066CC' },
   ];
 
   const mockTasks = [

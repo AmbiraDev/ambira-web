@@ -195,7 +195,7 @@ export const CommentInput: React.FC<CommentInputProps> = ({
           disabled={!content.trim() || isSubmitting}
           className={`text-base font-semibold transition-colors flex-shrink-0 leading-5 ${
             content.trim() && !isSubmitting
-              ? 'text-[#007AFF] hover:text-[#0051D5]'
+              ? 'text-[#0066CC] hover:text-[#0051D5]'
               : 'text-gray-300 cursor-not-allowed'
           }`}
           aria-label="Post comment"

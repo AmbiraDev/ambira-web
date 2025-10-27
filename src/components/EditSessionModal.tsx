@@ -276,7 +276,7 @@ export const EditSessionModal: React.FC<EditSessionModalProps> = ({
             type="text"
             value={title}
             onChange={e => setTitle(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF]"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC]"
             placeholder="Enter session title"
           />
         </div>
@@ -289,7 +289,7 @@ export const EditSessionModal: React.FC<EditSessionModalProps> = ({
           <textarea
             value={description}
             onChange={e => setDescription(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF]"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC]"
             rows={3}
             placeholder="How did the session go? What did you accomplish?"
           />
@@ -312,7 +312,7 @@ export const EditSessionModal: React.FC<EditSessionModalProps> = ({
                 value={sessionDate}
                 onChange={e => setSessionDate(e.target.value)}
                 max={new Date().toISOString().split('T')[0]}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#007AFF]"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0066CC]"
                 required
               />
               <p className="text-xs text-gray-500 mt-1">Date of your session</p>
@@ -327,7 +327,7 @@ export const EditSessionModal: React.FC<EditSessionModalProps> = ({
                 type="time"
                 value={startTime}
                 onChange={e => setStartTime(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#007AFF]"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0066CC]"
               />
               <p className="text-xs text-gray-500 mt-1">When you started</p>
             </div>
@@ -346,7 +346,7 @@ export const EditSessionModal: React.FC<EditSessionModalProps> = ({
                   max="23"
                   value={durationHours}
                   onChange={e => setDurationHours(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#007AFF]"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0066CC]"
                   placeholder="0"
                 />
                 <p className="text-xs text-gray-500 mt-1">Hours</p>
@@ -358,7 +358,7 @@ export const EditSessionModal: React.FC<EditSessionModalProps> = ({
                   max="59"
                   value={durationMinutes}
                   onChange={e => setDurationMinutes(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#007AFF]"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0066CC]"
                   placeholder="0"
                 />
                 <p className="text-xs text-gray-500 mt-1">Minutes</p>
@@ -434,7 +434,7 @@ export const EditSessionModal: React.FC<EditSessionModalProps> = ({
 
             {/* Upload Button */}
             {totalImages < 3 && (
-              <label className="flex flex-col items-center justify-center gap-2 px-4 py-8 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-[#007AFF] hover:bg-gray-50 transition-colors min-h-[120px]">
+              <label className="flex flex-col items-center justify-center gap-2 px-4 py-8 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-[#0066CC] hover:bg-gray-50 transition-colors min-h-[120px]">
                 <ImageIcon className="w-8 h-8 text-gray-400" />
                 <span className="text-sm font-medium text-gray-600">
                   {totalImages === 0
@@ -464,7 +464,7 @@ export const EditSessionModal: React.FC<EditSessionModalProps> = ({
           <select
             value={selectedProjectId}
             onChange={e => setSelectedProjectId(e.target.value)}
-            className="w-full pl-3 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] bg-white text-sm appearance-none"
+            className="w-full pl-3 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] bg-white text-sm appearance-none"
           >
             <option value="">Unassigned</option>
             {projects?.map(project => (
@@ -487,7 +487,7 @@ export const EditSessionModal: React.FC<EditSessionModalProps> = ({
                 e.target.value as 'everyone' | 'followers' | 'private'
               )
             }
-            className="w-full pl-3 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] bg-white appearance-none"
+            className="w-full pl-3 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] bg-white appearance-none"
           >
             <option value="everyone">Everyone</option>
             <option value="followers">Followers</option>
@@ -515,7 +515,7 @@ export const EditSessionModal: React.FC<EditSessionModalProps> = ({
         <button
           onClick={handleSave}
           disabled={!title.trim() || isSaving || isUploading}
-          className="flex-1 px-4 py-2 bg-[#007AFF] text-white rounded-lg hover:bg-[#0056D6] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex-1 px-4 py-2 bg-[#0066CC] text-white rounded-lg hover:bg-[#0051D5] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isUploading
             ? 'Uploading Images...'

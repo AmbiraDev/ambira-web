@@ -30,9 +30,12 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
   const menuRef = useRef<HTMLDivElement>(null);
 
   // Use React Query to fetch stats with 1hr cache
-  const { data: fetchedStats, isLoading: isLoadingStats } = useActivityStats(activity.id, {
-    enabled: !stats, // Only fetch if stats not provided as prop
-  });
+  const { data: fetchedStats, isLoading: isLoadingStats } = useActivityStats(
+    activity.id,
+    {
+      enabled: !stats, // Only fetch if stats not provided as prop
+    }
+  );
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -89,8 +92,12 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
   const colorValue = getColorValue(activity.color);
 
   // Calculate progress percentage
-  const weeklyProgress = activity.weeklyTarget ? ((currentStats?.weeklyHours || 0) / activity.weeklyTarget) * 100 : 0;
-  const totalProgress = activity.totalTarget ? ((currentStats?.totalHours || 0) / activity.totalTarget) * 100 : 0;
+  const weeklyProgress = activity.weeklyTarget
+    ? ((currentStats?.weeklyHours || 0) / activity.weeklyTarget) * 100
+    : 0;
+  const totalProgress = activity.totalTarget
+    ? ((currentStats?.totalHours || 0) / activity.totalTarget) * 100
+    : 0;
 
   const handleMenuToggle = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -119,7 +126,12 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
   };
 
   // Keyboard handler for menu items
-  const handleMenuItemKeyDown = (e: React.KeyboardEvent, action: () => void, index: number, totalItems: number) => {
+  const handleMenuItemKeyDown = (
+    e: React.KeyboardEvent,
+    action: () => void,
+    index: number,
+    totalItems: number
+  ) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
       e.stopPropagation();
@@ -150,7 +162,11 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
 
   return (
     <div className="bg-transparent rounded-xl border border-gray-200/60 hover:border-gray-300 hover:shadow-sm transition-all duration-200 relative group h-full flex flex-col">
-      <Link href={`/activities/${activity.id}`} className="block p-6 flex-1 flex flex-col" style={{ minHeight: `${CARD_MIN_HEIGHT}px` }}>
+      <Link
+        href={`/activities/${activity.id}`}
+        className="block p-6 flex-1 flex flex-col"
+        style={{ minHeight: `${CARD_MIN_HEIGHT}px` }}
+      >
         {/* Header with icon and menu */}
         <div className="flex items-start justify-between mb-5 flex-shrink-0">
           <div
@@ -165,9 +181,13 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
             aria-label="Open activity menu"
             aria-expanded={showMenu}
             aria-haspopup="true"
-            className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity p-1.5 hover:bg-gray-100 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] focus-visible:ring-offset-2 min-h-[44px] min-w-[44px] flex items-center justify-center"
+            className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity p-1.5 hover:bg-gray-100 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2 min-h-[44px] min-w-[44px] flex items-center justify-center"
           >
-            <svg className="w-5 h-5 text-gray-700" fill="currentColor" viewBox="0 0 20 20">
+            <svg
+              className="w-5 h-5 text-gray-700"
+              fill="currentColor"
+              viewBox="0 0 20 20"
+            >
               <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
             </svg>
           </button>
@@ -175,109 +195,129 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({
 
         {/* Activity info */}
         <div className="mb-5 flex-shrink-0">
-          <h3 className="text-xl font-bold text-gray-900 mb-2">{activity.name}</h3>
-          <p className="text-gray-600 text-sm line-clamp-2 leading-relaxed min-h-[2.5rem]">{activity.description}</p>
+          <h3 className="text-xl font-bold text-gray-900 mb-2">
+            {activity.name}
+          </h3>
+          <p className="text-gray-600 text-sm line-clamp-2 leading-relaxed min-h-[2.5rem]">
+            {activity.description}
+          </p>
         </div>
 
         {/* Progress indicators */}
         <div className="flex-1 flex flex-col justify-end">
-        {isLoadingStats ? (
-          <div className="space-y-4">
-            <div className="animate-pulse">
-              <div className="h-2.5 bg-gray-200 rounded-full w-full"></div>
-            </div>
-            <div className="animate-pulse">
-              <div className="h-2.5 bg-gray-200 rounded-full w-3/4"></div>
-            </div>
-          </div>
-        ) : currentStats ? (
-          <div className="space-y-4">
-            {/* Weekly progress */}
-            {activity.weeklyTarget && (
-              <div>
-                <div className="flex justify-between text-xs font-medium text-gray-700 mb-2">
-                  <span>This week</span>
-                  <span className="text-gray-900">{(currentStats.weeklyHours || 0).toFixed(1)}h / {activity.weeklyTarget}h</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
-                  <div
-                    role="progressbar"
-                    aria-valuenow={Math.min(100, Math.round(weeklyProgress))}
-                    aria-valuemin={0}
-                    aria-valuemax={100}
-                    aria-label={`Weekly progress: ${(currentStats.weeklyHours || 0).toFixed(1)} hours of ${activity.weeklyTarget} hours`}
-                    className={`${colorClass} h-2.5 rounded-full motion-safe:transition-all motion-safe:duration-300 shadow-sm`}
-                    style={{ width: `${Math.min(100, weeklyProgress)}%` }}
-                  ></div>
-                </div>
+          {isLoadingStats ? (
+            <div className="space-y-4">
+              <div className="animate-pulse">
+                <div className="h-2.5 bg-gray-200 rounded-full w-full"></div>
               </div>
-            )}
+              <div className="animate-pulse">
+                <div className="h-2.5 bg-gray-200 rounded-full w-3/4"></div>
+              </div>
+            </div>
+          ) : currentStats ? (
+            <div className="space-y-4">
+              {/* Weekly progress */}
+              {activity.weeklyTarget && (
+                <div>
+                  <div className="flex justify-between text-xs font-medium text-gray-700 mb-2">
+                    <span>This week</span>
+                    <span className="text-gray-900">
+                      {(currentStats.weeklyHours || 0).toFixed(1)}h /{' '}
+                      {activity.weeklyTarget}h
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
+                    <div
+                      role="progressbar"
+                      aria-valuenow={Math.min(100, Math.round(weeklyProgress))}
+                      aria-valuemin={0}
+                      aria-valuemax={100}
+                      aria-label={`Weekly progress: ${(currentStats.weeklyHours || 0).toFixed(1)} hours of ${activity.weeklyTarget} hours`}
+                      className={`${colorClass} h-2.5 rounded-full motion-safe:transition-all motion-safe:duration-300 shadow-sm`}
+                      style={{ width: `${Math.min(100, weeklyProgress)}%` }}
+                    ></div>
+                  </div>
+                </div>
+              )}
 
-            {/* Total progress */}
-            {activity.totalTarget && (
-              <div>
-                <div className="flex justify-between text-xs font-medium text-gray-700 mb-2">
-                  <span>Total</span>
-                  <span className="text-gray-900">{(currentStats.totalHours || 0).toFixed(1)}h / {activity.totalTarget}h</span>
+              {/* Total progress */}
+              {activity.totalTarget && (
+                <div>
+                  <div className="flex justify-between text-xs font-medium text-gray-700 mb-2">
+                    <span>Total</span>
+                    <span className="text-gray-900">
+                      {(currentStats.totalHours || 0).toFixed(1)}h /{' '}
+                      {activity.totalTarget}h
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
+                    <div
+                      role="progressbar"
+                      aria-valuenow={Math.min(100, Math.round(totalProgress))}
+                      aria-valuemin={0}
+                      aria-valuemax={100}
+                      aria-label={`Total progress: ${(currentStats.totalHours || 0).toFixed(1)} hours of ${activity.totalTarget} hours`}
+                      className={`${colorClass} h-2.5 rounded-full motion-safe:transition-all motion-safe:duration-300 shadow-sm`}
+                      style={{ width: `${Math.min(100, totalProgress)}%` }}
+                    ></div>
+                  </div>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-2.5 overflow-hidden">
-                  <div
-                    role="progressbar"
-                    aria-valuenow={Math.min(100, Math.round(totalProgress))}
-                    aria-valuemin={0}
-                    aria-valuemax={100}
-                    aria-label={`Total progress: ${(currentStats.totalHours || 0).toFixed(1)} hours of ${activity.totalTarget} hours`}
-                    className={`${colorClass} h-2.5 rounded-full motion-safe:transition-all motion-safe:duration-300 shadow-sm`}
-                    style={{ width: `${Math.min(100, totalProgress)}%` }}
-                  ></div>
-                </div>
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="text-sm text-gray-500 italic">
-            No targets set
-          </div>
-        )}
+              )}
+            </div>
+          ) : (
+            <div className="text-sm text-gray-500 italic">No targets set</div>
+          )}
         </div>
       </Link>
 
       {/* Dropdown menu */}
       {showMenu && (
-        <div ref={menuRef} role="menu" className="absolute top-16 right-4 bg-white/95 backdrop-blur-sm border border-gray-200 rounded-lg shadow-lg py-1 z-10 min-w-[150px]">
+        <div
+          ref={menuRef}
+          role="menu"
+          className="absolute top-16 right-4 bg-white/95 backdrop-blur-sm border border-gray-200 rounded-lg shadow-lg py-1 z-10 min-w-[150px]"
+        >
           <button
-            onClick={(e) => handleAction(e, () => onEdit?.(activity))}
-            onKeyDown={(e) => handleMenuItemKeyDown(e, () => onEdit?.(activity), 0, 3)}
+            onClick={e => handleAction(e, () => onEdit?.(activity))}
+            onKeyDown={e =>
+              handleMenuItemKeyDown(e, () => onEdit?.(activity), 0, 3)
+            }
             role="menuitem"
-            className="w-full px-4 py-2 text-left text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+            className="w-full px-4 py-2 text-left text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
           >
             Edit
           </button>
           {activity.status === 'active' ? (
             <button
-              onClick={(e) => handleAction(e, () => onArchive?.(activity))}
-              onKeyDown={(e) => handleMenuItemKeyDown(e, () => onArchive?.(activity), 1, 3)}
+              onClick={e => handleAction(e, () => onArchive?.(activity))}
+              onKeyDown={e =>
+                handleMenuItemKeyDown(e, () => onArchive?.(activity), 1, 3)
+              }
               role="menuitem"
-              className="w-full px-4 py-2 text-left text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+              className="w-full px-4 py-2 text-left text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
             >
               Archive
             </button>
           ) : (
             <button
-              onClick={(e) => handleAction(e, () => onArchive?.(activity))}
-              onKeyDown={(e) => handleMenuItemKeyDown(e, () => onArchive?.(activity), 1, 3)}
+              onClick={e => handleAction(e, () => onArchive?.(activity))}
+              onKeyDown={e =>
+                handleMenuItemKeyDown(e, () => onArchive?.(activity), 1, 3)
+              }
               role="menuitem"
-              className="w-full px-4 py-2 text-left text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+              className="w-full px-4 py-2 text-left text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
             >
               Restore
             </button>
           )}
           <div className="my-1 border-t border-gray-100"></div>
           <button
-            onClick={(e) => handleAction(e, () => onDelete?.(activity))}
-            onKeyDown={(e) => handleMenuItemKeyDown(e, () => onDelete?.(activity), 2, 3)}
+            onClick={e => handleAction(e, () => onDelete?.(activity))}
+            onKeyDown={e =>
+              handleMenuItemKeyDown(e, () => onDelete?.(activity), 2, 3)
+            }
             role="menuitem"
-            className="w-full px-4 py-2 text-left text-sm font-medium text-red-600 hover:bg-red-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+            className="w-full px-4 py-2 text-left text-sm font-medium text-red-600 hover:bg-red-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
           >
             Delete
           </button>
