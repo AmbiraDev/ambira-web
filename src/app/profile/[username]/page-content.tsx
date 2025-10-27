@@ -174,6 +174,7 @@ export default function ProfilePageContent({
 
   const { data: sessions = [], isLoading: isLoadingSessions } = useUserSessions(
     profile?.id || '',
+    undefined,
     {
       enabled: !!profile?.id,
     }

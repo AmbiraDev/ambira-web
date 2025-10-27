@@ -59,6 +59,7 @@ export class FeedService {
       case 'following':
         return this.getFollowingFeed(currentUserId, limit, cursor);
 
+      case 'trending':
       case 'all':
       case 'recent':
         return this.getPublicFeed(limit, cursor);

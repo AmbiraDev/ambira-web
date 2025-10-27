@@ -150,8 +150,8 @@ export function GroupDetailPage({ groupId }: GroupDetailPageProps) {
     );
   }
 
-  const isJoined = group.isMember(user.id);
-  const isAdmin = group.isAdmin(user.id);
+  const isJoined = group.memberIds.includes(user.id);
+  const isAdmin = group.adminUserIds.includes(user.id);
 
   // Get category icon
   const getCategoryIcon = () => {
@@ -250,7 +250,7 @@ export function GroupDetailPage({ groupId }: GroupDetailPageProps) {
 
                 {/* Member Count */}
                 <div className="text-sm text-gray-600">
-                  {group.getMemberCount()} member
+                  {group.memberCount || group.memberIds.length} member
                   {group.getMemberCount() !== 1 ? 's' : ''}
                 </div>
               </div>

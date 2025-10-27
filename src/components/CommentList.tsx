@@ -23,7 +23,7 @@ interface CommentListProps {
 export const CommentList: React.FC<CommentListProps> = ({
   sessionId,
   initialCommentCount = 0,
-  onCommentCountChange
+  onCommentCountChange,
 }) => {
   const { user } = useAuth();
   const [showInput, setShowInput] = useState(false);
@@ -33,7 +33,7 @@ export const CommentList: React.FC<CommentListProps> = ({
     data: commentsResponse,
     isLoading,
     error: queryError,
-    refetch
+    refetch,
   } = useSessionComments(sessionId, 20);
 
   const createCommentMutation = useCreateComment({
@@ -43,7 +43,7 @@ export const CommentList: React.FC<CommentListProps> = ({
       if (onCommentCountChange && commentsResponse) {
         onCommentCountChange(commentsResponse.comments.length + 1);
       }
-    }
+    },
   });
 
   const deleteCommentMutation = useDeleteComment({
@@ -52,7 +52,7 @@ export const CommentList: React.FC<CommentListProps> = ({
       if (onCommentCountChange && commentsResponse) {
         onCommentCountChange(Math.max(0, commentsResponse.comments.length - 1));
       }
-    }
+    },
   });
 
   const likeMutation = useCommentLike(sessionId);
@@ -65,7 +65,7 @@ export const CommentList: React.FC<CommentListProps> = ({
     try {
       await createCommentMutation.mutateAsync({
         sessionId,
-        content
+        content,
       });
     } catch (err: any) {
       console.error('Failed to create comment:', err);
@@ -75,7 +75,7 @@ export const CommentList: React.FC<CommentListProps> = ({
 
   const handleDelete = async (commentId: string) => {
     try {
-      await deleteCommentMutation.mutateAsync(commentId);
+      await deleteCommentMutation.mutateAsync({ commentId, sessionId });
     } catch (err: any) {
       console.error('Failed to delete comment:', err);
       throw err;
@@ -89,7 +89,7 @@ export const CommentList: React.FC<CommentListProps> = ({
   if (isLoading) {
     return (
       <div className="space-y-3 py-4">
-        {[1, 2, 3].map((i) => (
+        {[1, 2, 3].map(i => (
           <div key={i} className="flex gap-2.5 animate-pulse">
             <div className="w-10 h-10 rounded-full bg-gray-200" />
             <div className="flex-1 space-y-1.5">
@@ -106,9 +106,7 @@ export const CommentList: React.FC<CommentListProps> = ({
   if (error) {
     return (
       <div className="py-4">
-        <div className="text-center text-red-600 mb-4">
-          {error}
-        </div>
+        <div className="text-center text-red-600 mb-4">{error}</div>
         <button
           onClick={() => refetch()}
           className="w-full py-2 text-sm font-medium text-[#007AFF] hover:text-[#0051D5]"
@@ -124,14 +122,16 @@ export const CommentList: React.FC<CommentListProps> = ({
       {/* Comment Count Header */}
       <div className="flex items-center justify-between mb-2">
         <h3 className="text-base font-semibold text-gray-900">
-          {comments.length > 0 ? `${comments.length} ${comments.length === 1 ? 'Comment' : 'Comments'}` : 'Comments'}
+          {comments.length > 0
+            ? `${comments.length} ${comments.length === 1 ? 'Comment' : 'Comments'}`
+            : 'Comments'}
         </h3>
       </div>
 
       {/* Comments List */}
       {comments.length > 0 ? (
         <div className="space-y-3 mb-3">
-          {comments.map((comment) => (
+          {comments.map(comment => (
             <CommentItem
               key={comment.id}
               comment={comment}
@@ -179,4 +179,3 @@ export const CommentList: React.FC<CommentListProps> = ({
 };
 
 export default CommentList;
-

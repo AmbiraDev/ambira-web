@@ -4,10 +4,18 @@
  * All write operations for comments (create, update, delete, like).
  */
 
-import { useMutation, useQueryClient, UseMutationOptions } from '@tanstack/react-query';
+import {
+  useMutation,
+  useQueryClient,
+  UseMutationOptions,
+} from '@tanstack/react-query';
 import { CommentService, CommentLikeData } from '../services/CommentService';
 import { COMMENT_KEYS } from './useComments';
-import { CommentWithDetails, CreateCommentData, UpdateCommentData } from '@/types';
+import {
+  CommentWithDetails,
+  CreateCommentData,
+  UpdateCommentData,
+} from '@/types';
 import { SESSION_KEYS } from '@/features/sessions/hooks';
 
 const commentService = new CommentService();
@@ -24,16 +32,20 @@ const commentService = new CommentService();
  * });
  */
 export function useCreateComment(
-  options?: Partial<UseMutationOptions<CommentWithDetails, Error, CreateCommentData>>
+  options?: Partial<
+    UseMutationOptions<CommentWithDetails, Error, CreateCommentData>
+  >
 ) {
   const queryClient = useQueryClient();
 
   return useMutation<CommentWithDetails, Error, CreateCommentData>({
-    mutationFn: (data) => commentService.createComment(data),
+    mutationFn: data => commentService.createComment(data),
 
     onSuccess: (newComment, variables) => {
       // Invalidate comments for this session
-      queryClient.invalidateQueries({ queryKey: COMMENT_KEYS.session(variables.sessionId) });
+      queryClient.invalidateQueries({
+        queryKey: COMMENT_KEYS.session(variables.sessionId),
+      });
 
       // Update comment count in session cache and feed
       const updateSessionCommentCount = (session: any) => {
@@ -107,12 +119,17 @@ export function useUpdateComment(
     Error,
     { commentId: string; sessionId: string; data: UpdateCommentData }
   >({
-    mutationFn: ({ commentId, data }) => commentService.updateComment(commentId, data),
+    mutationFn: ({ commentId, data }) =>
+      commentService.updateComment(commentId, data),
 
     onMutate: async ({ commentId, sessionId, data }) => {
-      await queryClient.cancelQueries({ queryKey: COMMENT_KEYS.session(sessionId) });
+      await queryClient.cancelQueries({
+        queryKey: COMMENT_KEYS.session(sessionId),
+      });
 
-      const previousComments = queryClient.getQueryData(COMMENT_KEYS.session(sessionId));
+      const previousComments = queryClient.getQueryData(
+        COMMENT_KEYS.session(sessionId)
+      );
 
       // Optimistically update
       queryClient.setQueryData(COMMENT_KEYS.list(sessionId), (old: any) => {
@@ -131,8 +148,13 @@ export function useUpdateComment(
       return { previousComments };
     },
 
-    onError: (error, { sessionId }, context) => {
-      if (context?.previousComments) {
+    onError: (error, { sessionId }, context: unknown) => {
+      if (
+        context &&
+        typeof context === 'object' &&
+        'previousComments' in context &&
+        context.previousComments
+      ) {
         queryClient.setQueryData(
           COMMENT_KEYS.session(sessionId),
           context.previousComments
@@ -141,7 +163,9 @@ export function useUpdateComment(
     },
 
     onSuccess: (_, { sessionId }) => {
-      queryClient.invalidateQueries({ queryKey: COMMENT_KEYS.session(sessionId) });
+      queryClient.invalidateQueries({
+        queryKey: COMMENT_KEYS.session(sessionId),
+      });
     },
 
     ...options,
@@ -169,9 +193,13 @@ export function useDeleteComment(
     mutationFn: ({ commentId }) => commentService.deleteComment(commentId),
 
     onMutate: async ({ commentId, sessionId }) => {
-      await queryClient.cancelQueries({ queryKey: COMMENT_KEYS.session(sessionId) });
+      await queryClient.cancelQueries({
+        queryKey: COMMENT_KEYS.session(sessionId),
+      });
 
-      const previousComments = queryClient.getQueryData(COMMENT_KEYS.session(sessionId));
+      const previousComments = queryClient.getQueryData(
+        COMMENT_KEYS.session(sessionId)
+      );
 
       // Optimistically remove from comments list
       queryClient.setQueryData(COMMENT_KEYS.list(sessionId), (old: any) => {
@@ -179,15 +207,22 @@ export function useDeleteComment(
 
         return {
           ...old,
-          comments: old.comments.filter((comment: any) => comment.id !== commentId),
+          comments: old.comments.filter(
+            (comment: any) => comment.id !== commentId
+          ),
         };
       });
 
       return { previousComments };
     },
 
-    onError: (error, { sessionId }, context) => {
-      if (context?.previousComments) {
+    onError: (error, { sessionId }, context: unknown) => {
+      if (
+        context &&
+        typeof context === 'object' &&
+        'previousComments' in context &&
+        context.previousComments
+      ) {
         queryClient.setQueryData(
           COMMENT_KEYS.session(sessionId),
           context.previousComments
@@ -197,7 +232,9 @@ export function useDeleteComment(
 
     onSuccess: (_, { sessionId }) => {
       // Invalidate comments
-      queryClient.invalidateQueries({ queryKey: COMMENT_KEYS.session(sessionId) });
+      queryClient.invalidateQueries({
+        queryKey: COMMENT_KEYS.session(sessionId),
+      });
 
       // Update comment count in session cache and feed
       const updateSessionCommentCount = (session: any) => {
@@ -209,7 +246,10 @@ export function useDeleteComment(
       };
 
       // Update session detail cache
-      queryClient.setQueryData(SESSION_KEYS.detail(sessionId), updateSessionCommentCount);
+      queryClient.setQueryData(
+        SESSION_KEYS.detail(sessionId),
+        updateSessionCommentCount
+      );
 
       // Update feed caches
       queryClient.setQueriesData<any>({ queryKey: ['feed'] }, (old: any) => {
@@ -265,7 +305,10 @@ export function useCommentLike(
       } catch (error: any) {
         // If already liked/unliked, treat as success (idempotent)
         const errorMsg = error.message || String(error);
-        if (errorMsg.includes('Already liked') || errorMsg.includes('not liked')) {
+        if (
+          errorMsg.includes('Already liked') ||
+          errorMsg.includes('not liked')
+        ) {
           return;
         }
         throw error;
@@ -273,9 +316,13 @@ export function useCommentLike(
     },
 
     onMutate: async ({ commentId, action }) => {
-      await queryClient.cancelQueries({ queryKey: COMMENT_KEYS.session(sessionId) });
+      await queryClient.cancelQueries({
+        queryKey: COMMENT_KEYS.session(sessionId),
+      });
 
-      const previousComments = queryClient.getQueryData(COMMENT_KEYS.session(sessionId));
+      const previousComments = queryClient.getQueryData(
+        COMMENT_KEYS.session(sessionId)
+      );
 
       const increment = action === 'like' ? 1 : -1;
 
@@ -300,15 +347,25 @@ export function useCommentLike(
       return { previousComments };
     },
 
-    onError: (error, variables, context) => {
-      if (context?.previousComments) {
-        queryClient.setQueryData(COMMENT_KEYS.session(sessionId), context.previousComments);
+    onError: (error, variables, context: unknown) => {
+      if (
+        context &&
+        typeof context === 'object' &&
+        'previousComments' in context &&
+        context.previousComments
+      ) {
+        queryClient.setQueryData(
+          COMMENT_KEYS.session(sessionId),
+          context.previousComments
+        );
       }
     },
 
     onSuccess: () => {
       // Refetch to ensure consistency
-      queryClient.invalidateQueries({ queryKey: COMMENT_KEYS.session(sessionId) });
+      queryClient.invalidateQueries({
+        queryKey: COMMENT_KEYS.session(sessionId),
+      });
     },
 
     ...options,
@@ -326,7 +383,9 @@ export function useInvalidateComments() {
   const queryClient = useQueryClient();
 
   return (sessionId: string) => {
-    queryClient.invalidateQueries({ queryKey: COMMENT_KEYS.session(sessionId) });
+    queryClient.invalidateQueries({
+      queryKey: COMMENT_KEYS.session(sessionId),
+    });
     queryClient.invalidateQueries({ queryKey: COMMENT_KEYS.list(sessionId) });
   };
 }

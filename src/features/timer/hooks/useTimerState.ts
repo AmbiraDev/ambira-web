@@ -6,7 +6,17 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
-import { Project, ActiveTimer } from '@/types';
+import { Project } from '@/types';
+
+// Minimal interface for active session data (matches what comes from getActiveSession)
+export interface ActiveSessionData {
+  startTime: Date;
+  projectId: string;
+  selectedTaskIds: string[];
+  pausedDuration: number;
+  isPaused: boolean;
+  activityId?: string;
+}
 
 export interface TimerState {
   isRunning: boolean;
@@ -19,7 +29,7 @@ export interface TimerState {
 }
 
 export interface UseTimerStateOptions {
-  activeSession: ActiveTimer | null;
+  activeSession: ActiveSessionData | null;
   currentProject: Project | null;
   onAutoSave?: () => void;
 }

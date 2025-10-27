@@ -17,7 +17,7 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
   images,
   className = '',
   variant = 'grid',
-  priority = false
+  priority = false,
 }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [touchStart, setTouchStart] = useState<number | null>(null);
@@ -38,11 +38,17 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
 
     const onTouchStart = (e: React.TouchEvent) => {
       setTouchEnd(null);
-      setTouchStart(e.targetTouches[0].clientX);
+      const touch = e.targetTouches[0];
+      if (touch) {
+        setTouchStart(touch.clientX);
+      }
     };
 
     const onTouchMove = (e: React.TouchEvent) => {
-      setTouchEnd(e.targetTouches[0].clientX);
+      const touch = e.targetTouches[0];
+      if (touch) {
+        setTouchEnd(touch.clientX);
+      }
     };
 
     const onTouchEnd = () => {
@@ -80,7 +86,7 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
             onClick={() => openLightbox(currentIndex)}
           >
             <Image
-              src={images[currentIndex]}
+              src={images[currentIndex] ?? ''}
               alt={`Image ${currentIndex + 1}`}
               fill
               className="object-cover"
@@ -95,7 +101,7 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
               <>
                 {currentIndex > 0 && (
                   <button
-                    onClick={(e) => {
+                    onClick={e => {
                       e.stopPropagation();
                       goToPrevious();
                     }}
@@ -107,7 +113,7 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
                 )}
                 {currentIndex < images.length - 1 && (
                   <button
-                    onClick={(e) => {
+                    onClick={e => {
                       e.stopPropagation();
                       goToNext();
                     }}
@@ -163,7 +169,7 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
             onClick={() => openLightbox(0)}
           >
             <Image
-              src={images[0]}
+              src={images[0] ?? ''}
               alt="Image 1"
               fill
               className="object-cover"
@@ -208,7 +214,7 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
               onClick={() => openLightbox(0)}
             >
               <Image
-                src={images[0]}
+                src={images[0] ?? ''}
                 alt="Image 1"
                 fill
                 className="object-cover"
@@ -238,7 +244,9 @@ export const ImageGallery: React.FC<ImageGalleryProps> = ({
                 {/* Show +N overlay on last visible image if there are more */}
                 {index === 1 && images.length > 3 && (
                   <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                    <span className="text-white text-3xl font-bold">+{images.length - 3}</span>
+                    <span className="text-white text-3xl font-bold">
+                      +{images.length - 3}
+                    </span>
                   </div>
                 )}
               </div>

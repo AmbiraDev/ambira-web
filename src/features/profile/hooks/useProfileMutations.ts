@@ -16,6 +16,16 @@ import { PROFILE_KEYS } from './useProfile';
 
 const profileService = new ProfileService();
 
+// Context types for optimistic updates
+interface FollowUserContext {
+  previousProfile: unknown;
+  previousFollowing: unknown;
+}
+
+interface UnfollowUserContext {
+  previousProfile: unknown;
+}
+
 /**
  * Follow a user
  *
@@ -31,7 +41,8 @@ export function useFollowUser(
     UseMutationOptions<
       void,
       Error,
-      { currentUserId: string; targetUserId: string }
+      { currentUserId: string; targetUserId: string },
+      FollowUserContext
     >
   >
 ) {
@@ -40,7 +51,8 @@ export function useFollowUser(
   return useMutation<
     void,
     Error,
-    { currentUserId: string; targetUserId: string }
+    { currentUserId: string; targetUserId: string },
+    FollowUserContext
   >({
     mutationFn: ({ currentUserId, targetUserId }) =>
       profileService.followUser(currentUserId, targetUserId),
@@ -86,19 +98,15 @@ export function useFollowUser(
       return { previousProfile, previousFollowing };
     },
 
-    onError: (error, variables, context) => {
+    onError: (error, variables, context: FollowUserContext | undefined) => {
       // Rollback on error
-      if (context && 'previousProfile' in context && context.previousProfile) {
+      if (context?.previousProfile) {
         queryClient.setQueryData(
           PROFILE_KEYS.detail(variables.targetUserId),
           context.previousProfile
         );
       }
-      if (
-        context &&
-        'previousFollowing' in context &&
-        context.previousFollowing
-      ) {
+      if (context?.previousFollowing) {
         queryClient.setQueryData(
           PROFILE_KEYS.following(variables.currentUserId),
           context.previousFollowing
@@ -148,7 +156,8 @@ export function useUnfollowUser(
     UseMutationOptions<
       void,
       Error,
-      { currentUserId: string; targetUserId: string }
+      { currentUserId: string; targetUserId: string },
+      UnfollowUserContext
     >
   >
 ) {
@@ -157,7 +166,8 @@ export function useUnfollowUser(
   return useMutation<
     void,
     Error,
-    { currentUserId: string; targetUserId: string }
+    { currentUserId: string; targetUserId: string },
+    UnfollowUserContext
   >({
     mutationFn: ({ currentUserId, targetUserId }) =>
       profileService.unfollowUser(currentUserId, targetUserId),
@@ -200,9 +210,9 @@ export function useUnfollowUser(
       return { previousProfile };
     },
 
-    onError: (error, variables, context) => {
+    onError: (error, variables, context: UnfollowUserContext | undefined) => {
       // Rollback on error
-      if (context && 'previousProfile' in context && context.previousProfile) {
+      if (context?.previousProfile) {
         queryClient.setQueryData(
           PROFILE_KEYS.detail(variables.targetUserId),
           context.previousProfile

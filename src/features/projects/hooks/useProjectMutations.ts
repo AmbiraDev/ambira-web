@@ -65,9 +65,10 @@ export function useCreateProject(
       return { previousProjects };
     },
 
-    onError: (error, variables, context) => {
+    onError: (error, variables, context: unknown) => {
       if (
         context &&
+        typeof context === 'object' &&
         'previousProjects' in context &&
         context.previousProjects
       ) {
@@ -145,8 +146,13 @@ export function useUpdateProject(
       return { previousProject, previousProjects };
     },
 
-    onError: (error, { projectId }, context) => {
-      if (context && 'previousProject' in context && context.previousProject) {
+    onError: (error, { projectId }, context: unknown) => {
+      if (
+        context &&
+        typeof context === 'object' &&
+        'previousProject' in context &&
+        context.previousProject
+      ) {
         queryClient.setQueryData(
           PROJECT_KEYS.detail(projectId),
           context.previousProject
@@ -154,6 +160,7 @@ export function useUpdateProject(
       }
       if (
         context &&
+        typeof context === 'object' &&
         'previousProjects' in context &&
         context.previousProjects
       ) {
@@ -204,8 +211,13 @@ export function useDeleteProject(
       return { previousProjects };
     },
 
-    onError: (error, projectId, context) => {
-      if (context?.previousProjects) {
+    onError: (error, projectId, context: unknown) => {
+      if (
+        context &&
+        typeof context === 'object' &&
+        'previousProjects' in context &&
+        context.previousProjects
+      ) {
         queryClient.setQueryData(PROJECT_KEYS.list(), context.previousProjects);
       }
     },

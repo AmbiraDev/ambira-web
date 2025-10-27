@@ -134,7 +134,12 @@ export function useTimer(): UseTimerReturn {
       projectId: activeSession.projectId,
       elapsedSeconds: clientState.elapsedSeconds,
     });
-  }, [activeSession, clientState.isRunning, clientState.elapsedSeconds, pauseMutation]);
+  }, [
+    activeSession,
+    clientState.isRunning,
+    clientState.elapsedSeconds,
+    pauseMutation,
+  ]);
 
   // Resume timer
   const resumeTimer = useCallback(async (): Promise<void> => {
@@ -144,7 +149,12 @@ export function useTimer(): UseTimerReturn {
       pausedDuration: clientState.elapsedSeconds,
       projectId: activeSession.projectId,
     });
-  }, [activeSession, clientState.isRunning, clientState.elapsedSeconds, resumeMutation]);
+  }, [
+    activeSession,
+    clientState.isRunning,
+    clientState.elapsedSeconds,
+    resumeMutation,
+  ]);
 
   // Finish timer
   const finishTimer = useCallback(
@@ -166,7 +176,8 @@ export function useTimer(): UseTimerReturn {
         throw new Error('No active timer to finish');
       }
 
-      const finalDuration = options?.customDuration ?? clientState.elapsedSeconds;
+      const finalDuration =
+        options?.customDuration ?? clientState.elapsedSeconds;
 
       const session = await finishMutation.mutateAsync({
         title,
@@ -216,6 +227,7 @@ export function useTimer(): UseTimerReturn {
   // Construct timerState object matching old TimerContext interface
   const timerState: TimerStateType = {
     isRunning: clientState.isRunning,
+    isPaused: clientState.isPaused,
     startTime: activeSession?.startTime || null,
     pausedDuration: clientState.elapsedSeconds,
     currentProject: currentProject,

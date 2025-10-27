@@ -10,7 +10,11 @@ import { GroupRepository } from '@/infrastructure/firebase/repositories/GroupRep
 import { UserRepository } from '@/infrastructure/firebase/repositories/UserRepository';
 import { SessionRepository } from '@/infrastructure/firebase/repositories/SessionRepository';
 import { LeaderboardCalculator } from '../domain/LeaderboardCalculator';
-import { LeaderboardEntry, TimePeriod, GroupStats } from '../types/groups.types';
+import {
+  LeaderboardEntry,
+  TimePeriod,
+  GroupStats,
+} from '../types/groups.types';
 
 /**
  * Note: For now, we're using direct instantiation.
@@ -89,7 +93,9 @@ export class GroupService {
 
     // Business rule: Owner cannot leave
     if (group.isOwner(userId)) {
-      throw new Error('Group owner cannot leave. Please delete the group or transfer ownership first.');
+      throw new Error(
+        'Group owner cannot leave. Please delete the group or transfer ownership first.'
+      );
     }
 
     // Create updated group with member removed
@@ -123,7 +129,7 @@ export class GroupService {
     const sessions = await this.sessionRepo.findByUserIds(memberIds, {
       groupId: groupId,
       startDate: dateRange.start,
-      endDate: dateRange.end
+      endDate: dateRange.end,
     });
 
     // Calculate leaderboard using domain service
@@ -133,7 +139,10 @@ export class GroupService {
   /**
    * Helper method to get date range for a time period
    */
-  private getDateRangeForPeriod(period: TimePeriod): { start: Date; end: Date } {
+  private getDateRangeForPeriod(period: TimePeriod): {
+    start: Date;
+    end: Date;
+  } {
     const now = new Date();
     const end = now;
     let start: Date;
@@ -180,7 +189,10 @@ export class GroupService {
     const allSessions = await this.sessionRepo.findByGroupId(groupId, 1000);
 
     // Calculate total hours
-    const totalSeconds = allSessions.reduce((sum, session) => sum + session.duration, 0);
+    const totalSeconds = allSessions.reduce(
+      (sum, session) => sum + session.duration,
+      0
+    );
     const totalHours = totalSeconds / 3600;
 
     // Get sessions from the last week
@@ -195,7 +207,7 @@ export class GroupService {
       memberCount: group.getMemberCount(),
       totalSessions: allSessions.length,
       totalHours: Math.round(totalHours * 10) / 10, // Round to 1 decimal
-      activeMembersThisWeek: activeMemberIds.size
+      activeMembersThisWeek: activeMemberIds.size,
     };
   }
 
@@ -234,5 +246,54 @@ export class GroupService {
     }
 
     return group.canUserInvite(userId);
+  }
+
+  /**
+   * Create a new group
+   */
+  async createGroup(
+    data: {
+      name: string;
+      description: string;
+      category: string;
+      privacySetting: 'public' | 'approval-required';
+      location?: string;
+      imageUrl?: string;
+      [key: string]: unknown; // Allow additional properties from CreateGroupData
+    },
+    userId: string
+  ): Promise<Group> {
+    // Generate ID for the group
+    const groupId = this.generateGroupId();
+
+    // Create domain group with creator as both member and admin
+    const group = new Group(
+      groupId,
+      data.name,
+      data.description,
+      (data.category as any) || 'other', // Map to domain category type
+      (data.privacySetting as any) === 'approval-required'
+        ? 'approval-required'
+        : 'public',
+      [userId], // Creator is first member
+      [userId], // Creator is first admin
+      userId,
+      new Date(),
+      data.location,
+      data.imageUrl
+    );
+
+    // Save to repository
+    await this.groupRepo.save(group);
+
+    return group;
+  }
+
+  /**
+   * Generate a unique group ID
+   */
+  private generateGroupId(): string {
+    // Simple ID generation using timestamp + random suffix
+    return `group_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   }
 }

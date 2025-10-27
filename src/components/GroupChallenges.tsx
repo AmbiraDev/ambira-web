@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { useAuth } from '@/hooks/useAuth';
 import { useActivities } from '@/hooks/useActivitiesQuery';
 import { firebaseChallengeApi } from '@/lib/api';
 import { Challenge, ChallengeProgress, Group } from '@/types';
@@ -10,13 +9,13 @@ import ChallengeCard from './ChallengeCard';
 import CreateChallengeModal from './CreateChallengeModal';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { 
-  Plus, 
-  Trophy, 
+import {
+  Plus,
+  Trophy,
   Target,
   Calendar,
   Users,
-  TrendingUp
+  TrendingUp,
 } from 'lucide-react';
 
 interface GroupChallengesProps {
@@ -24,16 +23,24 @@ interface GroupChallengesProps {
   isAdmin: boolean;
 }
 
-export default function GroupChallenges({ group, isAdmin }: GroupChallengesProps) {
-  const { user } = useAuth();
+export default function GroupChallenges({
+  group,
+  isAdmin,
+}: GroupChallengesProps) {
   const { user } = useAuth();
   const { data: projects = [] } = useActivities(user?.id);
   const [challenges, setChallenges] = useState<Challenge[]>([]);
-  const [userProgress, setUserProgress] = useState<Record<string, ChallengeProgress>>({});
-  const [participatingChallenges, setParticipatingChallenges] = useState<Set<string>>(new Set());
+  const [userProgress, setUserProgress] = useState<
+    Record<string, ChallengeProgress>
+  >({});
+  const [participatingChallenges, setParticipatingChallenges] = useState<
+    Set<string>
+  >(new Set());
   const [isLoading, setIsLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [activeFilter, setActiveFilter] = useState<'all' | 'active' | 'upcoming' | 'completed'>('all');
+  const [activeFilter, setActiveFilter] = useState<
+    'all' | 'active' | 'upcoming' | 'completed'
+  >('all');
 
   useEffect(() => {
     loadGroupChallenges();
@@ -42,10 +49,10 @@ export default function GroupChallenges({ group, isAdmin }: GroupChallengesProps
   const loadGroupChallenges = async () => {
     try {
       setIsLoading(true);
-      
+
       const filters = {
         groupId: group.id,
-        status: activeFilter === 'all' ? undefined : activeFilter
+        status: activeFilter === 'all' ? undefined : activeFilter,
       };
 
       const challengesList = await firebaseChallengeApi.getChallenges(filters);
@@ -55,15 +62,17 @@ export default function GroupChallenges({ group, isAdmin }: GroupChallengesProps
       if (user) {
         const progressMap: Record<string, ChallengeProgress> = {};
         const participatingSet = new Set<string>();
-        
+
         for (const challenge of challengesList) {
-          const progress = await firebaseChallengeApi.getChallengeProgress(challenge.id);
+          const progress = await firebaseChallengeApi.getChallengeProgress(
+            challenge.id
+          );
           if (progress) {
             progressMap[challenge.id] = progress;
             participatingSet.add(challenge.id);
           }
         }
-        
+
         setUserProgress(progressMap);
         setParticipatingChallenges(participatingSet);
       }
@@ -78,7 +87,7 @@ export default function GroupChallenges({ group, isAdmin }: GroupChallengesProps
     try {
       await firebaseChallengeApi.createChallenge({
         ...data,
-        groupId: group.id
+        groupId: group.id,
       });
       await loadGroupChallenges();
       setShowCreateModal(false);
@@ -147,7 +156,9 @@ export default function GroupChallenges({ group, isAdmin }: GroupChallengesProps
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-semibold text-gray-900">Group Challenges</h3>
+          <h3 className="text-lg font-semibold text-gray-900">
+            Group Challenges
+          </h3>
           <p className="text-sm text-gray-600">
             Compete with group members in productivity challenges
           </p>
@@ -163,19 +174,27 @@ export default function GroupChallenges({ group, isAdmin }: GroupChallengesProps
       {/* Stats Overview */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="bg-blue-50 rounded-lg p-4 text-center">
-          <div className="text-2xl font-bold text-blue-600">{activeChallenges.length}</div>
+          <div className="text-2xl font-bold text-blue-600">
+            {activeChallenges.length}
+          </div>
           <div className="text-sm text-blue-600">Active</div>
         </div>
         <div className="bg-green-50 rounded-lg p-4 text-center">
-          <div className="text-2xl font-bold text-green-600">{upcomingChallenges.length}</div>
+          <div className="text-2xl font-bold text-green-600">
+            {upcomingChallenges.length}
+          </div>
           <div className="text-sm text-green-600">Upcoming</div>
         </div>
         <div className="bg-purple-50 rounded-lg p-4 text-center">
-          <div className="text-2xl font-bold text-purple-600">{completedChallenges.length}</div>
+          <div className="text-2xl font-bold text-purple-600">
+            {completedChallenges.length}
+          </div>
           <div className="text-sm text-purple-600">Completed</div>
         </div>
         <div className="bg-orange-50 rounded-lg p-4 text-center">
-          <div className="text-2xl font-bold text-orange-600">{participatingChallenges.size}</div>
+          <div className="text-2xl font-bold text-orange-600">
+            {participatingChallenges.size}
+          </div>
           <div className="text-sm text-orange-600">Participating</div>
         </div>
       </div>
@@ -185,9 +204,17 @@ export default function GroupChallenges({ group, isAdmin }: GroupChallengesProps
         {[
           { key: 'all', label: 'All Challenges', count: challenges.length },
           { key: 'active', label: 'Active', count: activeChallenges.length },
-          { key: 'upcoming', label: 'Upcoming', count: upcomingChallenges.length },
-          { key: 'completed', label: 'Completed', count: completedChallenges.length }
-        ].map((filter) => (
+          {
+            key: 'upcoming',
+            label: 'Upcoming',
+            count: upcomingChallenges.length,
+          },
+          {
+            key: 'completed',
+            label: 'Completed',
+            count: completedChallenges.length,
+          },
+        ].map(filter => (
           <button
             key={filter.key}
             onClick={() => setActiveFilter(filter.key as any)}
@@ -209,7 +236,10 @@ export default function GroupChallenges({ group, isAdmin }: GroupChallengesProps
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {[...Array(4)].map((_, i) => (
-            <div key={i} className="bg-white rounded-lg border border-gray-200 p-6 animate-pulse">
+            <div
+              key={i}
+              className="bg-white rounded-lg border border-gray-200 p-6 animate-pulse"
+            >
               <div className="h-4 bg-gray-200 rounded mb-4"></div>
               <div className="h-3 bg-gray-200 rounded mb-2"></div>
               <div className="h-3 bg-gray-200 rounded mb-4"></div>
@@ -219,7 +249,7 @@ export default function GroupChallenges({ group, isAdmin }: GroupChallengesProps
         </div>
       ) : filteredChallenges.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {filteredChallenges.map((challenge) => (
+          {filteredChallenges.map(challenge => (
             <ChallengeCard
               key={challenge.id}
               challenge={challenge}
@@ -235,13 +265,14 @@ export default function GroupChallenges({ group, isAdmin }: GroupChallengesProps
         <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
           <Trophy className="w-12 h-12 text-gray-400 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">
-            {activeFilter === 'all' ? 'No challenges yet' : `No ${activeFilter} challenges`}
+            {activeFilter === 'all'
+              ? 'No challenges yet'
+              : `No ${activeFilter} challenges`}
           </h3>
           <p className="text-gray-500 mb-6">
-            {isAdmin 
+            {isAdmin
               ? 'Create the first challenge for your group members to participate in.'
-              : 'Check back later for new challenges to join.'
-            }
+              : 'Check back later for new challenges to join.'}
           </p>
           {isAdmin && activeFilter === 'all' && (
             <Button onClick={() => setShowCreateModal(true)}>

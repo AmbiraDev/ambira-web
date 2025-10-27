@@ -17,20 +17,51 @@ import {
   useProfileById,
   useProfileStats,
   useFollowers,
-  useFollowing
+  useFollowing,
 } from '@/features/profile/hooks';
 import { useUserSessions } from '@/features/sessions/hooks';
 import { useProjects } from '@/features/projects/hooks';
 import Link from 'next/link';
 import Image from 'next/image';
-import { User as UserIcon, Users, Settings, Clock, Target, Calendar, Heart, LogOut, Edit, TrendingUp, BarChart3, ChevronDown, BarChart2, MapPin } from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Tooltip, Area, ComposedChart, BarChart, Bar } from 'recharts';
+import {
+  User as UserIcon,
+  Users,
+  Settings,
+  Clock,
+  Target,
+  Calendar,
+  Heart,
+  LogOut,
+  Edit,
+  TrendingUp,
+  BarChart3,
+  ChevronDown,
+  BarChart2,
+  MapPin,
+} from 'lucide-react';
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  ResponsiveContainer,
+  Tooltip,
+  Area,
+  ComposedChart,
+  BarChart,
+  Bar,
+} from 'recharts';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Feed from '@/components/Feed';
 import { ActivityList } from '@/components/ActivityList';
 import { Activity } from '@/types';
 
-type ProfileTab = 'progress' | 'sessions' | 'followers' | 'following' | 'activities';
+type ProfileTab =
+  | 'progress'
+  | 'sessions'
+  | 'followers'
+  | 'following'
+  | 'activities';
 type TimePeriod = '7D' | '2W' | '4W' | '3M' | '1Y';
 type ChartType = 'bar' | 'line';
 
@@ -48,10 +79,15 @@ export function OwnProfilePageContent() {
   const tabParam = searchParams?.get('tab') as ProfileTab | null;
 
   const [activeTab, setActiveTab] = useState<ProfileTab>(
-    tabParam === 'sessions' ? 'sessions' :
-    tabParam === 'followers' ? 'followers' :
-    tabParam === 'following' ? 'following' :
-    tabParam === 'activities' ? 'activities' : 'progress'
+    tabParam === 'sessions'
+      ? 'sessions'
+      : tabParam === 'followers'
+        ? 'followers'
+        : tabParam === 'following'
+          ? 'following'
+          : tabParam === 'activities'
+            ? 'activities'
+            : 'progress'
   );
   const [timePeriod, setTimePeriod] = useState<TimePeriod>('7D');
   const [showSettingsMenu, setShowSettingsMenu] = useState(false);
@@ -61,12 +97,18 @@ export function OwnProfilePageContent() {
   const [showActivityDropdown, setShowActivityDropdown] = useState(false);
 
   // Use new feature hooks for data with automatic caching
-  const { data: sessions = [], isLoading: sessionsLoading } = useUserSessions(user?.id || '', 50, {
-    enabled: !!user?.id,
-  });
-  const { data: stats = null, isLoading: statsLoading } = useProfileStats(user?.id || '', {
-    enabled: !!user?.id,
-  });
+  const { data: sessions = [], isLoading: sessionsLoading } = useUserSessions(
+    user?.id || '',
+    {
+      enabled: !!user?.id,
+    }
+  );
+  const { data: stats = null, isLoading: statsLoading } = useProfileStats(
+    user?.id || '',
+    {
+      enabled: !!user?.id,
+    }
+  );
   const { data: userProfile = null } = useProfileById(user?.id || '', {
     enabled: !!user?.id,
   });
@@ -76,7 +118,7 @@ export function OwnProfilePageContent() {
   const { data: following = [] } = useFollowing(user?.id || '', {
     enabled: !!user?.id,
   });
-  const { data: activities = [] } = useProjects(user?.id || '', {
+  const { data: activities = [] } = useProjects({
     enabled: !!user?.id,
   });
 
@@ -84,7 +126,13 @@ export function OwnProfilePageContent() {
 
   // Update tab when URL changes
   useEffect(() => {
-    if (tabParam === 'sessions' || tabParam === 'progress' || tabParam === 'followers' || tabParam === 'following' || tabParam === 'activities') {
+    if (
+      tabParam === 'sessions' ||
+      tabParam === 'progress' ||
+      tabParam === 'followers' ||
+      tabParam === 'following' ||
+      tabParam === 'activities'
+    ) {
       setActiveTab(tabParam);
     }
   }, [tabParam]);
@@ -92,8 +140,29 @@ export function OwnProfilePageContent() {
   // Filter sessions based on selected activity
   const filteredSessions = useMemo(() => {
     if (selectedActivityId === 'all') return sessions;
-    return sessions.filter(s => s.activityId === selectedActivityId || s.projectId === selectedActivityId);
+    return sessions.filter(
+      s =>
+        s.activityId === selectedActivityId ||
+        s.projectId === selectedActivityId
+    );
   }, [sessions, selectedActivityId]);
+
+  // Calculate weekly stats from sessions
+  const weeklyStats = useMemo(() => {
+    const now = new Date();
+    const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const weeklySessions = sessions.filter(
+      s => new Date(s.createdAt) >= oneWeekAgo
+    );
+    const weeklyHours = weeklySessions.reduce(
+      (sum, s) => sum + s.duration / 3600,
+      0
+    );
+    return {
+      weeklyHours,
+      sessionsThisWeek: weeklySessions.length,
+    };
+  }, [sessions]);
 
   // Calculate chart data using useMemo to prevent infinite loop
   const chartData = useMemo(() => {
@@ -109,17 +178,25 @@ export function OwnProfilePageContent() {
         const day = new Date(now);
         day.setDate(day.getDate() - i);
 
-        const daySessions = filteredSessions.filter(s => new Date(s.createdAt).toDateString() === day.toDateString());
-        const hoursWorked = daySessions.reduce((sum, s) => sum + s.duration / 3600, 0);
-        const avgDuration = daySessions.length > 0
-          ? daySessions.reduce((sum, s) => sum + s.duration, 0) / daySessions.length / 60
-          : 0;
+        const daySessions = filteredSessions.filter(
+          s => new Date(s.createdAt).toDateString() === day.toDateString()
+        );
+        const hoursWorked = daySessions.reduce(
+          (sum, s) => sum + s.duration / 3600,
+          0
+        );
+        const avgDuration =
+          daySessions.length > 0
+            ? daySessions.reduce((sum, s) => sum + s.duration, 0) /
+              daySessions.length /
+              60
+            : 0;
 
         data.push({
-          name: `${dayNames[day.getDay()].slice(0, 3)} ${day.getDate()}`,
+          name: `${(dayNames[day.getDay()] || 'Day').slice(0, 3)} ${day.getDate()}`,
           hours: Number(hoursWorked.toFixed(2)),
           sessions: daySessions.length,
-          avgDuration: Math.round(avgDuration)
+          avgDuration: Math.round(avgDuration),
         });
       }
     } else if (timePeriod === '2W') {
@@ -129,17 +206,25 @@ export function OwnProfilePageContent() {
         const day = new Date(now);
         day.setDate(day.getDate() - i);
 
-        const daySessions = filteredSessions.filter(s => new Date(s.createdAt).toDateString() === day.toDateString());
-        const hoursWorked = daySessions.reduce((sum, s) => sum + s.duration / 3600, 0);
-        const avgDuration = daySessions.length > 0
-          ? daySessions.reduce((sum, s) => sum + s.duration, 0) / daySessions.length / 60
-          : 0;
+        const daySessions = filteredSessions.filter(
+          s => new Date(s.createdAt).toDateString() === day.toDateString()
+        );
+        const hoursWorked = daySessions.reduce(
+          (sum, s) => sum + s.duration / 3600,
+          0
+        );
+        const avgDuration =
+          daySessions.length > 0
+            ? daySessions.reduce((sum, s) => sum + s.duration, 0) /
+              daySessions.length /
+              60
+            : 0;
 
         data.push({
-          name: `${dayNames[day.getDay()].slice(0, 3)} ${day.getDate()}`,
+          name: `${(dayNames[day.getDay()] || 'Day').slice(0, 3)} ${day.getDate()}`,
           hours: Number(hoursWorked.toFixed(2)),
           sessions: daySessions.length,
-          avgDuration: Math.round(avgDuration)
+          avgDuration: Math.round(avgDuration),
         });
       }
     } else if (timePeriod === '4W') {
@@ -148,70 +233,118 @@ export function OwnProfilePageContent() {
         const weekStart = new Date(now);
         weekStart.setDate(weekStart.getDate() - (i * 7 + 6));
         const weekEnd = new Date(now);
-        weekEnd.setDate(weekEnd.getDate() - (i * 7));
+        weekEnd.setDate(weekEnd.getDate() - i * 7);
 
         const weekSessions = filteredSessions.filter(s => {
           const sessionDate = new Date(s.createdAt);
           return sessionDate >= weekStart && sessionDate <= weekEnd;
         });
-        const hoursWorked = weekSessions.reduce((sum, s) => sum + s.duration / 3600, 0);
-        const avgDuration = weekSessions.length > 0
-          ? weekSessions.reduce((sum, s) => sum + s.duration, 0) / weekSessions.length / 60
-          : 0;
+        const hoursWorked = weekSessions.reduce(
+          (sum, s) => sum + s.duration / 3600,
+          0
+        );
+        const avgDuration =
+          weekSessions.length > 0
+            ? weekSessions.reduce((sum, s) => sum + s.duration, 0) /
+              weekSessions.length /
+              60
+            : 0;
 
         data.push({
           name: `Week ${4 - i}`,
           hours: Number(hoursWorked.toFixed(2)),
           sessions: weekSessions.length,
-          avgDuration: Math.round(avgDuration)
+          avgDuration: Math.round(avgDuration),
         });
       }
     } else if (timePeriod === '3M') {
       // Last 3 months
-      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const monthNames = [
+        'Jan',
+        'Feb',
+        'Mar',
+        'Apr',
+        'May',
+        'Jun',
+        'Jul',
+        'Aug',
+        'Sep',
+        'Oct',
+        'Nov',
+        'Dec',
+      ];
       for (let i = 2; i >= 0; i--) {
         const month = new Date(now);
         month.setMonth(month.getMonth() - i);
 
         const monthSessions = filteredSessions.filter(s => {
           const sessionDate = new Date(s.createdAt);
-          return sessionDate.getMonth() === month.getMonth() &&
-                 sessionDate.getFullYear() === month.getFullYear();
+          return (
+            sessionDate.getMonth() === month.getMonth() &&
+            sessionDate.getFullYear() === month.getFullYear()
+          );
         });
-        const hoursWorked = monthSessions.reduce((sum, s) => sum + s.duration / 3600, 0);
-        const avgDuration = monthSessions.length > 0
-          ? monthSessions.reduce((sum, s) => sum + s.duration, 0) / monthSessions.length / 60
-          : 0;
+        const hoursWorked = monthSessions.reduce(
+          (sum, s) => sum + s.duration / 3600,
+          0
+        );
+        const avgDuration =
+          monthSessions.length > 0
+            ? monthSessions.reduce((sum, s) => sum + s.duration, 0) /
+              monthSessions.length /
+              60
+            : 0;
 
         data.push({
-          name: monthNames[month.getMonth()],
+          name: monthNames[month.getMonth()] || 'Month',
           hours: Number(hoursWorked.toFixed(2)),
           sessions: monthSessions.length,
-          avgDuration: Math.round(avgDuration)
+          avgDuration: Math.round(avgDuration),
         });
       }
     } else if (timePeriod === '1Y') {
       // Last 12 months
-      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const monthNames = [
+        'Jan',
+        'Feb',
+        'Mar',
+        'Apr',
+        'May',
+        'Jun',
+        'Jul',
+        'Aug',
+        'Sep',
+        'Oct',
+        'Nov',
+        'Dec',
+      ];
       for (let i = 11; i >= 0; i--) {
         const month = new Date(now);
         month.setMonth(month.getMonth() - i);
 
         const monthSessions = filteredSessions.filter(s => {
           const sessionDate = new Date(s.createdAt);
-          return sessionDate.getMonth() === month.getMonth() &&
-                 sessionDate.getFullYear() === month.getFullYear();
+          return (
+            sessionDate.getMonth() === month.getMonth() &&
+            sessionDate.getFullYear() === month.getFullYear()
+          );
         });
-        const hoursWorked = monthSessions.reduce((sum, s) => sum + s.duration / 3600, 0);
-        const avgDuration = monthSessions.length > 0
-          ? monthSessions.reduce((sum, s) => sum + s.duration, 0) / monthSessions.length / 60
-          : 0;
+        const hoursWorked = monthSessions.reduce(
+          (sum, s) => sum + s.duration / 3600,
+          0
+        );
+        const avgDuration =
+          monthSessions.length > 0
+            ? monthSessions.reduce((sum, s) => sum + s.duration, 0) /
+              monthSessions.length /
+              60
+            : 0;
 
         data.push({
-          name: monthNames[month.getMonth()],
+          name: monthNames[month.getMonth()] || 'Month',
           hours: Number(hoursWorked.toFixed(2)),
           sessions: monthSessions.length,
-          avgDuration: Math.round(avgDuration)
+          avgDuration: Math.round(avgDuration),
         });
       }
     }
@@ -252,13 +385,16 @@ export function OwnProfilePageContent() {
     // Get current and previous period ranges
     const currentRange = getDateRange(timePeriod);
     const previousStart = new Date(currentRange.start);
-    const periodLength = currentRange.end.getTime() - currentRange.start.getTime();
+    const periodLength =
+      currentRange.end.getTime() - currentRange.start.getTime();
     previousStart.setTime(previousStart.getTime() - periodLength);
 
     // Filter sessions for current period
     const currentPeriodSessions = filteredSessions.filter(s => {
       const sessionDate = new Date(s.createdAt);
-      return sessionDate >= currentRange.start && sessionDate <= currentRange.end;
+      return (
+        sessionDate >= currentRange.start && sessionDate <= currentRange.end
+      );
     });
 
     // Filter sessions for previous period
@@ -268,37 +404,61 @@ export function OwnProfilePageContent() {
     });
 
     // Calculate current period stats
-    const currentHours = currentPeriodSessions.reduce((sum, s) => sum + s.duration / 3600, 0);
+    const currentHours = currentPeriodSessions.reduce(
+      (sum, s) => sum + s.duration / 3600,
+      0
+    );
     const currentSessionCount = currentPeriodSessions.length;
-    const currentAvgDuration = currentSessionCount > 0
-      ? currentPeriodSessions.reduce((sum, s) => sum + s.duration, 0) / currentSessionCount / 60
-      : 0;
+    const currentAvgDuration =
+      currentSessionCount > 0
+        ? currentPeriodSessions.reduce((sum, s) => sum + s.duration, 0) /
+          currentSessionCount /
+          60
+        : 0;
 
     const currentActiveDays = new Set(
       currentPeriodSessions.map(s => new Date(s.createdAt).toDateString())
     ).size;
 
     // Calculate previous period stats
-    const previousHours = previousPeriodSessions.reduce((sum, s) => sum + s.duration / 3600, 0);
+    const previousHours = previousPeriodSessions.reduce(
+      (sum, s) => sum + s.duration / 3600,
+      0
+    );
     const previousSessionCount = previousPeriodSessions.length;
-    const previousAvgDuration = previousSessionCount > 0
-      ? previousPeriodSessions.reduce((sum, s) => sum + s.duration, 0) / previousSessionCount / 60
-      : 0;
+    const previousAvgDuration =
+      previousSessionCount > 0
+        ? previousPeriodSessions.reduce((sum, s) => sum + s.duration, 0) /
+          previousSessionCount /
+          60
+        : 0;
 
     const previousActiveDays = new Set(
       previousPeriodSessions.map(s => new Date(s.createdAt).toDateString())
     ).size;
 
     // Calculate percentage changes
-    const calculateChange = (current: number, previous: number): number | null => {
+    const calculateChange = (
+      current: number,
+      previous: number
+    ): number | null => {
       if (previous === 0) return null; // No previous data
       return ((current - previous) / previous) * 100;
     };
 
     const hoursChange = calculateChange(currentHours, previousHours);
-    const sessionsChange = calculateChange(currentSessionCount, previousSessionCount);
-    const avgDurationChange = calculateChange(currentAvgDuration, previousAvgDuration);
-    const activeDaysChange = calculateChange(currentActiveDays, previousActiveDays);
+    const sessionsChange = calculateChange(
+      currentSessionCount,
+      previousSessionCount
+    );
+    const avgDurationChange = calculateChange(
+      currentAvgDuration,
+      previousAvgDuration
+    );
+    const activeDaysChange = calculateChange(
+      currentActiveDays,
+      previousActiveDays
+    );
 
     return {
       totalHours: currentHours,
@@ -332,7 +492,9 @@ export function OwnProfilePageContent() {
     const formattedChange = Math.abs(change).toFixed(0);
 
     return (
-      <div className={`text-sm ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
+      <div
+        className={`text-sm ${isPositive ? 'text-green-600' : 'text-red-600'}`}
+      >
         {isPositive ? '↑' : '↓'} {formattedChange}%
       </div>
     );
@@ -427,7 +589,11 @@ export function OwnProfilePageContent() {
                     {user.profilePicture || userProfile?.profilePicture ? (
                       <div className="w-20 h-20 md:w-32 md:h-32 rounded-full overflow-hidden ring-4 ring-white shadow-md mb-3 md:mb-4">
                         <Image
-                          src={userProfile?.profilePicture || user.profilePicture || ''}
+                          src={
+                            userProfile?.profilePicture ||
+                            user.profilePicture ||
+                            ''
+                          }
                           alt={user.name}
                           width={128}
                           height={128}
@@ -443,18 +609,27 @@ export function OwnProfilePageContent() {
                     )}
 
                     {/* Name and Username */}
-                    <h1 className="text-lg md:text-2xl font-bold text-gray-900">{user.name}</h1>
-                    <p className="text-gray-600 text-sm md:text-base mb-2 md:mb-3">@{user.username}</p>
+                    <h1 className="text-lg md:text-2xl font-bold text-gray-900">
+                      {user.name}
+                    </h1>
+                    <p className="text-gray-600 text-sm md:text-base mb-2 md:mb-3">
+                      @{user.username}
+                    </p>
 
                     {/* Bio */}
                     {(userProfile?.bio || user.bio) && (
-                      <p className="text-gray-700 mb-2 md:mb-3 text-sm md:text-base leading-snug">{userProfile?.bio || user.bio}</p>
+                      <p className="text-gray-700 mb-2 md:mb-3 text-sm md:text-base leading-snug">
+                        {userProfile?.bio || user.bio}
+                      </p>
                     )}
 
                     {/* Location */}
                     {(userProfile?.location || user.location) && (
                       <p className="text-gray-500 text-xs md:text-sm mb-3 md:mb-4 flex items-center gap-1">
-                        <MapPin className="w-3 h-3 md:w-4 md:h-4" aria-hidden="true" />
+                        <MapPin
+                          className="w-3 h-3 md:w-4 md:h-4"
+                          aria-hidden="true"
+                        />
                         {userProfile?.location || user.location}
                       </p>
                     )}
@@ -478,8 +653,12 @@ export function OwnProfilePageContent() {
                         className="hover:underline focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:ring-offset-2 rounded px-1"
                         aria-label={`View ${followers.length} followers`}
                       >
-                        <span className="font-bold text-gray-900 text-sm md:text-base">{followers.length}</span>{' '}
-                        <span className="text-gray-600 text-xs md:text-sm">Followers</span>
+                        <span className="font-bold text-gray-900 text-sm md:text-base">
+                          {followers.length}
+                        </span>{' '}
+                        <span className="text-gray-600 text-xs md:text-sm">
+                          Followers
+                        </span>
                       </button>
                       <button
                         onClick={() => {
@@ -489,8 +668,12 @@ export function OwnProfilePageContent() {
                         className="hover:underline focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:ring-offset-2 rounded px-1"
                         aria-label={`View ${following.length} following`}
                       >
-                        <span className="font-bold text-gray-900 text-sm md:text-base">{following.length}</span>{' '}
-                        <span className="text-gray-600 text-xs md:text-sm">Following</span>
+                        <span className="font-bold text-gray-900 text-sm md:text-base">
+                          {following.length}
+                        </span>{' '}
+                        <span className="text-gray-600 text-xs md:text-sm">
+                          Following
+                        </span>
                       </button>
                     </div>
                   </div>
@@ -498,19 +681,28 @@ export function OwnProfilePageContent() {
                   {/* Right Column - This Week Stats */}
                   <div className="md:w-64 border-t md:border-t-0 md:border-l border-gray-200 pt-4 md:pt-0 md:pl-8">
                     <div className="flex items-center gap-2 mb-3 md:mb-4">
-                      <BarChart2 className="w-4 h-4 md:w-5 md:h-5 text-[#FC4C02]" aria-hidden="true" />
-                      <h2 className="text-sm md:text-base font-bold">This week</h2>
+                      <BarChart2
+                        className="w-4 h-4 md:w-5 md:h-5 text-[#FC4C02]"
+                        aria-hidden="true"
+                      />
+                      <h2 className="text-sm md:text-base font-bold">
+                        This week
+                      </h2>
                     </div>
 
                     <div className="grid grid-cols-2 md:grid-cols-1 gap-3 md:gap-4 md:space-y-0">
                       <div>
-                        <div className="text-[10px] md:text-xs text-gray-600 uppercase tracking-wide">Time</div>
+                        <div className="text-[10px] md:text-xs text-gray-600 uppercase tracking-wide">
+                          Time
+                        </div>
                         <div className="text-lg md:text-2xl font-bold">
                           {stats?.weeklyHours?.toFixed(1) || 0}h
                         </div>
                       </div>
                       <div>
-                        <div className="text-[10px] md:text-xs text-gray-600 uppercase tracking-wide">Sessions</div>
+                        <div className="text-[10px] md:text-xs text-gray-600 uppercase tracking-wide">
+                          Sessions
+                        </div>
                         <div className="text-lg md:text-2xl font-bold">
                           {stats?.sessionsThisWeek || 0}
                         </div>
@@ -523,7 +715,11 @@ export function OwnProfilePageContent() {
               {/* Tabs */}
               <div className="sticky top-12 md:top-14 bg-white md:bg-gray-50 z-30 -mx-4 md:mx-0">
                 <div className="bg-white md:bg-gray-50 border-b border-gray-200">
-                  <div className="flex md:gap-8 px-4 md:px-0 overflow-x-auto scrollbar-hide" role="tablist" aria-label="Profile sections">
+                  <div
+                    className="flex md:gap-8 px-4 md:px-0 overflow-x-auto scrollbar-hide"
+                    role="tablist"
+                    aria-label="Profile sections"
+                  >
                     <button
                       onClick={() => {
                         setActiveTab('progress');
@@ -623,7 +819,9 @@ export function OwnProfilePageContent() {
                       {/* Activity Filter Dropdown */}
                       <div className="relative flex-shrink-0">
                         <button
-                          onClick={() => setShowActivityDropdown(!showActivityDropdown)}
+                          onClick={() =>
+                            setShowActivityDropdown(!showActivityDropdown)
+                          }
                           className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-700 bg-white border border-gray-300 rounded-full hover:bg-gray-50 transition-colors whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:ring-offset-2 min-h-[44px]"
                           aria-label="Filter by activity"
                           aria-expanded={showActivityDropdown}
@@ -632,8 +830,9 @@ export function OwnProfilePageContent() {
                           <span className="font-medium">
                             {selectedActivityId === 'all'
                               ? 'All'
-                              : activities.find(a => a.id === selectedActivityId)?.name || 'All'
-                            }
+                              : activities.find(
+                                  a => a.id === selectedActivityId
+                                )?.name || 'All'}
                           </span>
                           <ChevronDown className="w-3.5 h-3.5" />
                         </button>
@@ -653,13 +852,17 @@ export function OwnProfilePageContent() {
                                   setShowActivityDropdown(false);
                                 }}
                                 className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors flex items-center gap-2 ${
-                                  selectedActivityId === 'all' ? 'text-[#007AFF] font-medium bg-blue-50' : 'text-gray-700'
+                                  selectedActivityId === 'all'
+                                    ? 'text-[#007AFF] font-medium bg-blue-50'
+                                    : 'text-gray-700'
                                 }`}
                               >
-                                {selectedActivityId === 'all' && <span className="text-[#007AFF]">✓</span>}
+                                {selectedActivityId === 'all' && (
+                                  <span className="text-[#007AFF]">✓</span>
+                                )}
                                 <span>All Activities</span>
                               </button>
-                              {activities.map((activity) => (
+                              {activities.map(activity => (
                                 <button
                                   key={activity.id}
                                   onClick={() => {
@@ -667,12 +870,18 @@ export function OwnProfilePageContent() {
                                     setShowActivityDropdown(false);
                                   }}
                                   className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors flex items-center gap-2 ${
-                                    selectedActivityId === activity.id ? 'text-[#007AFF] font-medium bg-blue-50' : 'text-gray-700'
+                                    selectedActivityId === activity.id
+                                      ? 'text-[#007AFF] font-medium bg-blue-50'
+                                      : 'text-gray-700'
                                   }`}
                                 >
-                                  {selectedActivityId === activity.id && <span className="text-[#007AFF]">✓</span>}
+                                  {selectedActivityId === activity.id && (
+                                    <span className="text-[#007AFF]">✓</span>
+                                  )}
                                   <span className="flex items-center gap-2">
-                                    <span style={{ color: activity.color }}>●</span>
+                                    <span style={{ color: activity.color }}>
+                                      ●
+                                    </span>
                                     {activity.name}
                                   </span>
                                 </button>
@@ -685,39 +894,54 @@ export function OwnProfilePageContent() {
                       {/* Time Period Buttons - Scrollable on mobile */}
                       <div className="flex items-center gap-2 flex-1 min-w-0">
                         <div className="overflow-x-auto flex items-center gap-1.5 md:gap-2 flex-1 scrollbar-hide">
-                          {(['7D', '2W', '4W', '3M', '1Y'] as TimePeriod[]).map((period) => (
-                            <button
-                              key={period}
-                              onClick={() => setTimePeriod(period)}
-                              className={`px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-medium rounded-full transition-colors whitespace-nowrap flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:ring-offset-2 min-h-[44px] ${
-                                timePeriod === period
-                                  ? 'bg-gray-900 text-white'
-                                  : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-                              }`}
-                              aria-label={`Show ${period} time period`}
-                              aria-pressed={timePeriod === period}
-                            >
-                              {period}
-                            </button>
-                          ))}
+                          {(['7D', '2W', '4W', '3M', '1Y'] as TimePeriod[]).map(
+                            period => (
+                              <button
+                                key={period}
+                                onClick={() => setTimePeriod(period)}
+                                className={`px-3 md:px-4 py-1.5 md:py-2 text-xs md:text-sm font-medium rounded-full transition-colors whitespace-nowrap flex-shrink-0 focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:ring-offset-2 min-h-[44px] ${
+                                  timePeriod === period
+                                    ? 'bg-gray-900 text-white'
+                                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                                }`}
+                                aria-label={`Show ${period} time period`}
+                                aria-pressed={timePeriod === period}
+                              >
+                                {period}
+                              </button>
+                            )
+                          )}
                         </div>
 
                         {/* Chart Type Selector */}
                         <div className="relative flex-shrink-0">
                           <button
-                            onClick={() => setShowChartTypeDropdown(!showChartTypeDropdown)}
+                            onClick={() =>
+                              setShowChartTypeDropdown(!showChartTypeDropdown)
+                            }
                             className="flex items-center gap-1 px-2 md:px-3 py-1.5 md:py-2 text-xs md:text-sm text-gray-700 bg-white border border-gray-300 rounded-full hover:bg-gray-50 transition-colors whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:ring-offset-2 min-h-[44px]"
                             aria-label={`Chart type: ${chartType}`}
                             aria-expanded={showChartTypeDropdown}
                             aria-haspopup="listbox"
                           >
                             {chartType === 'bar' ? (
-                              <BarChart3 className="w-3.5 h-3.5 md:w-4 md:h-4" aria-hidden="true" />
+                              <BarChart3
+                                className="w-3.5 h-3.5 md:w-4 md:h-4"
+                                aria-hidden="true"
+                              />
                             ) : (
-                              <TrendingUp className="w-3.5 h-3.5 md:w-4 md:h-4" aria-hidden="true" />
+                              <TrendingUp
+                                className="w-3.5 h-3.5 md:w-4 md:h-4"
+                                aria-hidden="true"
+                              />
                             )}
-                            <span className="capitalize hidden sm:inline">{chartType}</span>
-                            <ChevronDown className="w-3 h-3" aria-hidden="true" />
+                            <span className="capitalize hidden sm:inline">
+                              {chartType}
+                            </span>
+                            <ChevronDown
+                              className="w-3 h-3"
+                              aria-hidden="true"
+                            />
                           </button>
 
                           {/* Chart Type Dropdown */}
@@ -735,10 +959,14 @@ export function OwnProfilePageContent() {
                                     setShowChartTypeDropdown(false);
                                   }}
                                   className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors flex items-center gap-2 ${
-                                    chartType === 'bar' ? 'text-[#007AFF] font-medium' : 'text-gray-700'
+                                    chartType === 'bar'
+                                      ? 'text-[#007AFF] font-medium'
+                                      : 'text-gray-700'
                                   }`}
                                 >
-                                  {chartType === 'bar' && <span className="text-[#007AFF]">✓</span>}
+                                  {chartType === 'bar' && (
+                                    <span className="text-[#007AFF]">✓</span>
+                                  )}
                                   <BarChart3 className="w-4 h-4" />
                                   Bar
                                 </button>
@@ -748,10 +976,14 @@ export function OwnProfilePageContent() {
                                     setShowChartTypeDropdown(false);
                                   }}
                                   className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors flex items-center gap-2 ${
-                                    chartType === 'line' ? 'text-[#007AFF] font-medium' : 'text-gray-700'
+                                    chartType === 'line'
+                                      ? 'text-[#007AFF] font-medium'
+                                      : 'text-gray-700'
                                   }`}
                                 >
-                                  {chartType === 'line' && <span className="text-[#007AFF]">✓</span>}
+                                  {chartType === 'line' && (
+                                    <span className="text-[#007AFF]">✓</span>
+                                  )}
                                   <TrendingUp className="w-4 h-4" />
                                   Line
                                 </button>
@@ -765,7 +997,9 @@ export function OwnProfilePageContent() {
                     {/* Main Chart */}
                     <div className="bg-white border border-gray-200 rounded-xl p-6">
                       <div className="mb-4">
-                        <h3 className="font-semibold text-gray-900">Hours completed</h3>
+                        <h3 className="font-semibold text-gray-900">
+                          Hours completed
+                        </h3>
                       </div>
                       <div className="h-72">
                         {isLoading ? (
@@ -773,7 +1007,15 @@ export function OwnProfilePageContent() {
                         ) : (
                           <ResponsiveContainer width="100%" height="100%">
                             {chartType === 'bar' ? (
-                              <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                              <BarChart
+                                data={chartData}
+                                margin={{
+                                  top: 10,
+                                  right: 10,
+                                  left: -20,
+                                  bottom: 0,
+                                }}
+                              >
                                 <XAxis
                                   dataKey="name"
                                   tick={{ fontSize: 12, fill: '#666' }}
@@ -787,14 +1029,41 @@ export function OwnProfilePageContent() {
                                   width={40}
                                 />
                                 <Tooltip content={<CustomTooltip />} />
-                                <Bar dataKey="hours" fill="#007AFF" radius={[4, 4, 0, 0]} name="Hours" />
+                                <Bar
+                                  dataKey="hours"
+                                  fill="#007AFF"
+                                  radius={[4, 4, 0, 0]}
+                                  name="Hours"
+                                />
                               </BarChart>
                             ) : (
-                              <ComposedChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                              <ComposedChart
+                                data={chartData}
+                                margin={{
+                                  top: 10,
+                                  right: 10,
+                                  left: -20,
+                                  bottom: 0,
+                                }}
+                              >
                                 <defs>
-                                  <linearGradient id="colorHours" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#007AFF" stopOpacity={0.3}/>
-                                    <stop offset="95%" stopColor="#007AFF" stopOpacity={0}/>
+                                  <linearGradient
+                                    id="colorHours"
+                                    x1="0"
+                                    y1="0"
+                                    x2="0"
+                                    y2="1"
+                                  >
+                                    <stop
+                                      offset="5%"
+                                      stopColor="#007AFF"
+                                      stopOpacity={0.3}
+                                    />
+                                    <stop
+                                      offset="95%"
+                                      stopColor="#007AFF"
+                                      stopOpacity={0}
+                                    />
                                   </linearGradient>
                                 </defs>
                                 <XAxis
@@ -830,27 +1099,82 @@ export function OwnProfilePageContent() {
                       {/* Average Session Duration */}
                       <div className="bg-white border border-gray-200 rounded-xl p-6">
                         <div className="mb-4">
-                          <h3 className="font-semibold text-gray-900">Average session duration</h3>
+                          <h3 className="font-semibold text-gray-900">
+                            Average session duration
+                          </h3>
                         </div>
                         <div className="h-48">
                           <ResponsiveContainer width="100%" height="100%">
                             {chartType === 'bar' ? (
-                              <BarChart data={avgDurationData} margin={{ top: 5, right: 5, left: -30, bottom: 0 }}>
-                                <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#666' }} axisLine={false} tickLine={false} />
-                                <YAxis tick={{ fontSize: 11, fill: '#666' }} axisLine={false} tickLine={false} />
+                              <BarChart
+                                data={avgDurationData}
+                                margin={{
+                                  top: 5,
+                                  right: 5,
+                                  left: -30,
+                                  bottom: 0,
+                                }}
+                              >
+                                <XAxis
+                                  dataKey="name"
+                                  tick={{ fontSize: 11, fill: '#666' }}
+                                  axisLine={false}
+                                  tickLine={false}
+                                />
+                                <YAxis
+                                  tick={{ fontSize: 11, fill: '#666' }}
+                                  axisLine={false}
+                                  tickLine={false}
+                                />
                                 <Tooltip content={<CustomTooltip />} />
-                                <Bar dataKey="value" fill="#34C759" radius={[4, 4, 0, 0]} name="Minutes" />
+                                <Bar
+                                  dataKey="value"
+                                  fill="#34C759"
+                                  radius={[4, 4, 0, 0]}
+                                  name="Minutes"
+                                />
                               </BarChart>
                             ) : (
-                              <ComposedChart data={avgDurationData} margin={{ top: 5, right: 5, left: -30, bottom: 0 }}>
+                              <ComposedChart
+                                data={avgDurationData}
+                                margin={{
+                                  top: 5,
+                                  right: 5,
+                                  left: -30,
+                                  bottom: 0,
+                                }}
+                              >
                                 <defs>
-                                  <linearGradient id="colorAvgDuration" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#34C759" stopOpacity={0.3}/>
-                                    <stop offset="95%" stopColor="#34C759" stopOpacity={0}/>
+                                  <linearGradient
+                                    id="colorAvgDuration"
+                                    x1="0"
+                                    y1="0"
+                                    x2="0"
+                                    y2="1"
+                                  >
+                                    <stop
+                                      offset="5%"
+                                      stopColor="#34C759"
+                                      stopOpacity={0.3}
+                                    />
+                                    <stop
+                                      offset="95%"
+                                      stopColor="#34C759"
+                                      stopOpacity={0}
+                                    />
                                   </linearGradient>
                                 </defs>
-                                <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#666' }} axisLine={false} tickLine={false} />
-                                <YAxis tick={{ fontSize: 11, fill: '#666' }} axisLine={false} tickLine={false} />
+                                <XAxis
+                                  dataKey="name"
+                                  tick={{ fontSize: 11, fill: '#666' }}
+                                  axisLine={false}
+                                  tickLine={false}
+                                />
+                                <YAxis
+                                  tick={{ fontSize: 11, fill: '#666' }}
+                                  axisLine={false}
+                                  tickLine={false}
+                                />
                                 <Tooltip content={<CustomTooltip />} />
                                 <Area
                                   type="monotone"
@@ -869,27 +1193,82 @@ export function OwnProfilePageContent() {
                       {/* Sessions */}
                       <div className="bg-white border border-gray-200 rounded-xl p-6">
                         <div className="mb-4">
-                          <h3 className="font-semibold text-gray-900">Sessions completed</h3>
+                          <h3 className="font-semibold text-gray-900">
+                            Sessions completed
+                          </h3>
                         </div>
                         <div className="h-48">
                           <ResponsiveContainer width="100%" height="100%">
                             {chartType === 'bar' ? (
-                              <BarChart data={chartData} margin={{ top: 5, right: 5, left: -30, bottom: 0 }}>
-                                <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#666' }} axisLine={false} tickLine={false} />
-                                <YAxis tick={{ fontSize: 11, fill: '#666' }} axisLine={false} tickLine={false} />
+                              <BarChart
+                                data={chartData}
+                                margin={{
+                                  top: 5,
+                                  right: 5,
+                                  left: -30,
+                                  bottom: 0,
+                                }}
+                              >
+                                <XAxis
+                                  dataKey="name"
+                                  tick={{ fontSize: 11, fill: '#666' }}
+                                  axisLine={false}
+                                  tickLine={false}
+                                />
+                                <YAxis
+                                  tick={{ fontSize: 11, fill: '#666' }}
+                                  axisLine={false}
+                                  tickLine={false}
+                                />
                                 <Tooltip content={<CustomTooltip />} />
-                                <Bar dataKey="sessions" fill="#34C759" radius={[4, 4, 0, 0]} name="Sessions" />
+                                <Bar
+                                  dataKey="sessions"
+                                  fill="#34C759"
+                                  radius={[4, 4, 0, 0]}
+                                  name="Sessions"
+                                />
                               </BarChart>
                             ) : (
-                              <ComposedChart data={chartData} margin={{ top: 5, right: 5, left: -30, bottom: 0 }}>
+                              <ComposedChart
+                                data={chartData}
+                                margin={{
+                                  top: 5,
+                                  right: 5,
+                                  left: -30,
+                                  bottom: 0,
+                                }}
+                              >
                                 <defs>
-                                  <linearGradient id="colorSessionsSmall" x1="0" y1="0" x2="0" y2="1">
-                                    <stop offset="5%" stopColor="#34C759" stopOpacity={0.3}/>
-                                    <stop offset="95%" stopColor="#34C759" stopOpacity={0}/>
+                                  <linearGradient
+                                    id="colorSessionsSmall"
+                                    x1="0"
+                                    y1="0"
+                                    x2="0"
+                                    y2="1"
+                                  >
+                                    <stop
+                                      offset="5%"
+                                      stopColor="#34C759"
+                                      stopOpacity={0.3}
+                                    />
+                                    <stop
+                                      offset="95%"
+                                      stopColor="#34C759"
+                                      stopOpacity={0}
+                                    />
                                   </linearGradient>
                                 </defs>
-                                <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#666' }} axisLine={false} tickLine={false} />
-                                <YAxis tick={{ fontSize: 11, fill: '#666' }} axisLine={false} tickLine={false} />
+                                <XAxis
+                                  dataKey="name"
+                                  tick={{ fontSize: 11, fill: '#666' }}
+                                  axisLine={false}
+                                  tickLine={false}
+                                />
+                                <YAxis
+                                  tick={{ fontSize: 11, fill: '#666' }}
+                                  axisLine={false}
+                                  tickLine={false}
+                                />
                                 <Tooltip content={<CustomTooltip />} />
                                 <Area
                                   type="monotone"
@@ -909,47 +1288,81 @@ export function OwnProfilePageContent() {
                     {/* Stats Grid - 5 columns */}
                     <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                       <div className="bg-white border border-gray-200 rounded-xl p-4">
-                        <div className="text-sm text-gray-600 mb-2 uppercase tracking-wide">Total Hours</div>
-                        <div className="text-2xl font-bold mb-1">{calculatedStats.totalHours.toFixed(1)}</div>
+                        <div className="text-sm text-gray-600 mb-2 uppercase tracking-wide">
+                          Total Hours
+                        </div>
+                        <div className="text-2xl font-bold mb-1">
+                          {calculatedStats.totalHours.toFixed(1)}
+                        </div>
                         {renderPercentageChange(calculatedStats.hoursChange)}
                       </div>
 
                       <div className="bg-white border border-gray-200 rounded-xl p-4">
-                        <div className="text-sm text-gray-600 mb-2 uppercase tracking-wide">Avg Duration</div>
-                        <div className="text-2xl font-bold mb-1">{calculatedStats.avgDuration}m</div>
-                        {renderPercentageChange(calculatedStats.avgDurationChange)}
+                        <div className="text-sm text-gray-600 mb-2 uppercase tracking-wide">
+                          Avg Duration
+                        </div>
+                        <div className="text-2xl font-bold mb-1">
+                          {calculatedStats.avgDuration}m
+                        </div>
+                        {renderPercentageChange(
+                          calculatedStats.avgDurationChange
+                        )}
                       </div>
 
                       <div className="bg-white border border-gray-200 rounded-xl p-4">
-                        <div className="text-sm text-gray-600 mb-2 uppercase tracking-wide">Sessions</div>
-                        <div className="text-2xl font-bold mb-1">{calculatedStats.sessions}</div>
+                        <div className="text-sm text-gray-600 mb-2 uppercase tracking-wide">
+                          Sessions
+                        </div>
+                        <div className="text-2xl font-bold mb-1">
+                          {calculatedStats.sessions}
+                        </div>
                         {renderPercentageChange(calculatedStats.sessionsChange)}
                       </div>
 
                       <div className="bg-white border border-gray-200 rounded-xl p-4">
-                        <div className="text-sm text-gray-600 mb-2 uppercase tracking-wide">Active Days</div>
-                        <div className="text-2xl font-bold mb-1">{calculatedStats.activeDays}</div>
-                        {renderPercentageChange(calculatedStats.activeDaysChange)}
+                        <div className="text-sm text-gray-600 mb-2 uppercase tracking-wide">
+                          Active Days
+                        </div>
+                        <div className="text-2xl font-bold mb-1">
+                          {calculatedStats.activeDays}
+                        </div>
+                        {renderPercentageChange(
+                          calculatedStats.activeDaysChange
+                        )}
                       </div>
 
                       <div className="bg-white border border-gray-200 rounded-xl p-4">
-                        <div className="text-sm text-gray-600 mb-2 uppercase tracking-wide">Activities</div>
-                        <div className="text-2xl font-bold mb-1">{calculatedStats.activities}</div>
-                        {renderPercentageChange(calculatedStats.activitiesChange)}
+                        <div className="text-sm text-gray-600 mb-2 uppercase tracking-wide">
+                          Activities
+                        </div>
+                        <div className="text-2xl font-bold mb-1">
+                          {calculatedStats.activities}
+                        </div>
+                        {renderPercentageChange(
+                          calculatedStats.activitiesChange
+                        )}
                       </div>
                     </div>
 
                     {/* Secondary Stats Grid - Streaks */}
                     <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                       <div className="bg-white border border-gray-200 rounded-xl p-4">
-                        <div className="text-sm text-gray-600 mb-2 uppercase tracking-wide">Current Streak</div>
-                        <div className="text-2xl font-bold mb-1">{calculatedStats.currentStreak}</div>
+                        <div className="text-sm text-gray-600 mb-2 uppercase tracking-wide">
+                          Current Streak
+                        </div>
+                        <div className="text-2xl font-bold mb-1">
+                          {calculatedStats.currentStreak}
+                        </div>
                         {renderPercentageChange(calculatedStats.streakChange)}
                       </div>
 
                       <div className="bg-white border border-gray-200 rounded-xl p-4">
-                        <div className="text-sm text-gray-600 mb-2 uppercase tracking-wide">Longest Streak</div>
-                        <div className="text-2xl font-bold mb-1">{calculatedStats.longestStreak}</div>
+                        <div className="text-sm text-gray-600 mb-2 uppercase tracking-wide">
+                          Longest Streak
+                        </div>
+                        <div className="text-2xl font-bold mb-1">
+                          {calculatedStats.longestStreak}
+                        </div>
                         {renderPercentageChange(calculatedStats.streakChange)}
                       </div>
                     </div>
@@ -967,89 +1380,33 @@ export function OwnProfilePageContent() {
 
                 {activeTab === 'followers' && (
                   <div className="bg-gray-50 rounded-xl border border-gray-200 p-4 md:p-6">
-                    <h3 className="text-base md:text-lg font-bold mb-4">Followers ({followers.length})</h3>
-                    {followers.length > 0 ? (
-                      <div className="space-y-3">
-                        {followers.map((follower) => (
-                          <Link
-                            key={follower.id}
-                            href={`/profile/${follower.username}`}
-                            className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors"
-                          >
-                            {follower.profilePicture ? (
-                              <div className="w-10 h-10 rounded-full overflow-hidden ring-2 ring-white">
-                                <Image
-                                  src={follower.profilePicture}
-                                  alt={follower.name}
-                                  width={40}
-                                  height={40}
-                                  className="w-full h-full object-cover"
-                                />
-                              </div>
-                            ) : (
-                              <div className="w-10 h-10 bg-[#FC4C02] rounded-full flex items-center justify-center">
-                                <span className="text-white font-semibold text-sm">
-                                  {follower.name.charAt(0).toUpperCase()}
-                                </span>
-                              </div>
-                            )}
-                            <div className="flex-1">
-                              <div className="font-medium">{follower.name}</div>
-                              <div className="text-sm text-gray-500">@{follower.username}</div>
-                            </div>
-                          </Link>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="text-center py-8 text-gray-400">
-                        <Users className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                        <p>No followers yet</p>
-                      </div>
-                    )}
+                    <h3 className="text-base md:text-lg font-bold mb-4">
+                      Followers ({userProfile?.followerCount || 0})
+                    </h3>
+                    <div className="text-center py-8 text-gray-400">
+                      <Users className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                      <p>Followers list view coming soon</p>
+                      <p className="text-sm mt-2">
+                        Currently showing {followers.length} follower
+                        {followers.length !== 1 ? 's' : ''}
+                      </p>
+                    </div>
                   </div>
                 )}
 
                 {activeTab === 'following' && (
                   <div className="bg-gray-50 rounded-xl border border-gray-200 p-4 md:p-6">
-                    <h3 className="text-base md:text-lg font-bold mb-4">Following ({following.length})</h3>
-                    {following.length > 0 ? (
-                      <div className="space-y-3">
-                        {following.map((followedUser) => (
-                          <Link
-                            key={followedUser.id}
-                            href={`/profile/${followedUser.username}`}
-                            className="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-50 transition-colors"
-                          >
-                            {followedUser.profilePicture ? (
-                              <div className="w-10 h-10 rounded-full overflow-hidden ring-2 ring-white">
-                                <Image
-                                  src={followedUser.profilePicture}
-                                  alt={followedUser.name}
-                                  width={40}
-                                  height={40}
-                                  className="w-full h-full object-cover"
-                                />
-                              </div>
-                            ) : (
-                              <div className="w-10 h-10 bg-[#FC4C02] rounded-full flex items-center justify-center">
-                                <span className="text-white font-semibold text-sm">
-                                  {followedUser.name.charAt(0).toUpperCase()}
-                                </span>
-                              </div>
-                            )}
-                            <div className="flex-1">
-                              <div className="font-medium">{followedUser.name}</div>
-                              <div className="text-sm text-gray-500">@{followedUser.username}</div>
-                            </div>
-                          </Link>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="text-center py-8 text-gray-400">
-                        <UserIcon className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                        <p>Not following anyone yet</p>
-                      </div>
-                    )}
+                    <h3 className="text-base md:text-lg font-bold mb-4">
+                      Following ({userProfile?.followingCount || 0})
+                    </h3>
+                    <div className="text-center py-8 text-gray-400">
+                      <UserIcon className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                      <p>Following list view coming soon</p>
+                      <p className="text-sm mt-2">
+                        Currently following {following.length} user
+                        {following.length !== 1 ? 's' : ''}
+                      </p>
+                    </div>
                   </div>
                 )}
 
