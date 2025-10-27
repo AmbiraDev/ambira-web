@@ -7,6 +7,7 @@
 
 import { firebaseApi } from '@/lib/api';
 import { Session, SessionWithDetails, SessionFilters } from '@/types';
+import { validateOrThrow, UpdateSessionSchema, type UpdateSessionData } from '@/lib/validation';
 
 export class SessionService {
   /**
@@ -76,8 +77,11 @@ export class SessionService {
   /**
    * Update session
    */
-  async updateSession(sessionId: string, data: Partial<Session>): Promise<void> {
-    return firebaseApi.session.updateSession(sessionId, data);
+  async updateSession(sessionId: string, data: unknown): Promise<void> {
+    // Validate input data
+    const validatedData = validateOrThrow(UpdateSessionSchema, data);
+
+    return firebaseApi.session.updateSession(sessionId, validatedData);
   }
 }
 

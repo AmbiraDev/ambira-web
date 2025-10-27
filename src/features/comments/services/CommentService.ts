@@ -13,6 +13,13 @@ import {
   UpdateCommentData,
   CommentsResponse,
 } from '@/types';
+import {
+  validateOrThrow,
+  CreateCommentSchema,
+  UpdateCommentSchema,
+  type CreateCommentData as ValidatedCreateCommentData,
+  type UpdateCommentData as ValidatedUpdateCommentData,
+} from '@/lib/validation';
 
 export class CommentService {
   /**
@@ -37,18 +44,21 @@ export class CommentService {
   /**
    * Create a new comment
    */
-  async createComment(data: CreateCommentData): Promise<CommentWithDetails> {
-    return firebaseApi.comment.createComment(data);
+  async createComment(data: unknown): Promise<CommentWithDetails> {
+    // Validate input data
+    const validatedData = validateOrThrow(CreateCommentSchema, data);
+
+    return firebaseApi.comment.createComment(validatedData as CreateCommentData);
   }
 
   /**
    * Update a comment
    */
-  async updateComment(
-    commentId: string,
-    data: UpdateCommentData
-  ): Promise<void> {
-    await firebaseApi.comment.updateComment(commentId, data);
+  async updateComment(commentId: string, data: unknown): Promise<void> {
+    // Validate input data
+    const validatedData = validateOrThrow(UpdateCommentSchema, data);
+
+    await firebaseApi.comment.updateComment(commentId, validatedData as UpdateCommentData);
   }
 
   /**

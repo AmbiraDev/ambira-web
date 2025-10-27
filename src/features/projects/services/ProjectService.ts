@@ -11,12 +11,13 @@
 import { firebaseApi } from '@/lib/api';
 import {
   Project,
-  Activity,
+  // Activity,
   CreateProjectData,
   UpdateProjectData,
   ProjectStats,
-  ActivityStats,
+  // ActivityStats,
 } from '@/types';
+import { validateOrThrow, CreateProjectSchema, UpdateProjectSchema } from '@/lib/validation';
 
 export class ProjectService {
   /**
@@ -58,15 +59,17 @@ export class ProjectService {
   /**
    * Create a new project
    */
-  async createProject(data: CreateProjectData): Promise<Project> {
-    return firebaseApi.project.createProject(data);
+  async createProject(data: unknown): Promise<Project> {
+    const validated = validateOrThrow(CreateProjectSchema, data);
+    return firebaseApi.project.createProject(validated as CreateProjectData);
   }
 
   /**
    * Update a project
    */
-  async updateProject(projectId: string, data: UpdateProjectData): Promise<Project> {
-    return firebaseApi.project.updateProject(projectId, data);
+  async updateProject(projectId: string, data: unknown): Promise<Project> {
+    const validated = validateOrThrow(UpdateProjectSchema, data);
+    return firebaseApi.project.updateProject(projectId, validated as UpdateProjectData);
   }
 
   /**

@@ -12,9 +12,16 @@ import {
 } from '@tanstack/react-query';
 import { GroupService } from '../services/GroupService';
 import { GROUPS_KEYS } from './useGroups';
+import { Group } from '@/types';
 
 // Singleton service instance
 const groupService = new GroupService();
+
+// Type for group cache data with member info
+interface GroupCacheData {
+  id: string;
+  memberIds: string[];
+}
 
 // ==================== MUTATION HOOKS ====================
 
@@ -34,7 +41,7 @@ export function useJoinGroup(
 
   return useMutation<void, Error, { groupId: string; userId: string }>({
     mutationFn: ({ groupId, userId }) =>
-      groupService.joinGroup(groupId, userId),
+      groupService.joinGroup({ groupId }, userId),
 
     onMutate: async ({ groupId, userId }) => {
       // Cancel outgoing queries
@@ -46,15 +53,15 @@ export function useJoinGroup(
       });
 
       // Snapshot previous values for rollback
-      const previousGroup = queryClient.getQueryData(
+      const previousGroup = queryClient.getQueryData<Group>(
         GROUPS_KEYS.detail(groupId)
       );
-      const previousUserGroups = queryClient.getQueryData(
+      const previousUserGroups = queryClient.getQueryData<Group[]>(
         GROUPS_KEYS.userGroups(userId)
       );
 
       // Optimistically update group member count
-      queryClient.setQueryData(GROUPS_KEYS.detail(groupId), (old: any) => {
+      queryClient.setQueryData<Group>(GROUPS_KEYS.detail(groupId), (old) => {
         if (!old) return old;
         return {
           ...old,
@@ -73,9 +80,9 @@ export function useJoinGroup(
         'previousGroup' in context &&
         context.previousGroup
       ) {
-        queryClient.setQueryData(
+        queryClient.setQueryData<Group>(
           GROUPS_KEYS.detail(variables.groupId),
-          context.previousGroup
+          context.previousGroup as Group
         );
       }
       if (
@@ -84,9 +91,9 @@ export function useJoinGroup(
         'previousUserGroups' in context &&
         context.previousUserGroups
       ) {
-        queryClient.setQueryData(
+        queryClient.setQueryData<Group[]>(
           GROUPS_KEYS.userGroups(variables.userId),
-          context.previousUserGroups
+          context.previousUserGroups as Group[]
         );
       }
     },
@@ -120,7 +127,7 @@ export function useLeaveGroup(
 
   return useMutation<void, Error, { groupId: string; userId: string }>({
     mutationFn: ({ groupId, userId }) =>
-      groupService.leaveGroup(groupId, userId),
+      groupService.leaveGroup({ groupId }, userId),
 
     onMutate: async ({ groupId, userId }) => {
       // Cancel outgoing queries
@@ -132,26 +139,26 @@ export function useLeaveGroup(
       });
 
       // Snapshot previous values
-      const previousGroup = queryClient.getQueryData(
+      const previousGroup = queryClient.getQueryData<Group>(
         GROUPS_KEYS.detail(groupId)
       );
-      const previousUserGroups = queryClient.getQueryData(
+      const previousUserGroups = queryClient.getQueryData<Group[]>(
         GROUPS_KEYS.userGroups(userId)
       );
 
       // Optimistically update group
-      queryClient.setQueryData(GROUPS_KEYS.detail(groupId), (old: any) => {
+      queryClient.setQueryData<Group>(GROUPS_KEYS.detail(groupId), (old) => {
         if (!old) return old;
         return {
           ...old,
-          memberIds: old.memberIds.filter((id: string) => id !== userId),
+          memberIds: old.memberIds.filter((id) => id !== userId),
         };
       });
 
       // Optimistically remove from user groups
-      queryClient.setQueryData(GROUPS_KEYS.userGroups(userId), (old: any) => {
+      queryClient.setQueryData<Group[]>(GROUPS_KEYS.userGroups(userId), (old) => {
         if (!Array.isArray(old)) return old;
-        return old.filter((group: any) => group.id !== groupId);
+        return old.filter((group) => group.id !== groupId);
       });
 
       return { previousGroup, previousUserGroups };
@@ -165,9 +172,9 @@ export function useLeaveGroup(
         'previousGroup' in context &&
         context.previousGroup
       ) {
-        queryClient.setQueryData(
+        queryClient.setQueryData<Group>(
           GROUPS_KEYS.detail(variables.groupId),
-          context.previousGroup
+          context.previousGroup as Group
         );
       }
       if (
@@ -176,9 +183,9 @@ export function useLeaveGroup(
         'previousUserGroups' in context &&
         context.previousUserGroups
       ) {
-        queryClient.setQueryData(
+        queryClient.setQueryData<Group[]>(
           GROUPS_KEYS.userGroups(variables.userId),
-          context.previousUserGroups
+          context.previousUserGroups as Group[]
         );
       }
     },
