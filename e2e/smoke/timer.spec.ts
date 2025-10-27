@@ -1,5 +1,5 @@
 import { test, expect } from '../fixtures/test-base';
-import { runAccessibilityScan, formatA11yViolations } from '../utils/accessibility';
+import { formatA11yViolations } from '../utils/accessibility';
 
 test.describe('Timer Page - Smoke Tests', () => {
   test.beforeEach(async ({ page }) => {
@@ -22,7 +22,9 @@ test.describe('Timer Page - Smoke Tests', () => {
 
     // Look for timer-related elements (buttons, controls, time display)
     // Using flexible selectors that might match timer UI
-    const timerElements = page.locator('button, [role="button"], [role="timer"]');
+    const timerElements = page.locator(
+      'button, [role="button"], [role="timer"]'
+    );
     const count = await timerElements.count();
 
     // Expect at least some interactive elements
@@ -47,7 +49,7 @@ test.describe('Timer Page - Smoke Tests', () => {
     const errors: string[] = [];
 
     // Listen for console errors
-    page.on('console', (msg) => {
+    page.on('console', msg => {
       if (msg.type() === 'error') {
         errors.push(msg.text());
       }
@@ -59,7 +61,7 @@ test.describe('Timer Page - Smoke Tests', () => {
 
     // Filter out known/expected errors
     const criticalErrors = errors.filter(
-      (error) =>
+      error =>
         !error.includes('Firebase') &&
         !error.includes('DevTools') &&
         !error.includes('favicon')
@@ -101,7 +103,10 @@ test.describe('Timer Page - Smoke Tests', () => {
 
     // Verify no horizontal scroll
     const hasHorizontalScroll = await page.evaluate(() => {
-      return document.documentElement.scrollWidth > document.documentElement.clientWidth;
+      return (
+        document.documentElement.scrollWidth >
+        document.documentElement.clientWidth
+      );
     });
     expect(hasHorizontalScroll).toBe(false);
   });

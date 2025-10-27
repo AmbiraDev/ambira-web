@@ -1,5 +1,5 @@
 import { test, expect } from '../fixtures/test-base';
-import { runAccessibilityScan, formatA11yViolations } from '../utils/accessibility';
+import { formatA11yViolations } from '../utils/accessibility';
 
 test.describe('Feed Page - Smoke Tests', () => {
   test.beforeEach(async ({ page }) => {
@@ -44,7 +44,7 @@ test.describe('Feed Page - Smoke Tests', () => {
     const errors: string[] = [];
 
     // Listen for console errors
-    page.on('console', (msg) => {
+    page.on('console', msg => {
       if (msg.type() === 'error') {
         errors.push(msg.text());
       }
@@ -56,7 +56,7 @@ test.describe('Feed Page - Smoke Tests', () => {
 
     // Filter out known/expected errors (e.g., Firebase emulator warnings)
     const criticalErrors = errors.filter(
-      (error) =>
+      error =>
         !error.includes('Firebase') &&
         !error.includes('DevTools') &&
         !error.includes('favicon')
@@ -98,7 +98,10 @@ test.describe('Feed Page - Smoke Tests', () => {
 
     // Verify no horizontal scroll
     const hasHorizontalScroll = await page.evaluate(() => {
-      return document.documentElement.scrollWidth > document.documentElement.clientWidth;
+      return (
+        document.documentElement.scrollWidth >
+        document.documentElement.clientWidth
+      );
     });
     expect(hasHorizontalScroll).toBe(false);
   });

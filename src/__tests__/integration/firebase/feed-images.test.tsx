@@ -52,7 +52,7 @@ jest.mock('firebase/firestore', () => ({
 jest.mock('next/image', () => ({
   __esModule: true,
   default: (props: any) => {
-    // eslint-disable-next-line jsx-a11y/alt-text, @next/next/no-img-element
+    // eslint-disable-next-line jsx-a11y/alt-text
     return <img {...props} />;
   },
 }));
@@ -469,10 +469,7 @@ describe('Firebase Feed Images Integration', () => {
         });
       });
 
-      // Import and test populateSessionsWithDetails
-      const { populateSessionsWithDetails } = require('@/lib/firebaseApi');
-
-      // This function is not exported, but we can test through getFeedSessions
+      // Test through getFeedSessions (populateSessionsWithDetails is internal)
       (getDocs as jest.Mock).mockResolvedValue({
         docs: [mockSessionDoc],
       });

@@ -11,6 +11,7 @@ import {
   getRedirectResult,
   GoogleAuthProvider,
 } from 'firebase/auth';
+import { getDoc, setDoc, query, getDocs } from 'firebase/firestore';
 
 // Mock Firebase Auth
 jest.mock('firebase/auth', () => ({
@@ -41,7 +42,7 @@ jest.mock('firebase/firestore', () => ({
   getDocs: jest.fn(),
   serverTimestamp: jest.fn(() => new Date()),
   Timestamp: {
-    fromDate: jest.fn((date) => date),
+    fromDate: jest.fn(date => date),
   },
 }));
 
@@ -58,13 +59,15 @@ describe('Google Sign-In - Mobile Detection', () => {
 
   test('should detect iPhone as mobile', () => {
     Object.defineProperty(navigator, 'userAgent', {
-      value: 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X) AppleWebKit/605.1.15',
+      value:
+        'Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X) AppleWebKit/605.1.15',
       writable: true,
     });
 
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-      navigator.userAgent
-    );
+    const isMobile =
+      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+        navigator.userAgent
+      );
 
     expect(isMobile).toBe(true);
   });
@@ -75,16 +78,18 @@ describe('Google Sign-In - Mobile Detection', () => {
       writable: true,
     });
 
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-      navigator.userAgent
-    );
+    const isMobile =
+      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+        navigator.userAgent
+      );
 
     expect(isMobile).toBe(true);
   });
 
   test('should detect Safari as needing redirect', () => {
     Object.defineProperty(navigator, 'userAgent', {
-      value: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Safari/605.1.15',
+      value:
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.0 Safari/605.1.15',
       writable: true,
     });
 
@@ -95,7 +100,8 @@ describe('Google Sign-In - Mobile Detection', () => {
 
   test('should NOT detect Chrome as Safari', () => {
     Object.defineProperty(navigator, 'userAgent', {
-      value: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+      value:
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
       writable: true,
     });
 
@@ -106,13 +112,15 @@ describe('Google Sign-In - Mobile Detection', () => {
 
   test('should detect desktop Chrome as non-mobile', () => {
     Object.defineProperty(navigator, 'userAgent', {
-      value: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+      value:
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
       writable: true,
     });
 
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-      navigator.userAgent
-    );
+    const isMobile =
+      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+        navigator.userAgent
+      );
 
     expect(isMobile).toBe(false);
   });
@@ -124,7 +132,8 @@ describe('Google Sign-In - Redirect Flow (Mobile)', () => {
   beforeEach(() => {
     // Set mobile user agent
     Object.defineProperty(navigator, 'userAgent', {
-      value: 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X) AppleWebKit/605.1.15',
+      value:
+        'Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X) AppleWebKit/605.1.15',
       writable: true,
     });
   });
@@ -190,7 +199,8 @@ describe('Google Sign-In - Popup Flow (Desktop)', () => {
   beforeEach(() => {
     // Set desktop Chrome user agent
     Object.defineProperty(navigator, 'userAgent', {
-      value: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+      value:
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
       writable: true,
     });
   });
@@ -218,8 +228,8 @@ describe('Google Sign-In - Popup Flow (Desktop)', () => {
     });
 
     // Mock Firestore getDoc
-    const { getDoc } = require('firebase/firestore');
-    getDoc.mockResolvedValue({
+    const mockGetDoc = getDoc as jest.Mock;
+    mockGetDoc.mockResolvedValue({
       exists: () => true,
       data: () => ({
         email: 'test@example.com',
@@ -293,8 +303,8 @@ describe('Google Sign-In - Redirect Result Handling', () => {
     });
 
     // Mock Firestore getDoc
-    const { getDoc } = require('firebase/firestore');
-    getDoc.mockResolvedValue({
+    const mockGetDoc = getDoc as jest.Mock;
+    mockGetDoc.mockResolvedValue({
       exists: () => true,
       data: () => ({
         email: 'test@example.com',
@@ -339,8 +349,11 @@ describe('Google Sign-In - Redirect Result Handling', () => {
     });
 
     // Mock Firestore - user doesn't exist
-    const { getDoc, setDoc, query, getDocs } = require('firebase/firestore');
-    getDoc.mockResolvedValue({
+    const mockGetDoc = getDoc as jest.Mock;
+    const mockSetDoc = setDoc as jest.Mock;
+    const mockQuery = query as jest.Mock;
+    const mockGetDocs = getDocs as jest.Mock;
+    mockGetDoc.mockResolvedValue({
       exists: () => false,
       data: () => null,
     });

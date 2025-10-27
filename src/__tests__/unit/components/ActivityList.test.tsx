@@ -3,6 +3,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ActivityList } from '@/components/ActivityList';
 import { Activity } from '@/types';
+import { useProjects } from '@/contexts/ProjectsContext';
 
 /**
  * Comprehensive tests for ActivityList component
@@ -27,9 +28,7 @@ jest.mock('next/navigation', () => ({
   }),
 }));
 
-jest.mock('@/contexts/ProjectsContext', () => ({
-  useProjects: jest.fn(),
-}));
+jest.mock('@/contexts/ProjectsContext');
 
 jest.mock('@/contexts/ToastContext', () => ({
   useToast: () => ({
@@ -78,13 +77,13 @@ const mockActivities: Activity[] = [
   },
 ];
 
-const useProjects = require('@/contexts/ProjectsContext').useProjects;
+const mockUseProjects = useProjects as jest.MockedFunction<typeof useProjects>;
 
 describe('ActivityList Component', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     // Set default mock implementation
-    useProjects.mockReturnValue({
+    mockUseProjects.mockReturnValue({
       projects: mockActivities,
       isLoading: false,
       error: null,
@@ -95,7 +94,7 @@ describe('ActivityList Component', () => {
 
   describe('Loading State', () => {
     it('should display loading skeleton', () => {
-      useProjects.mockReturnValue({
+      mockUseProjects.mockReturnValue({
         projects: null,
         isLoading: true,
         error: null,
@@ -111,7 +110,7 @@ describe('ActivityList Component', () => {
     });
 
     it('should show 6 skeleton cards in loading state', () => {
-      useProjects.mockReturnValue({
+      mockUseProjects.mockReturnValue({
         projects: null,
         isLoading: true,
         error: null,
@@ -128,7 +127,7 @@ describe('ActivityList Component', () => {
 
   describe('Error State', () => {
     it('should display error message when loading fails', () => {
-      useProjects.mockReturnValue({
+      mockUseProjects.mockReturnValue({
         projects: null,
         isLoading: false,
         error: 'Failed to load activities',
@@ -145,7 +144,7 @@ describe('ActivityList Component', () => {
     });
 
     it('should display retry button in error state', () => {
-      useProjects.mockReturnValue({
+      mockUseProjects.mockReturnValue({
         projects: null,
         isLoading: false,
         error: 'Failed to load activities',
@@ -160,7 +159,7 @@ describe('ActivityList Component', () => {
     });
 
     it('should reload page when retry button is clicked', () => {
-      useProjects.mockReturnValue({
+      mockUseProjects.mockReturnValue({
         projects: null,
         isLoading: false,
         error: 'Failed to load activities',
@@ -182,7 +181,7 @@ describe('ActivityList Component', () => {
 
   describe('Empty State', () => {
     it('should display empty state when no activities exist', () => {
-      useProjects.mockReturnValue({
+      mockUseProjects.mockReturnValue({
         projects: [],
         isLoading: false,
         error: null,
@@ -200,7 +199,7 @@ describe('ActivityList Component', () => {
     });
 
     it('should display create button in empty state', () => {
-      useProjects.mockReturnValue({
+      mockUseProjects.mockReturnValue({
         projects: [],
         isLoading: false,
         error: null,
@@ -217,7 +216,7 @@ describe('ActivityList Component', () => {
     });
 
     it('should navigate to new activity page when create button is clicked', () => {
-      useProjects.mockReturnValue({
+      mockUseProjects.mockReturnValue({
         projects: [],
         isLoading: false,
         error: null,
@@ -238,7 +237,7 @@ describe('ActivityList Component', () => {
 
   describe('Activities Display', () => {
     beforeEach(() => {
-      useProjects.mockReturnValue({
+      mockUseProjects.mockReturnValue({
         projects: mockActivities,
         isLoading: false,
         error: null,
@@ -254,7 +253,7 @@ describe('ActivityList Component', () => {
     });
 
     it('should display singular form for one activity', () => {
-      useProjects.mockReturnValue({
+      mockUseProjects.mockReturnValue({
         projects: [mockActivities[0]],
         isLoading: false,
         error: null,
@@ -288,7 +287,7 @@ describe('ActivityList Component', () => {
 
   describe('Accessibility - ARIA Labels', () => {
     beforeEach(() => {
-      useProjects.mockReturnValue({
+      mockUseProjects.mockReturnValue({
         projects: [],
         isLoading: false,
         error: null,
@@ -328,7 +327,7 @@ describe('ActivityList Component', () => {
 
   describe('Accessibility - Touch Targets', () => {
     beforeEach(() => {
-      useProjects.mockReturnValue({
+      mockUseProjects.mockReturnValue({
         projects: [],
         isLoading: false,
         error: null,
@@ -347,7 +346,7 @@ describe('ActivityList Component', () => {
     });
 
     it('should meet minimum 44px height for modal buttons', () => {
-      useProjects.mockReturnValue({
+      mockUseProjects.mockReturnValue({
         projects: mockActivities,
         isLoading: false,
         error: null,
@@ -384,7 +383,7 @@ describe('ActivityList Component', () => {
 
   describe('Delete Confirmation Modal', () => {
     beforeEach(() => {
-      useProjects.mockReturnValue({
+      mockUseProjects.mockReturnValue({
         projects: mockActivities,
         isLoading: false,
         error: null,
@@ -492,7 +491,7 @@ describe('ActivityList Component', () => {
 
     it('should call deleteProject when Delete is confirmed', async () => {
       const mockDeleteProject = jest.fn().mockResolvedValue(undefined);
-      useProjects.mockReturnValue({
+      mockUseProjects.mockReturnValue({
         projects: mockActivities,
         isLoading: false,
         error: null,
@@ -522,7 +521,7 @@ describe('ActivityList Component', () => {
 
     it('should show success toast after successful delete', async () => {
       const localMockDeleteProject = jest.fn().mockResolvedValue(undefined);
-      useProjects.mockReturnValue({
+      mockUseProjects.mockReturnValue({
         projects: mockActivities,
         isLoading: false,
         error: null,
@@ -556,7 +555,7 @@ describe('ActivityList Component', () => {
       const localMockDeleteProject = jest
         .fn()
         .mockRejectedValue(new Error('Delete failed'));
-      useProjects.mockReturnValue({
+      mockUseProjects.mockReturnValue({
         projects: mockActivities,
         isLoading: false,
         error: null,
@@ -595,7 +594,7 @@ describe('ActivityList Component', () => {
 
   describe('Archive/Restore Functionality', () => {
     beforeEach(() => {
-      useProjects.mockReturnValue({
+      mockUseProjects.mockReturnValue({
         projects: mockActivities,
         isLoading: false,
         error: null,
@@ -606,7 +605,7 @@ describe('ActivityList Component', () => {
 
     it('should call archiveProject when Archive is clicked on active activity', async () => {
       const mockArchiveProject = jest.fn().mockResolvedValue(undefined);
-      useProjects.mockReturnValue({
+      mockUseProjects.mockReturnValue({
         projects: mockActivities,
         isLoading: false,
         error: null,
@@ -655,7 +654,7 @@ describe('ActivityList Component', () => {
       const localMockArchiveProject = jest
         .fn()
         .mockRejectedValue(new Error('Archive failed'));
-      useProjects.mockReturnValue({
+      mockUseProjects.mockReturnValue({
         projects: mockActivities,
         isLoading: false,
         error: null,
@@ -693,7 +692,7 @@ describe('ActivityList Component', () => {
     it('should call onEditActivity when edit is clicked', () => {
       const mockEditHandler = jest.fn();
 
-      useProjects.mockReturnValue({
+      mockUseProjects.mockReturnValue({
         projects: mockActivities,
         isLoading: false,
         error: null,
@@ -719,7 +718,7 @@ describe('ActivityList Component', () => {
 
   describe('New Activity Navigation', () => {
     it('should navigate to new activity page', () => {
-      useProjects.mockReturnValue({
+      mockUseProjects.mockReturnValue({
         projects: mockActivities,
         isLoading: false,
         error: null,

@@ -1,6 +1,7 @@
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
+import { useAuth } from '@/hooks/useAuth';
 
 // Mock Next.js router
 const mockPush = jest.fn();
@@ -12,14 +13,14 @@ jest.mock('next/navigation', () => ({
 }));
 
 // Mock the auth hook
-jest.mock('@/hooks/useAuth', () => ({
-  useAuth: jest.fn(),
-}));
+jest.mock('@/hooks/useAuth');
 
-const mockUseAuth = require('@/hooks/useAuth').useAuth;
+const mockUseAuth = useAuth as jest.MockedFunction<typeof useAuth>;
 
 // Test component to render inside ProtectedRoute
-const TestComponent = () => <div data-testid="protected-content">Protected Content</div>;
+const TestComponent = () => (
+  <div data-testid="protected-content">Protected Content</div>
+);
 
 describe('ProtectedRoute', () => {
   beforeEach(() => {

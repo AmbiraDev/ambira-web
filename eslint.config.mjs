@@ -43,12 +43,35 @@ const eslintConfig = [
       '@tanstack/query/stable-query-client': 'error',
     },
   },
-  // Playwright test fixtures
+  // Jest test configuration
+  {
+    files: ['src/__tests__/**/*.{ts,tsx}', 'jest.setup.ts'],
+    rules: {
+      // Jest setup files legitimately use 'any' for global mocks
+      '@typescript-eslint/no-explicit-any': 'off',
+      // Test files often have unused imports for test utilities
+      '@typescript-eslint/no-unused-vars': 'off',
+      // Tests often assign values that look unused but are needed for test isolation
+      'prefer-const': 'warn',
+      // React test utilities create display-less components
+      'react/display-name': 'off',
+      // Test files often use require for dynamic test data
+      '@typescript-eslint/no-require-imports': 'warn',
+      // Test files use <img> for testing purposes, not for actual rendering
+      '@next/next/no-img-element': 'off',
+    },
+  },
+  // Playwright E2E tests
   {
     files: ['e2e/**/*.{ts,tsx}'],
     rules: {
       // Playwright's `use` function is not a React hook
       'react-hooks/rules-of-hooks': 'off',
+      // E2E tests use 'any' for Playwright page interactions
+      '@typescript-eslint/no-explicit-any': 'off',
+      // E2E test files often have unused imports
+      '@typescript-eslint/no-unused-vars': 'off',
+      '@typescript-eslint/no-require-imports': 'warn',
     },
   },
 ];
