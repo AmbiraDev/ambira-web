@@ -168,6 +168,24 @@ export class ActiveSession {
   }
 
   /**
+   * Factory: Create session with adjusted start time
+   */
+  withAdjustedStartTime(newStartTime: Date): ActiveSession {
+    return new ActiveSession(
+      this.id,
+      this.userId,
+      this.projectId,
+      newStartTime,
+      this.status,
+      this.pausedDuration,
+      this.lastPausedAt,
+      this.activityId,
+      this.title,
+      this.description
+    );
+  }
+
+  /**
    * Convert to completed Session data
    */
   toCompletedSessionData(endedAt: Date = new Date()): {
@@ -188,7 +206,7 @@ export class ActiveSession {
       startTime: this.startTime,
       endedAt,
       title: this.title,
-      description: this.description
+      description: this.description,
     };
   }
 
@@ -207,7 +225,7 @@ export class ActiveSession {
       activityId: this.activityId,
       title: this.title,
       description: this.description,
-      currentDuration: this.getCurrentDuration()
+      currentDuration: this.getCurrentDuration(),
     };
   }
 }

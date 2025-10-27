@@ -2,8 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
-import { SessionWithDetails, User } from '@/types';
-import SessionStats from './SessionStats';
+import { SessionWithDetails } from '@/types';
 import SessionInteractions from './SessionInteractions';
 import TopComments from './TopComments';
 import { ImageGallery } from './ImageGallery';
@@ -13,20 +12,11 @@ import { PrefetchLink } from './PrefetchLink';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { firebaseApi } from '@/lib/api';
-import {
-  MoreVertical,
-  Heart,
-  MessageCircle,
-  Share2,
-  Clock,
-  ListTodo,
-  Tag,
-} from 'lucide-react';
+import { MoreVertical } from 'lucide-react';
 import Link from 'next/link';
 import { cn, isEmpty } from '@/lib/utils';
-import { COLORS } from '@/config/constants';
 import { formatSessionDate, formatDuration } from '@/lib/formatters';
-import { getUserInitials, getUserColor } from '@/lib/userUtils';
+import { getUserInitials } from '@/lib/userUtils';
 
 interface SessionCardProps {
   session: SessionWithDetails;
@@ -50,7 +40,6 @@ export const SessionCard: React.FC<SessionCardProps> = ({
   onDelete,
   onEdit,
   className = '',
-  showComments = false,
   showGroupInfo = false,
   isAboveFold = false,
   priority = false,
@@ -64,10 +53,8 @@ export const SessionCard: React.FC<SessionCardProps> = ({
   const [localCommentCount, setLocalCommentCount] = useState(
     session.commentCount || 0
   );
-  const [showCommentInput, setShowCommentInput] = useState(false);
   const [showLikesModal, setShowLikesModal] = useState(false);
   const [showCommentsModal, setShowCommentsModal] = useState(false);
-  const [expandComments, setExpandComments] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const commentSectionRef = useRef<HTMLDivElement>(null);
 
@@ -136,6 +123,12 @@ export const SessionCard: React.FC<SessionCardProps> = ({
       document.removeEventListener('keydown', handleEscapeKey);
     };
   }, [showMenu]);
+
+  // Guard: Return null if user data is missing (during architecture migration)
+  if (!session.user) {
+    console.warn(`Session ${session.id} is missing user data`);
+    return null;
+  }
 
   return (
     <article
@@ -347,8 +340,6 @@ export const SessionCard: React.FC<SessionCardProps> = ({
           sessionId={session.id}
           totalCommentCount={localCommentCount}
           onCommentCountChange={setLocalCommentCount}
-          autoFocus={showCommentInput}
-          initialExpanded={expandComments}
         />
       </div>
 

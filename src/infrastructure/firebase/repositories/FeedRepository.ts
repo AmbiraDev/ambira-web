@@ -15,7 +15,7 @@ import {
   getDocs,
   DocumentSnapshot,
   getDoc,
-  doc
+  doc as firestoreDoc,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Session } from '@/domain/entities/Session';
@@ -63,7 +63,9 @@ export class FeedRepository {
         );
 
         if (cursor) {
-          const cursorDoc = await getDoc(doc(db, this.collectionName, cursor));
+          const cursorDoc = await getDoc(
+            firestoreDoc(db, this.collectionName, cursor)
+          );
           if (cursorDoc.exists()) {
             q = query(q, startAfter(cursorDoc));
           }
@@ -84,13 +86,17 @@ export class FeedRepository {
 
       const limitedDocs = allDocs.slice(0, limit + 1);
       const hasMore = limitedDocs.length > limit;
-      const sessions = this.mapper.toDomainList(limitedDocs.slice(0, limit));
+      const sessions = await this.mapper.toDomainListEnriched(
+        limitedDocs.slice(0, limit)
+      );
       const nextCursor = hasMore ? limitedDocs[limit - 1]?.id : undefined;
 
       return { sessions, hasMore, nextCursor };
     } catch (error) {
       console.error('Error getting feed for following:', error);
-      throw new Error(`Failed to get following feed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to get following feed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -110,7 +116,9 @@ export class FeedRepository {
       );
 
       if (cursor) {
-        const cursorDoc = await getDoc(doc(db, this.collectionName, cursor));
+        const cursorDoc = await getDoc(
+          firestoreDoc(db, this.collectionName, cursor)
+        );
         if (cursorDoc.exists()) {
           q = query(q, startAfter(cursorDoc));
         }
@@ -118,13 +126,17 @@ export class FeedRepository {
 
       const snapshot = await getDocs(q);
       const hasMore = snapshot.docs.length > limit;
-      const sessions = this.mapper.toDomainList(snapshot.docs.slice(0, limit));
+      const sessions = await this.mapper.toDomainListEnriched(
+        snapshot.docs.slice(0, limit)
+      );
       const nextCursor = hasMore ? snapshot.docs[limit - 1]?.id : undefined;
 
       return { sessions, hasMore, nextCursor };
     } catch (error) {
       console.error('Error getting public feed:', error);
-      throw new Error(`Failed to get public feed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to get public feed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -161,7 +173,9 @@ export class FeedRepository {
         );
 
         if (cursor) {
-          const cursorDoc = await getDoc(doc(db, this.collectionName, cursor));
+          const cursorDoc = await getDoc(
+            firestoreDoc(db, this.collectionName, cursor)
+          );
           if (cursorDoc.exists()) {
             q = query(q, startAfter(cursorDoc));
           }
@@ -182,13 +196,17 @@ export class FeedRepository {
 
       const limitedDocs = allDocs.slice(0, limit + 1);
       const hasMore = limitedDocs.length > limit;
-      const sessions = this.mapper.toDomainList(limitedDocs.slice(0, limit));
+      const sessions = await this.mapper.toDomainListEnriched(
+        limitedDocs.slice(0, limit)
+      );
       const nextCursor = hasMore ? limitedDocs[limit - 1]?.id : undefined;
 
       return { sessions, hasMore, nextCursor };
     } catch (error) {
       console.error('Error getting feed for group members unfollowed:', error);
-      throw new Error(`Failed to get group members feed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to get group members feed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 

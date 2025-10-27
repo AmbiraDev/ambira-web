@@ -16,6 +16,7 @@ export interface StartTimerData {
   activityId?: string | null;
   title?: string;
   description?: string;
+  customStartTime?: Date;
 }
 
 export interface CompleteTimerData {
@@ -50,11 +51,12 @@ export class TimerService {
 
     // Create new active session
     const sessionId = this.generateSessionId();
+    const startTime = data.customStartTime || new Date();
     const activeSession = new ActiveSession(
       sessionId,
       data.userId,
       data.projectId,
-      new Date(),
+      startTime,
       'running',
       0,
       undefined,
@@ -213,6 +215,33 @@ export class TimerService {
     await this.activeSessionRepo.saveActiveSession(updatedSession);
 
     return updatedSession;
+  }
+
+  /**
+   * Adjust timer start time
+   */
+  async adjustStartTime(
+    userId: string,
+    newStartTime: Date
+  ): Promise<ActiveSession> {
+    const activeSession = await this.activeSessionRepo.getActiveSession(userId);
+
+    if (!activeSession) {
+      throw new Error('No active timer to adjust');
+    }
+
+    // Validate the new start time isn't in the future
+    if (newStartTime > new Date()) {
+      throw new Error('Start time cannot be in the future');
+    }
+
+    // Create session with adjusted start time
+    const adjustedSession = activeSession.withAdjustedStartTime(newStartTime);
+
+    // Save updated session
+    await this.activeSessionRepo.saveActiveSession(adjustedSession);
+
+    return adjustedSession;
   }
 
   /**

@@ -221,13 +221,21 @@ export function useCompleteTimer(
   >({
     mutationFn: ({ userId, data }) => timerService.completeTimer(userId, data),
 
-    onSuccess: (session, { userId }) => {
+    onSuccess: async (session, { userId }) => {
       // Clear active session
       queryClient.setQueryData(TIMER_KEYS.active(userId), null);
 
-      // Invalidate related data
-      queryClient.invalidateQueries({ queryKey: ['feed'] });
-      queryClient.invalidateQueries({ queryKey: ['profile', userId] });
+      // Force immediate refetch of feed queries to show new session at top
+      // This creates an Instagram-like experience where posts appear immediately
+      // Using refetchType: 'active' ensures only currently-mounted queries refetch
+      await queryClient.invalidateQueries({
+        queryKey: ['feed'],
+        refetchType: 'active', // Only refetch queries that are currently being observed
+      });
+
+      // Invalidate other related data (these will refetch when needed)
+      queryClient.invalidateQueries({ queryKey: ['profile'] }); // Invalidate all profile-related queries
+      queryClient.invalidateQueries({ queryKey: ['sessions'] }); // Invalidate session queries
     },
 
     ...options,
@@ -252,6 +260,41 @@ export function useCancelTimer(
     onSuccess: (_, userId) => {
       // Clear active session
       queryClient.setQueryData(TIMER_KEYS.active(userId), null);
+    },
+
+    ...options,
+  });
+}
+
+/**
+ * Adjust the start time of the active timer
+ *
+ * @example
+ * const adjustMutation = useAdjustStartTime();
+ * adjustMutation.mutate({ userId, newStartTime: new Date('2025-10-27T10:00:00') });
+ */
+export function useAdjustStartTime(
+  options?: Partial<
+    UseMutationOptions<
+      ActiveSession,
+      Error,
+      { userId: string; newStartTime: Date }
+    >
+  >
+) {
+  const queryClient = useQueryClient();
+
+  return useMutation<
+    ActiveSession,
+    Error,
+    { userId: string; newStartTime: Date }
+  >({
+    mutationFn: ({ userId, newStartTime }) =>
+      timerService.adjustStartTime(userId, newStartTime),
+
+    onSuccess: (adjustedSession, { userId }) => {
+      // Update cache with adjusted session
+      queryClient.setQueryData(TIMER_KEYS.active(userId), adjustedSession);
     },
 
     ...options,

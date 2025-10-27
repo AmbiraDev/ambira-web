@@ -22,6 +22,12 @@ export {
   GROUPS_KEYS,
 } from './useGroups';
 
+// Members hook
+export { useGroupMembers } from './useGroupMembers';
+
+// Leaderboard hook (override the one from useGroups)
+export { useGroupLeaderboard as useGroupLeaderboardData } from './useGroupLeaderboard';
+
 // Mutation hooks
 export {
   useJoinGroup,

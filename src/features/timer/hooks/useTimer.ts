@@ -15,15 +15,16 @@ import {
   useFinishTimerMutation,
   useSaveActiveSession,
 } from '@/hooks/useTimerQuery';
-import { useTimerState } from './useTimerState';
+import { useAdjustStartTime } from './useTimerMutations';
+import { useTimerState, ActiveSessionData } from './useTimerState';
 import { useActivities } from '@/hooks/useActivitiesQuery';
 import { useAuth } from '@/hooks/useAuth';
-import { Session, Project, TimerState as TimerStateType } from '@/types';
+import { Session, TimerState as TimerStateType } from '@/types';
 import { auth } from '@/lib/firebase';
 
 export interface UseTimerReturn {
   // Server state
-  activeTimer: any | null;
+  activeTimer: ActiveSessionData | null;
   isLoading: boolean;
   error: Error | null;
 
@@ -34,9 +35,10 @@ export interface UseTimerReturn {
   isPaused: boolean;
 
   // Mutations
-  startTimer: (projectId: string) => Promise<void>;
+  startTimer: (projectId: string, customStartTime?: Date) => Promise<void>;
   pauseTimer: () => Promise<void>;
   resumeTimer: () => Promise<void>;
+  adjustStartTime: (newStartTime: Date) => Promise<void>;
   finishTimer: (
     title: string,
     description?: string,
@@ -90,6 +92,7 @@ export function useTimer(): UseTimerReturn {
   const cancelMutation = useCancelTimerMutation();
   const finishMutation = useFinishTimerMutation();
   const saveActiveSessionMutation = useSaveActiveSession();
+  const adjustStartTimeMutation = useAdjustStartTime();
 
   // Client state - local timer tick, elapsed time, etc.
   const clientState = useTimerState({
@@ -115,14 +118,32 @@ export function useTimer(): UseTimerReturn {
 
   // Start timer
   const startTimer = useCallback(
-    async (projectId: string): Promise<void> => {
+    async (projectId: string, customStartTime?: Date): Promise<void> => {
       if (!user) {
         throw new Error('User must be authenticated to start timer');
       }
 
-      await startMutation.mutateAsync({ projectId });
+      await startMutation.mutateAsync({
+        projectId,
+        customStartTime,
+      });
     },
     [user, startMutation]
+  );
+
+  // Adjust start time
+  const adjustStartTime = useCallback(
+    async (newStartTime: Date): Promise<void> => {
+      if (!user) {
+        throw new Error('User must be authenticated to adjust start time');
+      }
+
+      await adjustStartTimeMutation.mutateAsync({
+        userId: user.id,
+        newStartTime,
+      });
+    },
+    [user, adjustStartTimeMutation]
   );
 
   // Pause timer
@@ -252,6 +273,7 @@ export function useTimer(): UseTimerReturn {
     startTimer,
     pauseTimer,
     resumeTimer,
+    adjustStartTime,
     finishTimer,
     resetTimer,
 

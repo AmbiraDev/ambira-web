@@ -7,6 +7,32 @@
 
 export type SessionVisibility = 'everyone' | 'followers' | 'private';
 
+// User data for populated sessions
+export interface SessionUser {
+  id: string;
+  email: string;
+  name: string;
+  username: string;
+  bio?: string;
+  profilePicture?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// Activity data for populated sessions
+export interface SessionActivity {
+  id: string;
+  userId: string;
+  name: string;
+  description: string;
+  icon: string;
+  color: string;
+  status: 'active' | 'completed' | 'archived';
+  isDefault?: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 export class Session {
   constructor(
     public readonly id: string,
@@ -20,7 +46,22 @@ export class Session {
     public readonly visibility: SessionVisibility = 'everyone',
     public readonly supportCount: number = 0,
     public readonly commentCount: number = 0,
-    public readonly groupIds: readonly string[] = []
+    public readonly groupIds: readonly string[] = [],
+    // Enriched data (populated for feed/display)
+    public readonly user?: SessionUser,
+    public readonly activity?: SessionActivity,
+    public readonly project?: SessionActivity, // Backwards compatibility
+    public readonly images?: readonly string[],
+    public readonly isSupported?: boolean,
+    public readonly supportedBy?: readonly string[],
+    public readonly allowComments?: boolean,
+    public readonly updatedAt?: Date,
+    public readonly startTime?: Date,
+    public readonly tags?: readonly string[],
+    public readonly showStartTime?: boolean,
+    public readonly howFelt?: string,
+    public readonly privateNotes?: string,
+    public readonly isArchived?: boolean
   ) {
     this.validateInvariants();
   }
@@ -193,7 +234,7 @@ export class Session {
       visibility: this.visibility,
       supportCount: this.supportCount,
       commentCount: this.commentCount,
-      groupIds: Array.from(this.groupIds)
+      groupIds: Array.from(this.groupIds),
     };
   }
 }

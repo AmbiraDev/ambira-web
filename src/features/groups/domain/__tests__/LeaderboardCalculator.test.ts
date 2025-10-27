@@ -37,16 +37,16 @@ describe('LeaderboardCalculator', () => {
       expect(leaderboard).toHaveLength(2);
 
       // Bob should be first (2 hours)
-      expect(leaderboard[0]!.user.name).toBe('Bob');
-      expect(leaderboard[0]!.rank).toBe(1);
-      expect(leaderboard[0]!.totalHours).toBe(2);
-      expect(leaderboard[0]!.sessionCount).toBe(1);
+      expect(leaderboard[0]?.user.name).toBe('Bob');
+      expect(leaderboard[0]?.rank).toBe(1);
+      expect(leaderboard[0]?.totalHours).toBe(2);
+      expect(leaderboard[0]?.sessionCount).toBe(1);
 
       // Alice should be second (1.5 hours)
-      expect(leaderboard[1]!.user.name).toBe('Alice');
-      expect(leaderboard[1]!.rank).toBe(2);
-      expect(leaderboard[1]!.totalHours).toBe(1.5);
-      expect(leaderboard[1]!.sessionCount).toBe(2);
+      expect(leaderboard[1]?.user.name).toBe('Alice');
+      expect(leaderboard[1]?.rank).toBe(2);
+      expect(leaderboard[1]?.totalHours).toBe(1.5);
+      expect(leaderboard[1]?.sessionCount).toBe(2);
     });
 
     it('should handle users with no sessions', () => {
@@ -63,10 +63,10 @@ describe('LeaderboardCalculator', () => {
 
       // Assert
       expect(leaderboard).toHaveLength(2);
-      expect(leaderboard[0]!.totalHours).toBe(0);
-      expect(leaderboard[0]!.sessionCount).toBe(0);
-      expect(leaderboard[1]!.totalHours).toBe(0);
-      expect(leaderboard[1]!.sessionCount).toBe(0);
+      expect(leaderboard[0]?.totalHours).toBe(0);
+      expect(leaderboard[0]?.sessionCount).toBe(0);
+      expect(leaderboard[1]?.totalHours).toBe(0);
+      expect(leaderboard[1]?.sessionCount).toBe(0);
     });
 
     it('should sort by session count when hours are equal', () => {
@@ -87,10 +87,10 @@ describe('LeaderboardCalculator', () => {
 
       // Assert
       // Both have 1 hour, but Alice has 2 sessions vs Bob's 1
-      expect(leaderboard[0]!.user.name).toBe('Alice');
-      expect(leaderboard[0]!.sessionCount).toBe(2);
-      expect(leaderboard[1]!.user.name).toBe('Bob');
-      expect(leaderboard[1]!.sessionCount).toBe(1);
+      expect(leaderboard[0]?.user.name).toBe('Alice');
+      expect(leaderboard[0]?.sessionCount).toBe(2);
+      expect(leaderboard[1]?.user.name).toBe('Bob');
+      expect(leaderboard[1]?.sessionCount).toBe(1);
     });
 
     it('should filter sessions by time period (today)', () => {
@@ -112,8 +112,8 @@ describe('LeaderboardCalculator', () => {
       const leaderboard = calculator.calculate(users, sessions, 'today');
 
       // Assert
-      expect(leaderboard[0]!.totalHours).toBe(1); // Only today's session
-      expect(leaderboard[0]!.sessionCount).toBe(1);
+      expect(leaderboard[0]?.totalHours).toBe(1); // Only today's session
+      expect(leaderboard[0]?.sessionCount).toBe(1);
     });
 
     it('should filter sessions by time period (week)', () => {
@@ -135,8 +135,8 @@ describe('LeaderboardCalculator', () => {
       const leaderboard = calculator.calculate(users, sessions, 'week');
 
       // Assert
-      expect(leaderboard[0]!.totalHours).toBe(1); // Only this week's session
-      expect(leaderboard[0]!.sessionCount).toBe(1);
+      expect(leaderboard[0]?.totalHours).toBe(1); // Only this week's session
+      expect(leaderboard[0]?.sessionCount).toBe(1);
     });
   });
 
@@ -181,8 +181,8 @@ describe('LeaderboardCalculator', () => {
 
       // Assert
       expect(top2).toHaveLength(2);
-      expect(top2[0]!.user.name).toBe('Alice');
-      expect(top2[1]!.user.name).toBe('Bob');
+      expect(top2[0]?.user.name).toBe('Alice');
+      expect(top2[1]?.user.name).toBe('Bob');
     });
   });
 

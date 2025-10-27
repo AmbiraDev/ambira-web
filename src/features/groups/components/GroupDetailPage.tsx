@@ -11,6 +11,8 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { useGroupDetails } from '../hooks/useGroupDetails';
+import { GroupLeaderboard } from './GroupLeaderboard';
+import { GroupMembersList } from './GroupMembersList';
 import { Users, Settings, ArrowLeft } from 'lucide-react';
 
 interface GroupDetailPageProps {
@@ -150,7 +152,6 @@ export function GroupDetailPage({ groupId }: GroupDetailPageProps) {
     );
   }
 
-  const isJoined = group.memberIds.includes(user.id);
   const isAdmin = group.adminUserIds.includes(user.id);
 
   // Get category icon
@@ -295,10 +296,7 @@ export function GroupDetailPage({ groupId }: GroupDetailPageProps) {
                 <h2 className="text-xl font-bold text-gray-900 mb-4">
                   Group Leaderboard
                 </h2>
-                <p className="text-gray-500 text-center py-12">
-                  Leaderboard functionality will be added when SessionRepository
-                  is ready.
-                </p>
+                <GroupLeaderboard groupId={groupId} />
               </div>
             )}
 
@@ -307,9 +305,7 @@ export function GroupDetailPage({ groupId }: GroupDetailPageProps) {
                 <h2 className="text-xl font-bold text-gray-900 mb-4">
                   Members
                 </h2>
-                <p className="text-gray-500 text-center py-12">
-                  Member list will be displayed here.
-                </p>
+                <GroupMembersList groupId={groupId} />
               </div>
             )}
           </div>

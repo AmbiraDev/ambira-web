@@ -29,12 +29,19 @@ export const useSessionCompletion = () => {
 
       setNewAchievements(achievements);
 
-      // 4. Invalidate caches to refresh UI immediately
+      // 4. Force immediate refetch of feed queries to show new session at top
+      // This creates an Instagram-like experience where posts appear immediately
+      // Using refetchType: 'active' ensures only currently-mounted queries refetch
+      await queryClient.invalidateQueries({
+        queryKey: ['feed'],
+        refetchType: 'active',
+      });
+
+      // 5. Invalidate other caches to refresh UI when needed
       // Use partial key matching to invalidate all related caches
       queryClient.invalidateQueries({ queryKey: ['user', 'sessions', userId] });
       queryClient.invalidateQueries({ queryKey: ['user', 'stats', userId] });
       queryClient.invalidateQueries({ queryKey: ['streak', userId] });
-      queryClient.invalidateQueries({ queryKey: ['feed'] });
       queryClient.invalidateQueries({ queryKey: ['sessions', 'feed'] });
 
       return { session, achievements };
@@ -54,6 +61,6 @@ export const useSessionCompletion = () => {
     completeSession,
     newAchievements,
     clearAchievements,
-    isProcessing
+    isProcessing,
   };
 };

@@ -6,9 +6,9 @@
  */
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { firebaseSessionApi, firebaseProjectApi } from '@/lib/api';
+import { firebaseSessionApi } from '@/lib/api';
 import { useAuth } from '@/hooks/useAuth';
-import { Session, CreateSessionData, Project } from '@/types';
+import { Session, CreateSessionData } from '@/types';
 import { CACHE_KEYS, CACHE_TIMES } from '@/lib/queryClient';
 
 /**
@@ -43,6 +43,7 @@ export function useActiveTimerQuery() {
     staleTime: CACHE_TIMES.REAL_TIME, // 30 seconds - frequently check for updates
     refetchOnWindowFocus: true, // Refetch when window regains focus
     refetchInterval: 10000, // Check every 10 seconds if session still exists
+     
   });
 }
 
@@ -58,36 +59,39 @@ export function useStartTimerMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ projectId }: { projectId: string }) => {
+    mutationFn: async ({
+      projectId,
+      customStartTime,
+    }: {
+      projectId: string;
+      customStartTime?: Date;
+    }) => {
       if (!user) {
         throw new Error('User must be authenticated to start timer');
       }
 
-      const now = new Date();
+      const startTime = customStartTime || new Date();
 
       // Save active session to Firebase
       await firebaseSessionApi.saveActiveSession({
-        startTime: now,
+        startTime,
         projectId: projectId,
         selectedTaskIds: [],
         pausedDuration: 0,
         isPaused: false,
       });
 
-      return { projectId, startTime: now };
+      return { projectId, startTime };
     },
-    onSuccess: (data) => {
+    onSuccess: data => {
       // Update the active session cache immediately with optimistic data
-      queryClient.setQueryData(
-        CACHE_KEYS.ACTIVE_SESSION(user?.id || 'none'),
-        {
-          startTime: data.startTime,
-          projectId: data.projectId,
-          selectedTaskIds: [],
-          pausedDuration: 0,
-          isPaused: false,
-        }
-      );
+      queryClient.setQueryData(CACHE_KEYS.ACTIVE_SESSION(user?.id || 'none'), {
+        startTime: data.startTime,
+        projectId: data.projectId,
+        selectedTaskIds: [],
+        pausedDuration: 0,
+        isPaused: false,
+      });
     },
   });
 }
@@ -104,7 +108,7 @@ export function usePauseTimerMutation() {
     mutationFn: async ({
       startTime,
       projectId,
-      elapsedSeconds
+      elapsedSeconds,
     }: {
       startTime: Date;
       projectId: string;
@@ -120,18 +124,15 @@ export function usePauseTimerMutation() {
 
       return { startTime, projectId, elapsedSeconds };
     },
-    onSuccess: (data) => {
+    onSuccess: data => {
       // Update cache with paused state
-      queryClient.setQueryData(
-        CACHE_KEYS.ACTIVE_SESSION(user?.id || 'none'),
-        {
-          startTime: data.startTime,
-          projectId: data.projectId,
-          selectedTaskIds: [],
-          pausedDuration: data.elapsedSeconds,
-          isPaused: true,
-        }
-      );
+      queryClient.setQueryData(CACHE_KEYS.ACTIVE_SESSION(user?.id || 'none'), {
+        startTime: data.startTime,
+        projectId: data.projectId,
+        selectedTaskIds: [],
+        pausedDuration: data.elapsedSeconds,
+        isPaused: true,
+      });
     },
   });
 }
@@ -147,7 +148,7 @@ export function useResumeTimerMutation() {
   return useMutation({
     mutationFn: async ({
       pausedDuration,
-      projectId
+      projectId,
     }: {
       pausedDuration: number;
       projectId: string;
@@ -166,18 +167,15 @@ export function useResumeTimerMutation() {
 
       return { adjustedStartTime, projectId };
     },
-    onSuccess: (data) => {
+    onSuccess: data => {
       // Update cache with resumed state
-      queryClient.setQueryData(
-        CACHE_KEYS.ACTIVE_SESSION(user?.id || 'none'),
-        {
-          startTime: data.adjustedStartTime,
-          projectId: data.projectId,
-          selectedTaskIds: [],
-          pausedDuration: 0,
-          isPaused: false,
-        }
-      );
+      queryClient.setQueryData(CACHE_KEYS.ACTIVE_SESSION(user?.id || 'none'), {
+        startTime: data.adjustedStartTime,
+        projectId: data.projectId,
+        selectedTaskIds: [],
+        pausedDuration: 0,
+        isPaused: false,
+      });
     },
   });
 }
@@ -202,16 +200,13 @@ export function useSaveActiveSession() {
     },
     onSuccess: (data, variables) => {
       // Update the active session cache immediately
-      queryClient.setQueryData(
-        CACHE_KEYS.ACTIVE_SESSION(user?.id || 'none'),
-        {
-          startTime: variables.startTime,
-          projectId: variables.projectId,
-          selectedTaskIds: variables.selectedTaskIds,
-          pausedDuration: variables.pausedDuration,
-          isPaused: variables.isPaused,
-        }
-      );
+      queryClient.setQueryData(CACHE_KEYS.ACTIVE_SESSION(user?.id || 'none'), {
+        startTime: variables.startTime,
+        projectId: variables.projectId,
+        selectedTaskIds: variables.selectedTaskIds,
+        pausedDuration: variables.pausedDuration,
+        isPaused: variables.isPaused,
+      });
     },
   });
 }
@@ -321,7 +316,9 @@ export function useFinishTimerMutation() {
       };
     }) => {
       if (!options) {
-        throw new Error('Options with activityId, projectId, and startTime are required');
+        throw new Error(
+          'Options with activityId, projectId, and startTime are required'
+        );
       }
 
       const sessionData: CreateSessionData = {
@@ -374,7 +371,7 @@ export function useFinishTimerMutation() {
 
       return { previousActiveSession };
     },
-    onSuccess: async (session) => {
+    onSuccess: async session => {
       // Clear active session from Firebase
       await firebaseSessionApi.clearActiveSession();
 
@@ -465,7 +462,7 @@ export function useCreateSession() {
 
       return { previousActiveSession };
     },
-    onSuccess: async (session) => {
+    onSuccess: async session => {
       // Clear active session from Firebase
       await clearActiveSession.mutateAsync();
 

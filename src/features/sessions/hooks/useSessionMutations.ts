@@ -112,6 +112,7 @@ export function useDeleteSession(
         queryKey: SESSION_KEYS.detail(sessionId),
       });
       queryClient.invalidateQueries({ queryKey: SESSION_KEYS.all() });
+      queryClient.invalidateQueries({ queryKey: ['profile'] }); // Invalidate profile stats
     },
 
     ...options,
@@ -328,6 +329,7 @@ export function useUpdateSession(
       });
       queryClient.invalidateQueries({ queryKey: ['feed'] });
       queryClient.invalidateQueries({ queryKey: SESSION_KEYS.all() });
+      queryClient.invalidateQueries({ queryKey: ['profile'] }); // Invalidate profile stats
     },
 
     ...options,

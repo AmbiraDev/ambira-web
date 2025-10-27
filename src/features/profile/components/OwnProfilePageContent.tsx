@@ -24,13 +24,7 @@ import { useProjects } from '@/features/projects/hooks';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
-  User as UserIcon,
-  Users,
   Settings,
-  Clock,
-  Target,
-  Calendar,
-  Heart,
   LogOut,
   Edit,
   TrendingUp,
@@ -40,8 +34,6 @@ import {
   MapPin,
 } from 'lucide-react';
 import {
-  LineChart,
-  Line,
   XAxis,
   YAxis,
   ResponsiveContainer,
@@ -55,6 +47,8 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import Feed from '@/components/Feed';
 import { ActivityList } from '@/components/ActivityList';
 import { Activity } from '@/types';
+import { FollowersList } from '@/features/social/components/FollowersList';
+import { FollowingList } from '@/features/social/components/FollowingList';
 
 type ProfileTab =
   | 'progress'
@@ -146,23 +140,6 @@ export function OwnProfilePageContent() {
         s.projectId === selectedActivityId
     );
   }, [sessions, selectedActivityId]);
-
-  // Calculate weekly stats from sessions
-  const weeklyStats = useMemo(() => {
-    const now = new Date();
-    const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-    const weeklySessions = sessions.filter(
-      s => new Date(s.createdAt) >= oneWeekAgo
-    );
-    const weeklyHours = weeklySessions.reduce(
-      (sum, s) => sum + s.duration / 3600,
-      0
-    );
-    return {
-      weeklyHours,
-      sessionsThisWeek: weeklySessions.length,
-    };
-  }, [sessions]);
 
   // Calculate chart data using useMemo to prevent infinite loop
   const chartData = useMemo(() => {
@@ -1379,34 +1356,14 @@ export function OwnProfilePageContent() {
                 )}
 
                 {activeTab === 'followers' && (
-                  <div className="bg-gray-50 rounded-xl border border-gray-200 p-4 md:p-6">
-                    <h3 className="text-base md:text-lg font-bold mb-4">
-                      Followers ({userProfile?.followerCount || 0})
-                    </h3>
-                    <div className="text-center py-8 text-gray-400">
-                      <Users className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                      <p>Followers list view coming soon</p>
-                      <p className="text-sm mt-2">
-                        Currently showing {followers.length} follower
-                        {followers.length !== 1 ? 's' : ''}
-                      </p>
-                    </div>
+                  <div>
+                    <FollowersList userId={user.id} />
                   </div>
                 )}
 
                 {activeTab === 'following' && (
-                  <div className="bg-gray-50 rounded-xl border border-gray-200 p-4 md:p-6">
-                    <h3 className="text-base md:text-lg font-bold mb-4">
-                      Following ({userProfile?.followingCount || 0})
-                    </h3>
-                    <div className="text-center py-8 text-gray-400">
-                      <UserIcon className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                      <p>Following list view coming soon</p>
-                      <p className="text-sm mt-2">
-                        Currently following {following.length} user
-                        {following.length !== 1 ? 's' : ''}
-                      </p>
-                    </div>
+                  <div>
+                    <FollowingList userId={user.id} />
                   </div>
                 )}
 

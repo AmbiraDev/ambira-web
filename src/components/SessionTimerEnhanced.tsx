@@ -7,19 +7,15 @@ import { useActivities } from '@/hooks/useActivitiesQuery';
 import {
   Play,
   Pause,
-  Square,
-  X,
   ChevronDown,
   Check,
   Flag,
-  Image as ImageIcon,
-  XCircle,
   Edit3,
   ArrowLeft,
 } from 'lucide-react';
 import Slider from 'rc-slider';
 import 'rc-slider/assets/index.css';
-import { uploadImages, compressImage } from '@/lib/imageUpload';
+import { uploadImages } from '@/lib/imageUpload';
 import { ImageUpload } from '@/components/ImageUpload';
 import Link from 'next/link';
 import { Activity } from '@/types';
@@ -48,8 +44,6 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
   const [visibility, setVisibility] = useState<
     'everyone' | 'followers' | 'private'
   >('everyone');
-  const [showStartTime, setShowStartTime] = useState(false);
-  const [publishToFeeds, setPublishToFeeds] = useState(true);
   const [howFelt, setHowFelt] = useState<number>(3);
   const [privateNotes, setPrivateNotes] = useState('');
   const [selectedActivityId, setSelectedActivityId] = useState<string>('');
@@ -62,6 +56,8 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
   const [isUploadingImages, setIsUploadingImages] = useState(false);
   const [startTime, setStartTime] = useState<Date>(new Date());
   const [showActivityError, setShowActivityError] = useState(false);
+  const [customStartTime, setCustomStartTime] = useState<Date | null>(null);
+  const [showTimePickerModal, setShowTimePickerModal] = useState(false);
 
   // Only show user's custom activities
   const allActivities: Activity[] = projects || [];
@@ -156,7 +152,10 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
     }
 
     try {
-      await startTimer(selectedActivityId);
+      await startTimer(selectedActivityId, customStartTime || undefined);
+      // Reset custom start time after starting
+      setCustomStartTime(null);
+      setShowTimePickerModal(false);
     } catch (error) {
       console.error('Failed to start timer:', error);
       alert('Failed to start timer. Please try again.');
@@ -258,7 +257,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
       }
 
       // Finish the timer and create session
-      const session = await finishTimer(
+      await finishTimer(
         sessionTitle,
         sessionDescription,
         undefined, // tags
@@ -266,8 +265,8 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
         privateNotes,
         {
           visibility,
-          showStartTime,
-          publishToFeeds,
+          showStartTime: false,
+          publishToFeeds: true,
           customDuration: adjustedDuration,
           images: imageUrls,
         }
@@ -315,24 +314,6 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
       console.error('Failed to cancel timer:', error);
       alert('Failed to cancel session. Please try again.');
     }
-  };
-
-  const getProjectColor = (projectId: string | undefined) => {
-    if (!projectId || !projects) return 'bg-gray-500';
-    const project = projects.find(p => p.id === projectId);
-    const colorClasses = {
-      orange: 'bg-orange-500',
-      blue: 'bg-blue-500',
-      green: 'bg-green-500',
-      purple: 'bg-purple-500',
-      red: 'bg-red-500',
-      yellow: 'bg-yellow-500',
-      pink: 'bg-pink-500',
-      indigo: 'bg-indigo-500',
-    };
-    return (
-      colorClasses[project?.color as keyof typeof colorClasses] || 'bg-gray-500'
-    );
   };
 
   // Define selectedActivity before any early returns so it's available in all code paths
@@ -700,6 +681,40 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                   <Edit3 className="w-5 h-5" />
                   <span>Manual</span>
                 </Link>
+
+                <button
+                  onClick={() => setShowTimePickerModal(true)}
+                  className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-white border-2 border-gray-300 text-gray-700 hover:bg-gray-50 transition-colors text-lg font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-300 focus-visible:ring-offset-2 touch-manipulation"
+                >
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                  <span>
+                    {customStartTime
+                      ? `From ${Math.floor(
+                          (new Date().getTime() - customStartTime.getTime()) /
+                            1000 /
+                            60 /
+                            60
+                        )}h ${Math.floor(
+                          ((new Date().getTime() - customStartTime.getTime()) /
+                            1000 /
+                            60) %
+                            60
+                        )}m ago`
+                      : 'Start From'}
+                  </span>
+                </button>
               </>
             )}
 
@@ -901,6 +916,101 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
           </div>
         )}
       </div>
+
+      {/* Time Picker Modal */}
+      {showTimePickerModal && (
+        <div className="fixed inset-0 bg-black/50 z-[9999] flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl">
+            <h3 className="text-xl font-bold text-gray-900 mb-4">
+              Start From Past Time
+            </h3>
+            <p className="text-sm text-gray-600 mb-4">
+              Set when you actually started working. Your session will begin
+              from that time.
+            </p>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Start Time
+                </label>
+                <input
+                  type="datetime-local"
+                  value={
+                    customStartTime
+                      ? new Date(
+                          customStartTime.getTime() -
+                            customStartTime.getTimezoneOffset() * 60000
+                        )
+                          .toISOString()
+                          .slice(0, 16)
+                      : new Date(
+                          new Date().getTime() -
+                            new Date().getTimezoneOffset() * 60000
+                        )
+                          .toISOString()
+                          .slice(0, 16)
+                  }
+                  onChange={e => {
+                    if (e.target.value) {
+                      setCustomStartTime(new Date(e.target.value));
+                    } else {
+                      setCustomStartTime(null);
+                    }
+                  }}
+                  max={new Date(
+                    new Date().getTime() -
+                      new Date().getTimezoneOffset() * 60000
+                  )
+                    .toISOString()
+                    .slice(0, 16)}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] text-base"
+                />
+              </div>
+
+              {customStartTime && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                  <p className="text-sm text-blue-900">
+                    <strong>Duration:</strong>{' '}
+                    {Math.floor(
+                      (new Date().getTime() - customStartTime.getTime()) /
+                        1000 /
+                        60 /
+                        60
+                    )}
+                    h{' '}
+                    {Math.floor(
+                      ((new Date().getTime() - customStartTime.getTime()) /
+                        1000 /
+                        60) %
+                        60
+                    )}
+                    m
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => {
+                  setCustomStartTime(null);
+                  setShowTimePickerModal(false);
+                }}
+                className="flex-1 px-4 py-3 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300 transition-colors font-medium"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => setShowTimePickerModal(false)}
+                className="flex-1 px-4 py-3 bg-[#007AFF] text-white rounded-xl hover:bg-[#0051D5] transition-colors font-medium"
+              >
+                Done
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -2,18 +2,9 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useQueryClient } from '@tanstack/react-query';
-import { UserProfile } from '@/types';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
-import {
-  UserX,
-  User as UserIcon,
-  Users,
-  ChevronDown,
-  BarChart2,
-  MapPin,
-} from 'lucide-react';
+import { UserX, ChevronDown, BarChart2, MapPin } from 'lucide-react';
 import { toast } from 'sonner';
 import Link from 'next/link';
 import {
@@ -38,6 +29,8 @@ import {
 import { useUserSessions } from '@/features/sessions/hooks';
 import { useProjects } from '@/features/projects/hooks';
 import Feed from '@/components/Feed';
+import { FollowersList } from '@/features/social/components/FollowersList';
+import { FollowingList } from '@/features/social/components/FollowingList';
 
 type YouTab = 'progress' | 'sessions' | 'followers' | 'following';
 type TimePeriod = '7D' | '2W' | '4W' | '3M' | '1Y';
@@ -60,7 +53,6 @@ export default function ProfilePageContent({
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user: currentUser } = useAuth();
-  const queryClient = useQueryClient();
   const tabParam = searchParams?.get('tab') as YouTab | null;
 
   const [activeTab, setActiveTab] = useState<YouTab>(
@@ -1525,34 +1517,14 @@ export default function ProfilePageContent({
             )}
 
             {activeTab === 'followers' && (
-              <div className="bg-gray-50 rounded-xl border border-gray-200 p-4 md:p-6">
-                <h3 className="text-base md:text-lg font-bold mb-4">
-                  Followers ({profile?.followerCount || 0})
-                </h3>
-                <div className="text-center py-8 text-gray-400">
-                  <Users className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                  <p>Followers list view coming soon</p>
-                  <p className="text-sm mt-2">
-                    Currently showing {followers.length} follower
-                    {followers.length !== 1 ? 's' : ''}
-                  </p>
-                </div>
+              <div>
+                <FollowersList userId={profile.id} />
               </div>
             )}
 
             {activeTab === 'following' && (
-              <div className="bg-gray-50 rounded-xl border border-gray-200 p-4 md:p-6">
-                <h3 className="text-base md:text-lg font-bold mb-4">
-                  Following ({profile?.followingCount || 0})
-                </h3>
-                <div className="text-center py-8 text-gray-400">
-                  <UserIcon className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                  <p>Following list view coming soon</p>
-                  <p className="text-sm mt-2">
-                    Currently following {following.length} user
-                    {following.length !== 1 ? 's' : ''}
-                  </p>
-                </div>
+              <div>
+                <FollowingList userId={profile.id} />
               </div>
             )}
           </div>
