@@ -92,6 +92,11 @@ export function useStartTimerMutation() {
         pausedDuration: 0,
         isPaused: false,
       });
+
+      // Invalidate to trigger re-render with updated data
+      queryClient.invalidateQueries({
+        queryKey: CACHE_KEYS.ACTIVE_SESSION(user?.id || 'none'),
+      });
     },
   });
 }
@@ -132,6 +137,11 @@ export function usePauseTimerMutation() {
         selectedTaskIds: [],
         pausedDuration: data.elapsedSeconds,
         isPaused: true,
+      });
+
+      // Invalidate to trigger re-render with updated data
+      queryClient.invalidateQueries({
+        queryKey: CACHE_KEYS.ACTIVE_SESSION(user?.id || 'none'),
       });
     },
   });
@@ -176,6 +186,11 @@ export function useResumeTimerMutation() {
         pausedDuration: 0,
         isPaused: false,
       });
+
+      // Invalidate to trigger re-render with updated data
+      queryClient.invalidateQueries({
+        queryKey: CACHE_KEYS.ACTIVE_SESSION(user?.id || 'none'),
+      });
     },
   });
 }
@@ -206,6 +221,11 @@ export function useSaveActiveSession() {
         selectedTaskIds: variables.selectedTaskIds,
         pausedDuration: variables.pausedDuration,
         isPaused: variables.isPaused,
+      });
+
+      // Invalidate to trigger re-render with updated data
+      queryClient.invalidateQueries({
+        queryKey: CACHE_KEYS.ACTIVE_SESSION(user?.id || 'none'),
       });
     },
   });

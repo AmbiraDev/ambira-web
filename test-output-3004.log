@@ -1,0 +1,4 @@
+
+> temp-ambira-web@0.1.0 test:smoke
+> playwright test e2e/smoke
+

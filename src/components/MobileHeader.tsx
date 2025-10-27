@@ -11,13 +11,16 @@ interface MobileHeaderProps {
   showNotifications?: boolean;
 }
 
-export default function MobileHeader({ title, showNotifications = false }: MobileHeaderProps) {
+export default function MobileHeader({
+  title,
+  showNotifications = false,
+}: MobileHeaderProps) {
   const { user } = useAuth();
 
   if (!user) return null;
 
   return (
-    <div className="md:hidden bg-gray-50 px-4 py-2 sticky top-0 z-40 shadow-sm">
+    <header className="md:hidden bg-gray-50 px-4 py-2 sticky top-0 z-40 shadow-sm">
       <div className="flex items-center justify-center h-10 relative">
         {/* Left Side Icons */}
         <div className="absolute left-0 top-1/2 -translate-y-1/2 flex items-center gap-3">
@@ -45,7 +48,10 @@ export default function MobileHeader({ title, showNotifications = false }: Mobil
 
           {/* Search Icon */}
           {showNotifications && (
-            <Link href="/discover/people" className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors">
+            <Link
+              href="/discover/people"
+              className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
+            >
               <svg
                 className="w-6 h-6 text-gray-700"
                 fill="none"
@@ -61,9 +67,7 @@ export default function MobileHeader({ title, showNotifications = false }: Mobil
         </div>
 
         {/* Page Title - Centered */}
-        <h1 className="text-lg font-bold text-gray-900">
-          {title}
-        </h1>
+        <h1 className="text-lg font-bold text-gray-900">{title}</h1>
 
         {/* Notification Icon - Right */}
         {showNotifications && (
@@ -72,6 +76,6 @@ export default function MobileHeader({ title, showNotifications = false }: Mobil
           </div>
         )}
       </div>
-    </div>
+    </header>
   );
 }
