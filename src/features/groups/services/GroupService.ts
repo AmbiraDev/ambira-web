@@ -15,6 +15,11 @@ import {
   TimePeriod,
   GroupStats,
 } from '../types/groups.types';
+import {
+  validateOrThrow,
+  CreateGroupSchema,
+  GroupMembershipSchema,
+} from '@/lib/validation';
 
 /**
  * Note: For now, we're using direct instantiation.
@@ -57,7 +62,11 @@ export class GroupService {
   /**
    * Join a group
    */
-  async joinGroup(groupId: string, userId: string): Promise<void> {
+  async joinGroup(data: unknown, userId: string): Promise<void> {
+    // Validate input data
+    const validated = validateOrThrow(GroupMembershipSchema, data);
+    const groupId = validated.groupId;
+
     const group = await this.groupRepo.findById(groupId);
 
     if (!group) {
@@ -79,7 +88,11 @@ export class GroupService {
   /**
    * Leave a group
    */
-  async leaveGroup(groupId: string, userId: string): Promise<void> {
+  async leaveGroup(data: unknown, userId: string): Promise<void> {
+    // Validate input data
+    const validated = validateOrThrow(GroupMembershipSchema, data);
+    const groupId = validated.groupId;
+
     const group = await this.groupRepo.findById(groupId);
 
     if (!group) {
@@ -251,36 +264,30 @@ export class GroupService {
   /**
    * Create a new group
    */
-  async createGroup(
-    data: {
-      name: string;
-      description: string;
-      category: string;
-      privacySetting: 'public' | 'approval-required';
-      location?: string;
-      imageUrl?: string;
-      [key: string]: unknown; // Allow additional properties from CreateGroupData
-    },
-    userId: string
-  ): Promise<Group> {
+  async createGroup(data: unknown, userId: string): Promise<Group> {
+    // Validate input data
+    const validated = validateOrThrow(CreateGroupSchema, data);
+
     // Generate ID for the group
     const groupId = this.generateGroupId();
+
+    // Map 'other' category to 'learning' for domain compatibility
+    const categoryForDomain =
+      validated.category === 'other' ? 'learning' : validated.category;
 
     // Create domain group with creator as both member and admin
     const group = new Group(
       groupId,
-      data.name,
-      data.description,
-      (data.category as any) || 'other', // Map to domain category type
-      (data.privacySetting as any) === 'approval-required'
-        ? 'approval-required'
-        : 'public',
+      validated.name,
+      validated.description,
+      categoryForDomain as any,
+      validated.privacySetting,
       [userId], // Creator is first member
       [userId], // Creator is first admin
       userId,
       new Date(),
-      data.location,
-      data.imageUrl
+      validated.location,
+      validated.imageUrl
     );
 
     // Save to repository
