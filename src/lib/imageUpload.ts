@@ -126,7 +126,7 @@ export async function uploadImage(
   let processedFile = file;
   try {
     processedFile = await convertHeicToJpeg(file);
-  } catch (error: any) {
+  } catch (error: unknown) {
     throw error; // Re-throw conversion errors
   }
 
@@ -138,10 +138,10 @@ export async function uploadImage(
   // Compress if file is larger than 5MB
   const maxSize = 5 * 1024 * 1024; // 5MB
   if (processedFile.size > maxSize) {
-    const sizeMB = (processedFile.size / 1024 / 1024).toFixed(1);
+    const _sizeMB = (processedFile.size / 1024 / 1024).toFixed(1);
     try {
       processedFile = await compressToSize(processedFile, 5);
-    } catch (error: any) {
+    } catch (error: unknown) {
       debug.error('Compression failed:', error);
       throw new Error('Failed to compress image. Please try a smaller file.');
     }
@@ -163,7 +163,7 @@ export async function uploadImage(
     // Upload with timeout protection (30 seconds)
     const uploadPromise = (async () => {
       // Upload the processed file (not the original)
-      const snapshot = await uploadBytes(storageRef, processedFile);
+      const _snapshot = await uploadBytes(storageRef, processedFile);
       // Get download URL
       const url = await getDownloadURL(storageRef);
       return { url, path: storageRef.fullPath };
@@ -176,7 +176,7 @@ export async function uploadImage(
     ]);
 
     return result;
-  } catch (error: any) {
+  } catch (error: unknown) {
     debug.error('Error uploading image:', error);
 
     // Check if this is a timeout error

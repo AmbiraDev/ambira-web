@@ -1,0 +1,82 @@
+[
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/lib/api/sessions/posts.ts",
+    "count": 13
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/lib/api/challenges/index.ts",
+    "count": 12
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/lib/api/sessions/index.ts",
+    "count": 9
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/components/StreakCard.tsx",
+    "count": 8
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/components/ManualSessionRecorder.tsx",
+    "count": 8
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/components/LandingPage.tsx",
+    "count": 8
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/lib/api/users/index.ts",
+    "count": 7
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/lib/api/auth/index.ts",
+    "count": 7
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/components/LeftSidebar.tsx",
+    "count": 7
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/components/GroupHeader.tsx",
+    "count": 7
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/components/GroupAnalytics.tsx",
+    "count": 7
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/components/ProfileTabs.tsx",
+    "count": 6
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/components/GroupTabs.tsx",
+    "count": 6
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/components/GroupSettings.tsx",
+    "count": 6
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/lib/api/streaks/index.ts",
+    "count": 5
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/components/SessionTimer.tsx",
+    "count": 5
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/components/SaveSession.tsx",
+    "count": 5
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/components/GroupChallenges.tsx",
+    "count": 5
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/lib/api/social/comments.ts",
+    "count": 4
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/features/settings/components/SettingsPageContent.tsx",
+    "count": 4
+  }
+]

@@ -13,7 +13,7 @@ import {
   serverTimestamp,
   DocumentData,
 } from 'firebase/firestore';
-import { db, auth } from '@/lib/firebase';
+import { db, _auth } from '@/lib/firebase';
 import {
   handleError,
   isPermissionError,

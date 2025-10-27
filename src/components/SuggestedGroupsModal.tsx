@@ -13,7 +13,7 @@ interface SuggestedGroupsModalProps {
 }
 
 const GROUPS_PER_PAGE = 10;
-const TOTAL_GROUPS_TO_FETCH = 100;
+const _TOTAL_GROUPS_TO_FETCH = 100;
 
 export default function SuggestedGroupsModal({
   isOpen,

@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { Session } from '@/types';
-import { X, XCircle, Image as ImageIcon } from 'lucide-react';
+import { X, _XCircle, Image as ImageIcon } from 'lucide-react';
 import { uploadImages } from '@/lib/imageUpload';
 import { useAuth } from '@/hooks/useAuth';
 import { useActivities } from '@/hooks/useActivitiesQuery';

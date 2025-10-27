@@ -57,7 +57,7 @@ export function useFollowing(userId: string) {
                   profilePicture: userData.profilePicture,
                   bio: userData.bio,
                 } as FollowingUser;
-              } catch (error) {
+              } catch (_error) {
                 // Failed to fetch following user
                 return null;
               }
@@ -69,7 +69,7 @@ export function useFollowing(userId: string) {
             (user): user is FollowingUser => user !== null
           );
         }
-      } catch (error) {
+      } catch (_error) {
         // If social_graph doesn't exist, fall through to old follows collection
       }
 
@@ -98,7 +98,7 @@ export function useFollowing(userId: string) {
             profilePicture: userData.profilePicture,
             bio: userData.bio,
           } as FollowingUser;
-        } catch (err) {
+        } catch (_err) {
           // Failed to fetch following user
           return null;
         }

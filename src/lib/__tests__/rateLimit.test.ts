@@ -170,7 +170,7 @@ describe('Rate Limiting', () => {
       // Function should not be called
       try {
         await withRateLimit(testUserId + '-noexec', 'TASK_CREATE', mockFn);
-      } catch (error) {
+      } catch (_error) {
         // Expected to throw
       }
 

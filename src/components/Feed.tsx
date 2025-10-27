@@ -181,7 +181,7 @@ export const Feed: React.FC<FeedProps> = ({
           setHasNewSessions(true);
           setNewSessionsCount(newCount);
         }
-      } catch (err) {
+      } catch (_err) {
         // Silently fail
       }
     };
@@ -239,7 +239,7 @@ export const Feed: React.FC<FeedProps> = ({
         await navigator.clipboard.writeText(sessionUrl);
         // Could show success toast here
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       // Silently ignore if user cancels the share dialog
       if (err.name === 'AbortError') {
         return;
@@ -260,7 +260,7 @@ export const Feed: React.FC<FeedProps> = ({
       setIsDeleting(true);
       await deleteSessionMutation.mutateAsync(deleteConfirmSession);
       setDeleteConfirmSession(null);
-    } catch (err: any) {
+    } catch (_err: any) {
       // Could show error toast here
     } finally {
       setIsDeleting(false);

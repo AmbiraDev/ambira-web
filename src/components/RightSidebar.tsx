@@ -181,7 +181,7 @@ function RightSidebar() {
             </div>
           ) : (
             <div className="space-y-1">
-              {suggestedUsers.map((suggestedUser, index) => (
+              {suggestedUsers.map((suggestedUser, _index) => (
                 <Link
                   key={suggestedUser.id}
                   href={`/profile/${suggestedUser.username}`}
@@ -310,7 +310,7 @@ function RightSidebar() {
                           setSuggestedGroups(prev =>
                             prev.filter(g => g.id !== group.id)
                           );
-                        } catch (error) {
+                        } catch (_error) {
                           // Error joining group - silently fail for suggestions
                         } finally {
                           setJoiningGroups(prev => {

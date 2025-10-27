@@ -44,7 +44,7 @@ import { checkRateLimit } from '@/lib/rateLimit';
 import { ERROR_MESSAGES } from '@/config/errorMessages';
 
 // Shared utilities
-import { convertTimestamp, removeUndefinedFields } from '../shared/utils';
+import { convertTimestamp, _removeUndefinedFields } from '../shared/utils';
 import { fetchUserDataForSocialContext } from '../social/helpers';
 
 // Session helpers
@@ -433,7 +433,7 @@ export const firebaseSessionApi = {
         localStorage.setItem('timer-event', JSON.stringify(event));
         // Remove immediately to trigger the event
         localStorage.removeItem('timer-event');
-      } catch (storageError) {
+      } catch (_storageError) {
         // Ignore storage errors (e.g., in private browsing mode)
       }
     } catch (error) {

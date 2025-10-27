@@ -50,7 +50,7 @@ const checkUsernameExists = async (username: string): Promise<boolean> => {
     const snapshot = await getDocs(q);
     return !snapshot.empty;
   } catch (error) {
-    const apiError = handleError(error, 'Check username availability', {
+    const _apiError = handleError(error, 'Check username availability', {
       severity: ErrorSeverity.WARNING,
     });
     // If there's an error checking, allow the signup to proceed
@@ -63,7 +63,9 @@ const checkUsernameExists = async (username: string): Promise<boolean> => {
  * Check if an email already exists in Firestore
  * Note: Firebase Auth is the primary check for email uniqueness
  */
-const checkEmailExistsInFirestore = async (email: string): Promise<boolean> => {
+const _checkEmailExistsInFirestore = async (
+  email: string
+): Promise<boolean> => {
   try {
     const usersRef = collection(db, 'users');
     const q = query(
@@ -74,7 +76,7 @@ const checkEmailExistsInFirestore = async (email: string): Promise<boolean> => {
     const snapshot = await getDocs(q);
     return !snapshot.empty;
   } catch (error) {
-    const apiError = handleError(error, 'Check email availability', {
+    const _apiError = handleError(error, 'Check email availability', {
       severity: ErrorSeverity.WARNING,
     });
     return false;
@@ -396,7 +398,7 @@ export const firebaseAuthApi = {
       const token = await firebaseUser.getIdToken();
 
       return { user, token };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Google sign-in error:', error);
 
       // Special case: if redirect is in progress, pass through without modification
@@ -493,12 +495,12 @@ export const firebaseAuthApi = {
   /**
    * Verify authentication token
    */
-  verifyToken: async (token: string): Promise<boolean> => {
+  verifyToken: async (_token: string): Promise<boolean> => {
     try {
       // Firebase handles token verification automatically
       // We just need to check if user is authenticated
       return !!auth.currentUser;
-    } catch (error) {
+    } catch (_error) {
       return false;
     }
   },
@@ -511,7 +513,7 @@ export const firebaseAuthApi = {
       const result = await getRedirectResult(auth);
 
       if (result) {
-        const credential = GoogleAuthProvider.credentialFromResult(result);
+        const _credential = GoogleAuthProvider.credentialFromResult(result);
       }
 
       if (!result) {
@@ -572,7 +574,7 @@ export const firebaseAuthApi = {
       const token = await firebaseUser.getIdToken();
 
       return { user, token };
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('[handleGoogleRedirectResult] ERROR:', error);
       console.error('[handleGoogleRedirectResult] Error details:', {
         message: error.message,

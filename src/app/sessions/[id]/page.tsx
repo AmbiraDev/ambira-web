@@ -34,9 +34,10 @@ function SessionDetailContent({ sessionId }: { sessionId: string }) {
       setError(null);
 
       // Fetch the session with details
-      const sessionData = await firebaseApi.session.getSessionWithDetails(sessionId);
+      const sessionData =
+        await firebaseApi.session.getSessionWithDetails(sessionId);
       setSession(sessionData as unknown as SessionWithDetails);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error loading session:', err);
       setError(err.message || 'Failed to load session');
     } finally {
@@ -49,13 +50,19 @@ function SessionDetailContent({ sessionId }: { sessionId: string }) {
       await firebaseApi.post.supportSession(sessionId);
 
       // Optimistic update
-      setSession(prev => prev ? {
-        ...prev,
-        isSupported: true,
-        supportCount: prev.supportCount + 1,
-        supportedBy: [...(prev.supportedBy || []), user?.id || ''].filter(Boolean)
-      } : null);
-    } catch (err: any) {
+      setSession(prev =>
+        prev
+          ? {
+              ...prev,
+              isSupported: true,
+              supportCount: prev.supportCount + 1,
+              supportedBy: [...(prev.supportedBy || []), user?.id || ''].filter(
+                Boolean
+              ),
+            }
+          : null
+      );
+    } catch (err: unknown) {
       console.error('Failed to support session:', err);
     }
   };
@@ -65,13 +72,19 @@ function SessionDetailContent({ sessionId }: { sessionId: string }) {
       await firebaseApi.post.removeSupportFromSession(sessionId);
 
       // Optimistic update
-      setSession(prev => prev ? {
-        ...prev,
-        isSupported: false,
-        supportCount: Math.max(0, prev.supportCount - 1),
-        supportedBy: (prev.supportedBy || []).filter(id => id !== user?.id)
-      } : null);
-    } catch (err: any) {
+      setSession(prev =>
+        prev
+          ? {
+              ...prev,
+              isSupported: false,
+              supportCount: Math.max(0, prev.supportCount - 1),
+              supportedBy: (prev.supportedBy || []).filter(
+                id => id !== user?.id
+              ),
+            }
+          : null
+      );
+    } catch (err: unknown) {
       console.error('Failed to remove support:', err);
     }
   };
@@ -84,13 +97,13 @@ function SessionDetailContent({ sessionId }: { sessionId: string }) {
         await navigator.share({
           title: session?.title || 'Check out this session on Ambira',
           text: session?.description || 'Look at this productive session!',
-          url: sessionUrl
+          url: sessionUrl,
         });
       } else {
         await navigator.clipboard.writeText(sessionUrl);
         alert('Link copied to clipboard!');
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       if (err.name === 'AbortError') {
         return;
       }
@@ -106,7 +119,7 @@ function SessionDetailContent({ sessionId }: { sessionId: string }) {
     try {
       await firebaseApi.session.deleteSession(sessionId);
       router.push('/');
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to delete session:', err);
       alert('Failed to delete session. Please try again.');
     }
@@ -119,7 +132,8 @@ function SessionDetailContent({ sessionId }: { sessionId: string }) {
       const title = session.title || 'Session';
       document.title = `${title} by ${session.user?.name || 'User'} - Ambira`;
 
-      const description = session.description || `Check out this productive session on Ambira`;
+      const description =
+        session.description || `Check out this productive session on Ambira`;
 
       let metaDescription = document.querySelector('meta[name="description"]');
       if (!metaDescription) {
@@ -138,7 +152,9 @@ function SessionDetailContent({ sessionId }: { sessionId: string }) {
       }
       ogTitle.setAttribute('content', `${title} - Ambira`);
 
-      let ogDescription = document.querySelector('meta[property="og:description"]');
+      let ogDescription = document.querySelector(
+        'meta[property="og:description"]'
+      );
       if (!ogDescription) {
         ogDescription = document.createElement('meta');
         ogDescription.setAttribute('property', 'og:description');
@@ -171,7 +187,9 @@ function SessionDetailContent({ sessionId }: { sessionId: string }) {
       }
       twitterTitle.setAttribute('content', `${title} - Ambira`);
 
-      let twitterDescription = document.querySelector('meta[name="twitter:description"]');
+      let twitterDescription = document.querySelector(
+        'meta[name="twitter:description"]'
+      );
       if (!twitterDescription) {
         twitterDescription = document.createElement('meta');
         twitterDescription.setAttribute('name', 'twitter:description');
@@ -220,12 +238,23 @@ function SessionDetailContent({ sessionId }: { sessionId: string }) {
         <div className="max-w-[600px] mx-auto px-4 py-6">
           <div className="text-center py-12">
             <div className="text-red-600 mb-4">
-              <svg className="w-12 h-12 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 18.5c-.77.833.192 2.5 1.732 2.5z" />
+              <svg
+                className="w-12 h-12 mx-auto mb-2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 18.5c-.77.833.192 2.5 1.732 2.5z"
+                />
               </svg>
               <p className="font-medium text-lg">Session not found</p>
               <p className="text-sm text-gray-600 mt-1">
-                {error || 'This session may have been deleted or you may not have permission to view it.'}
+                {error ||
+                  'This session may have been deleted or you may not have permission to view it.'}
               </p>
             </div>
             <button
@@ -251,8 +280,12 @@ function SessionDetailContent({ sessionId }: { sessionId: string }) {
           </div>
           <MobileHeader title="Session" />
           <div className="max-w-[600px] mx-auto px-4 py-6 text-center">
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Error loading session</h2>
-            <p className="text-gray-600 mb-6">Something went wrong while loading this session.</p>
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              Error loading session
+            </h2>
+            <p className="text-gray-600 mb-6">
+              Something went wrong while loading this session.
+            </p>
             <button
               onClick={() => router.push('/')}
               className="px-4 py-2 bg-[#007AFF] text-white rounded-lg hover:bg-[#0051D5] transition-colors"
@@ -285,7 +318,11 @@ function SessionDetailContent({ sessionId }: { sessionId: string }) {
             onSupport={handleSupport}
             onRemoveSupport={handleRemoveSupport}
             onShare={handleShare}
-            onEdit={isOwnSession ? (sessionId) => router.push(`/sessions/${sessionId}/edit`) : undefined}
+            onEdit={
+              isOwnSession
+                ? sessionId => router.push(`/sessions/${sessionId}/edit`)
+                : undefined
+            }
             onDelete={isOwnSession ? handleDelete : undefined}
             showComments={true}
           />
@@ -295,7 +332,9 @@ function SessionDetailContent({ sessionId }: { sessionId: string }) {
   );
 }
 
-export default function SessionDetailPageWrapper({ params }: SessionDetailPageProps) {
+export default function SessionDetailPageWrapper({
+  params,
+}: SessionDetailPageProps) {
   const [sessionId, setSessionId] = React.useState<string>('');
 
   React.useEffect(() => {

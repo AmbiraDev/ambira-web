@@ -2,7 +2,13 @@
 
 import React, { useState, useEffect } from 'react';
 import { GroupStats } from '@/types';
-import { BarChart3, TrendingUp, Users, Clock, Calendar } from 'lucide-react';
+import {
+  _BarChart3,
+  TrendingUp,
+  _Users,
+  _Clock,
+  _Calendar,
+} from 'lucide-react';
 import {
   LineChart,
   Line,
@@ -34,7 +40,7 @@ export default function GroupAnalytics({
     hoursData: Array<{ date: string; hours: number; members: number }>;
     membershipGrowth: Array<{ date: string; members: number }>;
   } | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [_isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     loadAnalytics();

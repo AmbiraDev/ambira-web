@@ -4,8 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { Clock, Target, TrendingUp, BarChart3 } from 'lucide-react';
 import { ActivityChart } from './ActivityChart';
 import { ProgressRing } from './ProgressRing';
-import { AnalyticsPeriod, ProjectStats } from '@/types';
-import { firebaseProjectApi, firebaseSessionApi } from '@/lib/api';
+import { AnalyticsPeriod, _ProjectStats } from '@/types';
+import { _firebaseProjectApi, _firebaseSessionApi } from '@/lib/api';
 import { useAuth } from '@/hooks/useAuth';
 import { debug } from '@/lib/debug';
 
@@ -112,7 +112,7 @@ export const ProjectAnalytics: React.FC<ProjectAnalyticsProps> = ({
       const sessionFrequency = Object.entries(weeklyData)
         .sort(([a], [b]) => a.localeCompare(b))
         .slice(-12) // Last 12 weeks
-        .map(([weekKey, count], index) => ({
+        .map(([_weekKey, count], index) => ({
           label: `Week ${index + 1}`,
           value: count,
         }));

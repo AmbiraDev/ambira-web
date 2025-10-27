@@ -737,7 +737,7 @@ const ProjectBreakdownChart: React.FC<ProjectBreakdownChartProps> = ({
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {data.map((project, index) => (
+            {data.map((project, _index) => (
               <tr
                 key={project.projectId}
                 className="hover:bg-gray-50 transition-colors"

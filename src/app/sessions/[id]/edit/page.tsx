@@ -42,7 +42,7 @@ function SessionEditContent({ sessionId }: { sessionId: string }) {
       }
 
       setSession(sessionData);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error loading session:', err);
       setError(err.message || 'Failed to load session');
     } finally {
@@ -50,21 +50,24 @@ function SessionEditContent({ sessionId }: { sessionId: string }) {
     }
   };
 
-  const handleSave = async (sessionId: string, data: {
-    title: string;
-    description?: string;
-    projectId?: string;
-    tags?: string[];
-    visibility?: 'everyone' | 'followers' | 'private';
-    images?: string[];
-    startTime?: Date;
-    duration?: number;
-  }) => {
+  const handleSave = async (
+    sessionId: string,
+    data: {
+      title: string;
+      description?: string;
+      projectId?: string;
+      tags?: string[];
+      visibility?: 'everyone' | 'followers' | 'private';
+      images?: string[];
+      startTime?: Date;
+      duration?: number;
+    }
+  ) => {
     try {
       await firebaseApi.session.updateSession(sessionId, data);
       // Navigate back to the session detail page
       router.push(`/sessions/${sessionId}`);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to update session:', err);
       throw err; // Let the modal handle the error
     }
@@ -106,12 +109,23 @@ function SessionEditContent({ sessionId }: { sessionId: string }) {
         <div className="max-w-[600px] mx-auto px-4 py-6">
           <div className="text-center py-12">
             <div className="text-red-600 mb-4">
-              <svg className="w-12 h-12 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 18.5c-.77.833.192 2.5 1.732 2.5z" />
+              <svg
+                className="w-12 h-12 mx-auto mb-2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 18.5c-.77.833.192 2.5 1.732 2.5z"
+                />
               </svg>
               <p className="font-medium text-lg">Cannot Edit Session</p>
               <p className="text-sm text-gray-600 mt-1">
-                {error || 'This session may have been deleted or you may not have permission to edit it.'}
+                {error ||
+                  'This session may have been deleted or you may not have permission to edit it.'}
               </p>
             </div>
             <button
@@ -155,7 +169,9 @@ function SessionEditContent({ sessionId }: { sessionId: string }) {
   );
 }
 
-export default function SessionEditPageWrapper({ params }: SessionEditPageProps) {
+export default function SessionEditPageWrapper({
+  params,
+}: SessionEditPageProps) {
   const [sessionId, setSessionId] = React.useState<string>('');
 
   React.useEffect(() => {

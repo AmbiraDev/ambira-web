@@ -4,12 +4,7 @@
  * Handles queries for social relationships (follows, group memberships).
  */
 
-import {
-  collection,
-  getDocs,
-  query,
-  where
-} from 'firebase/firestore';
+import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
 export class SocialGraphRepository {
@@ -29,7 +24,7 @@ export class SocialGraphRepository {
           followingIds = outboundSnapshot.docs.map(doc => doc.id);
           return followingIds;
         }
-      } catch (socialGraphError) {
+      } catch (_socialGraphError) {
         // If social_graph doesn't exist, fall through to legacy follows
       }
 
@@ -48,7 +43,9 @@ export class SocialGraphRepository {
       return followingIds;
     } catch (error) {
       console.error(`Error getting following IDs for user ${userId}:`, error);
-      throw new Error(`Failed to get following IDs: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to get following IDs: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -68,7 +65,7 @@ export class SocialGraphRepository {
           followerIds = inboundSnapshot.docs.map(doc => doc.id);
           return followerIds;
         }
-      } catch (socialGraphError) {
+      } catch (_socialGraphError) {
         // If social_graph doesn't exist, fall through to legacy follows
       }
 
@@ -87,7 +84,9 @@ export class SocialGraphRepository {
       return followerIds;
     } catch (error) {
       console.error(`Error getting follower IDs for user ${userId}:`, error);
-      throw new Error(`Failed to get follower IDs: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to get follower IDs: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -134,8 +133,13 @@ export class SocialGraphRepository {
 
       return Array.from(allMemberIds);
     } catch (error) {
-      console.error(`Error getting group member IDs for user ${userId}:`, error);
-      throw new Error(`Failed to get group member IDs: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.error(
+        `Error getting group member IDs for user ${userId}:`,
+        error
+      );
+      throw new Error(
+        `Failed to get group member IDs: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -147,7 +151,10 @@ export class SocialGraphRepository {
       const followingIds = await this.getFollowingIds(followerId);
       return followingIds.includes(followingId);
     } catch (error) {
-      console.error(`Error checking if ${followerId} follows ${followingId}:`, error);
+      console.error(
+        `Error checking if ${followerId} follows ${followingId}:`,
+        error
+      );
       return false;
     }
   }

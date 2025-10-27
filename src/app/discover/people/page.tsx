@@ -15,7 +15,7 @@ export default function DiscoverPeoplePage() {
   const { user } = useAuth();
   const [suggestedUsers, setSuggestedUsers] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [followingUsers, setFollowingUsers] = useState<Set<string>>(new Set());
+  const [_followingUsers, setFollowingUsers] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     const loadUsers = async () => {
@@ -73,7 +73,7 @@ export default function DiscoverPeoplePage() {
               isFollowing,
               followersCount: isFollowing
                 ? (u.followersCount || 0) + 1
-                : Math.max(0, (u.followersCount || 0) - 1)
+                : Math.max(0, (u.followersCount || 0) - 1),
             }
           : u
       )
@@ -107,7 +107,9 @@ export default function DiscoverPeoplePage() {
             </button>
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Discover People</h1>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              Discover People
+            </h1>
             <p className="text-gray-600">
               Here are some people you might want to follow
             </p>
@@ -125,9 +127,12 @@ export default function DiscoverPeoplePage() {
             <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <UsersIcon className="w-10 h-10 text-[#007AFF]" />
             </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-2">No suggestions yet</h3>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">
+              No suggestions yet
+            </h3>
             <p className="text-gray-600 max-w-md mx-auto">
-              We'll show you people to connect with as the community grows. Check back later!
+              We'll show you people to connect with as the community grows.
+              Check back later!
             </p>
           </div>
         ) : (
@@ -141,7 +146,7 @@ export default function DiscoverPeoplePage() {
 
             {/* People List */}
             <div className="divide-y divide-gray-200">
-              {suggestedUsers.map((suggestedUser) => (
+              {suggestedUsers.map(suggestedUser => (
                 <div key={suggestedUser.id}>
                   <UserCardCompact
                     user={suggestedUser}

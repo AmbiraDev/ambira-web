@@ -14,11 +14,15 @@ export const SignupForm: React.FC = () => {
     username: '',
   });
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [errors, setErrors] = useState<Partial<SignupCredentials & { confirmPassword: string }>>({});
+  const [errors, setErrors] = useState<
+    Partial<SignupCredentials & { confirmPassword: string }>
+  >({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string>('');
   const [isCheckingUsername, setIsCheckingUsername] = useState(false);
-  const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(null);
+  const [usernameAvailable, setUsernameAvailable] = useState<boolean | null>(
+    null
+  );
 
   const { signup } = useAuth();
   const router = useRouter();
@@ -42,7 +46,8 @@ export const SignupForm: React.FC = () => {
 
       setIsCheckingUsername(true);
       try {
-        const isAvailable = await firebaseAuthApi.checkUsernameAvailability(username);
+        const isAvailable =
+          await firebaseAuthApi.checkUsernameAvailability(username);
         setUsernameAvailable(isAvailable);
       } catch (error) {
         console.error('Error checking username:', error);
@@ -72,7 +77,9 @@ export const SignupForm: React.FC = () => {
     }
 
     // Clear field-specific error when user starts typing
-    if (errors[name as keyof (SignupCredentials & { confirmPassword: string })]) {
+    if (
+      errors[name as keyof (SignupCredentials & { confirmPassword: string })]
+    ) {
       setErrors(prev => ({ ...prev, [name]: undefined }));
     }
 
@@ -83,7 +90,8 @@ export const SignupForm: React.FC = () => {
   };
 
   const validateForm = (): boolean => {
-    const newErrors: Partial<SignupCredentials & { confirmPassword: string }> = {};
+    const newErrors: Partial<SignupCredentials & { confirmPassword: string }> =
+      {};
 
     if (!formData.name.trim()) {
       newErrors.name = 'Name is required';
@@ -96,7 +104,8 @@ export const SignupForm: React.FC = () => {
     } else if (formData.username.trim().length < 3) {
       newErrors.username = 'Username must be at least 3 characters';
     } else if (!/^[a-zA-Z0-9_]+$/.test(formData.username.trim())) {
-      newErrors.username = 'Username can only contain letters, numbers, and underscores';
+      newErrors.username =
+        'Username can only contain letters, numbers, and underscores';
     } else if (usernameAvailable === false) {
       newErrors.username = 'This username is already taken';
     }
@@ -137,9 +146,10 @@ export const SignupForm: React.FC = () => {
       await signup(formData);
 
       // Check for invite context in sessionStorage
-      const inviteContextStr = typeof window !== 'undefined'
-        ? sessionStorage.getItem('inviteContext')
-        : null;
+      const inviteContextStr =
+        typeof window !== 'undefined'
+          ? sessionStorage.getItem('inviteContext')
+          : null;
 
       if (inviteContextStr) {
         try {
@@ -160,18 +170,26 @@ export const SignupForm: React.FC = () => {
 
       // Default redirect to home
       router.push('/');
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Signup error:', error);
 
       // Handle specific Firebase errors with user-friendly messages
       if (error.message?.includes('auth/email-already-in-use')) {
-        setSubmitError('This email address is already registered. Please try logging in instead or use a different email.');
+        setSubmitError(
+          'This email address is already registered. Please try logging in instead or use a different email.'
+        );
       } else if (error.message?.includes('auth/weak-password')) {
-        setSubmitError('Password is too weak. Please choose a stronger password with at least 6 characters.');
+        setSubmitError(
+          'Password is too weak. Please choose a stronger password with at least 6 characters.'
+        );
       } else if (error.message?.includes('auth/invalid-email')) {
         setSubmitError('Please enter a valid email address.');
       } else {
-        setSubmitError(error instanceof Error ? error.message : 'Signup failed. Please try again.');
+        setSubmitError(
+          error instanceof Error
+            ? error.message
+            : 'Signup failed. Please try again.'
+        );
       }
     } finally {
       setIsSubmitting(false);
@@ -188,7 +206,10 @@ export const SignupForm: React.FC = () => {
 
       <div className="space-y-5">
         <div>
-          <label htmlFor="name" className="block text-sm font-medium text-foreground mb-2">
+          <label
+            htmlFor="name"
+            className="block text-sm font-medium text-foreground mb-2"
+          >
             Full Name
           </label>
           <input
@@ -209,7 +230,10 @@ export const SignupForm: React.FC = () => {
         </div>
 
         <div>
-          <label htmlFor="username" className="block text-sm font-medium text-foreground mb-2">
+          <label
+            htmlFor="username"
+            className="block text-sm font-medium text-foreground mb-2"
+          >
             Username
           </label>
           <div className="relative">
@@ -224,10 +248,10 @@ export const SignupForm: React.FC = () => {
                 errors.username
                   ? 'border-destructive'
                   : usernameAvailable === true
-                  ? 'border-green-500'
-                  : usernameAvailable === false
-                  ? 'border-destructive'
-                  : 'border-border'
+                    ? 'border-green-500'
+                    : usernameAvailable === false
+                      ? 'border-destructive'
+                      : 'border-border'
               }`}
               placeholder="Choose a username"
             />
@@ -236,34 +260,65 @@ export const SignupForm: React.FC = () => {
                 <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary"></div>
               </div>
             )}
-            {!isCheckingUsername && usernameAvailable === true && formData.username.length >= 3 && (
-              <div className="absolute right-3 top-1/2 -translate-y-1/2 text-green-500">
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
-              </div>
-            )}
-            {!isCheckingUsername && usernameAvailable === false && formData.username.length >= 3 && (
-              <div className="absolute right-3 top-1/2 -translate-y-1/2 text-destructive">
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                </svg>
-              </div>
-            )}
+            {!isCheckingUsername &&
+              usernameAvailable === true &&
+              formData.username.length >= 3 && (
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-green-500">
+                  <svg
+                    className="w-5 h-5"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </div>
+              )}
+            {!isCheckingUsername &&
+              usernameAvailable === false &&
+              formData.username.length >= 3 && (
+                <div className="absolute right-3 top-1/2 -translate-y-1/2 text-destructive">
+                  <svg
+                    className="w-5 h-5"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </div>
+              )}
           </div>
           {errors.username && (
             <p className="mt-2 text-sm text-destructive">{errors.username}</p>
           )}
-          {!errors.username && usernameAvailable === true && formData.username.length >= 3 && (
-            <p className="mt-2 text-sm text-green-600">Username is available!</p>
-          )}
-          {!errors.username && usernameAvailable === false && formData.username.length >= 3 && (
-            <p className="mt-2 text-sm text-destructive">This username is already taken</p>
-          )}
+          {!errors.username &&
+            usernameAvailable === true &&
+            formData.username.length >= 3 && (
+              <p className="mt-2 text-sm text-green-600">
+                Username is available!
+              </p>
+            )}
+          {!errors.username &&
+            usernameAvailable === false &&
+            formData.username.length >= 3 && (
+              <p className="mt-2 text-sm text-destructive">
+                This username is already taken
+              </p>
+            )}
         </div>
 
         <div>
-          <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
+          <label
+            htmlFor="email"
+            className="block text-sm font-medium text-foreground mb-2"
+          >
             Email address
           </label>
           <input
@@ -284,7 +339,10 @@ export const SignupForm: React.FC = () => {
         </div>
 
         <div>
-          <label htmlFor="password" className="block text-sm font-medium text-foreground mb-2">
+          <label
+            htmlFor="password"
+            className="block text-sm font-medium text-foreground mb-2"
+          >
             Password
           </label>
           <input
@@ -305,7 +363,10 @@ export const SignupForm: React.FC = () => {
         </div>
 
         <div>
-          <label htmlFor="confirmPassword" className="block text-sm font-medium text-foreground mb-2">
+          <label
+            htmlFor="confirmPassword"
+            className="block text-sm font-medium text-foreground mb-2"
+          >
             Confirm Password
           </label>
           <input
@@ -321,7 +382,9 @@ export const SignupForm: React.FC = () => {
             placeholder="Confirm your password"
           />
           {errors.confirmPassword && (
-            <p className="mt-2 text-sm text-destructive">{errors.confirmPassword}</p>
+            <p className="mt-2 text-sm text-destructive">
+              {errors.confirmPassword}
+            </p>
           )}
         </div>
       </div>

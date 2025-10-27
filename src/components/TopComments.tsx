@@ -82,7 +82,7 @@ export const TopComments: React.FC<TopCommentsProps> = ({
         sessionId,
         content,
       });
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to create comment:', err);
       throw err;
     }
@@ -94,7 +94,7 @@ export const TopComments: React.FC<TopCommentsProps> = ({
         commentId,
         sessionId,
       });
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Failed to delete comment:', err);
       throw err;
     }

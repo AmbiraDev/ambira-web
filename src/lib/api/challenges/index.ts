@@ -276,7 +276,7 @@ export const firebaseChallengeApi = {
 
       const challengeData = challengeDoc.data();
       const now = new Date();
-      const startDate = convertTimestamp(challengeData.startDate);
+      const _startDate = convertTimestamp(challengeData.startDate);
       const endDate = convertTimestamp(challengeData.endDate);
 
       if (!challengeData.isActive) {
@@ -504,7 +504,7 @@ export const firebaseChallengeApi = {
         if (!challengeDoc.exists()) continue;
 
         const challengeData = challengeDoc.data();
-        const now = new Date();
+        const _now = new Date();
         const startDate = convertTimestamp(challengeData.startDate);
         const endDate = convertTimestamp(challengeData.endDate);
         const sessionStart = convertTimestamp(sessionData.startTime);

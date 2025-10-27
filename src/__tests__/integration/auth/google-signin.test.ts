@@ -152,7 +152,7 @@ describe('Google Sign-In - Redirect Flow (Mobile)', () => {
 
     try {
       await firebaseAuthApi.signInWithGoogle();
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Should throw REDIRECT_IN_PROGRESS
       expect(error.message).toBe('REDIRECT_IN_PROGRESS');
     }
@@ -178,7 +178,7 @@ describe('Google Sign-In - Redirect Flow (Mobile)', () => {
 
     try {
       await firebaseAuthApi.signInWithGoogle();
-    } catch (error: any) {
+    } catch (error: unknown) {
       // Expected REDIRECT_IN_PROGRESS
     }
 
@@ -262,7 +262,7 @@ describe('Google Sign-In - Popup Flow (Desktop)', () => {
 
     try {
       await firebaseAuthApi.signInWithGoogle();
-    } catch (error: any) {
+    } catch (error: unknown) {
       expect(error.message).toBe('REDIRECT_IN_PROGRESS');
     }
 

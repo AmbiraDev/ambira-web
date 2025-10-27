@@ -3,14 +3,14 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
-import { SessionFormData, Project, CreateSessionData } from '@/types';
+import { _SessionFormData, Project, CreateSessionData } from '@/types';
 import { firebaseApi } from '@/lib/api';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
-import { ArrowLeft, Check, Image as ImageIcon, X } from 'lucide-react';
+import { _ArrowLeft, _Check, Image as ImageIcon, X } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { uploadImages, compressImage } from '@/lib/imageUpload';
+import { uploadImages, _compressImage } from '@/lib/imageUpload';
 import { parseLocalDateTime } from '@/lib/utils';
 import Header from '@/components/HeaderComponent';
 import { debug } from '@/lib/debug';
@@ -86,7 +86,7 @@ export default function ManualSessionRecorder() {
   const [visibility, setVisibility] = useState<
     'everyone' | 'followers' | 'private'
   >('everyone');
-  const [privateNotes, setPrivateNotes] = useState('');
+  const [privateNotes, _setPrivateNotes] = useState('');
 
   // Manual time inputs
   const [sessionDate, setSessionDate] = useState(
@@ -98,7 +98,7 @@ export default function ManualSessionRecorder() {
     const minutes = String(now.getMinutes()).padStart(2, '0');
     return `${hours}:${minutes}`;
   });
-  const [endTime, setEndTime] = useState('10:00');
+  const [_endTime, _setEndTime] = useState('10:00');
   const [manualDurationHours, setManualDurationHours] = useState('1');
   const [manualDurationMinutes, setManualDurationMinutes] = useState('0');
 

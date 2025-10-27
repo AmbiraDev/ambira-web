@@ -7,7 +7,16 @@ import { firebaseUserApi } from '@/lib/api';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { MapPin, Calendar, Users, Clock, Edit3, UserPlus, Check, LogOut } from 'lucide-react';
+import {
+  MapPin,
+  Calendar,
+  _Users,
+  Clock,
+  Edit3,
+  UserPlus,
+  Check,
+  LogOut,
+} from 'lucide-react';
 import { toast } from 'sonner';
 
 interface ProfileHeaderProps {
@@ -36,7 +45,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
 
     try {
       setIsLoading(true);
-      
+
       if (isFollowing) {
         await firebaseUserApi.unfollowUser(profile.id);
         setIsFollowing(false);
@@ -137,10 +146,10 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
                   <Button
                     onClick={handleFollow}
                     disabled={isLoading}
-                    variant={isFollowing ? "outline" : "default"}
+                    variant={isFollowing ? 'outline' : 'default'}
                     className={`flex items-center gap-2 min-w-[110px] ${
-                      isFollowing 
-                        ? 'border-gray-300' 
+                      isFollowing
+                        ? 'border-gray-300'
                         : 'bg-[#FC4C02] hover:bg-[#E04502]'
                     }`}
                   >
@@ -165,11 +174,15 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
             {/* Stats row */}
             <div className="flex items-center gap-6 mt-4">
               <div>
-                <span className="text-2xl font-bold text-gray-900">{followersCount.toLocaleString()}</span>
+                <span className="text-2xl font-bold text-gray-900">
+                  {followersCount.toLocaleString()}
+                </span>
                 <span className="text-sm text-gray-600 ml-1">Followers</span>
               </div>
               <div>
-                <span className="text-2xl font-bold text-gray-900">{profile.followingCount.toLocaleString()}</span>
+                <span className="text-2xl font-bold text-gray-900">
+                  {profile.followingCount.toLocaleString()}
+                </span>
                 <span className="text-sm text-gray-600 ml-1">Following</span>
               </div>
             </div>
@@ -178,9 +191,7 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
 
         {/* Bio */}
         {profile.bio && (
-          <div className="text-gray-700 leading-relaxed">
-            {profile.bio}
-          </div>
+          <div className="text-gray-700 leading-relaxed">{profile.bio}</div>
         )}
 
         {/* Additional info */}

@@ -35,7 +35,7 @@ import { handleError, isPermissionError } from '@/lib/errorHandler';
 import { convertTimestamp } from '../shared/utils';
 
 // Types
-import type { User, StreakData, StreakStats } from '@/types';
+import type { _User, StreakData, StreakStats } from '@/types';
 
 // ============================================================================
 // PUBLIC API

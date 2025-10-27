@@ -48,7 +48,7 @@ function SessionShareContent({ sessionId }: { sessionId: string }) {
       const sessionData =
         await firebaseApi.session.getSessionWithDetails(sessionId);
       setSession(sessionData as unknown as SessionWithDetails);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error loading session:', err);
       setError(err.message || 'Failed to load session');
     } finally {
@@ -66,7 +66,7 @@ function SessionShareContent({ sessionId }: { sessionId: string }) {
     return `${minutes}m`;
   };
 
-  const formatTimeAgo = (date: Date): string => {
+  const _formatTimeAgo = (date: Date): string => {
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const yesterday = new Date(today);

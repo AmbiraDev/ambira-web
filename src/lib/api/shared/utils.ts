@@ -10,7 +10,10 @@ import { handleError } from '@/lib/errorHandler';
  * Legacy helper for backwards compatibility - wraps handleError
  * @deprecated Use handleError directly for better error context
  */
-export const getErrorMessage = (error: any, defaultMessage: string): string => {
+export const getErrorMessage = (
+  error: unknown,
+  defaultMessage: string
+): string => {
   const apiError = handleError(error, 'Operation', {
     defaultMessage,
     silent: true,

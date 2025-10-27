@@ -9,17 +9,17 @@ interface SessionStatsProps {
   className?: string;
 }
 
-export const SessionStats: React.FC<SessionStatsProps> = ({ 
-  session, 
-  project, 
-  className = '' 
+export const SessionStats: React.FC<SessionStatsProps> = ({
+  session,
+  project,
+  className = '',
 }) => {
-  const [showAllTasks, setShowAllTasks] = useState(false);
-  
+  const [_showAllTasks, _setShowAllTasks] = useState(false);
+
   const formatDuration = (seconds: number): string => {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
-    
+
     if (hours > 0) {
       return `${hours}h ${minutes}m`;
     }
@@ -27,11 +27,13 @@ export const SessionStats: React.FC<SessionStatsProps> = ({
   };
 
   // Task tracking not implemented at session level
-  const completedTasks: any[] = [];
-  const totalTasks = 0;
+  const _completedTasks: any[] = [];
+  const _totalTasks = 0;
 
   return (
-    <div className={`bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border border-gray-200 overflow-hidden ${className}`}>
+    <div
+      className={`bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl border border-gray-200 overflow-hidden ${className}`}
+    >
       {/* Session Title with Project Badge */}
       <div className="px-4 py-3 bg-white border-b border-gray-200">
         <div className="flex items-center gap-3">
@@ -45,9 +47,7 @@ export const SessionStats: React.FC<SessionStatsProps> = ({
             <h3 className="font-bold text-gray-900 text-base leading-tight truncate">
               {session.title}
             </h3>
-            <p className="text-sm text-gray-600 truncate">
-              {project.name}
-            </p>
+            <p className="text-sm text-gray-600 truncate">{project.name}</p>
           </div>
         </div>
       </div>

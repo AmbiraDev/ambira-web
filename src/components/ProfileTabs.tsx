@@ -3,8 +3,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { firebaseSessionApi, firebaseApi, firebaseUserApi, firebasePostApi } from '@/lib/api';
-import { Session, User, Project, SessionWithDetails } from '@/types';
+import {
+  firebaseSessionApi,
+  _firebaseApi,
+  firebaseUserApi,
+  firebasePostApi,
+} from '@/lib/api';
+import { _Session, User, _Project, SessionWithDetails } from '@/types';
 import SessionCard from './SessionCard';
 import ConfirmDialog from './ConfirmDialog';
 import {
@@ -15,12 +20,17 @@ import {
   Calendar,
   TrendingUp,
   Award,
-  Clock
+  Clock,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { debug } from '@/lib/debug';
 
-export type ProfileTab = 'overview' | 'achievements' | 'followers' | 'following' | 'posts';
+export type ProfileTab =
+  | 'overview'
+  | 'achievements'
+  | 'followers'
+  | 'following'
+  | 'posts';
 
 interface ProfileTabsProps {
   activeTab: ProfileTab;
@@ -84,10 +94,10 @@ export const ProfileTabs: React.FC<ProfileTabsProps> = ({
   return (
     <div className="border-b border-border">
       <div className="flex space-x-0 overflow-x-auto scrollbar-hide">
-        {tabs.map((tab) => (
+        {tabs.map(tab => (
           <Button
             key={tab.id}
-            variant={activeTab === tab.id ? "default" : "ghost"}
+            variant={activeTab === tab.id ? 'default' : 'ghost'}
             onClick={() => !tab.disabled && onTabChange(tab.id)}
             disabled={tab.disabled}
             className={cn(
@@ -99,10 +109,12 @@ export const ProfileTabs: React.FC<ProfileTabsProps> = ({
             )}
           >
             {tab.icon}
-            <span className="hidden md:inline whitespace-nowrap text-sm md:text-base">{tab.label}</span>
+            <span className="hidden md:inline whitespace-nowrap text-sm md:text-base">
+              {tab.label}
+            </span>
             {tab.badge !== undefined && (
               <Badge
-                variant={activeTab === tab.id ? "secondary" : "outline"}
+                variant={activeTab === tab.id ? 'secondary' : 'outline'}
                 className="ml-0.5 md:ml-1 text-xs px-1.5 py-0 md:inline hidden"
               >
                 {tab.badge}
@@ -121,11 +133,10 @@ interface TabContentProps {
   className?: string;
 }
 
-export const TabContent: React.FC<TabContentProps> = ({ children, className = "" }) => (
-  <div className={cn('py-6', className)}>
-    {children}
-  </div>
-);
+export const TabContent: React.FC<TabContentProps> = ({
+  children,
+  className = '',
+}) => <div className={cn('py-6', className)}>{children}</div>;
 
 // Overview tab content
 interface OverviewContentProps {
@@ -222,33 +233,47 @@ export const OverviewContent: React.FC<OverviewContentProps> = ({ stats }) => {
       {/* Additional Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="bg-card-background p-6 rounded-lg border border-border">
-          <h3 className="font-semibold text-foreground mb-4">Activity Summary</h3>
+          <h3 className="font-semibold text-foreground mb-4">
+            Activity Summary
+          </h3>
           <div className="space-y-3">
             <div className="flex justify-between">
               <span className="text-muted-foreground">Sessions this week:</span>
               <span className="font-medium">{stats.sessionsThisWeek}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Sessions this month:</span>
+              <span className="text-muted-foreground">
+                Sessions this month:
+              </span>
               <span className="font-medium">{stats.sessionsThisMonth}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Avg session duration:</span>
-              <span className="font-medium">{formatDuration(stats.averageSessionDuration)}</span>
+              <span className="text-muted-foreground">
+                Avg session duration:
+              </span>
+              <span className="font-medium">
+                {formatDuration(stats.averageSessionDuration)}
+              </span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Most productive hour:</span>
+              <span className="text-muted-foreground">
+                Most productive hour:
+              </span>
               <span className="font-medium">{stats.mostProductiveHour}:00</span>
             </div>
           </div>
         </div>
 
         <div className="bg-card-background p-6 rounded-lg border border-border">
-          <h3 className="font-semibold text-foreground mb-4">Monthly Overview</h3>
+          <h3 className="font-semibold text-foreground mb-4">
+            Monthly Overview
+          </h3>
           <div className="space-y-3">
             <div className="flex justify-between">
               <span className="text-muted-foreground">Total hours:</span>
-              <span className="font-medium">{formatHours(stats.monthlyHours)}</span>
+              <span className="font-medium">
+                {formatHours(stats.monthlyHours)}
+              </span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Daily average:</span>
@@ -258,7 +283,9 @@ export const OverviewContent: React.FC<OverviewContentProps> = ({ stats }) => {
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Weekly average:</span>
-              <span className="font-medium">{formatHours(stats.monthlyHours / 4.3)}</span>
+              <span className="font-medium">
+                {formatHours(stats.monthlyHours / 4.3)}
+              </span>
             </div>
           </div>
         </div>
@@ -283,7 +310,10 @@ interface FollowListContentProps {
   type: 'followers' | 'following';
 }
 
-export const FollowListContent: React.FC<FollowListContentProps> = ({ userId, type }) => {
+export const FollowListContent: React.FC<FollowListContentProps> = ({
+  userId,
+  type,
+}) => {
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -301,10 +331,10 @@ export const FollowListContent: React.FC<FollowListContentProps> = ({ userId, ty
           const following = await firebaseUserApi.getFollowing(userId);
           setUsers(following);
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         debug.error(`ProfileTabs - Failed to load ${type}:`, err);
         setError(err.message || `Failed to load ${type}`);
-      } finally{
+      } finally {
         setIsLoading(false);
       }
     };
@@ -353,7 +383,7 @@ export const FollowListContent: React.FC<FollowListContentProps> = ({ userId, ty
 
   return (
     <div className="space-y-0 divide-y divide-border">
-      {users.map((user) => (
+      {users.map(user => (
         <a
           key={user.id}
           href={`/profile/${user.username}`}
@@ -364,18 +394,26 @@ export const FollowListContent: React.FC<FollowListContentProps> = ({ userId, ty
           </div>
           <div className="flex-1 min-w-0">
             <div className="font-semibold text-foreground">{user.name}</div>
-            <div className="text-sm text-muted-foreground">@{user.username}</div>
+            <div className="text-sm text-muted-foreground">
+              @{user.username}
+            </div>
             {user.bio && (
-              <p className="mt-1 text-sm text-muted-foreground line-clamp-1">{user.bio}</p>
+              <p className="mt-1 text-sm text-muted-foreground line-clamp-1">
+                {user.bio}
+              </p>
             )}
           </div>
           <div className="flex items-center gap-4 text-sm text-muted-foreground flex-shrink-0">
             <div className="text-center">
-              <div className="font-semibold text-foreground">{user.followersCount}</div>
+              <div className="font-semibold text-foreground">
+                {user.followersCount}
+              </div>
               <div className="text-xs">followers</div>
             </div>
             <div className="text-center">
-              <div className="font-semibold text-foreground">{user.followingCount}</div>
+              <div className="font-semibold text-foreground">
+                {user.followingCount}
+              </div>
               <div className="text-xs">following</div>
             </div>
           </div>
@@ -398,10 +436,15 @@ interface PostsContentProps {
   isOwnProfile?: boolean;
 }
 
-export const PostsContent: React.FC<PostsContentProps> = ({ userId, isOwnProfile = false }) => {
+export const PostsContent: React.FC<PostsContentProps> = ({
+  userId,
+  isOwnProfile = false,
+}) => {
   const [sessions, setSessions] = useState<SessionWithDetails[]>([]);
-  const [isLoadingSessions, setIsLoadingSessions] = useState(false);
-  const [deleteConfirmSession, setDeleteConfirmSession] = useState<string | null>(null);
+  const [_isLoadingSessions, setIsLoadingSessions] = useState(false);
+  const [deleteConfirmSession, setDeleteConfirmSession] = useState<
+    string | null
+  >(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -409,14 +452,17 @@ export const PostsContent: React.FC<PostsContentProps> = ({ userId, isOwnProfile
     const loadSessions = async () => {
       try {
         setIsLoadingSessions(true);
-        const userSessions = await firebaseSessionApi.getUserSessions(userId, 50);
+        const userSessions = await firebaseSessionApi.getUserSessions(
+          userId,
+          50
+        );
         // Ensure sessions have activity field (backwards compatibility)
         const sessionsWithActivity = userSessions.map((session: any) => ({
           ...session,
           activity: session.activity || session.project,
         }));
         setSessions(sessionsWithActivity);
-      } catch (err: any) {
+      } catch (err: unknown) {
         debug.error('ProfileTabs - Failed to load sessions:', err);
         setError(err.message || 'Failed to load posts');
       } finally {
@@ -431,12 +477,14 @@ export const PostsContent: React.FC<PostsContentProps> = ({ userId, isOwnProfile
   const handleSupport = useCallback(async (sessionId: string) => {
     try {
       await firebasePostApi.supportSession(sessionId);
-      setSessions(prev => prev.map(s =>
-        s.id === sessionId
-          ? { ...s, supportCount: s.supportCount + 1, isSupported: true }
-          : s
-      ));
-    } catch (err: any) {
+      setSessions(prev =>
+        prev.map(s =>
+          s.id === sessionId
+            ? { ...s, supportCount: s.supportCount + 1, isSupported: true }
+            : s
+        )
+      );
+    } catch (err: unknown) {
       debug.error('ProfileTabs - Failed to support session:', err);
     }
   }, []);
@@ -444,12 +492,18 @@ export const PostsContent: React.FC<PostsContentProps> = ({ userId, isOwnProfile
   const handleRemoveSupport = useCallback(async (sessionId: string) => {
     try {
       await firebasePostApi.removeSupportFromSession(sessionId);
-      setSessions(prev => prev.map(s =>
-        s.id === sessionId
-          ? { ...s, supportCount: Math.max(0, s.supportCount - 1), isSupported: false }
-          : s
-      ));
-    } catch (err: any) {
+      setSessions(prev =>
+        prev.map(s =>
+          s.id === sessionId
+            ? {
+                ...s,
+                supportCount: Math.max(0, s.supportCount - 1),
+                isSupported: false,
+              }
+            : s
+        )
+      );
+    } catch (err: unknown) {
       debug.error('ProfileTabs - Failed to remove support:', err);
     }
   }, []);
@@ -460,7 +514,7 @@ export const PostsContent: React.FC<PostsContentProps> = ({ userId, isOwnProfile
       const shareUrl = `${window.location.origin}/sessions/${sessionId}`;
       await navigator.clipboard.writeText(shareUrl);
       // You could add a toast notification here
-    } catch (err: any) {
+    } catch (err: unknown) {
       debug.error('ProfileTabs - Failed to share session:', err);
     }
   }, []);
@@ -476,9 +530,11 @@ export const PostsContent: React.FC<PostsContentProps> = ({ userId, isOwnProfile
     try {
       setIsDeleting(true);
       await firebaseSessionApi.deleteSession(deleteConfirmSession);
-      setSessions(prev => prev.filter(session => session.id !== deleteConfirmSession));
+      setSessions(prev =>
+        prev.filter(session => session.id !== deleteConfirmSession)
+      );
       setDeleteConfirmSession(null);
-    } catch (err: any) {
+    } catch (err: unknown) {
       debug.error('ProfileTabs - Failed to delete session:', err);
     } finally {
       setIsDeleting(false);
@@ -489,7 +545,9 @@ export const PostsContent: React.FC<PostsContentProps> = ({ userId, isOwnProfile
     return (
       <div className="text-center py-12">
         <FileText className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
-        <h3 className="text-lg font-semibold text-foreground mb-2">Error loading posts</h3>
+        <h3 className="text-lg font-semibold text-foreground mb-2">
+          Error loading posts
+        </h3>
         <p className="text-muted-foreground">{error}</p>
       </div>
     );
@@ -505,8 +563,7 @@ export const PostsContent: React.FC<PostsContentProps> = ({ userId, isOwnProfile
         <p className="text-muted-foreground">
           {isOwnProfile
             ? 'Complete some sessions to see them here.'
-            : 'This user hasn\'t shared any sessions yet.'
-          }
+            : "This user hasn't shared any sessions yet."}
         </p>
       </div>
     );
@@ -514,7 +571,7 @@ export const PostsContent: React.FC<PostsContentProps> = ({ userId, isOwnProfile
 
   return (
     <div className="space-y-6">
-      {sessions.map((session) => (
+      {sessions.map(session => (
         <SessionCard
           key={session.id}
           session={session}

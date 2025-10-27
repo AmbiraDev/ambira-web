@@ -349,7 +349,7 @@ function CreateActivityContent() {
         throw new Error('Create activity function is not available');
       }
 
-      const activity = await createActivity.mutateAsync({
+      const _activity = await createActivity.mutateAsync({
         ...formData,
         name: formData.name.trim(),
         description: formData.description.trim(),

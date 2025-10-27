@@ -14,11 +14,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { firebaseAuthApi } from '@/lib/api/auth';
-import type {
-  AuthUser,
-  LoginCredentials,
-  SignupCredentials,
-} from '@/types';
+import type { AuthUser, LoginCredentials, SignupCredentials } from '@/types';
 
 /**
  * Cache Keys for Auth
@@ -45,7 +41,7 @@ export function useAuth() {
       // This is only called on initial mount or when cache is invalidated
       try {
         return await firebaseAuthApi.getCurrentUser();
-      } catch (error) {
+      } catch (_error) {
         // User is not authenticated
         return null;
       }
@@ -70,14 +66,14 @@ export function useLogin() {
     mutationFn: async (credentials: LoginCredentials) => {
       return await firebaseAuthApi.login(credentials);
     },
-    onSuccess: (data) => {
+    onSuccess: data => {
       // Update auth cache with logged-in user
       queryClient.setQueryData(AUTH_KEYS.session(), data.user);
 
       // Navigate to home
       router.push('/');
     },
-    onError: (error) => {
+    onError: error => {
       // Error is already formatted by firebaseAuthApi
       console.error('[useLogin] Login failed:', error);
     },
@@ -96,14 +92,14 @@ export function useSignup() {
     mutationFn: async (credentials: SignupCredentials) => {
       return await firebaseAuthApi.signup(credentials);
     },
-    onSuccess: (data) => {
+    onSuccess: data => {
       // Update auth cache with new user
       queryClient.setQueryData(AUTH_KEYS.session(), data.user);
 
       // Navigate to home
       router.push('/');
     },
-    onError: (error) => {
+    onError: error => {
       console.error('[useSignup] Signup failed:', error);
     },
   });
@@ -121,7 +117,7 @@ export function useGoogleSignIn() {
     mutationFn: async () => {
       return await firebaseAuthApi.signInWithGoogle();
     },
-    onSuccess: (data) => {
+    onSuccess: data => {
       // Update auth cache with Google user
       queryClient.setQueryData(AUTH_KEYS.session(), data.user);
 
@@ -165,7 +161,7 @@ export function useLogout() {
       // Navigate to landing page
       router.push('/');
     },
-    onError: (error) => {
+    onError: error => {
       console.error('[useLogout] Logout failed:', error);
 
       // Still navigate and clear cache even on error
@@ -187,13 +183,15 @@ export function useUpdateProfile() {
     mutationFn: async (updates: Partial<AuthUser>) => {
       // This would call firebaseUserApi.updateProfile
       // For now, just return the updated user
-      const currentUser = queryClient.getQueryData<AuthUser>(AUTH_KEYS.session());
+      const currentUser = queryClient.getQueryData<AuthUser>(
+        AUTH_KEYS.session()
+      );
       if (!currentUser) {
         throw new Error('Not authenticated');
       }
       return { ...currentUser, ...updates };
     },
-    onSuccess: (updatedUser) => {
+    onSuccess: updatedUser => {
       // Update auth cache
       queryClient.setQueryData(AUTH_KEYS.session(), updatedUser);
     },

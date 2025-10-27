@@ -8,7 +8,7 @@ import { IconRenderer } from '@/components/IconRenderer';
 import { useAuth } from '@/hooks/useAuth';
 import { useActivities, useActivityStats } from '@/hooks/useActivitiesQuery';
 import { firebaseApi } from '@/lib/api';
-import { Activity, ActivityStats, SessionWithDetails } from '@/types';
+import { Activity, _ActivityStats, SessionWithDetails } from '@/types';
 import Link from 'next/link';
 import {
   ArrowLeft,
@@ -63,7 +63,7 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
   const [isLoadingSessions, setIsLoadingSessions] = useState(true);
   const [activeTab, setActiveTab] = useState<ActivityTab>('analytics');
   const [timePeriod, setTimePeriod] = useState<TimePeriod>('7D');
-  const [showTimePeriodDropdown, setShowTimePeriodDropdown] = useState(false);
+  const [_showTimePeriodDropdown, _setShowTimePeriodDropdown] = useState(false);
   const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
   const [chartType, setChartType] = useState<'bar' | 'line'>(() => {
     // Load chart type from localStorage
@@ -278,7 +278,7 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
     setChartData(data);
   };
 
-  const formatTime = (seconds: number): string => {
+  const _formatTime = (seconds: number): string => {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
     if (hours > 0) {
@@ -287,7 +287,7 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
     return `${minutes}m`;
   };
 
-  const formatDate = (date: Date): string => {
+  const _formatDate = (date: Date): string => {
     const today = new Date();
     const yesterday = new Date(today);
     yesterday.setDate(yesterday.getDate() - 1);
@@ -307,11 +307,11 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
   };
 
   // Session handlers for SessionCard
-  const handleSupport = async (sessionId: string) => {
+  const handleSupport = async (_sessionId: string) => {
     // TODO: Re-implement when API is fixed
   };
 
-  const handleRemoveSupport = async (sessionId: string) => {
+  const handleRemoveSupport = async (_sessionId: string) => {
     // TODO: Re-implement when API is fixed
   };
 
@@ -435,11 +435,11 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
     );
   }
 
-  const weeklyProgress =
+  const _weeklyProgress =
     project.weeklyTarget && stats
       ? (stats.weeklyHours / project.weeklyTarget) * 100
       : 0;
-  const totalProgress =
+  const _totalProgress =
     project.totalTarget && stats
       ? (stats.totalHours / project.totalTarget) * 100
       : 0;

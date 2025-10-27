@@ -8,7 +8,9 @@ interface DataExportProps {
 }
 
 export const DataExport: React.FC<DataExportProps> = ({ userId }) => {
-  const [exportType, setExportType] = useState<'sessions' | 'projects' | 'tasks' | 'all'>('all');
+  const [exportType, setExportType] = useState<
+    'sessions' | 'projects' | 'tasks' | 'all'
+  >('all');
   const [dateFrom, setDateFrom] = useState<string>('');
   const [dateTo, setDateTo] = useState<string>('');
   const [format, setFormat] = useState<'csv' | 'json'>('csv');
@@ -23,7 +25,7 @@ export const DataExport: React.FC<DataExportProps> = ({ userId }) => {
     try {
       // Simulate export process
       await new Promise(resolve => setTimeout(resolve, 2000));
-      
+
       // In real implementation, call API:
       // await firebaseApi.analytics.exportData({
       //   type: exportType,
@@ -33,8 +35,10 @@ export const DataExport: React.FC<DataExportProps> = ({ userId }) => {
       //   includePrivate
       // });
 
-      setExportStatus('Export complete! Check your email for the download link.');
-    } catch (error) {
+      setExportStatus(
+        'Export complete! Check your email for the download link.'
+      );
+    } catch (_error) {
       setExportStatus('Export failed. Please try again.');
     } finally {
       setIsExporting(false);
@@ -45,10 +49,10 @@ export const DataExport: React.FC<DataExportProps> = ({ userId }) => {
     const today = new Date();
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(today.getDate() - 30);
-    
+
     return {
       from: thirtyDaysAgo.toISOString().split('T')[0],
-      to: today.toISOString().split('T')[0]
+      to: today.toISOString().split('T')[0],
     };
   };
 
@@ -60,7 +64,9 @@ export const DataExport: React.FC<DataExportProps> = ({ userId }) => {
         <Download className="w-6 h-6 text-blue-600" />
         <div>
           <h2 className="text-xl font-bold text-gray-900">Export Data</h2>
-          <p className="text-sm text-gray-600">Download your productivity data</p>
+          <p className="text-sm text-gray-600">
+            Download your productivity data
+          </p>
         </div>
       </div>
 
@@ -75,7 +81,7 @@ export const DataExport: React.FC<DataExportProps> = ({ userId }) => {
               { value: 'all', label: 'Everything', icon: Database },
               { value: 'sessions', label: 'Sessions', icon: Calendar },
               { value: 'projects', label: 'Projects', icon: FileText },
-              { value: 'tasks', label: 'Tasks', icon: FileText }
+              { value: 'tasks', label: 'Tasks', icon: FileText },
             ].map(({ value, label, icon: Icon }) => (
               <button
                 key={value}
@@ -86,8 +92,12 @@ export const DataExport: React.FC<DataExportProps> = ({ userId }) => {
                     : 'border-gray-200 hover:border-gray-300'
                 }`}
               >
-                <Icon className={`w-6 h-6 ${exportType === value ? 'text-blue-600' : 'text-gray-400'}`} />
-                <span className={`text-sm font-medium ${exportType === value ? 'text-blue-600' : 'text-gray-700'}`}>
+                <Icon
+                  className={`w-6 h-6 ${exportType === value ? 'text-blue-600' : 'text-gray-400'}`}
+                />
+                <span
+                  className={`text-sm font-medium ${exportType === value ? 'text-blue-600' : 'text-gray-700'}`}
+                >
                   {label}
                 </span>
               </button>
@@ -104,7 +114,7 @@ export const DataExport: React.FC<DataExportProps> = ({ userId }) => {
             <input
               type="date"
               value={dateFrom || defaults.from}
-              onChange={(e) => setDateFrom(e.target.value)}
+              onChange={e => setDateFrom(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -115,7 +125,7 @@ export const DataExport: React.FC<DataExportProps> = ({ userId }) => {
             <input
               type="date"
               value={dateTo || defaults.to}
-              onChange={(e) => setDateTo(e.target.value)}
+              onChange={e => setDateTo(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -158,10 +168,12 @@ export const DataExport: React.FC<DataExportProps> = ({ userId }) => {
             <input
               type="checkbox"
               checked={includePrivate}
-              onChange={(e) => setIncludePrivate(e.target.checked)}
+              onChange={e => setIncludePrivate(e.target.checked)}
               className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
             />
-            <span className="text-sm text-gray-700">Include private sessions and notes</span>
+            <span className="text-sm text-gray-700">
+              Include private sessions and notes
+            </span>
           </label>
         </div>
 
@@ -177,11 +189,13 @@ export const DataExport: React.FC<DataExportProps> = ({ userId }) => {
 
         {/* Status message */}
         {exportStatus && (
-          <div className={`p-4 rounded-lg ${
-            exportStatus.includes('failed') 
-              ? 'bg-red-50 text-red-700' 
-              : 'bg-green-50 text-green-700'
-          }`}>
+          <div
+            className={`p-4 rounded-lg ${
+              exportStatus.includes('failed')
+                ? 'bg-red-50 text-red-700'
+                : 'bg-green-50 text-green-700'
+            }`}
+          >
             <p className="text-sm">{exportStatus}</p>
           </div>
         )}
@@ -189,8 +203,9 @@ export const DataExport: React.FC<DataExportProps> = ({ userId }) => {
         {/* Info */}
         <div className="p-4 bg-gray-50 rounded-lg">
           <p className="text-sm text-gray-600">
-            <strong>Note:</strong> For security reasons, we'll email you a download link instead of 
-            downloading directly. The link will expire after 24 hours.
+            <strong>Note:</strong> For security reasons, we'll email you a
+            download link instead of downloading directly. The link will expire
+            after 24 hours.
           </p>
         </div>
       </div>

@@ -1,7 +1,14 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { ThumbsUp, MessageSquare, Share2, Image as ImageIcon, Link as LinkIcon, Copy } from 'lucide-react';
+import {
+  ThumbsUp,
+  MessageSquare,
+  Share2,
+  Image as ImageIcon,
+  Link as LinkIcon,
+  Copy,
+} from 'lucide-react';
 
 interface SessionInteractionsProps {
   sessionId: string;
@@ -25,7 +32,7 @@ export const SessionInteractions: React.FC<SessionInteractionsProps> = ({
   supportCount,
   commentCount,
   isSupported,
-  supportedBy = [],
+  supportedBy: _supportedBy = [],
   onSupport,
   onRemoveSupport,
   onShare,
@@ -34,7 +41,7 @@ export const SessionInteractions: React.FC<SessionInteractionsProps> = ({
   onCommentClick,
   onLikesClick,
   onViewAllCommentsClick,
-  className = ''
+  className = '',
 }) => {
   const [isSupporting, setIsSupporting] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
@@ -93,7 +100,10 @@ export const SessionInteractions: React.FC<SessionInteractionsProps> = ({
   // Close share menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (shareMenuRef.current && !shareMenuRef.current.contains(event.target as Node)) {
+      if (
+        shareMenuRef.current &&
+        !shareMenuRef.current.contains(event.target as Node)
+      ) {
         setShowShareMenu(false);
       }
     };
@@ -142,22 +152,29 @@ export const SessionInteractions: React.FC<SessionInteractionsProps> = ({
               onClick={handleSupport}
               disabled={isSupporting}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded hover:bg-gray-100 transition-colors ${
-                isSupporting ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+                isSupporting
+                  ? 'opacity-50 cursor-not-allowed'
+                  : 'cursor-pointer'
               }`}
-              aria-label={isSupported ? `Unlike session (${supportCount} ${supportCount === 1 ? 'like' : 'likes'})` : `Like session (${supportCount} ${supportCount === 1 ? 'like' : 'likes'})`}
+              aria-label={
+                isSupported
+                  ? `Unlike session (${supportCount} ${supportCount === 1 ? 'like' : 'likes'})`
+                  : `Like session (${supportCount} ${supportCount === 1 ? 'like' : 'likes'})`
+              }
             >
               <ThumbsUp
                 className={`w-5 h-5 transition-colors ${
-                  isSupported
-                    ? 'fill-gray-700 text-gray-700'
-                    : 'text-gray-600'
+                  isSupported ? 'fill-gray-700 text-gray-700' : 'text-gray-600'
                 }`}
                 strokeWidth={1.5}
                 aria-hidden="true"
               />
-              <span className={`text-sm font-medium ${
-                isSupported ? 'text-gray-700' : 'text-gray-600'
-              }`} aria-hidden="true">
+              <span
+                className={`text-sm font-medium ${
+                  isSupported ? 'text-gray-700' : 'text-gray-600'
+                }`}
+                aria-hidden="true"
+              >
                 {supportCount > 0 ? supportCount : ''}
               </span>
             </button>
@@ -173,7 +190,10 @@ export const SessionInteractions: React.FC<SessionInteractionsProps> = ({
                 strokeWidth={1.5}
                 aria-hidden="true"
               />
-              <span className="text-sm font-medium text-gray-600" aria-hidden="true">
+              <span
+                className="text-sm font-medium text-gray-600"
+                aria-hidden="true"
+              >
                 {commentCount > 0 ? commentCount : ''}
               </span>
             </button>
@@ -212,10 +232,16 @@ export const SessionInteractions: React.FC<SessionInteractionsProps> = ({
                         role="menuitem"
                         aria-label="Share session as image"
                       >
-                        <ImageIcon className="w-5 h-5 text-[#007AFF]" aria-hidden="true" />
+                        <ImageIcon
+                          className="w-5 h-5 text-[#007AFF]"
+                          aria-hidden="true"
+                        />
                         Share as image
                       </button>
-                      <div className="border-t border-gray-200 my-1" aria-hidden="true"></div>
+                      <div
+                        className="border-t border-gray-200 my-1"
+                        aria-hidden="true"
+                      ></div>
                     </>
                   )}
                   <button
@@ -224,17 +250,26 @@ export const SessionInteractions: React.FC<SessionInteractionsProps> = ({
                     role="menuitem"
                     aria-label="Share session link"
                   >
-                    <LinkIcon className="w-5 h-5 text-[#007AFF]" aria-hidden="true" />
+                    <LinkIcon
+                      className="w-5 h-5 text-[#007AFF]"
+                      aria-hidden="true"
+                    />
                     Share link
                   </button>
-                  <div className="border-t border-gray-200 my-1" aria-hidden="true"></div>
+                  <div
+                    className="border-t border-gray-200 my-1"
+                    aria-hidden="true"
+                  ></div>
                   <button
                     onClick={handleCopyLink}
                     className="w-full px-4 py-2.5 text-left text-sm font-medium text-gray-900 hover:bg-blue-50 flex items-center gap-3"
                     role="menuitem"
                     aria-label="Copy session link to clipboard"
                   >
-                    <Copy className="w-5 h-5 text-[#007AFF]" aria-hidden="true" />
+                    <Copy
+                      className="w-5 h-5 text-[#007AFF]"
+                      aria-hidden="true"
+                    />
                     Copy to clipboard
                   </button>
                 </div>
@@ -273,15 +308,19 @@ export const SessionInteractions: React.FC<SessionInteractionsProps> = ({
               onClick={handleSupport}
               disabled={isSupporting}
               className={`flex flex-col items-center justify-center py-2 rounded hover:bg-gray-50 transition-colors min-h-[44px] ${
-                isSupporting ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+                isSupporting
+                  ? 'opacity-50 cursor-not-allowed'
+                  : 'cursor-pointer'
               }`}
-              aria-label={isSupported ? `Unlike session (${supportCount} ${supportCount === 1 ? 'like' : 'likes'})` : `Like session (${supportCount} ${supportCount === 1 ? 'like' : 'likes'})`}
+              aria-label={
+                isSupported
+                  ? `Unlike session (${supportCount} ${supportCount === 1 ? 'like' : 'likes'})`
+                  : `Like session (${supportCount} ${supportCount === 1 ? 'like' : 'likes'})`
+              }
             >
               <ThumbsUp
                 className={`w-6 h-6 transition-colors ${
-                  isSupported
-                    ? 'fill-gray-700 text-gray-700'
-                    : 'text-gray-600'
+                  isSupported ? 'fill-gray-700 text-gray-700' : 'text-gray-600'
                 }`}
                 strokeWidth={1.5}
                 aria-hidden="true"
@@ -335,10 +374,16 @@ export const SessionInteractions: React.FC<SessionInteractionsProps> = ({
                         role="menuitem"
                         aria-label="Share session as image"
                       >
-                        <ImageIcon className="w-5 h-5 text-[#007AFF]" aria-hidden="true" />
+                        <ImageIcon
+                          className="w-5 h-5 text-[#007AFF]"
+                          aria-hidden="true"
+                        />
                         Share as image
                       </button>
-                      <div className="border-t border-gray-200 my-1" aria-hidden="true"></div>
+                      <div
+                        className="border-t border-gray-200 my-1"
+                        aria-hidden="true"
+                      ></div>
                     </>
                   )}
                   <button
@@ -347,17 +392,26 @@ export const SessionInteractions: React.FC<SessionInteractionsProps> = ({
                     role="menuitem"
                     aria-label="Share session link"
                   >
-                    <LinkIcon className="w-5 h-5 text-[#007AFF]" aria-hidden="true" />
+                    <LinkIcon
+                      className="w-5 h-5 text-[#007AFF]"
+                      aria-hidden="true"
+                    />
                     Share link
                   </button>
-                  <div className="border-t border-gray-200 my-1" aria-hidden="true"></div>
+                  <div
+                    className="border-t border-gray-200 my-1"
+                    aria-hidden="true"
+                  ></div>
                   <button
                     onClick={handleCopyLink}
                     className="w-full px-4 py-3 text-left text-base font-medium text-gray-900 hover:bg-blue-50 flex items-center gap-3"
                     role="menuitem"
                     aria-label="Copy session link to clipboard"
                   >
-                    <Copy className="w-5 h-5 text-[#007AFF]" aria-hidden="true" />
+                    <Copy
+                      className="w-5 h-5 text-[#007AFF]"
+                      aria-hidden="true"
+                    />
                     Copy to clipboard
                   </button>
                 </div>

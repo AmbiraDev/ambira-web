@@ -105,7 +105,7 @@ export function useGroupLeaderboard(
             sessionCount,
             rank: 0, // Will be set after sorting
           } as LeaderboardEntry;
-        } catch (error) {
+        } catch (_error) {
           // Failed to fetch leaderboard data for user
           return null;
         }

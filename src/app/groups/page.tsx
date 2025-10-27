@@ -36,7 +36,7 @@ const categoryOptions = [
 // Pagination and layout constants
 const GROUPS_PER_PAGE = 10;
 const SEARCH_RESULTS_LIMIT = 50;
-const MY_GROUPS_GRID_COLS = {
+const _MY_GROUPS_GRID_COLS = {
   mobile: 4,
   tablet: 6,
   desktop: 8,

@@ -15,7 +15,11 @@ import {
   UseInfiniteQueryOptions,
   InfiniteData,
 } from '@tanstack/react-query';
-import { FeedService, FeedFilters, FeedOptions } from '../services/FeedService';
+import {
+  FeedService,
+  FeedFilters,
+  _FeedOptions,
+} from '../services/FeedService';
 import { Session } from '@/domain/entities/Session';
 import { STANDARD_CACHE_TIMES } from '@/lib/react-query';
 

@@ -12,7 +12,11 @@ import { useQuery, UseQueryOptions } from '@tanstack/react-query';
 import { ProfileService } from '../services/ProfileService';
 import { User } from '@/domain/entities/User';
 import { Session } from '@/domain/entities/Session';
-import { TimePeriod, ChartDataPoint, ProfileStats } from '../domain/ProfileStatsCalculator';
+import {
+  TimePeriod,
+  ChartDataPoint,
+  ProfileStats,
+} from '../domain/ProfileStatsCalculator';
 import { STANDARD_CACHE_TIMES } from '@/lib/react-query';
 
 // Singleton service instance
@@ -24,7 +28,8 @@ export const PROFILE_KEYS = {
   all: () => ['profile'] as const,
   details: () => [...PROFILE_KEYS.all(), 'detail'] as const,
   detail: (userId: string) => [...PROFILE_KEYS.details(), userId] as const,
-  byUsername: (username: string) => [...PROFILE_KEYS.all(), 'username', username] as const,
+  byUsername: (username: string) =>
+    [...PROFILE_KEYS.all(), 'username', username] as const,
   sessions: (userId: string, limit?: number) =>
     [...PROFILE_KEYS.detail(userId), 'sessions', limit] as const,
   stats: (userId: string) => [...PROFILE_KEYS.detail(userId), 'stats'] as const,
@@ -32,10 +37,17 @@ export const PROFILE_KEYS = {
     [...PROFILE_KEYS.detail(userId), 'chart', period, activityId] as const,
   topActivities: (userId: string, limit?: number) =>
     [...PROFILE_KEYS.detail(userId), 'topActivities', limit] as const,
-  followers: (userId: string) => [...PROFILE_KEYS.detail(userId), 'followers'] as const,
-  following: (userId: string) => [...PROFILE_KEYS.detail(userId), 'following'] as const,
+  followers: (userId: string) =>
+    [...PROFILE_KEYS.detail(userId), 'followers'] as const,
+  following: (userId: string) =>
+    [...PROFILE_KEYS.detail(userId), 'following'] as const,
   isFollowing: (currentUserId: string, targetUserId: string) =>
-    [...PROFILE_KEYS.all(), 'isFollowing', currentUserId, targetUserId] as const,
+    [
+      ...PROFILE_KEYS.all(),
+      'isFollowing',
+      currentUserId,
+      targetUserId,
+    ] as const,
 };
 
 // ==================== QUERY HOOKS ====================
@@ -76,9 +88,12 @@ export function useProfileByUsername(
     queryFn: async () => {
       try {
         return await profileService.getProfileByUsername(username);
-      } catch (error: any) {
+      } catch (error: unknown) {
         // Return null for not found/permission errors instead of throwing
-        if (error?.message?.includes('not found') || error?.message?.includes('private')) {
+        if (
+          error?.message?.includes('not found') ||
+          error?.message?.includes('private')
+        ) {
           return null;
         }
         throw error;
@@ -166,9 +181,17 @@ export function useProfileChartData(
 export function useTopActivities(
   userId: string,
   limit: number = 5,
-  options?: Partial<UseQueryOptions<Array<{ id: string; hours: number; sessions: number }>, Error>>
+  options?: Partial<
+    UseQueryOptions<
+      Array<{ id: string; hours: number; sessions: number }>,
+      Error
+    >
+  >
 ) {
-  return useQuery<Array<{ id: string; hours: number; sessions: number }>, Error>({
+  return useQuery<
+    Array<{ id: string; hours: number; sessions: number }>,
+    Error
+  >({
     queryKey: PROFILE_KEYS.topActivities(userId, limit),
     queryFn: () => profileService.getTopActivities(userId, limit),
     staleTime: STANDARD_CACHE_TIMES.LONG, // 15 minutes
@@ -192,7 +215,7 @@ export function useFollowers(
     queryFn: async () => {
       try {
         return await profileService.getFollowers(userId);
-      } catch (error) {
+      } catch (_error) {
         // Return empty array on permission errors
         return [];
       }
@@ -219,7 +242,7 @@ export function useFollowing(
     queryFn: async () => {
       try {
         return await profileService.getFollowing(userId);
-      } catch (error) {
+      } catch (_error) {
         // Return empty array on permission errors
         return [];
       }
@@ -246,7 +269,8 @@ export function useIsFollowing(
     queryKey: PROFILE_KEYS.isFollowing(currentUserId, targetUserId),
     queryFn: () => profileService.isFollowing(currentUserId, targetUserId),
     staleTime: STANDARD_CACHE_TIMES.MEDIUM, // 5 minutes
-    enabled: !!currentUserId && !!targetUserId && currentUserId !== targetUserId,
+    enabled:
+      !!currentUserId && !!targetUserId && currentUserId !== targetUserId,
     ...options,
   });
 }
@@ -265,7 +289,11 @@ export function useCanViewProfile(
   options?: Partial<UseQueryOptions<boolean, Error>>
 ) {
   return useQuery<boolean, Error>({
-    queryKey: [...PROFILE_KEYS.detail(profileUser?.id || ''), 'canView', viewerId],
+    queryKey: [
+      ...PROFILE_KEYS.detail(profileUser?.id || ''),
+      'canView',
+      viewerId,
+    ],
     queryFn: () => {
       if (!profileUser) return false;
       return profileService.canViewProfile(profileUser, viewerId);

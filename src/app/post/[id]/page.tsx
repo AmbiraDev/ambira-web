@@ -9,7 +9,14 @@ import { SessionWithDetails, CommentWithDetails } from '@/types';
 import { firebaseApi } from '@/lib/api';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Heart, MessageCircle, Eye, TrendingUp, BarChart3, Users } from 'lucide-react';
+import {
+  Heart,
+  MessageCircle,
+  Eye,
+  TrendingUp,
+  _BarChart3,
+  _Users,
+} from 'lucide-react';
 
 type ActivityTab = 'overview' | 'comments';
 
@@ -40,11 +47,16 @@ function ActivityDetailContent({ activityId }: { activityId: string }) {
   const loadSessionData = async () => {
     try {
       setIsLoading(true);
-      const sessionData = await firebaseApi.session.getSessionWithDetails(activityId);
+      const sessionData =
+        await firebaseApi.session.getSessionWithDetails(activityId);
       setSession(sessionData as unknown as SessionWithDetails);
-    } catch (error: any) {
-      const isPermissionError = error?.message?.includes('permission') || error?.message?.includes('Permission');
-      const isNotFound = error?.message?.includes('not found') || error?.message?.includes('Not found');
+    } catch (error: unknown) {
+      const isPermissionError =
+        error?.message?.includes('permission') ||
+        error?.message?.includes('Permission');
+      const isNotFound =
+        error?.message?.includes('not found') ||
+        error?.message?.includes('Not found');
 
       if (isPermissionError || isNotFound) {
         setSession(null);
@@ -61,8 +73,10 @@ function ActivityDetailContent({ activityId }: { activityId: string }) {
     try {
       const response = await firebaseApi.comment.getSessionComments(activityId);
       setComments(response.comments);
-    } catch (error: any) {
-      const isPermissionError = error?.message?.includes('permission') || error?.message?.includes('Permission');
+    } catch (error: unknown) {
+      const isPermissionError =
+        error?.message?.includes('permission') ||
+        error?.message?.includes('Permission');
       if (!isPermissionError) {
         console.error('Error loading comments:', error);
       }
@@ -129,13 +143,17 @@ function ActivityDetailContent({ activityId }: { activityId: string }) {
     const yesterday = new Date(today);
     yesterday.setDate(yesterday.getDate() - 1);
 
-    const activityDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const activityDate = new Date(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate()
+    );
 
     // Format time as "h:mm am/pm"
     const timeStr = new Date(date).toLocaleTimeString('en-US', {
       hour: 'numeric',
       minute: '2-digit',
-      hour12: true
+      hour12: true,
     });
 
     // Check if today
@@ -152,23 +170,31 @@ function ActivityDetailContent({ activityId }: { activityId: string }) {
     const dateStr = new Date(date).toLocaleDateString('en-US', {
       month: 'long',
       day: 'numeric',
-      year: 'numeric'
+      year: 'numeric',
     });
 
     return `${dateStr} at ${timeStr}`;
   };
 
   // Calculate engagement metrics (X-like analytics)
-  const totalEngagements = (session?.supportCount || 0) + (session?.commentCount || 0);
+  const totalEngagements =
+    (session?.supportCount || 0) + (session?.commentCount || 0);
   const impressions = 0; // Placeholder - would need to implement view tracking
-  const engagementRate = impressions > 0 ? ((totalEngagements / impressions) * 100).toFixed(1) : '0.0';
+  const engagementRate =
+    impressions > 0
+      ? ((totalEngagements / impressions) * 100).toFixed(1)
+      : '0.0';
 
   if (!user) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Please log in to view activities</h1>
-          <p className="text-gray-600">You need to be logged in to view activity details.</p>
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">
+            Please log in to view activities
+          </h1>
+          <p className="text-gray-600">
+            You need to be logged in to view activity details.
+          </p>
         </div>
       </div>
     );
@@ -197,14 +223,27 @@ function ActivityDetailContent({ activityId }: { activityId: string }) {
           <div className="text-center py-12">
             <div className="mb-4">
               <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                <svg
+                  className="w-8 h-8 text-gray-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                  />
                 </svg>
               </div>
             </div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">Unable to view activity</h1>
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">
+              Unable to view activity
+            </h1>
             <p className="text-gray-600 mb-6 max-w-md mx-auto">
-              This activity doesn't exist, has been deleted, or is set to private.
+              This activity doesn't exist, has been deleted, or is set to
+              private.
             </p>
             <button
               onClick={() => router.push('/')}
@@ -249,8 +288,12 @@ function ActivityDetailContent({ activityId }: { activityId: string }) {
                 </div>
               )}
               <div>
-                <div className="font-semibold text-gray-900">{session.user.name}</div>
-                <div className="text-sm text-gray-500">@{session.user.username}</div>
+                <div className="font-semibold text-gray-900">
+                  {session.user.name}
+                </div>
+                <div className="text-sm text-gray-500">
+                  @{session.user.username}
+                </div>
               </div>
             </Link>
           </div>
@@ -269,14 +312,20 @@ function ActivityDetailContent({ activityId }: { activityId: string }) {
             </Link>
 
             {/* Title & Description */}
-            <h1 className="text-2xl font-bold text-gray-900 mb-3">{session.title}</h1>
+            <h1 className="text-2xl font-bold text-gray-900 mb-3">
+              {session.title}
+            </h1>
             {session.description && (
-              <p className="text-gray-700 text-lg mb-4 whitespace-pre-line">{session.description}</p>
+              <p className="text-gray-700 text-lg mb-4 whitespace-pre-line">
+                {session.description}
+              </p>
             )}
 
             {/* Duration & Date */}
             <div className="flex items-center gap-4 text-gray-500 text-sm mb-6">
-              <span className="font-medium text-gray-900">{formatTime(session.duration)}</span>
+              <span className="font-medium text-gray-900">
+                {formatTime(session.duration)}
+              </span>
               <span>•</span>
               <span>{formatTimeAgo(session.createdAt)}</span>
               {session.showStartTime && (
@@ -299,7 +348,9 @@ function ActivityDetailContent({ activityId }: { activityId: string }) {
                 <span>{session.commentCount}</span>
               </button>
               <button className="flex items-center gap-2 hover:text-gray-900 transition-colors">
-                <Heart className={`w-4 h-4 ${session.isSupported ? 'fill-red-500 text-red-500' : ''}`} />
+                <Heart
+                  className={`w-4 h-4 ${session.isSupported ? 'fill-red-500 text-red-500' : ''}`}
+                />
                 <span>{session.supportCount}</span>
               </button>
               <div className="flex items-center gap-2">
@@ -320,7 +371,9 @@ function ActivityDetailContent({ activityId }: { activityId: string }) {
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200'
               }`}
             >
-              <Heart className={`w-5 h-5 ${session.isSupported ? 'fill-current' : ''}`} />
+              <Heart
+                className={`w-5 h-5 ${session.isSupported ? 'fill-current' : ''}`}
+              />
               <span>{session.isSupported ? 'Supported' : 'Support'}</span>
             </button>
             <button
@@ -365,7 +418,9 @@ function ActivityDetailContent({ activityId }: { activityId: string }) {
             <div className="space-y-6">
               {/* Engagement Overview - X Style */}
               <div className="bg-white rounded-xl border border-gray-200 p-6">
-                <h3 className="text-lg font-bold text-gray-900 mb-6">Engagement</h3>
+                <h3 className="text-lg font-bold text-gray-900 mb-6">
+                  Engagement
+                </h3>
 
                 {/* Main Metrics Grid */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
@@ -373,23 +428,33 @@ function ActivityDetailContent({ activityId }: { activityId: string }) {
                     <div className="flex justify-center mb-2">
                       <Eye className="w-6 h-6 text-[#007AFF]" />
                     </div>
-                    <div className="text-2xl font-bold text-gray-900">{impressions}</div>
-                    <div className="text-sm text-gray-600 mt-1">Impressions</div>
+                    <div className="text-2xl font-bold text-gray-900">
+                      {impressions}
+                    </div>
+                    <div className="text-sm text-gray-600 mt-1">
+                      Impressions
+                    </div>
                   </div>
 
                   <div className="text-center p-4 bg-gray-50 rounded-xl">
                     <div className="flex justify-center mb-2">
                       <TrendingUp className="w-6 h-6 text-green-600" />
                     </div>
-                    <div className="text-2xl font-bold text-gray-900">{totalEngagements}</div>
-                    <div className="text-sm text-gray-600 mt-1">Engagements</div>
+                    <div className="text-2xl font-bold text-gray-900">
+                      {totalEngagements}
+                    </div>
+                    <div className="text-sm text-gray-600 mt-1">
+                      Engagements
+                    </div>
                   </div>
 
                   <div className="text-center p-4 bg-gray-50 rounded-xl">
                     <div className="flex justify-center mb-2">
                       <Heart className="w-6 h-6 text-red-500" />
                     </div>
-                    <div className="text-2xl font-bold text-gray-900">{session.supportCount}</div>
+                    <div className="text-2xl font-bold text-gray-900">
+                      {session.supportCount}
+                    </div>
                     <div className="text-sm text-gray-600 mt-1">Supports</div>
                   </div>
 
@@ -397,7 +462,9 @@ function ActivityDetailContent({ activityId }: { activityId: string }) {
                     <div className="flex justify-center mb-2">
                       <MessageCircle className="w-6 h-6 text-[#007AFF]" />
                     </div>
-                    <div className="text-2xl font-bold text-gray-900">{session.commentCount}</div>
+                    <div className="text-2xl font-bold text-gray-900">
+                      {session.commentCount}
+                    </div>
                     <div className="text-sm text-gray-600 mt-1">Comments</div>
                   </div>
                 </div>
@@ -406,15 +473,23 @@ function ActivityDetailContent({ activityId }: { activityId: string }) {
                 <div className="border-t border-gray-200 pt-6">
                   <div className="flex items-center justify-between mb-3">
                     <div>
-                      <div className="text-sm font-medium text-gray-600">Engagement Rate</div>
-                      <div className="text-xs text-gray-500 mt-0.5">Engagements ÷ Impressions</div>
+                      <div className="text-sm font-medium text-gray-600">
+                        Engagement Rate
+                      </div>
+                      <div className="text-xs text-gray-500 mt-0.5">
+                        Engagements ÷ Impressions
+                      </div>
                     </div>
-                    <div className="text-3xl font-bold text-gray-900">{engagementRate}%</div>
+                    <div className="text-3xl font-bold text-gray-900">
+                      {engagementRate}%
+                    </div>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
                     <div
                       className="bg-gradient-to-r from-[#007AFF] to-[#0051D5] h-2 rounded-full transition-all duration-300"
-                      style={{ width: `${Math.min(100, parseFloat(engagementRate))}%` }}
+                      style={{
+                        width: `${Math.min(100, parseFloat(engagementRate))}%`,
+                      }}
                     ></div>
                   </div>
                 </div>
@@ -422,7 +497,9 @@ function ActivityDetailContent({ activityId }: { activityId: string }) {
 
               {/* Engagement Breakdown */}
               <div className="bg-white rounded-xl border border-gray-200 p-6">
-                <h3 className="text-lg font-bold text-gray-900 mb-6">Engagement Breakdown</h3>
+                <h3 className="text-lg font-bold text-gray-900 mb-6">
+                  Engagement Breakdown
+                </h3>
 
                 <div className="space-y-4">
                   {/* Supports */}
@@ -430,16 +507,26 @@ function ActivityDetailContent({ activityId }: { activityId: string }) {
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">
                         <Heart className="w-4 h-4 text-red-500" />
-                        <span className="text-sm font-medium text-gray-700">Supports</span>
+                        <span className="text-sm font-medium text-gray-700">
+                          Supports
+                        </span>
                       </div>
                       <span className="text-sm font-semibold text-gray-900">
-                        {session.supportCount} ({totalEngagements > 0 ? Math.round((session.supportCount / totalEngagements) * 100) : 0}%)
+                        {session.supportCount} (
+                        {totalEngagements > 0
+                          ? Math.round(
+                              (session.supportCount / totalEngagements) * 100
+                            )
+                          : 0}
+                        %)
                       </span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
                       <div
                         className="bg-red-500 h-2 rounded-full transition-all duration-300"
-                        style={{ width: `${totalEngagements > 0 ? (session.supportCount / totalEngagements) * 100 : 0}%` }}
+                        style={{
+                          width: `${totalEngagements > 0 ? (session.supportCount / totalEngagements) * 100 : 0}%`,
+                        }}
                       ></div>
                     </div>
                   </div>
@@ -449,16 +536,26 @@ function ActivityDetailContent({ activityId }: { activityId: string }) {
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-2">
                         <MessageCircle className="w-4 h-4 text-[#007AFF]" />
-                        <span className="text-sm font-medium text-gray-700">Comments</span>
+                        <span className="text-sm font-medium text-gray-700">
+                          Comments
+                        </span>
                       </div>
                       <span className="text-sm font-semibold text-gray-900">
-                        {session.commentCount} ({totalEngagements > 0 ? Math.round((session.commentCount / totalEngagements) * 100) : 0}%)
+                        {session.commentCount} (
+                        {totalEngagements > 0
+                          ? Math.round(
+                              (session.commentCount / totalEngagements) * 100
+                            )
+                          : 0}
+                        %)
                       </span>
                     </div>
                     <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
                       <div
                         className="bg-[#007AFF] h-2 rounded-full transition-all duration-300"
-                        style={{ width: `${totalEngagements > 0 ? (session.commentCount / totalEngagements) * 100 : 0}%` }}
+                        style={{
+                          width: `${totalEngagements > 0 ? (session.commentCount / totalEngagements) * 100 : 0}%`,
+                        }}
                       ></div>
                     </div>
                   </div>
@@ -467,19 +564,27 @@ function ActivityDetailContent({ activityId }: { activityId: string }) {
 
               {/* Activity Details */}
               <div className="bg-white rounded-xl border border-gray-200 p-6">
-                <h3 className="text-lg font-bold text-gray-900 mb-4">Activity Details</h3>
+                <h3 className="text-lg font-bold text-gray-900 mb-4">
+                  Activity Details
+                </h3>
                 <div className="space-y-3">
                   <div className="flex items-center justify-between py-3 border-b border-gray-100">
                     <span className="text-sm text-gray-600">Duration</span>
-                    <span className="font-semibold text-gray-900">{formatTime(session.duration)}</span>
+                    <span className="font-semibold text-gray-900">
+                      {formatTime(session.duration)}
+                    </span>
                   </div>
                   <div className="flex items-center justify-between py-3 border-b border-gray-100">
                     <span className="text-sm text-gray-600">Date</span>
-                    <span className="text-sm text-gray-900">{formatDate(session.startTime)}</span>
+                    <span className="text-sm text-gray-900">
+                      {formatDate(session.startTime)}
+                    </span>
                   </div>
                   <div className="flex items-center justify-between py-3 border-b border-gray-100">
                     <span className="text-sm text-gray-600">Visibility</span>
-                    <span className="text-sm font-medium text-gray-900 capitalize">{session.visibility}</span>
+                    <span className="text-sm font-medium text-gray-900 capitalize">
+                      {session.visibility}
+                    </span>
                   </div>
                   <div className="flex items-center justify-between py-3">
                     <span className="text-sm text-gray-600">Activity</span>
@@ -500,10 +605,12 @@ function ActivityDetailContent({ activityId }: { activityId: string }) {
               {/* Comment Input */}
               {session.allowComments !== false && (
                 <div className="bg-white rounded-xl border border-gray-200 p-6">
-                  <h3 className="text-base font-medium text-gray-900 mb-4">Add a comment</h3>
+                  <h3 className="text-base font-medium text-gray-900 mb-4">
+                    Add a comment
+                  </h3>
                   <textarea
                     value={newComment}
-                    onChange={(e) => setNewComment(e.target.value)}
+                    onChange={e => setNewComment(e.target.value)}
                     placeholder="Write a comment..."
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:border-transparent resize-none"
                     rows={3}
@@ -527,7 +634,7 @@ function ActivityDetailContent({ activityId }: { activityId: string }) {
                 </h3>
                 {comments.length > 0 ? (
                   <div className="space-y-6">
-                    {comments.map((comment) => (
+                    {comments.map(comment => (
                       <div key={comment.id} className="flex gap-3">
                         <Link href={`/profile/${comment.user.username}`}>
                           {comment.user.profilePicture ? (
@@ -556,7 +663,9 @@ function ActivityDetailContent({ activityId }: { activityId: string }) {
                             >
                               {comment.user.name}
                             </Link>
-                            <p className="text-gray-700 mt-1">{comment.content}</p>
+                            <p className="text-gray-700 mt-1">
+                              {comment.content}
+                            </p>
                           </div>
                           <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
                             <span>{formatTimeAgo(comment.createdAt)}</span>
@@ -583,7 +692,9 @@ function ActivityDetailContent({ activityId }: { activityId: string }) {
   );
 }
 
-export default function ActivityDetailPageWrapper({ params }: ActivityDetailPageProps) {
+export default function ActivityDetailPageWrapper({
+  params,
+}: ActivityDetailPageProps) {
   const [activityId, setActivityId] = React.useState<string>('');
 
   React.useEffect(() => {

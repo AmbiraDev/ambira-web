@@ -32,7 +32,7 @@ interface NotificationsPanelProps {
 }
 
 const getNotificationIcon = (type: Notification['type']) => {
-  const iconClass = "w-5 h-5 text-gray-600";
+  const iconClass = 'w-5 h-5 text-gray-600';
 
   switch (type) {
     case 'follow':
@@ -54,10 +54,14 @@ const getNotificationIcon = (type: Notification['type']) => {
   }
 };
 
-
-export default function NotificationsPanel({ isOpen, onClose }: NotificationsPanelProps) {
+export default function NotificationsPanel({
+  isOpen,
+  onClose,
+}: NotificationsPanelProps) {
   // Enable real-time updates for notifications panel
-  const { data: notifications = [], isLoading } = useNotifications({ realtime: true });
+  const { data: notifications = [], isLoading: _isLoading } = useNotifications({
+    realtime: true,
+  });
   const unreadCount = useUnreadCount();
   const markAsReadMutation = useMarkNotificationRead();
   const markAllAsReadMutation = useMarkAllNotificationsRead();
@@ -88,12 +92,12 @@ export default function NotificationsPanel({ isOpen, onClose }: NotificationsPan
     // Get the current mouse position
     const mouseY = e.clientY;
 
-    setDeletingIds((prev) => new Set(prev).add(notificationId));
+    setDeletingIds(prev => new Set(prev).add(notificationId));
 
     // Use React Query mutation with optimistic updates
     await deleteNotificationMutation.mutateAsync(notificationId);
 
-    setDeletingIds((prev) => {
+    setDeletingIds(prev => {
       const next = new Set(prev);
       next.delete(notificationId);
       return next;
@@ -101,9 +105,13 @@ export default function NotificationsPanel({ isOpen, onClose }: NotificationsPan
 
     // After deletion, check which notification is now under the mouse cursor
     const elementAtPoint = document.elementFromPoint(e.clientX, mouseY);
-    const notificationElement = elementAtPoint?.closest('[data-notification-id]');
+    const notificationElement = elementAtPoint?.closest(
+      '[data-notification-id]'
+    );
     if (notificationElement) {
-      const newNotificationId = notificationElement.getAttribute('data-notification-id');
+      const newNotificationId = notificationElement.getAttribute(
+        'data-notification-id'
+      );
       if (newNotificationId) {
         setHoveredId(newNotificationId);
       }
@@ -123,17 +131,16 @@ export default function NotificationsPanel({ isOpen, onClose }: NotificationsPan
   return (
     <>
       {/* Backdrop */}
-      <div
-        className="fixed inset-0 z-40"
-        onClick={onClose}
-      />
+      <div className="fixed inset-0 z-40" onClick={onClose} />
 
       {/* Dropdown Panel */}
       <div className="absolute top-12 right-0 w-[400px] max-h-[500px] bg-white z-50 shadow-2xl rounded-lg border border-gray-200 flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
           <div className="flex items-center gap-2">
-            <h3 className="text-base font-semibold text-gray-900">Notifications</h3>
+            <h3 className="text-base font-semibold text-gray-900">
+              Notifications
+            </h3>
             {unreadCount > 0 && (
               <span className="bg-[#007AFF] text-white text-xs font-semibold px-2 py-0.5 rounded-full">
                 {unreadCount}
@@ -173,7 +180,7 @@ export default function NotificationsPanel({ isOpen, onClose }: NotificationsPan
             </div>
           ) : (
             <div className="divide-y divide-gray-100">
-              {notifications.map((notification) => (
+              {notifications.map(notification => (
                 <div
                   key={notification.id}
                   data-notification-id={notification.id}
@@ -199,7 +206,9 @@ export default function NotificationsPanel({ isOpen, onClose }: NotificationsPan
                         {notification.message}
                       </p>
                       <p className="text-xs text-gray-500 mt-1">
-                        {formatDistanceToNow(notification.createdAt, { addSuffix: true })}
+                        {formatDistanceToNow(notification.createdAt, {
+                          addSuffix: true,
+                        })}
                       </p>
                     </div>
 
@@ -207,7 +216,7 @@ export default function NotificationsPanel({ isOpen, onClose }: NotificationsPan
                     <div className="flex-shrink-0">
                       {hoveredId === notification.id ? (
                         <button
-                          onClick={(e) => handleDelete(e, notification.id)}
+                          onClick={e => handleDelete(e, notification.id)}
                           className="text-gray-400 hover:text-gray-600 transition-colors"
                           disabled={deletingIds.has(notification.id)}
                         >

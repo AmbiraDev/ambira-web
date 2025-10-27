@@ -842,7 +842,7 @@ export const firebaseUserApi = {
         if (!inboundSnapshot.empty) {
           followerIds = inboundSnapshot.docs.map(doc => doc.id);
         }
-      } catch (socialGraphError) {
+      } catch (_socialGraphError) {
         // If social_graph doesn't exist or has permission issues, continue to fallback
       }
 
@@ -921,7 +921,7 @@ export const firebaseUserApi = {
         if (!outboundSnapshot.empty) {
           followingIds = outboundSnapshot.docs.map(doc => doc.id);
         }
-      } catch (socialGraphError) {
+      } catch (_socialGraphError) {
         // If social_graph doesn't exist or has permission issues, continue to fallback
       }
 
@@ -1480,7 +1480,7 @@ export const firebaseUserApi = {
       try {
         const streakRef = doc(db, 'streaks', userId);
         await deleteDoc(streakRef);
-      } catch (error) {}
+      } catch (_error) {}
 
       // 6. Delete user's active session data
       try {
@@ -1492,7 +1492,7 @@ export const firebaseUserApi = {
           'current'
         );
         await deleteDoc(activeSessionRef);
-      } catch (error) {}
+      } catch (_error) {}
 
       // 7. Delete profile picture from storage if it exists
       try {
@@ -1502,7 +1502,7 @@ export const firebaseUserApi = {
           const storageRef = ref(storage, `profile-pictures/${userId}`);
           await deleteObject(storageRef);
         }
-      } catch (error) {}
+      } catch (_error) {}
 
       // 8. Delete the user document from Firestore
       await deleteDoc(doc(db, 'users', userId));

@@ -3,22 +3,29 @@
 import React, { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { ChallengeLeaderboard as ChallengeLeaderboardType, ChallengeLeaderboardEntry } from '@/types';
+import {
+  ChallengeLeaderboard as ChallengeLeaderboardType,
+  _ChallengeLeaderboardEntry,
+} from '@/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { 
-  Trophy, 
-  Medal, 
+import {
+  Trophy,
+  Medal,
   Award,
   Crown,
   User,
   MapPin,
-  CheckCircle
+  CheckCircle,
 } from 'lucide-react';
 
 interface ChallengeLeaderboardProps {
   leaderboard: ChallengeLeaderboardType;
-  challengeType: 'most-activity' | 'fastest-effort' | 'longest-session' | 'group-goal';
+  challengeType:
+    | 'most-activity'
+    | 'fastest-effort'
+    | 'longest-session'
+    | 'group-goal';
   currentUserId?: string;
   showFilters?: boolean;
 }
@@ -32,7 +39,11 @@ const getRankIcon = (rank: number) => {
     case 3:
       return <Award className="w-5 h-5 text-amber-600" />;
     default:
-      return <span className="w-5 h-5 flex items-center justify-center text-sm font-medium text-gray-500">#{rank}</span>;
+      return (
+        <span className="w-5 h-5 flex items-center justify-center text-sm font-medium text-gray-500">
+          #{rank}
+        </span>
+      );
   }
 };
 
@@ -53,12 +64,18 @@ export default function ChallengeLeaderboard({
   leaderboard,
   challengeType,
   currentUserId,
-  showFilters = true
+  showFilters = true,
 }: ChallengeLeaderboardProps) {
-  const [filter, setFilter] = useState<'all' | 'following' | 'completed'>('all');
+  const [filter, setFilter] = useState<'all' | 'following' | 'completed'>(
+    'all'
+  );
 
   const formatProgress = (progress: number) => {
-    if (challengeType === 'most-activity' || challengeType === 'group-goal' || challengeType === 'longest-session') {
+    if (
+      challengeType === 'most-activity' ||
+      challengeType === 'group-goal' ||
+      challengeType === 'longest-session'
+    ) {
       return `${progress.toFixed(1)} hours`;
     }
     if (challengeType === 'fastest-effort') {
@@ -91,7 +108,9 @@ export default function ChallengeLeaderboard({
     return true;
   });
 
-  const currentUserEntry = leaderboard.entries.find(entry => entry.userId === currentUserId);
+  const currentUserEntry = leaderboard.entries.find(
+    entry => entry.userId === currentUserId
+  );
 
   return (
     <div className="space-y-6">
@@ -128,7 +147,9 @@ export default function ChallengeLeaderboard({
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
           <div className="flex items-center gap-3">
             <div className="flex items-center justify-center w-10 h-10 bg-blue-100 rounded-full">
-              <span className="text-sm font-bold text-blue-700">#{currentUserEntry.rank}</span>
+              <span className="text-sm font-bold text-blue-700">
+                #{currentUserEntry.rank}
+              </span>
             </div>
             <div className="flex-1">
               <div className="flex items-center gap-2">
@@ -138,7 +159,8 @@ export default function ChallengeLeaderboard({
                 )}
               </div>
               <div className="text-sm text-blue-700">
-                {formatProgress(currentUserEntry.progress)} • {getProgressLabel()}
+                {formatProgress(currentUserEntry.progress)} •{' '}
+                {getProgressLabel()}
               </div>
             </div>
           </div>
@@ -152,7 +174,9 @@ export default function ChallengeLeaderboard({
             <div
               key={entry.userId}
               className={`relative bg-white border-2 rounded-lg p-6 text-center ${
-                entry.userId === currentUserId ? 'border-blue-300 bg-blue-50' : 'border-gray-200'
+                entry.userId === currentUserId
+                  ? 'border-blue-300 bg-blue-50'
+                  : 'border-gray-200'
               }`}
             >
               {/* Rank Badge */}
@@ -183,12 +207,16 @@ export default function ChallengeLeaderboard({
               </div>
 
               {/* User Info */}
-              <Link 
+              <Link
                 href={`/users/${entry.user.username}`}
                 className="block hover:text-blue-600 transition-colors"
               >
-                <h3 className="font-semibold text-gray-900 mb-1">{entry.user.name}</h3>
-                <p className="text-sm text-gray-500 mb-2">@{entry.user.username}</p>
+                <h3 className="font-semibold text-gray-900 mb-1">
+                  {entry.user.name}
+                </h3>
+                <p className="text-sm text-gray-500 mb-2">
+                  @{entry.user.username}
+                </p>
               </Link>
 
               {/* Location */}
@@ -203,9 +231,7 @@ export default function ChallengeLeaderboard({
               <div className="text-2xl font-bold text-gray-900 mb-1">
                 {formatProgress(entry.progress)}
               </div>
-              <div className="text-sm text-gray-500">
-                {getProgressLabel()}
-              </div>
+              <div className="text-sm text-gray-500">{getProgressLabel()}</div>
 
               {/* Completion Badge */}
               {entry.isCompleted && (
@@ -225,7 +251,9 @@ export default function ChallengeLeaderboard({
       {filteredEntries.length > 3 && (
         <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-200">
-            <h3 className="text-lg font-semibold text-gray-900">Full Leaderboard</h3>
+            <h3 className="text-lg font-semibold text-gray-900">
+              Full Leaderboard
+            </h3>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full">
@@ -246,7 +274,7 @@ export default function ChallengeLeaderboard({
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {filteredEntries.slice(3).map((entry) => (
+                {filteredEntries.slice(3).map(entry => (
                   <tr
                     key={entry.userId}
                     className={`hover:bg-gray-50 ${
@@ -278,13 +306,15 @@ export default function ChallengeLeaderboard({
                           )}
                         </div>
                         <div>
-                          <Link 
+                          <Link
                             href={`/users/${entry.user.username}`}
                             className="text-sm font-medium text-gray-900 hover:text-blue-600"
                           >
                             {entry.user.name}
                           </Link>
-                          <div className="text-sm text-gray-500">@{entry.user.username}</div>
+                          <div className="text-sm text-gray-500">
+                            @{entry.user.username}
+                          </div>
                         </div>
                       </div>
                     </td>
@@ -300,9 +330,7 @@ export default function ChallengeLeaderboard({
                           Completed
                         </Badge>
                       ) : (
-                        <Badge variant="secondary">
-                          In Progress
-                        </Badge>
+                        <Badge variant="secondary">In Progress</Badge>
                       )}
                     </td>
                   </tr>
@@ -317,12 +345,13 @@ export default function ChallengeLeaderboard({
       {filteredEntries.length === 0 && (
         <div className="text-center py-12">
           <Trophy className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No participants yet</h3>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">
+            No participants yet
+          </h3>
           <p className="text-gray-500">
-            {filter === 'completed' 
+            {filter === 'completed'
               ? 'No one has completed this challenge yet.'
-              : 'Be the first to join this challenge!'
-            }
+              : 'Be the first to join this challenge!'}
           </p>
         </div>
       )}

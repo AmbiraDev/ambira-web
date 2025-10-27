@@ -1,5 +1,5 @@
 /**
- * Notifications API Module  
+ * Notifications API Module
  * Handles notification CRUD and challenge-specific notifications
  */
 
@@ -25,7 +25,7 @@ import {
 } from 'firebase/firestore';
 
 // Local Firebase config
-import { db, auth } from '@/lib/firebase';
+import { db, _auth } from '@/lib/firebase';
 
 // Error handling
 import { handleError, ErrorSeverity } from '@/lib/errorHandler';

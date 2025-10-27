@@ -1,5 +1,5 @@
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, _waitFor } from '@testing-library/react';
 import ActivitiesPage from '../page';
 import { Activity } from '@/types';
 
@@ -36,13 +36,19 @@ jest.mock('next/navigation', () => ({
 }));
 
 jest.mock('@/components/ProtectedRoute', () => ({
-  ProtectedRoute: ({ children }: { children: React.ReactNode }) => <div data-testid="protected-route">{children}</div>,
+  ProtectedRoute: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="protected-route">{children}</div>
+  ),
 }));
 
 jest.mock('@/components/ErrorBoundary', () => ({
-  ErrorBoundary: ({ children, onError }: { children: React.ReactNode; onError?: (error: Error, errorInfo: any) => void }) => (
-    <div data-testid="error-boundary">{children}</div>
-  ),
+  ErrorBoundary: ({
+    children,
+    _onError,
+  }: {
+    children: React.ReactNode;
+    onError?: (error: Error, errorInfo: any) => void;
+  }) => <div data-testid="error-boundary">{children}</div>,
 }));
 
 jest.mock('@/components/HeaderComponent', () => {
@@ -64,9 +70,17 @@ jest.mock('@/components/BottomNavigation', () => {
 });
 
 jest.mock('@/components/ActivityList', () => ({
-  ActivityList: ({ onEditActivity }: { onEditActivity?: (activity: Activity) => void }) => (
+  ActivityList: ({
+    onEditActivity,
+  }: {
+    onEditActivity?: (activity: Activity) => void;
+  }) => (
     <div data-testid="activity-list">
-      <button onClick={() => onEditActivity?.({ id: 'test-activity' } as Activity)}>Edit Test Activity</button>
+      <button
+        onClick={() => onEditActivity?.({ id: 'test-activity' } as Activity)}
+      >
+        Edit Test Activity
+      </button>
     </div>
   ),
 }));
@@ -169,7 +183,8 @@ describe('Activities Page Integration', () => {
     it('should hide desktop header on mobile using CSS classes', () => {
       const { container } = render(<ActivitiesPage />);
 
-      const desktopHeaderContainer = screen.getByTestId('desktop-header').parentElement;
+      const desktopHeaderContainer =
+        screen.getByTestId('desktop-header').parentElement;
       expect(desktopHeaderContainer).toHaveClass('hidden');
       expect(desktopHeaderContainer).toHaveClass('md:block');
     });
@@ -177,14 +192,16 @@ describe('Activities Page Integration', () => {
     it('should hide mobile header on desktop using CSS classes', () => {
       const { container } = render(<ActivitiesPage />);
 
-      const mobileHeaderContainer = screen.getByTestId('mobile-header').parentElement;
+      const mobileHeaderContainer =
+        screen.getByTestId('mobile-header').parentElement;
       expect(mobileHeaderContainer).toHaveClass('md:hidden');
     });
 
     it('should hide bottom navigation on desktop using CSS classes', () => {
       const { container } = render(<ActivitiesPage />);
 
-      const bottomNavContainer = screen.getByTestId('bottom-navigation').parentElement;
+      const bottomNavContainer =
+        screen.getByTestId('bottom-navigation').parentElement;
       expect(bottomNavContainer).toHaveClass('md:hidden');
     });
   });
@@ -225,21 +242,24 @@ describe('Activities Page Integration', () => {
 
   describe('Error Boundary Integration', () => {
     it('should provide error handler to ErrorBoundary', () => {
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      const consoleSpy = jest
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
 
       // We need to access ErrorBoundary mock to verify it's called correctly
-      const ErrorBoundaryMock = require('@/components/ErrorBoundary').ErrorBoundary;
+      const _ErrorBoundaryMock =
+        require('@/components/ErrorBoundary').ErrorBoundary;
       const mockOnError = jest.fn();
 
       // Temporarily override the mock to capture onError
-      jest.spyOn(require('@/components/ErrorBoundary'), 'ErrorBoundary').mockImplementation(
-        ({ children, onError }: any) => {
+      jest
+        .spyOn(require('@/components/ErrorBoundary'), 'ErrorBoundary')
+        .mockImplementation(({ children, onError }: any) => {
           if (onError) {
             mockOnError.mockImplementation(onError);
           }
           return <div data-testid="error-boundary">{children}</div>;
-        }
-      );
+        });
 
       render(<ActivitiesPage />);
 
@@ -352,7 +372,9 @@ describe('Activities Page Integration', () => {
     });
 
     it('should log errors to console via ErrorBoundary onError handler', () => {
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      const consoleSpy = jest
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
 
       render(<ActivitiesPage />);
 

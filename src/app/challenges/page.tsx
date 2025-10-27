@@ -34,7 +34,7 @@ export default function ChallengesPage() {
   >('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [userProgressMap, setUserProgressMap] = useState<
+  const [userProgressMap, _setUserProgressMap] = useState<
     Record<string, number>
   >({});
 

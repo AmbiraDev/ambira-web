@@ -212,7 +212,7 @@ function SwipeableNotificationItem({
 export default function NotificationsPage() {
   const router = useRouter();
   const { user } = useAuth();
-  const { data: notifications = [], isLoading } = useNotifications({
+  const { data: notifications = [], _isLoading } = useNotifications({
     realtime: true,
   });
   const unreadCount = useUnreadCount();

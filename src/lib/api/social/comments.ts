@@ -47,7 +47,7 @@ import { checkRateLimit } from '@/lib/rateLimit';
 import { ERROR_MESSAGES } from '@/config/errorMessages';
 
 // Shared utilities
-import { convertTimestamp, removeUndefinedFields } from '../shared/utils';
+import { convertTimestamp, _removeUndefinedFields } from '../shared/utils';
 
 // Social helpers
 import {

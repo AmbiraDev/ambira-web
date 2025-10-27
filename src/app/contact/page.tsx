@@ -27,7 +27,10 @@ export default function ContactPage() {
   const [touched, setTouched] = useState<Set<string>>(new Set());
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const validateField = (name: string, value: string | boolean): string | undefined => {
+  const validateField = (
+    name: string,
+    value: string | boolean
+  ): string | undefined => {
     switch (name) {
       case 'name':
         if (typeof value === 'string' && !value.trim()) {
@@ -41,7 +44,10 @@ export default function ContactPage() {
         if (typeof value === 'string' && !value.trim()) {
           return 'Email is required';
         }
-        if (typeof value === 'string' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+        if (
+          typeof value === 'string' &&
+          !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
+        ) {
           return 'Please enter a valid email address';
         }
         break;
@@ -85,7 +91,10 @@ export default function ContactPage() {
 
   const handleBlur = (fieldName: string) => {
     setTouched(prev => new Set(prev).add(fieldName));
-    const value = fieldName === 'privacyAgree' ? privacyAgree : formData[fieldName as keyof typeof formData];
+    const value =
+      fieldName === 'privacyAgree'
+        ? privacyAgree
+        : formData[fieldName as keyof typeof formData];
     const error = validateField(fieldName, value);
     setErrors(prev => ({ ...prev, [fieldName]: error }));
   };
@@ -102,7 +111,9 @@ export default function ContactPage() {
     e.preventDefault();
 
     // Mark all fields as touched
-    setTouched(new Set(['name', 'email', 'subject', 'message', 'privacyAgree']));
+    setTouched(
+      new Set(['name', 'email', 'subject', 'message', 'privacyAgree'])
+    );
 
     if (!validateForm()) {
       return;
@@ -114,7 +125,7 @@ export default function ContactPage() {
       // TODO: Implement actual form submission to backend
       await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
 
-      alert('Thank you for contacting us! We\'ll get back to you soon.');
+      alert("Thank you for contacting us! We'll get back to you soon.");
 
       // Reset form
       setFormData({
@@ -127,8 +138,10 @@ export default function ContactPage() {
       setPrivacyAgree(false);
       setErrors({});
       setTouched(new Set());
-    } catch (error) {
-      alert('Sorry, there was an error submitting your message. Please try again.');
+    } catch (_error) {
+      alert(
+        'Sorry, there was an error submitting your message. Please try again.'
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -139,25 +152,41 @@ export default function ContactPage() {
       <div className={staticPageStyles.containers.content}>
         {/* Header */}
         <div className={staticPageStyles.spacing.sectionMargin}>
-          <Button variant="ghost" asChild className={staticPageStyles.backButton}>
+          <Button
+            variant="ghost"
+            asChild
+            className={staticPageStyles.backButton}
+          >
             <Link href="/">
               <ArrowLeft className="w-4 h-4 mr-2" />
               Back to Home
             </Link>
           </Button>
-          <h1 className={`${staticPageStyles.typography.pageTitle} mb-2`}>Contact Us</h1>
+          <h1 className={`${staticPageStyles.typography.pageTitle} mb-2`}>
+            Contact Us
+          </h1>
           <p className={staticPageStyles.typography.pageDescription}>
             Have a question, suggestion, or need support? We're here to help.
           </p>
         </div>
 
-        <div className={`grid md:grid-cols-3 gap-6 ${staticPageStyles.spacing.sectionMargin}`}>
+        <div
+          className={`grid md:grid-cols-3 gap-6 ${staticPageStyles.spacing.sectionMargin}`}
+        >
           {/* Contact Methods */}
           <div className={staticPageStyles.containers.card}>
-            <div className={`${staticPageStyles.iconBackgrounds.blue} rounded-lg p-3 w-fit mb-4`}>
-              <Mail className={`${staticPageStyles.icons.medium} ${staticPageStyles.icons.white}`} />
+            <div
+              className={`${staticPageStyles.iconBackgrounds.blue} rounded-lg p-3 w-fit mb-4`}
+            >
+              <Mail
+                className={`${staticPageStyles.icons.medium} ${staticPageStyles.icons.white}`}
+              />
             </div>
-            <h3 className={`${staticPageStyles.typography.subsectionHeading} mb-2`}>Email Support</h3>
+            <h3
+              className={`${staticPageStyles.typography.subsectionHeading} mb-2`}
+            >
+              Email Support
+            </h3>
             <p className={`${staticPageStyles.typography.smallText} mb-3`}>
               Get help from our support team
             </p>
@@ -170,10 +199,18 @@ export default function ContactPage() {
           </div>
 
           <div className={staticPageStyles.containers.card}>
-            <div className={`${staticPageStyles.iconBackgrounds.green} rounded-lg p-3 w-fit mb-4`}>
-              <MessageSquare className={`${staticPageStyles.icons.medium} ${staticPageStyles.icons.white}`} />
+            <div
+              className={`${staticPageStyles.iconBackgrounds.green} rounded-lg p-3 w-fit mb-4`}
+            >
+              <MessageSquare
+                className={`${staticPageStyles.icons.medium} ${staticPageStyles.icons.white}`}
+              />
             </div>
-            <h3 className={`${staticPageStyles.typography.subsectionHeading} mb-2`}>General Inquiries</h3>
+            <h3
+              className={`${staticPageStyles.typography.subsectionHeading} mb-2`}
+            >
+              General Inquiries
+            </h3>
             <p className={`${staticPageStyles.typography.smallText} mb-3`}>
               For partnerships and press
             </p>
@@ -186,10 +223,18 @@ export default function ContactPage() {
           </div>
 
           <div className={staticPageStyles.containers.card}>
-            <div className={`${staticPageStyles.iconBackgrounds.orange} rounded-lg p-3 w-fit mb-4`}>
-              <Bug className={`${staticPageStyles.icons.medium} ${staticPageStyles.icons.white}`} />
+            <div
+              className={`${staticPageStyles.iconBackgrounds.orange} rounded-lg p-3 w-fit mb-4`}
+            >
+              <Bug
+                className={`${staticPageStyles.icons.medium} ${staticPageStyles.icons.white}`}
+              />
             </div>
-            <h3 className={`${staticPageStyles.typography.subsectionHeading} mb-2`}>Report a Bug</h3>
+            <h3
+              className={`${staticPageStyles.typography.subsectionHeading} mb-2`}
+            >
+              Report a Bug
+            </h3>
             <p className={`${staticPageStyles.typography.smallText} mb-3`}>
               Help us improve Ambira
             </p>
@@ -203,23 +248,32 @@ export default function ContactPage() {
         </div>
 
         {/* Contact Form */}
-        <div className={`${staticPageStyles.containers.card} ${staticPageStyles.spacing.sectionMargin}`}>
+        <div
+          className={`${staticPageStyles.containers.card} ${staticPageStyles.spacing.sectionMargin}`}
+        >
           <div className="flex items-center mb-6">
-            <HelpCircle className={`${staticPageStyles.icons.medium} ${staticPageStyles.icons.primary} mr-2`} />
-            <h2 className={staticPageStyles.typography.sectionHeading}>Send us a Message</h2>
+            <HelpCircle
+              className={`${staticPageStyles.icons.medium} ${staticPageStyles.icons.primary} mr-2`}
+            />
+            <h2 className={staticPageStyles.typography.sectionHeading}>
+              Send us a Message
+            </h2>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6" noValidate>
             <div className="grid md:grid-cols-2 gap-6">
               <div>
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="name"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
                   Name <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
                   id="name"
                   value={formData.name}
-                  onChange={(e) => handleChange('name', e.target.value)}
+                  onChange={e => handleChange('name', e.target.value)}
                   onBlur={() => handleBlur('name')}
                   className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:border-transparent transition-colors ${
                     errors.name && touched.has('name')
@@ -227,8 +281,14 @@ export default function ContactPage() {
                       : 'border-gray-300 focus:ring-[#007AFF]'
                   }`}
                   placeholder="Your name"
-                  aria-invalid={errors.name && touched.has('name') ? 'true' : 'false'}
-                  aria-describedby={errors.name && touched.has('name') ? 'name-error' : undefined}
+                  aria-invalid={
+                    errors.name && touched.has('name') ? 'true' : 'false'
+                  }
+                  aria-describedby={
+                    errors.name && touched.has('name')
+                      ? 'name-error'
+                      : undefined
+                  }
                 />
                 {errors.name && touched.has('name') && (
                   <p id="name-error" className="mt-1 text-sm text-red-600">
@@ -238,14 +298,17 @@ export default function ContactPage() {
               </div>
 
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                <label
+                  htmlFor="email"
+                  className="block text-sm font-medium text-gray-700 mb-2"
+                >
                   Email <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="email"
                   id="email"
                   value={formData.email}
-                  onChange={(e) => handleChange('email', e.target.value)}
+                  onChange={e => handleChange('email', e.target.value)}
                   onBlur={() => handleBlur('email')}
                   className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:border-transparent transition-colors ${
                     errors.email && touched.has('email')
@@ -253,8 +316,14 @@ export default function ContactPage() {
                       : 'border-gray-300 focus:ring-[#007AFF]'
                   }`}
                   placeholder="your@email.com"
-                  aria-invalid={errors.email && touched.has('email') ? 'true' : 'false'}
-                  aria-describedby={errors.email && touched.has('email') ? 'email-error' : undefined}
+                  aria-invalid={
+                    errors.email && touched.has('email') ? 'true' : 'false'
+                  }
+                  aria-describedby={
+                    errors.email && touched.has('email')
+                      ? 'email-error'
+                      : undefined
+                  }
                 />
                 {errors.email && touched.has('email') && (
                   <p id="email-error" className="mt-1 text-sm text-red-600">
@@ -265,13 +334,16 @@ export default function ContactPage() {
             </div>
 
             <div>
-              <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="type"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Inquiry Type <span className="text-red-500">*</span>
               </label>
               <select
                 id="type"
                 value={formData.type}
-                onChange={(e) => handleChange('type', e.target.value)}
+                onChange={e => handleChange('type', e.target.value)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-transparent"
               >
                 <option value="general">General Question</option>
@@ -286,14 +358,17 @@ export default function ContactPage() {
             </div>
 
             <div>
-              <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="subject"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Subject <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 id="subject"
                 value={formData.subject}
-                onChange={(e) => handleChange('subject', e.target.value)}
+                onChange={e => handleChange('subject', e.target.value)}
                 onBlur={() => handleBlur('subject')}
                 className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:border-transparent transition-colors ${
                   errors.subject && touched.has('subject')
@@ -301,8 +376,14 @@ export default function ContactPage() {
                     : 'border-gray-300 focus:ring-[#007AFF]'
                 }`}
                 placeholder="Brief description of your inquiry"
-                aria-invalid={errors.subject && touched.has('subject') ? 'true' : 'false'}
-                aria-describedby={errors.subject && touched.has('subject') ? 'subject-error' : undefined}
+                aria-invalid={
+                  errors.subject && touched.has('subject') ? 'true' : 'false'
+                }
+                aria-describedby={
+                  errors.subject && touched.has('subject')
+                    ? 'subject-error'
+                    : undefined
+                }
               />
               {errors.subject && touched.has('subject') && (
                 <p id="subject-error" className="mt-1 text-sm text-red-600">
@@ -312,13 +393,16 @@ export default function ContactPage() {
             </div>
 
             <div>
-              <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="message"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Message <span className="text-red-500">*</span>
               </label>
               <textarea
                 id="message"
                 value={formData.message}
-                onChange={(e) => handleChange('message', e.target.value)}
+                onChange={e => handleChange('message', e.target.value)}
                 onBlur={() => handleBlur('message')}
                 rows={6}
                 className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:border-transparent resize-none transition-colors ${
@@ -327,8 +411,14 @@ export default function ContactPage() {
                     : 'border-gray-300 focus:ring-[#007AFF]'
                 }`}
                 placeholder="Tell us more about your question or concern..."
-                aria-invalid={errors.message && touched.has('message') ? 'true' : 'false'}
-                aria-describedby={errors.message && touched.has('message') ? 'message-error' : undefined}
+                aria-invalid={
+                  errors.message && touched.has('message') ? 'true' : 'false'
+                }
+                aria-describedby={
+                  errors.message && touched.has('message')
+                    ? 'message-error'
+                    : undefined
+                }
               />
               {errors.message && touched.has('message') && (
                 <p id="message-error" className="mt-1 text-sm text-red-600">
@@ -343,27 +433,46 @@ export default function ContactPage() {
                   type="checkbox"
                   id="privacy-agree"
                   checked={privacyAgree}
-                  onChange={(e) => {
+                  onChange={e => {
                     setPrivacyAgree(e.target.checked);
                     if (touched.has('privacyAgree')) {
-                      const error = validateField('privacyAgree', e.target.checked);
+                      const error = validateField(
+                        'privacyAgree',
+                        e.target.checked
+                      );
                       setErrors(prev => ({ ...prev, privacyAgree: error }));
                     }
                   }}
                   onBlur={() => handleBlur('privacyAgree')}
                   className={`mt-1 mr-2 h-4 w-4 rounded border-gray-300 text-[#007AFF] focus:ring-[#007AFF] ${
-                    errors.privacyAgree && touched.has('privacyAgree') ? 'border-red-500' : ''
+                    errors.privacyAgree && touched.has('privacyAgree')
+                      ? 'border-red-500'
+                      : ''
                   }`}
-                  aria-invalid={errors.privacyAgree && touched.has('privacyAgree') ? 'true' : 'false'}
-                  aria-describedby={errors.privacyAgree && touched.has('privacyAgree') ? 'privacy-error' : undefined}
+                  aria-invalid={
+                    errors.privacyAgree && touched.has('privacyAgree')
+                      ? 'true'
+                      : 'false'
+                  }
+                  aria-describedby={
+                    errors.privacyAgree && touched.has('privacyAgree')
+                      ? 'privacy-error'
+                      : undefined
+                  }
                 />
-                <label htmlFor="privacy-agree" className={staticPageStyles.typography.smallText}>
+                <label
+                  htmlFor="privacy-agree"
+                  className={staticPageStyles.typography.smallText}
+                >
                   I agree to the{' '}
-                  <Link href="/privacy" className={staticPageStyles.links.inline}>
+                  <Link
+                    href="/privacy"
+                    className={staticPageStyles.links.inline}
+                  >
                     Privacy Policy
                   </Link>{' '}
-                  and understand my data will be processed to respond to this inquiry.{' '}
-                  <span className="text-red-500">*</span>
+                  and understand my data will be processed to respond to this
+                  inquiry. <span className="text-red-500">*</span>
                 </label>
               </div>
               {errors.privacyAgree && touched.has('privacyAgree') && (
@@ -386,7 +495,11 @@ export default function ContactPage() {
 
         {/* Quick Links */}
         <div className={staticPageStyles.containers.card}>
-          <h3 className={`${staticPageStyles.typography.subsectionHeading} mb-4`}>Before you contact us...</h3>
+          <h3
+            className={`${staticPageStyles.typography.subsectionHeading} mb-4`}
+          >
+            Before you contact us...
+          </h3>
           <p className={`${staticPageStyles.typography.bodyText} mb-4`}>
             You might find the answer to your question in our help resources:
           </p>

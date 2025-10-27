@@ -75,7 +75,7 @@ export class SessionMapper {
         createdAt: this.timestampToDate(userData.createdAt),
         updatedAt: this.timestampToDate(userData.updatedAt),
       };
-    } catch (error) {
+    } catch (_error) {
       // If we can't fetch the user (permissions, deleted, etc), skip this session
       return null;
     }
@@ -128,7 +128,7 @@ export class SessionMapper {
               updatedAt: this.timestampToDate(activityData.updatedAt),
             };
           }
-        } catch (error) {
+        } catch (_error) {
           // Failed to fetch activity - use default
         }
       }

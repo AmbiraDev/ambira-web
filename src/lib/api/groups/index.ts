@@ -281,7 +281,7 @@ export const firebaseGroupApi = {
   /**
    * Search groups by name or description
    */
-  searchGroups: async (query: string): Promise<Group[]> => {
+  searchGroups: async (_query: string): Promise<Group[]> => {
     try {
       // Note: For production, implement proper text search
       // This is a placeholder implementation

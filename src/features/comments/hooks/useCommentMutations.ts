@@ -302,7 +302,7 @@ export function useCommentLike(
         } else {
           await commentService.unlikeComment(commentId);
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         // If already liked/unliked, treat as success (idempotent)
         const errorMsg = error.message || String(error);
         if (

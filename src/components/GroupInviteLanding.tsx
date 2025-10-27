@@ -12,7 +12,9 @@ interface GroupInviteLandingProps {
   groupId: string;
 }
 
-export default function GroupInviteLanding({ groupId }: GroupInviteLandingProps) {
+export default function GroupInviteLanding({
+  groupId,
+}: GroupInviteLandingProps) {
   const router = useRouter();
   const { user, isLoading: authLoading } = useAuth();
   const [group, setGroup] = useState<Group | null>(null);
@@ -70,7 +72,7 @@ export default function GroupInviteLanding({ groupId }: GroupInviteLandingProps)
       await firebaseApi.group.joinGroup(group.id, user.id);
       // Redirect to group page
       router.push(`/groups/${groupId}`);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Error joining group:', err);
       setError(err.message || 'Failed to join group');
     } finally {
@@ -81,10 +83,13 @@ export default function GroupInviteLanding({ groupId }: GroupInviteLandingProps)
   const handleSignUp = () => {
     // Store invite context in sessionStorage for post-signup redirect
     if (typeof window !== 'undefined') {
-      sessionStorage.setItem('inviteContext', JSON.stringify({
-        type: 'group',
-        groupId: groupId,
-      }));
+      sessionStorage.setItem(
+        'inviteContext',
+        JSON.stringify({
+          type: 'group',
+          groupId: groupId,
+        })
+      );
     }
     router.push('/signup');
   };
@@ -92,10 +97,13 @@ export default function GroupInviteLanding({ groupId }: GroupInviteLandingProps)
   const handleLogin = () => {
     // Store invite context in sessionStorage for post-login redirect
     if (typeof window !== 'undefined') {
-      sessionStorage.setItem('inviteContext', JSON.stringify({
-        type: 'group',
-        groupId: groupId,
-      }));
+      sessionStorage.setItem(
+        'inviteContext',
+        JSON.stringify({
+          type: 'group',
+          groupId: groupId,
+        })
+      );
     }
     router.push('/login');
   };
@@ -133,9 +141,12 @@ export default function GroupInviteLanding({ groupId }: GroupInviteLandingProps)
           <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <span className="text-3xl">❌</span>
           </div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Group Not Found</h1>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+            Group Not Found
+          </h1>
           <p className="text-gray-600 mb-6">
-            {error || "The group you're looking for doesn't exist or has been deleted."}
+            {error ||
+              "The group you're looking for doesn't exist or has been deleted."}
           </p>
           <button
             onClick={() => router.push('/')}
@@ -175,9 +186,7 @@ export default function GroupInviteLanding({ groupId }: GroupInviteLandingProps)
               className="w-16 h-16"
             />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">
-            Join Ambira
-          </h1>
+          <h1 className="text-2xl font-bold text-gray-900">Join Ambira</h1>
         </div>
 
         {/* Group Card */}
@@ -200,9 +209,7 @@ export default function GroupInviteLanding({ groupId }: GroupInviteLandingProps)
             <h2 className="text-3xl font-bold text-white mb-2">
               Join {group.name}
             </h2>
-            <p className="text-blue-100 text-lg">
-              on Ambira
-            </p>
+            <p className="text-blue-100 text-lg">on Ambira</p>
           </div>
 
           {/* Group Details */}
@@ -220,14 +227,21 @@ export default function GroupInviteLanding({ groupId }: GroupInviteLandingProps)
             <div className="flex items-center justify-center gap-6 mb-8 text-sm text-gray-600">
               {/* Category */}
               <div className="flex items-center gap-2">
-                <span className="text-xl">{getCategoryIcon(group.category)}</span>
-                <span className="capitalize">{group.category.replace('-', ' ')}</span>
+                <span className="text-xl">
+                  {getCategoryIcon(group.category)}
+                </span>
+                <span className="capitalize">
+                  {group.category.replace('-', ' ')}
+                </span>
               </div>
 
               {/* Member Count */}
               <div className="flex items-center gap-2">
                 <Users className="w-4 h-4" />
-                <span>{group.memberCount} {group.memberCount === 1 ? 'member' : 'members'}</span>
+                <span>
+                  {group.memberCount}{' '}
+                  {group.memberCount === 1 ? 'member' : 'members'}
+                </span>
               </div>
 
               {/* Location */}
@@ -267,8 +281,9 @@ export default function GroupInviteLanding({ groupId }: GroupInviteLandingProps)
         <div className="bg-white/80 backdrop-blur rounded-xl p-6 text-center">
           <h3 className="font-semibold text-gray-900 mb-2">What is Ambira?</h3>
           <p className="text-gray-600 text-sm">
-            Ambira is a social productivity tracking app that helps you track work sessions,
-            build streaks, and compete with friends. Think Strava, but for productivity.
+            Ambira is a social productivity tracking app that helps you track
+            work sessions, build streaks, and compete with friends. Think
+            Strava, but for productivity.
           </p>
         </div>
       </div>

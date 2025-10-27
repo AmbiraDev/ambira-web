@@ -17,7 +17,7 @@ import type { SessionWithDetails } from '@/types';
 import { DEFAULT_ACTIVITIES } from '@/types';
 
 export const populateSessionsWithDetails = async (
-  sessionDocs: any[]
+  sessionDocs: DocumentSnapshot[]
 ): Promise<SessionWithDetails[]> => {
   const sessions: SessionWithDetails[] = [];
   const batchSize = 10;

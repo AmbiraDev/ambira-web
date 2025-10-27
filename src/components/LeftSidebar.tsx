@@ -13,9 +13,9 @@ import { StreakCard } from './StreakCard';
 
 function LeftSidebar() {
   const { user } = useAuth();
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [stats, setStats] = useState<UserStats | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [_profile, setProfile] = useState<UserProfile | null>(null);
+  const [_stats, setStats] = useState<UserStats | null>(null);
+  const [_isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const loadUserData = async () => {
@@ -24,7 +24,7 @@ function LeftSidebar() {
           setIsLoading(true);
           const [profileData, statsData] = await Promise.all([
             firebaseApi.user.getUserProfile(user.username),
-            firebaseApi.user.getUserStats(user.id)
+            firebaseApi.user.getUserStats(user.id),
           ]);
           setProfile(profileData);
           setStats(statsData);
@@ -44,7 +44,7 @@ function LeftSidebar() {
             isFollowing: false,
             isPrivate: false,
             createdAt: new Date(),
-            updatedAt: new Date()
+            updatedAt: new Date(),
           });
           setStats({
             totalHours: 0,
@@ -55,7 +55,7 @@ function LeftSidebar() {
             currentStreak: 0,
             longestStreak: 0,
             averageSessionDuration: 0,
-            mostProductiveHour: 14
+            mostProductiveHour: 14,
           });
         } finally {
           setIsLoading(false);
@@ -66,10 +66,15 @@ function LeftSidebar() {
     loadUserData();
   }, [user]);
   return (
-    <aside className="hidden lg:block w-[340px] flex-shrink-0" aria-label="User sidebar">
+    <aside
+      className="hidden lg:block w-[340px] flex-shrink-0"
+      aria-label="User sidebar"
+    >
       <div className="space-y-4 h-full overflow-y-auto scrollbar-hide pt-12 pb-6">
         {/* Streak Card */}
-        {user && <StreakCard userId={user.id} variant="compact" showProgress={false} />}
+        {user && (
+          <StreakCard userId={user.id} variant="compact" showProgress={false} />
+        )}
 
         {/* Daily Goals */}
         <DailyGoals />

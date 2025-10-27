@@ -12,7 +12,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { getFollowingIds } from '@/lib/api/users/getFollowingIds';
-import { CACHE_KEYS, CACHE_TIMES } from '@/lib/queryClient';
+import { _CACHE_KEYS, CACHE_TIMES } from '@/lib/queryClient';
 
 interface UseFollowingListOptions {
   userId?: string;

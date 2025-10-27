@@ -176,7 +176,7 @@ export const CommentInput: React.FC<CommentInputProps> = ({
     }
   };
 
-  const handleCancel = () => {
+  const _handleCancel = () => {
     setContent('');
     setShowMentions(false);
     if (onCancel) onCancel();

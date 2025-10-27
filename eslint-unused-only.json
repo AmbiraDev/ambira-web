@@ -1,0 +1,4230 @@
+[
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/components/LandingPage.tsx",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'user' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 17,
+        "column": 44,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 17,
+        "endColumn": 48
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'isAuthenticated' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 17,
+        "column": 50,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 17,
+        "endColumn": 65
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'authIsLoading' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 17,
+        "column": 78,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 17,
+        "endColumn": 91
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'handleLoginWithEmail' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 58,
+        "column": 9,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 58,
+        "endColumn": 29
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/components/LandingPage.tsx",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'user' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 17,
+        "column": 44,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 17,
+        "endColumn": 48
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'isAuthenticated' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 17,
+        "column": 50,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 17,
+        "endColumn": 65
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'authIsLoading' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 17,
+        "column": 78,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 17,
+        "endColumn": 91
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'handleLoginWithEmail' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 58,
+        "column": 9,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 58,
+        "endColumn": 29
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/components/LandingPage.tsx",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'user' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 17,
+        "column": 44,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 17,
+        "endColumn": 48
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'isAuthenticated' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 17,
+        "column": 50,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 17,
+        "endColumn": 65
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'authIsLoading' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 17,
+        "column": 78,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 17,
+        "endColumn": 91
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'handleLoginWithEmail' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 58,
+        "column": 9,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 58,
+        "endColumn": 29
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/components/LandingPage.tsx",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'user' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 17,
+        "column": 44,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 17,
+        "endColumn": 48
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'isAuthenticated' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 17,
+        "column": 50,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 17,
+        "endColumn": 65
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'authIsLoading' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 17,
+        "column": 78,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 17,
+        "endColumn": 91
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'handleLoginWithEmail' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 58,
+        "column": 9,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 58,
+        "endColumn": 29
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/components/ManualSessionRecorder.tsx",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'SessionFormData' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 6,
+        "column": 10,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 6,
+        "endColumn": 25
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'Link' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 11,
+        "column": 8,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 11,
+        "endColumn": 12
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/components/ManualSessionRecorder.tsx",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'SessionFormData' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 6,
+        "column": 10,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 6,
+        "endColumn": 25
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'Link' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 11,
+        "column": 8,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 11,
+        "endColumn": 12
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/components/NotificationsPanel.tsx",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'isLoading' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 60,
+        "column": 37,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 60,
+        "endColumn": 46
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/components/PWAInstaller.tsx",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'error' is defined but never used. Allowed unused args must match /^_/u.",
+        "line": 13,
+        "column": 19,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 13,
+        "endColumn": 24
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/components/PersonalAnalyticsDashboard.tsx",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'StreakDisplay' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 15,
+        "column": 10,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 15,
+        "endColumn": 23
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/components/Post.tsx",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'variant' is assigned a value but never used. Allowed unused args must match /^_/u.",
+        "line": 22,
+        "column": 3,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 22,
+        "endColumn": 10
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/components/PrivacySettings.tsx",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'useAuth' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 7,
+        "column": 10,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 7,
+        "endColumn": 17
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'Globe' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 19,
+        "column": 3,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 19,
+        "endColumn": 8
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'Users' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 20,
+        "column": 3,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 20,
+        "endColumn": 8
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'Lock' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 21,
+        "column": 3,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 21,
+        "endColumn": 7
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/components/PrivacySettings.tsx",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'useAuth' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 7,
+        "column": 10,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 7,
+        "endColumn": 17
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'Globe' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 19,
+        "column": 3,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 19,
+        "endColumn": 8
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'Users' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 20,
+        "column": 3,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 20,
+        "endColumn": 8
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'Lock' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 21,
+        "column": 3,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 21,
+        "endColumn": 7
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/components/PrivacySettings.tsx",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'useAuth' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 7,
+        "column": 10,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 7,
+        "endColumn": 17
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'Globe' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 19,
+        "column": 3,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 19,
+        "endColumn": 8
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'Users' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 20,
+        "column": 3,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 20,
+        "endColumn": 8
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'Lock' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 21,
+        "column": 3,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 21,
+        "endColumn": 7
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/components/PrivacySettings.tsx",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'useAuth' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 7,
+        "column": 10,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 7,
+        "endColumn": 17
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'Globe' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 19,
+        "column": 3,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 19,
+        "endColumn": 8
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'Users' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 20,
+        "column": 3,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 20,
+        "endColumn": 8
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'Lock' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 21,
+        "column": 3,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 21,
+        "endColumn": 7
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/components/ProfileStats.tsx",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'index' is defined but never used. Allowed unused args must match /^_/u.",
+        "line": 740,
+        "column": 33,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 740,
+        "endColumn": 38
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/components/ProjectAnalytics.tsx",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'projectId' is defined but never used. Allowed unused args must match /^_/u.",
+        "line": 41,
+        "column": 3,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 41,
+        "endColumn": 12
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/components/RightSidebar.tsx",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'index' is defined but never used. Allowed unused args must match /^_/u.",
+        "line": 184,
+        "column": 51,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 184,
+        "endColumn": 56
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/components/SessionInteractions.tsx",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'supportedBy' is assigned a value but never used. Allowed unused args must match /^_/u.",
+        "line": 28,
+        "column": 3,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 28,
+        "endColumn": 14
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/components/SessionTimer.tsx",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'session' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 169,
+        "column": 25,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 169,
+        "endColumn": 32
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'post' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 169,
+        "column": 34,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 169,
+        "endColumn": 38
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/components/SessionTimer.tsx",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'session' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 169,
+        "column": 25,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 169,
+        "endColumn": 32
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'post' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 169,
+        "column": 34,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 169,
+        "endColumn": 38
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/features/comments/services/CommentService.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'Comment' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 10,
+        "column": 3,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 10,
+        "endColumn": 10
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'ValidatedCreateCommentData' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 20,
+        "column": 29,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 20,
+        "endColumn": 55
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'ValidatedUpdateCommentData' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 21,
+        "column": 29,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 21,
+        "endColumn": 55
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'cursor' is defined but never used. Allowed unused args must match /^_/u.",
+        "line": 31,
+        "column": 5,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 31,
+        "endColumn": 11
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/features/comments/services/CommentService.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'Comment' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 10,
+        "column": 3,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 10,
+        "endColumn": 10
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'ValidatedCreateCommentData' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 20,
+        "column": 29,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 20,
+        "endColumn": 55
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'ValidatedUpdateCommentData' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 21,
+        "column": 29,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 21,
+        "endColumn": 55
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'cursor' is defined but never used. Allowed unused args must match /^_/u.",
+        "line": 31,
+        "column": 5,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 31,
+        "endColumn": 11
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/features/comments/services/CommentService.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'Comment' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 10,
+        "column": 3,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 10,
+        "endColumn": 10
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'ValidatedCreateCommentData' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 20,
+        "column": 29,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 20,
+        "endColumn": 55
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'ValidatedUpdateCommentData' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 21,
+        "column": 29,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 21,
+        "endColumn": 55
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'cursor' is defined but never used. Allowed unused args must match /^_/u.",
+        "line": 31,
+        "column": 5,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 31,
+        "endColumn": 11
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/features/comments/services/CommentService.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'Comment' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 10,
+        "column": 3,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 10,
+        "endColumn": 10
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'ValidatedCreateCommentData' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 20,
+        "column": 29,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 20,
+        "endColumn": 55
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'ValidatedUpdateCommentData' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 21,
+        "column": 29,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 21,
+        "endColumn": 55
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'cursor' is defined but never used. Allowed unused args must match /^_/u.",
+        "line": 31,
+        "column": 5,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 31,
+        "endColumn": 11
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/features/feed/services/FeedService.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'Session' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 8,
+        "column": 10,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 8,
+        "endColumn": 17
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'cursor' is defined but never used. Allowed unused args must match /^_/u.",
+        "line": 123,
+        "column": 5,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 123,
+        "endColumn": 11
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'cursor' is defined but never used. Allowed unused args must match /^_/u.",
+        "line": 146,
+        "column": 5,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 146,
+        "endColumn": 11
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/features/feed/services/FeedService.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'Session' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 8,
+        "column": 10,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 8,
+        "endColumn": 17
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'cursor' is defined but never used. Allowed unused args must match /^_/u.",
+        "line": 123,
+        "column": 5,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 123,
+        "endColumn": 11
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'cursor' is defined but never used. Allowed unused args must match /^_/u.",
+        "line": 146,
+        "column": 5,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 146,
+        "endColumn": 11
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/features/feed/services/FeedService.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'Session' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 8,
+        "column": 10,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 8,
+        "endColumn": 17
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'cursor' is defined but never used. Allowed unused args must match /^_/u.",
+        "line": 123,
+        "column": 5,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 123,
+        "endColumn": 11
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'cursor' is defined but never used. Allowed unused args must match /^_/u.",
+        "line": 146,
+        "column": 5,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 146,
+        "endColumn": 11
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/features/groups/hooks/useGroupMutations.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'GroupCacheData' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 21,
+        "column": 11,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 21,
+        "endColumn": 25
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/features/groups/services/GroupService.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'UpdateGroupSchema' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 21,
+        "column": 3,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 21,
+        "endColumn": 20
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'GroupRoleSchema' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 23,
+        "column": 3,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 23,
+        "endColumn": 18
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'GroupInviteSchema' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 24,
+        "column": 3,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 24,
+        "endColumn": 20
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'CreateGroupData' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 25,
+        "column": 8,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 25,
+        "endColumn": 23
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'UpdateGroupData' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 26,
+        "column": 8,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 26,
+        "endColumn": 23
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'GroupMembershipData' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 27,
+        "column": 8,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 27,
+        "endColumn": 27
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'GroupRoleData' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 28,
+        "column": 8,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 28,
+        "endColumn": 21
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'GroupInviteData' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 29,
+        "column": 8,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 29,
+        "endColumn": 23
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/features/groups/services/GroupService.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'UpdateGroupSchema' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 21,
+        "column": 3,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 21,
+        "endColumn": 20
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'GroupRoleSchema' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 23,
+        "column": 3,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 23,
+        "endColumn": 18
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'GroupInviteSchema' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 24,
+        "column": 3,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 24,
+        "endColumn": 20
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'CreateGroupData' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 25,
+        "column": 8,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 25,
+        "endColumn": 23
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'UpdateGroupData' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 26,
+        "column": 8,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 26,
+        "endColumn": 23
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'GroupMembershipData' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 27,
+        "column": 8,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 27,
+        "endColumn": 27
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'GroupRoleData' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 28,
+        "column": 8,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 28,
+        "endColumn": 21
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'GroupInviteData' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 29,
+        "column": 8,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 29,
+        "endColumn": 23
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/features/groups/services/GroupService.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'UpdateGroupSchema' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 21,
+        "column": 3,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 21,
+        "endColumn": 20
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'GroupRoleSchema' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 23,
+        "column": 3,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 23,
+        "endColumn": 18
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'GroupInviteSchema' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 24,
+        "column": 3,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 24,
+        "endColumn": 20
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'CreateGroupData' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 25,
+        "column": 8,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 25,
+        "endColumn": 23
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'UpdateGroupData' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 26,
+        "column": 8,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 26,
+        "endColumn": 23
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'GroupMembershipData' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 27,
+        "column": 8,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 27,
+        "endColumn": 27
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'GroupRoleData' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 28,
+        "column": 8,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 28,
+        "endColumn": 21
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'GroupInviteData' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 29,
+        "column": 8,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 29,
+        "endColumn": 23
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/features/groups/services/GroupService.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'UpdateGroupSchema' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 21,
+        "column": 3,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 21,
+        "endColumn": 20
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'GroupRoleSchema' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 23,
+        "column": 3,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 23,
+        "endColumn": 18
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'GroupInviteSchema' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 24,
+        "column": 3,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 24,
+        "endColumn": 20
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'CreateGroupData' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 25,
+        "column": 8,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 25,
+        "endColumn": 23
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'UpdateGroupData' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 26,
+        "column": 8,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 26,
+        "endColumn": 23
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'GroupMembershipData' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 27,
+        "column": 8,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 27,
+        "endColumn": 27
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'GroupRoleData' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 28,
+        "column": 8,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 28,
+        "endColumn": 21
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'GroupInviteData' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 29,
+        "column": 8,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 29,
+        "endColumn": 23
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/features/groups/services/GroupService.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'UpdateGroupSchema' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 21,
+        "column": 3,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 21,
+        "endColumn": 20
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'GroupRoleSchema' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 23,
+        "column": 3,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 23,
+        "endColumn": 18
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'GroupInviteSchema' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 24,
+        "column": 3,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 24,
+        "endColumn": 20
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'CreateGroupData' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 25,
+        "column": 8,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 25,
+        "endColumn": 23
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'UpdateGroupData' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 26,
+        "column": 8,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 26,
+        "endColumn": 23
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'GroupMembershipData' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 27,
+        "column": 8,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 27,
+        "endColumn": 27
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'GroupRoleData' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 28,
+        "column": 8,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 28,
+        "endColumn": 21
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'GroupInviteData' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 29,
+        "column": 8,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 29,
+        "endColumn": 23
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/features/groups/services/GroupService.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'UpdateGroupSchema' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 21,
+        "column": 3,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 21,
+        "endColumn": 20
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'GroupRoleSchema' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 23,
+        "column": 3,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 23,
+        "endColumn": 18
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'GroupInviteSchema' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 24,
+        "column": 3,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 24,
+        "endColumn": 20
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'CreateGroupData' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 25,
+        "column": 8,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 25,
+        "endColumn": 23
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'UpdateGroupData' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 26,
+        "column": 8,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 26,
+        "endColumn": 23
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'GroupMembershipData' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 27,
+        "column": 8,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 27,
+        "endColumn": 27
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'GroupRoleData' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 28,
+        "column": 8,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 28,
+        "endColumn": 21
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'GroupInviteData' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 29,
+        "column": 8,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 29,
+        "endColumn": 23
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/features/groups/services/GroupService.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'UpdateGroupSchema' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 21,
+        "column": 3,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 21,
+        "endColumn": 20
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'GroupRoleSchema' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 23,
+        "column": 3,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 23,
+        "endColumn": 18
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'GroupInviteSchema' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 24,
+        "column": 3,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 24,
+        "endColumn": 20
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'CreateGroupData' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 25,
+        "column": 8,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 25,
+        "endColumn": 23
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'UpdateGroupData' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 26,
+        "column": 8,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 26,
+        "endColumn": 23
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'GroupMembershipData' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 27,
+        "column": 8,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 27,
+        "endColumn": 27
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'GroupRoleData' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 28,
+        "column": 8,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 28,
+        "endColumn": 21
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'GroupInviteData' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 29,
+        "column": 8,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 29,
+        "endColumn": 23
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/features/groups/services/GroupService.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'UpdateGroupSchema' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 21,
+        "column": 3,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 21,
+        "endColumn": 20
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'GroupRoleSchema' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 23,
+        "column": 3,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 23,
+        "endColumn": 18
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'GroupInviteSchema' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 24,
+        "column": 3,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 24,
+        "endColumn": 20
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'CreateGroupData' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 25,
+        "column": 8,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 25,
+        "endColumn": 23
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'UpdateGroupData' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 26,
+        "column": 8,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 26,
+        "endColumn": 23
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'GroupMembershipData' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 27,
+        "column": 8,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 27,
+        "endColumn": 27
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'GroupRoleData' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 28,
+        "column": 8,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 28,
+        "endColumn": 21
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'GroupInviteData' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 29,
+        "column": 8,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 29,
+        "endColumn": 23
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/features/profile/domain/ProfileStatsCalculator.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'data' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 40,
+        "column": 11,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 40,
+        "endColumn": 15
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/features/profile/hooks/useProfile.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'error' is defined but never used. Allowed unused caught errors must match /^_/u.",
+        "line": 195,
+        "column": 16,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 195,
+        "endColumn": 21
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'error' is defined but never used. Allowed unused caught errors must match /^_/u.",
+        "line": 222,
+        "column": 16,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 222,
+        "endColumn": 21
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/features/profile/hooks/useProfile.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'error' is defined but never used. Allowed unused caught errors must match /^_/u.",
+        "line": 195,
+        "column": 16,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 195,
+        "endColumn": 21
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'error' is defined but never used. Allowed unused caught errors must match /^_/u.",
+        "line": 222,
+        "column": 16,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 222,
+        "endColumn": 21
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/features/projects/services/ProjectService.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'Activity' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 14,
+        "column": 3,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 14,
+        "endColumn": 11
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'ActivityStats' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 18,
+        "column": 3,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 18,
+        "endColumn": 16
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/features/projects/services/ProjectService.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'Activity' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 14,
+        "column": 3,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 14,
+        "endColumn": 11
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'ActivityStats' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 18,
+        "column": 3,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 18,
+        "endColumn": 16
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/features/search/hooks/useFollowingList.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'CACHE_KEYS' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 15,
+        "column": 10,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 15,
+        "endColumn": 20
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/features/search/hooks/useSearchUsers.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'CACHE_KEYS' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 12,
+        "column": 10,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 12,
+        "endColumn": 20
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/features/sessions/services/SessionService.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'UpdateSessionData' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 10,
+        "column": 53,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 10,
+        "endColumn": 70
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/features/settings/components/SettingsPageContent.tsx",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'ChevronRight' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 23,
+        "column": 3,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 23,
+        "endColumn": 15
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'LogOut' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 28,
+        "column": 3,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 28,
+        "endColumn": 9
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'Trash2' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 29,
+        "column": 3,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 29,
+        "endColumn": 9
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'router' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 42,
+        "column": 9,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 42,
+        "endColumn": 15
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/features/settings/components/SettingsPageContent.tsx",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'ChevronRight' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 23,
+        "column": 3,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 23,
+        "endColumn": 15
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'LogOut' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 28,
+        "column": 3,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 28,
+        "endColumn": 9
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'Trash2' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 29,
+        "column": 3,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 29,
+        "endColumn": 9
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'router' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 42,
+        "column": 9,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 42,
+        "endColumn": 15
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/features/settings/components/SettingsPageContent.tsx",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'ChevronRight' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 23,
+        "column": 3,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 23,
+        "endColumn": 15
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'LogOut' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 28,
+        "column": 3,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 28,
+        "endColumn": 9
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'Trash2' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 29,
+        "column": 3,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 29,
+        "endColumn": 9
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'router' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 42,
+        "column": 9,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 42,
+        "endColumn": 15
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/features/settings/components/SettingsPageContent.tsx",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'ChevronRight' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 23,
+        "column": 3,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 23,
+        "endColumn": 15
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'LogOut' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 28,
+        "column": 3,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 28,
+        "endColumn": 9
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'Trash2' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 29,
+        "column": 3,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 29,
+        "endColumn": 9
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'router' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 42,
+        "column": 9,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 42,
+        "endColumn": 15
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/features/social/hooks/useFollowers.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'error' is defined but never used. Allowed unused caught errors must match /^_/u.",
+        "line": 60,
+        "column": 24,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 60,
+        "endColumn": 29
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'error' is defined but never used. Allowed unused caught errors must match /^_/u.",
+        "line": 72,
+        "column": 16,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 72,
+        "endColumn": 21
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'err' is defined but never used. Allowed unused caught errors must match /^_/u.",
+        "line": 104,
+        "column": 18,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 104,
+        "endColumn": 21
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/features/social/hooks/useFollowers.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'error' is defined but never used. Allowed unused caught errors must match /^_/u.",
+        "line": 60,
+        "column": 24,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 60,
+        "endColumn": 29
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'error' is defined but never used. Allowed unused caught errors must match /^_/u.",
+        "line": 72,
+        "column": 16,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 72,
+        "endColumn": 21
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'err' is defined but never used. Allowed unused caught errors must match /^_/u.",
+        "line": 104,
+        "column": 18,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 104,
+        "endColumn": 21
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/features/social/hooks/useFollowers.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'error' is defined but never used. Allowed unused caught errors must match /^_/u.",
+        "line": 60,
+        "column": 24,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 60,
+        "endColumn": 29
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'error' is defined but never used. Allowed unused caught errors must match /^_/u.",
+        "line": 72,
+        "column": 16,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 72,
+        "endColumn": 21
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'err' is defined but never used. Allowed unused caught errors must match /^_/u.",
+        "line": 104,
+        "column": 18,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 104,
+        "endColumn": 21
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/features/social/hooks/useFollowing.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'error' is defined but never used. Allowed unused caught errors must match /^_/u.",
+        "line": 60,
+        "column": 24,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 60,
+        "endColumn": 29
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'error' is defined but never used. Allowed unused caught errors must match /^_/u.",
+        "line": 72,
+        "column": 16,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 72,
+        "endColumn": 21
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'err' is defined but never used. Allowed unused caught errors must match /^_/u.",
+        "line": 101,
+        "column": 18,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 101,
+        "endColumn": 21
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/features/social/hooks/useFollowing.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'error' is defined but never used. Allowed unused caught errors must match /^_/u.",
+        "line": 60,
+        "column": 24,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 60,
+        "endColumn": 29
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'error' is defined but never used. Allowed unused caught errors must match /^_/u.",
+        "line": 72,
+        "column": 16,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 72,
+        "endColumn": 21
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'err' is defined but never used. Allowed unused caught errors must match /^_/u.",
+        "line": 101,
+        "column": 18,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 101,
+        "endColumn": 21
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/features/social/hooks/useFollowing.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'error' is defined but never used. Allowed unused caught errors must match /^_/u.",
+        "line": 60,
+        "column": 24,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 60,
+        "endColumn": 29
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'error' is defined but never used. Allowed unused caught errors must match /^_/u.",
+        "line": 72,
+        "column": 16,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 72,
+        "endColumn": 21
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'err' is defined but never used. Allowed unused caught errors must match /^_/u.",
+        "line": 101,
+        "column": 18,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 101,
+        "endColumn": 21
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/infrastructure/firebase/mappers/SessionMapper.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'error' is defined but never used. Allowed unused caught errors must match /^_/u.",
+        "line": 78,
+        "column": 14,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 78,
+        "endColumn": 19
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'error' is defined but never used. Allowed unused caught errors must match /^_/u.",
+        "line": 131,
+        "column": 18,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 131,
+        "endColumn": 23
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'error' is defined but never used. Allowed unused args must match /^_/u.",
+        "line": 242,
+        "column": 44,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 242,
+        "endColumn": 49
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/infrastructure/firebase/mappers/SessionMapper.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'error' is defined but never used. Allowed unused caught errors must match /^_/u.",
+        "line": 78,
+        "column": 14,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 78,
+        "endColumn": 19
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'error' is defined but never used. Allowed unused caught errors must match /^_/u.",
+        "line": 131,
+        "column": 18,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 131,
+        "endColumn": 23
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'error' is defined but never used. Allowed unused args must match /^_/u.",
+        "line": 242,
+        "column": 44,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 242,
+        "endColumn": 49
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/infrastructure/firebase/mappers/SessionMapper.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'error' is defined but never used. Allowed unused caught errors must match /^_/u.",
+        "line": 78,
+        "column": 14,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 78,
+        "endColumn": 19
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'error' is defined but never used. Allowed unused caught errors must match /^_/u.",
+        "line": 131,
+        "column": 18,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 131,
+        "endColumn": 23
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'error' is defined but never used. Allowed unused args must match /^_/u.",
+        "line": 242,
+        "column": 44,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 242,
+        "endColumn": 49
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/infrastructure/firebase/repositories/ActiveSessionRepository.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'getDoc' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 11,
+        "column": 3,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 11,
+        "endColumn": 9
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'where' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 16,
+        "column": 3,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 16,
+        "endColumn": 8
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/infrastructure/firebase/repositories/ActiveSessionRepository.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'getDoc' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 11,
+        "column": 3,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 11,
+        "endColumn": 9
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'where' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 16,
+        "column": 3,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 16,
+        "endColumn": 8
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/infrastructure/firebase/repositories/GroupRepository.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'updateDoc' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 14,
+        "column": 3,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 14,
+        "endColumn": 12
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'increment' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 21,
+        "column": 3,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 21,
+        "endColumn": 12
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'Timestamp' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 22,
+        "column": 3,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 22,
+        "endColumn": 12
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/infrastructure/firebase/repositories/GroupRepository.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'updateDoc' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 14,
+        "column": 3,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 14,
+        "endColumn": 12
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'increment' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 21,
+        "column": 3,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 21,
+        "endColumn": 12
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'Timestamp' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 22,
+        "column": 3,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 22,
+        "endColumn": 12
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/infrastructure/firebase/repositories/GroupRepository.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'updateDoc' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 14,
+        "column": 3,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 14,
+        "endColumn": 12
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'increment' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 21,
+        "column": 3,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 21,
+        "endColumn": 12
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'Timestamp' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 22,
+        "column": 3,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 22,
+        "endColumn": 12
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/infrastructure/firebase/repositories/SocialGraphRepository.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'socialGraphError' is defined but never used. Allowed unused caught errors must match /^_/u.",
+        "line": 32,
+        "column": 16,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 32,
+        "endColumn": 32
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'socialGraphError' is defined but never used. Allowed unused caught errors must match /^_/u.",
+        "line": 71,
+        "column": 16,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 71,
+        "endColumn": 32
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/infrastructure/firebase/repositories/SocialGraphRepository.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'socialGraphError' is defined but never used. Allowed unused caught errors must match /^_/u.",
+        "line": 32,
+        "column": 16,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 32,
+        "endColumn": 32
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'socialGraphError' is defined but never used. Allowed unused caught errors must match /^_/u.",
+        "line": 71,
+        "column": 16,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 71,
+        "endColumn": 32
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/infrastructure/firebase/repositories/UserRepository.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'writeBatch' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 19,
+        "column": 3,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 19,
+        "endColumn": 13
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/lib/api/achievements/index.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'setDoc' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 16,
+        "column": 3,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 16,
+        "endColumn": 9
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/lib/api/auth/index.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'apiError' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 53,
+        "column": 11,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 53,
+        "endColumn": 19
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'checkEmailExistsInFirestore' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 66,
+        "column": 7,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 66,
+        "endColumn": 34
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'apiError' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 77,
+        "column": 11,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 77,
+        "endColumn": 19
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'token' is defined but never used. Allowed unused args must match /^_/u.",
+        "line": 442,
+        "column": 26,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 442,
+        "endColumn": 31
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'token' is defined but never used. Allowed unused args must match /^_/u.",
+        "line": 496,
+        "column": 23,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 496,
+        "endColumn": 28
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'error' is defined but never used. Allowed unused caught errors must match /^_/u.",
+        "line": 501,
+        "column": 14,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 501,
+        "endColumn": 19
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'credential' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 514,
+        "column": 15,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 514,
+        "endColumn": 25
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/lib/api/auth/index.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'apiError' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 53,
+        "column": 11,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 53,
+        "endColumn": 19
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'checkEmailExistsInFirestore' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 66,
+        "column": 7,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 66,
+        "endColumn": 34
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'apiError' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 77,
+        "column": 11,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 77,
+        "endColumn": 19
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'token' is defined but never used. Allowed unused args must match /^_/u.",
+        "line": 442,
+        "column": 26,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 442,
+        "endColumn": 31
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'token' is defined but never used. Allowed unused args must match /^_/u.",
+        "line": 496,
+        "column": 23,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 496,
+        "endColumn": 28
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'error' is defined but never used. Allowed unused caught errors must match /^_/u.",
+        "line": 501,
+        "column": 14,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 501,
+        "endColumn": 19
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'credential' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 514,
+        "column": 15,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 514,
+        "endColumn": 25
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/lib/api/auth/index.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'apiError' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 53,
+        "column": 11,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 53,
+        "endColumn": 19
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'checkEmailExistsInFirestore' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 66,
+        "column": 7,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 66,
+        "endColumn": 34
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'apiError' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 77,
+        "column": 11,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 77,
+        "endColumn": 19
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'token' is defined but never used. Allowed unused args must match /^_/u.",
+        "line": 442,
+        "column": 26,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 442,
+        "endColumn": 31
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'token' is defined but never used. Allowed unused args must match /^_/u.",
+        "line": 496,
+        "column": 23,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 496,
+        "endColumn": 28
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'error' is defined but never used. Allowed unused caught errors must match /^_/u.",
+        "line": 501,
+        "column": 14,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 501,
+        "endColumn": 19
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'credential' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 514,
+        "column": 15,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 514,
+        "endColumn": 25
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/lib/api/auth/index.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'apiError' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 53,
+        "column": 11,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 53,
+        "endColumn": 19
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'checkEmailExistsInFirestore' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 66,
+        "column": 7,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 66,
+        "endColumn": 34
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'apiError' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 77,
+        "column": 11,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 77,
+        "endColumn": 19
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'token' is defined but never used. Allowed unused args must match /^_/u.",
+        "line": 442,
+        "column": 26,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 442,
+        "endColumn": 31
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'token' is defined but never used. Allowed unused args must match /^_/u.",
+        "line": 496,
+        "column": 23,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 496,
+        "endColumn": 28
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'error' is defined but never used. Allowed unused caught errors must match /^_/u.",
+        "line": 501,
+        "column": 14,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 501,
+        "endColumn": 19
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'credential' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 514,
+        "column": 15,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 514,
+        "endColumn": 25
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/lib/api/auth/index.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'apiError' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 53,
+        "column": 11,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 53,
+        "endColumn": 19
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'checkEmailExistsInFirestore' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 66,
+        "column": 7,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 66,
+        "endColumn": 34
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'apiError' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 77,
+        "column": 11,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 77,
+        "endColumn": 19
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'token' is defined but never used. Allowed unused args must match /^_/u.",
+        "line": 442,
+        "column": 26,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 442,
+        "endColumn": 31
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'token' is defined but never used. Allowed unused args must match /^_/u.",
+        "line": 496,
+        "column": 23,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 496,
+        "endColumn": 28
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'error' is defined but never used. Allowed unused caught errors must match /^_/u.",
+        "line": 501,
+        "column": 14,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 501,
+        "endColumn": 19
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'credential' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 514,
+        "column": 15,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 514,
+        "endColumn": 25
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/lib/api/auth/index.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'apiError' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 53,
+        "column": 11,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 53,
+        "endColumn": 19
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'checkEmailExistsInFirestore' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 66,
+        "column": 7,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 66,
+        "endColumn": 34
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'apiError' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 77,
+        "column": 11,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 77,
+        "endColumn": 19
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'token' is defined but never used. Allowed unused args must match /^_/u.",
+        "line": 442,
+        "column": 26,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 442,
+        "endColumn": 31
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'token' is defined but never used. Allowed unused args must match /^_/u.",
+        "line": 496,
+        "column": 23,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 496,
+        "endColumn": 28
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'error' is defined but never used. Allowed unused caught errors must match /^_/u.",
+        "line": 501,
+        "column": 14,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 501,
+        "endColumn": 19
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'credential' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 514,
+        "column": 15,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 514,
+        "endColumn": 25
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/lib/api/auth/index.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'apiError' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 53,
+        "column": 11,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 53,
+        "endColumn": 19
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'checkEmailExistsInFirestore' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 66,
+        "column": 7,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 66,
+        "endColumn": 34
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'apiError' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 77,
+        "column": 11,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 77,
+        "endColumn": 19
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'token' is defined but never used. Allowed unused args must match /^_/u.",
+        "line": 442,
+        "column": 26,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 442,
+        "endColumn": 31
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'token' is defined but never used. Allowed unused args must match /^_/u.",
+        "line": 496,
+        "column": 23,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 496,
+        "endColumn": 28
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'error' is defined but never used. Allowed unused caught errors must match /^_/u.",
+        "line": 501,
+        "column": 14,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 501,
+        "endColumn": 19
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'credential' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 514,
+        "column": 15,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 514,
+        "endColumn": 25
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/lib/api/groups/index.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'query' is defined but never used. Allowed unused args must match /^_/u.",
+        "line": 284,
+        "column": 24,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 284,
+        "endColumn": 29
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'groupId' is defined but never used. Allowed unused args must match /^_/u.",
+        "line": 299,
+        "column": 5,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 299,
+        "endColumn": 12
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'timeRange' is defined but never used. Allowed unused args must match /^_/u.",
+        "line": 300,
+        "column": 5,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 300,
+        "endColumn": 14
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/lib/api/groups/index.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'query' is defined but never used. Allowed unused args must match /^_/u.",
+        "line": 284,
+        "column": 24,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 284,
+        "endColumn": 29
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'groupId' is defined but never used. Allowed unused args must match /^_/u.",
+        "line": 299,
+        "column": 5,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 299,
+        "endColumn": 12
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'timeRange' is defined but never used. Allowed unused args must match /^_/u.",
+        "line": 300,
+        "column": 5,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 300,
+        "endColumn": 14
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/lib/api/groups/index.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'query' is defined but never used. Allowed unused args must match /^_/u.",
+        "line": 284,
+        "column": 24,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 284,
+        "endColumn": 29
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'groupId' is defined but never used. Allowed unused args must match /^_/u.",
+        "line": 299,
+        "column": 5,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 299,
+        "endColumn": 12
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'timeRange' is defined but never used. Allowed unused args must match /^_/u.",
+        "line": 300,
+        "column": 5,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 300,
+        "endColumn": 14
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/lib/api/notifications/index.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'auth' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 28,
+        "column": 14,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 28,
+        "endColumn": 18
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'challengeType' is defined but never used. Allowed unused args must match /^_/u.",
+        "line": 201,
+        "column": 5,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 201,
+        "endColumn": 18
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/lib/api/notifications/index.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'auth' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 28,
+        "column": 14,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 28,
+        "endColumn": 18
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'challengeType' is defined but never used. Allowed unused args must match /^_/u.",
+        "line": 201,
+        "column": 5,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 201,
+        "endColumn": 18
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/lib/api/social/helpers.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'auth' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 16,
+        "column": 14,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 16,
+        "endColumn": 18
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/lib/api/users/getFollowingIds.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'socialGraphError' is defined but never used. Allowed unused caught errors must match /^_/u.",
+        "line": 29,
+        "column": 14,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 29,
+        "endColumn": 30
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/lib/api/users/index.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'setDoc' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 24,
+        "column": 3,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 24,
+        "endColumn": 9
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/lib/validation/examples/ApiRouteExample.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'firestoreData' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 56,
+        "column": 11,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 56,
+        "endColumn": 24
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'commentData' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 109,
+        "column": 11,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 109,
+        "endColumn": 22
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'updateData' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 162,
+        "column": 11,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 162,
+        "endColumn": 21
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'queryData' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 204,
+        "column": 11,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 204,
+        "endColumn": 20
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'error' is defined but never used. Allowed unused caught errors must match /^_/u.",
+        "line": 265,
+        "column": 14,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 265,
+        "endColumn": 19
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'sessionData' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 283,
+        "column": 11,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 283,
+        "endColumn": 22
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'validatedData' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 350,
+        "column": 11,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 350,
+        "endColumn": 24
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'ApiResponse' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 375,
+        "column": 6,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 375,
+        "endColumn": 17
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/lib/validation/examples/ApiRouteExample.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'firestoreData' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 56,
+        "column": 11,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 56,
+        "endColumn": 24
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'commentData' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 109,
+        "column": 11,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 109,
+        "endColumn": 22
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'updateData' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 162,
+        "column": 11,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 162,
+        "endColumn": 21
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'queryData' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 204,
+        "column": 11,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 204,
+        "endColumn": 20
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'error' is defined but never used. Allowed unused caught errors must match /^_/u.",
+        "line": 265,
+        "column": 14,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 265,
+        "endColumn": 19
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'sessionData' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 283,
+        "column": 11,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 283,
+        "endColumn": 22
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'validatedData' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 350,
+        "column": 11,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 350,
+        "endColumn": 24
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'ApiResponse' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 375,
+        "column": 6,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 375,
+        "endColumn": 17
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/lib/validation/examples/ApiRouteExample.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'firestoreData' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 56,
+        "column": 11,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 56,
+        "endColumn": 24
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'commentData' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 109,
+        "column": 11,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 109,
+        "endColumn": 22
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'updateData' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 162,
+        "column": 11,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 162,
+        "endColumn": 21
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'queryData' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 204,
+        "column": 11,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 204,
+        "endColumn": 20
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'error' is defined but never used. Allowed unused caught errors must match /^_/u.",
+        "line": 265,
+        "column": 14,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 265,
+        "endColumn": 19
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'sessionData' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 283,
+        "column": 11,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 283,
+        "endColumn": 22
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'validatedData' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 350,
+        "column": 11,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 350,
+        "endColumn": 24
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'ApiResponse' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 375,
+        "column": 6,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 375,
+        "endColumn": 17
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/lib/validation/examples/ApiRouteExample.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'firestoreData' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 56,
+        "column": 11,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 56,
+        "endColumn": 24
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'commentData' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 109,
+        "column": 11,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 109,
+        "endColumn": 22
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'updateData' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 162,
+        "column": 11,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 162,
+        "endColumn": 21
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'queryData' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 204,
+        "column": 11,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 204,
+        "endColumn": 20
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'error' is defined but never used. Allowed unused caught errors must match /^_/u.",
+        "line": 265,
+        "column": 14,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 265,
+        "endColumn": 19
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'sessionData' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 283,
+        "column": 11,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 283,
+        "endColumn": 22
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'validatedData' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 350,
+        "column": 11,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 350,
+        "endColumn": 24
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'ApiResponse' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 375,
+        "column": 6,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 375,
+        "endColumn": 17
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/lib/validation/examples/ApiRouteExample.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'firestoreData' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 56,
+        "column": 11,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 56,
+        "endColumn": 24
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'commentData' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 109,
+        "column": 11,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 109,
+        "endColumn": 22
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'updateData' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 162,
+        "column": 11,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 162,
+        "endColumn": 21
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'queryData' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 204,
+        "column": 11,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 204,
+        "endColumn": 20
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'error' is defined but never used. Allowed unused caught errors must match /^_/u.",
+        "line": 265,
+        "column": 14,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 265,
+        "endColumn": 19
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'sessionData' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 283,
+        "column": 11,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 283,
+        "endColumn": 22
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'validatedData' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 350,
+        "column": 11,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 350,
+        "endColumn": 24
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'ApiResponse' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 375,
+        "column": 6,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 375,
+        "endColumn": 17
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/lib/validation/examples/ApiRouteExample.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'firestoreData' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 56,
+        "column": 11,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 56,
+        "endColumn": 24
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'commentData' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 109,
+        "column": 11,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 109,
+        "endColumn": 22
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'updateData' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 162,
+        "column": 11,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 162,
+        "endColumn": 21
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'queryData' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 204,
+        "column": 11,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 204,
+        "endColumn": 20
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'error' is defined but never used. Allowed unused caught errors must match /^_/u.",
+        "line": 265,
+        "column": 14,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 265,
+        "endColumn": 19
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'sessionData' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 283,
+        "column": 11,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 283,
+        "endColumn": 22
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'validatedData' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 350,
+        "column": 11,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 350,
+        "endColumn": 24
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'ApiResponse' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 375,
+        "column": 6,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 375,
+        "endColumn": 17
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/lib/validation/examples/ApiRouteExample.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'firestoreData' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 56,
+        "column": 11,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 56,
+        "endColumn": 24
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'commentData' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 109,
+        "column": 11,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 109,
+        "endColumn": 22
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'updateData' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 162,
+        "column": 11,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 162,
+        "endColumn": 21
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'queryData' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 204,
+        "column": 11,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 204,
+        "endColumn": 20
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'error' is defined but never used. Allowed unused caught errors must match /^_/u.",
+        "line": 265,
+        "column": 14,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 265,
+        "endColumn": 19
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'sessionData' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 283,
+        "column": 11,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 283,
+        "endColumn": 22
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'validatedData' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 350,
+        "column": 11,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 350,
+        "endColumn": 24
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'ApiResponse' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 375,
+        "column": 6,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 375,
+        "endColumn": 17
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/lib/validation/examples/ApiRouteExample.ts",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'firestoreData' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 56,
+        "column": 11,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 56,
+        "endColumn": 24
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'commentData' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 109,
+        "column": 11,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 109,
+        "endColumn": 22
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'updateData' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 162,
+        "column": 11,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 162,
+        "endColumn": 21
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'queryData' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 204,
+        "column": 11,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 204,
+        "endColumn": 20
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'error' is defined but never used. Allowed unused caught errors must match /^_/u.",
+        "line": 265,
+        "column": 14,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 265,
+        "endColumn": 19
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'sessionData' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 283,
+        "column": 11,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 283,
+        "endColumn": 22
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'validatedData' is assigned a value but never used. Allowed unused vars must match /^_/u.",
+        "line": 350,
+        "column": 11,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 350,
+        "endColumn": 24
+      },
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'ApiResponse' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 375,
+        "column": 6,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 375,
+        "endColumn": 17
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/lib/validation/examples/CommentFormExample.tsx",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'err' is defined but never used. Allowed unused caught errors must match /^_/u.",
+        "line": 229,
+        "column": 14,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 229,
+        "endColumn": 17
+      }
+    ]
+  },
+  {
+    "filePath": "/Users/hughgramelspacher/repos/ambira-main/ambira-web/src/lib/validation/examples/SessionFormExample.tsx",
+    "messages": [
+      {
+        "ruleId": "@typescript-eslint/no-unused-vars",
+        "severity": 1,
+        "message": "'SessionFormInput' is defined but never used. Allowed unused vars must match /^_/u.",
+        "line": 17,
+        "column": 44,
+        "nodeType": null,
+        "messageId": "unusedVar",
+        "endLine": 17,
+        "endColumn": 60
+      }
+    ]
+  }
+]

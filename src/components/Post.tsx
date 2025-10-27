@@ -19,7 +19,7 @@ export const Post: React.FC<PostProps> = ({
   onRemoveSupport,
   onShare,
   className = '',
-  variant = 'full'
+  variant: _variant = 'full',
 }) => {
   // For now, we'll use PostCard for both variants
   // In the future, we could create a more detailed full view

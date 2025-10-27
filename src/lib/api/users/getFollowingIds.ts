@@ -26,7 +26,7 @@ export async function getFollowingIds(userId: string): Promise<Set<string>> {
         // Just get the document IDs - no need to read data
         return new Set(outboundSnapshot.docs.map(doc => doc.id));
       }
-    } catch (socialGraphError) {
+    } catch (_socialGraphError) {
       // If social_graph doesn't exist, continue to fallback
     }
 

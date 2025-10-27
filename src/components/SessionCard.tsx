@@ -68,7 +68,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({
             session.userId
           );
           setIsFollowing(isUserFollowing);
-        } catch (error) {
+        } catch (_error) {
           // Error checking follow status - silently fail
         }
       }
@@ -92,7 +92,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({
         await firebaseApi.user.followUser(session.userId);
         setIsFollowing(true);
       }
-    } catch (error) {
+    } catch (_error) {
       // Error toggling follow - silently fail
     } finally {
       setIsFollowLoading(false);

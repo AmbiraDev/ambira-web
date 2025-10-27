@@ -11,9 +11,19 @@ import {
   SettingsCardHeader,
   SettingsCardContent,
   SettingsRow,
-  SettingsRowGroup
+  SettingsRowGroup,
 } from '@/components/ui/settings-section';
-import { Bell, Mail, BellRing, Heart, MessageCircle, UserPlus, Trophy, Flame, Users } from 'lucide-react';
+import {
+  Bell,
+  Mail,
+  BellRing,
+  _Heart,
+  _MessageCircle,
+  UserPlus,
+  Trophy,
+  _Flame,
+  Users,
+} from 'lucide-react';
 import { debug } from '@/lib/debug';
 
 interface NotificationSettingsProps {
@@ -43,14 +53,15 @@ const defaultPreferences: NotificationPreferences = {
     streaks: true,
     groupPosts: true,
     challenges: true,
-  }
+  },
 };
 
-export const NotificationSettings: React.FC<NotificationSettingsProps> = ({ 
-  onClose, 
-  isModal = false 
+export const NotificationSettings: React.FC<NotificationSettingsProps> = ({
+  onClose,
+  isModal = false,
 }) => {
-  const [preferences, setPreferences] = useState<NotificationPreferences>(defaultPreferences);
+  const [preferences, setPreferences] =
+    useState<NotificationPreferences>(defaultPreferences);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -66,7 +77,10 @@ export const NotificationSettings: React.FC<NotificationSettingsProps> = ({
       // For now, use defaults
       setPreferences(defaultPreferences);
     } catch (error) {
-      debug.error('NotificationSettings - Failed to load notification preferences:', error);
+      debug.error(
+        'NotificationSettings - Failed to load notification preferences:',
+        error
+      );
     } finally {
       setIsLoading(false);
     }
@@ -80,8 +94,8 @@ export const NotificationSettings: React.FC<NotificationSettingsProps> = ({
       ...prev,
       [category]: {
         ...prev[category],
-        [key]: !prev[category][key]
-      }
+        [key]: !prev[category][key],
+      },
     }));
   };
 
@@ -92,7 +106,10 @@ export const NotificationSettings: React.FC<NotificationSettingsProps> = ({
       // Need updateNotificationPreferences() method to persist to Firestore
       alert('Notification preferences saved successfully!');
     } catch (error) {
-      debug.error('NotificationSettings - Failed to save notification preferences:', error);
+      debug.error(
+        'NotificationSettings - Failed to save notification preferences:',
+        error
+      );
       alert('Failed to save notification preferences');
     } finally {
       setIsSaving(false);
@@ -104,7 +121,7 @@ export const NotificationSettings: React.FC<NotificationSettingsProps> = ({
     description,
     emailEnabled,
     inAppEnabled,
-    settingKey
+    settingKey,
   }: {
     label: string;
     description: string;
@@ -135,7 +152,7 @@ export const NotificationSettings: React.FC<NotificationSettingsProps> = ({
   if (isLoading) {
     return (
       <SettingsSection>
-        {[1, 2].map((i) => (
+        {[1, 2].map(i => (
           <SettingsCard key={i} className="animate-pulse">
             <SettingsCardHeader title="" description="" />
             <SettingsCardContent>
@@ -307,4 +324,3 @@ export const NotificationSettings: React.FC<NotificationSettingsProps> = ({
 };
 
 export default NotificationSettings;
-

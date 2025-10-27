@@ -56,7 +56,7 @@ export class LocalCache {
         version: CACHE_VERSION,
       };
       storage.setItem(`${this.PREFIX}${key}`, JSON.stringify(item));
-    } catch (e) {
+    } catch (_e) {
       // Storage might be full, try to clear old items
       this.clearExpired();
       try {
@@ -144,7 +144,7 @@ export class LocalCache {
           if (now - item.timestamp > CACHE_TIMES.WEEKLY) {
             storage.removeItem(key);
           }
-        } catch (e) {
+        } catch (_e) {
           // Invalid item, remove it
           storage.removeItem(key);
         }
@@ -237,7 +237,11 @@ export class MemoryCache {
   private static cache = new Map<string, MemoryCacheItem<any>>();
   private static readonly MAX_SIZE = 100; // Prevent memory leaks
 
-  static set<T>(key: string, data: T, ttlMs: number = CACHE_TIMES.MEDIUM): void {
+  static set<T>(
+    key: string,
+    data: T,
+    ttlMs: number = CACHE_TIMES.MEDIUM
+  ): void {
     // If cache is too large, remove oldest items
     if (this.cache.size >= this.MAX_SIZE) {
       const oldestKey = this.cache.keys().next().value as string | undefined;
@@ -312,11 +316,10 @@ export class QueryDeduplicator {
     }
 
     // Create new request
-    const promise = queryFn()
-      .finally(() => {
-        // Clean up after request completes
-        this.pending.delete(key);
-      });
+    const promise = queryFn().finally(() => {
+      // Clean up after request completes
+      this.pending.delete(key);
+    });
 
     this.pending.set(key, {
       promise,
@@ -423,7 +426,7 @@ export function invalidateCache(key: string): void {
 /**
  * Invalidate all caches with a specific prefix
  */
-export function invalidateCachePrefix(prefix: string): void {
+export function invalidateCachePrefix(_prefix: string): void {
   // Memory cache
   MemoryCache.clear(); // Simple clear for now
 

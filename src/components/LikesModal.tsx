@@ -78,7 +78,7 @@ export const LikesModal: React.FC<LikesModalProps> = ({
                 user.id
               );
               followStatuses[user.id] = isFollowing;
-            } catch (error) {
+            } catch (_error) {
               followStatuses[user.id] = false;
             }
           })

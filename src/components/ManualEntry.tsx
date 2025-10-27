@@ -73,7 +73,7 @@ export const ManualEntry: React.FC<ManualEntryProps> = ({
   useEffect(() => {
     const loadProjects = async () => {
       try {
-        const token = getAuthToken();
+        const _token = getAuthToken();
         // TODO: Load projects from Firebase
         const projectList: Project[] = []; // await mockProjectApiLocal.getProjects(token);
         setProjects(projectList);

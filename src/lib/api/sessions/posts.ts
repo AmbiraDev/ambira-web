@@ -45,7 +45,7 @@ import {
 } from '@/lib/errorHandler';
 
 // Shared utilities
-import { convertTimestamp, removeUndefinedFields } from '../shared/utils';
+import { convertTimestamp, _removeUndefinedFields } from '../shared/utils';
 
 // Session helpers
 import { populateSessionsWithDetails } from './helpers';
@@ -71,7 +71,9 @@ import type {
 // PRIVATE HELPERS
 // ============================================================================
 
-const processPosts = async (postDocs: any[]): Promise<PostWithDetails[]> => {
+const _processPosts = async (
+  postDocs: DocumentSnapshot[]
+): Promise<PostWithDetails[]> => {
   const posts: PostWithDetails[] = [];
   const batchSize = 10;
 
@@ -243,7 +245,7 @@ export const firebasePostApi = {
       }
 
       let sessionsQuery;
-      const { type = 'recent', userId, projectId, groupId } = filters;
+      const { type = 'recent', userId, _projectId, groupId } = filters;
 
       // Handle different feed types - fetch from sessions collection
       if (type === 'group' && groupId) {
@@ -314,7 +316,7 @@ export const firebasePostApi = {
           if (!outboundSnapshot.empty) {
             followingIds = outboundSnapshot.docs.map(doc => doc.id);
           }
-        } catch (socialGraphError) {
+        } catch (_socialGraphError) {
           // If social_graph doesn't exist or has permission issues, continue to fallback
         }
 
@@ -467,7 +469,7 @@ export const firebasePostApi = {
           if (!outboundSnapshot.empty) {
             followingIds = outboundSnapshot.docs.map(doc => doc.id);
           }
-        } catch (socialGraphError) {
+        } catch (_socialGraphError) {
           // If social_graph doesn't exist or has permission issues, continue to fallback
         }
 
@@ -622,7 +624,7 @@ export const firebasePostApi = {
           if (!outboundSnapshot.empty) {
             followingIds = outboundSnapshot.docs.map(doc => doc.id);
           }
-        } catch (socialGraphError) {
+        } catch (_socialGraphError) {
           // If social_graph doesn't exist or has permission issues, continue to fallback
         }
 

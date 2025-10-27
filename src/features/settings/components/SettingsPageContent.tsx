@@ -26,7 +26,7 @@ import {
   Github,
   Linkedin,
   LogOut,
-  Trash2
+  Trash2,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import Image from 'next/image';
@@ -39,7 +39,7 @@ type SettingsTab = 'profile' | 'privacy' | 'notifications' | 'display';
 
 export function SettingsPageContent() {
   const { user, logout } = useAuth();
-  const router = useRouter();
+  const _router = useRouter();
   const [activeTab, setActiveTab] = useState<SettingsTab>('profile');
   const [formData, setFormData] = useState({
     name: user?.name || '',
@@ -56,7 +56,9 @@ export function SettingsPageContent() {
   const [isSaving, setIsSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
-  const [profilePictureUrl, setProfilePictureUrl] = useState(user?.profilePicture || '');
+  const [profilePictureUrl, setProfilePictureUrl] = useState(
+    user?.profilePicture || ''
+  );
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [originalFormData, setOriginalFormData] = useState({
@@ -75,7 +77,11 @@ export function SettingsPageContent() {
   const tabs = [
     { id: 'profile' as SettingsTab, label: 'My Profile', icon: User },
     { id: 'privacy' as SettingsTab, label: 'Privacy Controls', icon: Shield },
-    { id: 'notifications' as SettingsTab, label: 'Email Notifications', icon: Bell },
+    {
+      id: 'notifications' as SettingsTab,
+      label: 'Email Notifications',
+      icon: Bell,
+    },
     { id: 'display' as SettingsTab, label: 'Display Preferences', icon: Globe },
   ];
 
@@ -122,7 +128,9 @@ export function SettingsPageContent() {
     // Validate file type
     const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
     if (!validTypes.includes(file.type)) {
-      toast.error('Invalid file type. Please upload a JPEG, PNG, GIF, or WebP image.');
+      toast.error(
+        'Invalid file type. Please upload a JPEG, PNG, GIF, or WebP image.'
+      );
       return;
     }
 
@@ -135,18 +143,18 @@ export function SettingsPageContent() {
 
     try {
       setIsUploadingPhoto(true);
-      
+
       // Upload to Firebase Storage
       const downloadURL = await firebaseUserApi.uploadProfilePicture(file);
-      
+
       // Update profile with new picture URL
       await firebaseUserApi.updateProfile({
         profilePicture: downloadURL,
       });
-      
+
       setProfilePictureUrl(downloadURL);
       toast.success('Profile picture updated!');
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Upload error:', err);
       toast.error(err?.message || 'Failed to upload photo');
     } finally {
@@ -160,7 +168,11 @@ export function SettingsPageContent() {
       setIsSaving(true);
 
       // Build social links object only if at least one link is provided
-      const socialLinks: { twitter?: string; github?: string; linkedin?: string } = {};
+      const socialLinks: {
+        twitter?: string;
+        github?: string;
+        linkedin?: string;
+      } = {};
       if (formData.twitter) socialLinks.twitter = formData.twitter;
       if (formData.github) socialLinks.github = formData.github;
       if (formData.linkedin) socialLinks.linkedin = formData.linkedin;
@@ -172,7 +184,8 @@ export function SettingsPageContent() {
         bio: formData.bio || undefined,
         location: formData.location || undefined,
         website: formData.website || undefined,
-        socialLinks: Object.keys(socialLinks).length > 0 ? socialLinks : undefined,
+        socialLinks:
+          Object.keys(socialLinks).length > 0 ? socialLinks : undefined,
         profileVisibility: formData.profileVisibility,
       });
       toast.success('Profile updated successfully!');
@@ -182,7 +195,7 @@ export function SettingsPageContent() {
       setTimeout(() => {
         window.location.reload();
       }, 1000);
-    } catch (err: any) {
+    } catch (err: unknown) {
       toast.error(err?.message || 'Failed to update profile');
       setIsSaving(false);
     }
@@ -201,7 +214,7 @@ export function SettingsPageContent() {
       setTimeout(() => {
         window.location.reload();
       }, 1000);
-    } catch (err: any) {
+    } catch (err: unknown) {
       toast.error(err?.message || 'Failed to update privacy settings');
       setIsSaving(false);
     }
@@ -211,7 +224,7 @@ export function SettingsPageContent() {
     try {
       await logout();
       toast.success('Logged out successfully');
-    } catch (err: any) {
+    } catch (err: unknown) {
       toast.error(err?.message || 'Failed to log out');
     }
   };
@@ -225,7 +238,7 @@ export function SettingsPageContent() {
       await firebaseUserApi.deleteAccount();
       toast.success('Account deleted successfully');
       // The logout will happen automatically as part of deleteAccount
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Delete account error:', err);
       toast.error(err?.message || 'Failed to delete account');
       setIsDeleting(false);
@@ -240,18 +253,18 @@ export function SettingsPageContent() {
         <div className="hidden md:block">
           <Header />
         </div>
-        
+
         {/* Mobile Header */}
         <div className="md:hidden">
           <MobileHeader title="Settings" />
         </div>
-        
+
         <div className="max-w-7xl mx-auto px-0 md:px-4 sm:px-6 lg:px-8 py-0 md:py-8">
           <div className="flex flex-col md:flex-row gap-0 md:gap-8">
             {/* Sidebar - Desktop Only */}
             <div className="hidden md:block w-64 flex-shrink-0">
               <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-                {tabs.map((tab) => {
+                {tabs.map(tab => {
                   const Icon = tab.icon;
                   return (
                     <button
@@ -275,7 +288,7 @@ export function SettingsPageContent() {
             <div className="md:hidden bg-white border-b border-gray-200">
               <div className="overflow-x-auto scrollbar-hide">
                 <div className="flex">
-                  {tabs.map((tab) => {
+                  {tabs.map(tab => {
                     const Icon = tab.icon;
                     return (
                       <button
@@ -307,7 +320,9 @@ export function SettingsPageContent() {
                           <User className="w-6 h-6 text-[#007AFF]" />
                           My Profile
                         </h2>
-                        <p className="text-gray-600 text-sm">Update your personal information and profile settings</p>
+                        <p className="text-gray-600 text-sm">
+                          Update your personal information and profile settings
+                        </p>
                       </div>
 
                       {/* Profile Picture */}
@@ -319,7 +334,11 @@ export function SettingsPageContent() {
                           {profilePictureUrl || user?.profilePicture ? (
                             <div className="w-24 h-24 rounded-full overflow-hidden ring-4 ring-white flex-shrink-0">
                               <Image
-                                src={profilePictureUrl || user?.profilePicture || ''}
+                                src={
+                                  profilePictureUrl ||
+                                  user?.profilePicture ||
+                                  ''
+                                }
                                 alt="Profile"
                                 width={96}
                                 height={96}
@@ -366,7 +385,10 @@ export function SettingsPageContent() {
 
                       {/* Name */}
                       <div>
-                        <label htmlFor="name" className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                        <label
+                          htmlFor="name"
+                          className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2"
+                        >
                           <User className="w-4 h-4" />
                           Name
                         </label>
@@ -374,19 +396,26 @@ export function SettingsPageContent() {
                           type="text"
                           id="name"
                           value={formData.name}
-                          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                          onChange={e =>
+                            setFormData({ ...formData, name: e.target.value })
+                          }
                           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] outline-none"
                         />
                       </div>
 
                       {/* Username */}
                       <div>
-                        <label htmlFor="username" className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                        <label
+                          htmlFor="username"
+                          className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2"
+                        >
                           <User className="w-4 h-4" />
                           Username
                         </label>
                         <div className="relative">
-                          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">@</span>
+                          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">
+                            @
+                          </span>
                           <input
                             type="text"
                             id="username"
@@ -395,36 +424,58 @@ export function SettingsPageContent() {
                             className="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
                           />
                         </div>
-                        <p className="text-xs text-gray-500 mt-1">Username cannot be changed - it&apos;s your unique identifier</p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          Username cannot be changed - it&apos;s your unique
+                          identifier
+                        </p>
                       </div>
 
                       {/* Tagline */}
                       <div>
-                        <label htmlFor="tagline" className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                        <label
+                          htmlFor="tagline"
+                          className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2"
+                        >
                           Tagline
                         </label>
                         <input
                           type="text"
                           id="tagline"
                           value={formData.tagline}
-                          onChange={(e) => setFormData({ ...formData, tagline: e.target.value })}
+                          onChange={e =>
+                            setFormData({
+                              ...formData,
+                              tagline: e.target.value,
+                            })
+                          }
                           maxLength={60}
                           placeholder="Your headline or current status..."
                           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] outline-none"
                         />
-                        <p className="text-sm text-gray-500 mt-1">{formData.tagline.length}/60 • Appears below your name on your profile</p>
+                        <p className="text-sm text-gray-500 mt-1">
+                          {formData.tagline.length}/60 • Appears below your name
+                          on your profile
+                        </p>
                       </div>
 
                       {/* Pronouns */}
                       <div>
-                        <label htmlFor="pronouns" className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                        <label
+                          htmlFor="pronouns"
+                          className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2"
+                        >
                           Pronouns
                         </label>
                         <input
                           type="text"
                           id="pronouns"
                           value={formData.pronouns}
-                          onChange={(e) => setFormData({ ...formData, pronouns: e.target.value })}
+                          onChange={e =>
+                            setFormData({
+                              ...formData,
+                              pronouns: e.target.value,
+                            })
+                          }
                           maxLength={20}
                           placeholder="e.g., she/her, he/him, they/them"
                           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] outline-none"
@@ -433,24 +484,34 @@ export function SettingsPageContent() {
 
                       {/* Bio */}
                       <div>
-                        <label htmlFor="bio" className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                        <label
+                          htmlFor="bio"
+                          className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2"
+                        >
                           Bio
                         </label>
                         <textarea
                           id="bio"
                           value={formData.bio}
-                          onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+                          onChange={e =>
+                            setFormData({ ...formData, bio: e.target.value })
+                          }
                           rows={4}
                           maxLength={160}
                           placeholder="Tell us about yourself..."
                           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] outline-none resize-none"
                         />
-                        <p className="text-sm text-gray-500 mt-1">{formData.bio.length}/160</p>
+                        <p className="text-sm text-gray-500 mt-1">
+                          {formData.bio.length}/160
+                        </p>
                       </div>
 
                       {/* Location */}
                       <div>
-                        <label htmlFor="location" className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                        <label
+                          htmlFor="location"
+                          className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2"
+                        >
                           <Globe className="w-4 h-4" />
                           Location
                         </label>
@@ -458,7 +519,12 @@ export function SettingsPageContent() {
                           type="text"
                           id="location"
                           value={formData.location}
-                          onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                          onChange={e =>
+                            setFormData({
+                              ...formData,
+                              location: e.target.value,
+                            })
+                          }
                           placeholder="City, Country"
                           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] outline-none"
                         />
@@ -466,11 +532,16 @@ export function SettingsPageContent() {
 
                       {/* Links Section */}
                       <div className="pt-4 border-t border-gray-200">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Links</h3>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                          Links
+                        </h3>
 
                         {/* Website */}
                         <div className="mb-4">
-                          <label htmlFor="website" className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                          <label
+                            htmlFor="website"
+                            className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2"
+                          >
                             <LinkIcon className="w-4 h-4" />
                             Website
                           </label>
@@ -478,7 +549,12 @@ export function SettingsPageContent() {
                             type="url"
                             id="website"
                             value={formData.website}
-                            onChange={(e) => setFormData({ ...formData, website: e.target.value })}
+                            onChange={e =>
+                              setFormData({
+                                ...formData,
+                                website: e.target.value,
+                              })
+                            }
                             placeholder="https://yourwebsite.com"
                             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] outline-none"
                           />
@@ -487,17 +563,27 @@ export function SettingsPageContent() {
                         {/* Social Links */}
                         <div className="space-y-4">
                           <div>
-                            <label htmlFor="twitter" className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                            <label
+                              htmlFor="twitter"
+                              className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2"
+                            >
                               <Twitter className="w-4 h-4" />
                               Twitter/X
                             </label>
                             <div className="relative">
-                              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">@</span>
+                              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">
+                                @
+                              </span>
                               <input
                                 type="text"
                                 id="twitter"
                                 value={formData.twitter}
-                                onChange={(e) => setFormData({ ...formData, twitter: e.target.value })}
+                                onChange={e =>
+                                  setFormData({
+                                    ...formData,
+                                    twitter: e.target.value,
+                                  })
+                                }
                                 placeholder="username"
                                 className="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] outline-none"
                               />
@@ -505,7 +591,10 @@ export function SettingsPageContent() {
                           </div>
 
                           <div>
-                            <label htmlFor="github" className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                            <label
+                              htmlFor="github"
+                              className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2"
+                            >
                               <Github className="w-4 h-4" />
                               GitHub
                             </label>
@@ -513,14 +602,22 @@ export function SettingsPageContent() {
                               type="text"
                               id="github"
                               value={formData.github}
-                              onChange={(e) => setFormData({ ...formData, github: e.target.value })}
+                              onChange={e =>
+                                setFormData({
+                                  ...formData,
+                                  github: e.target.value,
+                                })
+                              }
                               placeholder="username"
                               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] outline-none"
                             />
                           </div>
 
                           <div>
-                            <label htmlFor="linkedin" className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+                            <label
+                              htmlFor="linkedin"
+                              className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2"
+                            >
                               <Linkedin className="w-4 h-4" />
                               LinkedIn
                             </label>
@@ -528,7 +625,12 @@ export function SettingsPageContent() {
                               type="text"
                               id="linkedin"
                               value={formData.linkedin}
-                              onChange={(e) => setFormData({ ...formData, linkedin: e.target.value })}
+                              onChange={e =>
+                                setFormData({
+                                  ...formData,
+                                  linkedin: e.target.value,
+                                })
+                              }
                               placeholder="username"
                               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] outline-none"
                             />
@@ -538,8 +640,10 @@ export function SettingsPageContent() {
 
                       {/* Account Information */}
                       <div className="pt-4 border-t border-gray-200">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Account Information</h3>
-                        
+                        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                          Account Information
+                        </h3>
+
                         {/* Email */}
                         <div className="mb-4">
                           <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
@@ -575,13 +679,17 @@ export function SettingsPageContent() {
                           disabled={isSaving || !hasChanges}
                           className={`px-6 py-3 md:py-2 rounded-lg transition-colors text-white ${
                             isSaving || !hasChanges
-                              ? 'bg-gray-400 cursor-not-allowed' 
-                              : saved 
-                                ? 'bg-green-600 hover:bg-green-600' 
+                              ? 'bg-gray-400 cursor-not-allowed'
+                              : saved
+                                ? 'bg-green-600 hover:bg-green-600'
                                 : 'bg-[#007AFF] hover:bg-[#0051D5]'
                           }`}
                         >
-                          {isSaving ? 'Saving…' : saved ? '✓ Saved' : 'Save Changes'}
+                          {isSaving
+                            ? 'Saving…'
+                            : saved
+                              ? '✓ Saved'
+                              : 'Save Changes'}
                         </button>
                       </div>
                     </div>
@@ -595,7 +703,9 @@ export function SettingsPageContent() {
                         <Shield className="w-6 h-6 text-[#007AFF]" />
                         Privacy Controls
                       </h2>
-                      <p className="text-gray-600 text-sm">Control who can see your profile and content</p>
+                      <p className="text-gray-600 text-sm">
+                        Control who can see your profile and content
+                      </p>
                     </div>
 
                     <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
@@ -604,26 +714,48 @@ export function SettingsPageContent() {
                           <Globe className="w-5 h-5 text-[#007AFF]" />
                           Profile Visibility
                         </h3>
-                        <p className="text-sm text-gray-600 mt-1">Control who can view your profile and sessions</p>
+                        <p className="text-sm text-gray-600 mt-1">
+                          Control who can view your profile and sessions
+                        </p>
                       </div>
                       <div className="px-6 py-4">
-                        <label htmlFor="profileVisibility" className="text-sm font-medium text-gray-700 mb-2 block">
+                        <label
+                          htmlFor="profileVisibility"
+                          className="text-sm font-medium text-gray-700 mb-2 block"
+                        >
                           Profile Access
                         </label>
                         <select
                           id="profileVisibility"
                           value={formData.profileVisibility}
-                          onChange={(e) => setFormData({ ...formData, profileVisibility: e.target.value as any })}
+                          onChange={e =>
+                            setFormData({
+                              ...formData,
+                              profileVisibility: e.target.value as any,
+                            })
+                          }
                           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] outline-none"
                         >
-                          <option value="everyone">🌐 Everyone - Your profile and sessions are visible to all users</option>
-                          <option value="followers">👥 Followers Only - Only your followers can see your profile and sessions</option>
-                          <option value="private">🔒 Only You - Your profile and sessions are completely private</option>
+                          <option value="everyone">
+                            🌐 Everyone - Your profile and sessions are visible
+                            to all users
+                          </option>
+                          <option value="followers">
+                            👥 Followers Only - Only your followers can see your
+                            profile and sessions
+                          </option>
+                          <option value="private">
+                            🔒 Only You - Your profile and sessions are
+                            completely private
+                          </option>
                         </select>
                         <p className="text-xs text-gray-500 mt-2">
-                          {formData.profileVisibility === 'everyone' && 'Your profile, sessions, and stats are visible to everyone.'}
-                          {formData.profileVisibility === 'followers' && 'Only your followers can see your profile and sessions. You won\'t appear in suggestions.'}
-                          {formData.profileVisibility === 'private' && 'Your profile is completely private. Only you can see your sessions and stats.'}
+                          {formData.profileVisibility === 'everyone' &&
+                            'Your profile, sessions, and stats are visible to everyone.'}
+                          {formData.profileVisibility === 'followers' &&
+                            "Only your followers can see your profile and sessions. You won't appear in suggestions."}
+                          {formData.profileVisibility === 'private' &&
+                            'Your profile is completely private. Only you can see your sessions and stats.'}
                         </p>
                       </div>
                     </div>
@@ -632,7 +764,13 @@ export function SettingsPageContent() {
                     <div className="flex flex-col md:flex-row gap-3 pt-2">
                       <button
                         type="button"
-                        onClick={() => setFormData({ ...formData, profileVisibility: originalFormData.profileVisibility })}
+                        onClick={() =>
+                          setFormData({
+                            ...formData,
+                            profileVisibility:
+                              originalFormData.profileVisibility,
+                          })
+                        }
                         className="px-6 py-3 md:py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors text-center"
                       >
                         Cancel
@@ -649,15 +787,17 @@ export function SettingsPageContent() {
                               : 'bg-[#007AFF] hover:bg-[#0051D5]'
                         }`}
                       >
-                        {isSaving ? 'Saving…' : saved ? '✓ Saved' : 'Save Changes'}
+                        {isSaving
+                          ? 'Saving…'
+                          : saved
+                            ? '✓ Saved'
+                            : 'Save Changes'}
                       </button>
                     </div>
                   </div>
                 )}
 
-                {activeTab === 'notifications' && (
-                  <NotificationSettings />
-                )}
+                {activeTab === 'notifications' && <NotificationSettings />}
 
                 {activeTab === 'display' && (
                   <div className="bg-gray-50 rounded-xl border border-gray-200 p-4 md:p-6 space-y-6">
@@ -666,15 +806,20 @@ export function SettingsPageContent() {
                         <Globe className="w-6 h-6 text-[#007AFF]" />
                         Display Preferences
                       </h2>
-                      <p className="text-gray-600 text-sm">Customize how the app looks and feels.</p>
+                      <p className="text-gray-600 text-sm">
+                        Customize how the app looks and feels.
+                      </p>
                     </div>
 
                     <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
                       <div className="px-6 py-8 text-center">
                         <Globe className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                        <h3 className="font-medium text-gray-900 mb-1">Coming Soon</h3>
+                        <h3 className="font-medium text-gray-900 mb-1">
+                          Coming Soon
+                        </h3>
                         <p className="text-sm text-gray-600">
-                          Display preferences will be available in a future update
+                          Display preferences will be available in a future
+                          update
                         </p>
                       </div>
                     </div>
@@ -705,7 +850,7 @@ export function SettingsPageContent() {
             </div>
           </div>
         </div>
-        
+
         {/* Mobile Bottom Navigation */}
         <div className="md:hidden">
           <BottomNavigation />

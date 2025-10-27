@@ -48,7 +48,7 @@ export default function BottomNavigation() {
   const hasActiveSession =
     timerState.currentProject &&
     (timerState.isRunning || timerState.pausedDuration > 0);
-  const isOnTimerPage = pathname.startsWith('/timer');
+  const _isOnTimerPage = pathname.startsWith('/timer');
 
   // Close menu when pathname changes
   useEffect(() => {
@@ -232,7 +232,11 @@ export default function BottomNavigation() {
             aria-label="View feed"
             aria-current={isActive('/') ? 'page' : undefined}
           >
-            <Home className="w-6 h-6" strokeWidth={isActive('/') ? 2.5 : 2} aria-hidden="true" />
+            <Home
+              className="w-6 h-6"
+              strokeWidth={isActive('/') ? 2.5 : 2}
+              aria-hidden="true"
+            />
             <span className="text-[10px] font-medium">Feed</span>
           </Link>
 
@@ -257,16 +261,26 @@ export default function BottomNavigation() {
           <Link
             href="/timer"
             className={`flex flex-col items-center justify-center space-y-0.5 px-3 py-1 transition-colors ${
-              hasActiveSession || isActive('/timer') ? 'text-[#007AFF]' : 'text-gray-500'
+              hasActiveSession || isActive('/timer')
+                ? 'text-[#007AFF]'
+                : 'text-gray-500'
             }`}
-            aria-label={hasActiveSession ? 'View active session' : 'Start session timer'}
+            aria-label={
+              hasActiveSession ? 'View active session' : 'Start session timer'
+            }
             aria-current={isActive('/timer') ? 'page' : undefined}
           >
-            <div className={`relative p-0.5 rounded-full ${hasActiveSession ? 'ring-2 ring-[#007AFF]' : ''}`}>
+            <div
+              className={`relative p-0.5 rounded-full ${hasActiveSession ? 'ring-2 ring-[#007AFF]' : ''}`}
+            >
               <PlayCircle
                 className="w-6 h-6"
                 strokeWidth={hasActiveSession || isActive('/timer') ? 2.5 : 2}
-                fill={hasActiveSession || isActive('/timer') ? 'currentColor' : 'none'}
+                fill={
+                  hasActiveSession || isActive('/timer')
+                    ? 'currentColor'
+                    : 'none'
+                }
                 aria-hidden="true"
               />
             </div>

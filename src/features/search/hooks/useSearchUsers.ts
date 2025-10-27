@@ -9,7 +9,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { firebaseUserApi } from '@/lib/api';
-import { CACHE_KEYS, CACHE_TIMES } from '@/lib/queryClient';
+import { _CACHE_KEYS, CACHE_TIMES } from '@/lib/queryClient';
 import type { UserSearchResult } from '@/types';
 
 interface UseSearchUsersOptions {

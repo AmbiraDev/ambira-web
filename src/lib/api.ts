@@ -22,7 +22,7 @@ import {
   ProjectBreakdown,
   PrivacySettings,
   UserSearchResult,
-  SuggestedUser
+  SuggestedUser,
 } from '@/types';
 
 // Create axios instance
@@ -39,21 +39,21 @@ let authToken: string | null = null;
 
 // Request interceptor to add auth token
 api.interceptors.request.use(
-  (config) => {
+  config => {
     if (authToken) {
       config.headers.Authorization = `Bearer ${authToken}`;
     }
     return config;
   },
-  (error) => {
+  error => {
     return Promise.reject(error);
   }
 );
 
 // Response interceptor to handle 401 errors
 api.interceptors.response.use(
-  (response) => response,
-  (error) => {
+  response => response,
+  error => {
     if (error.response?.status === 401) {
       // Clear token and redirect to login
       authToken = null;
@@ -94,13 +94,19 @@ export const authApi = {
 
   // Login
   login: async (credentials: LoginCredentials): Promise<AuthResponse> => {
-    const response: AxiosResponse<AuthResponse> = await api.post('/auth/login', credentials);
+    const response: AxiosResponse<AuthResponse> = await api.post(
+      '/auth/login',
+      credentials
+    );
     return response.data;
   },
 
   // Signup
   signup: async (credentials: SignupCredentials): Promise<AuthResponse> => {
-    const response: AxiosResponse<AuthResponse> = await api.post('/auth/signup', credentials);
+    const response: AxiosResponse<AuthResponse> = await api.post(
+      '/auth/signup',
+      credentials
+    );
     return response.data;
   },
 
@@ -148,8 +154,14 @@ export const projectApi = {
   },
 
   // Update project
-  updateProject: async (id: string, data: UpdateProjectData): Promise<Project> => {
-    const response: AxiosResponse<Project> = await api.put(`/projects/${id}`, data);
+  updateProject: async (
+    id: string,
+    data: UpdateProjectData
+  ): Promise<Project> => {
+    const response: AxiosResponse<Project> = await api.put(
+      `/projects/${id}`,
+      data
+    );
     return response.data;
   },
 
@@ -160,19 +172,25 @@ export const projectApi = {
 
   // Get project statistics
   getProjectStats: async (id: string): Promise<ProjectStats> => {
-    const response: AxiosResponse<ProjectStats> = await api.get(`/projects/${id}/stats`);
+    const response: AxiosResponse<ProjectStats> = await api.get(
+      `/projects/${id}/stats`
+    );
     return response.data;
   },
 
   // Archive project
   archiveProject: async (id: string): Promise<Project> => {
-    const response: AxiosResponse<Project> = await api.patch(`/projects/${id}/archive`);
+    const response: AxiosResponse<Project> = await api.patch(
+      `/projects/${id}/archive`
+    );
     return response.data;
   },
 
   // Restore project
   restoreProject: async (id: string): Promise<Project> => {
-    const response: AxiosResponse<Project> = await api.patch(`/projects/${id}/restore`);
+    const response: AxiosResponse<Project> = await api.patch(
+      `/projects/${id}/restore`
+    );
     return response.data;
   },
 };
@@ -181,26 +199,36 @@ export const projectApi = {
 export const timerApi = {
   // Start a new timer session
   startSession: async (projectId: string): Promise<ActiveTimer> => {
-    const response: AxiosResponse<ActiveTimer> = await api.post('/sessions/start', {
-      projectId,
-    });
+    const response: AxiosResponse<ActiveTimer> = await api.post(
+      '/sessions/start',
+      {
+        projectId,
+      }
+    );
     return response.data;
   },
 
   // Update active timer (for pause/resume)
-  updateActiveTimer: async (timerId: string, pausedDuration: number): Promise<ActiveTimer> => {
-    const response: AxiosResponse<ActiveTimer> = await api.put(`/sessions/active/${timerId}`, {
-      pausedDuration,
-    });
+  updateActiveTimer: async (
+    timerId: string,
+    pausedDuration: number
+  ): Promise<ActiveTimer> => {
+    const response: AxiosResponse<ActiveTimer> = await api.put(
+      `/sessions/active/${timerId}`,
+      {
+        pausedDuration,
+      }
+    );
     return response.data;
   },
 
   // Get active timer
   getActiveTimer: async (): Promise<ActiveTimer | null> => {
     try {
-      const response: AxiosResponse<ActiveTimer> = await api.get('/sessions/active');
+      const response: AxiosResponse<ActiveTimer> =
+        await api.get('/sessions/active');
       return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
       if (error.response?.status === 404) {
         return null; // No active timer
       }
@@ -209,8 +237,14 @@ export const timerApi = {
   },
 
   // Finish timer and create session
-  finishSession: async (timerId: string, sessionData: CreateSessionData): Promise<Session> => {
-    const response: AxiosResponse<Session> = await api.post(`/sessions/finish/${timerId}`, sessionData);
+  finishSession: async (
+    timerId: string,
+    sessionData: CreateSessionData
+  ): Promise<Session> => {
+    const response: AxiosResponse<Session> = await api.post(
+      `/sessions/finish/${timerId}`,
+      sessionData
+    );
     return response.data;
   },
 
@@ -224,7 +258,10 @@ export const timerApi = {
 export const sessionApi = {
   // Create a new session (manual entry)
   createSession: async (sessionData: SessionFormData): Promise<Session> => {
-    const response: AxiosResponse<Session> = await api.post('/sessions', sessionData);
+    const response: AxiosResponse<Session> = await api.post(
+      '/sessions',
+      sessionData
+    );
     return response.data;
   },
 
@@ -248,7 +285,9 @@ export const sessionApi = {
       ...(filters.search && { search: filters.search }),
     });
 
-    const response: AxiosResponse<SessionListResponse> = await api.get(`/sessions?${params}`);
+    const response: AxiosResponse<SessionListResponse> = await api.get(
+      `/sessions?${params}`
+    );
     return response.data;
   },
 
@@ -259,8 +298,14 @@ export const sessionApi = {
   },
 
   // Update session
-  updateSession: async (id: string, sessionData: Partial<SessionFormData>): Promise<Session> => {
-    const response: AxiosResponse<Session> = await api.put(`/sessions/${id}`, sessionData);
+  updateSession: async (
+    id: string,
+    sessionData: Partial<SessionFormData>
+  ): Promise<Session> => {
+    const response: AxiosResponse<Session> = await api.put(
+      `/sessions/${id}`,
+      sessionData
+    );
     return response.data;
   },
 
@@ -271,13 +316,17 @@ export const sessionApi = {
 
   // Archive session
   archiveSession: async (id: string): Promise<Session> => {
-    const response: AxiosResponse<Session> = await api.patch(`/sessions/${id}/archive`);
+    const response: AxiosResponse<Session> = await api.patch(
+      `/sessions/${id}/archive`
+    );
     return response.data;
   },
 
   // Unarchive session
   unarchiveSession: async (id: string): Promise<Session> => {
-    const response: AxiosResponse<Session> = await api.patch(`/sessions/${id}/unarchive`);
+    const response: AxiosResponse<Session> = await api.patch(
+      `/sessions/${id}/unarchive`
+    );
     return response.data;
   },
 };
@@ -286,42 +335,63 @@ export const sessionApi = {
 export const userApi = {
   // Get user profile by username
   getUserProfile: async (username: string): Promise<UserProfile> => {
-    const response: AxiosResponse<UserProfile> = await api.get(`/users/${username}`);
+    const response: AxiosResponse<UserProfile> = await api.get(
+      `/users/${username}`
+    );
     return response.data;
   },
 
   // Update user profile
-  updateProfile: async (data: Partial<{
-    name: string;
-    bio: string;
-    location: string;
-    profilePicture: string;
-  }>): Promise<UserProfile> => {
-    const response: AxiosResponse<UserProfile> = await api.put('/users/profile', data);
+  updateProfile: async (
+    data: Partial<{
+      name: string;
+      bio: string;
+      location: string;
+      profilePicture: string;
+    }>
+  ): Promise<UserProfile> => {
+    const response: AxiosResponse<UserProfile> = await api.put(
+      '/users/profile',
+      data
+    );
     return response.data;
   },
 
   // Get user statistics
   getUserStats: async (userId: string): Promise<UserStats> => {
-    const response: AxiosResponse<UserStats> = await api.get(`/users/${userId}/stats`);
+    const response: AxiosResponse<UserStats> = await api.get(
+      `/users/${userId}/stats`
+    );
     return response.data;
   },
 
   // Get activity data for calendar heatmap
-  getActivityData: async (userId: string, year: number): Promise<ActivityData[]> => {
-    const response: AxiosResponse<ActivityData[]> = await api.get(`/users/${userId}/activity?year=${year}`);
+  getActivityData: async (
+    userId: string,
+    year: number
+  ): Promise<ActivityData[]> => {
+    const response: AxiosResponse<ActivityData[]> = await api.get(
+      `/users/${userId}/activity?year=${year}`
+    );
     return response.data;
   },
 
   // Get weekly activity data
-  getWeeklyActivity: async (userId: string, weeks: number = 12): Promise<WeeklyActivity[]> => {
-    const response: AxiosResponse<WeeklyActivity[]> = await api.get(`/users/${userId}/weekly-activity?weeks=${weeks}`);
+  getWeeklyActivity: async (
+    userId: string,
+    weeks: number = 12
+  ): Promise<WeeklyActivity[]> => {
+    const response: AxiosResponse<WeeklyActivity[]> = await api.get(
+      `/users/${userId}/weekly-activity?weeks=${weeks}`
+    );
     return response.data;
   },
 
   // Get project breakdown
   getProjectBreakdown: async (userId: string): Promise<ProjectBreakdown[]> => {
-    const response: AxiosResponse<ProjectBreakdown[]> = await api.get(`/users/${userId}/project-breakdown`);
+    const response: AxiosResponse<ProjectBreakdown[]> = await api.get(
+      `/users/${userId}/project-breakdown`
+    );
     return response.data;
   },
 
@@ -336,7 +406,11 @@ export const userApi = {
   },
 
   // Get followers
-  getFollowers: async (userId: string, page: number = 1, limit: number = 20): Promise<{
+  getFollowers: async (
+    userId: string,
+    page: number = 1,
+    limit: number = 20
+  ): Promise<{
     users: UserProfile[];
     totalCount: number;
     hasMore: boolean;
@@ -345,12 +419,18 @@ export const userApi = {
       users: UserProfile[];
       totalCount: number;
       hasMore: boolean;
-    }> = await api.get(`/users/${userId}/followers?page=${page}&limit=${limit}`);
+    }> = await api.get(
+      `/users/${userId}/followers?page=${page}&limit=${limit}`
+    );
     return response.data;
   },
 
   // Get following
-  getFollowing: async (userId: string, page: number = 1, limit: number = 20): Promise<{
+  getFollowing: async (
+    userId: string,
+    page: number = 1,
+    limit: number = 20
+  ): Promise<{
     users: UserProfile[];
     totalCount: number;
     hasMore: boolean;
@@ -359,12 +439,18 @@ export const userApi = {
       users: UserProfile[];
       totalCount: number;
       hasMore: boolean;
-    }> = await api.get(`/users/${userId}/following?page=${page}&limit=${limit}`);
+    }> = await api.get(
+      `/users/${userId}/following?page=${page}&limit=${limit}`
+    );
     return response.data;
   },
 
   // Search users
-  searchUsers: async (query: string, page: number = 1, limit: number = 20): Promise<{
+  searchUsers: async (
+    query: string,
+    page: number = 1,
+    limit: number = 20
+  ): Promise<{
     users: UserSearchResult[];
     totalCount: number;
     hasMore: boolean;
@@ -373,25 +459,36 @@ export const userApi = {
       users: UserSearchResult[];
       totalCount: number;
       hasMore: boolean;
-    }> = await api.get(`/users/search?q=${encodeURIComponent(query)}&page=${page}&limit=${limit}`);
+    }> = await api.get(
+      `/users/search?q=${encodeURIComponent(query)}&page=${page}&limit=${limit}`
+    );
     return response.data;
   },
 
   // Get suggested users
   getSuggestedUsers: async (limit: number = 10): Promise<SuggestedUser[]> => {
-    const response: AxiosResponse<SuggestedUser[]> = await api.get(`/users/suggested?limit=${limit}`);
+    const response: AxiosResponse<SuggestedUser[]> = await api.get(
+      `/users/suggested?limit=${limit}`
+    );
     return response.data;
   },
 
   // Get privacy settings
   getPrivacySettings: async (): Promise<PrivacySettings> => {
-    const response: AxiosResponse<PrivacySettings> = await api.get('/users/privacy-settings');
+    const response: AxiosResponse<PrivacySettings> = await api.get(
+      '/users/privacy-settings'
+    );
     return response.data;
   },
 
   // Update privacy settings
-  updatePrivacySettings: async (settings: Partial<PrivacySettings>): Promise<PrivacySettings> => {
-    const response: AxiosResponse<PrivacySettings> = await api.put('/users/privacy-settings', settings);
+  updatePrivacySettings: async (
+    settings: Partial<PrivacySettings>
+  ): Promise<PrivacySettings> => {
+    const response: AxiosResponse<PrivacySettings> = await api.put(
+      '/users/privacy-settings',
+      settings
+    );
     return response.data;
   },
 

@@ -10,7 +10,7 @@ export const FeedCarousel: React.FC = () => {
     setCurrentSlide(index);
   };
 
-  const handleSwipe = (direction: 'left' | 'right') => {
+  const _handleSwipe = (direction: 'left' | 'right') => {
     if (direction === 'left' && currentSlide < totalSlides - 1) {
       setCurrentSlide(currentSlide + 1);
     } else if (direction === 'right' && currentSlide > 0) {
@@ -30,7 +30,9 @@ export const FeedCarousel: React.FC = () => {
           <div className="w-full flex-shrink-0 px-4 md:px-0">
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-bold text-gray-900">Your Weekly Snapshot</h3>
+                <h3 className="text-lg font-bold text-gray-900">
+                  Your Weekly Snapshot
+                </h3>
                 <button className="text-[#007AFF] text-sm font-medium hover:text-[#0056D6]">
                   View Details
                 </button>
@@ -38,12 +40,24 @@ export const FeedCarousel: React.FC = () => {
 
               <div className="grid grid-cols-3 gap-4">
                 <div>
-                  <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Activities</div>
+                  <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">
+                    Activities
+                  </div>
                   <div className="flex items-baseline gap-2">
                     <span className="text-2xl font-bold text-gray-900">12</span>
                     <span className="text-sm text-green-600 flex items-center">
-                      <svg className="w-3 h-3 mr-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
+                      <svg
+                        className="w-3 h-3 mr-0.5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M5 10l7-7m0 0l7 7m-7-7v18"
+                        />
                       </svg>
                       +3
                     </span>
@@ -51,12 +65,26 @@ export const FeedCarousel: React.FC = () => {
                 </div>
 
                 <div>
-                  <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Time</div>
+                  <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">
+                    Time
+                  </div>
                   <div className="flex items-baseline gap-2">
-                    <span className="text-2xl font-bold text-gray-900">24h</span>
+                    <span className="text-2xl font-bold text-gray-900">
+                      24h
+                    </span>
                     <span className="text-sm text-green-600 flex items-center">
-                      <svg className="w-3 h-3 mr-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
+                      <svg
+                        className="w-3 h-3 mr-0.5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M5 10l7-7m0 0l7 7m-7-7v18"
+                        />
                       </svg>
                       +5h
                     </span>
@@ -64,12 +92,24 @@ export const FeedCarousel: React.FC = () => {
                 </div>
 
                 <div>
-                  <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">Projects</div>
+                  <div className="text-xs text-gray-500 uppercase tracking-wide mb-1">
+                    Projects
+                  </div>
                   <div className="flex items-baseline gap-2">
                     <span className="text-2xl font-bold text-gray-900">5</span>
                     <span className="text-sm text-gray-500 flex items-center">
-                      <svg className="w-3 h-3 mr-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" />
+                      <svg
+                        className="w-3 h-3 mr-0.5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M20 12H4"
+                        />
                       </svg>
                       0
                     </span>
@@ -106,7 +146,9 @@ export const FeedCarousel: React.FC = () => {
           <div className="w-full flex-shrink-0 px-4 md:px-0">
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-bold text-gray-900">Suggested Goal</h3>
+                <h3 className="text-lg font-bold text-gray-900">
+                  Suggested Goal
+                </h3>
                 <button className="text-[#007AFF] text-sm font-medium hover:text-[#0056D6]">
                   Customize
                 </button>
@@ -118,8 +160,12 @@ export const FeedCarousel: React.FC = () => {
                     🎯
                   </div>
                   <div>
-                    <h4 className="font-bold text-gray-900">25 Hours This Week</h4>
-                    <p className="text-xs text-gray-600">Track 25 hours of focused work</p>
+                    <h4 className="font-bold text-gray-900">
+                      25 Hours This Week
+                    </h4>
+                    <p className="text-xs text-gray-600">
+                      Track 25 hours of focused work
+                    </p>
                   </div>
                 </div>
 
@@ -129,7 +175,10 @@ export const FeedCarousel: React.FC = () => {
                     <span className="font-semibold">16h / 25h</span>
                   </div>
                   <div className="w-full bg-white rounded-full h-2 overflow-hidden">
-                    <div className="bg-gradient-to-r from-blue-500 to-indigo-600 h-full rounded-full" style={{ width: '64%' }}></div>
+                    <div
+                      className="bg-gradient-to-r from-blue-500 to-indigo-600 h-full rounded-full"
+                      style={{ width: '64%' }}
+                    ></div>
                   </div>
                 </div>
               </div>
@@ -149,9 +198,7 @@ export const FeedCarousel: React.FC = () => {
             key={index}
             onClick={() => handleDotClick(index)}
             className={`h-1.5 rounded-full transition-all duration-300 ${
-              currentSlide === index
-                ? 'w-8 bg-[#007AFF]'
-                : 'w-8 bg-gray-300'
+              currentSlide === index ? 'w-8 bg-[#007AFF]' : 'w-8 bg-gray-300'
             }`}
             aria-label={`Go to slide ${index + 1}`}
           />

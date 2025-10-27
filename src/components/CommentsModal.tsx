@@ -105,7 +105,7 @@ export const CommentsModal: React.FC<CommentsModalProps> = ({
         sessionId,
         content,
       });
-    } catch (err: any) {
+    } catch (err: unknown) {
       debug.error('CommentsModal - Failed to create comment:', err);
       throw err;
     }
@@ -114,7 +114,7 @@ export const CommentsModal: React.FC<CommentsModalProps> = ({
   const handleDelete = async (commentId: string) => {
     try {
       await deleteCommentMutation.mutateAsync({ commentId, sessionId });
-    } catch (err: any) {
+    } catch (err: unknown) {
       debug.error('CommentsModal - Failed to delete comment:', err);
       throw err;
     }
@@ -126,7 +126,7 @@ export const CommentsModal: React.FC<CommentsModalProps> = ({
 
   if (!isOpen) return null;
 
-  const formatTimeAgo = (date: Date): string => {
+  const _formatTimeAgo = (date: Date): string => {
     const now = new Date();
     const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
