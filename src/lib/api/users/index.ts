@@ -1188,12 +1188,14 @@ export const firebaseUserApi = {
       }
 
       // Query users ordered by popularity (follower count descending)
-      // This ensures we get the most popular users first
+      // Fetch a reasonable buffer to account for already-followed users
+      // If we need 5 suggestions and user follows ~20 people, fetching 30 should be sufficient
+      const fetchLimit = Math.min(limitCount * 5, 50); // 5x multiplier, max 50
       const usersQuery = query(
         collection(db, 'users'),
         where('profileVisibility', '==', 'everyone'),
         orderBy('followersCount', 'desc'),
-        limitFn(100) // Fetch top 100 popular users, then filter client-side
+        limitFn(fetchLimit)
       );
 
       const querySnapshot = await getDocs(usersQuery);
