@@ -6,39 +6,37 @@ import { ChallengeFilters } from '@/types';
 import {
   useChallenges,
   useJoinChallenge,
-  useLeaveChallenge
+  useLeaveChallenge,
 } from '@/features/challenges/hooks';
 import Header from '@/components/HeaderComponent';
 import ChallengeCard from '@/components/ChallengeCard';
 import { Button } from '@/components/ui/button';
-import {
-  Trophy,
-  Target,
-  Search,
-  TrendingUp,
-  Zap,
-  Timer
-} from 'lucide-react';
+import { Trophy, Target, Search, TrendingUp, Zap, Timer } from 'lucide-react';
 
 const filterTabs = [
   { key: 'all', label: 'All Challenges', icon: Trophy },
   { key: 'active', label: 'Active', icon: TrendingUp },
   { key: 'upcoming', label: 'Upcoming', icon: Target },
-  { key: 'participating', label: 'My Challenges', icon: Target }
+  { key: 'participating', label: 'My Challenges', icon: Target },
 ];
 
 const challengeTypeFilters = [
   { key: 'most-activity', label: 'Most Activity', icon: TrendingUp },
   { key: 'fastest-effort', label: 'Fastest Effort', icon: Zap },
   { key: 'longest-session', label: 'Longest Session', icon: Timer },
-  { key: 'group-goal', label: 'Group Goal', icon: Target }
+  { key: 'group-goal', label: 'Group Goal', icon: Target },
 ];
 
 export default function ChallengesPage() {
   const { user } = useAuth();
-  const [activeFilter, setActiveFilter] = useState<'all' | 'active' | 'upcoming' | 'participating'>('all');
+  const [activeFilter, setActiveFilter] = useState<
+    'all' | 'active' | 'upcoming' | 'participating'
+  >('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [userProgressMap, setUserProgressMap] = useState<
+    Record<string, number>
+  >({});
 
   // Build filters based on active filter state
   const filters = useMemo(() => {
@@ -64,11 +62,17 @@ export default function ChallengesPage() {
   const joinChallengeMutation = useJoinChallenge();
   const leaveChallengeMutation = useLeaveChallenge();
 
-  // Note: Participating challenges logic simplified
-  // The challenge data already includes participation info from the filter
+  // Build set of participating challenge IDs based on filter result
+  // When filtering by 'participating', all returned challenges are ones the user is in
   const participatingChallenges = useMemo(() => {
-    return new Set(challenges.filter(c => c.isParticipating).map(c => c.id));
-  }, [challenges]);
+    if (activeFilter === 'participating') {
+      // All challenges returned when filtering by participation are participating
+      return new Set(challenges.map(c => c.id));
+    }
+    // Otherwise, we need a different method to determine participation
+    // For now, we mark none as participating unless the filter explicitly sets it
+    return new Set<string>();
+  }, [challenges, activeFilter]);
 
   const handleJoinChallenge = async (challengeId: string) => {
     try {
@@ -92,9 +96,10 @@ export default function ChallengesPage() {
     if (!searchQuery) return challenges;
 
     const query = searchQuery.toLowerCase();
-    return challenges.filter(challenge =>
-      challenge.name.toLowerCase().includes(query) ||
-      challenge.description.toLowerCase().includes(query)
+    return challenges.filter(
+      challenge =>
+        challenge.name.toLowerCase().includes(query) ||
+        challenge.description.toLowerCase().includes(query)
     );
   }, [challenges, searchQuery]);
 
@@ -115,10 +120,10 @@ export default function ChallengesPage() {
         <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6 mb-6">
           {/* Status Filter Tabs */}
           <div className="flex flex-wrap gap-2 mb-4">
-            {filterTabs.map((tab) => {
+            {filterTabs.map(tab => {
               const Icon = tab.icon;
               const isActive = activeFilter === tab.key;
-              
+
               return (
                 <button
                   key={tab.key}
@@ -144,18 +149,18 @@ export default function ChallengesPage() {
                 type="text"
                 placeholder="Search challenges..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={e => setSearchQuery(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
             </div>
-            
+
             <select
               value={typeFilter}
-              onChange={(e) => setTypeFilter(e.target.value)}
+              onChange={e => setTypeFilter(e.target.value)}
               className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="all">All Types</option>
-              {challengeTypeFilters.map((type) => (
+              {challengeTypeFilters.map(type => (
                 <option key={type.key} value={type.key}>
                   {type.label}
                 </option>
@@ -168,7 +173,10 @@ export default function ChallengesPage() {
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             {[...Array(6)].map((_, i) => (
-              <div key={i} className="bg-white rounded-lg border border-gray-200 shadow-sm p-6 animate-pulse">
+              <div
+                key={i}
+                className="bg-white rounded-lg border border-gray-200 shadow-sm p-6 animate-pulse"
+              >
                 <div className="h-4 bg-gray-200 rounded mb-4"></div>
                 <div className="h-3 bg-gray-200 rounded mb-2"></div>
                 <div className="h-3 bg-gray-200 rounded mb-4"></div>
@@ -178,12 +186,12 @@ export default function ChallengesPage() {
           </div>
         ) : filteredChallenges.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-            {filteredChallenges.map((challenge) => (
+            {filteredChallenges.map(challenge => (
               <ChallengeCard
                 key={challenge.id}
                 challenge={challenge}
                 isParticipating={participatingChallenges.has(challenge.id)}
-                userProgress={challenge.userProgress?.currentValue || 0}
+                userProgress={userProgressMap[challenge.id] || 0}
                 onJoin={() => handleJoinChallenge(challenge.id)}
                 onLeave={() => handleLeaveChallenge(challenge.id)}
                 showActions={!!user}
@@ -199,14 +207,10 @@ export default function ChallengesPage() {
             <p className="text-gray-600 mb-6">
               {searchQuery
                 ? 'Try adjusting your search or filters'
-                : 'Check back later for new challenges to join'
-              }
+                : 'Check back later for new challenges to join'}
             </p>
             {searchQuery && (
-              <Button
-                variant="outline"
-                onClick={() => setSearchQuery('')}
-              >
+              <Button variant="outline" onClick={() => setSearchQuery('')}>
                 Clear Search
               </Button>
             )}
