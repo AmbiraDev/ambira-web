@@ -124,6 +124,7 @@ File: `.github/workflows/playwright.yml`
 ### Automatic Retries
 
 Tests automatically retry up to 2 times in CI:
+
 - Handles transient network issues
 - Deals with timing inconsistencies
 - Reduces false positives
@@ -146,24 +147,39 @@ When tests fail, CI uploads:
 
 ## Required Secrets
 
-Configure these in GitHub repository settings (Settings → Secrets):
+### Firebase Configuration (Recommended)
 
-### Firebase Configuration
+The CI workflow can build and run with mock Firebase credentials as a fallback, but **for full functionality, configure these secrets** in GitHub repository settings (Settings → Secrets and variables → Actions):
 
-```
-NEXT_PUBLIC_FIREBASE_API_KEY
-NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
-NEXT_PUBLIC_FIREBASE_PROJECT_ID
-NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET
-NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID
-NEXT_PUBLIC_FIREBASE_APP_ID
-```
+| Secret Name                                | Description                  | Required?   |
+| ------------------------------------------ | ---------------------------- | ----------- |
+| `NEXT_PUBLIC_FIREBASE_API_KEY`             | Firebase API Key             | Recommended |
+| `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`         | Firebase Auth Domain         | Recommended |
+| `NEXT_PUBLIC_FIREBASE_PROJECT_ID`          | Firebase Project ID          | Recommended |
+| `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET`      | Firebase Storage Bucket      | Recommended |
+| `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID` | Firebase Messaging Sender ID | Recommended |
+| `NEXT_PUBLIC_FIREBASE_APP_ID`              | Firebase App ID              | Recommended |
+
+**Behavior Without Secrets:**
+
+- ✅ Build will complete using mock Firebase credentials
+- ✅ Server will start successfully
+- ⚠️ Tests may fail when interacting with Firebase services
+- ⚠️ Authentication flows won't work properly
+
+**Behavior With Secrets:**
+
+- ✅ Full Firebase functionality available
+- ✅ Tests can verify authentication flows
+- ✅ Real-world Firebase interactions tested
+
+For detailed setup instructions, see [`.github/GITHUB_SECRETS_SETUP.md`](../../.github/GITHUB_SECRETS_SETUP.md).
 
 ### Optional Secrets
 
-```
-PLAYWRIGHT_BASE_URL  # Override test target URL
-```
+| Secret Name           | Description              | Default                 |
+| --------------------- | ------------------------ | ----------------------- |
+| `PLAYWRIGHT_BASE_URL` | Override test target URL | `http://localhost:3000` |
 
 ## Local Testing Before CI
 
@@ -214,6 +230,7 @@ npm run test:e2e:ui
 ### Standards Tested
 
 All pages must comply with:
+
 - WCAG 2.0 Level A
 - WCAG 2.0 Level AA
 - WCAG 2.1 Level A
@@ -222,6 +239,7 @@ All pages must comply with:
 ### Common Accessibility Issues
 
 Tests check for:
+
 - Missing alt text on images
 - Insufficient color contrast
 - Missing ARIA labels
@@ -277,15 +295,36 @@ When NOT to update:
 
 ## Troubleshooting
 
+### Build Fails with Firebase Error
+
+**Error Message**:
+
+```
+Error [FirebaseError]: Firebase: Error (auth/invalid-api-key).
+Export encountered an error on /_not-found/page
+```
+
+**Cause**: Firebase environment variables are not configured in GitHub Secrets.
+
+**Solution**:
+
+1. The workflow will now build successfully with mock credentials
+2. For full functionality, configure Firebase secrets (see [Required Secrets](#required-secrets))
+3. Follow the setup guide in [`.github/GITHUB_SECRETS_SETUP.md`](../../.github/GITHUB_SECRETS_SETUP.md)
+
+**Note**: The workflow has been updated to use mock Firebase credentials as fallbacks, so builds will complete even without secrets configured.
+
 ### Tests Pass Locally but Fail in CI
 
 **Possible Causes**:
+
 - Environment differences
 - Timing issues (network, rendering)
 - Missing environment variables
 - CI-specific browser behavior
 
 **Solutions**:
+
 - Add explicit waits: `await page.waitForLoadState('networkidle')`
 - Check environment variables are set in GitHub Secrets
 - Review CI logs for specific error messages
@@ -294,12 +333,14 @@ When NOT to update:
 ### Tests Are Flaky
 
 **Possible Causes**:
+
 - Race conditions
 - Network timing
 - Animation timing
 - External API dependencies
 
 **Solutions**:
+
 - Use Playwright's auto-waiting
 - Add `waitForLoadState` before assertions
 - Avoid fixed timeouts (use dynamic waits)
@@ -308,12 +349,14 @@ When NOT to update:
 ### Tests Are Too Slow
 
 **Possible Causes**:
+
 - Too many tests
 - Unnecessary waits
 - Network requests
 - Heavy page rendering
 
 **Solutions**:
+
 - Run only critical tests in smoke suite
 - Remove fixed `waitForTimeout` calls
 - Mock slow network requests
@@ -322,11 +365,13 @@ When NOT to update:
 ### Browser Installation Fails
 
 **Possible Causes**:
+
 - Cache corruption
 - Playwright version mismatch
 - System dependency issues
 
 **Solutions**:
+
 - Clear Playwright cache in CI
 - Update Playwright to latest version
 - Ensure system dependencies are installed
