@@ -1186,10 +1186,11 @@ export const firebaseUserApi = {
       }
 
       // Get users with public profiles - fetch more to account for filtering
+      // Use a higher multiplier to ensure we get enough suggestions after filtering
       const usersQuery = query(
         collection(db, 'users'),
         where('profileVisibility', '==', 'everyone'),
-        limitFn(limitCount * 3) // Get more to filter out current user and following
+        limitFn(Math.max(limitCount * 10, 50)) // Fetch more to ensure enough suggestions after filtering
       );
 
       const querySnapshot = await getDocs(usersQuery);
