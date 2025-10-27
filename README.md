@@ -5,6 +5,7 @@ A social productivity tracking application built with Next.js, TypeScript, and T
 ## Features
 
 ### ✅ Implemented Foundation
+
 - **Next.js 15** with App Router and TypeScript
 - **Electric-blue + White Theme** with Tailwind CSS
 - **Responsive Layout** with fixed header and optional sidebars
@@ -19,6 +20,7 @@ A social productivity tracking application built with Next.js, TypeScript, and T
   - `/settings` and `/settings/privacy` - User settings
 
 ### ✅ Social Features
+
 - **User Profiles** with Strava-inspired profile pages
   - Clean white profile header with large avatar and stats (followers, following, total hours)
   - Tabbed interface: Overview, Achievements, Following, Posts
@@ -39,7 +41,7 @@ A social productivity tracking application built with Next.js, TypeScript, and T
   - Follow/unfollow buttons with optimistic updates
   - Followers and following lists
   - Privacy-aware profile visibility
-- **User Discovery** 
+- **User Discovery**
   - Search users by name or username with real-time results
   - Suggested users with algorithm-based recommendations
   - User cards with follow buttons and profile previews
@@ -49,6 +51,7 @@ A social productivity tracking application built with Next.js, TypeScript, and T
   - Blocked users management
 
 ### ✅ Challenges System (NEW!)
+
 - **Challenge Types** with different competition formats:
   - **Most Activity**: Compete to log the most productive hours
   - **Fastest Effort**: Achieve the best tasks-per-hour ratio
@@ -89,6 +92,7 @@ A social productivity tracking application built with Next.js, TypeScript, and T
   - Footer restyled to match blue/gray theme; removed app store badges and placeholder social icons
 
 ### 🎨 Design System
+
 - **Electric Blue Primary Color** (#007AFF) for logos, buttons, and accents
 - **Clean White Surfaces** for posts and backgrounds
 - **Success Green** (#34C759) for positive actions
@@ -96,6 +100,7 @@ A social productivity tracking application built with Next.js, TypeScript, and T
 - **Strava-inspired Layout** with three-column desktop and single-column mobile
 
 ### 🏗️ Architecture
+
 - **Component-based** React architecture
 - **TypeScript** for type safety
 - **ESLint + Prettier** for code consistency
@@ -105,23 +110,27 @@ A social productivity tracking application built with Next.js, TypeScript, and T
 ## Getting Started
 
 ### Prerequisites
-- Node.js 18+ 
+
+- Node.js 18+
 - npm or yarn
 
 ### Installation
 
 1. Clone the repository:
+
 ```bash
 git clone <repository-url>
 cd ambira-web
 ```
 
 2. Install dependencies:
+
 ```bash
 npm install
 ```
 
 3. Start the development server:
+
 ```bash
 npm run dev
 ```
@@ -217,6 +226,23 @@ The following composite indexes are required for the feed to work correctly:
 
 Create these indexes in Firebase Console or they will be auto-suggested when you first load the feed.
 
+## Documentation
+
+For comprehensive documentation, see:
+
+- **[Documentation Hub](./docs/index.md)** - Central navigation for all documentation
+- **[CLAUDE.md](./CLAUDE.md)** - AI assistant guidelines and project instructions
+- **[Architecture Documentation](./docs/architecture/README.md)** - System architecture and design patterns
+- **[Testing Documentation](./docs/testing/README.md)** - Testing guides and best practices
+- **[Testing Quickstart](./docs/testing/QUICKSTART.md)** - Get started with testing quickly
+
+### Key Documentation Highlights
+
+- **[Caching Strategy](./docs/architecture/CACHING_STRATEGY.md)** - React Query implementation patterns
+- **[Architecture Examples](./docs/architecture/EXAMPLES.md)** - Complete feature implementations
+- **[Migration Guide](./docs/architecture/MIGRATION_GUIDE.md)** - Guide for migrating to new patterns
+- **[Playwright CI Setup](./docs/testing/playwright-ci-setup.md)** - E2E testing in CI/CD
+
 ## Contributing
 
 This project follows a structured development approach with clear separation of concerns and TypeScript for type safety. When adding new features:
@@ -226,6 +252,8 @@ This project follows a structured development approach with clear separation of 
 3. Add pages in `src/app/`
 4. Follow the established design system
 5. Write tests for new functionality
+6. Consult the [Architecture Documentation](./docs/architecture/README.md) for patterns
+7. See [Testing Documentation](./docs/testing/README.md) for testing requirements
 
 ## License
 

@@ -58,7 +58,7 @@ export function useFollowers(userId: string) {
                   bio: userData.bio,
                 } as FollowerUser;
               } catch (error) {
-                console.warn(`Failed to fetch follower ${followerId}:`, error);
+                // Failed to fetch follower user
                 return null;
               }
             }
@@ -71,7 +71,6 @@ export function useFollowers(userId: string) {
         }
       } catch (error) {
         // If social_graph doesn't exist, fall through to old follows collection
-        console.log('Social graph not available, using follows collection');
       }
 
       // Fallback to old follows collection
@@ -103,7 +102,7 @@ export function useFollowers(userId: string) {
             bio: userData.bio,
           } as FollowerUser;
         } catch (err) {
-          console.warn(`Failed to fetch follower ${followerId}:`, err);
+          // Failed to fetch follower user
           return null;
         }
       });

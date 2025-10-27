@@ -69,7 +69,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({
           );
           setIsFollowing(isUserFollowing);
         } catch (error) {
-          console.error('Error checking follow status:', error);
+          // Error checking follow status - silently fail
         }
       }
     };
@@ -93,7 +93,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({
         setIsFollowing(true);
       }
     } catch (error) {
-      console.error('Error toggling follow:', error);
+      // Error toggling follow - silently fail
     } finally {
       setIsFollowLoading(false);
     }
@@ -126,7 +126,6 @@ export const SessionCard: React.FC<SessionCardProps> = ({
 
   // Guard: Return null if user data is missing (during architecture migration)
   if (!session.user) {
-    console.warn(`Session ${session.id} is missing user data`);
     return null;
   }
 

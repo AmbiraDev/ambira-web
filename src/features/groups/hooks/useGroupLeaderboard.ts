@@ -106,10 +106,7 @@ export function useGroupLeaderboard(
             rank: 0, // Will be set after sorting
           } as LeaderboardEntry;
         } catch (error) {
-          console.warn(
-            `Failed to fetch leaderboard data for user ${userId}:`,
-            error
-          );
+          // Failed to fetch leaderboard data for user
           return null;
         }
       });

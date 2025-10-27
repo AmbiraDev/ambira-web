@@ -48,10 +48,10 @@ export function AuthInitializer({ children }: AuthInitializerProps) {
       // This MUST happen before setting up the auth listener
       // getRedirectResult can only be called once per redirect
       try {
-        const redirectResult = await firebaseAuthApi.handleGoogleRedirectResult();
+        const redirectResult =
+          await firebaseAuthApi.handleGoogleRedirectResult();
 
         if (redirectResult) {
-          console.log('[AuthInitializer] ✅ Google redirect result received');
           redirectHandledRef.current = true;
 
           // Update React Query cache immediately
@@ -71,43 +71,39 @@ export function AuthInitializer({ children }: AuthInitializerProps) {
       }
 
       // STEP 2: Set up Firebase auth state listener
-      authUnsubscribe = firebaseAuthApi.onAuthStateChanged(async (firebaseUser) => {
-        console.log('[AuthInitializer] 🔄 Auth state changed:', {
-          hasUser: !!firebaseUser,
-          redirectHandled: redirectHandledRef.current,
-        });
-
-        // Skip if we already handled redirect
-        if (redirectHandledRef.current) {
-          console.log('[AuthInitializer] ⏭️  Skipping - redirect already handled');
-          redirectHandledRef.current = false; // Reset for next time
-          return;
-        }
-
-        try {
-          if (firebaseUser) {
-            // User is signed in - fetch full user data from Firestore
-            const userData = await firebaseAuthApi.getCurrentUser();
-            console.log('[AuthInitializer] ✅ User authenticated:', userData.username);
-
-            // Update React Query cache
-            queryClient.setQueryData(AUTH_KEYS.session(), userData);
-          } else {
-            // User is signed out
-            console.log('[AuthInitializer] 🚪 User signed out');
-
-            // Clear React Query cache
-            queryClient.setQueryData(AUTH_KEYS.session(), null);
+      authUnsubscribe = firebaseAuthApi.onAuthStateChanged(
+        async firebaseUser => {
+          // Skip if we already handled redirect
+          if (redirectHandledRef.current) {
+            redirectHandledRef.current = false; // Reset for next time
+            return;
           }
-        } catch (error) {
-          console.error('[AuthInitializer] ❌ Auth state change error:', error);
 
-          // On error, assume user is not authenticated
-          queryClient.setQueryData(AUTH_KEYS.session(), null);
-        } finally {
-          setIsInitializing(false);
+          try {
+            if (firebaseUser) {
+              // User is signed in - fetch full user data from Firestore
+              const userData = await firebaseAuthApi.getCurrentUser();
+
+              // Update React Query cache
+              queryClient.setQueryData(AUTH_KEYS.session(), userData);
+            } else {
+              // User is signed out
+              // Clear React Query cache
+              queryClient.setQueryData(AUTH_KEYS.session(), null);
+            }
+          } catch (error) {
+            console.error(
+              '[AuthInitializer] ❌ Auth state change error:',
+              error
+            );
+
+            // On error, assume user is not authenticated
+            queryClient.setQueryData(AUTH_KEYS.session(), null);
+          } finally {
+            setIsInitializing(false);
+          }
         }
-      });
+      );
     };
 
     // Start initialization
@@ -116,7 +112,6 @@ export function AuthInitializer({ children }: AuthInitializerProps) {
     // Cleanup: Unsubscribe from Firebase listener on unmount
     return () => {
       if (authUnsubscribe) {
-        console.log('[AuthInitializer] 🧹 Cleaning up auth listener');
         authUnsubscribe();
       }
     };

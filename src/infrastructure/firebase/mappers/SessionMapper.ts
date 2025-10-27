@@ -60,9 +60,7 @@ export class SessionMapper {
     try {
       const userDoc = await getDoc(firestoreDoc(db, 'users', data.userId));
       if (!userDoc.exists()) {
-        console.warn(
-          `Skipping session ${doc.id} - user ${data.userId} does not exist`
-        );
+        // User does not exist - skip session
         return null;
       }
 
@@ -79,10 +77,6 @@ export class SessionMapper {
       };
     } catch (error) {
       // If we can't fetch the user (permissions, deleted, etc), skip this session
-      console.warn(
-        `Skipping session ${doc.id} - failed to fetch user ${data.userId}:`,
-        error
-      );
       return null;
     }
 
@@ -135,7 +129,7 @@ export class SessionMapper {
             };
           }
         } catch (error) {
-          console.warn(`Failed to fetch activity ${activityId}:`, error);
+          // Failed to fetch activity - use default
         }
       }
     }
@@ -246,7 +240,7 @@ export class SessionMapper {
       const batchResults = await Promise.all(
         batch.map(doc =>
           this.toDomainEnriched(doc).catch(error => {
-            console.warn(`Failed to enrich session ${doc.id}:`, error);
+            // Failed to enrich session - return null to filter out
             return null;
           })
         )

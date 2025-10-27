@@ -2,7 +2,11 @@
  * Streak Mutation Hooks - React Query Boundary
  */
 
-import { useMutation, useQueryClient, UseMutationOptions } from '@tanstack/react-query';
+import {
+  useMutation,
+  useQueryClient,
+  UseMutationOptions,
+} from '@tanstack/react-query';
 import { StreakService } from '../services/StreakService';
 import { STREAK_KEYS } from './useStreaks';
 
@@ -19,7 +23,7 @@ const streakService = new StreakService();
  *   { userId: 'user-123', isPublic: true },
  *   {
  *     onSuccess: () => {
- *       console.log('Streak visibility updated');
+ *       // Streak visibility updated
  *     }
  *   }
  * );

@@ -435,7 +435,6 @@ export const firebaseSessionApi = {
         localStorage.removeItem('timer-event');
       } catch (storageError) {
         // Ignore storage errors (e.g., in private browsing mode)
-        console.warn('Failed to broadcast session cancellation:', storageError);
       }
     } catch (error) {
       const apiError = handleError(error, 'Clear active session', {

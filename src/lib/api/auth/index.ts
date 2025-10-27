@@ -55,7 +55,6 @@ const checkUsernameExists = async (username: string): Promise<boolean> => {
     });
     // If there's an error checking, allow the signup to proceed
     // Firebase Auth will handle duplicate emails
-    console.warn('Error checking username availability:', apiError.userMessage);
     return false;
   }
 };
@@ -78,7 +77,6 @@ const checkEmailExistsInFirestore = async (email: string): Promise<boolean> => {
     const apiError = handleError(error, 'Check email availability', {
       severity: ErrorSeverity.WARNING,
     });
-    console.warn('Error checking email availability:', apiError.userMessage);
     return false;
   }
 };

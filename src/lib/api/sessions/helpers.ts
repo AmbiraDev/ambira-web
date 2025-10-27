@@ -3,10 +3,7 @@
  * Shared utilities for session operations
  */
 
-import {
-  doc,
-  getDoc,
-} from 'firebase/firestore';
+import { doc, getDoc } from 'firebase/firestore';
 
 import { db, auth } from '@/lib/firebase';
 import {
@@ -37,9 +34,6 @@ export const populateSessionsWithDetails = async (
       } catch (error) {
         // Handle permission errors for deleted users
         if (isPermissionError(error) || isNotFoundError(error)) {
-          console.warn(
-            `Skipping session ${sessionDoc.id} - user ${sessionData.userId} is inaccessible or deleted`
-          );
           return null;
         }
         // Re-throw other errors
@@ -47,9 +41,7 @@ export const populateSessionsWithDetails = async (
       }
 
       if (!userDoc.exists()) {
-        console.warn(
-          `Skipping session ${sessionDoc.id} - user ${sessionData.userId} no longer exists`
-        );
+        // User no longer exists - skip session
         return null;
       }
       const userData = userDoc.data();
@@ -60,7 +52,9 @@ export const populateSessionsWithDetails = async (
 
       if (activityId) {
         // First, check if it's a default activity
-        const defaultActivity = DEFAULT_ACTIVITIES.find(a => a.id === activityId);
+        const defaultActivity = DEFAULT_ACTIVITIES.find(
+          a => a.id === activityId
+        );
 
         if (defaultActivity) {
           activityData = {
@@ -76,7 +70,13 @@ export const populateSessionsWithDetails = async (
           // If not a default activity, try to fetch from custom activities collection
           try {
             const activityDoc = await getDoc(
-              doc(db, 'projects', sessionData.userId, 'userProjects', activityId)
+              doc(
+                db,
+                'projects',
+                sessionData.userId,
+                'userProjects',
+                activityId
+              )
             );
             if (activityDoc.exists()) {
               activityData = activityDoc.data();
@@ -128,50 +128,62 @@ export const populateSessionsWithDetails = async (
           createdAt: convertTimestamp(userData?.createdAt) || new Date(),
           updatedAt: convertTimestamp(userData?.updatedAt) || new Date(),
         },
-        activity: activityData ? {
-          id: activityData.id || activityId || '',
-          userId: sessionData.userId,
-          name: activityData.name || 'Unknown Activity',
-          description: activityData.description || '',
-          icon: activityData.icon || 'flat-color-icons:briefcase',
-          color: activityData.color || '#007AFF',
-          status: activityData.status || 'active',
-          isDefault: activityData.isDefault || false,
-          createdAt: activityData.createdAt ? convertTimestamp(activityData.createdAt) : new Date(),
-          updatedAt: activityData.updatedAt ? convertTimestamp(activityData.updatedAt) : new Date(),
-        } : {
-          id: activityId || '',
-          userId: sessionData.userId,
-          name: 'Unknown Activity',
-          description: '',
-          icon: 'flat-color-icons:briefcase',
-          color: '#007AFF',
-          status: 'active',
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
-        project: activityData ? {
-          id: activityData.id || activityId || '',
-          userId: sessionData.userId,
-          name: activityData.name || 'Unknown Activity',
-          description: activityData.description || '',
-          icon: activityData.icon || 'flat-color-icons:briefcase',
-          color: activityData.color || '#007AFF',
-          status: activityData.status || 'active',
-          isDefault: activityData.isDefault || false,
-          createdAt: activityData.createdAt ? convertTimestamp(activityData.createdAt) : new Date(),
-          updatedAt: activityData.updatedAt ? convertTimestamp(activityData.updatedAt) : new Date(),
-        } : {
-          id: activityId || '',
-          userId: sessionData.userId,
-          name: 'Unknown Activity',
-          description: '',
-          icon: 'flat-color-icons:briefcase',
-          color: '#007AFF',
-          status: 'active',
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
+        activity: activityData
+          ? {
+              id: activityData.id || activityId || '',
+              userId: sessionData.userId,
+              name: activityData.name || 'Unknown Activity',
+              description: activityData.description || '',
+              icon: activityData.icon || 'flat-color-icons:briefcase',
+              color: activityData.color || '#007AFF',
+              status: activityData.status || 'active',
+              isDefault: activityData.isDefault || false,
+              createdAt: activityData.createdAt
+                ? convertTimestamp(activityData.createdAt)
+                : new Date(),
+              updatedAt: activityData.updatedAt
+                ? convertTimestamp(activityData.updatedAt)
+                : new Date(),
+            }
+          : {
+              id: activityId || '',
+              userId: sessionData.userId,
+              name: 'Unknown Activity',
+              description: '',
+              icon: 'flat-color-icons:briefcase',
+              color: '#007AFF',
+              status: 'active',
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            },
+        project: activityData
+          ? {
+              id: activityData.id || activityId || '',
+              userId: sessionData.userId,
+              name: activityData.name || 'Unknown Activity',
+              description: activityData.description || '',
+              icon: activityData.icon || 'flat-color-icons:briefcase',
+              color: activityData.color || '#007AFF',
+              status: activityData.status || 'active',
+              isDefault: activityData.isDefault || false,
+              createdAt: activityData.createdAt
+                ? convertTimestamp(activityData.createdAt)
+                : new Date(),
+              updatedAt: activityData.updatedAt
+                ? convertTimestamp(activityData.updatedAt)
+                : new Date(),
+            }
+          : {
+              id: activityId || '',
+              userId: sessionData.userId,
+              name: 'Unknown Activity',
+              description: '',
+              icon: 'flat-color-icons:briefcase',
+              color: '#007AFF',
+              status: 'active',
+              createdAt: new Date(),
+              updatedAt: new Date(),
+            },
       };
 
       return session;
