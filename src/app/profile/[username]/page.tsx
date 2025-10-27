@@ -14,8 +14,6 @@
  * For now, we've separated routing from presentation.
  */
 
-'use client';
-
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import Header from '@/components/HeaderComponent';
 import MobileHeader from '@/components/MobileHeader';

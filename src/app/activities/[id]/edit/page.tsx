@@ -393,7 +393,10 @@ function EditActivityContent({ activityId }: { activityId: string }) {
     }
   };
 
-  const handleInputChange = (field: keyof UpdateActivityData, value: any) => {
+  const handleInputChange = (
+    field: keyof UpdateActivityData,
+    value: string | number | undefined
+  ) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: undefined }));

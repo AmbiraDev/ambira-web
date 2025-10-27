@@ -14,6 +14,7 @@ import {
   Bell,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { useAuth } from '@/hooks/useAuth';
 import {
   useNotifications,
@@ -166,9 +167,11 @@ function SwipeableNotificationItem({
           {/* Avatar / Icon */}
           <div className="flex-shrink-0">
             {notification.actorProfilePicture ? (
-              <img
+              <Image
                 src={notification.actorProfilePicture}
                 alt={notification.actorName ?? ''}
+                width={48}
+                height={48}
                 className="w-12 h-12 rounded-full object-cover"
               />
             ) : (

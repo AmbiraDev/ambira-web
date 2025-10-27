@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { useActivities } from '@/hooks/useActivitiesQuery';
 import { useState, useEffect } from 'react';
@@ -15,7 +16,8 @@ interface DailyGoalProgress {
 
 function DailyGoals() {
   const { user } = useAuth();
-  const { data: activities = [], isLoading: activitiesLoading } = useActivities();
+  const { data: activities = [], isLoading: activitiesLoading } =
+    useActivities();
   const [goals, setGoals] = useState<DailyGoalProgress[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -31,7 +33,7 @@ function DailyGoals() {
 
         // Filter activities with weekly targets
         const activitiesWithGoals = activities.filter(
-          (activity) => activity.weeklyTarget && activity.weeklyTarget > 0
+          activity => activity.weeklyTarget && activity.weeklyTarget > 0
         );
 
         if (activitiesWithGoals.length === 0) {
@@ -46,7 +48,9 @@ function DailyGoals() {
 
         // Fetch today's sessions
         const { db } = await import('@/lib/firebase');
-        const { collection, getDocs, query, where } = await import('firebase/firestore');
+        const { collection, getDocs, query, where } = await import(
+          'firebase/firestore'
+        );
 
         const q = query(
           collection(db, 'sessions'),
@@ -59,7 +63,7 @@ function DailyGoals() {
         // Calculate progress for each activity
         const progressMap = new Map<string, number>();
 
-        snapshot.forEach((doc) => {
+        snapshot.forEach(doc => {
           const data: any = doc.data();
           const activityId = data.activityId || data.projectId;
           if (!activityId) return;
@@ -70,18 +74,23 @@ function DailyGoals() {
         });
 
         // Build daily goals array
-        const dailyGoals: DailyGoalProgress[] = activitiesWithGoals.map((activity) => {
-          const dailyGoal = (activity.weeklyTarget || 0) / 7;
-          const currentProgress = progressMap.get(activity.id) || 0;
-          const percentage = Math.min((currentProgress / dailyGoal) * 100, 100);
+        const dailyGoals: DailyGoalProgress[] = activitiesWithGoals.map(
+          activity => {
+            const dailyGoal = (activity.weeklyTarget || 0) / 7;
+            const currentProgress = progressMap.get(activity.id) || 0;
+            const percentage = Math.min(
+              (currentProgress / dailyGoal) * 100,
+              100
+            );
 
-          return {
-            activity,
-            dailyGoal,
-            currentProgress,
-            percentage,
-          };
-        });
+            return {
+              activity,
+              dailyGoal,
+              currentProgress,
+              percentage,
+            };
+          }
+        );
 
         setGoals(dailyGoals);
       } catch (error) {
@@ -112,7 +121,7 @@ function DailyGoals() {
   if (goals.length === 0 && !isLoading) {
     return (
       <div className="flex justify-center mt-8 mr-4">
-        <a
+        <Link
           href="/activities/new"
           className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#007AFF] text-white rounded-lg font-semibold text-sm hover:bg-[#0056D6] transition-colors shadow-md hover:shadow-lg"
         >
@@ -130,7 +139,7 @@ function DailyGoals() {
             />
           </svg>
           Create Your First Activity
-        </a>
+        </Link>
       </div>
     );
   }
@@ -143,7 +152,7 @@ function DailyGoals() {
 
       {isLoading ? (
         <div className="space-y-4">
-          {[1, 2].map((i) => (
+          {[1, 2].map(i => (
             <div key={i} className="animate-pulse flex items-center gap-4">
               <div className="w-[60px] h-[60px] bg-gray-200 rounded-full"></div>
               <div className="flex-1">
@@ -155,17 +164,25 @@ function DailyGoals() {
         </div>
       ) : (
         <div className="space-y-4">
-          {goals.map((goal) => {
+          {goals.map(goal => {
             const radius = 26;
             const circumference = 2 * Math.PI * radius;
-            const strokeDashoffset = circumference - (goal.percentage / 100) * circumference;
+            const strokeDashoffset =
+              circumference - (goal.percentage / 100) * circumference;
 
             return (
               <div key={goal.activity.id} className="flex items-center gap-4">
                 {/* Circular Progress Indicator */}
-                <div className="relative flex-shrink-0" style={{ width: 60, height: 60 }}>
+                <div
+                  className="relative flex-shrink-0"
+                  style={{ width: 60, height: 60 }}
+                >
                   {/* Background circle */}
-                  <svg className="absolute inset-0 -rotate-90" width="60" height="60">
+                  <svg
+                    className="absolute inset-0 -rotate-90"
+                    width="60"
+                    height="60"
+                  >
                     <circle
                       cx="30"
                       cy="30"

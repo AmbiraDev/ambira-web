@@ -20,9 +20,8 @@ jest.mock('@/lib/imageUpload');
 jest.mock('next/image', () => ({
   __esModule: true,
   default: (props: any) => {
-    // eslint-disable-next-line jsx-a11y/alt-text, @next/next/no-img-element
     return <img {...props} />;
-  }
+  },
 }));
 
 describe('SessionTimerEnhanced - Image Upload', () => {
@@ -36,11 +35,11 @@ describe('SessionTimerEnhanced - Image Upload', () => {
   const mockGetFormattedTime = jest.fn((seconds: number) => '01:00:00');
 
   const mockProjects = [
-    { id: 'proj1', name: 'Test Project', icon: '📝', color: '#007AFF' }
+    { id: 'proj1', name: 'Test Project', icon: '📝', color: '#007AFF' },
   ];
 
   const mockTasks = [
-    { id: 'task1', name: 'Test Task', projectId: 'proj1', status: 'active' }
+    { id: 'task1', name: 'Test Task', projectId: 'proj1', status: 'active' },
   ];
 
   beforeEach(() => {
@@ -55,7 +54,7 @@ describe('SessionTimerEnhanced - Image Upload', () => {
         selectedTasks: [],
         activeTimerId: 'timer-123',
         isConnected: true,
-        lastAutoSave: null
+        lastAutoSave: null,
       },
       startTimer: mockStartTimer,
       pauseTimer: mockPauseTimer,
@@ -64,7 +63,7 @@ describe('SessionTimerEnhanced - Image Upload', () => {
       resetTimer: mockResetTimer,
       updateSelectedTasks: mockUpdateSelectedTasks,
       getElapsedTime: mockGetElapsedTime,
-      getFormattedTime: mockGetFormattedTime
+      getFormattedTime: mockGetFormattedTime,
     });
 
     (useActivities as jest.Mock).mockReturnValue({
@@ -75,7 +74,7 @@ describe('SessionTimerEnhanced - Image Upload', () => {
 
     (uploadImages as jest.Mock).mockResolvedValue([
       { url: 'https://example.com/image1.jpg', path: 'path/to/image1.jpg' },
-      { url: 'https://example.com/image2.jpg', path: 'path/to/image2.jpg' }
+      { url: 'https://example.com/image2.jpg', path: 'path/to/image2.jpg' },
     ]);
 
     // Mock URL.createObjectURL
@@ -111,14 +110,18 @@ describe('SessionTimerEnhanced - Image Upload', () => {
     });
 
     // Create mock file
-    const file = new File(['image content'], 'test-image.jpg', { type: 'image/jpeg' });
+    const file = new File(['image content'], 'test-image.jpg', {
+      type: 'image/jpeg',
+    });
 
     // Find file input and simulate file selection
-    const fileInput = screen.getByLabelText(/add images/i).querySelector('input[type="file"]') as HTMLInputElement;
+    const fileInput = screen
+      .getByLabelText(/add images/i)
+      .querySelector('input[type="file"]') as HTMLInputElement;
 
     Object.defineProperty(fileInput, 'files', {
       value: [file],
-      writable: false
+      writable: false,
     });
 
     fireEvent.change(fileInput);
@@ -139,11 +142,13 @@ describe('SessionTimerEnhanced - Image Upload', () => {
     });
 
     const file = new File(['image'], 'test.jpg', { type: 'image/jpeg' });
-    const fileInput = screen.getByLabelText(/add images/i).querySelector('input[type="file"]') as HTMLInputElement;
+    const fileInput = screen
+      .getByLabelText(/add images/i)
+      .querySelector('input[type="file"]') as HTMLInputElement;
 
     Object.defineProperty(fileInput, 'files', {
       value: [file],
-      writable: false
+      writable: false,
     });
 
     fireEvent.change(fileInput);
@@ -172,14 +177,16 @@ describe('SessionTimerEnhanced - Image Upload', () => {
       new File(['1'], '1.jpg', { type: 'image/jpeg' }),
       new File(['2'], '2.jpg', { type: 'image/jpeg' }),
       new File(['3'], '3.jpg', { type: 'image/jpeg' }),
-      new File(['4'], '4.jpg', { type: 'image/jpeg' })
+      new File(['4'], '4.jpg', { type: 'image/jpeg' }),
     ];
 
-    const fileInput = screen.getByLabelText(/add images/i).querySelector('input[type="file"]') as HTMLInputElement;
+    const fileInput = screen
+      .getByLabelText(/add images/i)
+      .querySelector('input[type="file"]') as HTMLInputElement;
 
     Object.defineProperty(fileInput, 'files', {
       value: files,
-      writable: false
+      writable: false,
     });
 
     fireEvent.change(fileInput);
@@ -204,19 +211,25 @@ describe('SessionTimerEnhanced - Image Upload', () => {
     });
 
     // Create a file larger than 5MB
-    const largeFile = new File(['x'.repeat(6 * 1024 * 1024)], 'large.jpg', { type: 'image/jpeg' });
+    const largeFile = new File(['x'.repeat(6 * 1024 * 1024)], 'large.jpg', {
+      type: 'image/jpeg',
+    });
 
-    const fileInput = screen.getByLabelText(/add images/i).querySelector('input[type="file"]') as HTMLInputElement;
+    const fileInput = screen
+      .getByLabelText(/add images/i)
+      .querySelector('input[type="file"]') as HTMLInputElement;
 
     Object.defineProperty(fileInput, 'files', {
       value: [largeFile],
-      writable: false
+      writable: false,
     });
 
     fireEvent.change(fileInput);
 
     await waitFor(() => {
-      expect(alertMock).toHaveBeenCalledWith(expect.stringContaining('too large'));
+      expect(alertMock).toHaveBeenCalledWith(
+        expect.stringContaining('too large')
+      );
     });
 
     alertMock.mockRestore();
@@ -236,17 +249,21 @@ describe('SessionTimerEnhanced - Image Upload', () => {
 
     const textFile = new File(['text'], 'file.txt', { type: 'text/plain' });
 
-    const fileInput = screen.getByLabelText(/add images/i).querySelector('input[type="file"]') as HTMLInputElement;
+    const fileInput = screen
+      .getByLabelText(/add images/i)
+      .querySelector('input[type="file"]') as HTMLInputElement;
 
     Object.defineProperty(fileInput, 'files', {
       value: [textFile],
-      writable: false
+      writable: false,
     });
 
     fireEvent.change(fileInput);
 
     await waitFor(() => {
-      expect(alertMock).toHaveBeenCalledWith(expect.stringContaining('not an image'));
+      expect(alertMock).toHaveBeenCalledWith(
+        expect.stringContaining('not an image')
+      );
     });
 
     alertMock.mockRestore();
@@ -263,11 +280,13 @@ describe('SessionTimerEnhanced - Image Upload', () => {
     });
 
     const file = new File(['image'], 'test.jpg', { type: 'image/jpeg' });
-    const fileInput = screen.getByLabelText(/add images/i).querySelector('input[type="file"]') as HTMLInputElement;
+    const fileInput = screen
+      .getByLabelText(/add images/i)
+      .querySelector('input[type="file"]') as HTMLInputElement;
 
     Object.defineProperty(fileInput, 'files', {
       value: [file],
-      writable: false
+      writable: false,
     });
 
     fireEvent.change(fileInput);
@@ -305,14 +324,16 @@ describe('SessionTimerEnhanced - Image Upload', () => {
     // Add images
     const files = [
       new File(['1'], '1.jpg', { type: 'image/jpeg' }),
-      new File(['2'], '2.jpg', { type: 'image/jpeg' })
+      new File(['2'], '2.jpg', { type: 'image/jpeg' }),
     ];
 
-    const fileInput = screen.getByLabelText(/add images/i).querySelector('input[type="file"]') as HTMLInputElement;
+    const fileInput = screen
+      .getByLabelText(/add images/i)
+      .querySelector('input[type="file"]') as HTMLInputElement;
 
     Object.defineProperty(fileInput, 'files', {
       value: files,
-      writable: false
+      writable: false,
     });
 
     fireEvent.change(fileInput);
@@ -338,7 +359,10 @@ describe('SessionTimerEnhanced - Image Upload', () => {
         expect.anything(),
         expect.anything(),
         expect.objectContaining({
-          images: ['https://example.com/image1.jpg', 'https://example.com/image2.jpg']
+          images: [
+            'https://example.com/image1.jpg',
+            'https://example.com/image2.jpg',
+          ],
         })
       );
     });
@@ -346,7 +370,9 @@ describe('SessionTimerEnhanced - Image Upload', () => {
 
   it('should handle image upload errors gracefully', async () => {
     const alertMock = jest.spyOn(window, 'alert').mockImplementation(() => {});
-    const consoleErrorMock = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const consoleErrorMock = jest
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
 
     (uploadImages as jest.Mock).mockRejectedValue(new Error('Upload failed'));
     mockFinishTimer.mockResolvedValue({ id: 'session-123' });
@@ -361,11 +387,13 @@ describe('SessionTimerEnhanced - Image Upload', () => {
     });
 
     const file = new File(['image'], 'test.jpg', { type: 'image/jpeg' });
-    const fileInput = screen.getByLabelText(/add images/i).querySelector('input[type="file"]') as HTMLInputElement;
+    const fileInput = screen
+      .getByLabelText(/add images/i)
+      .querySelector('input[type="file"]') as HTMLInputElement;
 
     Object.defineProperty(fileInput, 'files', {
       value: [file],
-      writable: false
+      writable: false,
     });
 
     fireEvent.change(fileInput);
@@ -381,7 +409,9 @@ describe('SessionTimerEnhanced - Image Upload', () => {
     fireEvent.click(saveButton);
 
     await waitFor(() => {
-      expect(alertMock).toHaveBeenCalledWith(expect.stringContaining('Failed to upload images'));
+      expect(alertMock).toHaveBeenCalledWith(
+        expect.stringContaining('Failed to upload images')
+      );
       // Session should still be created without images
       expect(mockFinishTimer).toHaveBeenCalled();
     });
@@ -402,11 +432,13 @@ describe('SessionTimerEnhanced - Image Upload', () => {
 
     // Add one image
     const file = new File(['image'], 'test.jpg', { type: 'image/jpeg' });
-    const fileInput = screen.getByLabelText(/add images/i).querySelector('input[type="file"]') as HTMLInputElement;
+    const fileInput = screen
+      .getByLabelText(/add images/i)
+      .querySelector('input[type="file"]') as HTMLInputElement;
 
     Object.defineProperty(fileInput, 'files', {
       value: [file],
-      writable: false
+      writable: false,
     });
 
     fireEvent.change(fileInput);
@@ -429,14 +461,16 @@ describe('SessionTimerEnhanced - Image Upload', () => {
     const files = [
       new File(['1'], '1.jpg', { type: 'image/jpeg' }),
       new File(['2'], '2.jpg', { type: 'image/jpeg' }),
-      new File(['3'], '3.jpg', { type: 'image/jpeg' })
+      new File(['3'], '3.jpg', { type: 'image/jpeg' }),
     ];
 
-    const fileInput = screen.getByLabelText(/add images/i).querySelector('input[type="file"]') as HTMLInputElement;
+    const fileInput = screen
+      .getByLabelText(/add images/i)
+      .querySelector('input[type="file"]') as HTMLInputElement;
 
     Object.defineProperty(fileInput, 'files', {
       value: files,
-      writable: false
+      writable: false,
     });
 
     fireEvent.change(fileInput);

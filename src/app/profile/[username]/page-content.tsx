@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Image from 'next/image';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { UserX, ChevronDown, BarChart2, MapPin } from 'lucide-react';
@@ -710,9 +711,11 @@ export default function ProfilePageContent({
                 {/* Profile Picture */}
                 {profile.profilePicture ? (
                   <div className="w-20 h-20 md:w-32 md:h-32 rounded-full overflow-hidden ring-4 ring-white shadow-md mb-3 md:mb-4">
-                    <img
+                    <Image
                       src={profile.profilePicture}
                       alt={`${profile.name}'s profile picture`}
+                      width={128}
+                      height={128}
                       className="w-full h-full object-cover"
                     />
                   </div>

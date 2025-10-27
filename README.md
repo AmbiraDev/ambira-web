@@ -101,11 +101,21 @@ A social productivity tracking application built with Next.js, TypeScript, and T
 
 ### 🏗️ Architecture
 
-- **Component-based** React architecture
+- **Component-based** React architecture with Clean Architecture principles
 - **TypeScript** for type safety
+- **React Query** at feature boundaries for data caching and state management
 - **ESLint + Prettier** for code consistency
 - **Tailwind CSS** for styling
 - **Modular file structure** with organized components
+
+**📚 For comprehensive architecture documentation, see [docs/architecture/ARCHITECTURE.md](./docs/architecture/ARCHITECTURE.md)**
+
+**Quick Links**:
+
+- [System Architecture (C4 Diagrams)](./docs/architecture/ARCHITECTURE.md#architecture-diagrams)
+- [Caching Strategy](./docs/architecture/CACHING_STRATEGY.md)
+- [Deployment Architecture](./docs/architecture/diagrams/09-deployment-architecture.md)
+- [Data Flow Diagrams](./docs/architecture/ARCHITECTURE.md#data-flow-sequence-diagrams)
 
 ## Getting Started
 

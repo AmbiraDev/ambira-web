@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
+import Image from 'next/image';
 import { CommentWithDetails } from '@/types';
 import Link from 'next/link';
 import { Trash2, Heart, MoreVertical } from 'lucide-react';
@@ -20,12 +21,14 @@ export const CommentItem: React.FC<CommentItemProps> = ({
   sessionId,
   onDelete,
   onLike,
-  currentUserId
+  currentUserId,
 }) => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isLiking, setIsLiking] = useState(false);
   const [optimisticLiked, setOptimisticLiked] = useState(comment.isLiked);
-  const [optimisticLikeCount, setOptimisticLikeCount] = useState(comment.likeCount);
+  const [optimisticLikeCount, setOptimisticLikeCount] = useState(
+    comment.likeCount
+  );
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -95,7 +98,9 @@ export const CommentItem: React.FC<CommentItemProps> = ({
     // Optimistic update
     const action = optimisticLiked ? 'unlike' : 'like';
     const newLiked = !optimisticLiked;
-    const newCount = newLiked ? optimisticLikeCount + 1 : Math.max(0, optimisticLikeCount - 1);
+    const newCount = newLiked
+      ? optimisticLikeCount + 1
+      : Math.max(0, optimisticLikeCount - 1);
 
     setOptimisticLiked(newLiked);
     setOptimisticLikeCount(newCount);
@@ -125,9 +130,11 @@ export const CommentItem: React.FC<CommentItemProps> = ({
       {/* User Avatar */}
       <Link href={`/profile/${comment.user.username}`} className="shrink-0">
         {comment.user.profilePicture ? (
-          <img
+          <Image
             src={comment.user.profilePicture}
             alt={comment.user.name}
+            width={40}
+            height={40}
             className="w-10 h-10 rounded-full object-cover"
           />
         ) : (
@@ -200,14 +207,22 @@ export const CommentItem: React.FC<CommentItemProps> = ({
                   : 'text-gray-500 hover:text-red-600'
               } ${isLiking ? 'opacity-70' : ''}`}
               disabled={!onLike || isLiking}
-              aria-label={optimisticLiked ? `Unlike comment (${optimisticLikeCount} ${optimisticLikeCount === 1 ? 'like' : 'likes'})` : `Like comment (${optimisticLikeCount} ${optimisticLikeCount === 1 ? 'like' : 'likes'})`}
+              aria-label={
+                optimisticLiked
+                  ? `Unlike comment (${optimisticLikeCount} ${optimisticLikeCount === 1 ? 'like' : 'likes'})`
+                  : `Like comment (${optimisticLikeCount} ${optimisticLikeCount === 1 ? 'like' : 'likes'})`
+              }
             >
               <Heart
                 className={`w-4 h-4 ${optimisticLiked ? 'fill-current' : ''}`}
                 aria-hidden="true"
               />
               {optimisticLikeCount > 0 && (
-                <span className="text-xs font-medium">{optimisticLikeCount > 1 ? `${optimisticLikeCount} like${optimisticLikeCount > 1 ? 's' : ''}` : '1 like'}</span>
+                <span className="text-xs font-medium">
+                  {optimisticLikeCount > 1
+                    ? `${optimisticLikeCount} like${optimisticLikeCount > 1 ? 's' : ''}`
+                    : '1 like'}
+                </span>
               )}
             </button>
           </div>
@@ -218,4 +233,3 @@ export const CommentItem: React.FC<CommentItemProps> = ({
 };
 
 export default CommentItem;
-

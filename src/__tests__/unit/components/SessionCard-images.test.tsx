@@ -6,29 +6,28 @@ import { SessionWithDetails } from '@/types';
 // Mock Firebase
 jest.mock('@/lib/firebase', () => ({
   auth: {
-    currentUser: { uid: 'test-user' }
+    currentUser: { uid: 'test-user' },
   },
   db: {},
-  storage: {}
+  storage: {},
 }));
 
 jest.mock('@/lib/api', () => ({
   firebaseSessionApi: {},
-  firebaseCommentApi: {}
+  firebaseCommentApi: {},
 }));
 
 // Mock Next.js components
 jest.mock('next/image', () => ({
   __esModule: true,
   default: (props: any) => {
-    // eslint-disable-next-line jsx-a11y/alt-text, @next/next/no-img-element
     return <img {...props} />;
-  }
+  },
 }));
 
 jest.mock('next/link', () => ({
   __esModule: true,
-  default: ({ children, href }: any) => <a href={href}>{children}</a>
+  default: ({ children, href }: any) => <a href={href}>{children}</a>,
 }));
 
 // Mock ImageGallery component
@@ -39,13 +38,13 @@ jest.mock('../ImageGallery', () => ({
         <img key={idx} src={img} alt={`Gallery image ${idx + 1}`} />
       ))}
     </div>
-  )
+  ),
 }));
 
 // Mock CommentList to avoid Firebase dependencies
 jest.mock('../CommentList', () => ({
   __esModule: true,
-  default: () => <div data-testid="comment-list">Comments</div>
+  default: () => <div data-testid="comment-list">Comments</div>,
 }));
 
 describe('SessionCard - Image Display', () => {
@@ -57,7 +56,7 @@ describe('SessionCard - Image Display', () => {
     bio: 'Test bio',
     profilePicture: 'https://example.com/avatar.jpg',
     createdAt: new Date('2024-01-01'),
-    updatedAt: new Date('2024-01-01')
+    updatedAt: new Date('2024-01-01'),
   };
 
   const mockProject = {
@@ -69,7 +68,7 @@ describe('SessionCard - Image Display', () => {
     color: '#007AFF',
     status: 'active' as const,
     createdAt: new Date('2024-01-01'),
-    updatedAt: new Date('2024-01-01')
+    updatedAt: new Date('2024-01-01'),
   };
 
   const baseSession: SessionWithDetails = {
@@ -92,7 +91,7 @@ describe('SessionCard - Image Display', () => {
     user: mockUser,
     activity: mockProject,
     project: mockProject,
-    images: []
+    images: [],
   };
 
   const mockOnSupport = jest.fn();
@@ -146,8 +145,8 @@ describe('SessionCard - Image Display', () => {
       ...baseSession,
       images: [
         'https://example.com/image1.jpg',
-        'https://example.com/image2.jpg'
-      ]
+        'https://example.com/image2.jpg',
+      ],
     };
 
     render(
@@ -166,12 +165,12 @@ describe('SessionCard - Image Display', () => {
     const images = [
       'https://example.com/image1.jpg',
       'https://example.com/image2.jpg',
-      'https://example.com/image3.jpg'
+      'https://example.com/image3.jpg',
     ];
 
     const sessionWithImages = {
       ...baseSession,
-      images
+      images,
     };
 
     render(
@@ -194,7 +193,7 @@ describe('SessionCard - Image Display', () => {
     const sessionWithImages = {
       ...baseSession,
       description: 'Test description',
-      images: ['https://example.com/image.jpg']
+      images: ['https://example.com/image.jpg'],
     };
 
     const { container } = render(
@@ -224,7 +223,7 @@ describe('SessionCard - Image Display', () => {
   it('should display single image in gallery when session has one image', () => {
     const sessionWithOneImage = {
       ...baseSession,
-      images: ['https://example.com/single-image.jpg']
+      images: ['https://example.com/single-image.jpg'],
     };
 
     render(
@@ -249,8 +248,8 @@ describe('SessionCard - Image Display', () => {
       images: [
         'https://example.com/image1.jpg',
         'https://example.com/image2.jpg',
-        'https://example.com/image3.jpg'
-      ]
+        'https://example.com/image3.jpg',
+      ],
     };
 
     render(
@@ -271,7 +270,7 @@ describe('SessionCard - Image Display', () => {
 
     const sessionWithImages = {
       ...baseSession,
-      images: ['https://example.com/image.jpg']
+      images: ['https://example.com/image.jpg'],
     };
 
     render(
@@ -312,7 +311,7 @@ describe('SessionCard - Image Display', () => {
   it('should apply correct padding styles to gallery container when images are present', () => {
     const sessionWithImages = {
       ...baseSession,
-      images: ['https://example.com/image.jpg']
+      images: ['https://example.com/image.jpg'],
     };
 
     const { container } = render(
@@ -332,7 +331,7 @@ describe('SessionCard - Image Display', () => {
   it('should allow user interactions when session has images', () => {
     const sessionWithImages = {
       ...baseSession,
-      images: ['https://example.com/image.jpg']
+      images: ['https://example.com/image.jpg'],
     };
 
     render(
@@ -359,11 +358,12 @@ describe('SessionCard - Image Display', () => {
   });
 
   it('should render image gallery correctly when URLs are very long', () => {
-    const longUrl = 'https://firebasestorage.googleapis.com/v0/b/project-id.appspot.com/o/session-images%2Fuser-id%2F1234567890_abc123.jpg?alt=media&token=very-long-token-string-here';
+    const longUrl =
+      'https://firebasestorage.googleapis.com/v0/b/project-id.appspot.com/o/session-images%2Fuser-id%2F1234567890_abc123.jpg?alt=media&token=very-long-token-string-here';
 
     const sessionWithImages = {
       ...baseSession,
-      images: [longUrl]
+      images: [longUrl],
     };
 
     render(
@@ -383,7 +383,7 @@ describe('SessionCard - Image Display', () => {
     const sessionWithImages = {
       ...baseSession,
       description: 'A'.repeat(300), // Long description
-      images: ['https://example.com/image.jpg']
+      images: ['https://example.com/image.jpg'],
     };
 
     render(

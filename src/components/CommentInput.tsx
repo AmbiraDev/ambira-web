@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
+import Image from 'next/image';
 import { UserSearchResult } from '@/types';
 import { firebaseUserApi } from '@/lib/api';
 
@@ -238,9 +239,11 @@ export const CommentInput: React.FC<CommentInputProps> = ({
               aria-selected={index === selectedMentionIndex}
             >
               {user.profilePicture ? (
-                <img
+                <Image
                   src={user.profilePicture}
                   alt={user.name}
+                  width={32}
+                  height={32}
                   className="w-8 h-8 rounded-full object-cover"
                 />
               ) : (

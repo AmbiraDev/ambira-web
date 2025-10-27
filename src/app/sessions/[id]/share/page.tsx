@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 import { ArrowLeft, Download, Share2 } from 'lucide-react';
 import { SessionWithDetails, User } from '@/types';
 import { firebaseApi } from '@/lib/api';
@@ -24,7 +25,9 @@ function SessionShareContent({ sessionId }: { sessionId: string }) {
   const [session, setSession] = useState<SessionWithDetails | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedLayout, setSelectedLayout] = useState<LayoutType | null>('square');
+  const [selectedLayout, setSelectedLayout] = useState<LayoutType | null>(
+    'square'
+  );
   const [isExporting, setIsExporting] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
 
@@ -42,7 +45,8 @@ function SessionShareContent({ sessionId }: { sessionId: string }) {
       setIsLoading(true);
       setError(null);
 
-      const sessionData = await firebaseApi.session.getSessionWithDetails(sessionId);
+      const sessionData =
+        await firebaseApi.session.getSessionWithDetails(sessionId);
       setSession(sessionData as unknown as SessionWithDetails);
     } catch (err: any) {
       console.error('Error loading session:', err);
@@ -68,12 +72,16 @@ function SessionShareContent({ sessionId }: { sessionId: string }) {
     const yesterday = new Date(today);
     yesterday.setDate(yesterday.getDate() - 1);
 
-    const sessionDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const sessionDate = new Date(
+      date.getFullYear(),
+      date.getMonth(),
+      date.getDate()
+    );
 
     const timeStr = date.toLocaleTimeString('en-US', {
       hour: 'numeric',
       minute: '2-digit',
-      hour12: true
+      hour12: true,
     });
 
     if (sessionDate.getTime() === today.getTime()) {
@@ -87,7 +95,7 @@ function SessionShareContent({ sessionId }: { sessionId: string }) {
     const dateStr = date.toLocaleDateString('en-US', {
       month: 'long',
       day: 'numeric',
-      year: 'numeric'
+      year: 'numeric',
     });
 
     return `${dateStr} at ${timeStr}`;
@@ -106,13 +114,13 @@ function SessionShareContent({ sessionId }: { sessionId: string }) {
     const dateStr = new Intl.DateTimeFormat('en-US', {
       month: 'short',
       day: 'numeric',
-      year: 'numeric'
+      year: 'numeric',
     }).format(date);
 
     const timeStr = new Intl.DateTimeFormat('en-US', {
       hour: 'numeric',
       minute: '2-digit',
-      hour12: true
+      hour12: true,
     }).format(date);
 
     return `${dateStr} at ${timeStr}`;
@@ -150,7 +158,7 @@ function SessionShareContent({ sessionId }: { sessionId: string }) {
         cacheBust: true,
         backgroundColor: '#ffffff',
         width: selectedLayout === 'square' ? 1080 : 1080,
-        height: selectedLayout === 'square' ? 1110 : 1080
+        height: selectedLayout === 'square' ? 1110 : 1080,
       });
 
       // Clean up
@@ -194,7 +202,7 @@ function SessionShareContent({ sessionId }: { sessionId: string }) {
         cacheBust: true,
         backgroundColor: '#ffffff',
         width: selectedLayout === 'square' ? 1080 : 1080,
-        height: selectedLayout === 'square' ? 1110 : 1080
+        height: selectedLayout === 'square' ? 1110 : 1080,
       });
 
       // Clean up
@@ -202,13 +210,15 @@ function SessionShareContent({ sessionId }: { sessionId: string }) {
 
       const response = await fetch(dataUrl);
       const blob = await response.blob();
-      const file = new File([blob], `ambira-session.png`, { type: 'image/png' });
+      const file = new File([blob], `ambira-session.png`, {
+        type: 'image/png',
+      });
 
       if (navigator.share && navigator.canShare({ files: [file] })) {
         await navigator.share({
           files: [file],
           title: session?.title || 'My Ambira Session',
-          text: `Check out my productivity session on Ambira!`
+          text: `Check out my productivity session on Ambira!`,
         });
       } else {
         await handleExport();
@@ -257,12 +267,23 @@ function SessionShareContent({ sessionId }: { sessionId: string }) {
         <div className="max-w-4xl mx-auto px-4 py-6">
           <div className="text-center py-12">
             <div className="text-red-600 mb-4">
-              <svg className="w-12 h-12 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 18.5c-.77.833.192 2.5 1.732 2.5z" />
+              <svg
+                className="w-12 h-12 mx-auto mb-2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 18.5c-.77.833.192 2.5 1.732 2.5z"
+                />
               </svg>
               <p className="font-medium text-lg">Cannot Share Session</p>
               <p className="text-sm text-gray-600 mt-1">
-                {error || 'This session may have been deleted or you may not have permission to view it.'}
+                {error ||
+                  'This session may have been deleted or you may not have permission to view it.'}
               </p>
             </div>
             <button
@@ -289,8 +310,18 @@ function SessionShareContent({ sessionId }: { sessionId: string }) {
         <div className="max-w-4xl mx-auto px-4 py-6">
           <div className="text-center py-12">
             <div className="text-gray-600 mb-4">
-              <svg className="w-12 h-12 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              <svg
+                className="w-12 h-12 mx-auto mb-2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                />
               </svg>
               <p className="font-medium text-lg">Cannot Share This Session</p>
               <p className="text-sm text-gray-600 mt-1">
@@ -318,83 +349,165 @@ function SessionShareContent({ sessionId }: { sessionId: string }) {
         height: '1110px',
         backgroundColor: '#ffffff',
         overflow: 'hidden',
-        fontFamily: 'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif'
+        fontFamily:
+          'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
       }}
     >
-      <div style={{
-        height: '100%',
-        paddingTop: '48px',
-        paddingLeft: '32px',
-        paddingRight: '32px',
-        paddingBottom: '16px',
-        display: 'flex',
-        flexDirection: 'column',
-        backgroundColor: '#ffffff'
-      }}>
+      <div
+        style={{
+          height: '100%',
+          paddingTop: '48px',
+          paddingLeft: '32px',
+          paddingRight: '32px',
+          paddingBottom: '16px',
+          display: 'flex',
+          flexDirection: 'column',
+          backgroundColor: '#ffffff',
+        }}
+      >
         {/* Top Bar - Logo/Website and User Info */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '36px' }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: '36px',
+          }}
+        >
           {/* User Info */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-          {session.user.profilePicture ? (
-            <div style={{ width: '88px', height: '88px', borderRadius: '50%', overflow: 'hidden', flexShrink: 0 }}>
-              <img src={session.user.profilePicture} alt={session.user.name} width="88" height="88" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            {session.user.profilePicture ? (
+              <div
+                style={{
+                  width: '88px',
+                  height: '88px',
+                  borderRadius: '50%',
+                  overflow: 'hidden',
+                  flexShrink: 0,
+                }}
+              >
+                <img
+                  src={session.user.profilePicture}
+                  alt={session.user.name}
+                  width="88"
+                  height="88"
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+              </div>
+            ) : (
+              <div
+                style={{
+                  width: '88px',
+                  height: '88px',
+                  backgroundColor: '#f3f4f6',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                }}
+              >
+                <span
+                  style={{
+                    color: '#4b5563',
+                    fontWeight: 600,
+                    fontSize: '36px',
+                  }}
+                >
+                  {getUserInitials(session.user)}
+                </span>
+              </div>
+            )}
+            <div
+              style={{ display: 'flex', alignItems: 'baseline', gap: '12px' }}
+            >
+              <div
+                style={{
+                  fontWeight: 700,
+                  fontSize: '40px',
+                  color: '#111827',
+                  lineHeight: 1,
+                }}
+              >
+                {session.user.name}
+              </div>
+              <div
+                style={{
+                  fontSize: '28px',
+                  color: '#6b7280',
+                  lineHeight: 1,
+                  position: 'relative',
+                  top: '-3px',
+                }}
+              >
+                @{session.user.username}
+              </div>
             </div>
-          ) : (
-            <div style={{
-              width: '88px',
-              height: '88px',
-              backgroundColor: '#f3f4f6',
-              borderRadius: '50%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0
-            }}>
-              <span style={{ color: '#4b5563', fontWeight: 600, fontSize: '36px' }}>{getUserInitials(session.user)}</span>
-            </div>
-          )}
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: '12px' }}>
-            <div style={{ fontWeight: 700, fontSize: '40px', color: '#111827', lineHeight: 1 }}>{session.user.name}</div>
-            <div style={{ fontSize: '28px', color: '#6b7280', lineHeight: 1, position: 'relative', top: '-3px' }}>@{session.user.username}</div>
-          </div>
           </div>
 
           {/* Logo and Website - Top Right */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '14px',
-            flexShrink: 0
-          }}>
-            <svg width="56" height="56" viewBox="0 0 375 375" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
-              <path d="M 56.387 320.265 L 105.145 307.202 L 134.619 191.47 L 222.369 275.789 L 300.91 254.743 C 300.91 254.743 327.644 243.277 327.701 205.067 C 327.765 162.452 292.22 150.864 292.22 150.864 C 292.22 150.864 311.586 129.825 286.573 94.501 C 265.409 64.612 226.767 75.885 226.767 75.885 L 131.479 100.996 L 163.14 132.378 L 240.652 113.004 C 240.652 113.004 253.429 109.011 259.254 125.122 C 264.463 139.529 249.128 146.798 249.139 146.809 C 249.186 146.856 192.6 161.379 192.553 161.379 C 192.506 161.379 224.354 193.363 224.406 193.466 C 224.435 193.523 259.751 183.839 259.751 183.839 C 259.751 183.839 281.184 181.354 285.882 196.467 C 292.14 216.599 271.779 222.147 271.79 222.147 C 271.837 222.147 239.215 231.316 239.215 231.316 C 239.215 231.316 113.277 106.094 113.228 106.045 C 113.179 105.996 56.211 321.004 56.387 320.265 Z" fill="#007AFF" transform="matrix(0.96592605, 0.25881901, -0.25881901, 0.96592605, 57.2958925, -43.02296686)"/>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '14px',
+              flexShrink: 0,
+            }}
+          >
+            <svg
+              width="56"
+              height="56"
+              viewBox="0 0 375 375"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              style={{ flexShrink: 0 }}
+            >
+              <path
+                d="M 56.387 320.265 L 105.145 307.202 L 134.619 191.47 L 222.369 275.789 L 300.91 254.743 C 300.91 254.743 327.644 243.277 327.701 205.067 C 327.765 162.452 292.22 150.864 292.22 150.864 C 292.22 150.864 311.586 129.825 286.573 94.501 C 265.409 64.612 226.767 75.885 226.767 75.885 L 131.479 100.996 L 163.14 132.378 L 240.652 113.004 C 240.652 113.004 253.429 109.011 259.254 125.122 C 264.463 139.529 249.128 146.798 249.139 146.809 C 249.186 146.856 192.6 161.379 192.553 161.379 C 192.506 161.379 224.354 193.363 224.406 193.466 C 224.435 193.523 259.751 183.839 259.751 183.839 C 259.751 183.839 281.184 181.354 285.882 196.467 C 292.14 216.599 271.779 222.147 271.79 222.147 C 271.837 222.147 239.215 231.316 239.215 231.316 C 239.215 231.316 113.277 106.094 113.228 106.045 C 113.179 105.996 56.211 321.004 56.387 320.265 Z"
+                fill="#007AFF"
+                transform="matrix(0.96592605, 0.25881901, -0.25881901, 0.96592605, 57.2958925, -43.02296686)"
+              />
             </svg>
-            <span style={{ fontSize: '36px', fontWeight: 400, color: '#111827', lineHeight: 1, whiteSpace: 'nowrap' }}>www.ambira.app</span>
+            <span
+              style={{
+                fontSize: '36px',
+                fontWeight: 400,
+                color: '#111827',
+                lineHeight: 1,
+                whiteSpace: 'nowrap',
+              }}
+            >
+              www.ambira.app
+            </span>
           </div>
         </div>
 
         {/* Title and Description */}
         <div style={{ marginBottom: '32px' }}>
-          <h3 style={{
-            fontSize: '44px',
-            fontWeight: 'bold',
-            color: '#111827',
-            lineHeight: '1.2',
-            margin: 0,
-            marginBottom: '12px',
-            textAlign: 'left'
-          }}>
+          <h3
+            style={{
+              fontSize: '44px',
+              fontWeight: 'bold',
+              color: '#111827',
+              lineHeight: '1.2',
+              margin: 0,
+              marginBottom: '12px',
+              textAlign: 'left',
+            }}
+          >
             {session.title || 'Focus Session'}
           </h3>
           {session.description && (
-            <p style={{
-              color: '#4b5563',
-              fontSize: '28px',
-              lineHeight: '1.4',
-              margin: 0,
-              wordBreak: 'break-word',
-              textAlign: 'left'
-            }}>
+            <p
+              style={{
+                color: '#4b5563',
+                fontSize: '28px',
+                lineHeight: '1.4',
+                margin: 0,
+                wordBreak: 'break-word',
+                textAlign: 'left',
+              }}
+            >
               {session.description}
             </p>
           )}
@@ -404,13 +517,15 @@ function SessionShareContent({ sessionId }: { sessionId: string }) {
         {session.images && session.images.length > 0 && (
           <div style={{ marginBottom: '32px' }}>
             {session.images.length === 1 ? (
-              <div style={{
-                width: '100%',
-                height: '480px',
-                borderRadius: '16px',
-                overflow: 'hidden',
-                backgroundColor: '#f9fafb'
-              }}>
+              <div
+                style={{
+                  width: '100%',
+                  height: '480px',
+                  borderRadius: '16px',
+                  overflow: 'hidden',
+                  backgroundColor: '#f9fafb',
+                }}
+              >
                 <img
                   src={session.images[0]}
                   alt="Session image"
@@ -418,20 +533,29 @@ function SessionShareContent({ sessionId }: { sessionId: string }) {
                     width: '100%',
                     height: '100%',
                     objectFit: 'cover',
-                    objectPosition: 'center center'
+                    objectPosition: 'center center',
                   }}
                 />
               </div>
             ) : session.images.length === 2 ? (
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 1fr',
+                  gap: '12px',
+                }}
+              >
                 {session.images.slice(0, 2).map((img, idx) => (
-                  <div key={idx} style={{
-                    width: '100%',
-                    height: '380px',
-                    borderRadius: '16px',
-                    overflow: 'hidden',
-                    backgroundColor: '#f9fafb'
-                  }}>
+                  <div
+                    key={idx}
+                    style={{
+                      width: '100%',
+                      height: '380px',
+                      borderRadius: '16px',
+                      overflow: 'hidden',
+                      backgroundColor: '#f9fafb',
+                    }}
+                  >
                     <img
                       src={img}
                       alt={`Session image ${idx + 1}`}
@@ -439,22 +563,31 @@ function SessionShareContent({ sessionId }: { sessionId: string }) {
                         width: '100%',
                         height: '100%',
                         objectFit: 'cover',
-                        objectPosition: 'center center'
+                        objectPosition: 'center center',
                       }}
                     />
                   </div>
                 ))}
               </div>
             ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 1fr',
+                  gap: '12px',
+                }}
+              >
                 {session.images.slice(0, 4).map((img, idx) => (
-                  <div key={idx} style={{
-                    width: '100%',
-                    height: '240px',
-                    borderRadius: '16px',
-                    overflow: 'hidden',
-                    backgroundColor: '#f9fafb'
-                  }}>
+                  <div
+                    key={idx}
+                    style={{
+                      width: '100%',
+                      height: '240px',
+                      borderRadius: '16px',
+                      overflow: 'hidden',
+                      backgroundColor: '#f9fafb',
+                    }}
+                  >
                     <img
                       src={img}
                       alt={`Session image ${idx + 1}`}
@@ -462,7 +595,7 @@ function SessionShareContent({ sessionId }: { sessionId: string }) {
                         width: '100%',
                         height: '100%',
                         objectFit: 'cover',
-                        objectPosition: 'center center'
+                        objectPosition: 'center center',
                       }}
                     />
                   </div>
@@ -474,14 +607,51 @@ function SessionShareContent({ sessionId }: { sessionId: string }) {
 
         {/* Stats */}
         <div style={{ paddingLeft: '8px', paddingBottom: '0px' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '32px' }}>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr 1fr',
+              gap: '32px',
+            }}
+          >
             <div>
-              <div style={{ fontSize: '24px', color: '#6b7280', marginBottom: '10px', fontWeight: 500 }}>Time</div>
-              <div style={{ fontSize: '32px', fontWeight: 600, color: '#111827' }}>{formatTime(session.duration)}</div>
+              <div
+                style={{
+                  fontSize: '24px',
+                  color: '#6b7280',
+                  marginBottom: '10px',
+                  fontWeight: 500,
+                }}
+              >
+                Time
+              </div>
+              <div
+                style={{ fontSize: '32px', fontWeight: 600, color: '#111827' }}
+              >
+                {formatTime(session.duration)}
+              </div>
             </div>
             <div>
-              <div style={{ fontSize: '24px', color: '#6b7280', marginBottom: '10px', fontWeight: 500 }}>Activity</div>
-              <div style={{ fontSize: '32px', fontWeight: 600, color: '#111827', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              <div
+                style={{
+                  fontSize: '24px',
+                  color: '#6b7280',
+                  marginBottom: '10px',
+                  fontWeight: 500,
+                }}
+              >
+                Activity
+              </div>
+              <div
+                style={{
+                  fontSize: '32px',
+                  fontWeight: 600,
+                  color: '#111827',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                }}
+              >
                 {session.activity?.name || session.project?.name || 'N/A'}
               </div>
             </div>
@@ -499,121 +669,248 @@ function SessionShareContent({ sessionId }: { sessionId: string }) {
         width: '1080px',
         height: '1080px',
         backgroundColor: '#ffffff',
-        overflow: 'hidden'
+        overflow: 'hidden',
       }}
     >
-      <div style={{
-        height: '100%',
-        padding: '60px',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'space-between',
-        backgroundColor: '#f9fafb'
-      }}>
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          borderBottom: '3px solid #111827',
-          paddingBottom: '20px'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-            <svg width="70" height="70" viewBox="0 0 375 375" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M 56.387 320.265 L 105.145 307.202 L 134.619 191.47 L 222.369 275.789 L 300.91 254.743 C 300.91 254.743 327.644 243.277 327.701 205.067 C 327.765 162.452 292.22 150.864 292.22 150.864 C 292.22 150.864 311.586 129.825 286.573 94.501 C 265.409 64.612 226.767 75.885 226.767 75.885 L 131.479 100.996 L 163.14 132.378 L 240.652 113.004 C 240.652 113.004 253.429 109.011 259.254 125.122 C 264.463 139.529 249.128 146.798 249.139 146.809 C 249.186 146.856 192.6 161.379 192.553 161.379 C 192.506 161.379 224.354 193.363 224.406 193.466 C 224.435 193.523 259.751 183.839 259.751 183.839 C 259.751 183.839 281.184 181.354 285.882 196.467 C 292.14 216.599 271.779 222.147 271.79 222.147 C 271.837 222.147 239.215 231.316 239.215 231.316 C 239.215 231.316 113.277 106.094 113.228 106.045 C 113.179 105.996 56.211 321.004 56.387 320.265 Z" fill="#007AFF" transform="matrix(0.96592605, 0.25881901, -0.25881901, 0.96592605, 57.2958925, -43.02296686)"/>
-            </svg>
-          </div>
-          <div style={{ color: '#4b5563', fontSize: '22px' }}>{formatDate(session.createdAt)}</div>
-        </div>
-
-        <div style={{
-          flex: 1,
+      <div
+        style={{
+          height: '100%',
+          padding: '60px',
           display: 'flex',
           flexDirection: 'column',
-          justifyContent: 'center',
-          gap: '32px',
-          paddingTop: '32px',
-          paddingBottom: '32px'
-        }}>
-          <div style={{ textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-            <h1 style={{
-              fontSize: '68px',
-              fontWeight: 'bold',
-              color: '#111827',
-              lineHeight: '1.2',
-              margin: 0,
-              fontFamily: 'system-ui, -apple-system, sans-serif'
-            }}>
+          justifyContent: 'space-between',
+          backgroundColor: '#f9fafb',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            borderBottom: '3px solid #111827',
+            paddingBottom: '20px',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <svg
+              width="70"
+              height="70"
+              viewBox="0 0 375 375"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M 56.387 320.265 L 105.145 307.202 L 134.619 191.47 L 222.369 275.789 L 300.91 254.743 C 300.91 254.743 327.644 243.277 327.701 205.067 C 327.765 162.452 292.22 150.864 292.22 150.864 C 292.22 150.864 311.586 129.825 286.573 94.501 C 265.409 64.612 226.767 75.885 226.767 75.885 L 131.479 100.996 L 163.14 132.378 L 240.652 113.004 C 240.652 113.004 253.429 109.011 259.254 125.122 C 264.463 139.529 249.128 146.798 249.139 146.809 C 249.186 146.856 192.6 161.379 192.553 161.379 C 192.506 161.379 224.354 193.363 224.406 193.466 C 224.435 193.523 259.751 183.839 259.751 183.839 C 259.751 183.839 281.184 181.354 285.882 196.467 C 292.14 216.599 271.779 222.147 271.79 222.147 C 271.837 222.147 239.215 231.316 239.215 231.316 C 239.215 231.316 113.277 106.094 113.228 106.045 C 113.179 105.996 56.211 321.004 56.387 320.265 Z"
+                fill="#007AFF"
+                transform="matrix(0.96592605, 0.25881901, -0.25881901, 0.96592605, 57.2958925, -43.02296686)"
+              />
+            </svg>
+          </div>
+          <div style={{ color: '#4b5563', fontSize: '22px' }}>
+            {formatDate(session.createdAt)}
+          </div>
+        </div>
+
+        <div
+          style={{
+            flex: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            gap: '32px',
+            paddingTop: '32px',
+            paddingBottom: '32px',
+          }}
+        >
+          <div
+            style={{
+              textAlign: 'center',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '20px',
+            }}
+          >
+            <h1
+              style={{
+                fontSize: '68px',
+                fontWeight: 'bold',
+                color: '#111827',
+                lineHeight: '1.2',
+                margin: 0,
+                fontFamily: 'system-ui, -apple-system, sans-serif',
+              }}
+            >
               {session.title || 'Focus Session'}
             </h1>
             {session.description && (
-              <p style={{
-                color: '#4b5563',
-                fontSize: '28px',
-                lineHeight: '1.5',
-                maxWidth: '880px',
-                margin: '0 auto',
-                display: '-webkit-box',
-                WebkitLineClamp: 3,
-                WebkitBoxOrient: 'vertical',
-                overflow: 'hidden',
-                fontFamily: 'system-ui, -apple-system, sans-serif'
-              }}>
+              <p
+                style={{
+                  color: '#4b5563',
+                  fontSize: '28px',
+                  lineHeight: '1.5',
+                  maxWidth: '880px',
+                  margin: '0 auto',
+                  display: '-webkit-box',
+                  WebkitLineClamp: 3,
+                  WebkitBoxOrient: 'vertical',
+                  overflow: 'hidden',
+                  fontFamily: 'system-ui, -apple-system, sans-serif',
+                }}
+              >
                 {session.description}
               </p>
             )}
           </div>
 
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '48px',
-            paddingTop: '28px',
-            paddingBottom: '28px'
-          }}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '48px',
+              paddingTop: '28px',
+              paddingBottom: '28px',
+            }}
+          >
             <div style={{ textAlign: 'center', minWidth: '380px' }}>
-              <div style={{ color: '#6b7280', fontSize: '19px', marginBottom: '10px', fontFamily: 'system-ui, -apple-system, sans-serif' }}>Duration</div>
-              <div style={{ color: '#111827', fontSize: '58px', fontWeight: 'bold', whiteSpace: 'nowrap', fontFamily: 'system-ui, -apple-system, sans-serif' }}>{formatTime(session.duration)}</div>
+              <div
+                style={{
+                  color: '#6b7280',
+                  fontSize: '19px',
+                  marginBottom: '10px',
+                  fontFamily: 'system-ui, -apple-system, sans-serif',
+                }}
+              >
+                Duration
+              </div>
+              <div
+                style={{
+                  color: '#111827',
+                  fontSize: '58px',
+                  fontWeight: 'bold',
+                  whiteSpace: 'nowrap',
+                  fontFamily: 'system-ui, -apple-system, sans-serif',
+                }}
+              >
+                {formatTime(session.duration)}
+              </div>
             </div>
-            <div style={{ width: '1px', height: '90px', backgroundColor: '#d1d5db' }}></div>
+            <div
+              style={{
+                width: '1px',
+                height: '90px',
+                backgroundColor: '#d1d5db',
+              }}
+            ></div>
             <div style={{ textAlign: 'center', minWidth: '480px' }}>
-              <div style={{ color: '#6b7280', fontSize: '19px', marginBottom: '10px', fontFamily: 'system-ui, -apple-system, sans-serif' }}>Activity</div>
-              <div style={{ color: '#111827', fontSize: '46px', fontWeight: 'bold', wordBreak: 'break-word', fontFamily: 'system-ui, -apple-system, sans-serif' }}>{session.activity?.name || 'Work'}</div>
+              <div
+                style={{
+                  color: '#6b7280',
+                  fontSize: '19px',
+                  marginBottom: '10px',
+                  fontFamily: 'system-ui, -apple-system, sans-serif',
+                }}
+              >
+                Activity
+              </div>
+              <div
+                style={{
+                  color: '#111827',
+                  fontSize: '46px',
+                  fontWeight: 'bold',
+                  wordBreak: 'break-word',
+                  fontFamily: 'system-ui, -apple-system, sans-serif',
+                }}
+              >
+                {session.activity?.name || 'Work'}
+              </div>
             </div>
           </div>
         </div>
 
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          borderTop: '3px solid #111827',
-          paddingTop: '20px'
-        }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            borderTop: '3px solid #111827',
+            paddingTop: '20px',
+          }}
+        >
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             {session.user.profilePicture ? (
-              <div style={{ width: '60px', height: '60px', borderRadius: '50%', overflow: 'hidden' }}>
-                <img src={session.user.profilePicture} alt={session.user.name} width="60" height="60" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <div
+                style={{
+                  width: '60px',
+                  height: '60px',
+                  borderRadius: '50%',
+                  overflow: 'hidden',
+                }}
+              >
+                <img
+                  src={session.user.profilePicture}
+                  alt={session.user.name}
+                  width="60"
+                  height="60"
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
               </div>
             ) : (
-              <div style={{
-                width: '60px',
-                height: '60px',
-                backgroundColor: '#111827',
-                borderRadius: '50%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}>
-                <span style={{ color: '#ffffff', fontWeight: 'bold', fontSize: '24px', fontFamily: 'system-ui, -apple-system, sans-serif' }}>{getUserInitials(session.user)}</span>
+              <div
+                style={{
+                  width: '60px',
+                  height: '60px',
+                  backgroundColor: '#111827',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <span
+                  style={{
+                    color: '#ffffff',
+                    fontWeight: 'bold',
+                    fontSize: '24px',
+                    fontFamily: 'system-ui, -apple-system, sans-serif',
+                  }}
+                >
+                  {getUserInitials(session.user)}
+                </span>
               </div>
             )}
             <div>
-              <div style={{ color: '#111827', fontSize: '34px', fontWeight: 'bold', fontFamily: 'system-ui, -apple-system, sans-serif' }}>{session.user.name}</div>
-              <div style={{ color: '#4b5563', fontSize: '22px', fontFamily: 'system-ui, -apple-system, sans-serif' }}>@{session.user.username}</div>
+              <div
+                style={{
+                  color: '#111827',
+                  fontSize: '34px',
+                  fontWeight: 'bold',
+                  fontFamily: 'system-ui, -apple-system, sans-serif',
+                }}
+              >
+                {session.user.name}
+              </div>
+              <div
+                style={{
+                  color: '#4b5563',
+                  fontSize: '22px',
+                  fontFamily: 'system-ui, -apple-system, sans-serif',
+                }}
+              >
+                @{session.user.username}
+              </div>
             </div>
           </div>
-          <div style={{ color: '#111827', fontSize: '46px', fontWeight: 'bold', fontFamily: 'system-ui, -apple-system, sans-serif' }}>ambira.app</div>
+          <div
+            style={{
+              color: '#111827',
+              fontSize: '46px',
+              fontWeight: 'bold',
+              fontFamily: 'system-ui, -apple-system, sans-serif',
+            }}
+          >
+            ambira.app
+          </div>
         </div>
       </div>
     </div>
@@ -638,8 +935,12 @@ function SessionShareContent({ sessionId }: { sessionId: string }) {
 
         {/* Header */}
         <div className="text-center mb-10">
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">Share Your Session</h1>
-          <p className="text-gray-600 text-lg">Download or share your session card</p>
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+            Share Your Session
+          </h1>
+          <p className="text-gray-600 text-lg">
+            Download or share your session card
+          </p>
         </div>
 
         {/* Error Message */}
@@ -716,7 +1017,9 @@ function SessionShareContent({ sessionId }: { sessionId: string }) {
   );
 }
 
-export default function SessionSharePageWrapper({ params }: SessionSharePageProps) {
+export default function SessionSharePageWrapper({
+  params,
+}: SessionSharePageProps) {
   const [sessionId, setSessionId] = React.useState<string>('');
 
   React.useEffect(() => {
