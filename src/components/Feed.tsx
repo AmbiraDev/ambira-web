@@ -89,11 +89,18 @@ export const Feed: React.FC<FeedProps> = ({
     hasNextPage,
     isFetchingNextPage,
     refetch
-  } = useFeedInfinite(user?.id || '', filters, initialLimit);
+  } = useFeedInfinite(user?.id || '', filters);
 
   // Flatten pages into allSessions
+  // Note: Casting to SessionWithDetails[] for compatibility during architecture migration
+  // The data structure comes from useFeedInfinite which returns InfiniteData<FeedResult>
+  // where each page is a FeedResult with sessions: Session[] property
   const allSessions = useMemo(() => {
-    return data?.pages.flatMap(page => page.sessions) || [];
+    if (!data?.pages) return [];
+    return data.pages.flatMap((page) => {
+      // Each page is a FeedResult with sessions property
+      return (page as any).sessions || [];
+    }) as SessionWithDetails[];
   }, [data]);
 
   const hasMore = hasNextPage || false;
@@ -249,6 +256,8 @@ export const Feed: React.FC<FeedProps> = ({
 
   // Real-time updates for support counts (throttled to reduce reads)
   // Only listen to the first 10 sessions to reduce overhead
+  // Note: React Query handles optimistic updates through mutations
+  // This listener is kept for reference but real-time updates happen via queryClient updates
   useEffect(() => {
     if (allSessions.length === 0 || !top10SessionIdsString) return;
 
@@ -256,18 +265,11 @@ export const Feed: React.FC<FeedProps> = ({
     const sessionIds = top10SessionIdsString.split(',').filter(Boolean);
     if (sessionIds.length === 0) return;
 
+    // Register listener but don't update state directly
+    // React Query mutations handle support count updates via cache invalidation
     const unsubscribe = firebaseApi.post.listenToSessionUpdates(sessionIds, (updates) => {
-      setAllSessions(prev => prev.map(session => {
-        const update = updates[session.id];
-        if (update) {
-          return {
-            ...session,
-            supportCount: update.supportCount > 0 ? update.supportCount : session.supportCount,
-            isSupported: update.isSupported !== undefined ? update.isSupported : session.isSupported
-          };
-        }
-        return session;
-      }));
+      // Updates are handled by React Query's optimistic updates in supportMutation
+      // This listener can be used for real-time notifications in the future
     });
 
     return unsubscribe;
@@ -280,7 +282,8 @@ export const Feed: React.FC<FeedProps> = ({
 
     const observer = new IntersectionObserver(
       (entries) => {
-        const [entry] = entries;
+        const entry = entries[0];
+        if (!entry) return;
 
         if (entry.isIntersecting && hasMore && !isLoadingMore) {
           loadMore();

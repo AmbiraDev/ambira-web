@@ -21,7 +21,9 @@ export function ColorSelector({ colors, value, onChange, className = '' }: Color
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Support both name and hex value
-  const selectedColor = colors.find(c => c.name === value || c.hex === value) || colors[0];
+  // Ensure selectedColor is always defined with a fallback
+  const DEFAULT_COLOR: ColorOption = { name: 'gray', hex: '#6B7280', label: 'Gray' };
+  const selectedColor = colors.find(c => c.name === value || c.hex === value) || colors[0] || DEFAULT_COLOR;
 
   // Close dropdown when clicking outside
   useEffect(() => {

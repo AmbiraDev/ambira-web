@@ -71,10 +71,8 @@ export const ProjectList: React.FC<ProjectListProps> = ({
   };
 
   const handleRestore = async (project: Project) => {
-    if (!archiveProject) return;
-
     try {
-      await archiveProject(project.id); // This will toggle the status
+      await restoreProjectMutation.mutateAsync(project.id);
     } catch (error) {
       console.error('Failed to restore project:', error);
     }
@@ -136,7 +134,7 @@ export const ProjectList: React.FC<ProjectListProps> = ({
     return (
       <div className="text-center py-12">
         <div className="text-red-500 text-lg mb-4">Error loading activities</div>
-        <p className="text-gray-600 mb-4">{error}</p>
+        <p className="text-gray-600 mb-4">{error instanceof Error ? error.message : String(error)}</p>
         <button
           onClick={() => window.location.reload()}
           className="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition-colors"

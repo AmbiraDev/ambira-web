@@ -95,8 +95,9 @@ export class ProfileStatsCalculator {
             60
           : 0;
 
+      const dayName = dayNames[day.getDay()];
       data.push({
-        name: `${dayNames[day.getDay()].slice(0, 3)} ${day.getDate()}`,
+        name: `${dayName?.slice(0, 3) || ''} ${day.getDate()}`,
         hours: Number(hoursWorked.toFixed(2)),
         sessions: daySessions.length,
         avgDuration: Math.round(avgDuration),
@@ -212,8 +213,9 @@ export class ProfileStatsCalculator {
             60
           : 0;
 
+      const monthName = monthNames[monthStart.getMonth()];
       data.push({
-        name: monthNames[monthStart.getMonth()],
+        name: monthName || '',
         hours: Number(hoursWorked.toFixed(2)),
         sessions: monthSessions.length,
         avgDuration: Math.round(avgDuration),
@@ -297,7 +299,12 @@ export class ProfileStatsCalculator {
 
     // Check if there's activity today or yesterday
     if (dates.length > 0) {
-      const mostRecentDate = new Date(dates[0]);
+      const firstDate = dates[0];
+      if (!firstDate) {
+        return { currentStreak: 0, longestStreak: 0 };
+      }
+
+      const mostRecentDate = new Date(firstDate);
       mostRecentDate.setHours(0, 0, 0, 0);
 
       if (
@@ -308,9 +315,16 @@ export class ProfileStatsCalculator {
 
         // Count consecutive days
         for (let i = 1; i < dates.length; i++) {
-          const prevDate = new Date(dates[i - 1]);
+          const prevDateValue = dates[i - 1];
+          const currDateValue = dates[i];
+
+          if (!prevDateValue || !currDateValue) {
+            break;
+          }
+
+          const prevDate = new Date(prevDateValue);
           prevDate.setHours(0, 0, 0, 0);
-          const currDate = new Date(dates[i]);
+          const currDate = new Date(currDateValue);
           currDate.setHours(0, 0, 0, 0);
 
           const dayDiff = Math.round(
@@ -331,9 +345,16 @@ export class ProfileStatsCalculator {
     let tempStreak = 1;
 
     for (let i = 1; i < dates.length; i++) {
-      const prevDate = new Date(dates[i - 1]);
+      const prevDateValue = dates[i - 1];
+      const currDateValue = dates[i];
+
+      if (!prevDateValue || !currDateValue) {
+        continue;
+      }
+
+      const prevDate = new Date(prevDateValue);
       prevDate.setHours(0, 0, 0, 0);
-      const currDate = new Date(dates[i]);
+      const currDate = new Date(currDateValue);
       currDate.setHours(0, 0, 0, 0);
 
       const dayDiff = Math.round(

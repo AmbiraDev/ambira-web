@@ -62,8 +62,8 @@ export function IconSelector({ icons, value, onChange, className = '' }: IconSel
         className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none bg-white cursor-pointer hover:bg-gray-50 transition-colors flex items-center justify-between"
       >
         <div className="flex items-center gap-3">
-          <Icon icon={selectedIcon.icon} width={32} height={32} />
-          <span className="text-gray-900">{selectedIcon.label}</span>
+          <Icon icon={selectedIcon ? selectedIcon.icon : 'mdi:circle'} width={32} height={32} />
+          <span className="text-gray-900">{selectedIcon ? selectedIcon.label : 'Select Icon'}</span>
         </div>
         <ChevronDown className={`w-5 h-5 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>

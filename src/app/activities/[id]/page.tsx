@@ -112,34 +112,38 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
     const data: ChartDataPoint[] = [];
 
     if (timePeriod === '7D') {
-      const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const;
       for (let i = 6; i >= 0; i--) {
         const day = new Date(now);
         day.setDate(day.getDate() - i);
+        const dayIndex = day.getDay();
+        const dayName = (dayNames[dayIndex] || 'Day') as string;
         const daySessions = sessions.filter(s => new Date(s.createdAt).toDateString() === day.toDateString());
         const hoursWorked = daySessions.reduce((sum, s) => sum + s.duration / 3600, 0);
         const avgDuration = daySessions.length > 0
           ? daySessions.reduce((sum, s) => sum + s.duration, 0) / daySessions.length / 60
           : 0;
         data.push({
-          name: `${dayNames[day.getDay()].slice(0, 3)} ${day.getDate()}`,
+          name: `${dayName.slice(0, 3)} ${day.getDate()}`,
           hours: Number(hoursWorked.toFixed(2)),
           sessions: daySessions.length,
           avgDuration: Math.round(avgDuration)
         });
       }
     } else if (timePeriod === '2W') {
-      const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const;
       for (let i = 13; i >= 0; i--) {
         const day = new Date(now);
         day.setDate(day.getDate() - i);
+        const dayIndex = day.getDay();
+        const dayName = (dayNames[dayIndex] || 'Day') as string;
         const daySessions = sessions.filter(s => new Date(s.createdAt).toDateString() === day.toDateString());
         const hoursWorked = daySessions.reduce((sum, s) => sum + s.duration / 3600, 0);
         const avgDuration = daySessions.length > 0
           ? daySessions.reduce((sum, s) => sum + s.duration, 0) / daySessions.length / 60
           : 0;
         data.push({
-          name: `${dayNames[day.getDay()].slice(0, 3)} ${day.getDate()}`,
+          name: `${dayName.slice(0, 3)} ${day.getDate()}`,
           hours: Number(hoursWorked.toFixed(2)),
           sessions: daySessions.length,
           avgDuration: Math.round(avgDuration)
@@ -162,11 +166,13 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
         data.push({ name: `Week ${4 - i}`, hours: Number(hoursWorked.toFixed(2)), sessions: weekSessions.length, avgDuration: Math.round(avgDuration) });
       }
     } else if (timePeriod === '3M' || timePeriod === '1Y') {
-      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] as const;
       const monthsBack = timePeriod === '3M' ? 2 : 11;
       for (let i = monthsBack; i >= 0; i--) {
         const month = new Date(now);
         month.setMonth(month.getMonth() - i);
+        const monthIndex = month.getMonth();
+        const monthName = (monthNames[monthIndex] || 'Month') as string;
         const monthSessions = sessions.filter(s => {
           const sessionDate = new Date(s.createdAt);
           return sessionDate.getMonth() === month.getMonth() && sessionDate.getFullYear() === month.getFullYear();
@@ -175,7 +181,7 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
         const avgDuration = monthSessions.length > 0
           ? monthSessions.reduce((sum, s) => sum + s.duration, 0) / monthSessions.length / 60
           : 0;
-        data.push({ name: monthNames[month.getMonth()], hours: Number(hoursWorked.toFixed(2)), sessions: monthSessions.length, avgDuration: Math.round(avgDuration) });
+        data.push({ name: monthName, hours: Number(hoursWorked.toFixed(2)), sessions: monthSessions.length, avgDuration: Math.round(avgDuration) });
       }
     }
 

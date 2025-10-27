@@ -285,14 +285,14 @@ export function useArchiveProject(
       return { previousProject, previousProjects };
     },
 
-    onError: (error, projectId, context) => {
-      if (context?.previousProject) {
+    onError: (error, projectId, context: unknown) => {
+      if (context && typeof context === 'object' && 'previousProject' in context && context.previousProject) {
         queryClient.setQueryData(
           PROJECT_KEYS.detail(projectId),
           context.previousProject
         );
       }
-      if (context?.previousProjects) {
+      if (context && typeof context === 'object' && 'previousProjects' in context && context.previousProjects) {
         queryClient.setQueryData(PROJECT_KEYS.list(), context.previousProjects);
       }
     },
@@ -353,14 +353,14 @@ export function useRestoreProject(
       return { previousProject, previousProjects };
     },
 
-    onError: (error, projectId, context) => {
-      if (context?.previousProject) {
+    onError: (error, projectId, context: unknown) => {
+      if (context && typeof context === 'object' && 'previousProject' in context && context.previousProject) {
         queryClient.setQueryData(
           PROJECT_KEYS.detail(projectId),
           context.previousProject
         );
       }
-      if (context?.previousProjects) {
+      if (context && typeof context === 'object' && 'previousProjects' in context && context.previousProjects) {
         queryClient.setQueryData(PROJECT_KEYS.list(), context.previousProjects);
       }
     },

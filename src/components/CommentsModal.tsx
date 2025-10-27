@@ -113,7 +113,7 @@ export const CommentsModal: React.FC<CommentsModalProps> = ({
 
   const handleDelete = async (commentId: string) => {
     try {
-      await deleteCommentMutation.mutateAsync(commentId);
+      await deleteCommentMutation.mutateAsync({ commentId, sessionId });
     } catch (err: any) {
       debug.error('CommentsModal - Failed to delete comment:', err);
       throw err;

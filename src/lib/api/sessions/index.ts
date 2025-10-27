@@ -77,6 +77,20 @@ import type {
 // ============================================================================
 
 /**
+ * Validate and normalize project/activity status from Firestore
+ * Ensures the status is one of the allowed values, falls back to 'active' if invalid
+ *
+ * @param status - The status value from Firestore (may be any string)
+ * @returns A valid status value: 'active', 'completed', or 'archived'
+ */
+function normalizeStatus(status: any): 'active' | 'completed' | 'archived' {
+  if (status === 'completed' || status === 'archived') {
+    return status;
+  }
+  return 'active';
+}
+
+/**
  * Create a timeout promise that rejects after a specified duration
  * Used to prevent Firebase queries from hanging indefinitely
  *
@@ -525,7 +539,7 @@ export const firebaseSessionApi = {
               color: projectData.color || '#64748B',
               weeklyTarget: projectData.weeklyTarget,
               totalTarget: projectData.totalTarget,
-              status: projectData.status || 'active',
+              status: normalizeStatus(projectData.status),
               createdAt: convertTimestamp(projectData.createdAt) || new Date(),
               updatedAt: convertTimestamp(projectData.updatedAt) || new Date(),
             }
@@ -897,7 +911,7 @@ export const firebaseSessionApi = {
             description: projectData.description || '',
             color: projectData.color || '#007AFF',
             icon: projectData.icon || 'FolderIcon',
-            status: projectData.status || 'active',
+            status: normalizeStatus(projectData.status),
             totalTime: projectData.totalTime || 0,
             sessionCount: projectData.sessionCount || 0,
             isArchived: projectData.isArchived || false,

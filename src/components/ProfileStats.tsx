@@ -313,18 +313,18 @@ const DailyActivityChart: React.FC<DailyActivityChartProps> = ({
 
           {/* X-axis */}
           <div className="absolute left-14 right-0 bottom-0 h-6 flex justify-between text-xs text-muted-foreground">
-            {selectedPeriod === '30d' && filteredData.length > 0 && (
+            {selectedPeriod === '30d' && filteredData.length > 0 && filteredData[0] && (
               <>
                 <span>{new Date(filteredData[0].date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
-                <span>{new Date(filteredData[Math.floor(filteredData.length / 2)].date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
-                <span>{new Date(filteredData[filteredData.length - 1].date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                <span>{new Date(filteredData[Math.floor(filteredData.length / 2)]!.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                <span>{new Date(filteredData[filteredData.length - 1]!.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
               </>
             )}
-            {selectedPeriod === '90d' && filteredData.length > 0 && (
+            {selectedPeriod === '90d' && filteredData.length > 0 && filteredData[0] && (
               <>
                 <span>{new Date(filteredData[0].date).toLocaleDateString('en-US', { month: 'short' })}</span>
-                <span>{new Date(filteredData[Math.floor(filteredData.length / 2)].date).toLocaleDateString('en-US', { month: 'short' })}</span>
-                <span>{new Date(filteredData[filteredData.length - 1].date).toLocaleDateString('en-US', { month: 'short' })}</span>
+                <span>{new Date(filteredData[Math.floor(filteredData.length / 2)]!.date).toLocaleDateString('en-US', { month: 'short' })}</span>
+                <span>{new Date(filteredData[filteredData.length - 1]!.date).toLocaleDateString('en-US', { month: 'short' })}</span>
               </>
             )}
             {selectedPeriod === 'year' && filteredData.length > 0 && (
@@ -355,29 +355,39 @@ const WeeklyChart: React.FC<WeeklyChartProps> = ({ data, formatHours }) => {
 
   // Parse week string (format: "2025-W40") to get a readable date range
   const getWeekLabel = (weekStr: string): string => {
-    const [year, weekNum] = weekStr.split('-W');
-    const weekNumber = parseInt(weekNum);
-    
+    const parts = weekStr.split('-W');
+    if (parts.length !== 2 || !parts[0] || !parts[1]) {
+      return 'Invalid week';
+    }
+    const year = parts[0];
+    const weekNum = parts[1];
+    const weekNumber = parseInt(weekNum, 10);
+
     // Get the first day of the week
-    const firstDay = new Date(parseInt(year), 0, 1 + (weekNumber - 1) * 7);
+    const firstDay = new Date(parseInt(year, 10), 0, 1 + (weekNumber - 1) * 7);
     const dayOfWeek = firstDay.getDay();
     const diff = firstDay.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
     const monday = new Date(firstDay.setDate(diff));
-    
+
     return monday.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   };
 
   const getWeekRange = (weekStr: string): string => {
-    const [year, weekNum] = weekStr.split('-W');
-    const weekNumber = parseInt(weekNum);
-    
-    const firstDay = new Date(parseInt(year), 0, 1 + (weekNumber - 1) * 7);
+    const parts = weekStr.split('-W');
+    if (parts.length !== 2 || !parts[0] || !parts[1]) {
+      return 'Invalid week range';
+    }
+    const year = parts[0];
+    const weekNum = parts[1];
+    const weekNumber = parseInt(weekNum, 10);
+
+    const firstDay = new Date(parseInt(year, 10), 0, 1 + (weekNumber - 1) * 7);
     const dayOfWeek = firstDay.getDay();
     const diff = firstDay.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
     const monday = new Date(firstDay.setDate(diff));
     const sunday = new Date(monday);
     sunday.setDate(monday.getDate() + 6);
-    
+
     return `${monday.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${sunday.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
   };
 
@@ -573,7 +583,7 @@ const ProjectBreakdownChart: React.FC<ProjectBreakdownChartProps> = ({ data, for
             {data[0]?.projectName}
           </div>
           <div className="text-xs text-muted-foreground">
-            {formatHours(data[0]?.hours)}
+            {data[0] ? formatHours(data[0].hours) : formatHours(0)}
           </div>
         </div>
       </div>

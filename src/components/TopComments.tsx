@@ -90,7 +90,7 @@ export const TopComments: React.FC<TopCommentsProps> = ({
 
   const handleDelete = async (commentId: string) => {
     try {
-      await deleteCommentMutation.mutateAsync(commentId);
+      await deleteCommentMutation.mutateAsync({ commentId, sessionId: session.id });
     } catch (err: any) {
       console.error('Failed to delete comment:', err);
       throw err;
