@@ -285,8 +285,12 @@ describe('Firebase Image Storage Integration', () => {
       const uploadResults = await imageUploadModule.uploadImages(imageFiles);
 
       expect(uploadResults).toHaveLength(2);
-      expect(uploadResults[0].url).toBe(mockUrls[0]);
-      expect(uploadResults[1].url).toBe(mockUrls[1]);
+      const firstResult = uploadResults[0];
+      const secondResult = uploadResults[1];
+      expect(firstResult).toBeDefined();
+      expect(secondResult).toBeDefined();
+      expect(firstResult?.url).toBe(mockUrls[0]);
+      expect(secondResult?.url).toBe(mockUrls[1]);
 
       // Step 2: Create session with uploaded image URLs
       const imageUrls = uploadResults.map(r => r.url);

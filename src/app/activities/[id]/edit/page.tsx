@@ -240,14 +240,17 @@ function EditActivityContent({ activityId }: { activityId: string }) {
       const selectedIcon = AVAILABLE_ICONS.find(i => i.name === formData.icon);
       const selectedColor = AVAILABLE_COLORS.find(c => c.name === formData.color);
 
-      await updateProject(activityId, {
-        ...formData,
-        name: formData.name?.trim(),
-        description: formData.description?.trim(),
-        icon: selectedIcon?.icon || formData.icon,
-        color: selectedColor?.hex || formData.color,
-        weeklyTarget: formData.weeklyTarget || undefined,
-        totalTarget: formData.totalTarget || undefined,
+      await updateProject.mutateAsync({
+        id: activityId,
+        data: {
+          ...formData,
+          name: formData.name?.trim(),
+          description: formData.description?.trim(),
+          icon: selectedIcon?.icon || formData.icon,
+          color: selectedColor?.hex || formData.color,
+          weeklyTarget: formData.weeklyTarget || undefined,
+          totalTarget: formData.totalTarget || undefined,
+        },
       });
 
       setSuccessMessage('Activity updated successfully!');
@@ -278,11 +281,11 @@ function EditActivityContent({ activityId }: { activityId: string }) {
   // Get current icon string
   const selectedIconData = AVAILABLE_ICONS.find(i => i.icon === formData.icon) ||
                           AVAILABLE_ICONS.find(i => i.name === formData.icon) ||
-                          AVAILABLE_ICONS[0];
+                          AVAILABLE_ICONS[0]!;
 
   // Get current color
   const selectedColorData = AVAILABLE_COLORS.find(c => c.name === formData.color || c.hex === formData.color) ||
-                            AVAILABLE_COLORS[0];
+                            AVAILABLE_COLORS[0]!;
 
   if (isLoading) {
     return (

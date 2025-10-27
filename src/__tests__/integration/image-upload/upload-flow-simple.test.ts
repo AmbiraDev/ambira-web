@@ -69,7 +69,9 @@ describe('Image Upload Integration Flow - Simplified', () => {
       const validFiles = files.filter(f => f.size <= maxSize);
 
       expect(validFiles).toHaveLength(1);
-      expect(validFiles[0].name).toBe('small.jpg');
+      const firstFile = validFiles[0];
+      expect(firstFile).toBeDefined();
+      expect(firstFile?.name).toBe('small.jpg');
     });
 
     it('should handle file type validation', () => {

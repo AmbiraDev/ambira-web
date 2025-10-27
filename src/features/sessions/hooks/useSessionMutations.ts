@@ -11,6 +11,21 @@ import { Session } from '@/types';
 
 const sessionService = new SessionService();
 
+// Context types for optimistic updates
+interface DeleteSessionContext {
+  previousFeedData: [any, any][];
+  previousSession: unknown;
+}
+
+interface SupportSessionContext {
+  previousFeedData: [any, any][];
+  previousSession: unknown;
+}
+
+interface UpdateSessionContext {
+  previousSession: unknown;
+}
+
 /**
  * Delete a session
  *
@@ -19,11 +34,11 @@ const sessionService = new SessionService();
  * deleteMutation.mutate(sessionId);
  */
 export function useDeleteSession(
-  options?: Partial<UseMutationOptions<void, Error, string>>
+  options?: Partial<UseMutationOptions<void, Error, string, DeleteSessionContext>>
 ) {
   const queryClient = useQueryClient();
 
-  return useMutation<void, Error, string>({
+  return useMutation<void, Error, string, DeleteSessionContext>({
     mutationFn: (sessionId) => sessionService.deleteSession(sessionId),
 
     onMutate: async (sessionId) => {
@@ -96,11 +111,11 @@ export function useDeleteSession(
  */
 export function useSupportSession(
   currentUserId?: string,
-  options?: Partial<UseMutationOptions<void, Error, SupportSessionData>>
+  options?: Partial<UseMutationOptions<void, Error, SupportSessionData, SupportSessionContext>>
 ) {
   const queryClient = useQueryClient();
 
-  return useMutation<void, Error, SupportSessionData>({
+  return useMutation<void, Error, SupportSessionData, SupportSessionContext>({
     mutationFn: async ({ sessionId, action }) => {
       if (action === 'support') {
         await sessionService.supportSession(sessionId);
@@ -220,12 +235,12 @@ export function useSupportSession(
  */
 export function useUpdateSession(
   options?: Partial<
-    UseMutationOptions<void, Error, { sessionId: string; data: Partial<Session> }>
+    UseMutationOptions<void, Error, { sessionId: string; data: Partial<Session> }, UpdateSessionContext>
   >
 ) {
   const queryClient = useQueryClient();
 
-  return useMutation<void, Error, { sessionId: string; data: Partial<Session> }>({
+  return useMutation<void, Error, { sessionId: string; data: Partial<Session> }, UpdateSessionContext>({
     mutationFn: ({ sessionId, data }) => sessionService.updateSession(sessionId, data),
 
     onMutate: async ({ sessionId, data }) => {

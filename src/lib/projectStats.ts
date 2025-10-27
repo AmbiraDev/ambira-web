@@ -95,14 +95,19 @@ function calculateCurrentStreak(sessions: Session[]): number {
   const yesterdayString = yesterday.toDateString();
 
   // If no session today or yesterday, streak is broken
-  const mostRecentDate = uniqueDates[0].toDateString();
+  const firstDate: Date | undefined = uniqueDates[0];
+  if (!firstDate) {
+    return 0;
+  }
+
+  const mostRecentDate = firstDate.toDateString();
   if (mostRecentDate !== todayString && mostRecentDate !== yesterdayString) {
     return 0;
   }
 
   // Calculate consecutive days
   let streak = 0;
-  let currentDate = new Date(uniqueDates[0]);
+  let currentDate: Date = new Date(firstDate);
 
   for (const sessionDate of uniqueDates) {
     const daysDifference = Math.floor(

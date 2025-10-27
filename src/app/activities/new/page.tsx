@@ -317,9 +317,9 @@ function CreateProjectContent() {
             <div className="flex items-center gap-3 md:gap-4">
               <div
                 className="w-14 h-14 md:w-16 md:h-16 rounded-xl flex items-center justify-center shadow-lg p-2"
-                style={{ backgroundColor: selectedColorData.hex }}
+                style={{ backgroundColor: selectedColorData?.hex || '#f97316' }}
               >
-                <Icon icon={selectedIconData.icon} width={40} height={40} className="md:w-12 md:h-12" />
+                <Icon icon={selectedIconData?.icon || 'flat-color-icons:briefcase'} width={40} height={40} className="md:w-12 md:h-12" />
               </div>
               <div className="flex-1 min-w-0">
                 <h2 className="text-lg md:text-xl font-bold text-gray-900 truncate">

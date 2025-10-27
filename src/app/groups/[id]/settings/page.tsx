@@ -94,8 +94,11 @@ export default function GroupSettingsPage() {
       let imageUrl = formData.imageUrl;
       if (groupImages.length > 0) {
         try {
-          const result = await uploadImage(groupImages[0], 'group-images');
-          imageUrl = result.url;
+          const imageFile = groupImages[0];
+          if (imageFile) {
+            const result = await uploadImage(imageFile, 'group-images');
+            imageUrl = result.url;
+          }
         } catch (uploadError) {
           console.error('Error uploading group image:', uploadError);
           setError(uploadError instanceof Error ? uploadError.message : 'Failed to upload group image');

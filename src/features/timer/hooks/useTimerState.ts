@@ -77,7 +77,10 @@ export function useTimerState({
     const now = new Date();
     let elapsed: number;
 
-    if (activeSession.isPaused) {
+    // Timer is considered paused if pausedDuration > 0
+    const isPaused = activeSession.pausedDuration > 0;
+
+    if (isPaused) {
       // When paused, use the pausedDuration from server
       elapsed = activeSession.pausedDuration;
     } else {
@@ -89,11 +92,11 @@ export function useTimerState({
 
     setTimerState(prev => ({
       ...prev,
-      isRunning: !activeSession.isPaused,
-      isPaused: activeSession.isPaused,
+      isRunning: !isPaused,
+      isPaused: isPaused,
       elapsedSeconds: Math.max(0, elapsed),
       currentProject: currentProject,
-      activeTimerId: activeSession.projectId,
+      activeTimerId: activeSession.activityId || activeSession.projectId || null,
     }));
   }, [activeSession, currentProject]);
 

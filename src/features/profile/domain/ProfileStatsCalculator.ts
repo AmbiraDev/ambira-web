@@ -23,6 +23,9 @@ export interface ProfileStats {
   longestSession: number; // in seconds
   currentStreak: number;
   longestStreak: number;
+  // Additional computed fields
+  weeklyHours?: number; // Hours this week
+  sessionsThisWeek?: number; // Sessions count this week
 }
 
 export class ProfileStatsCalculator {

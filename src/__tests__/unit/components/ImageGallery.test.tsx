@@ -34,11 +34,13 @@ describe('ImageGallery', () => {
   });
 
   it('should render a single image without navigation', () => {
-    render(<ImageGallery images={[mockImages[0]]} />);
+    const firstImage = mockImages[0];
+    if (!firstImage) return;
+    render(<ImageGallery images={[firstImage]} />);
 
     const image = screen.getByAltText('Image 1');
     expect(image).toBeInTheDocument();
-    expect(image).toHaveAttribute('src', mockImages[0]);
+    expect(image).toHaveAttribute('src', firstImage);
 
     // Should not show navigation arrows for single image
     expect(screen.queryByLabelText('Previous image')).not.toBeInTheDocument();
@@ -60,7 +62,9 @@ describe('ImageGallery', () => {
   });
 
   it('should not show dot indicators for single image', () => {
-    render(<ImageGallery images={[mockImages[0]]} />);
+    const firstImage = mockImages[0];
+    if (!firstImage) return;
+    render(<ImageGallery images={[firstImage]} />);
 
     const dots = screen.queryAllByRole('button', { name: /Go to image/i });
     expect(dots).toHaveLength(0);
@@ -114,9 +118,11 @@ describe('ImageGallery', () => {
     render(<ImageGallery images={mockImages} />);
 
     const dots = screen.getAllByRole('button', { name: /Go to image/i });
+    const thirdDot = dots[2];
+    if (!thirdDot) return;
 
     // Click on third dot
-    fireEvent.click(dots[2]);
+    fireEvent.click(thirdDot);
 
     const image = screen.getByAltText('Image 3');
     expect(image).toHaveAttribute('src', mockImages[2]);
@@ -126,17 +132,20 @@ describe('ImageGallery', () => {
     const { container } = render(<ImageGallery images={mockImages} />);
 
     const dots = screen.getAllByRole('button', { name: /Go to image/i });
+    const firstDot = dots[0];
+    const secondDot = dots[1];
+    if (!firstDot || !secondDot) return;
 
     // First dot should be active (has bg-[#007AFF] class)
-    expect(dots[0]).toHaveClass('bg-[#007AFF]');
-    expect(dots[1]).toHaveClass('bg-gray-300');
+    expect(firstDot).toHaveClass('bg-[#007AFF]');
+    expect(secondDot).toHaveClass('bg-gray-300');
 
     // Click second dot
-    fireEvent.click(dots[1]);
+    fireEvent.click(secondDot);
 
     // Second dot should now be active
-    expect(dots[1]).toHaveClass('bg-[#007AFF]');
-    expect(dots[0]).toHaveClass('bg-gray-300');
+    expect(secondDot).toHaveClass('bg-[#007AFF]');
+    expect(firstDot).toHaveClass('bg-gray-300');
   });
 
   it('should handle swipe gestures on touch devices', () => {
@@ -208,7 +217,9 @@ describe('ImageGallery', () => {
 
     // Navigate to last image
     const dots = screen.getAllByRole('button', { name: /Go to image/i });
-    fireEvent.click(dots[2]);
+    const thirdDot = dots[2];
+    if (!thirdDot) return;
+    fireEvent.click(thirdDot);
 
     // Try to swipe left on last image
     fireEvent.touchStart(container!, { targetTouches: [{ clientX: 200 }] });

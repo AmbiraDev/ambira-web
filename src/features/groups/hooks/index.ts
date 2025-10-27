@@ -17,6 +17,8 @@ export {
   useGroupStats,
   useCanJoinGroup,
   useCanInviteToGroup,
+  useGroups,
+  useGroupSearch,
   GROUPS_KEYS,
 } from './useGroups';
 

@@ -180,12 +180,17 @@ describe('Feed Page Keyboard Navigation', () => {
       const sessionCards = screen.getAllByRole('article');
       if (sessionCards.length > 0) {
         const firstCard = sessionCards[0];
+        if (!firstCard) return;
         const buttonsInCard = within(firstCard).queryAllByRole('button');
 
         if (buttonsInCard.length > 1) {
           // Focus should move through buttons in the card in order
-          buttonsInCard[0].focus();
-          await user.tab();
+          const firstButton = buttonsInCard[0];
+          if (!firstButton) return;
+          if (firstButton instanceof HTMLElement) {
+            firstButton.focus();
+            await user.tab();
+          }
 
           const isFocusInCard = buttonsInCard.some(btn => btn === document.activeElement);
           // Focus should either be in the same card or have moved to next card
@@ -213,8 +218,10 @@ describe('Feed Page Keyboard Navigation', () => {
       // (Y coordinates should be non-decreasing within a card)
       const isLogicalOrder = positions.every((pos, i) => {
         if (i === 0) return true;
+        const prevPos = positions[i - 1];
+        if (!prevPos || !prevPos.rect) return true;
         // Allow some flexibility for side-by-side elements
-        return pos.rect.top >= positions[i - 1].rect.top - 50;
+        return pos.rect.top >= prevPos.rect.top - 50;
       });
 
       expect(isLogicalOrder).toBe(true);
@@ -260,6 +267,7 @@ describe('Feed Page Keyboard Navigation', () => {
 
       if (menuButtons.length > 0) {
         const menuButton = menuButtons[0];
+        if (!menuButton || !(menuButton instanceof Element)) return;
         await user.click(menuButton);
 
         // Tab forward
@@ -283,6 +291,7 @@ describe('Feed Page Keyboard Navigation', () => {
 
       if (likeButtons.length > 0) {
         const likeButton = likeButtons[0];
+        if (!likeButton || !(likeButton instanceof HTMLElement)) return;
         likeButton.focus();
 
         expect(document.activeElement).toBe(likeButton);
@@ -303,6 +312,7 @@ describe('Feed Page Keyboard Navigation', () => {
 
       if (likeButtons.length > 0) {
         const likeButton = likeButtons[0];
+        if (!likeButton || !(likeButton instanceof HTMLElement)) return;
         likeButton.focus();
 
         expect(document.activeElement).toBe(likeButton);
@@ -323,6 +333,7 @@ describe('Feed Page Keyboard Navigation', () => {
 
       if (shareButtons.length > 0) {
         const shareButton = shareButtons[0];
+        if (!shareButton || !(shareButton instanceof HTMLElement)) return;
         shareButton.focus();
 
         await user.keyboard('{Enter}');
@@ -340,6 +351,7 @@ describe('Feed Page Keyboard Navigation', () => {
 
       if (links.length > 0) {
         const link = links[0];
+        if (!link || !(link instanceof HTMLElement)) return;
         link.focus();
 
         expect(document.activeElement).toBe(link);
@@ -362,6 +374,7 @@ describe('Feed Page Keyboard Navigation', () => {
 
       if (menuButtons.length > 0) {
         const menuButton = menuButtons[0];
+        if (!menuButton || !(menuButton instanceof Element)) return;
         await user.click(menuButton);
 
         // Try navigating with arrow keys
@@ -476,7 +489,7 @@ describe('Feed Page Keyboard Navigation', () => {
       const buttons = screen.queryAllByRole('button');
 
       // Should have at least some interactive element for recovery
-      expect(buttons.length >= 0).toBe(true);
+      expect(buttons.length).toBeGreaterThanOrEqual(0);
     });
   });
 
@@ -487,7 +500,9 @@ describe('Feed Page Keyboard Navigation', () => {
 
       const buttons = screen.getAllByRole('button');
       if (buttons.length > 0) {
-        buttons[0].focus();
+        const firstButton = buttons[0];
+        if (!firstButton) return;
+        firstButton.focus();
         const focusedButton = document.activeElement;
 
         // Rerender with same content

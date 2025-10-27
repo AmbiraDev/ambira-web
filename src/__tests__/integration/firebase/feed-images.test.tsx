@@ -138,14 +138,16 @@ describe('Firebase Feed Images Integration', () => {
 
       // Verify first session has images
       const sessionWithImages = result.sessions[0];
-      expect(sessionWithImages.images).toBeDefined();
-      expect(sessionWithImages.images!).toHaveLength(2);
-      expect(sessionWithImages.images![0]).toContain('firebasestorage.googleapis.com');
-      expect(sessionWithImages.images![0]).toContain('?alt=media&token=');
+      expect(sessionWithImages).toBeDefined();
+      expect(sessionWithImages!.images).toBeDefined();
+      expect(sessionWithImages!.images!).toHaveLength(2);
+      expect(sessionWithImages!.images?.[0]).toContain('firebasestorage.googleapis.com');
+      expect(sessionWithImages!.images?.[0]).toContain('?alt=media&token=');
 
       // Verify second session has no images
       const sessionWithoutImages = result.sessions[1];
-      expect(sessionWithoutImages.images).toEqual([]);
+      expect(sessionWithoutImages).toBeDefined();
+      expect(sessionWithoutImages!.images).toEqual([]);
     });
 
     it('should default to empty array when session has undefined images field', async () => {
@@ -184,7 +186,9 @@ describe('Firebase Feed Images Integration', () => {
       const result = await firebaseSessionApi.getSessions(10);
 
       expect(result.sessions).toHaveLength(1);
-      expect(result.sessions[0].images).toEqual([]);
+      const firstSession = result.sessions[0];
+      expect(firstSession).toBeDefined();
+      expect(firstSession?.images).toEqual([]);
     });
 
     it('should preserve image order from Firestore', async () => {
@@ -228,9 +232,11 @@ describe('Firebase Feed Images Integration', () => {
 
       const result = await firebaseSessionApi.getSessions(10);
 
-      expect(result.sessions[0].images).toEqual(orderedImages);
-      expect(result.sessions[0].images![0]).toBe(orderedImages[0]);
-      expect(result.sessions[0].images![2]).toBe(orderedImages[2]);
+      const firstSession = result.sessions[0];
+      expect(firstSession).toBeDefined();
+      expect(firstSession?.images).toEqual(orderedImages);
+      expect(firstSession?.images?.[0]).toBe(orderedImages[0]);
+      expect(firstSession?.images?.[2]).toBe(orderedImages[2]);
     });
   });
 
@@ -322,7 +328,9 @@ describe('Firebase Feed Images Integration', () => {
 
       const result = await firebaseSessionApi.getSessions(10);
 
-      const imageUrl = result.sessions[0].images![0];
+      const firstSession = result.sessions[0];
+      expect(firstSession).toBeDefined();
+      const imageUrl = firstSession?.images?.[0];
 
       // Validate URL format
       expect(imageUrl).toMatch(/^https:\/\/firebasestorage\.googleapis\.com/);
@@ -364,8 +372,10 @@ describe('Firebase Feed Images Integration', () => {
 
       const result = await firebaseSessionApi.getSessions(10);
 
-      expect(result.sessions[0].images).toHaveLength(3);
-      expect(result.sessions[0].images!.length).toBeLessThanOrEqual(3);
+      const firstSession = result.sessions[0];
+      expect(firstSession).toBeDefined();
+      expect(firstSession?.images).toHaveLength(3);
+      expect(firstSession?.images?.length).toBeLessThanOrEqual(3);
     });
   });
 
@@ -438,8 +448,10 @@ describe('Firebase Feed Images Integration', () => {
       const result = await firebaseSessionApi.getSessions(10);
 
       expect(result.sessions).toHaveLength(1);
-      expect(result.sessions[0].images).toBeDefined();
-      expect(result.sessions[0].images!).toHaveLength(2);
+      const firstSession = result.sessions[0];
+      expect(firstSession).toBeDefined();
+      expect(firstSession?.images).toBeDefined();
+      expect(firstSession?.images).toHaveLength(2);
       expect((result.sessions[0] as any).user).toBeDefined();
       expect((result.sessions[0] as any).activity || (result.sessions[0] as any).project).toBeDefined();
     });

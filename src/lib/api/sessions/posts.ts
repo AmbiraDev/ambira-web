@@ -30,16 +30,24 @@ import {
   serverTimestamp,
   Timestamp,
   increment,
+  runTransaction,
+  onSnapshot,
 } from 'firebase/firestore';
 
 // Local Firebase config
 import { db, auth } from '@/lib/firebase';
 
 // Error handling
-import { handleError, ErrorSeverity } from '@/lib/errorHandler';
+import { handleError, ErrorSeverity, isPermissionError } from '@/lib/errorHandler';
 
 // Shared utilities
 import { convertTimestamp, removeUndefinedFields } from '../shared/utils';
+
+// Session helpers
+import { populateSessionsWithDetails } from './helpers';
+
+// Rate limiting
+import { checkRateLimit } from '@/lib/rateLimit';
 
 // Types
 import type {

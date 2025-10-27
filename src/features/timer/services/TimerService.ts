@@ -182,6 +182,13 @@ export class TimerService {
   }
 
   /**
+   * Cancel timer without saving (alias for stopTimer)
+   */
+  async cancelTimer(userId: string): Promise<void> {
+    return this.stopTimer(userId);
+  }
+
+  /**
    * Update timer metadata
    */
   async updateTimerMetadata(

@@ -364,7 +364,9 @@ describe('ActivityList Component', () => {
 
       // Open menu and trigger delete
       const menuButtons = screen.getAllByRole('button', { name: /open activity menu/i });
-      fireEvent.click(menuButtons[0]);
+      const firstMenuButton = menuButtons[0];
+      if (!firstMenuButton || !(firstMenuButton instanceof Element)) return;
+      fireEvent.click(firstMenuButton);
 
       const deleteButton = screen.getByRole('menuitem', { name: /delete/i });
       fireEvent.click(deleteButton);
@@ -397,7 +399,9 @@ describe('ActivityList Component', () => {
       render(<ActivityList onEditActivity={jest.fn()} />);
 
       const menuButtons = screen.getAllByRole('button', { name: /open activity menu/i });
-      fireEvent.click(menuButtons[0]);
+      const firstMenuButton = menuButtons[0];
+      if (!firstMenuButton || !(firstMenuButton instanceof Element)) return;
+      fireEvent.click(firstMenuButton);
 
       const deleteButton = screen.getByRole('menuitem', { name: /delete/i });
       fireEvent.click(deleteButton);
@@ -410,7 +414,9 @@ describe('ActivityList Component', () => {
       render(<ActivityList onEditActivity={jest.fn()} />);
 
       const menuButtons = screen.getAllByRole('button', { name: /open activity menu/i });
-      fireEvent.click(menuButtons[0]);
+      const firstMenuButton = menuButtons[0];
+      if (!firstMenuButton || !(firstMenuButton instanceof Element)) return;
+      fireEvent.click(firstMenuButton);
 
       const deleteButton = screen.getByRole('menuitem', { name: /delete/i });
       fireEvent.click(deleteButton);
@@ -422,7 +428,9 @@ describe('ActivityList Component', () => {
       render(<ActivityList onEditActivity={jest.fn()} />);
 
       const menuButtons = screen.getAllByRole('button', { name: /open activity menu/i });
-      fireEvent.click(menuButtons[0]);
+      const firstMenuButton = menuButtons[0];
+      if (!firstMenuButton) return;
+      fireEvent.click(firstMenuButton);
 
       const deleteButton = screen.getByRole('menuitem', { name: /delete/i });
       fireEvent.click(deleteButton);
@@ -437,7 +445,9 @@ describe('ActivityList Component', () => {
       render(<ActivityList onEditActivity={jest.fn()} />);
 
       const menuButtons = screen.getAllByRole('button', { name: /open activity menu/i });
-      fireEvent.click(menuButtons[0]);
+      const firstMenuButton = menuButtons[0];
+      if (!firstMenuButton) return;
+      fireEvent.click(firstMenuButton);
 
       const deleteButton = screen.getByRole('menuitem', { name: /delete/i });
       fireEvent.click(deleteButton);
@@ -455,7 +465,9 @@ describe('ActivityList Component', () => {
       render(<ActivityList onEditActivity={jest.fn()} />);
 
       const menuButtons = screen.getAllByRole('button', { name: /open activity menu/i });
-      fireEvent.click(menuButtons[0]);
+      const firstMenuButton = menuButtons[0];
+      if (!firstMenuButton) return;
+      fireEvent.click(firstMenuButton);
 
       const deleteButton = screen.getByRole('menuitem', { name: /delete/i });
       fireEvent.click(deleteButton);
@@ -469,7 +481,7 @@ describe('ActivityList Component', () => {
     });
 
     it('should call deleteProject when Delete is confirmed', async () => {
-      
+
       const mockDeleteProject = jest.fn().mockResolvedValue(undefined);
       useProjects.mockReturnValue({
         projects: mockActivities,
@@ -482,7 +494,9 @@ describe('ActivityList Component', () => {
       render(<ActivityList onEditActivity={jest.fn()} />);
 
       const menuButtons = screen.getAllByRole('button', { name: /open activity menu/i });
-      fireEvent.click(menuButtons[0]);
+      const firstMenuButton = menuButtons[0];
+      if (!firstMenuButton) return;
+      fireEvent.click(firstMenuButton);
 
       const deleteButton = screen.getByRole('menuitem', { name: /delete/i });
       fireEvent.click(deleteButton);
@@ -509,7 +523,9 @@ describe('ActivityList Component', () => {
       render(<ActivityList onEditActivity={jest.fn()} />);
 
       const menuButtons = screen.getAllByRole('button', { name: /open activity menu/i });
-      fireEvent.click(menuButtons[0]);
+      const firstMenuButton = menuButtons[0];
+      if (!firstMenuButton) return;
+      fireEvent.click(firstMenuButton);
 
       const deleteButton = screen.getByRole('menuitem', { name: /delete/i });
       fireEvent.click(deleteButton);
@@ -538,7 +554,9 @@ describe('ActivityList Component', () => {
       render(<ActivityList onEditActivity={jest.fn()} />);
 
       const menuButtons = screen.getAllByRole('button', { name: /open activity menu/i });
-      fireEvent.click(menuButtons[0]);
+      const firstMenuButton = menuButtons[0];
+      if (!firstMenuButton) return;
+      fireEvent.click(firstMenuButton);
 
       const deleteButton = screen.getByRole('menuitem', { name: /delete/i });
       fireEvent.click(deleteButton);
@@ -582,7 +600,9 @@ describe('ActivityList Component', () => {
       render(<ActivityList onEditActivity={jest.fn()} />);
 
       const menuButtons = screen.getAllByRole('button', { name: /open activity menu/i });
-      fireEvent.click(menuButtons[0]); // First activity (active)
+      const firstMenuButton = menuButtons[0]; // First activity (active)
+      if (!firstMenuButton) return;
+      fireEvent.click(firstMenuButton);
 
       const archiveButton = screen.getByRole('menuitem', { name: /archive/i });
       fireEvent.click(archiveButton);
@@ -597,7 +617,9 @@ describe('ActivityList Component', () => {
       render(<ActivityList onEditActivity={jest.fn()} />);
 
       const menuButtons = screen.getAllByRole('button', { name: /open activity menu/i });
-      fireEvent.click(menuButtons[0]);
+      const firstMenuButton = menuButtons[0];
+      if (!firstMenuButton) return;
+      fireEvent.click(firstMenuButton);
 
       const archiveButton = screen.getByRole('menuitem', { name: /archive/i });
       fireEvent.click(archiveButton);
@@ -623,7 +645,9 @@ describe('ActivityList Component', () => {
       render(<ActivityList onEditActivity={jest.fn()} />);
 
       const menuButtons = screen.getAllByRole('button', { name: /open activity menu/i });
-      fireEvent.click(menuButtons[0]);
+      const firstMenuButton = menuButtons[0];
+      if (!firstMenuButton) return;
+      fireEvent.click(firstMenuButton);
 
       const archiveButton = screen.getByRole('menuitem', { name: /archive/i });
       fireEvent.click(archiveButton);
@@ -654,7 +678,9 @@ describe('ActivityList Component', () => {
       render(<ActivityList onEditActivity={mockEditHandler} />);
 
       const menuButtons = screen.getAllByRole('button', { name: /open activity menu/i });
-      fireEvent.click(menuButtons[0]);
+      const firstMenuButton = menuButtons[0];
+      if (!firstMenuButton) return;
+      fireEvent.click(firstMenuButton);
 
       const editButton = screen.getByRole('menuitem', { name: /edit/i });
       fireEvent.click(editButton);

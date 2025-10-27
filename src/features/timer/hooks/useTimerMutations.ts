@@ -6,11 +6,15 @@
 
 import { useMutation, useQueryClient, UseMutationOptions } from '@tanstack/react-query';
 import { TimerService, StartTimerData, CompleteTimerData } from '../services/TimerService';
-import { TIMER_KEYS } from './useTimer';
 import { ActiveSession } from '@/domain/entities/ActiveSession';
 import { Session } from '@/domain/entities/Session';
 
 const timerService = new TimerService();
+
+// Query keys for timer-related queries
+export const TIMER_KEYS = {
+  active: (userId: string) => ['timer', 'active', userId] as const,
+};
 
 /**
  * Start a new timer
@@ -52,11 +56,11 @@ export function useStartTimer(
  * pauseMutation.mutate(userId);
  */
 export function usePauseTimer(
-  options?: Partial<UseMutationOptions<ActiveSession, Error, string>>
+  options?: Partial<UseMutationOptions<ActiveSession, Error, string, { previousSession: ActiveSession | undefined }>>
 ) {
   const queryClient = useQueryClient();
 
-  return useMutation<ActiveSession, Error, string>({
+  return useMutation<ActiveSession, Error, string, { previousSession: ActiveSession | undefined }>({
     mutationFn: (userId) => timerService.pauseTimer(userId),
 
     onMutate: async (userId) => {
@@ -64,7 +68,7 @@ export function usePauseTimer(
       await queryClient.cancelQueries({ queryKey: TIMER_KEYS.active(userId) });
 
       // Snapshot
-      const previousSession = queryClient.getQueryData(TIMER_KEYS.active(userId));
+      const previousSession = queryClient.getQueryData<ActiveSession>(TIMER_KEYS.active(userId));
 
       // Optimistically update
       queryClient.setQueryData(TIMER_KEYS.active(userId), (old: any) => {
@@ -102,17 +106,17 @@ export function usePauseTimer(
  * resumeMutation.mutate(userId);
  */
 export function useResumeTimer(
-  options?: Partial<UseMutationOptions<ActiveSession, Error, string>>
+  options?: Partial<UseMutationOptions<ActiveSession, Error, string, { previousSession: ActiveSession | undefined }>>
 ) {
   const queryClient = useQueryClient();
 
-  return useMutation<ActiveSession, Error, string>({
+  return useMutation<ActiveSession, Error, string, { previousSession: ActiveSession | undefined }>({
     mutationFn: (userId) => timerService.resumeTimer(userId),
 
     onMutate: async (userId) => {
       await queryClient.cancelQueries({ queryKey: TIMER_KEYS.active(userId) });
 
-      const previousSession = queryClient.getQueryData(TIMER_KEYS.active(userId));
+      const previousSession = queryClient.getQueryData<ActiveSession>(TIMER_KEYS.active(userId));
 
       queryClient.setQueryData(TIMER_KEYS.active(userId), (old: any) => {
         if (!old) return old;

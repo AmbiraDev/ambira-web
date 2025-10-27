@@ -189,6 +189,121 @@ export const firebaseProjectApi = {
       throw new Error(apiError.userMessage);
     }
   },
+
+  // Get project by ID
+  getProjectById: async (id: string): Promise<Project | null> => {
+    try {
+      if (!auth.currentUser) {
+        throw new Error('User not authenticated');
+      }
+
+      const projectDoc = await getDoc(
+        doc(db, 'projects', auth.currentUser.uid, 'userProjects', id)
+      );
+
+      if (!projectDoc.exists()) {
+        return null;
+      }
+
+      const data = projectDoc.data();
+      return {
+        id: projectDoc.id,
+        userId: auth.currentUser.uid,
+        name: data.name,
+        description: data.description,
+        icon: data.icon,
+        color: data.color,
+        weeklyTarget: data.weeklyTarget,
+        totalTarget: data.totalTarget,
+        status: data.status || 'active',
+        createdAt: convertTimestamp(data.createdAt),
+        updatedAt: convertTimestamp(data.updatedAt),
+      };
+    } catch (error) {
+      const apiError = handleError(error, 'Get project by ID', {
+        defaultMessage: 'Failed to get project',
+      });
+      throw new Error(apiError.userMessage);
+    }
+  },
+
+  // Get project stats
+  getProjectStats: async (id: string): Promise<ProjectStats | null> => {
+    try {
+      if (!auth.currentUser) {
+        throw new Error('User not authenticated');
+      }
+
+      // Get all sessions for this project
+      const sessionsQuery = query(
+        collection(db, 'sessions'),
+        where('userId', '==', auth.currentUser.uid),
+        where('activityId', '==', id)
+      );
+
+      const querySnapshot = await getDocs(sessionsQuery);
+
+      let totalHours = 0;
+      let weeklyHours = 0;
+      let sessionCount = 0;
+      let longestSession = 0;
+      let lastSessionDate: Date | undefined;
+
+      const now = new Date();
+      const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+      querySnapshot.forEach(doc => {
+        const data = doc.data();
+        const duration = data.duration || 0; // in seconds
+        const startTime = convertTimestamp(data.startTime);
+
+        totalHours += duration / 3600; // Convert to hours
+        sessionCount++;
+
+        if (duration > longestSession) {
+          longestSession = duration;
+        }
+
+        if (startTime >= oneWeekAgo) {
+          weeklyHours += duration / 3600;
+        }
+
+        if (!lastSessionDate || startTime > lastSessionDate) {
+          lastSessionDate = startTime;
+        }
+      });
+
+      const averageSessionDuration = sessionCount > 0 ? totalHours / sessionCount : 0;
+
+      // Calculate streak (simplified - just checks if there was activity in the last 2 days)
+      const twoDaysAgo = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000);
+      const currentStreak = lastSessionDate && lastSessionDate >= twoDaysAgo ? 1 : 0;
+
+      // Get project to check targets
+      const project = await firebaseProjectApi.getProjectById(id);
+      const weeklyTarget = project?.weeklyTarget || 0;
+      const totalTarget = project?.totalTarget || 0;
+
+      const weeklyProgressPercentage = weeklyTarget > 0 ? (weeklyHours / weeklyTarget) * 100 : 0;
+      const totalProgressPercentage = totalTarget > 0 ? (totalHours / totalTarget) * 100 : 0;
+
+      return {
+        totalHours,
+        weeklyHours,
+        sessionCount,
+        currentStreak,
+        weeklyProgressPercentage,
+        totalProgressPercentage,
+        averageSessionDuration,
+        lastSessionDate,
+      };
+    } catch (error) {
+      const apiError = handleError(error, 'Get project stats', {
+        defaultMessage: 'Failed to get project stats',
+      });
+      throw new Error(apiError.userMessage);
+    }
+  },
 };
 
 // Firebase Session API

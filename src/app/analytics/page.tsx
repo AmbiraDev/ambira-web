@@ -91,10 +91,14 @@ export default function AnalyticsPage() {
   }, [showChartTypeDropdown]);
 
   // Use new feature hooks for sessions and stats
-  const { data: sessions = [], isLoading: sessionsLoading } = useUserSessions(user?.id || '', 100, {
-    enabled: !!user?.id,
-  });
-  const { data: stats = null, isLoading: statsLoading } = useProfileStats(user?.id || '', {
+  const { data: sessions = [], isLoading: sessionsLoading } = useUserSessions(
+    user?.id || '',
+    undefined,
+    {
+      enabled: !!user?.id,
+    }
+  );
+  const { data: stats, isLoading: statsLoading } = useProfileStats(user?.id || '', {
     enabled: !!user?.id,
   });
   const { data: activities = [] } = useActivities(user?.id);
@@ -202,8 +206,8 @@ export default function AnalyticsPage() {
       totalHours: currentHours,
       sessions: currentSessionCount,
       avgDuration: Math.round(currentAvgDuration),
-      currentStreak: stats?.currentStreak || 0,
-      longestStreak: stats?.longestStreak || 0,
+      currentStreak: stats?.currentStreak ?? 0,
+      longestStreak: stats?.longestStreak ?? 0,
       activeDays: currentActiveDays,
       activities: activities?.length || 0,
 
@@ -232,8 +236,9 @@ export default function AnalyticsPage() {
         const avgDuration = daySessions.length > 0
           ? daySessions.reduce((sum, s) => sum + s.duration, 0) / daySessions.length / 60
           : 0;
+        const dayIndex = day.getDay();
         data.push({
-          name: `${dayNames[day.getDay()].slice(0, 3)} ${day.getDate()}`,
+          name: `${dayNames[dayIndex]?.slice(0, 3) ?? 'Day'} ${day.getDate()}`,
           hours: Number(hoursWorked.toFixed(2)),
           sessions: daySessions.length,
           avgDuration: Math.round(avgDuration)
@@ -249,8 +254,9 @@ export default function AnalyticsPage() {
         const avgDuration = daySessions.length > 0
           ? daySessions.reduce((sum, s) => sum + s.duration, 0) / daySessions.length / 60
           : 0;
+        const dayIndex = day.getDay();
         data.push({
-          name: `${dayNames[day.getDay()].slice(0, 3)} ${day.getDate()}`,
+          name: `${dayNames[dayIndex]?.slice(0, 3) ?? 'Day'} ${day.getDate()}`,
           hours: safeNumber(hoursWorked.toFixed(2)),
           sessions: daySessions.length,
           avgDuration: Math.round(avgDuration)
@@ -286,7 +292,8 @@ export default function AnalyticsPage() {
         const avgDuration = monthSessions.length > 0
           ? monthSessions.reduce((sum, s) => sum + s.duration, 0) / monthSessions.length / 60
           : 0;
-        data.push({ name: monthNames[month.getMonth()], hours: safeNumber(hoursWorked.toFixed(2)), sessions: monthSessions.length, avgDuration: Math.round(avgDuration) });
+        const monthIndex = month.getMonth();
+        data.push({ name: monthNames[monthIndex] ?? 'Month', hours: safeNumber(hoursWorked.toFixed(2)), sessions: monthSessions.length, avgDuration: Math.round(avgDuration) });
       }
     }
     return data;

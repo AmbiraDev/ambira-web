@@ -2,9 +2,16 @@ import { test as base } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
 /**
- * Extended test fixture with accessibility testing utilities
+ * Extended test fixtures with accessibility testing utilities
  */
-export const test = base.extend({
+type TestFixtures = {
+  makeAxeBuilder: () => AxeBuilder;
+};
+
+/**
+ * Extended test with accessibility scanning fixture
+ */
+export const test = base.extend<TestFixtures>({
   /**
    * Automatic accessibility scanning for each test
    * Usage: test('my test', async ({ page, makeAxeBuilder }) => { ... })

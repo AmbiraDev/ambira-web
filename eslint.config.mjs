@@ -43,6 +43,14 @@ const eslintConfig = [
       '@tanstack/query/stable-query-client': 'error',
     },
   },
+  // Playwright test fixtures
+  {
+    files: ['e2e/**/*.{ts,tsx}'],
+    rules: {
+      // Playwright's `use` function is not a React hook
+      'react-hooks/rules-of-hooks': 'off',
+    },
+  },
 ];
 
 export default eslintConfig;

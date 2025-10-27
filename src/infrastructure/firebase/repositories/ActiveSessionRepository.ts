@@ -42,6 +42,9 @@ export class ActiveSessionRepository {
       }
 
       const doc = snapshot.docs[0];
+      if (!doc) {
+        return null;
+      }
       return this.mapper.toDomain(doc);
     } catch (error) {
       console.error(`Error getting active session for user ${userId}:`, error);

@@ -48,7 +48,7 @@ export function getUserColor(userId: string): string {
 
   // Use modulo to select a color from the array
   const index = hash % COLORS.USER_AVATAR_GRADIENTS.length;
-  return COLORS.USER_AVATAR_GRADIENTS[index];
+  return COLORS.USER_AVATAR_GRADIENTS[index] ?? COLORS.USER_AVATAR_GRADIENTS[0] ?? 'bg-gradient-to-br from-brand-primary to-brand-primary-dark';
 }
 
 /**
@@ -70,7 +70,7 @@ export function getUserColorHex(userId: string): string {
 
   // Use modulo to select a color from the array
   const index = hash % COLORS.USER_AVATAR_HEX.length;
-  return COLORS.USER_AVATAR_HEX[index];
+  return COLORS.USER_AVATAR_HEX[index] ?? COLORS.USER_AVATAR_HEX[0] ?? '#FC4C02';
 }
 
 /**

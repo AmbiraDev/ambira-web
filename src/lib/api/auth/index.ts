@@ -117,8 +117,12 @@ const generateUniqueUsername = async (
   }
 
   // Fall back to email-based username
-  const baseUsername = email
-    .split('@')[0]
+  const emailParts = email.split('@');
+  const emailPart = emailParts[0];
+  if (!emailPart) {
+    throw new Error('Invalid email format');
+  }
+  const baseUsername = emailPart
     .toLowerCase()
     .replace(/[^a-z0-9]/g, '')
     .substring(0, 20);

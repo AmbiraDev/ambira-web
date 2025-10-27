@@ -62,7 +62,7 @@ export function useCreateProject(
     },
 
     onError: (error, variables, context) => {
-      if (context?.previousProjects) {
+      if (context && 'previousProjects' in context && context.previousProjects) {
         queryClient.setQueryData(PROJECT_KEYS.list(), context.previousProjects);
       }
     },
@@ -125,10 +125,10 @@ export function useUpdateProject(
     },
 
     onError: (error, { projectId }, context) => {
-      if (context?.previousProject) {
+      if (context && 'previousProject' in context && context.previousProject) {
         queryClient.setQueryData(PROJECT_KEYS.detail(projectId), context.previousProject);
       }
-      if (context?.previousProjects) {
+      if (context && 'previousProjects' in context && context.previousProjects) {
         queryClient.setQueryData(PROJECT_KEYS.list(), context.previousProjects);
       }
     },

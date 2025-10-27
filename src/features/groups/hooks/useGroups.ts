@@ -10,11 +10,47 @@
 
 import { useQuery, UseQueryOptions } from '@tanstack/react-query';
 import { GroupService } from '../services/GroupService';
-import { Group } from '@/domain/entities/Group';
+import { Group as DomainGroup } from '@/domain/entities/Group';
+import { Group as UIGroup } from '@/types';
 import { LeaderboardEntry, TimePeriod, GroupStats } from '../types/groups.types';
 
 // Singleton service instance
 const groupService = new GroupService();
+
+// ==================== ADAPTERS ====================
+/**
+ * Convert domain Group entity to UI Group interface
+ * Maps domain model to the shape expected by UI components
+ */
+function adaptDomainGroupToUI(domainGroup: DomainGroup): UIGroup {
+  return {
+    id: domainGroup.id,
+    name: domainGroup.name,
+    description: domainGroup.description,
+    category: domainGroup.category,
+    type: 'professional', // Default type - can be made configurable
+    privacySetting: domainGroup.privacy === 'public' ? 'public' : 'approval-required',
+    memberCount: domainGroup.getMemberCount(),
+    adminUserIds: Array.from(domainGroup.adminUserIds),
+    memberIds: Array.from(domainGroup.memberIds),
+    createdByUserId: domainGroup.createdByUserId,
+    createdAt: domainGroup.createdAt,
+    updatedAt: domainGroup.createdAt, // Use createdAt as updatedAt since domain doesn't track it
+    imageUrl: domainGroup.imageUrl,
+    location: domainGroup.location,
+    // Optional fields - add defaults if needed by UI layer
+    icon: undefined,
+    color: undefined,
+    bannerUrl: undefined,
+  };
+}
+
+/**
+ * Convert array of domain Groups to UI Groups
+ */
+function adaptDomainGroupsToUI(domainGroups: DomainGroup[]): UIGroup[] {
+  return domainGroups.map(adaptDomainGroupToUI);
+}
 
 // ==================== CACHE KEYS ====================
 // Hierarchical cache keys for efficient invalidation
@@ -49,11 +85,14 @@ const CACHE_TIMES = {
  */
 export function useGroupDetails(
   groupId: string,
-  options?: Partial<UseQueryOptions<Group | null, Error>>
+  options?: Partial<UseQueryOptions<UIGroup | null, Error>>
 ) {
-  return useQuery<Group | null, Error>({
+  return useQuery<UIGroup | null, Error>({
     queryKey: GROUPS_KEYS.detail(groupId),
-    queryFn: () => groupService.getGroupDetails(groupId),
+    queryFn: async () => {
+      const domainGroup = await groupService.getGroupDetails(groupId);
+      return domainGroup ? adaptDomainGroupToUI(domainGroup) : null;
+    },
     staleTime: CACHE_TIMES.LONG, // 15 minutes cache
     enabled: !!groupId,
     ...options,
@@ -68,11 +107,14 @@ export function useGroupDetails(
  */
 export function useUserGroups(
   userId: string,
-  options?: Partial<UseQueryOptions<Group[], Error>>
+  options?: Partial<UseQueryOptions<UIGroup[], Error>>
 ) {
-  return useQuery<Group[], Error>({
+  return useQuery<UIGroup[], Error>({
     queryKey: GROUPS_KEYS.userGroups(userId),
-    queryFn: () => groupService.getUserGroups(userId),
+    queryFn: async () => {
+      const domainGroups = await groupService.getUserGroups(userId);
+      return adaptDomainGroupsToUI(domainGroups);
+    },
     staleTime: CACHE_TIMES.LONG, // 15 minutes cache
     enabled: !!userId,
     ...options,
@@ -87,11 +129,14 @@ export function useUserGroups(
  */
 export function usePublicGroups(
   limit?: number,
-  options?: Partial<UseQueryOptions<Group[], Error>>
+  options?: Partial<UseQueryOptions<UIGroup[], Error>>
 ) {
-  return useQuery<Group[], Error>({
+  return useQuery<UIGroup[], Error>({
     queryKey: GROUPS_KEYS.publicGroups(),
-    queryFn: () => groupService.getPublicGroups(limit),
+    queryFn: async () => {
+      const domainGroups = await groupService.getPublicGroups(limit);
+      return adaptDomainGroupsToUI(domainGroups);
+    },
     staleTime: CACHE_TIMES.LONG, // 15 minutes cache
     ...options,
   });
@@ -172,6 +217,59 @@ export function useCanInviteToGroup(
     queryFn: () => groupService.canUserInvite(groupId, userId),
     staleTime: CACHE_TIMES.MEDIUM,
     enabled: !!groupId && !!userId,
+    ...options,
+  });
+}
+
+/**
+ * Get all groups with optional filters
+ *
+ * @example
+ * const { data: groups } = useGroups({ category: 'fitness' });
+ */
+export function useGroups(
+  filters?: Record<string, unknown>,
+  options?: Partial<UseQueryOptions<UIGroup[], Error>>
+) {
+  return useQuery<UIGroup[], Error>({
+    queryKey: GROUPS_KEYS.list(JSON.stringify(filters || {})),
+    queryFn: async () => {
+      const domainGroups = await groupService.getPublicGroups();
+      return adaptDomainGroupsToUI(domainGroups);
+    },
+    staleTime: CACHE_TIMES.LONG,
+    ...options,
+  });
+}
+
+/**
+ * Search for groups with specific criteria
+ *
+ * @example
+ * const { data: groups } = useGroupSearch({ name: 'fitness' }, 50);
+ */
+export function useGroupSearch(
+  filters: { name?: string; location?: string; category?: string },
+  limit: number = 50,
+  options?: Partial<UseQueryOptions<UIGroup[], Error>>
+) {
+  return useQuery<UIGroup[], Error>({
+    queryKey: [...GROUPS_KEYS.lists(), 'search', filters, limit],
+    queryFn: async () => {
+      // Get all public groups and filter client-side
+      const domainGroups = await groupService.getPublicGroups(limit);
+      const filtered = domainGroups.filter(group => {
+        const matchesName = !filters.name ||
+          group.name.toLowerCase().includes(filters.name.toLowerCase());
+        const matchesLocation = !filters.location ||
+          group.location?.toLowerCase().includes(filters.location.toLowerCase());
+        const matchesCategory = !filters.category ||
+          group.category === filters.category;
+        return matchesName && matchesLocation && matchesCategory;
+      });
+      return adaptDomainGroupsToUI(filtered);
+    },
+    staleTime: CACHE_TIMES.SHORT,
     ...options,
   });
 }

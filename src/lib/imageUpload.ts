@@ -70,13 +70,17 @@ async function convertHeicToJpeg(file: File): Promise<File> {
     });
 
     // heic2any can return Blob or Blob[]
-    const blob = Array.isArray(convertedBlob)
+    const blob: Blob | undefined = Array.isArray(convertedBlob)
       ? convertedBlob[0]
       : convertedBlob;
 
+    if (!blob) {
+      throw new Error('Failed to convert HEIC image: No blob data');
+    }
+
     // Create a new File from the converted blob
     const convertedFile = new File(
-      [blob],
+      [blob as Blob],
       file.name.replace(/\.heic$/i, '.jpg').replace(/\.heif$/i, '.jpg'),
       { type: 'image/jpeg' }
     );

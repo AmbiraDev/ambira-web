@@ -71,17 +71,30 @@ export function useSessionWithDetails(
  * @example
  * const { data: sessions, isLoading } = useUserSessions(userId);
  * const { data: sessions } = useUserSessions(userId, { activityId: 'abc123' });
+ * const { data: sessions } = useUserSessions(userId, undefined, { enabled: true });
  */
 export function useUserSessions(
   userId: string,
-  filters?: SessionFilters,
+  filtersOrOptions?: SessionFilters | Partial<UseQueryOptions<Session[], Error>> | null,
   options?: Partial<UseQueryOptions<Session[], Error>>
 ) {
+  // Handle overloaded parameters: if second param has 'enabled', it's options not filters
+  let actualFilters: SessionFilters | undefined;
+  let actualOptions: Partial<UseQueryOptions<Session[], Error>> | undefined;
+
+  if (filtersOrOptions && 'enabled' in filtersOrOptions) {
+    actualFilters = undefined;
+    actualOptions = filtersOrOptions as Partial<UseQueryOptions<Session[], Error>>;
+  } else {
+    actualFilters = filtersOrOptions as SessionFilters | undefined;
+    actualOptions = options;
+  }
+
   return useQuery<Session[], Error>({
-    queryKey: SESSION_KEYS.userSessions(userId, filters),
-    queryFn: () => sessionService.getUserSessions(userId, filters),
+    queryKey: SESSION_KEYS.userSessions(userId, actualFilters),
+    queryFn: () => sessionService.getUserSessions(userId, actualFilters),
     staleTime: STANDARD_CACHE_TIMES.MEDIUM,
     enabled: !!userId,
-    ...options,
+    ...actualOptions,
   });
 }

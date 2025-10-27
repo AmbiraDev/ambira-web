@@ -61,13 +61,13 @@ export function useFollowUser(
 
     onError: (error, variables, context) => {
       // Rollback on error
-      if (context?.previousProfile) {
+      if (context && 'previousProfile' in context && context.previousProfile) {
         queryClient.setQueryData(
           PROFILE_KEYS.detail(variables.targetUserId),
           context.previousProfile
         );
       }
-      if (context?.previousFollowing) {
+      if (context && 'previousFollowing' in context && context.previousFollowing) {
         queryClient.setQueryData(
           PROFILE_KEYS.following(variables.currentUserId),
           context.previousFollowing
@@ -141,7 +141,7 @@ export function useUnfollowUser(
 
     onError: (error, variables, context) => {
       // Rollback on error
-      if (context?.previousProfile) {
+      if (context && 'previousProfile' in context && context.previousProfile) {
         queryClient.setQueryData(
           PROFILE_KEYS.detail(variables.targetUserId),
           context.previousProfile

@@ -33,12 +33,18 @@ function SwipeableNotificationItem({
 
   const onTouchStart = (e: React.TouchEvent) => {
     setTouchEnd(0);
-    setTouchStart(e.targetTouches[0].clientX);
+    const touch = e.targetTouches[0];
+    if (touch) {
+      setTouchStart(touch.clientX);
+    }
   };
 
   const onTouchMove = (e: React.TouchEvent) => {
-    setTouchEnd(e.targetTouches[0].clientX);
-    const distance = touchStart - e.targetTouches[0].clientX;
+    const touch = e.targetTouches[0];
+    if (!touch) return;
+
+    setTouchEnd(touch.clientX);
+    const distance = touchStart - touch.clientX;
     if (distance > 0) {
       setSwipeOffset(Math.min(distance, deleteThreshold + 20));
     }

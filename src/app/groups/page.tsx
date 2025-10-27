@@ -1,11 +1,10 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import {
   useUserGroups,
-  useGroups,
-  useGroupSearch,
+  usePublicGroups,
   useJoinGroup
 } from '@/features/groups/hooks';
 import Header from '@/components/HeaderComponent';
@@ -56,34 +55,43 @@ export default function GroupsPage() {
     enabled: !!user?.id,
   });
 
-  const { data: allSuggestedGroups = [], isLoading: isLoadingSuggested } = useGroups({}, {
+  const { data: allPublicGroups = [], isLoading: isLoadingSuggested } = usePublicGroups(undefined, {
     enabled: !!user,
   });
-
-  const hasActiveFilters = !!(searchFilters.name || searchFilters.location || searchFilters.category);
-  const { data: cachedSearchResults = [], refetch: refetchSearch } = useGroupSearch(
-    searchFilters,
-    SEARCH_RESULTS_LIMIT,
-    {
-      enabled: false,
-    }
-  );
 
   const joinGroupMutation = useJoinGroup();
   const isLoading = isLoadingUserGroups || isLoadingSuggested;
 
-  // Update search results when cached results change
+  // Client-side filtering for search
+  const hasActiveFilters = !!(searchFilters.name || searchFilters.location || searchFilters.category);
+
+  const filteredSearchResults = useMemo(() => {
+    if (!hasActiveFilters) return [];
+
+    return allPublicGroups.filter(group => {
+      const matchesName = searchFilters.name === '' ||
+        group.name.toLowerCase().includes(searchFilters.name.toLowerCase());
+      const matchesLocation = searchFilters.location === '' ||
+        (group.location?.toLowerCase().includes(searchFilters.location.toLowerCase()) ?? false);
+      const matchesCategory = searchFilters.category === '' ||
+        group.category === searchFilters.category;
+
+      return matchesName && matchesLocation && matchesCategory;
+    }).slice(0, SEARCH_RESULTS_LIMIT);
+  }, [allPublicGroups, searchFilters]);
+
+  // Update search results when filtered results change
   useEffect(() => {
-    if (hasSearched && cachedSearchResults.length > 0) {
-      setSearchResults(cachedSearchResults);
+    if (hasSearched && filteredSearchResults.length >= 0) {
+      setSearchResults(filteredSearchResults);
     }
-  }, [cachedSearchResults, hasSearched]);
+  }, [filteredSearchResults, hasSearched]);
 
   /**
    * Executes a group search based on current filter criteria.
    * Updates search results state and resets pagination to first page.
    */
-  const handleSearch = async () => {
+  const handleSearch = useCallback(async () => {
     if (!user) return;
 
     try {
@@ -92,11 +100,10 @@ export default function GroupsPage() {
       setCurrentPage(0);
       setSearchStatus('Searching for groups...');
 
-      // Trigger the cached query refetch
-      const { data } = await refetchSearch();
-      if (data) {
-        setSearchResults(data);
-        setSearchStatus(`Found ${data.length} ${data.length === 1 ? 'group' : 'groups'}`);
+      // Use client-side filtered results
+      if (filteredSearchResults.length > 0) {
+        setSearchResults(filteredSearchResults);
+        setSearchStatus(`Found ${filteredSearchResults.length} ${filteredSearchResults.length === 1 ? 'group' : 'groups'}`);
       } else {
         setSearchStatus('No groups found');
       }
@@ -106,7 +113,7 @@ export default function GroupsPage() {
     } finally {
       setIsSearching(false);
     }
-  };
+  }, [user, filteredSearchResults]);
 
   /**
    * Clears a specific search filter and updates the filter state.
@@ -128,16 +135,16 @@ export default function GroupsPage() {
 
   // Memoized pagination calculations to avoid unnecessary recalculations
   const { totalPages, paginatedGroups } = useMemo(() => {
-    const pages = Math.ceil(allSuggestedGroups.length / GROUPS_PER_PAGE);
+    const pages = Math.ceil(allPublicGroups.length / GROUPS_PER_PAGE);
     const startIndex = currentPage * GROUPS_PER_PAGE;
     const endIndex = startIndex + GROUPS_PER_PAGE;
-    const groups = allSuggestedGroups.slice(startIndex, endIndex);
+    const groups = allPublicGroups.slice(startIndex, endIndex);
 
     return {
       totalPages: pages,
       paginatedGroups: groups,
     };
-  }, [allSuggestedGroups, currentPage]);
+  }, [allPublicGroups, currentPage]);
 
   /**
    * Advances to the next page of groups if available.
@@ -418,7 +425,7 @@ export default function GroupsPage() {
             <p className="text-gray-600">Try adjusting your search filters</p>
           </div>
         ) : !hasSearched ? (
-          allSuggestedGroups.length > 0 ? (
+          allPublicGroups.length > 0 ? (
           <div id="discover-groups">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">Discover Groups</h2>
             <div className="space-y-4">
@@ -437,7 +444,7 @@ export default function GroupsPage() {
             </div>
 
             {/* Pagination Controls */}
-            {allSuggestedGroups.length > GROUPS_PER_PAGE && (
+            {allPublicGroups.length > GROUPS_PER_PAGE && (
               <div className="mt-4 flex items-center justify-between">
                 <button
                   onClick={goToPreviousPage}

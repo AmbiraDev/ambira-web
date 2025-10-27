@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useQueryClient } from '@tanstack/react-query';
 import { UserProfile } from '@/types';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
@@ -15,7 +16,8 @@ import {
   useFollowers,
   useFollowing,
   useFollowUser,
-  useUnfollowUser
+  useUnfollowUser,
+  useIsFollowing
 } from '@/features/profile/hooks';
 import { useUserSessions } from '@/features/sessions/hooks';
 import { useProjects } from '@/features/projects/hooks';
@@ -140,7 +142,7 @@ export default function ProfilePageContent({ username }: ProfilePageContentProps
   const {
     data: sessions = [],
     isLoading: isLoadingSessions
-  } = useUserSessions(profile?.id || '', 50, {
+  } = useUserSessions(profile?.id || '', {
     enabled: !!profile?.id,
   });
 
@@ -152,9 +154,18 @@ export default function ProfilePageContent({ username }: ProfilePageContentProps
     enabled: !!profile?.id,
   });
 
-  const { data: activities = [] } = useProjects(profile?.id || '', {
+  const { data: activities = [] } = useProjects({
     enabled: !!profile?.id,
   });
+
+  // Check if current user is following this profile
+  const { data: isFollowing = false } = useIsFollowing(
+    currentUser?.id || '',
+    profile?.id || '',
+    {
+      enabled: !isOwnProfile && !!currentUser?.id && !!profile?.id,
+    }
+  );
 
   // Use follow/unfollow mutations
   const followUserMutation = useFollowUser();
@@ -177,6 +188,18 @@ export default function ProfilePageContent({ username }: ProfilePageContentProps
     if (selectedActivityId === 'all') return sessions;
     return sessions.filter(s => s.activityId === selectedActivityId || s.projectId === selectedActivityId);
   }, [sessions, selectedActivityId]);
+
+  // Calculate weekly stats from sessions
+  const weeklyStats = useMemo(() => {
+    const now = new Date();
+    const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const weeklySessions = sessions.filter(s => new Date(s.createdAt) >= oneWeekAgo);
+    const weeklyHours = weeklySessions.reduce((sum, s) => sum + s.duration / 3600, 0);
+    return {
+      weeklyHours,
+      sessionsThisWeek: weeklySessions.length
+    };
+  }, [sessions]);
 
   // Update tab when URL changes
   useEffect(() => {
@@ -213,7 +236,7 @@ export default function ProfilePageContent({ username }: ProfilePageContentProps
           : 0;
 
         data.push({
-          name: `${dayNames[day.getDay()].slice(0, 3)} ${day.getDate()}`,
+          name: `${(dayNames[day.getDay()] || 'Day').slice(0, 3)} ${day.getDate()}`,
           hours: Number(hoursWorked.toFixed(2)),
           sessions: daySessions.length,
           avgDuration: Math.round(avgDuration)
@@ -233,7 +256,7 @@ export default function ProfilePageContent({ username }: ProfilePageContentProps
           : 0;
 
         data.push({
-          name: `${dayNames[day.getDay()].slice(0, 3)} ${day.getDate()}`,
+          name: `${(dayNames[day.getDay()] || 'Day').slice(0, 3)} ${day.getDate()}`,
           hours: Number(hoursWorked.toFixed(2)),
           sessions: daySessions.length,
           avgDuration: Math.round(avgDuration)
@@ -281,7 +304,7 @@ export default function ProfilePageContent({ username }: ProfilePageContentProps
           : 0;
 
         data.push({
-          name: monthNames[month.getMonth()],
+          name: monthNames[month.getMonth()] || 'Month',
           hours: Number(hoursWorked.toFixed(2)),
           sessions: monthSessions.length,
           avgDuration: Math.round(avgDuration)
@@ -305,7 +328,7 @@ export default function ProfilePageContent({ username }: ProfilePageContentProps
           : 0;
 
         data.push({
-          name: monthNames[month.getMonth()],
+          name: monthNames[month.getMonth()] || 'Month',
           hours: Number(hoursWorked.toFixed(2)),
           sessions: monthSessions.length,
           avgDuration: Math.round(avgDuration)
@@ -571,14 +594,20 @@ export default function ProfilePageContent({ username }: ProfilePageContentProps
                 )}
 
                 {/* Follow Button - Only for other users' profiles */}
-                {!isOwnProfile && (
+                {!isOwnProfile && currentUser && profile && (
                   <button
                     onClick={async () => {
                       try {
-                        if (profile.isFollowing) {
-                          await unfollowUserMutation.mutateAsync(profile.id);
+                        if (isFollowing) {
+                          await unfollowUserMutation.mutateAsync({
+                            currentUserId: currentUser.id,
+                            targetUserId: profile.id
+                          });
                         } else {
-                          await followUserMutation.mutateAsync(profile.id);
+                          await followUserMutation.mutateAsync({
+                            currentUserId: currentUser.id,
+                            targetUserId: profile.id
+                          });
                         }
                         // Automatic cache invalidation handled by mutations
                       } catch (error) {
@@ -587,14 +616,14 @@ export default function ProfilePageContent({ username }: ProfilePageContentProps
                     }}
                     disabled={followUserMutation.isPending || unfollowUserMutation.isPending}
                     className={`inline-flex items-center gap-2 mb-3 md:mb-4 px-3 md:px-4 py-2 md:py-2.5 rounded-lg transition-colors font-semibold text-xs md:text-sm disabled:opacity-50 disabled:cursor-not-allowed ${
-                      profile.isFollowing
+                      isFollowing
                         ? 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                         : 'bg-[#007AFF] text-white hover:bg-[#0056D6]'
                     }`}
                   >
                     {followUserMutation.isPending || unfollowUserMutation.isPending
                       ? 'Loading...'
-                      : profile.isFollowing
+                      : isFollowing
                       ? 'Following'
                       : 'Follow'}
                   </button>
@@ -636,13 +665,13 @@ export default function ProfilePageContent({ username }: ProfilePageContentProps
                   <div>
                     <div className="text-[10px] md:text-xs text-gray-600 uppercase tracking-wide">Time</div>
                     <div className="text-lg md:text-2xl font-bold">
-                      {stats?.weeklyHours?.toFixed(1) || 0}h
+                      {weeklyStats.weeklyHours.toFixed(1)}h
                     </div>
                   </div>
                   <div>
                     <div className="text-[10px] md:text-xs text-gray-600 uppercase tracking-wide">Sessions</div>
                     <div className="text-lg md:text-2xl font-bold">
-                      {stats?.sessionsThisWeek || 0}
+                      {weeklyStats.sessionsThisWeek}
                     </div>
                   </div>
                   <div>
@@ -1037,85 +1066,23 @@ export default function ProfilePageContent({ username }: ProfilePageContentProps
 
             {activeTab === 'followers' && (
               <div className="bg-gray-50 rounded-xl border border-gray-200 p-4 md:p-6">
-                <h3 className="text-base md:text-lg font-bold mb-4">Followers ({followers.length})</h3>
-                {followers.length > 0 ? (
-                  <div className="space-y-3">
-                    {followers.map((follower) => (
-                      <Link
-                        key={follower.id}
-                        href={`/profile/${follower.username}`}
-                        className="flex items-center gap-3 p-2 rounded-lg hover:bg-white transition-colors"
-                      >
-                        {follower.profilePicture ? (
-                          <div className="w-10 h-10 rounded-full overflow-hidden ring-2 ring-white">
-                            <img
-                              src={follower.profilePicture}
-                              alt={follower.name}
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                        ) : (
-                          <div className="w-10 h-10 bg-[#FC4C02] rounded-full flex items-center justify-center">
-                            <span className="text-white font-semibold text-sm">
-                              {follower.name.charAt(0).toUpperCase()}
-                            </span>
-                          </div>
-                        )}
-                        <div className="flex-1">
-                          <div className="font-medium">{follower.name}</div>
-                          <div className="text-sm text-gray-500">@{follower.username}</div>
-                        </div>
-                      </Link>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-8 text-gray-400">
-                    <Users className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                    <p>No followers yet</p>
-                  </div>
-                )}
+                <h3 className="text-base md:text-lg font-bold mb-4">Followers ({profile?.followerCount || 0})</h3>
+                <div className="text-center py-8 text-gray-400">
+                  <Users className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                  <p>Followers list view coming soon</p>
+                  <p className="text-sm mt-2">Currently showing {followers.length} follower{followers.length !== 1 ? 's' : ''}</p>
+                </div>
               </div>
             )}
 
             {activeTab === 'following' && (
               <div className="bg-gray-50 rounded-xl border border-gray-200 p-4 md:p-6">
-                <h3 className="text-base md:text-lg font-bold mb-4">Following ({following.length})</h3>
-                {following.length > 0 ? (
-                  <div className="space-y-3">
-                    {following.map((followedUser) => (
-                      <Link
-                        key={followedUser.id}
-                        href={`/profile/${followedUser.username}`}
-                        className="flex items-center gap-3 p-2 rounded-lg hover:bg-white transition-colors"
-                      >
-                        {followedUser.profilePicture ? (
-                          <div className="w-10 h-10 rounded-full overflow-hidden ring-2 ring-white">
-                            <img
-                              src={followedUser.profilePicture}
-                              alt={followedUser.name}
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                        ) : (
-                          <div className="w-10 h-10 bg-[#FC4C02] rounded-full flex items-center justify-center">
-                            <span className="text-white font-semibold text-sm">
-                              {followedUser.name.charAt(0).toUpperCase()}
-                            </span>
-                          </div>
-                        )}
-                        <div className="flex-1">
-                          <div className="font-medium">{followedUser.name}</div>
-                          <div className="text-sm text-gray-500">@{followedUser.username}</div>
-                        </div>
-                      </Link>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-8 text-gray-400">
-                    <UserIcon className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                    <p>Not following anyone yet</p>
-                  </div>
-                )}
+                <h3 className="text-base md:text-lg font-bold mb-4">Following ({profile?.followingCount || 0})</h3>
+                <div className="text-center py-8 text-gray-400">
+                  <UserIcon className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                  <p>Following list view coming soon</p>
+                  <p className="text-sm mt-2">Currently following {following.length} user{following.length !== 1 ? 's' : ''}</p>
+                </div>
               </div>
             )}
           </div>

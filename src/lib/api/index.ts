@@ -52,6 +52,9 @@ export { firebaseAchievementApi, ACHIEVEMENT_DEFINITIONS } from './achievements'
 // Notifications Module
 export { firebaseNotificationApi, challengeNotifications } from './notifications';
 
+// Groups Module
+export { firebaseGroupApi } from './groups';
+
 // Shared Utilities
 export {
   convertTimestamp,
@@ -82,6 +85,7 @@ import { firebaseChallengeApi } from './challenges';
 import { firebaseStreakApi } from './streaks';
 import { firebaseAchievementApi } from './achievements';
 import { firebaseNotificationApi, challengeNotifications } from './notifications';
+import { firebaseGroupApi } from './groups';
 
 /**
  * Combined API object for backward compatibility
@@ -106,6 +110,7 @@ export const firebaseApi = {
   streak: firebaseStreakApi,
   achievement: firebaseAchievementApi,
   notification: firebaseNotificationApi,
+  group: firebaseGroupApi,
   challengeNotifications,
 } as const;
 

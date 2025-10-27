@@ -79,7 +79,7 @@ module.exports = {
     },
 
     /**
-     * Services (src/features/*/services) cannot use React or React Query
+     * Services (src/features/star/services) cannot use React or React Query
      */
     {
       files: ['src/features/**/services/**/*.{ts,tsx}'],

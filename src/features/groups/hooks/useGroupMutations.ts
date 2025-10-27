@@ -52,10 +52,10 @@ export function useJoinGroup(
 
     onError: (error, variables, context) => {
       // Rollback on error
-      if (context?.previousGroup) {
+      if (context && 'previousGroup' in context && context.previousGroup) {
         queryClient.setQueryData(GROUPS_KEYS.detail(variables.groupId), context.previousGroup);
       }
-      if (context?.previousUserGroups) {
+      if (context && 'previousUserGroups' in context && context.previousUserGroups) {
         queryClient.setQueryData(GROUPS_KEYS.userGroups(variables.userId), context.previousUserGroups);
       }
     },
@@ -115,10 +115,10 @@ export function useLeaveGroup(
 
     onError: (error, variables, context) => {
       // Rollback on error
-      if (context?.previousGroup) {
+      if (context && 'previousGroup' in context && context.previousGroup) {
         queryClient.setQueryData(GROUPS_KEYS.detail(variables.groupId), context.previousGroup);
       }
-      if (context?.previousUserGroups) {
+      if (context && 'previousUserGroups' in context && context.previousUserGroups) {
         queryClient.setQueryData(GROUPS_KEYS.userGroups(variables.userId), context.previousUserGroups);
       }
     },

@@ -193,6 +193,9 @@ export const firebaseStreakApi = {
 
       sortedDays.forEach((dayKey, index) => {
         const [year, month, day] = dayKey.split('-').map(Number);
+        if (year === undefined || month === undefined || day === undefined) {
+          throw new Error(`Invalid date format in dayKey: ${dayKey}`);
+        }
         const currentDate = new Date(year, month - 1, day);
 
         if (!prevDate) {
@@ -227,10 +230,11 @@ export const firebaseStreakApi = {
       const milestones = [7, 30, 100, 365, 500, 1000];
       const nextMilestone =
         milestones.find(m => m > currentStreak) ||
-        milestones[milestones.length - 1];
+        milestones[milestones.length - 1] ||
+        1000; // Fallback to 1000 if array is empty
 
 
-      const result = {
+      const result: StreakStats = {
         currentStreak,
         longestStreak,
         totalStreakDays,
@@ -322,13 +326,19 @@ export const firebaseStreakApi = {
 
       // Update streak history (keep last 365 days)
       const dateStr = sessionDay.toISOString().split('T')[0];
+      if (!dateStr) {
+        throw new Error('Invalid date format');
+      }
       const existingDayIndex = streakData.streakHistory.findIndex(
         d => d.date === dateStr
       );
 
       let newHistory = [...streakData.streakHistory];
       if (existingDayIndex >= 0) {
-        newHistory[existingDayIndex].sessionCount += 1;
+        const existingDay = newHistory[existingDayIndex];
+        if (existingDay) {
+          existingDay.sessionCount += 1;
+        }
       } else {
         newHistory.push({
           date: dateStr,
@@ -389,6 +399,31 @@ export const firebaseStreakApi = {
     } catch (error) {
       const apiError = handleError(error, 'Toggle streak visibility', {
         defaultMessage: 'Failed to toggle streak visibility',
+      });
+      throw new Error(apiError.userMessage);
+    }
+  },
+
+  /**
+   * Update the visibility of a user's streak to a specific value
+   *
+   * @param userId - The user ID whose streak visibility to update
+   * @param isPublic - Whether the streak should be public
+   * @returns Promise that resolves when visibility is updated
+   * @throws Error if user is not authorized or update fails
+   */
+  updateStreakVisibility: async (userId: string, isPublic: boolean): Promise<void> => {
+    try {
+      if (!auth.currentUser || auth.currentUser.uid !== userId) {
+        throw new Error('Unauthorized');
+      }
+
+      await updateDoc(doc(db, 'streaks', userId), {
+        isPublic,
+      });
+    } catch (error) {
+      const apiError = handleError(error, 'Update streak visibility', {
+        defaultMessage: 'Failed to update streak visibility',
       });
       throw new Error(apiError.userMessage);
     }

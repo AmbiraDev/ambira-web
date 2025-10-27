@@ -90,6 +90,9 @@ export const firebaseUserApi = {
       }
 
       const userDoc = querySnapshot.docs[0];
+      if (!userDoc) {
+        throw new Error('User not found');
+      }
       const userData = userDoc.data();
       const isOwnProfile = auth.currentUser?.uid === userDoc.id;
 

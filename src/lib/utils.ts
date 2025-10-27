@@ -15,8 +15,14 @@ export function cn(...inputs: ClassValue[]) {
  * This function correctly parses the date components to create a Date in local time.
  */
 export function parseLocalDateTime(dateString: string, timeString: string): Date {
-  const [year, month, day] = dateString.split('-').map(Number);
-  const [hours, minutes] = timeString.split(':').map(Number);
+  const dateParts = dateString.split('-').map(Number);
+  const timeParts = timeString.split(':').map(Number);
+
+  const year = dateParts[0] ?? 1970;
+  const month = dateParts[1] ?? 1;
+  const day = dateParts[2] ?? 1;
+  const hours = timeParts[0] ?? 0;
+  const minutes = timeParts[1] ?? 0;
 
   // month is 0-indexed in JavaScript Date constructor
   return new Date(year, month - 1, day, hours, minutes, 0, 0);

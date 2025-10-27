@@ -67,7 +67,11 @@ export class UserRepository {
         return null;
       }
 
-      return this.mapper.toDomain(snapshot.docs[0]);
+      const doc = snapshot.docs[0];
+      if (!doc) {
+        return null;
+      }
+      return this.mapper.toDomain(doc);
     } catch (error) {
       console.error(`Error finding user by username ${username}:`, error);
       throw new Error(`Failed to find user: ${error instanceof Error ? error.message : 'Unknown error'}`);

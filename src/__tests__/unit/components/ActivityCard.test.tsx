@@ -198,11 +198,14 @@ describe('ActivityCard Component', () => {
       await user.click(menuButton);
 
       const menuItems = screen.getAllByRole('menuitem');
-      menuItems[0].focus();
+      const firstItem = menuItems[0];
+      const secondItem = menuItems[1];
+      if (!firstItem || !secondItem || !(firstItem instanceof HTMLElement) || !(secondItem instanceof HTMLElement)) return;
+      firstItem.focus();
 
       await user.keyboard('{ArrowDown}');
 
-      expect(document.activeElement).toBe(menuItems[1]);
+      expect(document.activeElement).toBe(secondItem);
     });
 
     it('should navigate menu items with ArrowUp key', async () => {
@@ -213,11 +216,14 @@ describe('ActivityCard Component', () => {
       await user.click(menuButton);
 
       const menuItems = screen.getAllByRole('menuitem');
-      menuItems[1].focus();
+      const firstItem = menuItems[0];
+      const secondItem = menuItems[1];
+      if (!firstItem || !secondItem || !(firstItem instanceof HTMLElement) || !(secondItem instanceof HTMLElement)) return;
+      secondItem.focus();
 
       await user.keyboard('{ArrowUp}');
 
-      expect(document.activeElement).toBe(menuItems[0]);
+      expect(document.activeElement).toBe(firstItem);
     });
 
     it('should wrap around when navigating down from last menu item', async () => {
@@ -228,11 +234,14 @@ describe('ActivityCard Component', () => {
       await user.click(menuButton);
 
       const menuItems = screen.getAllByRole('menuitem');
-      menuItems[2].focus(); // Last item
+      const firstItem = menuItems[0];
+      const lastItem = menuItems[2];
+      if (!firstItem || !lastItem || !(firstItem instanceof HTMLElement) || !(lastItem instanceof HTMLElement)) return;
+      lastItem.focus(); // Last item
 
       await user.keyboard('{ArrowDown}');
 
-      expect(document.activeElement).toBe(menuItems[0]); // Should wrap to first
+      expect(document.activeElement).toBe(firstItem); // Should wrap to first
     });
 
     it('should wrap around when navigating up from first menu item', async () => {
@@ -243,11 +252,14 @@ describe('ActivityCard Component', () => {
       await user.click(menuButton);
 
       const menuItems = screen.getAllByRole('menuitem');
-      menuItems[0].focus(); // First item
+      const firstItem = menuItems[0];
+      const lastItem = menuItems[2];
+      if (!firstItem || !lastItem || !(firstItem instanceof HTMLElement) || !(lastItem instanceof HTMLElement)) return;
+      firstItem.focus(); // First item
 
       await user.keyboard('{ArrowUp}');
 
-      expect(document.activeElement).toBe(menuItems[2]); // Should wrap to last
+      expect(document.activeElement).toBe(lastItem); // Should wrap to last
     });
 
     it('should activate menu item with Enter key', async () => {

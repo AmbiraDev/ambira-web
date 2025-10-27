@@ -333,6 +333,9 @@ export interface Challenge {
   isActive: boolean;
   rewards?: string[];
   category?: string; // Category for grouping challenges (e.g., 'fitness', 'study', 'work')
+  // User-specific fields (populated when fetching for a specific user)
+  isParticipating?: boolean; // Whether the current user is participating
+  userProgress?: number; // Current user's progress in this challenge
 }
 
 export interface ChallengeParticipant {
@@ -813,11 +816,13 @@ export interface ActiveTimer {
   projectId?: string; // Backwards compatibility
   startTime: Date;
   pausedDuration: number; // seconds
+  isPaused: boolean; // Whether the timer is paused
   lastUpdated: Date;
 }
 
 export interface TimerState {
   isRunning: boolean;
+  isPaused: boolean;
   startTime: Date | null;
   pausedDuration: number;
   currentProject: Project | null;
@@ -886,7 +891,9 @@ export interface SessionFormData {
 }
 
 export interface SessionFilters {
+  userId?: string;
   projectId?: string;
+  activityId?: string;
   dateFrom?: Date;
   dateTo?: Date;
   tags?: string[];
