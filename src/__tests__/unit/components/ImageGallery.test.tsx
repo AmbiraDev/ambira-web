@@ -6,7 +6,7 @@ import { ImageGallery } from '@/components/ImageGallery';
 jest.mock('next/image', () => ({
   __esModule: true,
   default: (props: React.ImgHTMLAttributes<HTMLImageElement>) => {
-    return <img {...props} alt={props.alt || ''} />;
+    return <img {...props} alt={props.alt || ''} data-testid="next-image" />;
   },
 }));
 
@@ -28,7 +28,7 @@ describe('ImageGallery', () => {
   });
 
   it('should render nothing when images is undefined', () => {
-    const { container } = render(<ImageGallery images={undefined as any} />);
+    const { container } = render(<ImageGallery images={undefined} />);
     expect(container.firstChild).toBeNull();
   });
 
@@ -128,7 +128,7 @@ describe('ImageGallery', () => {
   });
 
   it('should highlight the active dot indicator', () => {
-    const { container } = render(<ImageGallery images={mockImages} />);
+    render(<ImageGallery images={mockImages} />);
 
     const dots = screen.getAllByRole('button', { name: /Go to image/i });
     const firstDot = dots[0];

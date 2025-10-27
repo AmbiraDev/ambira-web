@@ -36,8 +36,8 @@ export const SessionTimer: React.FC<SessionTimerProps> = ({
         if (timerState.currentProject) {
           setSelectedProjectId(timerState.currentProject.id);
         }
-      } catch (error) {
-        console.error('Failed to load projects:', error);
+      } catch {
+        console.error('Failed to load projects');
       }
     };
 
@@ -52,8 +52,8 @@ export const SessionTimer: React.FC<SessionTimerProps> = ({
     try {
       setIsLoading(true);
       await startTimer(selectedProjectId);
-    } catch (error) {
-      console.error('Failed to start timer:', error);
+    } catch {
+      console.error('Failed to start timer');
     } finally {
       setIsLoading(false);
     }
@@ -180,8 +180,8 @@ export const SessionTimer: React.FC<SessionTimerProps> = ({
 
               setShowFinishModal(false);
               // Timer will be finished by the context
-            } catch (error) {
-              console.error('Failed to save session:', error);
+            } catch {
+              console.error('Failed to save session');
               throw error;
             }
           }}
@@ -224,8 +224,8 @@ const CustomTimerControls: React.FC<CustomTimerControlsProps> = ({
     try {
       setIsLoading(true);
       await onStart();
-    } catch (error) {
-      console.error('Failed to start timer:', error);
+    } catch {
+      console.error('Failed to start timer');
     } finally {
       setIsLoading(false);
     }
@@ -235,8 +235,8 @@ const CustomTimerControls: React.FC<CustomTimerControlsProps> = ({
     try {
       setIsLoading(true);
       await pauseTimer();
-    } catch (error) {
-      console.error('Failed to pause timer:', error);
+    } catch {
+      console.error('Failed to pause timer');
     } finally {
       setIsLoading(false);
     }
@@ -246,8 +246,8 @@ const CustomTimerControls: React.FC<CustomTimerControlsProps> = ({
     try {
       setIsLoading(true);
       await resumeTimer();
-    } catch (error) {
-      console.error('Failed to resume timer:', error);
+    } catch {
+      console.error('Failed to resume timer');
     } finally {
       setIsLoading(false);
     }
@@ -262,8 +262,8 @@ const CustomTimerControls: React.FC<CustomTimerControlsProps> = ({
       try {
         setIsLoading(true);
         await resetTimer();
-      } catch (error) {
-        console.error('Failed to reset timer:', error);
+      } catch {
+        console.error('Failed to reset timer');
       } finally {
         setIsLoading(false);
       }

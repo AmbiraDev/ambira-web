@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { useActivities } from '@/hooks/useActivitiesQuery';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { IconRenderer } from './IconRenderer';
 import { Activity } from '@/types';
 
@@ -63,7 +63,11 @@ function DailyGoals() {
         const progressMap = new Map<string, number>();
 
         snapshot.forEach(doc => {
-          const data: any = doc.data();
+          const data = doc.data() as {
+            activityId?: string;
+            projectId?: string;
+            duration?: number;
+          };
           const activityId = data.activityId || data.projectId;
           if (!activityId) return;
 
@@ -92,8 +96,8 @@ function DailyGoals() {
         );
 
         setGoals(dailyGoals);
-      } catch (error) {
-        console.error('Failed to load daily goals:', error);
+      } catch (_err) {
+        console.error('Failed to load daily goals:', err);
         setGoals([]);
       } finally {
         setIsLoading(false);

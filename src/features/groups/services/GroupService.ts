@@ -275,12 +275,29 @@ export class GroupService {
     const categoryForDomain =
       validated.category === 'other' ? 'learning' : validated.category;
 
+    // Validate category matches domain model
+    const validCategories = [
+      'work',
+      'study',
+      'side-project',
+      'learning',
+    ] as const;
+    if (
+      !validCategories.includes(
+        categoryForDomain as (typeof validCategories)[number]
+      )
+    ) {
+      throw new Error(
+        `Invalid category: ${categoryForDomain}. Must be one of: ${validCategories.join(', ')}`
+      );
+    }
+
     // Create domain group with creator as both member and admin
     const group = new Group(
       groupId,
       validated.name,
       validated.description,
-      categoryForDomain as any,
+      categoryForDomain as 'work' | 'study' | 'side-project' | 'learning',
       validated.privacySetting,
       [userId], // Creator is first member
       [userId], // Creator is first admin

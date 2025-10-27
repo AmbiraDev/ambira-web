@@ -66,8 +66,6 @@ interface ImageUploadProps {
   maxSizeMB?: number;
   /** Accepted file types (e.g., ['image/jpeg', 'image/png']) */
   acceptedTypes?: string[];
-  /** Show accepted types hint */
-  showTypeHint?: boolean;
   /** Current images (for controlled component) */
   images?: File[];
   /** Preview URLs (for controlled component) */
@@ -101,7 +99,6 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
     'image/heic',
     'image/heif',
   ],
-  showTypeHint = true,
   images = [],
   previewUrls = [],
   onImagesChange,

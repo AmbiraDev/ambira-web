@@ -38,9 +38,9 @@ export const FABMenu: React.FC = () => {
       }
 
       setShowManualEntry(false);
-    } catch (error) {
-      console.error('Failed to save session:', error);
-      throw error;
+    } catch (_err) {
+      console.error('Failed to save session:', err);
+      throw err;
     } finally {
       setIsLoading(false);
     }

@@ -15,11 +15,7 @@ import {
   UseInfiniteQueryOptions,
   InfiniteData,
 } from '@tanstack/react-query';
-import {
-  FeedService,
-  FeedFilters,
-  _FeedOptions,
-} from '../services/FeedService';
+import { FeedService, FeedFilters } from '../services/FeedService';
 import { Session } from '@/domain/entities/Session';
 import { STANDARD_CACHE_TIMES } from '@/lib/react-query';
 
@@ -87,7 +83,7 @@ export function useFeedInfinite(
     queryFn: ({ pageParam }) =>
       feedService.getFeed(currentUserId, filters, {
         limit: 20,
-        cursor: pageParam as string | undefined,
+        _cursor: pageParam as string | undefined,
       }),
     getNextPageParam: lastPage => {
       return lastPage.hasMore ? lastPage.nextCursor : undefined;
@@ -137,7 +133,7 @@ export function useUserFeed(
   options?: Partial<UseQueryOptions<FeedResult, Error>>
 ) {
   return useQuery<FeedResult, Error>({
-    queryKey: [...FEED_KEYS.user(userId), limit],
+    queryKey: [...FEED_KEYS.user(userId), currentUserId, limit],
     queryFn: () =>
       feedService.getFeed(currentUserId, { type: 'user', userId }, { limit }),
     staleTime: STANDARD_CACHE_TIMES.MEDIUM, // 5 minutes
@@ -161,7 +157,7 @@ export function useGroupFeed(
   options?: Partial<UseQueryOptions<FeedResult, Error>>
 ) {
   return useQuery<FeedResult, Error>({
-    queryKey: [...FEED_KEYS.group(groupId), limit],
+    queryKey: [...FEED_KEYS.group(groupId), currentUserId, limit],
     queryFn: () =>
       feedService.getFeed(currentUserId, { type: 'group', groupId }, { limit }),
     staleTime: STANDARD_CACHE_TIMES.MEDIUM, // 5 minutes

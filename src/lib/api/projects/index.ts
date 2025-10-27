@@ -74,7 +74,7 @@ export const firebaseProjectApi = {
       });
 
       return projects;
-    } catch (error) {
+    } catch (_error) {
       const apiError = handleError(error, 'Get projects', {
         defaultMessage: 'Failed to get projects',
       });
@@ -92,7 +92,7 @@ export const firebaseProjectApi = {
       // Rate limitFn project creation
       checkRateLimit(auth.currentUser.uid, 'PROJECT_CREATE');
 
-      const projectData = removeUndefinedFields({
+      const _projectData = removeUndefinedFields({
         ...data,
         status: 'active',
         createdAt: serverTimestamp(),
@@ -117,7 +117,7 @@ export const firebaseProjectApi = {
         createdAt: new Date(),
         updatedAt: new Date(),
       };
-    } catch (error) {
+    } catch (_error) {
       const apiError = handleError(error, 'Create project', {
         defaultMessage: 'Failed to create project',
       });
@@ -149,7 +149,7 @@ export const firebaseProjectApi = {
       const projectDoc = await getDoc(
         doc(db, 'projects', auth.currentUser.uid, 'userProjects', id)
       );
-      const projectData = projectDoc.data()!;
+      const _projectData = projectDoc.data()!;
 
       return {
         id,
@@ -164,7 +164,7 @@ export const firebaseProjectApi = {
         createdAt: convertTimestamp(projectData.createdAt),
         updatedAt: convertTimestamp(projectData.updatedAt),
       };
-    } catch (error) {
+    } catch (_error) {
       const apiError = handleError(error, 'Update project', {
         defaultMessage: 'Failed to update project',
       });
@@ -182,7 +182,7 @@ export const firebaseProjectApi = {
       await deleteDoc(
         doc(db, 'projects', auth.currentUser.uid, 'userProjects', id)
       );
-    } catch (error) {
+    } catch (_error) {
       const apiError = handleError(error, 'Delete project', {
         defaultMessage: 'Failed to delete project',
       });
@@ -219,7 +219,7 @@ export const firebaseProjectApi = {
         createdAt: convertTimestamp(data.createdAt),
         updatedAt: convertTimestamp(data.updatedAt),
       };
-    } catch (error) {
+    } catch (_error) {
       const apiError = handleError(error, 'Get project by ID', {
         defaultMessage: 'Failed to get project',
       });
@@ -301,7 +301,7 @@ export const firebaseProjectApi = {
         averageSessionDuration,
         lastSessionDate,
       };
-    } catch (error) {
+    } catch (_error) {
       const apiError = handleError(error, 'Get project stats', {
         defaultMessage: 'Failed to get project stats',
       });

@@ -17,12 +17,6 @@ import { Group } from '@/types';
 // Singleton service instance
 const groupService = new GroupService();
 
-// Type for group cache data with member info
-interface GroupCacheData {
-  id: string;
-  memberIds: string[];
-}
-
 // ==================== MUTATION HOOKS ====================
 
 /**
@@ -61,7 +55,7 @@ export function useJoinGroup(
       );
 
       // Optimistically update group member count
-      queryClient.setQueryData<Group>(GROUPS_KEYS.detail(groupId), (old) => {
+      queryClient.setQueryData<Group>(GROUPS_KEYS.detail(groupId), old => {
         if (!old) return old;
         return {
           ...old,
@@ -147,18 +141,18 @@ export function useLeaveGroup(
       );
 
       // Optimistically update group
-      queryClient.setQueryData<Group>(GROUPS_KEYS.detail(groupId), (old) => {
+      queryClient.setQueryData<Group>(GROUPS_KEYS.detail(groupId), old => {
         if (!old) return old;
         return {
           ...old,
-          memberIds: old.memberIds.filter((id) => id !== userId),
+          memberIds: old.memberIds.filter(id => id !== userId),
         };
       });
 
       // Optimistically remove from user groups
-      queryClient.setQueryData<Group[]>(GROUPS_KEYS.userGroups(userId), (old) => {
+      queryClient.setQueryData<Group[]>(GROUPS_KEYS.userGroups(userId), old => {
         if (!Array.isArray(old)) return old;
-        return old.filter((group) => group.id !== groupId);
+        return old.filter(group => group.id !== groupId);
       });
 
       return { previousGroup, previousUserGroups };

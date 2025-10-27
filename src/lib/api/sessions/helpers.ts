@@ -31,7 +31,7 @@ export const populateSessionsWithDetails = async (
       let userDoc;
       try {
         userDoc = await getDoc(doc(db, 'users', sessionData.userId));
-      } catch (error) {
+      } catch (_error) {
         // Handle permission errors for deleted users
         if (isPermissionError(error) || isNotFoundError(error)) {
           return null;
@@ -47,7 +47,7 @@ export const populateSessionsWithDetails = async (
       const userData = userDoc.data();
 
       // Get activity data (check both activityId and projectId for backwards compatibility)
-      let activityData: any = null;
+      let activityData: unknown = null;
       const activityId = sessionData.activityId || sessionData.projectId;
 
       if (activityId) {
@@ -81,7 +81,7 @@ export const populateSessionsWithDetails = async (
             if (activityDoc.exists()) {
               activityData = activityDoc.data();
             }
-          } catch (error) {
+          } catch (_error) {
             handleError(error, `Fetch activity ${activityId}`, {
               severity: ErrorSeverity.WARNING,
             });

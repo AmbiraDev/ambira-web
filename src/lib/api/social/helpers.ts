@@ -13,7 +13,7 @@ import {
   serverTimestamp,
   DocumentData,
 } from 'firebase/firestore';
-import { db, _auth } from '@/lib/firebase';
+import { db } from '@/lib/firebase';
 import {
   handleError,
   isPermissionError,
@@ -78,8 +78,8 @@ export const updateSocialGraph = async (
       if (action === 'unfollow' && !isFollowing) return;
 
       const now = new Date();
-      const currentUserUpdate: any = { updatedAt: now };
-      const targetUserUpdate: any = { updatedAt: now };
+      const currentUserUpdate: unknown = { updatedAt: now };
+      const targetUserUpdate: unknown = { updatedAt: now };
 
       // NOW DO ALL WRITES
       if (action === 'follow') {
@@ -154,7 +154,7 @@ export const updateSocialGraph = async (
         });
       }
     }
-  } catch (error) {
+  } catch (_error) {
     const apiError = handleError(
       error,
       `${action.charAt(0).toUpperCase() + action.slice(1)} user`
@@ -175,7 +175,7 @@ export const fetchUserDataForSocialContext = async (
       return null;
     }
     return userDoc.data();
-  } catch (error) {
+  } catch (_error) {
     if (isPermissionError(error) || isNotFoundError(error)) {
       return null;
     }

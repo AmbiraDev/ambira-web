@@ -3,7 +3,15 @@
  */
 
 import * as v from 'valibot';
-import { validateOrThrow, validate, stripUndefined, prepareForFirestore, formatValidationError, isValidationError, ValidationError } from '../utils/validate';
+import {
+  validateOrThrow,
+  validate,
+  stripUndefined,
+  prepareForFirestore,
+  formatValidationError,
+  isValidationError,
+  ValidationError,
+} from '../utils/validate';
 
 describe('Validation Utilities', () => {
   describe('validateOrThrow', () => {
@@ -31,7 +39,7 @@ describe('Validation Utilities', () => {
       try {
         validateOrThrow(TestSchema, input);
         fail('Should have thrown ValidationError');
-      } catch (error) {
+      } catch (_error) {
         expect(error).toBeInstanceOf(ValidationError);
         if (error instanceof ValidationError) {
           expect(error.issues).toHaveLength(2);
@@ -166,7 +174,9 @@ describe('Validation Utilities', () => {
 
   describe('formatValidationError', () => {
     it('should format single error', () => {
-      const error = new ValidationError('Validation failed', [{ path: 'email', message: 'Invalid email' }]);
+      const error = new ValidationError('Validation failed', [
+        { path: 'email', message: 'Invalid email' },
+      ]);
 
       const formatted = formatValidationError(error);
 
@@ -185,7 +195,9 @@ describe('Validation Utilities', () => {
     });
 
     it('should format errors without paths', () => {
-      const error = new ValidationError('Validation failed', [{ message: 'General error' }]);
+      const error = new ValidationError('Validation failed', [
+        { message: 'General error' },
+      ]);
 
       const formatted = formatValidationError(error);
 

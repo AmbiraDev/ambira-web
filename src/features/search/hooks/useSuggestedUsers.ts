@@ -29,7 +29,7 @@ export function useSuggestedUsers({
   limit = 10,
 }: UseSuggestedUsersOptions = {}): UseSuggestedUsersReturn {
   const { data, isLoading, isError, error } = useQuery({
-    queryKey: CACHE_KEYS.SUGGESTED_USERS(),
+    queryKey: [...CACHE_KEYS.SUGGESTED_USERS(), limit],
     queryFn: () => firebaseUserApi.getSuggestedUsers(limit),
     enabled,
     staleTime: CACHE_TIMES.LONG, // 15 minutes

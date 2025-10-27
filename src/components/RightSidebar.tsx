@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useAuth } from '@/hooks/useAuth';
@@ -37,13 +37,7 @@ function RightSidebar() {
   const [showPeopleModal, setShowPeopleModal] = useState(false);
   const [showGroupsModal, setShowGroupsModal] = useState(false);
 
-  useEffect(() => {
-    if (user) {
-      loadSuggestedContent();
-    }
-  }, [user]);
-
-  const loadSuggestedContent = async () => {
+  const loadSuggestedContent = useCallback(async () => {
     try {
       setIsLoading(true);
 
@@ -54,8 +48,8 @@ function RightSidebar() {
         const following = await firebaseUserApi.getFollowing(user.id);
         const followingIds = new Set(following.map(u => u.id));
         setFollowingUsers(followingIds);
-      } catch (error) {
-        console.error('Failed to load following list:', error);
+      } catch {
+        console.error('Failed to load following list');
       }
 
       // Load suggested users (top 5) with 1 hour cache
@@ -72,8 +66,8 @@ function RightSidebar() {
           }
         );
         setSuggestedUsers(suggestions);
-      } catch (error) {
-        console.error('Failed to load suggested users:', error);
+      } catch {
+        console.error('Failed to load suggested users');
       }
 
       // Load suggested groups (top 5) with 1 hour cache
@@ -97,15 +91,21 @@ function RightSidebar() {
           group => !userGroupIds.has(group.id)
         );
         setSuggestedGroups(filteredGroups.slice(0, 5));
-      } catch (error) {
-        console.error('Failed to load suggested groups:', error);
+      } catch {
+        console.error('Failed to load suggested groups');
       }
-    } catch (error) {
-      console.error('Failed to load suggested content:', error);
+    } catch {
+      console.error('Failed to load suggested content');
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (user) {
+      loadSuggestedContent();
+    }
+  }, [user, loadSuggestedContent]);
 
   const handleFollowToggle = async (userId: string) => {
     if (!user) return;
@@ -131,8 +131,8 @@ function RightSidebar() {
         // Remove from suggestions after following
         setSuggestedUsers(prev => prev.filter(u => u.id !== userId));
       }
-    } catch (error) {
-      console.error('Failed to toggle follow:', error);
+    } catch {
+      console.error('Failed to toggle follow');
       // Revert on error
       setFollowingUsers(prev => {
         const next = new Set(prev);
@@ -181,7 +181,7 @@ function RightSidebar() {
             </div>
           ) : (
             <div className="space-y-1">
-              {suggestedUsers.map((suggestedUser, _index) => (
+              {suggestedUsers.map(suggestedUser => (
                 <Link
                   key={suggestedUser.id}
                   href={`/profile/${suggestedUser.username}`}
@@ -310,7 +310,7 @@ function RightSidebar() {
                           setSuggestedGroups(prev =>
                             prev.filter(g => g.id !== group.id)
                           );
-                        } catch (_error) {
+                        } catch {
                           // Error joining group - silently fail for suggestions
                         } finally {
                           setJoiningGroups(prev => {

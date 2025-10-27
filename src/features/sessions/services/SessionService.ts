@@ -7,7 +7,7 @@
 
 import { firebaseApi } from '@/lib/api';
 import { Session, SessionWithDetails, SessionFilters } from '@/types';
-import { validateOrThrow, UpdateSessionSchema, type UpdateSessionData } from '@/lib/validation';
+import { validateOrThrow, UpdateSessionSchema } from '@/lib/validation';
 
 export class SessionService {
   /**
@@ -16,8 +16,8 @@ export class SessionService {
   async getSession(sessionId: string): Promise<Session | null> {
     try {
       return await firebaseApi.session.getSession(sessionId);
-    } catch (error) {
-      console.error('Error getting session:', error);
+    } catch (_err) {
+      console.error('Error getting session:', _err);
       return null;
     }
   }
@@ -25,11 +25,13 @@ export class SessionService {
   /**
    * Get session with populated user and activity details
    */
-  async getSessionWithDetails(sessionId: string): Promise<SessionWithDetails | null> {
+  async getSessionWithDetails(
+    sessionId: string
+  ): Promise<SessionWithDetails | null> {
     try {
       return await firebaseApi.session.getSessionWithDetails(sessionId);
-    } catch (error) {
-      console.error('Error getting session with details:', error);
+    } catch (_err) {
+      console.error('Error getting session with details:', _err);
       return null;
     }
   }
@@ -47,8 +49,8 @@ export class SessionService {
         ...filters,
       });
       return result.sessions;
-    } catch (error) {
-      console.error('Error getting user sessions:', error);
+    } catch (_err) {
+      console.error('Error getting user sessions:', _err);
       return [];
     }
   }

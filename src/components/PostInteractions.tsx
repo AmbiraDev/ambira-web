@@ -4,7 +4,6 @@ import React, { useState } from 'react';
 
 interface PostInteractionsProps {
   postId: string;
-  supportCount: number;
   commentCount: number;
   isSupported: boolean;
   onSupport: (postId: string) => Promise<void>;
@@ -16,21 +15,20 @@ interface PostInteractionsProps {
 
 export const PostInteractions: React.FC<PostInteractionsProps> = ({
   postId,
-  supportCount,
   commentCount,
   isSupported,
   onSupport,
   onRemoveSupport,
   onShare,
   onCommentClick,
-  className = ''
+  className = '',
 }) => {
   const [isSupporting, setIsSupporting] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
 
   const handleSupport = async () => {
     if (isSupporting) return;
-    
+
     setIsSupporting(true);
     try {
       if (isSupported) {
@@ -38,8 +36,8 @@ export const PostInteractions: React.FC<PostInteractionsProps> = ({
       } else {
         await onSupport(postId);
       }
-    } catch (error) {
-      console.error('Failed to update support:', error);
+    } catch (_error) {
+      console.error('Failed to update support');
     } finally {
       setIsSupporting(false);
     }
@@ -47,19 +45,21 @@ export const PostInteractions: React.FC<PostInteractionsProps> = ({
 
   const handleShare = async () => {
     if (isSharing) return;
-    
+
     setIsSharing(true);
     try {
       await onShare(postId);
-    } catch (error) {
-      console.error('Failed to share post:', error);
+    } catch (_error) {
+      console.error('Failed to share post');
     } finally {
       setIsSharing(false);
     }
   };
 
   return (
-    <div className={`flex items-center justify-between py-3 px-4 border-t border-gray-200 bg-gray-50/50 ${className}`}>
+    <div
+      className={`flex items-center justify-between py-3 px-4 border-t border-gray-200 bg-gray-50/50 ${className}`}
+    >
       {/* Left side - Support and Comments */}
       <div className="flex items-center gap-1">
         {/* Support Button */}
@@ -95,7 +95,13 @@ export const PostInteractions: React.FC<PostInteractionsProps> = ({
           onClick={onCommentClick}
           className="flex items-center gap-1.5 px-3 py-2 rounded-lg font-medium text-gray-600 hover:bg-gray-100 hover:text-blue-600 transition-all"
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            strokeWidth={2}
+          >
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -103,7 +109,8 @@ export const PostInteractions: React.FC<PostInteractionsProps> = ({
             />
           </svg>
           <span className="text-sm">
-            {commentCount === 1 ? 'Comment' : 'Comments'} {commentCount > 0 && `(${commentCount})`}
+            {commentCount === 1 ? 'Comment' : 'Comments'}{' '}
+            {commentCount > 0 && `(${commentCount})`}
           </span>
         </button>
       </div>
@@ -116,7 +123,13 @@ export const PostInteractions: React.FC<PostInteractionsProps> = ({
           isSharing ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
         }`}
       >
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
+        <svg
+          className="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+          strokeWidth={2}
+        >
           <path
             strokeLinecap="round"
             strokeLinejoin="round"

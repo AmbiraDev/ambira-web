@@ -32,12 +32,12 @@ import { formatDistanceToNow } from 'date-fns';
 function SwipeableNotificationItem({
   notification,
   onDelete,
-  _onMarkRead,
+
   onClick,
 }: {
   notification: Notification;
   onDelete: (id: string) => void;
-  _onMarkRead: (id: string) => void;
+
   onClick: (notification: Notification) => void;
 }) {
   const [touchStart, setTouchStart] = useState(0);
@@ -235,10 +235,6 @@ export default function NotificationsPage() {
     deleteNotificationMutation.mutate(id);
   };
 
-  const _handleMarkRead = (id: string) => {
-    markAsReadMutation.mutate(id);
-  };
-
   const handleMarkAllRead = () => {
     markAllAsReadMutation.mutate();
   };
@@ -304,7 +300,6 @@ export default function NotificationsPage() {
                     key={notification.id}
                     notification={notification}
                     onDelete={handleDelete}
-                    _onMarkRead={_handleMarkRead}
                     onClick={handleNotificationClick}
                   />
                 ))
@@ -352,7 +347,6 @@ export default function NotificationsPage() {
                 key={notification.id}
                 notification={notification}
                 onDelete={handleDelete}
-                _onMarkRead={_handleMarkRead}
                 onClick={handleNotificationClick}
               />
             ))}

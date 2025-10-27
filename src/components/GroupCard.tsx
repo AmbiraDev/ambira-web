@@ -11,13 +11,14 @@ interface GroupCardProps {
   isJoined?: boolean;
   onJoin?: (groupId: string) => Promise<void>;
   onLeave?: (groupId: string) => Promise<void>;
-  isLoading?: boolean;
+  isLoading?: boolean; // Kept for future use
 }
 
 export default function GroupCard({
-  group
+  group,
+  // Props below are in the interface but not used in current implementation
+  // currentUserId, isJoined, onJoin, onLeave, isLoading
 }: GroupCardProps) {
-
   return (
     <Link
       href={`/groups/${group.id}`}
@@ -25,11 +26,7 @@ export default function GroupCard({
     >
       {/* Group Avatar */}
       <div className="mb-3">
-        <GroupAvatar
-          imageUrl={group.imageUrl}
-          name={group.name}
-          size="lg"
-        />
+        <GroupAvatar imageUrl={group.imageUrl} name={group.name} size="lg" />
       </div>
 
       {/* Group Name */}

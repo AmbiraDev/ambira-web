@@ -1,27 +1,20 @@
 'use client';
 
 import React from 'react';
-import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Group, GroupStats } from '@/types';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import GroupAvatar from '@/components/GroupAvatar';
 import {
   Users,
   MapPin,
   Lock,
   Globe,
-  Calendar,
   Settings,
-  MoreHorizontal,
   TrendingUp,
   Clock,
-  Target,
-  ArrowLeft,
   ChevronLeft,
   MessageSquare,
-  UserPlus
+  UserPlus,
 } from 'lucide-react';
 
 interface GroupHeaderProps {
@@ -37,18 +30,18 @@ interface GroupHeaderProps {
 }
 
 const categoryLabels = {
-  'work': 'Work',
-  'study': 'Study',
+  work: 'Work',
+  study: 'Study',
   'side-project': 'Side Project',
-  'learning': 'Learning',
-  'other': 'Other'
+  learning: 'Learning',
+  other: 'Other',
 };
 
 const typeLabels = {
   'just-for-fun': 'Just for Fun',
-  'professional': 'Professional',
-  'competitive': 'Competitive',
-  'other': 'Other'
+  professional: 'Professional',
+  competitive: 'Competitive',
+  other: 'Other',
 };
 
 export default function GroupHeader({
@@ -60,7 +53,7 @@ export default function GroupHeader({
   onLeave,
   onSettings,
   onInvite,
-  isLoading = false
+  isLoading = false,
 }: GroupHeaderProps) {
   const router = useRouter();
   const isAdmin = currentUserId && group.adminUserIds.includes(currentUserId);
@@ -90,7 +83,9 @@ export default function GroupHeader({
         >
           <ChevronLeft className="w-6 h-6 text-gray-700" />
         </button>
-        <h1 className="text-lg font-bold text-gray-900 truncate flex-1">{group.name}</h1>
+        <h1 className="text-lg font-bold text-gray-900 truncate flex-1">
+          {group.name}
+        </h1>
         {(isAdmin || isCreator) && (
           <button
             onClick={onSettings}
@@ -114,7 +109,9 @@ export default function GroupHeader({
             />
             <div className="flex-1 min-w-0">
               <div className="flex items-start justify-between gap-2">
-                <h1 className="text-2xl font-bold text-gray-900">{group.name}</h1>
+                <h1 className="text-2xl font-bold text-gray-900">
+                  {group.name}
+                </h1>
                 {(isAdmin || isCreator) && (
                   <button
                     onClick={onSettings}
@@ -191,7 +188,9 @@ export default function GroupHeader({
                 disabled={isLoading}
                 className="flex-1 py-3 px-4 bg-[#007AFF] hover:bg-[#0056D6] text-white rounded-xl font-semibold text-sm transition-colors disabled:opacity-50"
               >
-                {group.privacySetting === 'public' ? 'Join Group' : 'Request to Join'}
+                {group.privacySetting === 'public'
+                  ? 'Join Group'
+                  : 'Request to Join'}
               </button>
             ) : canLeave ? (
               <>
@@ -226,7 +225,9 @@ export default function GroupHeader({
                 </div>
                 <span className="text-xs text-gray-600">Active Members</span>
               </div>
-              <div className="text-2xl font-bold text-gray-900">{stats.activeMembers}</div>
+              <div className="text-2xl font-bold text-gray-900">
+                {stats.activeMembers}
+              </div>
             </div>
 
             <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-4">
@@ -236,7 +237,9 @@ export default function GroupHeader({
                 </div>
                 <span className="text-xs text-gray-600">Weekly Hours</span>
               </div>
-              <div className="text-2xl font-bold text-gray-900">{stats.weeklyHours.toFixed(1)}h</div>
+              <div className="text-2xl font-bold text-gray-900">
+                {stats.weeklyHours.toFixed(1)}h
+              </div>
             </div>
 
             <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-4">
@@ -246,7 +249,9 @@ export default function GroupHeader({
                 </div>
                 <span className="text-xs text-gray-600">Total Hours</span>
               </div>
-              <div className="text-2xl font-bold text-gray-900">{stats.totalHours.toFixed(1)}h</div>
+              <div className="text-2xl font-bold text-gray-900">
+                {stats.totalHours.toFixed(1)}h
+              </div>
             </div>
 
             <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-xl p-4">
@@ -256,7 +261,9 @@ export default function GroupHeader({
                 </div>
                 <span className="text-xs text-gray-600">Posts</span>
               </div>
-              <div className="text-2xl font-bold text-gray-900">{stats.totalPosts}</div>
+              <div className="text-2xl font-bold text-gray-900">
+                {stats.totalPosts}
+              </div>
             </div>
           </div>
         )}

@@ -460,7 +460,7 @@ export interface Achievement {
   icon: string;
   earnedAt: Date;
   sessionId?: string;
-  metadata?: Record<string, any>; // Additional data like milestone value
+  metadata?: Record<string, unknown>; // Additional data like milestone value
   isShared?: boolean; // Whether user shared to feed
 }
 

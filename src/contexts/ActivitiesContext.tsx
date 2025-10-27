@@ -8,7 +8,9 @@
 
 import React, { createContext } from 'react';
 
-export const ActivitiesContext = createContext<any>(null);
+export const ActivitiesContext = createContext<null>(
+  null
+) as React.Context<null>;
 
 export const ActivitiesProvider: React.FC<{ children: React.ReactNode }> = ({
   children,

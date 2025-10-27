@@ -105,8 +105,9 @@ export function useGroupLeaderboard(
             sessionCount,
             rank: 0, // Will be set after sorting
           } as LeaderboardEntry;
-        } catch (_error) {
+        } catch (_err) {
           // Failed to fetch leaderboard data for user
+          console.error('Failed to fetch leaderboard data for user:', _err);
           return null;
         }
       });

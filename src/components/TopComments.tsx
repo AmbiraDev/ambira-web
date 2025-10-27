@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { CommentWithDetails } from '@/types';
 import { useAuth } from '@/hooks/useAuth';
 import {
   useSessionComments,
@@ -73,8 +72,10 @@ export const TopComments: React.FC<TopCommentsProps> = ({
 
   // Refetch when expanded state changes
   useEffect(() => {
-    refetch();
-  }, [isExpanded]);
+    if (isExpanded) {
+      refetch();
+    }
+  }, [isExpanded, refetch]);
 
   const handleCreateComment = async (content: string) => {
     try {

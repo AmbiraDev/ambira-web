@@ -15,10 +15,31 @@ import {
   CommentWithDetails,
   CreateCommentData,
   UpdateCommentData,
+  Session,
+  SessionWithDetails,
+  CommentsResponse,
 } from '@/types';
 import { SESSION_KEYS } from '@/features/sessions/hooks';
 
 const commentService = new CommentService();
+
+// Feed data structures from React Query cache
+interface FeedArrayData {
+  sessions?: SessionWithDetails[];
+  hasMore?: boolean;
+  nextCursor?: string;
+}
+
+interface FeedInfiniteData {
+  pages: Array<{
+    sessions: SessionWithDetails[];
+    hasMore: boolean;
+    nextCursor?: string;
+  }>;
+  pageParams: unknown[];
+}
+
+type FeedData = SessionWithDetails[] | FeedArrayData | FeedInfiniteData;
 
 /**
  * Create a new comment
@@ -48,7 +69,9 @@ export function useCreateComment(
       });
 
       // Update comment count in session cache and feed
-      const updateSessionCommentCount = (session: any) => {
+      const updateSessionCommentCount = (
+        session: Session | SessionWithDetails
+      ): Session | SessionWithDetails => {
         if (session?.id !== variables.sessionId) return session;
         return {
           ...session,
@@ -63,21 +86,21 @@ export function useCreateComment(
       );
 
       // Update feed caches
-      queryClient.setQueriesData<any>({ queryKey: ['feed'] }, (old: any) => {
+      queryClient.setQueriesData<FeedData>({ queryKey: ['feed'] }, old => {
         if (!old) return old;
 
         if (Array.isArray(old)) {
           return old.map(updateSessionCommentCount);
-        } else if (old.sessions) {
+        } else if ('sessions' in old && old.sessions) {
           return {
             ...old,
             sessions: old.sessions.map(updateSessionCommentCount),
           };
-        } else if (old.pages) {
+        } else if ('pages' in old && old.pages) {
           // Handle infinite query
           return {
             ...old,
-            pages: old.pages.map((page: any) => ({
+            pages: old.pages.map(page => ({
               ...page,
               sessions: page.sessions.map(updateSessionCommentCount),
             })),
@@ -132,18 +155,21 @@ export function useUpdateComment(
       );
 
       // Optimistically update
-      queryClient.setQueryData(COMMENT_KEYS.list(sessionId), (old: any) => {
-        if (!old?.comments) return old;
+      queryClient.setQueryData<CommentsResponse>(
+        COMMENT_KEYS.list(sessionId),
+        old => {
+          if (!old?.comments) return old;
 
-        return {
-          ...old,
-          comments: old.comments.map((comment: any) =>
-            comment.id === commentId
-              ? { ...comment, ...data, isEdited: true }
-              : comment
-          ),
-        };
-      });
+          return {
+            ...old,
+            comments: old.comments.map(comment =>
+              comment.id === commentId
+                ? { ...comment, ...data, isEdited: true }
+                : comment
+            ),
+          };
+        }
+      );
 
       return { previousComments };
     },
@@ -202,16 +228,17 @@ export function useDeleteComment(
       );
 
       // Optimistically remove from comments list
-      queryClient.setQueryData(COMMENT_KEYS.list(sessionId), (old: any) => {
-        if (!old?.comments) return old;
+      queryClient.setQueryData<CommentsResponse>(
+        COMMENT_KEYS.list(sessionId),
+        old => {
+          if (!old?.comments) return old;
 
-        return {
-          ...old,
-          comments: old.comments.filter(
-            (comment: any) => comment.id !== commentId
-          ),
-        };
-      });
+          return {
+            ...old,
+            comments: old.comments.filter(comment => comment.id !== commentId),
+          };
+        }
+      );
 
       return { previousComments };
     },
@@ -237,7 +264,9 @@ export function useDeleteComment(
       });
 
       // Update comment count in session cache and feed
-      const updateSessionCommentCount = (session: any) => {
+      const updateSessionCommentCount = (
+        session: Session | SessionWithDetails
+      ): Session | SessionWithDetails => {
         if (session?.id !== sessionId) return session;
         return {
           ...session,
@@ -252,20 +281,20 @@ export function useDeleteComment(
       );
 
       // Update feed caches
-      queryClient.setQueriesData<any>({ queryKey: ['feed'] }, (old: any) => {
+      queryClient.setQueriesData<FeedData>({ queryKey: ['feed'] }, old => {
         if (!old) return old;
 
         if (Array.isArray(old)) {
           return old.map(updateSessionCommentCount);
-        } else if (old.sessions) {
+        } else if ('sessions' in old && old.sessions) {
           return {
             ...old,
             sessions: old.sessions.map(updateSessionCommentCount),
           };
-        } else if (old.pages) {
+        } else if ('pages' in old && old.pages) {
           return {
             ...old,
-            pages: old.pages.map((page: any) => ({
+            pages: old.pages.map(page => ({
               ...page,
               sessions: page.sessions.map(updateSessionCommentCount),
             })),
@@ -327,22 +356,28 @@ export function useCommentLike(
       const increment = action === 'like' ? 1 : -1;
 
       // Optimistically update comments
-      queryClient.setQueryData(COMMENT_KEYS.list(sessionId), (old: any) => {
-        if (!old?.comments) return old;
+      queryClient.setQueryData<CommentsResponse>(
+        COMMENT_KEYS.list(sessionId),
+        old => {
+          if (!old?.comments) return old;
 
-        return {
-          ...old,
-          comments: old.comments.map((comment: any) =>
-            comment.id === commentId
-              ? {
-                  ...comment,
-                  likeCount: Math.max(0, (comment.likeCount || 0) + increment),
-                  isLiked: action === 'like',
-                }
-              : comment
-          ),
-        };
-      });
+          return {
+            ...old,
+            comments: old.comments.map(comment =>
+              comment.id === commentId
+                ? {
+                    ...comment,
+                    likeCount: Math.max(
+                      0,
+                      (comment.likeCount || 0) + increment
+                    ),
+                    isLiked: action === 'like',
+                  }
+                : comment
+            ),
+          };
+        }
+      );
 
       return { previousComments };
     },

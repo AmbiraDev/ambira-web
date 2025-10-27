@@ -63,7 +63,7 @@ describe('Project Schemas', () => {
 
       expect(result.success).toBe(false);
       if (!result.success) {
-        const paths = result.errors.map((e) => e.path);
+        const paths = result.errors.map(e => e.path);
         expect(paths).toContain('name');
       }
     });
@@ -79,7 +79,7 @@ describe('Project Schemas', () => {
 
       expect(result.success).toBe(false);
       if (!result.success) {
-        const paths = result.errors.map((e) => e.path);
+        const paths = result.errors.map(e => e.path);
         expect(paths).toContain('description');
       }
     });
@@ -95,7 +95,7 @@ describe('Project Schemas', () => {
 
       expect(result.success).toBe(false);
       if (!result.success) {
-        const paths = result.errors.map((e) => e.path);
+        const paths = result.errors.map(e => e.path);
         expect(paths).toContain('icon');
       }
     });
@@ -111,7 +111,7 @@ describe('Project Schemas', () => {
 
       expect(result.success).toBe(false);
       if (!result.success) {
-        const paths = result.errors.map((e) => e.path);
+        const paths = result.errors.map(e => e.path);
         expect(paths).toContain('color');
       }
     });
@@ -215,7 +215,7 @@ describe('Project Schemas', () => {
         'rgb(255,0,0)', // Wrong format
       ];
 
-      invalidColors.forEach((color) => {
+      invalidColors.forEach(color => {
         const input = {
           name: 'Test Project',
           description: 'Test description',
@@ -233,9 +233,15 @@ describe('Project Schemas', () => {
     });
 
     it('should validate various valid hex color formats', () => {
-      const validColors = ['#007AFF', '#ff3b30', '#34C759', '#FFFFFF', '#000000'];
+      const validColors = [
+        '#007AFF',
+        '#ff3b30',
+        '#34C759',
+        '#FFFFFF',
+        '#000000',
+      ];
 
-      validColors.forEach((color) => {
+      validColors.forEach(color => {
         const input = {
           name: 'Test Project',
           description: 'Test description',
@@ -376,7 +382,7 @@ describe('Project Schemas', () => {
     it('should validate all status enum values', () => {
       const statuses = ['active', 'completed', 'archived'] as const;
 
-      statuses.forEach((status) => {
+      statuses.forEach(status => {
         const input = {
           name: 'Test Project',
           description: 'Test description',
@@ -400,7 +406,7 @@ describe('Project Schemas', () => {
         description: 'Test description',
         icon: '📚',
         color: '#FF3B30',
-        status: 'invalid-status' as any,
+        status: 'invalid-status' as unknown as typeof input.status,
       };
 
       const result = validate(CreateProjectSchema, input);
@@ -612,7 +618,7 @@ describe('Project Schemas', () => {
     it('should fail for weeklyTarget out of range', () => {
       const invalidTargets = [-1, 169, 200];
 
-      invalidTargets.forEach((weeklyTarget) => {
+      invalidTargets.forEach(weeklyTarget => {
         const input = { weeklyTarget };
         const result = validate(UpdateProjectSchema, input);
 
@@ -626,7 +632,7 @@ describe('Project Schemas', () => {
     it('should fail for totalTarget out of range', () => {
       const invalidTargets = [-1, 10001, 20000];
 
-      invalidTargets.forEach((totalTarget) => {
+      invalidTargets.forEach(totalTarget => {
         const input = { totalTarget };
         const result = validate(UpdateProjectSchema, input);
 
@@ -639,7 +645,7 @@ describe('Project Schemas', () => {
 
     it('should fail for invalid status', () => {
       const input = {
-        status: 'pending' as any,
+        status: 'pending' as unknown as typeof input.status,
       };
 
       const result = validate(UpdateProjectSchema, input);
@@ -746,7 +752,7 @@ describe('Project Schemas', () => {
 
     it('should fail for invalid status', () => {
       const input = {
-        status: 'invalid-status' as any,
+        status: 'invalid-status' as unknown as typeof input.status,
       };
 
       const result = validate(ProjectFiltersSchema, input);
@@ -812,7 +818,7 @@ describe('Project Schemas', () => {
 
       expect(result.success).toBe(false);
       if (!result.success) {
-        const paths = result.errors.map((e) => e.path);
+        const paths = result.errors.map(e => e.path);
         expect(paths).toContain('field');
       }
     });
@@ -826,14 +832,14 @@ describe('Project Schemas', () => {
 
       expect(result.success).toBe(false);
       if (!result.success) {
-        const paths = result.errors.map((e) => e.path);
+        const paths = result.errors.map(e => e.path);
         expect(paths).toContain('direction');
       }
     });
 
     it('should fail for invalid field', () => {
       const input = {
-        field: 'invalid' as any,
+        field: 'invalid' as unknown as typeof input.field,
         direction: 'asc' as const,
       };
 
@@ -848,7 +854,7 @@ describe('Project Schemas', () => {
     it('should fail for invalid direction', () => {
       const input = {
         field: 'name' as const,
-        direction: 'invalid' as any,
+        direction: 'invalid' as unknown as typeof input.direction,
       };
 
       const result = validate(ProjectSortSchema, input);

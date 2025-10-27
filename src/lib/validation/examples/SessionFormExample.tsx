@@ -14,7 +14,7 @@
 'use client';
 
 import { useState } from 'react';
-import { validate, SessionFormSchema, type SessionFormInput as _SessionFormInput } from '@/lib/validation';
+import { validate, SessionFormSchema } from '@/lib/validation';
 
 interface SessionFormData {
   activityId: string;
@@ -58,19 +58,21 @@ export function SessionFormExample() {
   const [submitSuccess, setSubmitSuccess] = useState(false);
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
   ) => {
     const { name, value, type } = e.target;
     const checked = (e.target as HTMLInputElement).checked;
 
-    setFormData((prev) => ({
+    setFormData(prev => ({
       ...prev,
       [name]: type === 'checkbox' ? checked : value,
     }));
 
     // Clear field-specific error when user starts typing
     if (errors[name as keyof SessionFormErrors]) {
-      setErrors((prev) => ({ ...prev, [name]: undefined }));
+      setErrors(prev => ({ ...prev, [name]: undefined }));
     }
 
     // Clear submit error
@@ -91,7 +93,7 @@ export function SessionFormExample() {
     if (!result.success) {
       // Map validation errors to form fields
       const newErrors: SessionFormErrors = {};
-      result.errors.forEach((error) => {
+      result.errors.forEach(error => {
         if (error.path) {
           newErrors[error.path as keyof SessionFormErrors] = error.message;
         } else {
@@ -130,8 +132,10 @@ export function SessionFormExample() {
         visibility: 'everyone',
         allowComments: true,
       });
-    } catch (__error) {
-      setSubmitError(error instanceof Error ? error.message : 'Failed to create session');
+    } catch (_error) {
+      setSubmitError(
+        error instanceof Error ? error.message : 'Failed to create session'
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -155,7 +159,10 @@ export function SessionFormExample() {
 
       {/* Activity ID */}
       <div>
-        <label htmlFor="activityId" className="block text-sm font-medium text-foreground mb-2">
+        <label
+          htmlFor="activityId"
+          className="block text-sm font-medium text-foreground mb-2"
+        >
           Project/Activity <span className="text-destructive">*</span>
         </label>
         <input
@@ -169,12 +176,17 @@ export function SessionFormExample() {
           }`}
           placeholder="Select project..."
         />
-        {errors.activityId && <p className="mt-2 text-sm text-destructive">{errors.activityId}</p>}
+        {errors.activityId && (
+          <p className="mt-2 text-sm text-destructive">{errors.activityId}</p>
+        )}
       </div>
 
       {/* Title */}
       <div>
-        <label htmlFor="title" className="block text-sm font-medium text-foreground mb-2">
+        <label
+          htmlFor="title"
+          className="block text-sm font-medium text-foreground mb-2"
+        >
           Session Title <span className="text-destructive">*</span>
         </label>
         <input
@@ -189,13 +201,18 @@ export function SessionFormExample() {
           placeholder="What did you work on?"
           maxLength={200}
         />
-        {errors.title && <p className="mt-2 text-sm text-destructive">{errors.title}</p>}
+        {errors.title && (
+          <p className="mt-2 text-sm text-destructive">{errors.title}</p>
+        )}
       </div>
 
       {/* Duration & Start Time */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label htmlFor="duration" className="block text-sm font-medium text-foreground mb-2">
+          <label
+            htmlFor="duration"
+            className="block text-sm font-medium text-foreground mb-2"
+          >
             Duration (minutes) <span className="text-destructive">*</span>
           </label>
           <input
@@ -210,11 +227,16 @@ export function SessionFormExample() {
             }`}
             placeholder="60"
           />
-          {errors.duration && <p className="mt-2 text-sm text-destructive">{errors.duration}</p>}
+          {errors.duration && (
+            <p className="mt-2 text-sm text-destructive">{errors.duration}</p>
+          )}
         </div>
 
         <div>
-          <label htmlFor="startTime" className="block text-sm font-medium text-foreground mb-2">
+          <label
+            htmlFor="startTime"
+            className="block text-sm font-medium text-foreground mb-2"
+          >
             Start Time <span className="text-destructive">*</span>
           </label>
           <input
@@ -227,13 +249,18 @@ export function SessionFormExample() {
               errors.startTime ? 'border-destructive' : 'border-border'
             }`}
           />
-          {errors.startTime && <p className="mt-2 text-sm text-destructive">{errors.startTime}</p>}
+          {errors.startTime && (
+            <p className="mt-2 text-sm text-destructive">{errors.startTime}</p>
+          )}
         </div>
       </div>
 
       {/* Description */}
       <div>
-        <label htmlFor="description" className="block text-sm font-medium text-foreground mb-2">
+        <label
+          htmlFor="description"
+          className="block text-sm font-medium text-foreground mb-2"
+        >
           Description
         </label>
         <textarea
@@ -248,12 +275,17 @@ export function SessionFormExample() {
           placeholder="Add details about your session..."
           maxLength={5000}
         />
-        {errors.description && <p className="mt-2 text-sm text-destructive">{errors.description}</p>}
+        {errors.description && (
+          <p className="mt-2 text-sm text-destructive">{errors.description}</p>
+        )}
       </div>
 
       {/* Visibility */}
       <div>
-        <label htmlFor="visibility" className="block text-sm font-medium text-foreground mb-2">
+        <label
+          htmlFor="visibility"
+          className="block text-sm font-medium text-foreground mb-2"
+        >
           Visibility
         </label>
         <select
@@ -269,12 +301,17 @@ export function SessionFormExample() {
           <option value="followers">Followers only</option>
           <option value="private">Private</option>
         </select>
-        {errors.visibility && <p className="mt-2 text-sm text-destructive">{errors.visibility}</p>}
+        {errors.visibility && (
+          <p className="mt-2 text-sm text-destructive">{errors.visibility}</p>
+        )}
       </div>
 
       {/* Tags */}
       <div>
-        <label htmlFor="tags" className="block text-sm font-medium text-foreground mb-2">
+        <label
+          htmlFor="tags"
+          className="block text-sm font-medium text-foreground mb-2"
+        >
           Tags (comma-separated)
         </label>
         <input
@@ -288,12 +325,17 @@ export function SessionFormExample() {
           }`}
           placeholder="coding, learning, project"
         />
-        {errors.tags && <p className="mt-2 text-sm text-destructive">{errors.tags}</p>}
+        {errors.tags && (
+          <p className="mt-2 text-sm text-destructive">{errors.tags}</p>
+        )}
       </div>
 
       {/* How Felt */}
       <div>
-        <label htmlFor="howFelt" className="block text-sm font-medium text-foreground mb-2">
+        <label
+          htmlFor="howFelt"
+          className="block text-sm font-medium text-foreground mb-2"
+        >
           How did you feel? (1-5)
         </label>
         <input
@@ -309,12 +351,17 @@ export function SessionFormExample() {
           }`}
           placeholder="1-5"
         />
-        {errors.howFelt && <p className="mt-2 text-sm text-destructive">{errors.howFelt}</p>}
+        {errors.howFelt && (
+          <p className="mt-2 text-sm text-destructive">{errors.howFelt}</p>
+        )}
       </div>
 
       {/* Private Notes */}
       <div>
-        <label htmlFor="privateNotes" className="block text-sm font-medium text-foreground mb-2">
+        <label
+          htmlFor="privateNotes"
+          className="block text-sm font-medium text-foreground mb-2"
+        >
           Private Notes (only visible to you)
         </label>
         <textarea

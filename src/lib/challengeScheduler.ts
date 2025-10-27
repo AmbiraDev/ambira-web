@@ -4,7 +4,6 @@
  */
 
 import { firebaseChallengeApi, challengeNotifications } from './api';
-import { Challenge } from '@/types';
 
 /**
  * Check for challenges ending soon and send notifications
@@ -37,7 +36,7 @@ export async function checkChallengesEndingSoon(): Promise<void> {
         );
       }
     }
-  } catch (error) {
+  } catch (_error) {
     console.error('Error checking challenges ending soon:', error);
   }
 }
@@ -54,7 +53,7 @@ export async function checkRankChanges(challengeId: string): Promise<void> {
 
     // For now, we'll skip rank change notifications as they require storing previous ranks
     // This could be implemented with a separate collection to track rank history
-  } catch (error) {
+  } catch (_error) {
     console.error('Error checking rank changes:', error);
   }
 }
@@ -84,7 +83,7 @@ export async function testChallengeNotifications(
       25,
       100
     );
-  } catch (error) {
+  } catch (_error) {
     console.error('Error sending test notifications:', error);
   }
 }

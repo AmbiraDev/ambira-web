@@ -3,14 +3,13 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
-import { _SessionFormData, Project, CreateSessionData } from '@/types';
+import { Project, CreateSessionData } from '@/types';
 import { firebaseApi } from '@/lib/api';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
-import { _ArrowLeft, _Check, Image as ImageIcon, X } from 'lucide-react';
-import Link from 'next/link';
+import { Image as ImageIcon, X } from 'lucide-react';
 import Image from 'next/image';
-import { uploadImages, _compressImage } from '@/lib/imageUpload';
+import { uploadImages } from '@/lib/imageUpload';
 import { parseLocalDateTime } from '@/lib/utils';
 import Header from '@/components/HeaderComponent';
 import { debug } from '@/lib/debug';
@@ -86,7 +85,7 @@ export default function ManualSessionRecorder() {
   const [visibility, setVisibility] = useState<
     'everyone' | 'followers' | 'private'
   >('everyone');
-  const [privateNotes, _setPrivateNotes] = useState('');
+  const [privateNotes] = useState('');
 
   // Manual time inputs
   const [sessionDate, setSessionDate] = useState(
@@ -98,7 +97,6 @@ export default function ManualSessionRecorder() {
     const minutes = String(now.getMinutes()).padStart(2, '0');
     return `${hours}:${minutes}`;
   });
-  const [_endTime, _setEndTime] = useState('10:00');
   const [manualDurationHours, setManualDurationHours] = useState('1');
   const [manualDurationMinutes, setManualDurationMinutes] = useState('0');
 
@@ -116,8 +114,8 @@ export default function ManualSessionRecorder() {
       try {
         const projectList = await firebaseApi.project.getProjects();
         setProjects(projectList);
-      } catch (error) {
-        debug.error('ManualSessionRecorder - Failed to load projects:', error);
+      } catch (_error) {
+        debug.error('ManualSessionRecorder - Failed to load projects');
       }
     };
 
@@ -140,7 +138,7 @@ export default function ManualSessionRecorder() {
         : `${timeOfDay} Work Session`;
       setTitle(smartTitle);
     }
-  }, [projectId, projects]);
+  }, [projectId, projects, title]); // Add title to dependencies
 
   const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -189,11 +187,8 @@ export default function ManualSessionRecorder() {
               file.name.replace(/\.heic$/i, '.jpg').replace(/\.heif$/i, '.jpg'),
               { type: 'image/jpeg' }
             );
-          } catch (error) {
-            debug.error(
-              'ManualSessionRecorder - Error converting HEIC:',
-              error
-            );
+          } catch (_error) {
+            debug.error('ManualSessionRecorder - Error converting HEIC');
             // More helpful error message
             alert(
               `HEIC conversion is currently unavailable. Please convert ${file.name} to JPG or PNG before uploading, or try refreshing the page.`
@@ -215,8 +210,8 @@ export default function ManualSessionRecorder() {
         validFiles.push(processedFile);
         const previewUrl = URL.createObjectURL(processedFile);
         previewUrls.push(previewUrl);
-      } catch (error) {
-        debug.error('ManualSessionRecorder - Error processing image:', error);
+      } catch (_error) {
+        debug.error('ManualSessionRecorder - Error processing image');
         alert(`Failed to process ${file.name}`);
       }
     }
@@ -295,11 +290,8 @@ export default function ManualSessionRecorder() {
         try {
           const uploadResults = await uploadImages(selectedImages);
           imageUrls = uploadResults.map(result => result.url);
-        } catch (error) {
-          debug.error(
-            'ManualSessionRecorder - Failed to upload images:',
-            error
-          );
+        } catch (_error) {
+          debug.error('ManualSessionRecorder - Failed to upload images');
           setErrors({ submit: 'Failed to upload images. Please try again.' });
           setIsUploadingImages(false);
           setIsLoading(false);
@@ -344,11 +336,8 @@ export default function ManualSessionRecorder() {
 
       // Redirect to home feed
       router.push('/');
-    } catch (error) {
-      debug.error(
-        'ManualSessionRecorder - Failed to create manual session:',
-        error
-      );
+    } catch (_error) {
+      debug.error('ManualSessionRecorder - Failed to create manual session');
       toast.error('Failed to create session. Please try again.');
       setErrors({ submit: 'Failed to create session. Please try again.' });
     } finally {

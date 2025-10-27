@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Clock, Target, Calendar, Heart, ChevronDown } from 'lucide-react';
 import {
   LineChart,
@@ -33,30 +33,22 @@ export const ProjectProgressView: React.FC<ProjectProgressViewProps> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
 
-  useEffect(() => {
-    loadSessions();
-  }, [projectId]);
-
-  useEffect(() => {
-    processChartData();
-  }, [sessions, timePeriod]);
-
-  const loadSessions = async () => {
+  const loadSessions = useCallback(async () => {
     try {
       setIsLoading(true);
       const response = await firebaseSessionApi.getSessions(1, 500, {
         projectId,
       });
       setSessions(response.sessions);
-    } catch (error) {
-      console.error('Failed to load sessions:', error);
+    } catch {
+      console.error('Failed to load sessions');
       setSessions([]);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [projectId]);
 
-  const processChartData = () => {
+  const processChartData = useCallback(() => {
     const now = new Date();
     const data: ChartDataPoint[] = [];
 
@@ -168,7 +160,15 @@ export const ProjectProgressView: React.FC<ProjectProgressViewProps> = ({
     }
 
     setChartData(data);
-  };
+  }, [sessions, timePeriod]);
+
+  useEffect(() => {
+    loadSessions();
+  }, [loadSessions]);
+
+  useEffect(() => {
+    processChartData();
+  }, [processChartData]);
 
   // Calculate stats
   const totalHours = sessions.reduce((sum, s) => sum + s.duration / 3600, 0);
@@ -344,7 +344,7 @@ export const ProjectProgressView: React.FC<ProjectProgressViewProps> = ({
                 stroke="#007AFF"
                 strokeWidth={2}
                 isAnimationActive={false}
-                dot={(props: any) => {
+                dot={(props: unknown) => {
                   const { cx, cy, index, payload } = props;
                   const isLast = index === chartData.length - 1;
                   return (

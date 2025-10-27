@@ -10,14 +10,7 @@ import Header from './HeaderComponent';
 import PWAInstallPrompt from './PWAInstallPrompt';
 
 export const LandingPage: React.FC = () => {
-  const {
-    login,
-    signup,
-    signInWithGoogle,
-    _user,
-    _isAuthenticated,
-    isLoading: authIsLoading,
-  } = useAuth();
+  const { login, signup, signInWithGoogle } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showSignup, setShowSignup] = useState(false);
@@ -57,19 +50,18 @@ export const LandingPage: React.FC = () => {
       console.error('Google sign-in error:', err);
       // Don't show error or clear loading if redirect is in progress
       // (user is being redirected to Google)
-      if (err?.message !== 'REDIRECT_IN_PROGRESS') {
+      const errorMessage =
+        err && typeof err === 'object' && 'message' in err
+          ? String(err.message)
+          : '';
+      if (errorMessage !== 'REDIRECT_IN_PROGRESS') {
         setError(
-          err?.message || 'Failed to sign in with Google. Please try again.'
+          errorMessage || 'Failed to sign in with Google. Please try again.'
         );
         setIsLoading(false);
       }
       // If REDIRECT_IN_PROGRESS, keep loading state - browser will redirect
     }
-  };
-
-  const _handleLoginWithEmail = () => {
-    setShowLogin(true);
-    setError(null);
   };
 
   const handleSignupWithEmail = () => {
@@ -127,15 +119,19 @@ export const LandingPage: React.FC = () => {
       console.error('Login error:', err);
 
       // Handle specific Firebase errors with user-friendly messages
-      if (err.message?.includes('auth/user-not-found')) {
+      const errorMessage =
+        err && typeof err === 'object' && 'message' in err
+          ? String(err.message)
+          : '';
+      if (errorMessage.includes('auth/user-not-found')) {
         setError(
           'No account found with this email address. Please sign up or check your email.'
         );
-      } else if (err.message?.includes('auth/wrong-password')) {
+      } else if (errorMessage.includes('auth/wrong-password')) {
         setError('Incorrect password. Please try again.');
-      } else if (err.message?.includes('auth/invalid-email')) {
+      } else if (errorMessage.includes('auth/invalid-email')) {
         setError('Please enter a valid email address.');
-      } else if (err.message?.includes('auth/too-many-requests')) {
+      } else if (errorMessage.includes('auth/too-many-requests')) {
         setError('Too many failed attempts. Please try again later.');
       } else {
         setError(
@@ -198,7 +194,7 @@ export const LandingPage: React.FC = () => {
         const available =
           await firebaseUserApi.checkUsernameAvailability(username);
         setUsernameAvailable(available);
-      } catch (_error: any) {
+      } catch {
         // Set to null to indicate check couldn't be completed
         // Registration will still proceed with server-side validation
         setUsernameAvailable(null);
@@ -275,15 +271,19 @@ export const LandingPage: React.FC = () => {
       console.error('Signup error:', err);
 
       // Handle specific Firebase errors with user-friendly messages
-      if (err.message?.includes('auth/email-already-in-use')) {
+      const errorMessage =
+        err && typeof err === 'object' && 'message' in err
+          ? String(err.message)
+          : '';
+      if (errorMessage.includes('auth/email-already-in-use')) {
         setError(
           'This email address is already registered. Please try logging in instead or use a different email.'
         );
-      } else if (err.message?.includes('auth/weak-password')) {
+      } else if (errorMessage.includes('auth/weak-password')) {
         setError(
           'Password is too weak. Please choose a stronger password with at least 6 characters.'
         );
-      } else if (err.message?.includes('auth/invalid-email')) {
+      } else if (errorMessage.includes('auth/invalid-email')) {
         setError('Please enter a valid email address.');
       } else {
         setError('Failed to create account. Please try again.');
@@ -292,35 +292,6 @@ export const LandingPage: React.FC = () => {
       setIsLoading(false);
     }
   };
-
-  const [_carouselIndex, _setCarouselIndex] = useState(0);
-
-  const _benefits = [
-    {
-      title: 'Track your active life in one place',
-      description:
-        'Record all your productivity sessions and track your progress over time',
-      image: '📊',
-    },
-    {
-      title: 'Stay motivated with friends',
-      description:
-        'Share your achievements and compete in challenges with your community',
-      image: '🏆',
-    },
-    {
-      title: 'Build lasting habits',
-      description:
-        'Track streaks and celebrate milestones as you reach your goals',
-      image: '🔥',
-    },
-    {
-      title: 'Join groups & challenges',
-      description:
-        'Connect with like-minded people and push each other to succeed',
-      image: '👥',
-    },
-  ];
 
   return (
     <div className="min-h-screen bg-white">

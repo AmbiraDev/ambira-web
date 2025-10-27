@@ -7,18 +7,15 @@
 
 import { firebaseApi } from '@/lib/api';
 import {
-  Comment,
-  CommentWithDetails,
   CreateCommentData,
   UpdateCommentData,
   CommentsResponse,
+  CommentWithDetails,
 } from '@/types';
 import {
   validateOrThrow,
   CreateCommentSchema,
   UpdateCommentSchema,
-  type CreateCommentData as ValidatedCreateCommentData,
-  type UpdateCommentData as ValidatedUpdateCommentData,
 } from '@/lib/validation';
 
 export class CommentService {
@@ -27,13 +24,12 @@ export class CommentService {
    */
   async getSessionComments(
     sessionId: string,
-    limit: number = 20,
-    cursor?: string
+    limit: number = 20
   ): Promise<CommentsResponse> {
     try {
       return await firebaseApi.comment.getSessionComments(sessionId, limit);
-    } catch (error) {
-      console.error('Error getting session comments:', error);
+    } catch (_err) {
+      console.error('Error getting session comments:', _err);
       return {
         comments: [],
         hasMore: false,
@@ -48,7 +44,9 @@ export class CommentService {
     // Validate input data
     const validatedData = validateOrThrow(CreateCommentSchema, data);
 
-    return firebaseApi.comment.createComment(validatedData as CreateCommentData);
+    return firebaseApi.comment.createComment(
+      validatedData as CreateCommentData
+    );
   }
 
   /**
@@ -58,7 +56,10 @@ export class CommentService {
     // Validate input data
     const validatedData = validateOrThrow(UpdateCommentSchema, data);
 
-    await firebaseApi.comment.updateComment(commentId, validatedData as UpdateCommentData);
+    await firebaseApi.comment.updateComment(
+      commentId,
+      validatedData as UpdateCommentData
+    );
   }
 
   /**

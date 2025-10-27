@@ -12,7 +12,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { getFollowingIds } from '@/lib/api/users/getFollowingIds';
-import { _CACHE_KEYS, CACHE_TIMES } from '@/lib/queryClient';
+import { CACHE_TIMES } from '@/lib/queryClient';
 
 interface UseFollowingListOptions {
   userId?: string;
@@ -30,8 +30,10 @@ export function useFollowingList({
   userId,
   enabled = true,
 }: UseFollowingListOptions): UseFollowingListReturn {
+  const queryKey = ['following-ids', userId] as const;
+
   const { data, isLoading, isError, error } = useQuery({
-    queryKey: userId ? ['following-ids', userId] : ['following-ids', 'null'],
+    queryKey,
     queryFn: async () => {
       if (!userId) {
         return new Set<string>();

@@ -380,11 +380,11 @@ function EditActivityContent({ activityId }: { activityId: string }) {
       setTimeout(() => {
         router.push(`/activities/${activityId}`);
       }, 1500);
-    } catch (error) {
-      console.error('Failed to update activity:', error);
+    } catch (_error) {
+      console.error('Failed to update activity:', _error);
       const errorMessage =
-        error instanceof Error
-          ? error.message
+        _error instanceof Error
+          ? _error.message
           : 'Failed to update activity. Please try again.';
       setErrors({ name: errorMessage });
       setSuccessMessage('');

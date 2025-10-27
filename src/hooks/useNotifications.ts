@@ -1,8 +1,20 @@
-import { useQuery, useMutation, useQueryClient, UseQueryOptions } from '@tanstack/react-query';
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  UseQueryOptions,
+} from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import { Notification } from '@/types';
 import { firebaseNotificationApi } from '@/lib/api';
-import { collection, query, where, orderBy, limit as firestoreLimit, onSnapshot } from 'firebase/firestore';
+import {
+  collection,
+  query,
+  where,
+  orderBy,
+  limit as firestoreLimit,
+  onSnapshot,
+} from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { useEffect, useMemo } from 'react';
 import { CACHE_KEYS, CACHE_TIMES } from '@/lib/queryClient';
@@ -23,7 +35,10 @@ export function useNotifications(options?: {
   const realtime = options?.realtime ?? false;
   const limit = options?.limit ?? 50;
 
-  const queryKey = CACHE_KEYS.NOTIFICATIONS(user?.id || 'none');
+  const queryKey = useMemo(
+    () => [...CACHE_KEYS.NOTIFICATIONS(user?.id || 'none'), limit, user],
+    [user, limit]
+  );
 
   // Base query for notifications
   const notificationsQuery = useQuery({
@@ -51,10 +66,10 @@ export function useNotifications(options?: {
 
     const unsubscribe = onSnapshot(
       notificationsRef,
-      (snapshot) => {
+      snapshot => {
         const notifications: Notification[] = [];
 
-        snapshot.forEach((doc) => {
+        snapshot.forEach(doc => {
           const data = doc.data();
           const notification: Notification = {
             id: doc.id,
@@ -81,7 +96,7 @@ export function useNotifications(options?: {
         // Update React Query cache with real-time data
         queryClient.setQueryData(queryKey, notifications);
       },
-      (error) => {
+      error => {
         console.error('Error in notifications real-time listener:', error);
       }
     );
@@ -105,7 +120,7 @@ export function useUnreadCount() {
   const notifications = queryClient.getQueryData<Notification[]>(queryKey);
 
   return useMemo(
-    () => notifications?.filter((n) => !n.isRead).length ?? 0,
+    () => notifications?.filter(n => !n.isRead).length ?? 0,
     [notifications]
   );
 }
@@ -123,18 +138,19 @@ export function useMarkNotificationRead() {
       firebaseNotificationApi.markAsRead(notificationId),
 
     // Optimistic update
-    onMutate: async (notificationId) => {
+    onMutate: async notificationId => {
       // Cancel any outgoing refetches
       await queryClient.cancelQueries({ queryKey });
 
       // Snapshot the previous value
-      const previousNotifications = queryClient.getQueryData<Notification[]>(queryKey);
+      const previousNotifications =
+        queryClient.getQueryData<Notification[]>(queryKey);
 
       // Optimistically update to the new value
       if (previousNotifications) {
         queryClient.setQueryData<Notification[]>(
           queryKey,
-          previousNotifications.map((n) =>
+          previousNotifications.map(n =>
             n.id === notificationId ? { ...n, isRead: true } : n
           )
         );
@@ -177,12 +193,13 @@ export function useMarkAllNotificationsRead() {
     onMutate: async () => {
       await queryClient.cancelQueries({ queryKey });
 
-      const previousNotifications = queryClient.getQueryData<Notification[]>(queryKey);
+      const previousNotifications =
+        queryClient.getQueryData<Notification[]>(queryKey);
 
       if (previousNotifications) {
         queryClient.setQueryData<Notification[]>(
           queryKey,
-          previousNotifications.map((n) => ({ ...n, isRead: true }))
+          previousNotifications.map(n => ({ ...n, isRead: true }))
         );
       }
 
@@ -215,15 +232,16 @@ export function useDeleteNotification() {
       firebaseNotificationApi.deleteNotification(notificationId),
 
     // Optimistic update
-    onMutate: async (notificationId) => {
+    onMutate: async notificationId => {
       await queryClient.cancelQueries({ queryKey });
 
-      const previousNotifications = queryClient.getQueryData<Notification[]>(queryKey);
+      const previousNotifications =
+        queryClient.getQueryData<Notification[]>(queryKey);
 
       if (previousNotifications) {
         queryClient.setQueryData<Notification[]>(
           queryKey,
-          previousNotifications.filter((n) => n.id !== notificationId)
+          previousNotifications.filter(n => n.id !== notificationId)
         );
       }
 
@@ -255,11 +273,12 @@ export function useClearAllNotifications() {
     mutationFn: async () => {
       if (!user) throw new Error('User not authenticated');
 
-      const notifications = queryClient.getQueryData<Notification[]>(queryKey) || [];
+      const notifications =
+        queryClient.getQueryData<Notification[]>(queryKey) || [];
 
       // Delete all notifications in parallel
       await Promise.all(
-        notifications.map((notification) =>
+        notifications.map(notification =>
           firebaseNotificationApi.deleteNotification(notification.id)
         )
       );
@@ -269,7 +288,8 @@ export function useClearAllNotifications() {
     onMutate: async () => {
       await queryClient.cancelQueries({ queryKey });
 
-      const previousNotifications = queryClient.getQueryData<Notification[]>(queryKey);
+      const previousNotifications =
+        queryClient.getQueryData<Notification[]>(queryKey);
 
       // Clear the cache immediately
       queryClient.setQueryData<Notification[]>(queryKey, []);
@@ -289,4 +309,3 @@ export function useClearAllNotifications() {
     },
   });
 }
-

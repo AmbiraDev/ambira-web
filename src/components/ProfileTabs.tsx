@@ -50,8 +50,6 @@ export const ProfileTabs: React.FC<ProfileTabsProps> = ({
   activeTab,
   onTabChange,
   stats,
-  _showPrivateContent = false,
-  _userId,
 }) => {
   const tabs: Array<{
     id: ProfileTab;
@@ -440,7 +438,7 @@ export const PostsContent: React.FC<PostsContentProps> = ({
   isOwnProfile = false,
 }) => {
   const [sessions, setSessions] = useState<SessionWithDetails[]>([]);
-  const [_isLoadingSessions, setIsLoadingSessions] = useState(false);
+  const [, setIsLoadingSessions] = useState(false);
   const [deleteConfirmSession, setDeleteConfirmSession] = useState<
     string | null
   >(null);
@@ -456,7 +454,7 @@ export const PostsContent: React.FC<PostsContentProps> = ({
           50
         );
         // Ensure sessions have activity field (backwards compatibility)
-        const sessionsWithActivity = userSessions.map((session: any) => ({
+        const sessionsWithActivity = userSessions.map((session: unknown) => ({
           ...session,
           activity: session.activity || session.project,
         }));

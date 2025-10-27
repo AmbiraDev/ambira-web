@@ -13,17 +13,7 @@ import {
   SettingsRow,
   SettingsRowGroup,
 } from '@/components/ui/settings-section';
-import {
-  Bell,
-  Mail,
-  BellRing,
-  _Heart,
-  _MessageCircle,
-  UserPlus,
-  Trophy,
-  _Flame,
-  Users,
-} from 'lucide-react';
+import { Bell, Mail, BellRing, UserPlus, Trophy, Users } from 'lucide-react';
 import { debug } from '@/lib/debug';
 
 interface NotificationSettingsProps {
@@ -76,10 +66,9 @@ export const NotificationSettings: React.FC<NotificationSettingsProps> = ({
       // Need to create getNotificationPreferences() and updateNotificationPreferences() methods
       // For now, use defaults
       setPreferences(defaultPreferences);
-    } catch (error) {
+    } catch (_error) {
       debug.error(
-        'NotificationSettings - Failed to load notification preferences:',
-        error
+        'NotificationSettings - Failed to load notification preferences'
       );
     } finally {
       setIsLoading(false);
@@ -105,10 +94,9 @@ export const NotificationSettings: React.FC<NotificationSettingsProps> = ({
       // TODO: Implement notification preferences save API in firebaseUserApi
       // Need updateNotificationPreferences() method to persist to Firestore
       alert('Notification preferences saved successfully!');
-    } catch (error) {
+    } catch (_error) {
       debug.error(
-        'NotificationSettings - Failed to save notification preferences:',
-        error
+        'NotificationSettings - Failed to save notification preferences'
       );
       alert('Failed to save notification preferences');
     } finally {

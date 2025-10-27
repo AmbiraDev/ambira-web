@@ -13,8 +13,18 @@ jest.mock('@/contexts/AuthContext', () => ({
 jest.mock('@/contexts/ProjectsContext', () => ({
   useProjects: () => ({
     projects: [
-      { id: 'project-1', name: 'Test Project 1', icon: 'code', color: '#007AFF' },
-      { id: 'project-2', name: 'Test Project 2', icon: 'book', color: '#34C759' },
+      {
+        id: 'project-1',
+        name: 'Test Project 1',
+        icon: 'code',
+        color: '#007AFF',
+      },
+      {
+        id: 'project-2',
+        name: 'Test Project 2',
+        icon: 'book',
+        color: '#34C759',
+      },
     ],
   }),
 }));
@@ -35,21 +45,31 @@ jest.mock('@/features/profile/hooks', () => ({
 
 // Mock recharts components
 jest.mock('recharts', () => ({
-  ResponsiveContainer: ({ children }: any) => <div>{children}</div>,
-  BarChart: ({ children }: any) => <div>{children}</div>,
+  ResponsiveContainer: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
+  BarChart: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
   Bar: () => null,
   XAxis: () => null,
   YAxis: () => null,
   Tooltip: () => null,
-  LineChart: ({ children }: any) => <div>{children}</div>,
+  LineChart: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
   Line: () => null,
-  ComposedChart: ({ children }: any) => <div>{children}</div>,
+  ComposedChart: ({ children }: { children: React.ReactNode }) => (
+    <div>{children}</div>
+  ),
   Area: () => null,
 }));
 
 // Mock other components
 jest.mock('@/components/ProtectedRoute', () => ({
-  ProtectedRoute: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+  ProtectedRoute: ({ children }: { children: React.ReactNode }) => (
+    <>{children}</>
+  ),
 }));
 
 jest.mock('@/components/MobileHeader', () => ({
@@ -88,19 +108,25 @@ describe('Analytics Page - Accessibility ARIA Labels', () => {
   describe('Activity Selector Dropdown', () => {
     it('should have proper aria-label on activity selector button', () => {
       render(<AnalyticsPage />);
-      const activityButton = screen.getByLabelText('Select activity to filter analytics');
+      const activityButton = screen.getByLabelText(
+        'Select activity to filter analytics'
+      );
       expect(activityButton).toBeInTheDocument();
     });
 
     it('should have aria-expanded attribute on activity selector button', () => {
       render(<AnalyticsPage />);
-      const activityButton = screen.getByLabelText('Select activity to filter analytics');
+      const activityButton = screen.getByLabelText(
+        'Select activity to filter analytics'
+      );
       expect(activityButton).toHaveAttribute('aria-expanded');
     });
 
     it('should have aria-haspopup listbox on activity selector button', () => {
       render(<AnalyticsPage />);
-      const activityButton = screen.getByLabelText('Select activity to filter analytics');
+      const activityButton = screen.getByLabelText(
+        'Select activity to filter analytics'
+      );
       expect(activityButton).toHaveAttribute('aria-haspopup', 'listbox');
     });
   });
@@ -108,19 +134,25 @@ describe('Analytics Page - Accessibility ARIA Labels', () => {
   describe('Chart Type Selector Dropdown', () => {
     it('should have proper aria-label on chart type selector button', () => {
       render(<AnalyticsPage />);
-      const chartTypeButton = screen.getByLabelText('Select chart type for analytics visualization');
+      const chartTypeButton = screen.getByLabelText(
+        'Select chart type for analytics visualization'
+      );
       expect(chartTypeButton).toBeInTheDocument();
     });
 
     it('should have aria-expanded attribute on chart type selector button', () => {
       render(<AnalyticsPage />);
-      const chartTypeButton = screen.getByLabelText('Select chart type for analytics visualization');
+      const chartTypeButton = screen.getByLabelText(
+        'Select chart type for analytics visualization'
+      );
       expect(chartTypeButton).toHaveAttribute('aria-expanded');
     });
 
     it('should have aria-haspopup listbox on chart type selector button', () => {
       render(<AnalyticsPage />);
-      const chartTypeButton = screen.getByLabelText('Select chart type for analytics visualization');
+      const chartTypeButton = screen.getByLabelText(
+        'Select chart type for analytics visualization'
+      );
       expect(chartTypeButton).toHaveAttribute('aria-haspopup', 'listbox');
     });
   });
@@ -144,7 +176,9 @@ describe('Analytics Page - Accessibility ARIA Labels', () => {
 
     it('should have role="group" on time period container', () => {
       const { container } = render(<AnalyticsPage />);
-      const groupElement = container.querySelector('[role="group"][aria-label="Time period selection"]');
+      const groupElement = container.querySelector(
+        '[role="group"][aria-label="Time period selection"]'
+      );
       expect(groupElement).toBeInTheDocument();
     });
   });
@@ -154,8 +188,12 @@ describe('Analytics Page - Accessibility ARIA Labels', () => {
       render(<AnalyticsPage />);
 
       // Verify all critical buttons have accessible names
-      const activitySelector = screen.getByLabelText('Select activity to filter analytics');
-      const chartTypeSelector = screen.getByLabelText('Select chart type for analytics visualization');
+      const activitySelector = screen.getByLabelText(
+        'Select activity to filter analytics'
+      );
+      const chartTypeSelector = screen.getByLabelText(
+        'Select chart type for analytics visualization'
+      );
       const timePeriodButtons = [
         screen.getByLabelText('Last 7 days'),
         screen.getByLabelText('Last 2 weeks'),

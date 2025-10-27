@@ -34,7 +34,7 @@ export const DataExport: React.FC = () => {
       setExportStatus(
         'Export complete! Check your email for the download link.'
       );
-    } catch (_error) {
+    } catch {
       setExportStatus('Export failed. Please try again.');
     } finally {
       setIsExporting(false);
@@ -81,7 +81,11 @@ export const DataExport: React.FC = () => {
             ].map(({ value, label, icon: Icon }) => (
               <button
                 key={value}
-                onClick={() => setExportType(value as any)}
+                onClick={() =>
+                  setExportType(
+                    value as 'sessions' | 'projects' | 'tasks' | 'all'
+                  )
+                }
                 className={`flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all ${
                   exportType === value
                     ? 'border-blue-500 bg-blue-50'

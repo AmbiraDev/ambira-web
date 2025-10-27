@@ -32,9 +32,6 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
     profilePicture: profile.profilePicture || '',
   });
   const [isLoading, setIsLoading] = useState(false);
-  const [_profileVisibility, _setProfileVisibility] = useState<
-    'everyone' | 'followers' | 'private'
-  >('everyone');
   const [profileImageFile, setProfileImageFile] = useState<File[]>([]);
   const [profileImagePreview, setProfileImagePreview] = useState<string[]>(
     profile.profilePicture ? [profile.profilePicture] : []
@@ -103,10 +100,10 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
       });
 
       return [downloadURL];
-    } catch (error) {
-      console.error('File upload error:', error);
+    } catch (_err) {
+      console.error('File upload error:', err);
       toast.error('Failed to upload image', { id: 'upload-profile-pic' });
-      throw error;
+      throw err;
     }
   };
 

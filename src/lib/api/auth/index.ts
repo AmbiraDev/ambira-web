@@ -49,8 +49,8 @@ const checkUsernameExists = async (username: string): Promise<boolean> => {
     );
     const snapshot = await getDocs(q);
     return !snapshot.empty;
-  } catch (error) {
-    const _apiError = handleError(error, 'Check username availability', {
+  } catch (_error) {
+    handleError(error, 'Check username availability', {
       severity: ErrorSeverity.WARNING,
     });
     // If there's an error checking, allow the signup to proceed
@@ -62,6 +62,7 @@ const checkUsernameExists = async (username: string): Promise<boolean> => {
 /**
  * Check if an email already exists in Firestore
  * Note: Firebase Auth is the primary check for email uniqueness
+ * DEPRECATED: Use Firebase Auth's built-in email validation instead
  */
 const _checkEmailExistsInFirestore = async (
   email: string
@@ -75,8 +76,8 @@ const _checkEmailExistsInFirestore = async (
     );
     const snapshot = await getDocs(q);
     return !snapshot.empty;
-  } catch (error) {
-    const _apiError = handleError(error, 'Check email availability', {
+  } catch (_error) {
+    handleError(error, 'Check email availability', {
       severity: ErrorSeverity.WARNING,
     });
     return false;
@@ -204,7 +205,7 @@ export const firebaseAuthApi = {
       const token = await firebaseUser.getIdToken();
 
       return { user, token };
-    } catch (error) {
+    } catch (_error) {
       // Re-throw rate limit errors as-is
       if (error instanceof RateLimitError) {
         throw error;
@@ -282,10 +283,10 @@ export const firebaseAuthApi = {
         updatedAt: new Date(),
       };
 
-      const token = await firebaseUser.getIdToken();
+      const _token = await firebaseUser.getIdToken();
 
-      return { user, token };
-    } catch (error) {
+      return { user, token: _token };
+    } catch (_error) {
       // Re-throw rate limit errors as-is
       if (error instanceof RateLimitError) {
         throw error;
@@ -317,7 +318,7 @@ export const firebaseAuthApi = {
       try {
         // Use popup for better UX and to avoid cross-origin issues
         userCredential = await signInWithPopup(auth, provider);
-      } catch (popupError: any) {
+      } catch (popupError: unknown) {
         console.error('[signInWithGoogle] Popup error:', popupError);
         console.error('[signInWithGoogle] Error code:', popupError.code);
         console.error('[signInWithGoogle] Error message:', popupError.message);
@@ -407,7 +408,10 @@ export const firebaseAuthApi = {
       }
 
       // If the error is already a custom Error with a message, re-throw it as-is
-      if (error instanceof Error && !(error as any).code) {
+      if (
+        error instanceof Error &&
+        !('code' in (error as Record<string, unknown>))
+      ) {
         throw error;
       }
 
@@ -430,7 +434,7 @@ export const firebaseAuthApi = {
   logout: async (): Promise<void> => {
     try {
       await signOut(auth);
-    } catch (error) {
+    } catch (_error) {
       const apiError = handleError(error, 'Logout', {
         defaultMessage: 'Logout failed',
       });
@@ -441,7 +445,7 @@ export const firebaseAuthApi = {
   /**
    * Get current authenticated user
    */
-  getCurrentUser: async (token?: string): Promise<AuthUser> => {
+  getCurrentUser: async (_token?: string): Promise<AuthUser> => {
     try {
       if (!auth.currentUser) {
         throw new Error('No authenticated user');
@@ -484,7 +488,7 @@ export const firebaseAuthApi = {
         createdAt: convertTimestamp(userData.createdAt),
         updatedAt: convertTimestamp(userData.updatedAt),
       };
-    } catch (error) {
+    } catch (_error) {
       const apiError = handleError(error, 'Get current user', {
         defaultMessage: 'Failed to get current user',
       });
@@ -495,7 +499,7 @@ export const firebaseAuthApi = {
   /**
    * Verify authentication token
    */
-  verifyToken: async (_token: string): Promise<boolean> => {
+  verifyToken: async (): Promise<boolean> => {
     try {
       // Firebase handles token verification automatically
       // We just need to check if user is authenticated
@@ -511,10 +515,6 @@ export const firebaseAuthApi = {
   handleGoogleRedirectResult: async (): Promise<AuthResponse | null> => {
     try {
       const result = await getRedirectResult(auth);
-
-      if (result) {
-        const _credential = GoogleAuthProvider.credentialFromResult(result);
-      }
 
       if (!result) {
         // No redirect result (user didn't come from redirect flow)

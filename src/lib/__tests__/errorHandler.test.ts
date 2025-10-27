@@ -10,7 +10,6 @@ import {
   isAuthError,
   isNetworkError,
   withNullOnError,
-  ErrorSeverity,
 } from '../errorHandler';
 
 describe('errorHandler', () => {
@@ -37,7 +36,9 @@ describe('errorHandler', () => {
       const apiError = createApiError(firestoreError, 'Fetch user');
 
       expect(apiError.code).toBe('permission-denied');
-      expect(apiError.userMessage).toBe("You don't have permission to perform this action.");
+      expect(apiError.userMessage).toBe(
+        "You don't have permission to perform this action."
+      );
     });
 
     it('creates error from generic Error', () => {

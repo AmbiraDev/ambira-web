@@ -36,8 +36,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         images: group.imageUrl ? [group.imageUrl] : [],
       },
     };
-  } catch (error) {
-    console.error('Error generating metadata:', error);
+  } catch {
+    console.error('Error generating metadata');
     return {
       title: 'Join Group on Ambira',
       description: 'Join Ambira to track your productivity with friends',

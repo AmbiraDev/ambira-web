@@ -1,4 +1,9 @@
-import { useQuery, useMutation, useQueryClient, UseQueryOptions } from '@tanstack/react-query';
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  UseQueryOptions,
+} from '@tanstack/react-query';
 import { useAuth } from '@/hooks/useAuth';
 import {
   Activity,
@@ -54,7 +59,7 @@ export function useActivity(
   return useQuery({
     queryKey: ['activity', activityId],
     queryFn: () => {
-      const activity = activities?.find((a) => a.id === activityId);
+      const activity = activities?.find(a => a.id === activityId);
       return activity || null;
     },
     enabled: !!activities && !!activityId,
@@ -74,7 +79,7 @@ export function useActivityStats(
   const { user } = useAuth();
 
   return useQuery({
-    queryKey: ['activity', 'stats', activityId],
+    queryKey: ['activity', 'stats', activityId, user?.id],
     queryFn: async () => {
       if (!user?.id) {
         return {
@@ -93,7 +98,10 @@ export function useActivityStats(
         collection(db, 'sessions'),
         and(
           where('userId', '==', user.id),
-          or(where('activityId', '==', activityId), where('projectId', '==', activityId))
+          or(
+            where('activityId', '==', activityId),
+            where('projectId', '==', activityId)
+          )
         )
       );
       const snapshot = await getDocs(q);
@@ -106,10 +114,12 @@ export function useActivityStats(
       weekStart.setDate(now.getDate() - now.getDay());
       weekStart.setHours(0, 0, 0, 0);
 
-      snapshot.forEach((doc) => {
-        const data: any = doc.data();
+      snapshot.forEach(doc => {
+        const data: unknown = doc.data();
         const duration = safeNumber(data.duration, 0);
-        const start = data.startTime?.toDate ? data.startTime.toDate() : new Date(data.startTime);
+        const start = data.startTime?.toDate
+          ? data.startTime.toDate()
+          : new Date(data.startTime);
         totalSeconds += duration;
         sessionCount += 1;
         if (start >= weekStart) weeklySeconds += duration;
@@ -128,7 +138,8 @@ export function useActivityStats(
         currentStreak,
         weeklyProgressPercentage: 0,
         totalProgressPercentage: 0,
-        averageSessionDuration: sessionCount > 0 ? totalSeconds / sessionCount : 0,
+        averageSessionDuration:
+          sessionCount > 0 ? totalSeconds / sessionCount : 0,
       };
     },
     enabled: !!activityId && !!user,
@@ -146,10 +157,11 @@ export function useCreateActivity() {
   const queryKey = CACHE_KEYS.PROJECTS(user?.id || 'none');
 
   return useMutation({
-    mutationFn: (data: CreateActivityData) => firebaseActivityApi.createProject(data),
+    mutationFn: (data: CreateActivityData) =>
+      firebaseActivityApi.createProject(data),
 
     // Optimistic update
-    onMutate: async (newActivity) => {
+    onMutate: async newActivity => {
       // Cancel any outgoing refetches
       await queryClient.cancelQueries({ queryKey });
 
@@ -173,7 +185,10 @@ export function useCreateActivity() {
 
       // Add to cache optimistically
       if (previousActivities) {
-        queryClient.setQueryData<Activity[]>(queryKey, [...previousActivities, tempActivity]);
+        queryClient.setQueryData<Activity[]>(queryKey, [
+          ...previousActivities,
+          tempActivity,
+        ]);
       }
 
       return { previousActivities, tempActivity };
@@ -188,7 +203,7 @@ export function useCreateActivity() {
       queryClient.setQueryData<Activity[]>(
         queryKey,
         previousActivities
-          .filter((a) => a.id !== tempActivity?.id)
+          .filter(a => a.id !== tempActivity?.id)
           .concat(newActivity)
       );
     },
@@ -230,7 +245,7 @@ export function useUpdateActivity() {
       if (previousActivities) {
         queryClient.setQueryData<Activity[]>(
           queryKey,
-          previousActivities.map((a) =>
+          previousActivities.map(a =>
             a.id === id ? { ...a, ...data, updatedAt: new Date() } : a
           )
         );
@@ -244,7 +259,9 @@ export function useUpdateActivity() {
       const previousActivities = context?.previousActivities || [];
       queryClient.setQueryData<Activity[]>(
         queryKey,
-        previousActivities.map((a) => (a.id === updatedActivity.id ? updatedActivity : a))
+        previousActivities.map(a =>
+          a.id === updatedActivity.id ? updatedActivity : a
+        )
       );
     },
 
@@ -271,10 +288,11 @@ export function useDeleteActivity() {
   const queryKey = CACHE_KEYS.PROJECTS(user?.id || 'none');
 
   return useMutation({
-    mutationFn: (activityId: string) => firebaseActivityApi.deleteProject(activityId),
+    mutationFn: (activityId: string) =>
+      firebaseActivityApi.deleteProject(activityId),
 
     // Optimistic update
-    onMutate: async (activityId) => {
+    onMutate: async activityId => {
       await queryClient.cancelQueries({ queryKey });
 
       const previousActivities = queryClient.getQueryData<Activity[]>(queryKey);
@@ -283,7 +301,7 @@ export function useDeleteActivity() {
       if (previousActivities) {
         queryClient.setQueryData<Activity[]>(
           queryKey,
-          previousActivities.filter((a) => a.id !== activityId)
+          previousActivities.filter(a => a.id !== activityId)
         );
       }
 
@@ -313,7 +331,10 @@ export function useArchiveActivity() {
 
   return useMutation({
     mutationFn: (activityId: string) =>
-      updateActivity.mutateAsync({ id: activityId, data: { status: 'archived' } }),
+      updateActivity.mutateAsync({
+        id: activityId,
+        data: { status: 'archived' },
+      }),
   });
 }
 
@@ -326,7 +347,10 @@ export function useRestoreActivity() {
 
   return useMutation({
     mutationFn: (activityId: string) =>
-      updateActivity.mutateAsync({ id: activityId, data: { status: 'active' } }),
+      updateActivity.mutateAsync({
+        id: activityId,
+        data: { status: 'active' },
+      }),
   });
 }
 

@@ -23,8 +23,8 @@ export class ChallengeService {
   async getChallenges(filters?: ChallengeFilters): Promise<Challenge[]> {
     try {
       return await firebaseApi.challenge.getChallenges(filters);
-    } catch (error) {
-      console.error('Error getting challenges:', error);
+    } catch (_err) {
+      console.error('Error getting challenges:', _err);
       return [];
     }
   }
@@ -35,8 +35,8 @@ export class ChallengeService {
   async getChallenge(challengeId: string): Promise<Challenge | null> {
     try {
       return await firebaseApi.challenge.getChallenge(challengeId);
-    } catch (error) {
-      console.error('Error getting challenge:', error);
+    } catch (_err) {
+      console.error('Error getting challenge:', _err);
       return null;
     }
   }
@@ -44,11 +44,13 @@ export class ChallengeService {
   /**
    * Get challenge leaderboard
    */
-  async getChallengeLeaderboard(challengeId: string): Promise<ChallengeLeaderboard | null> {
+  async getChallengeLeaderboard(
+    challengeId: string
+  ): Promise<ChallengeLeaderboard | null> {
     try {
       return await firebaseApi.challenge.getChallengeLeaderboard(challengeId);
-    } catch (error) {
-      console.error('Error getting challenge leaderboard:', error);
+    } catch (_err) {
+      console.error('Error getting challenge leaderboard:', _err);
       return null;
     }
   }
@@ -61,9 +63,12 @@ export class ChallengeService {
     userId: string
   ): Promise<ChallengeProgress | null> {
     try {
-      return await firebaseApi.challenge.getChallengeProgress(challengeId, userId);
-    } catch (error) {
-      console.error('Error getting challenge progress:', error);
+      return await firebaseApi.challenge.getChallengeProgress(
+        challengeId,
+        userId
+      );
+    } catch (_err) {
+      console.error('Error getting challenge progress:', _err);
       return null;
     }
   }
@@ -74,8 +79,8 @@ export class ChallengeService {
   async getChallengeStats(challengeId: string): Promise<ChallengeStats | null> {
     try {
       return await firebaseApi.challenge.getChallengeStats(challengeId);
-    } catch (error) {
-      console.error('Error getting challenge stats:', error);
+    } catch (_err) {
+      console.error('Error getting challenge stats:', _err);
       return null;
     }
   }

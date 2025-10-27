@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { TrendingUp, Award, Calendar } from 'lucide-react';
 import { ActivityChart } from './ActivityChart';
 
@@ -8,11 +8,9 @@ interface ComparativeAnalyticsProps {
   userId: string;
 }
 
-export const ComparativeAnalytics: React.FC<ComparativeAnalyticsProps> = ({
-  userId: _userId,
-}) => {
+export const ComparativeAnalytics: React.FC<ComparativeAnalyticsProps> = () => {
   // Project selection functionality not yet implemented
-  const [_selectedProjects, _setSelectedProjects] = useState<string[]>([]);
+  // userId parameter will be used when the feature is implemented
 
   // Mock data
   const mockData = {

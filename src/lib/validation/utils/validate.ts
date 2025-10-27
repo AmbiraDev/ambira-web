@@ -37,15 +37,14 @@ export class ValidationError extends Error {
  * // validated is now type-safe and guaranteed to match schema
  * ```
  */
-export function validateOrThrow<TSchema extends v.BaseSchema<unknown, unknown, v.BaseIssue<unknown>>>(
-  schema: TSchema,
-  data: unknown
-): v.InferOutput<TSchema> {
+export function validateOrThrow<
+  TSchema extends v.BaseSchema<unknown, unknown, v.BaseIssue<unknown>>,
+>(schema: TSchema, data: unknown): v.InferOutput<TSchema> {
   const result = v.safeParse(schema, data);
 
   if (!result.success) {
-    const issues = result.issues.map((issue) => ({
-      path: issue.path?.map((p) => String(p.key)).join('.'),
+    const issues = result.issues.map(issue => ({
+      path: issue.path?.map(p => String(p.key)).join('.'),
       message: issue.message,
     }));
 
@@ -72,7 +71,9 @@ export function validateOrThrow<TSchema extends v.BaseSchema<unknown, unknown, v
  * }
  * ```
  */
-export function validate<TSchema extends v.BaseSchema<unknown, unknown, v.BaseIssue<unknown>>>(
+export function validate<
+  TSchema extends v.BaseSchema<unknown, unknown, v.BaseIssue<unknown>>,
+>(
   schema: TSchema,
   data: unknown
 ):
@@ -87,8 +88,8 @@ export function validate<TSchema extends v.BaseSchema<unknown, unknown, v.BaseIs
   const result = v.safeParse(schema, data);
 
   if (!result.success) {
-    const errors = result.issues.map((issue) => ({
-      path: issue.path?.map((p) => String(p.key)).join('.'),
+    const errors = result.issues.map(issue => ({
+      path: issue.path?.map(p => String(p.key)).join('.'),
       message: issue.message,
     }));
 
@@ -114,7 +115,9 @@ export function validate<TSchema extends v.BaseSchema<unknown, unknown, v.BaseIs
  * // Result: { name: 'John', email: 'john@example.com' }
  * ```
  */
-export function stripUndefined<T extends Record<string, unknown>>(data: T): Partial<T> {
+export function stripUndefined<T extends Record<string, unknown>>(
+  data: T
+): Partial<T> {
   const result: Record<string, unknown> = {};
 
   for (const [key, value] of Object.entries(data)) {
@@ -150,7 +153,9 @@ export function stripUndefined<T extends Record<string, unknown>>(data: T): Part
  * );
  * ```
  */
-export function prepareForFirestore<T extends Record<string, unknown>>(data: T): Partial<T> {
+export function prepareForFirestore<T extends Record<string, unknown>>(
+  data: T
+): Partial<T> {
   return stripUndefined(data);
 }
 
@@ -164,7 +169,7 @@ export function prepareForFirestore<T extends Record<string, unknown>>(data: T):
  * ```typescript
  * try {
  *   validateOrThrow(schema, data);
- * } catch (error) {
+ * } catch (_error) {
  *   if (error instanceof ValidationError) {
  *     toast.error(formatValidationError(error));
  *   }
@@ -176,7 +181,9 @@ export function formatValidationError(error: ValidationError): string {
     return error.issues[0].message;
   }
 
-  return error.issues.map((issue) => `${issue.path ? `${issue.path}: ` : ''}${issue.message}`).join('\n');
+  return error.issues
+    .map(issue => `${issue.path ? `${issue.path}: ` : ''}${issue.message}`)
+    .join('\n');
 }
 
 /**

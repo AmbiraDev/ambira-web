@@ -27,22 +27,26 @@ import type { CacheKeyFactory } from './types';
  * // GROUPS_KEYS.details() => ['groups', 'detail']
  * // GROUPS_KEYS.detail('123') => ['groups', 'detail', '123']
  */
-export function createCacheKeyFactory<T extends Record<string, (...args: any[]) => any[]>>(
+export function createCacheKeyFactory<
+  T extends Record<string, (...args: never[]) => unknown[]>,
+>(
   featureName: string,
   keys: T
 ): CacheKeyFactory & T & { all: () => readonly [string] } {
   const all = () => [featureName] as const;
 
+  type FactoryType = CacheKeyFactory & T & { all: () => readonly [string] };
+
   const factory = Object.entries(keys).reduce(
     (acc, [key, fn]) => {
-      acc[key] = (...args: any[]) => {
+      acc[key] = (...args: Parameters<typeof fn>) => {
         const base = all();
         const suffix = fn(...args);
         return [...base, ...suffix] as const;
       };
       return acc;
     },
-    { all } as any
+    { all } as FactoryType
   );
 
   return factory;
@@ -63,7 +67,10 @@ export function createCacheKeyFactory<T extends Record<string, (...args: any[]) 
  * const invalidate = useInvalidateGroups();
  * invalidate(); // Invalidates all group queries
  */
-export function createInvalidator(queryClient: QueryClient, queryKey: readonly unknown[]) {
+export function createInvalidator(
+  queryClient: QueryClient,
+  queryKey: readonly unknown[]
+) {
   return () => {
     queryClient.invalidateQueries({ queryKey });
   };
@@ -131,13 +138,20 @@ export function prefetchQuery<TData>(
  *   });
  * }
  */
+interface OptimisticUpdateContext<TData> {
+  previousData: TData | undefined;
+  queryKey: readonly unknown[];
+}
+
 export function createOptimisticUpdate<TData, TVariables>(
   queryClient: QueryClient,
   getQueryKey: (variables: TVariables) => readonly unknown[],
   updater: (oldData: TData, variables: TVariables) => TData
 ) {
   return {
-    onMutate: async (variables: TVariables) => {
+    onMutate: async (
+      variables: TVariables
+    ): Promise<OptimisticUpdateContext<TData>> => {
       const queryKey = getQueryKey(variables);
 
       // Cancel outgoing queries
@@ -148,20 +162,27 @@ export function createOptimisticUpdate<TData, TVariables>(
 
       // Optimistically update
       if (previousData) {
-        queryClient.setQueryData<TData>(queryKey, updater(previousData, variables));
+        queryClient.setQueryData<TData>(
+          queryKey,
+          updater(previousData, variables)
+        );
       }
 
       return { previousData, queryKey };
     },
 
-    onError: (_error: Error, _variables: TVariables, context: any) => {
+    onError: (
+      _error: Error,
+      _variables: TVariables,
+      context: OptimisticUpdateContext<TData> | undefined
+    ) => {
       // Rollback on error
       if (context?.previousData && context?.queryKey) {
         queryClient.setQueryData(context.queryKey, context.previousData);
       }
     },
 
-    onSettled: (_data: any, _error: any, variables: TVariables) => {
+    onSettled: (_data: unknown, _error: unknown, variables: TVariables) => {
       // Invalidate to refetch
       const queryKey = getQueryKey(variables);
       queryClient.invalidateQueries({ queryKey });
@@ -183,8 +204,11 @@ export function createOptimisticUpdate<TData, TVariables>(
  *   ]);
  * }
  */
-export function batchInvalidate(queryClient: QueryClient, queryKeys: readonly unknown[][]) {
-  queryKeys.forEach((queryKey) => {
+export function batchInvalidate(
+  queryClient: QueryClient,
+  queryKeys: readonly unknown[][]
+) {
+  queryKeys.forEach(queryKey => {
     queryClient.invalidateQueries({ queryKey });
   });
 }
@@ -200,7 +224,10 @@ export function batchInvalidate(queryClient: QueryClient, queryKeys: readonly un
  *   // Prefetch or show loading state
  * }
  */
-export function isCached(queryClient: QueryClient, queryKey: readonly unknown[]): boolean {
+export function isCached(
+  queryClient: QueryClient,
+  queryKey: readonly unknown[]
+): boolean {
   const state = queryClient.getQueryState(queryKey);
   return !!state && state.status === 'success' && !state.isInvalidated;
 }

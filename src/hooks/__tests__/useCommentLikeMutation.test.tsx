@@ -30,17 +30,14 @@ describe('useCommentLike', () => {
   });
 
   const wrapper = ({ children }: { children: React.ReactNode }) => (
-    <QueryClientProvider client={queryClient}>
-      {children}
-    </QueryClientProvider>
+    <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
   );
 
   describe('Like Comment', () => {
     it('should call likeComment API when action is "like"', async () => {
-      const { result } = renderHook(
-        () => useCommentLike(sessionId),
-        { wrapper }
-      );
+      const { result } = renderHook(() => useCommentLike(sessionId), {
+        wrapper,
+      });
 
       result.current.mutate({ commentId, action: 'like' });
 
@@ -71,19 +68,30 @@ describe('useCommentLike', () => {
 
       queryClient.setQueryData(COMMENT_KEYS.list(sessionId), initialComments);
 
-      const { result } = renderHook(
-        () => useCommentLike(sessionId),
-        { wrapper }
-      );
+      const { result } = renderHook(() => useCommentLike(sessionId), {
+        wrapper,
+      });
 
       // Mock successful API call
-      (firebaseApi.comment.likeComment as jest.Mock).mockResolvedValueOnce(undefined);
+      (firebaseApi.comment.likeComment as jest.Mock).mockResolvedValueOnce(
+        undefined
+      );
 
       result.current.mutate({ commentId, action: 'like' });
 
       // Check optimistic update
       await waitFor(() => {
-        const updatedData = queryClient.getQueryData(COMMENT_KEYS.list(sessionId)) as any;
+        const updatedData = queryClient.getQueryData(
+          COMMENT_KEYS.list(sessionId)
+        ) as {
+          comments: Array<{
+            id: string;
+            content: string;
+            likeCount: number;
+            isLiked: boolean;
+          }>;
+          hasMore: boolean;
+        };
         expect(updatedData.comments[0].isLiked).toBe(true);
         expect(updatedData.comments[0].likeCount).toBe(6);
         // Other comment should remain unchanged
@@ -95,12 +103,13 @@ describe('useCommentLike', () => {
     it('should invalidate comments query after successful like', async () => {
       const invalidateQueriesSpy = jest.spyOn(queryClient, 'invalidateQueries');
 
-      const { result } = renderHook(
-        () => useCommentLike(sessionId),
-        { wrapper }
-      );
+      const { result } = renderHook(() => useCommentLike(sessionId), {
+        wrapper,
+      });
 
-      (firebaseApi.comment.likeComment as jest.Mock).mockResolvedValueOnce(undefined);
+      (firebaseApi.comment.likeComment as jest.Mock).mockResolvedValueOnce(
+        undefined
+      );
 
       result.current.mutate({ commentId, action: 'like' });
 
@@ -114,15 +123,16 @@ describe('useCommentLike', () => {
 
   describe('Unlike Comment', () => {
     it('should call unlikeComment API when action is "unlike"', async () => {
-      const { result } = renderHook(
-        () => useCommentLike(sessionId),
-        { wrapper }
-      );
+      const { result } = renderHook(() => useCommentLike(sessionId), {
+        wrapper,
+      });
 
       result.current.mutate({ commentId, action: 'unlike' });
 
       await waitFor(() => {
-        expect(firebaseApi.comment.unlikeComment).toHaveBeenCalledWith(commentId);
+        expect(firebaseApi.comment.unlikeComment).toHaveBeenCalledWith(
+          commentId
+        );
       });
     });
 
@@ -142,18 +152,29 @@ describe('useCommentLike', () => {
 
       queryClient.setQueryData(COMMENT_KEYS.list(sessionId), initialComments);
 
-      const { result } = renderHook(
-        () => useCommentLike(sessionId),
-        { wrapper }
-      );
+      const { result } = renderHook(() => useCommentLike(sessionId), {
+        wrapper,
+      });
 
-      (firebaseApi.comment.unlikeComment as jest.Mock).mockResolvedValueOnce(undefined);
+      (firebaseApi.comment.unlikeComment as jest.Mock).mockResolvedValueOnce(
+        undefined
+      );
 
       result.current.mutate({ commentId, action: 'unlike' });
 
       // Check optimistic update
       await waitFor(() => {
-        const updatedData = queryClient.getQueryData(COMMENT_KEYS.list(sessionId)) as any;
+        const updatedData = queryClient.getQueryData(
+          COMMENT_KEYS.list(sessionId)
+        ) as {
+          comments: Array<{
+            id: string;
+            content: string;
+            likeCount: number;
+            isLiked: boolean;
+          }>;
+          hasMore: boolean;
+        };
         expect(updatedData.comments[0].isLiked).toBe(false);
         expect(updatedData.comments[0].likeCount).toBe(5);
       });
@@ -175,17 +196,28 @@ describe('useCommentLike', () => {
 
       queryClient.setQueryData(COMMENT_KEYS.list(sessionId), initialComments);
 
-      const { result } = renderHook(
-        () => useCommentLike(sessionId),
-        { wrapper }
-      );
+      const { result } = renderHook(() => useCommentLike(sessionId), {
+        wrapper,
+      });
 
-      (firebaseApi.comment.unlikeComment as jest.Mock).mockResolvedValueOnce(undefined);
+      (firebaseApi.comment.unlikeComment as jest.Mock).mockResolvedValueOnce(
+        undefined
+      );
 
       result.current.mutate({ commentId, action: 'unlike' });
 
       await waitFor(() => {
-        const updatedData = queryClient.getQueryData(COMMENT_KEYS.list(sessionId)) as any;
+        const updatedData = queryClient.getQueryData(
+          COMMENT_KEYS.list(sessionId)
+        ) as {
+          comments: Array<{
+            id: string;
+            content: string;
+            likeCount: number;
+            isLiked: boolean;
+          }>;
+          hasMore: boolean;
+        };
         expect(updatedData.comments[0].likeCount).toBe(0);
         expect(updatedData.comments[0].likeCount).toBeGreaterThanOrEqual(0);
       });
@@ -208,10 +240,9 @@ describe('useCommentLike', () => {
 
       queryClient.setQueryData(COMMENT_KEYS.list(sessionId), initialComments);
 
-      const { result } = renderHook(
-        () => useCommentLike(sessionId),
-        { wrapper }
-      );
+      const { result } = renderHook(() => useCommentLike(sessionId), {
+        wrapper,
+      });
 
       // Mock failed API call
       (firebaseApi.comment.likeComment as jest.Mock).mockRejectedValueOnce(
@@ -226,18 +257,29 @@ describe('useCommentLike', () => {
       });
 
       // Data should be rolled back to original state
-      const finalData = queryClient.getQueryData(COMMENT_KEYS.list(sessionId)) as any;
+      const finalData = queryClient.getQueryData(
+        COMMENT_KEYS.list(sessionId)
+      ) as {
+        comments: Array<{
+          id: string;
+          content: string;
+          likeCount: number;
+          isLiked: boolean;
+        }>;
+        hasMore: boolean;
+      };
       expect(finalData.comments[0].isLiked).toBe(false);
       expect(finalData.comments[0].likeCount).toBe(5);
     });
 
     it('should handle missing comments data gracefully', async () => {
-      const { result } = renderHook(
-        () => useCommentLike(sessionId),
-        { wrapper }
-      );
+      const { result } = renderHook(() => useCommentLike(sessionId), {
+        wrapper,
+      });
 
-      (firebaseApi.comment.likeComment as jest.Mock).mockResolvedValueOnce(undefined);
+      (firebaseApi.comment.likeComment as jest.Mock).mockResolvedValueOnce(
+        undefined
+      );
 
       // Should not throw error when no initial data
       expect(() => {
@@ -266,18 +308,29 @@ describe('useCommentLike', () => {
 
       queryClient.setQueryData(COMMENT_KEYS.list(sessionId), initialComments);
 
-      const { result } = renderHook(
-        () => useCommentLike(sessionId),
-        { wrapper }
-      );
+      const { result } = renderHook(() => useCommentLike(sessionId), {
+        wrapper,
+      });
 
-      (firebaseApi.comment.likeComment as jest.Mock).mockResolvedValue(undefined);
-      (firebaseApi.comment.unlikeComment as jest.Mock).mockResolvedValue(undefined);
+      (firebaseApi.comment.likeComment as jest.Mock).mockResolvedValue(
+        undefined
+      );
+      (firebaseApi.comment.unlikeComment as jest.Mock).mockResolvedValue(
+        undefined
+      );
 
       // Like
       result.current.mutate({ commentId, action: 'like' });
       await waitFor(() => {
-        const data = queryClient.getQueryData(COMMENT_KEYS.list(sessionId)) as any;
+        const data = queryClient.getQueryData(COMMENT_KEYS.list(sessionId)) as {
+          comments: Array<{
+            id: string;
+            content: string;
+            likeCount: number;
+            isLiked: boolean;
+          }>;
+          hasMore: boolean;
+        };
         expect(data.comments[0].isLiked).toBe(true);
         expect(data.comments[0].likeCount).toBe(6);
       });
@@ -285,7 +338,15 @@ describe('useCommentLike', () => {
       // Unlike
       result.current.mutate({ commentId, action: 'unlike' });
       await waitFor(() => {
-        const data = queryClient.getQueryData(COMMENT_KEYS.list(sessionId)) as any;
+        const data = queryClient.getQueryData(COMMENT_KEYS.list(sessionId)) as {
+          comments: Array<{
+            id: string;
+            content: string;
+            likeCount: number;
+            isLiked: boolean;
+          }>;
+          hasMore: boolean;
+        };
         expect(data.comments[0].isLiked).toBe(false);
         expect(data.comments[0].likeCount).toBe(5);
       });
@@ -312,18 +373,27 @@ describe('useCommentLike', () => {
 
       queryClient.setQueryData(COMMENT_KEYS.list(sessionId), initialComments);
 
-      const { result } = renderHook(
-        () => useCommentLike(sessionId),
-        { wrapper }
-      );
+      const { result } = renderHook(() => useCommentLike(sessionId), {
+        wrapper,
+      });
 
-      (firebaseApi.comment.likeComment as jest.Mock).mockResolvedValue(undefined);
+      (firebaseApi.comment.likeComment as jest.Mock).mockResolvedValue(
+        undefined
+      );
 
       // Like first comment
       result.current.mutate({ commentId: 'comment-1', action: 'like' });
 
       await waitFor(() => {
-        const data = queryClient.getQueryData(COMMENT_KEYS.list(sessionId)) as any;
+        const data = queryClient.getQueryData(COMMENT_KEYS.list(sessionId)) as {
+          comments: Array<{
+            id: string;
+            content: string;
+            likeCount: number;
+            isLiked: boolean;
+          }>;
+          hasMore: boolean;
+        };
         expect(data.comments[0].isLiked).toBe(true);
         expect(data.comments[0].likeCount).toBe(6);
         // Second comment should be unchanged
@@ -337,12 +407,13 @@ describe('useCommentLike', () => {
     it('should cancel ongoing queries before mutation', async () => {
       const cancelQueriesSpy = jest.spyOn(queryClient, 'cancelQueries');
 
-      const { result } = renderHook(
-        () => useCommentLike(sessionId),
-        { wrapper }
-      );
+      const { result } = renderHook(() => useCommentLike(sessionId), {
+        wrapper,
+      });
 
-      (firebaseApi.comment.likeComment as jest.Mock).mockResolvedValueOnce(undefined);
+      (firebaseApi.comment.likeComment as jest.Mock).mockResolvedValueOnce(
+        undefined
+      );
 
       result.current.mutate({ commentId, action: 'like' });
 

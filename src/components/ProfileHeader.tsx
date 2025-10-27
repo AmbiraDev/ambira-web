@@ -64,8 +64,8 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
         };
         onProfileUpdate(updatedProfile);
       }
-    } catch (error) {
-      console.error('Follow/unfollow error:', error);
+    } catch (_error) {
+      console.error('Follow/unfollow error');
       toast.error('Failed to update follow status');
     } finally {
       setIsLoading(false);

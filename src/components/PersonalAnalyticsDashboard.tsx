@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Clock,
   Target,
@@ -12,7 +12,6 @@ import {
 import { StatsCard } from './StatsCard';
 import { ActivityChart } from './ActivityChart';
 import { HeatmapCalendar } from './HeatmapCalendar';
-import { StreakDisplay } from './StreakDisplay';
 import { AnalyticsPeriod, Session } from '@/types';
 import { firebaseSessionApi } from '@/lib/api';
 
@@ -39,14 +38,10 @@ export const PersonalAnalyticsDashboard: React.FC<
   const [isLoading, setIsLoading] = useState(true);
   const [sessions, setSessions] = useState<Session[]>([]);
 
-  useEffect(() => {
-    loadSessions();
-  }, [selectedPeriod, userId, projectId]);
-
-  const loadSessions = async () => {
+  const loadSessions = useCallback(async () => {
     try {
       setIsLoading(true);
-      const filters: any = {};
+      const filters: unknown = {};
       if (projectId) {
         filters.projectId = projectId;
       }
@@ -67,12 +62,16 @@ export const PersonalAnalyticsDashboard: React.FC<
       );
 
       setSessions(filteredSessions);
-    } catch (error) {
-      console.error('Failed to load sessions:', error);
+    } catch (_error) {
+      console.error('Failed to load sessions');
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [selectedPeriod, userId, projectId]);
+
+  useEffect(() => {
+    loadSessions();
+  }, [loadSessions]);
 
   const calculateAnalytics = () => {
     // Calculate total hours

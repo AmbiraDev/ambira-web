@@ -31,6 +31,7 @@ interface ChallengeDetailProps {
   onJoin: () => Promise<void>;
   onLeave: () => Promise<void>;
   onEdit?: () => void;
+  onDelete?: () => void;
   isLoading: boolean;
 }
 
@@ -72,6 +73,7 @@ export default function ChallengeDetail({
   onJoin,
   onLeave,
   onEdit,
+  onDelete: _onDelete,
   isLoading,
 }: ChallengeDetailProps) {
   const [activeSection, setActiveSection] = useState<

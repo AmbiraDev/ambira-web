@@ -109,8 +109,8 @@ export function useTimer(): UseTimerReturn {
             pausedDuration: 0,
             isPaused: false,
           });
-        } catch (error) {
-          console.error('Auto-save failed:', error);
+        } catch (_err) {
+          console.error('Auto-save failed:', _err);
         }
       }
     },

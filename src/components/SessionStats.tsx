@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Session, Project } from '@/types';
 
 interface SessionStatsProps {
@@ -14,8 +14,6 @@ export const SessionStats: React.FC<SessionStatsProps> = ({
   project,
   className = '',
 }) => {
-  const [_showAllTasks, _setShowAllTasks] = useState(false);
-
   const formatDuration = (seconds: number): string => {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
@@ -25,10 +23,6 @@ export const SessionStats: React.FC<SessionStatsProps> = ({
     }
     return `${minutes}m`;
   };
-
-  // Task tracking not implemented at session level
-  const _completedTasks: any[] = [];
-  const _totalTasks = 0;
 
   return (
     <div

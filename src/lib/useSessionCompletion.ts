@@ -9,8 +9,7 @@ export const useSessionCompletion = () => {
   const queryClient = useQueryClient();
 
   const completeSession = async (
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    sessionData: any,
+    sessionData: unknown,
     userId: string
   ): Promise<{ session: Session; achievements: Achievement[] }> => {
     setIsProcessing(true);
@@ -45,7 +44,7 @@ export const useSessionCompletion = () => {
       queryClient.invalidateQueries({ queryKey: ['sessions', 'feed'] });
 
       return { session, achievements };
-    } catch (error) {
+    } catch (_error) {
       console.error('Failed to complete session:', error);
       throw error;
     } finally {

@@ -3,7 +3,11 @@
  */
 
 import { validate } from '../utils/validate';
-import { CreateSessionSchema, UpdateSessionSchema, SessionFormSchema } from '../schemas/session.schemas';
+import {
+  CreateSessionSchema,
+  UpdateSessionSchema,
+  SessionFormSchema,
+} from '../schemas/session.schemas';
 
 describe('Session Schemas', () => {
   describe('CreateSessionSchema', () => {
@@ -50,7 +54,7 @@ describe('Session Schemas', () => {
 
       expect(result.success).toBe(false);
       if (!result.success) {
-        const paths = result.errors.map((e) => e.path);
+        const paths = result.errors.map(e => e.path);
         expect(paths).toContain('activityId');
         expect(paths).toContain('startTime');
       }
@@ -79,7 +83,7 @@ describe('Session Schemas', () => {
         { duration: 90000 }, // Too long (> 24 hours)
       ];
 
-      inputs.forEach((durationInput) => {
+      inputs.forEach(durationInput => {
         const input = {
           activityId: '550e8400-e29b-41d4-a716-446655440000',
           title: 'Test',
@@ -118,7 +122,7 @@ describe('Session Schemas', () => {
         title: 'Test',
         duration: 3600,
         startTime: new Date(),
-        visibility: 'invalid' as any,
+        visibility: 'invalid' as unknown as typeof input.visibility,
       };
 
       const result = validate(CreateSessionSchema, input);
@@ -132,7 +136,7 @@ describe('Session Schemas', () => {
     it('should fail for invalid howFelt rating', () => {
       const inputs = [{ howFelt: 0 }, { howFelt: 6 }, { howFelt: -1 }];
 
-      inputs.forEach((ratingInput) => {
+      inputs.forEach(ratingInput => {
         const input = {
           activityId: '550e8400-e29b-41d4-a716-446655440000',
           title: 'Test',

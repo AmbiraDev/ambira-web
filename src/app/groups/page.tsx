@@ -94,7 +94,7 @@ export default function GroupsPage() {
         return matchesName && matchesLocation && matchesCategory;
       })
       .slice(0, SEARCH_RESULTS_LIMIT);
-  }, [allPublicGroups, searchFilters]);
+  }, [allPublicGroups, searchFilters, hasActiveFilters]);
 
   // Update search results when filtered results change
   useEffect(() => {
@@ -108,7 +108,7 @@ export default function GroupsPage() {
         setSearchStatus('No groups found');
       }
     }
-  }, [filteredSearchResults, hasSearched]);
+  }, [filteredSearchResults, hasSearched, setSearchResults, setSearchStatus]);
 
   /**
    * Executes a group search based on current filter criteria.
@@ -132,8 +132,8 @@ export default function GroupsPage() {
       } else {
         setSearchStatus('No groups found');
       }
-    } catch (error) {
-      console.error('Error searching groups:', error);
+    } catch {
+      console.error('Error searching groups');
       setSearchStatus('Error searching groups. Please try again.');
     } finally {
       setIsSearching(false);
@@ -204,8 +204,8 @@ export default function GroupsPage() {
     try {
       await joinGroupMutation.mutateAsync({ groupId, userId: user.id });
       // Automatic cache invalidation handled by mutation
-    } catch (error) {
-      console.error('Failed to join group:', error);
+    } catch (_err) {
+      console.error('Failed to join group:', err);
     }
   };
 

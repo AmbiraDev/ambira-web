@@ -18,7 +18,12 @@ import {
   Query,
 } from 'firebase/firestore';
 import { db } from './firebase';
-import { cachedQuery, invalidateCache, MemoryCache, QueryDeduplicator } from './cache';
+import {
+  cachedQuery,
+  invalidateCache,
+  MemoryCache,
+  QueryDeduplicator,
+} from './cache';
 import { CACHE_TIMES } from '@/config/constants';
 
 // ==================== CACHED DOCUMENT READS ====================
@@ -37,16 +42,12 @@ export async function getCachedDoc(
 ): Promise<DocumentSnapshot> {
   const cacheKey = `doc:${docRef.path}`;
 
-  return cachedQuery(
-    cacheKey,
-    () => getDoc(docRef),
-    {
-      memoryTtl: options.memoryTtl ?? CACHE_TIMES.MEDIUM, // 5 minutes
-      sessionCache: options.sessionCache ?? true,
-      localTtl: options.localTtl ?? 0,
-      dedupe: options.dedupe ?? true,
-    }
-  );
+  return cachedQuery(cacheKey, () => getDoc(docRef), {
+    memoryTtl: options.memoryTtl ?? CACHE_TIMES.MEDIUM, // 5 minutes
+    sessionCache: options.sessionCache ?? true,
+    localTtl: options.localTtl ?? 0,
+    dedupe: options.dedupe ?? true,
+  });
 }
 
 /**
@@ -120,16 +121,12 @@ export async function getCachedQuery<T>(
     dedupe?: boolean;
   } = {}
 ): Promise<QuerySnapshot<T>> {
-  return cachedQuery(
-    `query:${cacheKey}`,
-    () => getDocs(query),
-    {
-      memoryTtl: options.memoryTtl ?? CACHE_TIMES.SHORT, // 1 minute default for queries
-      sessionCache: options.sessionCache ?? false,
-      localTtl: options.localTtl ?? 0,
-      dedupe: options.dedupe ?? true,
-    }
-  );
+  return cachedQuery(`query:${cacheKey}`, () => getDocs(query), {
+    memoryTtl: options.memoryTtl ?? CACHE_TIMES.SHORT, // 1 minute default for queries
+    sessionCache: options.sessionCache ?? false,
+    localTtl: options.localTtl ?? 0,
+    dedupe: options.dedupe ?? true,
+  });
 }
 
 // ==================== BATCH WRITES ====================
@@ -145,7 +142,7 @@ export async function batchWrite(
   }>
 ): Promise<void> {
   const BATCH_SIZE = 500;
-  const batches: typeof operations[] = [];
+  const batches: (typeof operations)[] = [];
 
   // Split into chunks of 500
   for (let i = 0; i < operations.length; i += BATCH_SIZE) {
@@ -225,10 +222,14 @@ export class OptimisticUpdateManager {
 /**
  * Prefetch documents in the background to warm the cache
  */
-export async function prefetchDocs(docRefs: DocumentReference[]): Promise<void> {
+export async function prefetchDocs(
+  docRefs: DocumentReference[]
+): Promise<void> {
   // Use low priority to not interfere with user actions
   if ('requestIdleCallback' in window) {
-    (window as Window & { requestIdleCallback: (callback: () => void) => void }).requestIdleCallback(() => {
+    (
+      window as Window & { requestIdleCallback: (callback: () => void) => void }
+    ).requestIdleCallback(() => {
       getCachedDocs(docRefs, { memoryTtl: CACHE_TIMES.LONG });
     });
   } else {
@@ -246,7 +247,9 @@ export async function prefetchQuery<T>(
   cacheKey: string
 ): Promise<void> {
   if ('requestIdleCallback' in window) {
-    (window as Window & { requestIdleCallback: (callback: () => void) => void }).requestIdleCallback(() => {
+    (
+      window as Window & { requestIdleCallback: (callback: () => void) => void }
+    ).requestIdleCallback(() => {
       getCachedQuery(query, cacheKey, { memoryTtl: CACHE_TIMES.LONG });
     });
   } else {
@@ -293,15 +296,15 @@ export class PaginationCache<T> {
 
   constructor(private pageSize: number = 20) {}
 
-  setPage(cursor: string, items: T[]): void {
+  setPage(_cursor: string, items: T[]): void {
     this.pages.set(cursor, items);
   }
 
-  getPage(cursor: string): T[] | null {
+  getPage(_cursor: string): T[] | null {
     return this.pages.get(cursor) ?? null;
   }
 
-  setCursor(page: string, cursor: unknown): void {
+  setCursor(page: string, _cursor: unknown): void {
     this.cursors.set(page, cursor);
   }
 

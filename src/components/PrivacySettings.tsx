@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { PrivacySettings as PrivacySettingsType, UserProfile } from '@/types';
 import { firebaseUserApi } from '@/lib/api';
-import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import {
   SettingsSection,
@@ -15,9 +15,6 @@ import {
 } from '@/components/ui/settings-section';
 import {
   Shield,
-  Globe as _Globe,
-  Users as _Users,
-  Lock as _Lock,
   Eye,
   UserX,
   Check,
@@ -56,22 +53,11 @@ export const PrivacySettings: React.FC<PrivacySettingsProps> = ({
       // Currently uses firebaseUserApi.getPrivacySettings() - verify implementation status
       const settings = await firebaseUserApi.getPrivacySettings();
       setSettings(settings);
-    } catch (error) {
-      console.error('Failed to load privacy settings:', error);
+    } catch (_error) {
+      console.error('Failed to load privacy settings');
       toast.error('Failed to load privacy settings');
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const _loadBlockedUsers = async (): Promise<UserProfile[]> => {
-    try {
-      // This would be a new API endpoint to get blocked users
-      // For now, return empty array
-      return [];
-    } catch (error) {
-      console.error('Failed to load blocked users:', error);
-      return [];
     }
   };
 
@@ -87,8 +73,8 @@ export const PrivacySettings: React.FC<PrivacySettingsProps> = ({
       setIsSaving(true);
       await firebaseUserApi.updatePrivacySettings(settings);
       toast.success('Privacy settings updated successfully');
-    } catch (error) {
-      console.error('Failed to save privacy settings:', error);
+    } catch (_error) {
+      console.error('Failed to save privacy settings');
       toast.error('Failed to save privacy settings');
     } finally {
       setIsSaving(false);
@@ -105,49 +91,10 @@ export const PrivacySettings: React.FC<PrivacySettingsProps> = ({
         blockedUsers: prev.blockedUsers.filter(id => id !== userId),
       }));
       toast.success('User unblocked successfully');
-    } catch (error) {
-      console.error('Failed to unblock user:', error);
+    } catch (_error) {
+      console.error('Failed to unblock user');
       toast.error('Failed to unblock user');
     }
-  };
-
-  const _getVisibilityIcon = (visibility: string) => {
-    switch (visibility) {
-      case 'everyone':
-        return <Globe className="w-4 h-4" />;
-      case 'followers':
-        return <Users className="w-4 h-4" />;
-      case 'private':
-        return <Lock className="w-4 h-4" />;
-      default:
-        return <Eye className="w-4 h-4" />;
-    }
-  };
-
-  const _getVisibilityDescription = (visibility: string, type: string) => {
-    const descriptions = {
-      profileVisibility: {
-        everyone: 'Anyone can view your profile and basic information',
-        followers: 'Only people you follow back can view your profile',
-        private: 'Only you can view your profile',
-      },
-      activityVisibility: {
-        everyone: 'Your activity is visible to everyone',
-        followers: 'Your activity is only visible to your followers',
-        private: 'Your activity is private',
-      },
-      projectVisibility: {
-        everyone: 'Your projects are visible to everyone',
-        followers: 'Your projects are only visible to your followers',
-        private: 'Your projects are private',
-      },
-    };
-
-    return (
-      descriptions[type as keyof typeof descriptions]?.[
-        visibility as keyof typeof descriptions.profileVisibility
-      ] || ''
-    );
   };
 
   if (isLoading) {
@@ -291,9 +238,11 @@ export const PrivacySettings: React.FC<PrivacySettingsProps> = ({
                 >
                   <div className="flex items-center gap-3">
                     {blockedUser.profilePicture ? (
-                      <img
+                      <Image
                         src={blockedUser.profilePicture}
                         alt={`${blockedUser.name}'s profile picture`}
+                        width={40}
+                        height={40}
                         className="w-10 h-10 rounded-full object-cover border border-gray-200"
                       />
                     ) : (

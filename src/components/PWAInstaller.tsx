@@ -8,8 +8,8 @@ export default function PWAInstaller() {
       window.addEventListener('load', () => {
         navigator.serviceWorker
           .register('/sw.js')
-          .then(_registration => {})
-          .catch(_error => {});
+          .then(() => {})
+          .catch(() => {});
       });
     }
   }, []);

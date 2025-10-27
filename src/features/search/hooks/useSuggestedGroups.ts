@@ -56,6 +56,12 @@ export function useSuggestedGroups({
   });
 
   const joinedGroupIds = new Set(userGroups.map(g => g.id));
+  const queryKey = [
+    ...CACHE_KEYS.SUGGESTED_GROUPS(),
+    userId,
+    limit,
+    joinedGroupIds.size,
+  ] as const;
 
   const {
     data,
@@ -63,7 +69,7 @@ export function useSuggestedGroups({
     isError,
     error,
   } = useQuery({
-    queryKey: [...CACHE_KEYS.SUGGESTED_GROUPS(), userId],
+    queryKey,
     queryFn: async () => {
       // Fetch all groups ordered by popularity
       const allGroupsSnapshot = await getDocs(

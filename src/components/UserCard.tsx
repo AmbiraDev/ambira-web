@@ -52,8 +52,8 @@ export const UserCard: React.FC<UserCardProps> = ({
         await firebaseUserApi.followUser(user.id);
         toast.success(`Following ${user.name}`);
       }
-    } catch (error) {
-      console.error('Follow/unfollow error:', error);
+    } catch {
+      console.error('Follow/unfollow error');
       // Revert on error
       setIsFollowing(!newFollowingState);
       onFollowChange?.(user.id, !newFollowingState);
@@ -275,8 +275,8 @@ export const UserCardCompact: React.FC<UserCardProps> = ({
         await firebaseUserApi.followUser(user.id);
         toast.success(`Following ${user.name}`);
       }
-    } catch (error) {
-      console.error('Follow/unfollow error:', error);
+    } catch {
+      console.error('Follow/unfollow error');
       // Revert on error
       setIsFollowing(!newFollowingState);
       onFollowChange?.(user.id, !newFollowingState);

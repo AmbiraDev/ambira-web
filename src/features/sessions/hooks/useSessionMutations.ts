@@ -8,26 +8,45 @@ import {
   useMutation,
   useQueryClient,
   UseMutationOptions,
+  QueryKey,
 } from '@tanstack/react-query';
 import { SessionService, SupportSessionData } from '../services/SessionService';
 import { SESSION_KEYS } from './useSessions';
-import { Session } from '@/types';
+import { Session, SessionWithDetails } from '@/types';
 
 const sessionService = new SessionService();
 
+// Feed data structures from React Query cache
+interface FeedArrayData {
+  sessions?: SessionWithDetails[];
+  hasMore?: boolean;
+  nextCursor?: string;
+}
+
+interface FeedInfiniteData {
+  pages: Array<{
+    sessions: SessionWithDetails[];
+    hasMore: boolean;
+    nextCursor?: string;
+  }>;
+  pageParams: unknown[];
+}
+
+type FeedData = SessionWithDetails[] | FeedArrayData | FeedInfiniteData;
+
 // Context types for optimistic updates
 interface DeleteSessionContext {
-  previousFeedData: [any, any][];
-  previousSession: unknown;
+  previousFeedData: [QueryKey, unknown][];
+  previousSession: Session | undefined;
 }
 
 interface SupportSessionContext {
-  previousFeedData: [any, any][];
-  previousSession: unknown;
+  previousFeedData: [QueryKey, unknown][];
+  previousSession: Session | undefined;
 }
 
 interface UpdateSessionContext {
-  previousSession: unknown;
+  previousSession: Session | undefined;
 }
 
 /**
@@ -63,23 +82,23 @@ export function useDeleteSession(
       );
 
       // Optimistically remove from feed
-      queryClient.setQueriesData<any>({ queryKey: ['feed'] }, (old: any) => {
+      queryClient.setQueriesData<FeedData>({ queryKey: ['feed'] }, old => {
         if (!old) return old;
 
         if (Array.isArray(old)) {
-          return old.filter((s: any) => s.id !== sessionId);
-        } else if (old.sessions) {
+          return old.filter(s => s.id !== sessionId);
+        } else if ('sessions' in old && old.sessions) {
           return {
             ...old,
-            sessions: old.sessions.filter((s: any) => s.id !== sessionId),
+            sessions: old.sessions.filter(s => s.id !== sessionId),
           };
-        } else if (old.pages) {
+        } else if ('pages' in old && old.pages) {
           // Handle infinite query
           return {
             ...old,
-            pages: old.pages.map((page: any) => ({
+            pages: old.pages.map(page => ({
               ...page,
-              sessions: page.sessions.filter((s: any) => s.id !== sessionId),
+              sessions: page.sessions.filter(s => s.id !== sessionId),
             })),
           };
         }
@@ -93,7 +112,7 @@ export function useDeleteSession(
     onError: (error, sessionId, context: DeleteSessionContext | undefined) => {
       // Rollback
       if (context?.previousFeedData) {
-        context.previousFeedData.forEach(([queryKey, data]: [any, any]) => {
+        context.previousFeedData.forEach(([queryKey, data]) => {
           queryClient.setQueryData(queryKey, data);
         });
       }
@@ -162,17 +181,21 @@ export function useSupportSession(
       const increment = action === 'support' ? 1 : -1;
 
       // Optimistically update feed sessions
-      queryClient.setQueriesData<any>({ queryKey: ['feed'] }, (old: any) => {
+      queryClient.setQueriesData<FeedData>({ queryKey: ['feed'] }, old => {
         if (!old) return old;
 
-        const updateSession = (session: any) => {
+        const updateSession = (
+          session: SessionWithDetails
+        ): SessionWithDetails => {
           if (session.id !== sessionId) return session;
 
           const supportedBy = session.supportedBy || [];
           const newSupportedBy =
             action === 'support'
-              ? [...supportedBy, currentUserId].filter(Boolean)
-              : supportedBy.filter((id: string) => id !== currentUserId);
+              ? [...supportedBy, currentUserId].filter((id): id is string =>
+                  Boolean(id)
+                )
+              : supportedBy.filter(id => id !== currentUserId);
 
           return {
             ...session,
@@ -184,16 +207,16 @@ export function useSupportSession(
 
         if (Array.isArray(old)) {
           return old.map(updateSession);
-        } else if (old.sessions) {
+        } else if ('sessions' in old && old.sessions) {
           return {
             ...old,
             sessions: old.sessions.map(updateSession),
           };
-        } else if (old.pages) {
+        } else if ('pages' in old && old.pages) {
           // Handle infinite query
           return {
             ...old,
-            pages: old.pages.map((page: any) => ({
+            pages: old.pages.map(page => ({
               ...page,
               sessions: page.sessions.map(updateSession),
             })),
@@ -206,14 +229,16 @@ export function useSupportSession(
       // Optimistically update single session
       queryClient.setQueryData<Session | null>(
         SESSION_KEYS.detail(sessionId),
-        (old: any) => {
+        old => {
           if (!old) return old;
 
           const supportedBy = old.supportedBy || [];
           const newSupportedBy =
             action === 'support'
-              ? [...supportedBy, currentUserId].filter(Boolean)
-              : supportedBy.filter((id: string) => id !== currentUserId);
+              ? [...supportedBy, currentUserId].filter((id): id is string =>
+                  Boolean(id)
+                )
+              : supportedBy.filter(id => id !== currentUserId);
 
           return {
             ...old,
@@ -234,7 +259,7 @@ export function useSupportSession(
     ) => {
       // Rollback
       if (context?.previousFeedData) {
-        context.previousFeedData.forEach(([queryKey, data]: [any, any]) => {
+        context.previousFeedData.forEach(([queryKey, data]) => {
           queryClient.setQueryData(queryKey, data);
         });
       }
@@ -301,7 +326,7 @@ export function useUpdateSession(
       // Optimistically update
       queryClient.setQueryData<Session | null>(
         SESSION_KEYS.detail(sessionId),
-        (old: any) => {
+        old => {
           if (!old) return old;
           return { ...old, ...data };
         }

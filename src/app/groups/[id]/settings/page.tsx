@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import Header from '@/components/HeaderComponent';
@@ -40,13 +40,7 @@ export default function GroupSettingsPage() {
   const [groupImages, setGroupImages] = useState<File[]>([]);
   const [groupImagePreviews, setGroupImagePreviews] = useState<string[]>([]);
 
-  useEffect(() => {
-    if (groupId && user) {
-      loadGroup();
-    }
-  }, [groupId, user]);
-
-  const loadGroup = async () => {
+  const loadGroup = useCallback(async () => {
     try {
       setIsLoading(true);
       const groupData = await firebaseApi.group.getGroup(groupId);
@@ -77,13 +71,19 @@ export default function GroupSettingsPage() {
       if (groupData.imageUrl) {
         setGroupImagePreviews([groupData.imageUrl]);
       }
-    } catch (error) {
-      console.error('Error loading group:', error);
+    } catch {
+      console.error('Error loading group');
       setError('Failed to load group');
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [groupId, user, router]);
+
+  useEffect(() => {
+    if (groupId && user) {
+      loadGroup();
+    }
+  }, [groupId, user, loadGroup]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -127,7 +127,7 @@ export default function GroupSettingsPage() {
 
       await firebaseApi.group.updateGroup(groupId, updateData);
       router.push(`/groups/${groupId}`);
-    } catch (error) {
+    } catch (_error) {
       console.error('Error updating group:', error);
       setError('Failed to update group. Please try again.');
       setIsSaving(false);

@@ -14,7 +14,7 @@ interface StreakDisplayProps {
 export const StreakDisplay: React.FC<StreakDisplayProps> = ({
   userId,
   size = 'medium',
-  showLabel = true
+  showLabel = true,
 }) => {
   const [streakStats, setStreakStats] = useState<StreakStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -24,8 +24,8 @@ export const StreakDisplay: React.FC<StreakDisplayProps> = ({
       try {
         const stats = await firebaseApi.streak.getStreakStats(userId);
         setStreakStats(stats);
-      } catch (error) {
-        console.error('Failed to load streak:', error);
+      } catch {
+        console.error('Failed to load streak');
       } finally {
         setIsLoading(false);
       }
@@ -48,13 +48,13 @@ export const StreakDisplay: React.FC<StreakDisplayProps> = ({
   const sizeClasses = {
     small: 'text-lg',
     medium: 'text-2xl',
-    large: 'text-4xl'
+    large: 'text-4xl',
   };
 
   const iconSizeClasses = {
     small: 'w-5 h-5',
     medium: 'w-8 h-8',
-    large: 'w-12 h-12'
+    large: 'w-12 h-12',
   };
 
   const getFlameColor = () => {

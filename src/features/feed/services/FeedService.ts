@@ -5,7 +5,6 @@
  * Coordinates between repositories to build different feed types.
  */
 
-import { Session } from '@/domain/entities/Session';
 import {
   FeedRepository,
   FeedResult,
@@ -120,7 +119,7 @@ export class FeedService {
   private async getUserFeed(
     userId: string,
     limit: number,
-    cursor?: string
+    _cursor?: string
   ): Promise<FeedResult> {
     // Use SessionRepository's findByUserId method
     const sessions = await this.sessionRepo.findByUserId(userId, limit);
@@ -143,7 +142,7 @@ export class FeedService {
   private async getGroupFeed(
     groupId: string,
     limit: number,
-    cursor?: string
+    _cursor?: string
   ): Promise<FeedResult> {
     // Use SessionRepository's findByGroupId method
     const sessions = await this.sessionRepo.findByGroupId(groupId, limit);
@@ -164,7 +163,7 @@ export class FeedService {
   private async getGroupMembersUnfollowedFeed(
     currentUserId: string,
     limit: number,
-    cursor?: string
+    _cursor?: string
   ): Promise<FeedResult> {
     // Get all group member IDs
     const groupMemberIds =

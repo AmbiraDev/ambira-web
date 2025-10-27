@@ -21,11 +21,11 @@ export function parseLocalDateTime(
   const dateParts = dateString.split('-').map(Number);
   const timeParts = timeString.split(':').map(Number);
 
-  const year = dateParts[0] ?? 1970;
-  const month = dateParts[1] ?? 1;
-  const day = dateParts[2] ?? 1;
-  const hours = timeParts[0] ?? 0;
-  const minutes = timeParts[1] ?? 0;
+  const year = (dateParts[0] as number | undefined) ?? 1970;
+  const month = (dateParts[1] as number | undefined) ?? 1;
+  const day = (dateParts[2] as number | undefined) ?? 1;
+  const hours = (timeParts[0] as number | undefined) ?? 0;
+  const minutes = (timeParts[1] as number | undefined) ?? 0;
 
   // month is 0-indexed in JavaScript Date constructor
   return new Date(year, month - 1, day, hours, minutes, 0, 0);
@@ -45,7 +45,7 @@ export function parseLocalDateTime(
  * safeNumber(null, 10) // 10
  * safeNumber(Infinity, 0) // 0
  */
-export const safeNumber = (value: any, fallback: number = 0): number => {
+export const safeNumber = (value: unknown, fallback: number = 0): number => {
   const num = Number(value);
   return isNaN(num) || !isFinite(num) ? fallback : num;
 };
@@ -63,8 +63,8 @@ export const safeNumber = (value: any, fallback: number = 0): number => {
  * safeParseInt('12.9') // 12
  * safeParseInt('abc') // 0
  */
-export const safeParseInt = (value: any, fallback: number = 0): number => {
-  const num = parseInt(value, 10);
+export const safeParseInt = (value: unknown, fallback: number = 0): number => {
+  const num = parseInt(String(value), 10);
   return isNaN(num) ? fallback : num;
 };
 
@@ -81,8 +81,11 @@ export const safeParseInt = (value: any, fallback: number = 0): number => {
  * safeParseFloat('abc') // 0
  * safeParseFloat(null, 1.5) // 1.5
  */
-export const safeParseFloat = (value: any, fallback: number = 0): number => {
-  const num = parseFloat(value);
+export const safeParseFloat = (
+  value: unknown,
+  fallback: number = 0
+): number => {
+  const num = parseFloat(String(value));
   return isNaN(num) ? fallback : num;
 };
 

@@ -496,13 +496,12 @@ describe('Feed Page Keyboard Navigation', () => {
     it('should provide keyboard-accessible error recovery', async () => {
       const useFeedInfinite = (await import('@/features/feed/hooks'))
         .useFeedInfinite;
-      const _mockRefetch = jest.fn();
 
       useFeedInfinite.mockReturnValue({
         data: null,
         isLoading: false,
         error: new Error('Failed to load'),
-        refetch: _mockRefetch,
+        refetch: jest.fn(),
         isFetching: false,
         fetchNextPage: jest.fn(),
         hasNextPage: false,

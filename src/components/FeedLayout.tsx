@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { firebaseApi } from '@/lib/api';
-import { UserStats, SuggestedUser, FeedFilters } from '@/types';
+import { UserStats, FeedFilters } from '@/types';
 import Feed from './Feed';
 import SuggestedUsers from './SuggestedUsers';
 
@@ -18,7 +18,7 @@ export const FeedLayout: React.FC<FeedLayoutProps> = ({ className = '' }) => {
   const [userStats, setUserStats] = useState<UserStats | null>(null);
   const [isLoadingStats, setIsLoadingStats] = useState(true);
   const [feedType, setFeedType] = useState<FeedType>('recent');
-  const [filters, setFilters] = useState<FeedFilters>({ type: 'recent' });
+  const [filters] = useState<FeedFilters>({ type: 'recent' });
 
   // Load user stats and suggestions
   React.useEffect(() => {
@@ -30,8 +30,8 @@ export const FeedLayout: React.FC<FeedLayoutProps> = ({ className = '' }) => {
         await firebaseApi.user.getSuggestedUsers(5);
 
         setUserStats(stats);
-      } catch (error) {
-        console.error('Failed to load feed data:', error);
+      } catch (_err) {
+        console.error('Failed to load feed data:', err);
       } finally {
         setIsLoadingStats(false);
       }

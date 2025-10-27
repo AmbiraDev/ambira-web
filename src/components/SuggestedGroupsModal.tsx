@@ -1,11 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { X, Users, ChevronLeft, ChevronRight, MapPin } from 'lucide-react';
 import Link from 'next/link';
 import { firebaseApi } from '@/lib/api';
 import { useAuth } from '@/hooks/useAuth';
 import GroupAvatar from '@/components/GroupAvatar';
+import type { Group } from '@/types';
 
 interface SuggestedGroupsModalProps {
   isOpen: boolean;
@@ -13,23 +14,47 @@ interface SuggestedGroupsModalProps {
 }
 
 const GROUPS_PER_PAGE = 10;
-const _TOTAL_GROUPS_TO_FETCH = 100;
 
 export default function SuggestedGroupsModal({
   isOpen,
   onClose,
 }: SuggestedGroupsModalProps) {
   const { user } = useAuth();
-  const [allSuggestedGroups, setAllSuggestedGroups] = useState<any[]>([]);
+  const [allSuggestedGroups, setAllSuggestedGroups] = useState<Group[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [joiningGroups, setJoiningGroups] = useState<Set<string>>(new Set());
   const [currentPage, setCurrentPage] = useState(0);
+
+  const loadGroups = useCallback(async () => {
+    if (!user) return;
+
+    try {
+      setIsLoading(true);
+      setCurrentPage(0);
+
+      // Get user's current groups to exclude them from suggestions
+      const userGroups = await firebaseApi.group.getUserGroups(user.id);
+      const userGroupIds = new Set(userGroups.map(g => g.id));
+
+      // Get all groups and filter out ones user is already in
+      const allGroups = await firebaseApi.group.searchGroups('');
+      const filteredGroups = allGroups.filter(
+        group => !userGroupIds.has(group.id)
+      );
+      setAllSuggestedGroups(filteredGroups);
+    } catch {
+      console.error('Error loading groups');
+      setAllSuggestedGroups([]);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [user]);
 
   useEffect(() => {
     if (isOpen && user) {
       loadGroups();
     }
-  }, [isOpen, user]);
+  }, [isOpen, user, loadGroups]);
 
   // Handle ESC key to close modal
   useEffect(() => {
@@ -47,31 +72,6 @@ export default function SuggestedGroupsModal({
       document.removeEventListener('keydown', handleEscape);
     };
   }, [isOpen, onClose]);
-
-  const loadGroups = async () => {
-    if (!user) return;
-
-    try {
-      setIsLoading(true);
-      setCurrentPage(0);
-
-      // Get user's current groups to exclude them from suggestions
-      const userGroups = await firebaseApi.group.getUserGroups(user.id);
-      const userGroupIds = new Set(userGroups.map(g => g.id));
-
-      // Get all groups and filter out ones user is already in
-      const allGroups = await firebaseApi.group.searchGroups('');
-      const filteredGroups = allGroups.filter(
-        group => !userGroupIds.has(group.id)
-      );
-      setAllSuggestedGroups(filteredGroups);
-    } catch (error) {
-      console.error('Error loading groups:', error);
-      setAllSuggestedGroups([]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   // Calculate paginated groups
   const totalPages = Math.ceil(allSuggestedGroups.length / GROUPS_PER_PAGE);
@@ -102,8 +102,8 @@ export default function SuggestedGroupsModal({
       await firebaseApi.group.joinGroup(groupId, user.id);
       // Remove from suggestions after joining
       setAllSuggestedGroups(prev => prev.filter(g => g.id !== groupId));
-    } catch (error) {
-      console.error('Failed to join group:', error);
+    } catch {
+      console.error('Failed to join group');
     } finally {
       setJoiningGroups(prev => {
         const next = new Set(prev);

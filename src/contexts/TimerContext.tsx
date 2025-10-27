@@ -8,7 +8,7 @@
 
 import React, { createContext } from 'react';
 
-export const TimerContext = createContext<any>(null);
+export const TimerContext = createContext<null>(null) as React.Context<null>;
 
 export const TimerProvider: React.FC<{ children: React.ReactNode }> = ({
   children,

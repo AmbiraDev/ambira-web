@@ -18,8 +18,8 @@ export const StreakStats: React.FC<StreakStatsProps> = ({ userId }) => {
       try {
         const stats = await firebaseApi.streak.getStreakStats(userId);
         setStreakStats(stats);
-      } catch (error) {
-        console.error('Failed to load streak stats:', error);
+      } catch {
+        console.error('Failed to load streak stats');
       } finally {
         setIsLoading(false);
       }
@@ -88,7 +88,9 @@ export const StreakStats: React.FC<StreakStatsProps> = ({ userId }) => {
             <Calendar className="w-5 h-5" />
             <span className="text-sm font-medium">Total Days</span>
           </div>
-          <div className="text-3xl font-bold">{streakStats.totalStreakDays}</div>
+          <div className="text-3xl font-bold">
+            {streakStats.totalStreakDays}
+          </div>
           <div className="text-xs text-gray-500 mt-1">active days</div>
         </div>
 
@@ -133,7 +135,8 @@ export const StreakStats: React.FC<StreakStatsProps> = ({ userId }) => {
             <span className="font-medium">Streak at risk!</span>
           </div>
           <p className="text-sm text-red-600 mt-1">
-            Complete a session today to maintain your {streakStats.currentStreak} day streak.
+            Complete a session today to maintain your{' '}
+            {streakStats.currentStreak} day streak.
           </p>
         </div>
       )}

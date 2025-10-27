@@ -65,7 +65,7 @@ export default function GroupChallenges({
         setUserProgress(progressMap);
         setParticipatingChallenges(participatingSet);
       }
-    } catch (error) {
+    } catch (_error) {
       console.error('Failed to load group challenges:', error);
     } finally {
       setIsLoading(false);
@@ -84,7 +84,7 @@ export default function GroupChallenges({
       });
       await loadGroupChallenges();
       setShowCreateModal(false);
-    } catch (error) {
+    } catch (_error) {
       console.error('Failed to create challenge:', error);
       throw error;
     }
@@ -94,7 +94,7 @@ export default function GroupChallenges({
     try {
       await firebaseChallengeApi.joinChallenge(challengeId);
       await loadGroupChallenges();
-    } catch (error) {
+    } catch (_error) {
       console.error('Failed to join challenge:', error);
       alert('Failed to join challenge. Please try again.');
     }
@@ -104,7 +104,7 @@ export default function GroupChallenges({
     try {
       await firebaseChallengeApi.leaveChallenge(challengeId);
       await loadGroupChallenges();
-    } catch (error) {
+    } catch (_error) {
       console.error('Failed to leave challenge:', error);
       alert('Failed to leave challenge. Please try again.');
     }

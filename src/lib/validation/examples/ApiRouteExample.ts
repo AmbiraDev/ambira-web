@@ -49,17 +49,18 @@ export async function createSessionRoute(request: NextRequest) {
     }
 
     // Type-safe validated data
-    const __validatedData: CreateSessionData = result.data;
+    const validatedData: CreateSessionData = result.data;
 
     // Prepare for Firestore (removes undefined values)
-    const __firestoreData = prepareForFirestore({
+
+    const _firestoreData = prepareForFirestore({
       ...validatedData,
       userId: 'current-user-id', // Add from auth
       createdAt: new Date(),
     });
 
     // Save to database
-    // const sessionId = await db.collection('sessions').add(firestoreData);
+    // const sessionId = await db.collection('sessions').add(_firestoreData);
 
     return NextResponse.json(
       {
@@ -69,7 +70,7 @@ export async function createSessionRoute(request: NextRequest) {
       },
       { status: 201 }
     );
-  } catch (__error) {
+  } catch (_error) {
     console.error('Session creation error:', error);
 
     if (isValidationError(error)) {
@@ -102,10 +103,14 @@ export async function createCommentRoute(request: NextRequest) {
     const body = await request.json();
 
     // Validate and throw on error (cleaner for simple cases)
-    const __validatedData: CreateCommentData = validateOrThrow(CreateCommentSchema, body);
+    const validatedData: CreateCommentData = validateOrThrow(
+      CreateCommentSchema,
+      body
+    );
 
     // Add metadata
-    const __commentData = prepareForFirestore({
+
+    const _commentData = prepareForFirestore({
       ...validatedData,
       userId: 'current-user-id', // Add from auth
       createdAt: new Date(),
@@ -114,7 +119,7 @@ export async function createCommentRoute(request: NextRequest) {
     });
 
     // Save to database
-    // const commentId = await db.collection('comments').add(commentData);
+    // const commentId = await db.collection('comments').add(_commentData);
 
     return NextResponse.json(
       {
@@ -123,7 +128,7 @@ export async function createCommentRoute(request: NextRequest) {
       },
       { status: 201 }
     );
-  } catch (__error) {
+  } catch (_error) {
     console.error('Comment creation error:', error);
 
     // ValidationError is automatically caught here
@@ -155,22 +160,26 @@ export async function updateProfileRoute(request: NextRequest) {
     const body = await request.json();
 
     // Validate partial update data
-    const __validatedData: UpdateProfileData = validateOrThrow(UpdateProfileSchema, body);
+    const validatedData: UpdateProfileData = validateOrThrow(
+      UpdateProfileSchema,
+      body
+    );
 
     // Prepare for Firestore
-    const __updateData = prepareForFirestore({
+
+    const _updateData = prepareForFirestore({
       ...validatedData,
       updatedAt: new Date(),
     });
 
     // Update in database
-    // await db.collection('users').doc(userId).update(updateData);
+    // await db.collection('users').doc(userId).update(_updateData);
 
     return NextResponse.json({
       success: true,
       data: validatedData,
     });
-  } catch (__error) {
+  } catch (_error) {
     if (isValidationError(error)) {
       return NextResponse.json(
         {
@@ -200,7 +209,8 @@ export async function getSessionsRoute(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
 
     // Extract query parameters
-    const __queryData = {
+
+    const _queryData = {
       userId: searchParams.get('userId') || undefined,
       activityId: searchParams.get('activityId') || undefined,
       visibility: searchParams.get('visibility') || undefined,
@@ -210,7 +220,7 @@ export async function getSessionsRoute(request: NextRequest) {
     };
 
     // You can validate query params too
-    // const validatedQuery = validateOrThrow(SessionFiltersSchema, queryData);
+    // const validatedQuery = validateOrThrow(SessionFiltersSchema, _queryData);
 
     // Query database with validated filters
     // const sessions = await db.collection('sessions').where(...).get();
@@ -219,7 +229,7 @@ export async function getSessionsRoute(request: NextRequest) {
       sessions: [],
       count: 0,
     });
-  } catch (__error) {
+  } catch (_error) {
     if (isValidationError(error)) {
       return NextResponse.json(
         {
@@ -248,24 +258,20 @@ async function withAuth(
   return async (request: NextRequest) => {
     try {
       // Extract auth token
-      const token = request.headers.get('authorization')?.replace('Bearer ', '');
+      const token = request.headers
+        .get('authorization')
+        ?.replace('Bearer ', '');
 
       if (!token) {
-        return NextResponse.json(
-          { error: 'Unauthorized' },
-          { status: 401 }
-        );
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
       }
 
       // Verify token and get user ID
       // const userId = await verifyToken(token);
 
       return handler(request, 'user-id');
-    } catch (__error) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
+    } catch (_error) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
   };
 }
@@ -279,14 +285,15 @@ export const POST = withAuth(async (request: NextRequest, userId: string) => {
     const validatedData = validateOrThrow(CreateSessionSchema, body);
 
     // userId is available from middleware
-    const __sessionData = prepareForFirestore({
+
+    const _sessionData = prepareForFirestore({
       ...validatedData,
       userId,
       createdAt: new Date(),
     });
 
     return NextResponse.json({ success: true });
-  } catch (error) {
+  } catch (_error) {
     if (isValidationError(error)) {
       return NextResponse.json(
         { error: formatValidationError(error) },
@@ -346,13 +353,14 @@ function createErrorResponse(
 export async function exampleWithErrorHelper(request: NextRequest) {
   try {
     const body = await request.json();
-    const _validatedData = validateOrThrow(CreateCommentSchema, body);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const validatedData = validateOrThrow(CreateCommentSchema, body);
 
     // Process data...
     // validatedData available for use
 
     return NextResponse.json({ success: true });
-  } catch (error) {
+  } catch (_error) {
     return createErrorResponse(error, 'Failed to create comment');
   }
 }
@@ -372,9 +380,10 @@ type ApiErrorResponse = {
   details?: Array<{ path?: string; message: string }>;
 };
 
-type _ApiResponse<T> = ApiSuccessResponse<T> | ApiErrorResponse;
-
-function successResponse<T>(data: T, status: number = 200): NextResponse<ApiSuccessResponse<T>> {
+function successResponse<T>(
+  data: T,
+  status: number = 200
+): NextResponse<ApiSuccessResponse<T>> {
   return NextResponse.json({ success: true, data }, { status });
 }
 
@@ -412,7 +421,7 @@ export async function typeSafeRouteExample(request: NextRequest) {
       },
       201
     );
-  } catch (error) {
+  } catch (_error) {
     if (isValidationError(error)) {
       return errorResponse(
         'Validation failed',
@@ -422,6 +431,11 @@ export async function typeSafeRouteExample(request: NextRequest) {
       );
     }
 
-    return errorResponse('Internal server error', 'Failed to create session', undefined, 500);
+    return errorResponse(
+      'Internal server error',
+      'Failed to create session',
+      undefined,
+      500
+    );
   }
 }

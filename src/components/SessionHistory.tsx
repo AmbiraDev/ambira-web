@@ -12,14 +12,21 @@ export const SessionHistory: React.FC = () => {
   const [sessions, setSessions] = useState<Session[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [filters, setFilters] = useState<SessionFilters>({});
-  const [sort, setSort] = useState<SessionSort>({ field: 'startTime', direction: 'desc' });
+  const [sort, setSort] = useState<SessionSort>({
+    field: 'startTime',
+    direction: 'desc',
+  });
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
   const [hasMore, setHasMore] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [showMenuForSession, setShowMenuForSession] = useState<string | null>(null);
-  const [deleteConfirmSession, setDeleteConfirmSession] = useState<string | null>(null);
+  const [showMenuForSession, setShowMenuForSession] = useState<string | null>(
+    null
+  );
+  const [deleteConfirmSession, setDeleteConfirmSession] = useState<
+    string | null
+  >(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
   // Load initial data
@@ -30,15 +37,15 @@ export const SessionHistory: React.FC = () => {
         // Load projects and user's sessions from Firebase
         const [projectsData, sessionsResp] = await Promise.all([
           firebaseProjectApi.getProjects(),
-          firebaseSessionApi.getSessions(1, 20, {})
+          firebaseSessionApi.getSessions(1, 20, {}),
         ]);
 
         setProjects(projectsData);
         setSessions(sessionsResp.sessions);
         setTotalCount(sessionsResp.totalCount);
         setHasMore(sessionsResp.hasMore);
-      } catch (error) {
-        console.error('Failed to load session history:', error);
+      } catch {
+        console.error('Failed to load session history');
       } finally {
         setIsLoading(false);
       }
@@ -61,8 +68,8 @@ export const SessionHistory: React.FC = () => {
         setSessions(sessionsResp.sessions);
         setTotalCount(sessionsResp.totalCount);
         setHasMore(sessionsResp.hasMore);
-      } catch (error) {
-        console.error('Failed to load sessions:', error);
+      } catch {
+        console.error('Failed to load sessions');
       } finally {
         setIsLoading(false);
       }
@@ -106,8 +113,8 @@ export const SessionHistory: React.FC = () => {
       setTotalCount(sessionsResp.totalCount);
       setHasMore(sessionsResp.hasMore);
       setDeleteConfirmSession(null);
-    } catch (error) {
-      console.error('Failed to delete session:', error);
+    } catch {
+      console.error('Failed to delete session');
     } finally {
       setIsDeleting(false);
     }
@@ -117,7 +124,7 @@ export const SessionHistory: React.FC = () => {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
     const secs = seconds % 60;
-    
+
     if (hours > 0) {
       return `${hours}h ${minutes}m`;
     } else if (minutes > 0) {
@@ -133,7 +140,7 @@ export const SessionHistory: React.FC = () => {
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     });
   };
 
@@ -159,12 +166,18 @@ export const SessionHistory: React.FC = () => {
   const getFeelingEmoji = (rating?: number) => {
     if (!rating) return '😐';
     switch (rating) {
-      case 1: return '😞';
-      case 2: return '😕';
-      case 3: return '😐';
-      case 4: return '🙂';
-      case 5: return '😊';
-      default: return '😐';
+      case 1:
+        return '😞';
+      case 2:
+        return '😕';
+      case 3:
+        return '😐';
+      case 4:
+        return '🙂';
+      case 5:
+        return '😊';
+      default:
+        return '😐';
     }
   };
 
@@ -189,7 +202,7 @@ export const SessionHistory: React.FC = () => {
             <input
               type="text"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={e => setSearchQuery(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Search sessions..."
             />
@@ -202,11 +215,16 @@ export const SessionHistory: React.FC = () => {
             </label>
             <select
               value={filters.projectId || ''}
-              onChange={(e) => handleFiltersChange({ ...filters, projectId: e.target.value || undefined })}
+              onChange={e =>
+                handleFiltersChange({
+                  ...filters,
+                  projectId: e.target.value || undefined,
+                })
+              }
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="">All Projects</option>
-              {projects.map((project) => (
+              {projects.map(project => (
                 <option key={project.id} value={project.id}>
                   {project.name}
                 </option>
@@ -221,11 +239,19 @@ export const SessionHistory: React.FC = () => {
             </label>
             <input
               type="date"
-              value={filters.dateFrom ? filters.dateFrom.toISOString().split('T')[0] : ''}
-              onChange={(e) => handleFiltersChange({ 
-                ...filters, 
-                dateFrom: e.target.value ? new Date(e.target.value) : undefined 
-              })}
+              value={
+                filters.dateFrom
+                  ? filters.dateFrom.toISOString().split('T')[0]
+                  : ''
+              }
+              onChange={e =>
+                handleFiltersChange({
+                  ...filters,
+                  dateFrom: e.target.value
+                    ? new Date(e.target.value)
+                    : undefined,
+                })
+              }
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -236,11 +262,15 @@ export const SessionHistory: React.FC = () => {
             </label>
             <input
               type="date"
-              value={filters.dateTo ? filters.dateTo.toISOString().split('T')[0] : ''}
-              onChange={(e) => handleFiltersChange({ 
-                ...filters, 
-                dateTo: e.target.value ? new Date(e.target.value) : undefined 
-              })}
+              value={
+                filters.dateTo ? filters.dateTo.toISOString().split('T')[0] : ''
+              }
+              onChange={e =>
+                handleFiltersChange({
+                  ...filters,
+                  dateTo: e.target.value ? new Date(e.target.value) : undefined,
+                })
+              }
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -251,9 +281,15 @@ export const SessionHistory: React.FC = () => {
           <label className="text-sm font-medium text-gray-700">Sort by:</label>
           <select
             value={`${sort.field}-${sort.direction}`}
-            onChange={(e) => {
+            onChange={e => {
               const [field, direction] = e.target.value.split('-');
-              handleSortChange({ field: field as any, direction: direction as any });
+              handleSortChange({
+                field: (field || 'startTime') as
+                  | 'startTime'
+                  | 'duration'
+                  | 'title',
+                direction: (direction || 'desc') as 'asc' | 'desc',
+              });
             }}
             className="px-3 py-1 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
@@ -272,16 +308,23 @@ export const SessionHistory: React.FC = () => {
         {sessions.length === 0 ? (
           <div className="p-8 text-center text-gray-500">
             <p className="text-lg">No sessions found</p>
-            <p className="text-sm mt-2">Try adjusting your filters or start a new session</p>
+            <p className="text-sm mt-2">
+              Try adjusting your filters or start a new session
+            </p>
           </div>
         ) : (
           <div className="divide-y divide-gray-200">
-            {sessions.map((session) => (
-              <div key={session.id} className="p-6 hover:bg-gray-50 transition-colors">
+            {sessions.map(session => (
+              <div
+                key={session.id}
+                className="p-6 hover:bg-gray-50 transition-colors"
+              >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center space-x-3 mb-2">
-                      <h3 className="text-lg font-medium text-gray-900">{session.title}</h3>
+                      <h3 className="text-lg font-medium text-gray-900">
+                        {session.title}
+                      </h3>
                       <span className="text-sm text-gray-500">
                         {getVisibilityIcon(session.visibility)}
                       </span>
@@ -289,22 +332,26 @@ export const SessionHistory: React.FC = () => {
                         {getFeelingEmoji(session.howFelt)}
                       </span>
                     </div>
-                    
+
                     <div className="flex items-center space-x-4 text-sm text-gray-600 mb-3">
                       <span>{getProjectName(session.projectId)}</span>
                       <span>•</span>
                       <span>{formatDate(session.startTime)}</span>
                       <span>•</span>
-                      <span className="font-medium">{formatDuration(session.duration)}</span>
+                      <span className="font-medium">
+                        {formatDuration(session.duration)}
+                      </span>
                     </div>
 
                     {session.description && (
-                      <p className="text-gray-700 text-sm mb-3">{session.description}</p>
+                      <p className="text-gray-700 text-sm mb-3">
+                        {session.description}
+                      </p>
                     )}
 
                     {session.tags && session.tags.length > 0 && (
                       <div className="flex flex-wrap gap-1 mb-3">
-                        {session.tags.map((tag) => (
+                        {session.tags.map(tag => (
                           <span
                             key={tag}
                             className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full"
@@ -319,7 +366,11 @@ export const SessionHistory: React.FC = () => {
                   {/* Options Menu */}
                   <div className="relative">
                     <button
-                      onClick={() => setShowMenuForSession(showMenuForSession === session.id ? null : session.id)}
+                      onClick={() =>
+                        setShowMenuForSession(
+                          showMenuForSession === session.id ? null : session.id
+                        )
+                      }
                       className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full p-2 transition-colors"
                     >
                       <MoreVertical className="w-5 h-5" />

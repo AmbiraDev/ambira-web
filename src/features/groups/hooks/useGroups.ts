@@ -139,7 +139,7 @@ export function usePublicGroups(
   options?: Partial<UseQueryOptions<UIGroup[], Error>>
 ) {
   return useQuery<UIGroup[], Error>({
-    queryKey: GROUPS_KEYS.publicGroups(),
+    queryKey: [...GROUPS_KEYS.publicGroups(), limit],
     queryFn: async () => {
       const domainGroups = await groupService.getPublicGroups(limit);
       return adaptDomainGroupsToUI(domainGroups);

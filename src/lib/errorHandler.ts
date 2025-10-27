@@ -31,43 +31,53 @@ export enum ErrorSeverity {
  */
 const FIREBASE_ERROR_MESSAGES: Record<string, string> = {
   // Auth errors
-  'auth/email-already-in-use': 'This email is already registered. Please sign in or use a different email.',
+  'auth/email-already-in-use':
+    'This email is already registered. Please sign in or use a different email.',
   'auth/invalid-email': 'Please enter a valid email address.',
-  'auth/operation-not-allowed': 'This operation is not allowed. Please contact support.',
-  'auth/weak-password': 'Password is too weak. Please use at least 6 characters.',
-  'auth/user-disabled': 'This account has been disabled. Please contact support.',
-  'auth/user-not-found': 'No account found with this email. Please check your email or sign up.',
+  'auth/operation-not-allowed':
+    'This operation is not allowed. Please contact support.',
+  'auth/weak-password':
+    'Password is too weak. Please use at least 6 characters.',
+  'auth/user-disabled':
+    'This account has been disabled. Please contact support.',
+  'auth/user-not-found':
+    'No account found with this email. Please check your email or sign up.',
   'auth/wrong-password': 'Incorrect password. Please try again.',
   'auth/invalid-credential': 'Invalid email or password. Please try again.',
   'auth/too-many-requests': 'Too many failed attempts. Please try again later.',
-  'auth/network-request-failed': 'Network error. Please check your connection and try again.',
+  'auth/network-request-failed':
+    'Network error. Please check your connection and try again.',
 
   // Firestore errors
-  'permission-denied': 'You don\'t have permission to perform this action.',
+  'permission-denied': "You don't have permission to perform this action.",
   'not-found': 'The requested resource was not found.',
   'already-exists': 'This resource already exists.',
   'resource-exhausted': 'Too many requests. Please try again later.',
-  'failed-precondition': 'Operation cannot be completed. Please refresh and try again.',
-  'aborted': 'Operation was cancelled. Please try again.',
+  'failed-precondition':
+    'Operation cannot be completed. Please refresh and try again.',
+  aborted: 'Operation was cancelled. Please try again.',
   'out-of-range': 'Invalid value provided.',
-  'unimplemented': 'This feature is not yet available.',
-  'internal': 'An internal error occurred. Please try again later.',
-  'unavailable': 'Service is temporarily unavailable. Please try again later.',
+  unimplemented: 'This feature is not yet available.',
+  internal: 'An internal error occurred. Please try again later.',
+  unavailable: 'Service is temporarily unavailable. Please try again later.',
   'data-loss': 'Data error occurred. Please contact support.',
-  'unauthenticated': 'Please sign in to continue.',
+  unauthenticated: 'Please sign in to continue.',
   'deadline-exceeded': 'Request timed out. Please try again.',
-  'cancelled': 'Operation was cancelled.',
+  cancelled: 'Operation was cancelled.',
 
   // Storage errors
-  'storage/unauthorized': 'You don\'t have permission to access this file.',
+  'storage/unauthorized': "You don't have permission to access this file.",
   'storage/canceled': 'Upload was cancelled.',
   'storage/unknown': 'An error occurred while uploading. Please try again.',
   'storage/object-not-found': 'File not found.',
-  'storage/bucket-not-found': 'Storage bucket not configured. Please contact support.',
+  'storage/bucket-not-found':
+    'Storage bucket not configured. Please contact support.',
   'storage/quota-exceeded': 'Storage quota exceeded. Please contact support.',
   'storage/unauthenticated': 'Please sign in to upload files.',
-  'storage/retry-limit-exceeded': 'Upload failed after multiple attempts. Please try again later.',
-  'storage/invalid-checksum': 'File validation failed. Please try uploading again.',
+  'storage/retry-limit-exceeded':
+    'Upload failed after multiple attempts. Please try again later.',
+  'storage/invalid-checksum':
+    'File validation failed. Please try uploading again.',
 };
 
 /**
@@ -81,9 +91,9 @@ function getErrorCode(error: unknown): string {
     return (error as FirebaseError).code || 'unknown';
   }
 
-  // Generic Error
+  // Generic Error with code property
   if (error instanceof Error && 'code' in error) {
-    return (error as any).code || 'unknown';
+    return (error as Error & { code?: string }).code || 'unknown';
   }
 
   return 'unknown';
@@ -103,8 +113,8 @@ function getErrorMessage(error: unknown): string {
     return error;
   }
 
-  if (typeof error === 'object' && 'message' in error) {
-    return String((error as any).message);
+  if (typeof error === 'object' && error !== null && 'message' in error) {
+    return String((error as { message: unknown }).message);
   }
 
   return 'An unknown error occurred';
@@ -158,11 +168,12 @@ export function logError(
 ): void {
   // Only log errors in development or for critical errors
   if (isDevelopment || severity === ErrorSeverity.CRITICAL) {
-    const logMethod = severity === ErrorSeverity.ERROR || severity === ErrorSeverity.CRITICAL
-      ? debug.error
-      : severity === ErrorSeverity.WARNING
-      ? debug.warn
-      : debug.log;
+    const logMethod =
+      severity === ErrorSeverity.ERROR || severity === ErrorSeverity.CRITICAL
+        ? debug.error
+        : severity === ErrorSeverity.WARNING
+          ? debug.warn
+          : debug.log;
 
     // Log as a single string to avoid object logging which triggers intercept-console-error
     const errorMessage = `[API Error] ${JSON.stringify({
@@ -177,9 +188,10 @@ export function logError(
 
     // Log original error for debugging
     if (apiError.originalError && severity === ErrorSeverity.CRITICAL) {
-      const originalErrorMsg = apiError.originalError instanceof Error
-        ? apiError.originalError.message
-        : String(apiError.originalError);
+      const originalErrorMsg =
+        apiError.originalError instanceof Error
+          ? apiError.originalError.message
+          : String(apiError.originalError);
       debug.error(`[Original Error] ${originalErrorMsg}`);
     }
   }
@@ -201,7 +213,11 @@ export function handleError(
   const apiError = createApiError(error, context, options.defaultMessage);
 
   if (!options.silent) {
-    logError(apiError, options.severity || ErrorSeverity.ERROR, options.logContext);
+    logError(
+      apiError,
+      options.severity || ErrorSeverity.ERROR,
+      options.logContext
+    );
   }
 
   return apiError;
@@ -262,7 +278,7 @@ export async function withErrorHandling<T>(
 ): Promise<T> {
   try {
     return await operation();
-  } catch (error) {
+  } catch (_error) {
     const apiError = handleError(error, context, options);
 
     if (options.onError) {
@@ -287,7 +303,7 @@ export async function withNullOnError<T>(
 ): Promise<T | null> {
   try {
     return await operation();
-  } catch (error) {
+  } catch (_error) {
     const shouldReturnNull =
       (options.nullOnPermissionDenied && isPermissionError(error)) ||
       (options.nullOnNotFound && isNotFoundError(error));

@@ -1,12 +1,12 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import Header from '@/components/HeaderComponent';
 import { IconRenderer } from '@/components/IconRenderer';
 import { useAuth } from '@/hooks/useAuth';
-import { useActivities, useActivityStats } from '@/hooks/useActivitiesQuery';
+import { useActivities } from '@/hooks/useActivitiesQuery';
 import { firebaseApi } from '@/lib/api';
 import { Activity, SessionWithDetails } from '@/types';
 import { ArrowLeft, Clock, Settings, ChevronDown } from 'lucide-react';
@@ -42,8 +42,6 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
   const router = useRouter();
   const { user } = useAuth();
   const { data: projects = [] } = useActivities(user?.id);
-  const { data: stats, isLoading: isLoadingStats } =
-    useActivityStats(projectId);
 
   const [project, setProject] = useState<Activity | null>(null);
   const [sessions, setSessions] = useState<SessionWithDetails[]>([]);
@@ -51,7 +49,6 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
   const [isLoadingSessions, setIsLoadingSessions] = useState(true);
   const [activeTab, setActiveTab] = useState<ActivityTab>('analytics');
   const [timePeriod, setTimePeriod] = useState<TimePeriod>('7D');
-  const [_showTimePeriodDropdown, _setShowTimePeriodDropdown] = useState(false);
   const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
   const [chartType, setChartType] = useState<'bar' | 'line'>(() => {
     // Load chart type from localStorage
@@ -72,10 +69,12 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
 
   useEffect(() => {
     loadProjectData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId, projects]);
 
   useEffect(() => {
     processChartData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessions, timePeriod]);
 
   const loadProjectData = async () => {
@@ -103,13 +102,13 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
           );
           setSessions(projectSessions as SessionWithDetails[]);
         }
-      } catch (error) {
-        console.error('Error loading sessions:', error);
+      } catch {
+        console.error('Error loading sessions:');
       } finally {
         setIsLoadingSessions(false);
       }
-    } catch (error) {
-      console.error('Error loading project data:', error);
+    } catch {
+      console.error('Error loading project data:');
     } finally {
       setIsLoading(false);
     }
@@ -266,41 +265,15 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
     setChartData(data);
   };
 
-  const _formatTime = (seconds: number): string => {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    if (hours > 0) {
-      return `${hours}h ${minutes}m`;
-    }
-    return `${minutes}m`;
-  };
-
-  const _formatDate = (date: Date): string => {
-    const today = new Date();
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
-
-    if (date.toDateString() === today.toDateString()) {
-      return `Today at ${date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`;
-    } else if (date.toDateString() === yesterday.toDateString()) {
-      return `Yesterday at ${date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`;
-    } else {
-      return date.toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        hour: 'numeric',
-        minute: '2-digit',
-      });
-    }
-  };
-
   // Session handlers for SessionCard
-  const handleSupport = async (_sessionId: string) => {
+  const handleSupport = async () => {
     // TODO: Re-implement when API is fixed
+    // Placeholder for support feature
   };
 
-  const handleRemoveSupport = async (_sessionId: string) => {
+  const handleRemoveSupport = async () => {
     // TODO: Re-implement when API is fixed
+    // Placeholder for support feature
   };
 
   const handleShare = async (sessionId: string) => {
@@ -316,16 +289,16 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
     if (navigator.share) {
       try {
         await navigator.share(shareData);
-      } catch (error) {
-        console.error('Error sharing:', error);
+      } catch {
+        console.error('Error sharing:');
       }
     } else {
       // Fallback to clipboard
       try {
         await navigator.clipboard.writeText(shareData.url);
         alert('Link copied to clipboard!');
-      } catch (error) {
-        console.error('Error copying to clipboard:', error);
+      } catch {
+        console.error('Error copying to clipboard');
       }
     }
   };
@@ -436,15 +409,6 @@ function ProjectDetailContent({ projectId }: { projectId: string }) {
       </div>
     );
   }
-
-  const _weeklyProgress =
-    project.weeklyTarget && stats
-      ? (stats.weeklyHours / project.weeklyTarget) * 100
-      : 0;
-  const _totalProgress =
-    project.totalTarget && stats
-      ? (stats.totalHours / project.totalTarget) * 100
-      : 0;
 
   return (
     <div className="min-h-screen bg-gray-50">

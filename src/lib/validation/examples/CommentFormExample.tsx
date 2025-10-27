@@ -14,7 +14,11 @@
 'use client';
 
 import { useState } from 'react';
-import { validate, CreateCommentSchema, type CreateCommentInput } from '@/lib/validation';
+import {
+  validate,
+  CreateCommentSchema,
+  type CreateCommentInput,
+} from '@/lib/validation';
 
 interface CommentFormProps {
   sessionId: string;
@@ -62,7 +66,7 @@ export function CommentFormExample({
       });
 
       if (!result.success) {
-        const contentError = result.errors.find((err) => err.path === 'content');
+        const contentError = result.errors.find(err => err.path === 'content');
         if (contentError) {
           setError(contentError.message);
         }
@@ -118,7 +122,7 @@ export function CommentFormExample({
       if (onCommentCreated) {
         onCommentCreated(commentId);
       }
-    } catch (__err) {
+    } catch (_err) {
       setError(err instanceof Error ? err.message : 'Failed to post comment');
     } finally {
       setIsSubmitting(false);
@@ -159,9 +163,7 @@ export function CommentFormExample({
           </div>
           <div className="text-sm text-muted-foreground">
             {showValidation && (
-              <span
-                className={remainingChars < 100 ? 'text-orange-500' : ''}
-              >
+              <span className={remainingChars < 100 ? 'text-orange-500' : ''}>
                 {remainingChars} characters remaining
               </span>
             )}
@@ -186,11 +188,7 @@ export function CommentFormExample({
           disabled={isSubmitting || !content.trim()}
           className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-md hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
-          {isSubmitting
-            ? 'Posting...'
-            : parentCommentId
-              ? 'Reply'
-              : 'Comment'}
+          {isSubmitting ? 'Posting...' : parentCommentId ? 'Reply' : 'Comment'}
         </button>
       </div>
     </form>
@@ -226,7 +224,7 @@ export function InlineCommentExample({ sessionId }: { sessionId: string }) {
       });
 
       setContent('');
-    } catch (__err) {
+    } catch (_err) {
       setError('Failed to post comment');
     } finally {
       setIsSubmitting(false);
@@ -247,7 +245,7 @@ export function InlineCommentExample({ sessionId }: { sessionId: string }) {
         <input
           type="text"
           value={content}
-          onChange={(e) => {
+          onChange={e => {
             setContent(e.target.value);
             if (error) setError('');
           }}

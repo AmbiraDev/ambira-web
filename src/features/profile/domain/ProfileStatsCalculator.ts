@@ -37,7 +37,6 @@ export class ProfileStatsCalculator {
     period: TimePeriod
   ): ChartDataPoint[] {
     const now = new Date();
-    const _data: ChartDataPoint[] = [];
 
     switch (period) {
       case '7D':

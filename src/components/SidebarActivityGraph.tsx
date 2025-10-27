@@ -1,9 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { ChevronDown } from 'lucide-react';
 import {
-  LineChart,
   Line,
   ResponsiveContainer,
   XAxis,
@@ -32,15 +31,7 @@ function SidebarActivityGraph() {
   const [isLoading, setIsLoading] = useState(true);
   const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
 
-  useEffect(() => {
-    loadSessions();
-  }, [user]);
-
-  useEffect(() => {
-    processChartData();
-  }, [sessions, timePeriod]);
-
-  const loadSessions = async () => {
+  const loadSessions = useCallback(async () => {
     if (!user) {
       setIsLoading(false);
       return;
@@ -50,15 +41,15 @@ function SidebarActivityGraph() {
       setIsLoading(true);
       const response = await firebaseSessionApi.getSessions(1, 500, {});
       setSessions(response.sessions);
-    } catch (error) {
-      console.error('Failed to load sessions:', error);
+    } catch {
+      console.error('Failed to load sessions');
       setSessions([]);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [user]);
 
-  const processChartData = () => {
+  const processChartData = useCallback(() => {
     const now = new Date();
     const data: ChartDataPoint[] = [];
 
@@ -116,7 +107,15 @@ function SidebarActivityGraph() {
     }
 
     setChartData(data);
-  };
+  }, [sessions, timePeriod]);
+
+  useEffect(() => {
+    loadSessions();
+  }, [loadSessions]);
+
+  useEffect(() => {
+    processChartData();
+  }, [processChartData]);
 
   return (
     <div className="p-6">
@@ -209,7 +208,10 @@ function SidebarActivityGraph() {
                   color: 'white',
                 }}
                 labelStyle={{ color: 'white', marginBottom: '4px' }}
-                formatter={(value: any) => [`${value.toFixed(1)} hrs`, 'Time']}
+                formatter={(value: unknown) => [
+                  `${value.toFixed(1)} hrs`,
+                  'Time',
+                ]}
                 cursor={{
                   stroke: '#e5e7eb',
                   strokeWidth: 1,

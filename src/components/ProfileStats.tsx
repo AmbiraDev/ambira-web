@@ -17,10 +17,7 @@ interface ProfileStatsProps {
   isOwnProfile?: boolean;
 }
 
-export const ProfileStats: React.FC<ProfileStatsProps> = ({
-  userId,
-  _isOwnProfile = false,
-}) => {
+export const ProfileStats: React.FC<ProfileStatsProps> = ({ userId }) => {
   const [activeTab, setActiveTab] = useState<'daily' | 'weekly' | 'projects'>(
     'daily'
   );
@@ -38,8 +35,8 @@ export const ProfileStats: React.FC<ProfileStatsProps> = ({
       const year = new Date().getFullYear();
       const data = await firebaseUserApi.getUserDailyActivity(userId, year);
       setActivityData(data);
-    } catch (error) {
-      console.error('Failed to load activity data:', error);
+    } catch (_error) {
+      console.error('Failed to load activity data');
       setActivityData([]);
     } finally {
       setIsLoading(false);
@@ -51,8 +48,8 @@ export const ProfileStats: React.FC<ProfileStatsProps> = ({
       setIsLoading(true);
       const data = await firebaseUserApi.getUserWeeklyActivity(userId, 12);
       setWeeklyData(data);
-    } catch (error) {
-      console.error('Failed to load weekly data:', error);
+    } catch (_error) {
+      console.error('Failed to load weekly data');
       setWeeklyData([]);
     } finally {
       setIsLoading(false);
@@ -65,8 +62,8 @@ export const ProfileStats: React.FC<ProfileStatsProps> = ({
       const year = new Date().getFullYear();
       const data = await firebaseUserApi.getUserProjectBreakdown(userId, year);
       setProjectData(data);
-    } catch (error) {
-      console.error('Failed to load project data:', error);
+    } catch (_error) {
+      console.error('Failed to load project data');
       setProjectData([]);
     } finally {
       setIsLoading(false);

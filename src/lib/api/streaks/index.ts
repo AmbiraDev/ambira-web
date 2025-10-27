@@ -15,10 +15,7 @@ import {
   getDocs,
   setDoc,
   updateDoc,
-  deleteDoc,
-  serverTimestamp,
   Timestamp,
-  addDoc,
   query,
   where,
   orderBy,
@@ -94,7 +91,7 @@ export const firebaseStreakApi = {
         streakHistory: data.streakHistory || [],
         isPublic: data.isPublic !== false,
       };
-    } catch (error) {
+    } catch (_error) {
       // Handle permission errors gracefully - return empty streak
       if (isPermissionError(error)) {
         return {
@@ -188,7 +185,7 @@ export const firebaseStreakApi = {
       let tempStreak = 0;
       let prevDate: Date | null = null;
 
-      sortedDays.forEach((dayKey, index) => {
+      sortedDays.forEach((dayKey, _index) => {
         const [year, month, day] = dayKey.split('-').map(Number);
         if (year === undefined || month === undefined || day === undefined) {
           throw new Error(`Invalid date format in dayKey: ${dayKey}`);
@@ -243,7 +240,7 @@ export const firebaseStreakApi = {
       };
 
       return result;
-    } catch (error) {
+    } catch (_error) {
       console.error('=== FIREBASE API: Error in getStreakStats ===', error);
       const apiError = handleError(error, 'Get streak stats', {
         defaultMessage: 'Failed to get streak stats',
@@ -363,7 +360,7 @@ export const firebaseStreakApi = {
       });
 
       return updatedStreak;
-    } catch (error) {
+    } catch (_error) {
       const apiError = handleError(error, 'Update streak', {
         defaultMessage: 'Failed to update streak',
       });
@@ -392,7 +389,7 @@ export const firebaseStreakApi = {
       });
 
       return newVisibility;
-    } catch (error) {
+    } catch (_error) {
       const apiError = handleError(error, 'Toggle streak visibility', {
         defaultMessage: 'Failed to toggle streak visibility',
       });
@@ -420,7 +417,7 @@ export const firebaseStreakApi = {
       await updateDoc(doc(db, 'streaks', userId), {
         isPublic,
       });
-    } catch (error) {
+    } catch (_error) {
       const apiError = handleError(error, 'Update streak visibility', {
         defaultMessage: 'Failed to update streak visibility',
       });
@@ -449,7 +446,7 @@ export const firebaseStreakApi = {
         currentStreak: streakValue,
         lastActivityDate: Timestamp.fromDate(new Date()),
       });
-    } catch (error) {
+    } catch (_error) {
       const apiError = handleError(error, 'Restore streak', {
         defaultMessage: 'Failed to restore streak',
       });

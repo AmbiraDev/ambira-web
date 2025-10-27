@@ -9,8 +9,8 @@ export class StreakService {
   async getStreakData(userId: string): Promise<StreakData | null> {
     try {
       return await firebaseApi.streak.getStreakData(userId);
-    } catch (error) {
-      console.error('Error getting streak data:', error);
+    } catch (_err) {
+      console.error('Error getting streak data:', _err);
       return null;
     }
   }
@@ -18,13 +18,16 @@ export class StreakService {
   async getStreakStats(userId: string): Promise<StreakStats | null> {
     try {
       return await firebaseApi.streak.getStreakStats(userId);
-    } catch (error) {
-      console.error('Error getting streak stats:', error);
+    } catch (_err) {
+      console.error('Error getting streak stats:', _err);
       return null;
     }
   }
 
-  async updateStreakVisibility(userId: string, isPublic: boolean): Promise<void> {
+  async updateStreakVisibility(
+    userId: string,
+    isPublic: boolean
+  ): Promise<void> {
     return firebaseApi.streak.updateStreakVisibility(userId, isPublic);
   }
 }

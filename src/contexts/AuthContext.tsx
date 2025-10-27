@@ -8,7 +8,7 @@
 
 import React, { createContext } from 'react';
 
-export const AuthContext = createContext<any>(null);
+export const AuthContext = createContext<null>(null) as React.Context<null>;
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,

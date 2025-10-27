@@ -28,8 +28,6 @@ import {
   limit as limitFn,
   startAfter,
   serverTimestamp,
-  Timestamp,
-  increment,
   runTransaction,
   onSnapshot,
 } from 'firebase/firestore';
@@ -59,12 +57,9 @@ import type {
   PostWithDetails,
   CreatePostData,
   UpdatePostData,
-  PostSupport,
   FeedResponse,
   FeedFilters,
   Session,
-  User,
-  Project,
 } from '@/types';
 
 // ============================================================================
@@ -91,7 +86,6 @@ const _processPosts = async (
       const sessionData = sessionDoc.data();
 
       // Get project data
-      let projectData = null;
       const projectId = sessionData?.projectId;
       if (projectId) {
         try {
@@ -99,9 +93,9 @@ const _processPosts = async (
             doc(db, 'projects', postData.userId, 'userProjects', projectId)
           );
           if (projectDoc.exists()) {
-            projectData = projectDoc.data();
+            // projectData is available if needed
           }
-        } catch (error) {
+        } catch (_error) {
           handleError(error, `Fetch project ${projectId}`, {
             severity: ErrorSeverity.WARNING,
           });
@@ -225,7 +219,7 @@ export const firebasePostApi = {
         createdAt: new Date(),
         updatedAt: new Date(),
       };
-    } catch (error) {
+    } catch (_error) {
       const apiError = handleError(error, 'Create post', {
         defaultMessage: 'Failed to create post',
       });
@@ -245,7 +239,7 @@ export const firebasePostApi = {
       }
 
       let sessionsQuery;
-      const { type = 'recent', userId, _projectId, groupId } = filters;
+      const { type = 'recent', userId, groupId } = filters;
 
       // Handle different feed types - fetch from sessions collection
       if (type === 'group' && groupId) {
@@ -696,7 +690,7 @@ export const firebasePostApi = {
           nextCursor,
         };
       }
-    } catch (error) {
+    } catch (_error) {
       handleError(error, 'in getFeedSessions', {
         severity: ErrorSeverity.ERROR,
       });
@@ -774,7 +768,7 @@ export const firebasePostApi = {
           silent: true,
         });
       }
-    } catch (error) {
+    } catch (_error) {
       const apiError = handleError(error, 'Support session', {
         defaultMessage: 'Failed to support session',
       });
@@ -817,7 +811,7 @@ export const firebasePostApi = {
           updatedAt: serverTimestamp(),
         });
       });
-    } catch (error) {
+    } catch (_error) {
       const apiError = handleError(error, 'Remove support', {
         defaultMessage: 'Failed to remove support',
       });
@@ -854,7 +848,7 @@ export const firebasePostApi = {
         createdAt: convertTimestamp(postData.createdAt),
         updatedAt: convertTimestamp(postData.updatedAt),
       };
-    } catch (error) {
+    } catch (_error) {
       const apiError = handleError(error, 'Update post', {
         defaultMessage: 'Failed to update post',
       });
@@ -878,7 +872,7 @@ export const firebasePostApi = {
       }
 
       await deleteDoc(doc(db, 'posts', postId));
-    } catch (error) {
+    } catch (_error) {
       const apiError = handleError(error, 'Delete post', {
         defaultMessage: 'Failed to delete post',
       });
@@ -984,7 +978,6 @@ export const firebasePostApi = {
         const sessionData = sessionDoc.data();
 
         // Get project data
-        let projectData = null;
         const projectId = sessionData?.projectId;
         if (projectId) {
           try {
@@ -992,9 +985,9 @@ export const firebasePostApi = {
               doc(db, 'projects', postData.userId, 'userProjects', projectId)
             );
             if (projectDoc.exists()) {
-              projectData = projectDoc.data();
+              // projectData is available if needed
             }
-          } catch (error) {
+          } catch (_error) {
             handleError(error, `Fetch project ${projectId}`, {
               severity: ErrorSeverity.WARNING,
             });
@@ -1070,7 +1063,7 @@ export const firebasePostApi = {
       }
 
       return posts;
-    } catch (error) {
+    } catch (_error) {
       const apiError = handleError(error, 'Get user posts', {
         defaultMessage: 'Failed to get user posts',
       });

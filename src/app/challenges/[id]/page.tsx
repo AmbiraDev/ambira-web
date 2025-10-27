@@ -75,8 +75,8 @@ export default function ChallengeDetailPage() {
         // Check if user is admin (challenge creator)
         setIsAdmin(challengeData.createdByUserId === user.id);
       }
-    } catch (error) {
-      console.error('Failed to load challenge data:', error);
+    } catch {
+      console.error('Failed to load challenge data');
       // TODO: Show error message or redirect
     } finally {
       setIsLoading(false);
@@ -90,8 +90,8 @@ export default function ChallengeDetailPage() {
       setActionLoading(true);
       await firebaseChallengeApi.joinChallenge(challengeId);
       await loadChallengeData(); // Reload to update participation status
-    } catch (error) {
-      console.error('Failed to join challenge:', error);
+    } catch {
+      console.error('Failed to join challenge');
       alert('Failed to join challenge. Please try again.');
     } finally {
       setActionLoading(false);
@@ -110,8 +110,8 @@ export default function ChallengeDetailPage() {
       setActionLoading(true);
       await firebaseChallengeApi.leaveChallenge(challengeId);
       await loadChallengeData(); // Reload to update participation status
-    } catch (error) {
-      console.error('Failed to leave challenge:', error);
+    } catch {
+      console.error('Failed to leave challenge');
       alert('Failed to leave challenge. Please try again.');
     } finally {
       setActionLoading(false);
@@ -133,8 +133,8 @@ export default function ChallengeDetailPage() {
       setActionLoading(true);
       await firebaseChallengeApi.deleteChallenge(challengeId);
       router.push('/challenges');
-    } catch (error) {
-      console.error('Failed to delete challenge:', error);
+    } catch {
+      console.error('Failed to delete challenge');
       alert('Failed to delete challenge. Please try again.');
     } finally {
       setActionLoading(false);

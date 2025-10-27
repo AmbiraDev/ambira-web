@@ -8,6 +8,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { useGroupDetails } from '../hooks/useGroupDetails';
@@ -190,11 +191,13 @@ export function GroupDetailPage({ groupId }: GroupDetailPageProps) {
           <div className="mb-6">
             <div className="flex flex-col sm:flex-row items-start gap-4">
               {/* Group Avatar */}
-              <div className="w-20 h-20 sm:w-32 sm:h-32 bg-gradient-to-br from-[#007AFF] to-[#0051D5] rounded-full flex items-center justify-center flex-shrink-0">
+              <div className="w-20 h-20 sm:w-32 sm:h-32 bg-gradient-to-br from-[#007AFF] to-[#0051D5] rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden">
                 {group.imageUrl ? (
-                  <img
+                  <Image
                     src={group.imageUrl}
                     alt={group.name}
+                    width={128}
+                    height={128}
                     className="w-full h-full rounded-full object-cover"
                   />
                 ) : (

@@ -86,11 +86,12 @@ export function useFollowUser(
       // Optimistically update follower count on profile
       queryClient.setQueryData(
         PROFILE_KEYS.detail(targetUserId),
-        (old: any) => {
-          if (!old) return old;
+        (old: unknown) => {
+          if (!old || typeof old !== 'object') return old;
+          const profile = old as { followerCount?: number };
           return {
-            ...old,
-            followerCount: (old.followerCount || 0) + 1,
+            ...profile,
+            followerCount: (profile.followerCount || 0) + 1,
           };
         }
       );
@@ -198,11 +199,12 @@ export function useUnfollowUser(
       // Optimistically update follower count on profile
       queryClient.setQueryData(
         PROFILE_KEYS.detail(targetUserId),
-        (old: any) => {
-          if (!old) return old;
+        (old: unknown) => {
+          if (!old || typeof old !== 'object') return old;
+          const profile = old as { followerCount?: number };
           return {
-            ...old,
-            followerCount: Math.max(0, (old.followerCount || 0) - 1),
+            ...profile,
+            followerCount: Math.max(0, (profile.followerCount || 0) - 1),
           };
         }
       );

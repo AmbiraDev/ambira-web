@@ -95,10 +95,10 @@ export function usePauseTimer(
       );
 
       // Optimistically update
-      queryClient.setQueryData(TIMER_KEYS.active(userId), (old: any) => {
+      queryClient.setQueryData(TIMER_KEYS.active(userId), (old: unknown) => {
         if (!old) return old;
         return {
-          ...old,
+          ...(old as Record<string, unknown>),
           status: 'paused',
         };
       });
@@ -161,10 +161,10 @@ export function useResumeTimer(
         TIMER_KEYS.active(userId)
       );
 
-      queryClient.setQueryData(TIMER_KEYS.active(userId), (old: any) => {
+      queryClient.setQueryData(TIMER_KEYS.active(userId), (old: unknown) => {
         if (!old) return old;
         return {
-          ...old,
+          ...(old as Record<string, unknown>),
           status: 'running',
         };
       });

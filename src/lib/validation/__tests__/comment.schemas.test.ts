@@ -52,7 +52,7 @@ describe('Comment Schemas', () => {
 
       expect(result.success).toBe(false);
       if (!result.success) {
-        const paths = result.errors.map((e) => e.path);
+        const paths = result.errors.map(e => e.path);
         expect(paths).toContain('sessionId');
       }
     });
@@ -66,7 +66,7 @@ describe('Comment Schemas', () => {
 
       expect(result.success).toBe(false);
       if (!result.success) {
-        const paths = result.errors.map((e) => e.path);
+        const paths = result.errors.map(e => e.path);
         expect(paths).toContain('content');
       }
     });
@@ -261,7 +261,7 @@ describe('Comment Schemas', () => {
 
     it('should fail for invalid isEdited type', () => {
       const input = {
-        isEdited: 'yes' as any,
+        isEdited: 'yes' as unknown as boolean,
       };
 
       const result = validate(UpdateCommentSchema, input);
@@ -294,7 +294,7 @@ describe('Comment Schemas', () => {
 
       expect(result.success).toBe(false);
       if (!result.success) {
-        const paths = result.errors.map((e) => e.path);
+        const paths = result.errors.map(e => e.path);
         expect(paths).toContain('commentId');
       }
     });
@@ -459,7 +459,7 @@ describe('Comment Schemas', () => {
 
       expect(result.success).toBe(false);
       if (!result.success) {
-        const paths = result.errors.map((e) => e.path);
+        const paths = result.errors.map(e => e.path);
         expect(paths).toContain('field');
       }
     });
@@ -473,14 +473,14 @@ describe('Comment Schemas', () => {
 
       expect(result.success).toBe(false);
       if (!result.success) {
-        const paths = result.errors.map((e) => e.path);
+        const paths = result.errors.map(e => e.path);
         expect(paths).toContain('direction');
       }
     });
 
     it('should fail for invalid field value', () => {
       const input = {
-        field: 'invalidField' as any,
+        field: 'invalidField' as unknown as typeof input.field,
         direction: 'asc' as const,
       };
 
@@ -495,7 +495,7 @@ describe('Comment Schemas', () => {
     it('should fail for invalid direction value', () => {
       const input = {
         field: 'createdAt' as const,
-        direction: 'invalid' as any,
+        direction: 'invalid' as unknown as typeof input.direction,
       };
 
       const result = validate(CommentSortSchema, input);

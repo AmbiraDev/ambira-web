@@ -142,8 +142,8 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
 
       onSuccess?.(project.id);
       onClose();
-    } catch (error) {
-      console.error('Failed to create project:', error);
+    } catch (_err) {
+      console.error('Failed to create project:', err);
       toast.error('Failed to create project. Please try again.');
       setErrors({ name: 'Failed to create project. Please try again.' });
     } finally {

@@ -8,7 +8,6 @@ import { firebaseUserApi } from '@/lib/api';
 interface CommentInputProps {
   placeholder?: string;
   onSubmit: (content: string) => Promise<void>;
-  onCancel?: () => void;
   autoFocus?: boolean;
   initialValue?: string;
 }
@@ -16,7 +15,6 @@ interface CommentInputProps {
 export const CommentInput: React.FC<CommentInputProps> = ({
   placeholder = 'Add a comment, @ to mention',
   onSubmit,
-  onCancel,
   autoFocus = false,
   initialValue = '',
 }) => {
@@ -55,8 +53,8 @@ export const CommentInput: React.FC<CommentInputProps> = ({
         try {
           const results = await firebaseUserApi.searchUsers(mentionQuery, 5);
           setMentionSuggestions(results.users);
-        } catch (error) {
-          console.error('Failed to search users:', error);
+        } catch (_err) {
+          console.error('Failed to search users:', err);
           setMentionSuggestions([]);
         }
       } else {
@@ -160,17 +158,11 @@ export const CommentInput: React.FC<CommentInputProps> = ({
       setContent('');
       setShowMentions(false);
       setMentionQuery('');
-    } catch (error) {
-      console.error('Failed to submit comment:', error);
+    } catch (_err) {
+      console.error('Failed to submit comment:', err);
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const _handleCancel = () => {
-    setContent('');
-    setShowMentions(false);
-    if (onCancel) onCancel();
   };
 
   return (

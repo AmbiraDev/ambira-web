@@ -58,14 +58,6 @@ export const SaveSession: React.FC<SaveSessionProps> = ({
 
   const [projects, setProjects] = useState<Project[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [_showPostModal, _setShowPostModal] = useState(false);
-
-  // TODO: Implement Firebase API calls
-  // Helper function to get auth token
-  const _getAuthToken = (): string => {
-    // For now, return empty string since we're not using Firebase sessions yet
-    return '';
-  };
 
   // Load projects on mount
   useEffect(() => {
@@ -80,8 +72,8 @@ export const SaveSession: React.FC<SaveSessionProps> = ({
         if (initialData.projectId && !formData.projectId) {
           setFormData(prev => ({ ...prev, projectId: initialData.projectId! }));
         }
-      } catch (error) {
-        debug.error('SaveSession - Failed to load projects:', error);
+      } catch {
+        debug.error('SaveSession - Failed to load projects');
       }
     };
 
@@ -106,7 +98,7 @@ export const SaveSession: React.FC<SaveSessionProps> = ({
     }
   }, [formData.projectId, formData.title, projects]);
 
-  const handleInputChange = (field: keyof SessionFormData, value: any) => {
+  const handleInputChange = (field: keyof SessionFormData, value: unknown) => {
     setFormData(prev => ({ ...prev, [field]: value }));
 
     // Clear error when user starts typing
@@ -158,14 +150,11 @@ export const SaveSession: React.FC<SaveSessionProps> = ({
       // Note: Post creation is now handled by the onSave callback
       // The parent component (SessionTimer/ManualEntry) will handle creating the post
       // using firebaseApi.session.createSessionWithPost if visibility !== 'private'
-    } catch (error) {
-      debug.error('SaveSession - Failed to save session:', error);
+    } catch {
+      debug.error('SaveSession - Failed to save session');
       setErrors({ submit: ERROR_MESSAGES.SESSION_SAVE_FAILED });
     }
   };
-
-  const _handlePostSuccess = async () => {};
-  const _handlePostCancel = async () => {};
 
   const formatDuration = (seconds: number): string => {
     const hours = Math.floor(seconds / 3600);

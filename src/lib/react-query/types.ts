@@ -29,7 +29,7 @@ import type {
 export type QueryOptions<
   TData = unknown,
   TError = Error,
-  TQueryKey extends QueryKey = QueryKey
+  TQueryKey extends QueryKey = QueryKey,
 > = Partial<TanStackUseQueryOptions<TData, TError, TData, TQueryKey>>;
 
 /**
@@ -45,9 +45,11 @@ export type QueryOptions<
  *   });
  * }
  */
-export type MutationOptions<TData = unknown, TVariables = void, TError = Error> = Partial<
-  TanStackUseMutationOptions<TData, TError, TVariables>
->;
+export type MutationOptions<
+  TData = unknown,
+  TVariables = void,
+  TError = Error,
+> = Partial<TanStackUseMutationOptions<TData, TError, TVariables>>;
 
 /**
  * Cache key factory pattern
@@ -63,7 +65,10 @@ export type MutationOptions<TData = unknown, TVariables = void, TError = Error> 
  *   detail: (id: string) => [...GROUPS_KEYS.details(), id] as const,
  * };
  */
-export type CacheKeyFactory = Record<string, (...args: any[]) => readonly unknown[]>;
+export type CacheKeyFactory = Record<
+  string,
+  (...args: never[]) => readonly unknown[]
+>;
 
 /**
  * Standard cache times for different data types
@@ -93,7 +98,9 @@ export const STANDARD_CACHE_TIMES = {
 /**
  * Helper type for service methods that feature hooks wrap
  */
-export type ServiceMethod<TReturn, TParams extends any[] = []> = (...args: TParams) => Promise<TReturn>;
+export type ServiceMethod<TReturn, TParams extends unknown[] = []> = (
+  ...args: TParams
+) => Promise<TReturn>;
 
 /**
  * Extract parameters from a service method
@@ -102,7 +109,8 @@ export type ServiceMethod<TReturn, TParams extends any[] = []> = (...args: TPara
  * type GroupServiceParams = ServiceParams<typeof groupService.getGroupDetails>;
  * // string
  */
-export type ServiceParams<T> = T extends ServiceMethod<any, infer P> ? P : never;
+export type ServiceParams<T> =
+  T extends ServiceMethod<unknown, infer P> ? P : never;
 
 /**
  * Extract return type from a service method

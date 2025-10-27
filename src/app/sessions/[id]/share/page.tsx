@@ -1,9 +1,10 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft, Download, Share2 } from 'lucide-react';
-import { SessionWithDetails } from '@/types';
+import { SessionWithDetails, User } from '@/types';
 import { firebaseApi } from '@/lib/api';
 import { useAuth } from '@/hooks/useAuth';
 import Header from '@/components/HeaderComponent';
@@ -33,13 +34,7 @@ function SessionShareContent({ sessionId }: { sessionId: string }) {
   const minimalRef = useRef<HTMLDivElement>(null);
   const squareRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    if (sessionId && user) {
-      loadSession();
-    }
-  }, [sessionId, user]);
-
-  const loadSession = async () => {
+  const loadSession = useCallback(async () => {
     try {
       setIsLoading(true);
       setError(null);
@@ -49,11 +44,19 @@ function SessionShareContent({ sessionId }: { sessionId: string }) {
       setSession(sessionData as unknown as SessionWithDetails);
     } catch (err: unknown) {
       console.error('Error loading session:', err);
-      setError(err.message || 'Failed to load session');
+      const errorMessage =
+        err instanceof Error ? err.message : 'Failed to load session';
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [sessionId]);
+
+  useEffect(() => {
+    if (sessionId && user) {
+      loadSession();
+    }
+  }, [sessionId, user, loadSession]);
 
   const formatTime = (seconds: number): string => {
     const hours = Math.floor(seconds / 3600);
@@ -63,41 +66,6 @@ function SessionShareContent({ sessionId }: { sessionId: string }) {
       return `${hours}h ${minutes}m`;
     }
     return `${minutes}m`;
-  };
-
-  const _formatTimeAgo = (date: Date): string => {
-    const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
-
-    const sessionDate = new Date(
-      date.getFullYear(),
-      date.getMonth(),
-      date.getDate()
-    );
-
-    const timeStr = date.toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true,
-    });
-
-    if (sessionDate.getTime() === today.getTime()) {
-      return `Today at ${timeStr}`;
-    }
-
-    if (sessionDate.getTime() === yesterday.getTime()) {
-      return `Yesterday at ${timeStr}`;
-    }
-
-    const dateStr = date.toLocaleDateString('en-US', {
-      month: 'long',
-      day: 'numeric',
-      year: 'numeric',
-    });
-
-    return `${dateStr} at ${timeStr}`;
   };
 
   const getUserInitials = (user: User): string => {
@@ -167,8 +135,8 @@ function SessionShareContent({ sessionId }: { sessionId: string }) {
       link.download = `ambira-${session?.title?.toLowerCase().replace(/\s+/g, '-') || 'session'}-${selectedLayout}.png`;
       link.href = dataUrl;
       link.click();
-    } catch (error) {
-      console.error('Failed to export image:', error);
+    } catch {
+      console.error('Failed to export image');
       setExportError('Failed to export image. Please try again.');
     } finally {
       setIsExporting(false);
@@ -222,7 +190,7 @@ function SessionShareContent({ sessionId }: { sessionId: string }) {
       } else {
         await handleExport();
       }
-    } catch (error) {
+    } catch (_error) {
       console.error('Failed to share image:', error);
       if ((error as Error).name !== 'AbortError') {
         setExportError('Failed to share. Downloading instead...');
@@ -557,6 +525,7 @@ function SessionShareContent({ sessionId }: { sessionId: string }) {
                       backgroundColor: '#f9fafb',
                     }}
                   >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={img}
                       alt={`Session image ${idx + 1}`}
@@ -589,6 +558,7 @@ function SessionShareContent({ sessionId }: { sessionId: string }) {
                       backgroundColor: '#f9fafb',
                     }}
                   >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={img}
                       alt={`Session image ${idx + 1}`}
@@ -848,6 +818,7 @@ function SessionShareContent({ sessionId }: { sessionId: string }) {
                   overflow: 'hidden',
                 }}
               >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={session.user.profilePicture}
                   alt={session.user.name}

@@ -57,8 +57,9 @@ export function useFollowers(userId: string) {
                   profilePicture: userData.profilePicture,
                   bio: userData.bio,
                 } as FollowerUser;
-              } catch (_error) {
+              } catch (_err) {
                 // Failed to fetch follower user
+                console.error('Failed to fetch follower user:', _err);
                 return null;
               }
             }
@@ -69,8 +70,12 @@ export function useFollowers(userId: string) {
             (follower): follower is FollowerUser => follower !== null
           );
         }
-      } catch (_error) {
+      } catch (_err) {
         // If social_graph doesn't exist, fall through to old follows collection
+        console.debug(
+          'Social graph not found, falling back to follows collection:',
+          _err
+        );
       }
 
       // Fallback to old follows collection
@@ -103,6 +108,10 @@ export function useFollowers(userId: string) {
           } as FollowerUser;
         } catch (_err) {
           // Failed to fetch follower user
+          console.error(
+            'Failed to fetch follower user from follows collection:',
+            _err
+          );
           return null;
         }
       });

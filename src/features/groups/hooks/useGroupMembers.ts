@@ -64,8 +64,9 @@ export function useGroupMembers(groupId: string) {
               bio: userData.bio,
               joinedAt: membershipData.joinedAt?.toDate() || new Date(),
             } as GroupMember;
-          } catch (_error) {
+          } catch (_err) {
             // Failed to fetch user
+            console.error('Failed to fetch user:', _err);
             return null;
           }
         }

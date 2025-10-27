@@ -35,12 +35,7 @@ import {
 import { db, auth } from '@/lib/firebase';
 
 // Error handling
-import {
-  handleError,
-  isPermissionError,
-  isNotFoundError,
-  ErrorSeverity,
-} from '@/lib/errorHandler';
+import { handleError, isPermissionError } from '@/lib/errorHandler';
 import { checkRateLimit } from '@/lib/rateLimit';
 
 // Error messages
@@ -61,7 +56,6 @@ import type {
   CommentWithDetails,
   CreateCommentData,
   UpdateCommentData,
-  CommentLike,
   CommentsResponse,
 } from '@/types';
 
@@ -97,7 +91,7 @@ export const firebaseCommentApi = {
         match => match[1]
       );
 
-      const commentData: any = {
+      const commentData: unknown = {
         sessionId: data.sessionId,
         userId,
         content: data.content,
@@ -229,7 +223,7 @@ export const firebaseCommentApi = {
         updatedAt: new Date(),
         user: buildCommentUserDetails(userId, userData || null),
       };
-    } catch (error) {
+    } catch (_error) {
       const apiError = handleError(error, 'Create comment', {
         defaultMessage: ERROR_MESSAGES.COMMENT_POST_FAILED,
       });
@@ -281,7 +275,7 @@ export const firebaseCommentApi = {
         createdAt: convertTimestamp(commentData.createdAt),
         updatedAt: new Date(),
       } as Comment;
-    } catch (error) {
+    } catch (_error) {
       const apiError = handleError(error, 'Update comment', {
         defaultMessage: ERROR_MESSAGES.COMMENT_POST_FAILED,
       });
@@ -345,7 +339,7 @@ export const firebaseCommentApi = {
           replyCount: increment(-1),
         });
       }
-    } catch (error) {
+    } catch (_error) {
       const apiError = handleError(error, 'Delete comment', {
         defaultMessage: ERROR_MESSAGES.COMMENT_DELETE_FAILED,
       });
@@ -387,7 +381,7 @@ export const firebaseCommentApi = {
       await updateDoc(commentRef, {
         likeCount: increment(1),
       });
-    } catch (error) {
+    } catch (_error) {
       const apiError = handleError(error, 'Like comment', {
         defaultMessage: 'Failed to like comment',
       });
@@ -425,7 +419,7 @@ export const firebaseCommentApi = {
       await updateDoc(commentRef, {
         likeCount: increment(-1),
       });
-    } catch (error) {
+    } catch (_error) {
       const apiError = handleError(error, 'Unlike comment', {
         defaultMessage: 'Failed to unlike comment',
       });
@@ -532,7 +526,7 @@ export const firebaseCommentApi = {
         comments,
         hasMore,
       };
-    } catch (error) {
+    } catch (_error) {
       // Handle permission errors gracefully - return empty comments
       if (isPermissionError(error)) {
         // Don't log permission errors - they're expected for restricted sessions
@@ -654,7 +648,7 @@ export const firebaseCommentApi = {
         hasMore,
         nextCursor: hasMore && lastDocInResult ? lastDocInResult.id : undefined,
       };
-    } catch (error) {
+    } catch (_error) {
       const apiError = handleError(error, 'Get comments', {
         defaultMessage: ERROR_MESSAGES.COMMENT_LOAD_FAILED,
       });
@@ -724,7 +718,7 @@ export const firebaseCommentApi = {
       );
 
       return replies;
-    } catch (error) {
+    } catch (_error) {
       const apiError = handleError(error, 'Get replies', {
         defaultMessage: ERROR_MESSAGES.COMMENT_LOAD_FAILED,
       });
@@ -804,7 +798,7 @@ export const firebaseCommentApi = {
       );
 
       return comments;
-    } catch (error) {
+    } catch (_error) {
       // Handle permission errors gracefully - return empty array
       if (isPermissionError(error)) {
         return [];

@@ -2,6 +2,9 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import ActivitiesPage from '../page';
 import { Activity } from '@/types';
+import { useAuth } from '@/contexts/AuthContext';
+import { useProjects } from '@/contexts/ProjectsContext';
+import { useRouter } from 'next/navigation';
 
 /**
  * Integration tests for Activities Page
@@ -44,7 +47,6 @@ jest.mock('@/components/ProtectedRoute', () => ({
 jest.mock('@/components/ErrorBoundary', () => ({
   ErrorBoundary: ({
     children,
-    _onError,
   }: {
     children: React.ReactNode;
     onError?: (error: Error, errorInfo: React.ErrorInfo) => void;
@@ -105,8 +107,7 @@ describe('Activities Page Integration', () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
-    const { useAuth } = require('@/contexts/AuthContext');
-    useAuth.mockReturnValue({
+    (useAuth as jest.Mock).mockReturnValue({
       user: {
         id: 'test-user',
         email: 'test@example.com',
@@ -114,8 +115,7 @@ describe('Activities Page Integration', () => {
       },
     });
 
-    const { useProjects } = require('@/contexts/ProjectsContext');
-    useProjects.mockReturnValue({
+    (useProjects as jest.Mock).mockReturnValue({
       projects: mockActivities,
       isLoading: false,
       error: null,
@@ -123,8 +123,7 @@ describe('Activities Page Integration', () => {
       archiveProject: jest.fn(),
     });
 
-    const { useRouter } = require('next/navigation');
-    useRouter.mockReturnValue({
+    (useRouter as jest.Mock).mockReturnValue({
       push: jest.fn(),
     });
   });
@@ -181,7 +180,7 @@ describe('Activities Page Integration', () => {
     });
 
     it('should hide desktop header on mobile using CSS classes', () => {
-      const { container } = render(<ActivitiesPage />);
+      render(<ActivitiesPage />);
 
       const desktopHeaderContainer =
         screen.getByTestId('desktop-header').parentElement;
@@ -190,7 +189,7 @@ describe('Activities Page Integration', () => {
     });
 
     it('should hide mobile header on desktop using CSS classes', () => {
-      const { container } = render(<ActivitiesPage />);
+      render(<ActivitiesPage />);
 
       const mobileHeaderContainer =
         screen.getByTestId('mobile-header').parentElement;
@@ -198,7 +197,7 @@ describe('Activities Page Integration', () => {
     });
 
     it('should hide bottom navigation on desktop using CSS classes', () => {
-      const { container } = render(<ActivitiesPage />);
+      render(<ActivitiesPage />);
 
       const bottomNavContainer =
         screen.getByTestId('bottom-navigation').parentElement;
@@ -208,9 +207,8 @@ describe('Activities Page Integration', () => {
 
   describe('Edit Handler Integration', () => {
     it('should navigate to edit page when handleEditActivity is called', () => {
-      const { useRouter } = require('next/navigation');
       const mockPush = jest.fn();
-      useRouter.mockReturnValue({
+      (useRouter as jest.Mock).mockReturnValue({
         push: mockPush,
       });
 
@@ -223,9 +221,8 @@ describe('Activities Page Integration', () => {
     });
 
     it('should construct correct edit URL with activity ID', () => {
-      const { useRouter } = require('next/navigation');
       const mockPush = jest.fn();
-      useRouter.mockReturnValue({
+      (useRouter as jest.Mock).mockReturnValue({
         push: mockPush,
       });
 
@@ -250,8 +247,11 @@ describe('Activities Page Integration', () => {
       const mockOnError = jest.fn();
 
       // Temporarily override the mock to capture onError
+      const ErrorBoundaryModule = jest.requireMock(
+        '@/components/ErrorBoundary'
+      );
       jest
-        .spyOn(require('@/components/ErrorBoundary'), 'ErrorBoundary')
+        .spyOn(ErrorBoundaryModule, 'ErrorBoundary')
         .mockImplementation(
           ({
             children,
@@ -278,8 +278,7 @@ describe('Activities Page Integration', () => {
 
   describe('Authentication States', () => {
     it('should not render content when user is not authenticated', () => {
-      const { useAuth } = require('@/contexts/AuthContext');
-      useAuth.mockReturnValue({
+      (useAuth as jest.Mock).mockReturnValue({
         user: null,
       });
 
@@ -290,8 +289,7 @@ describe('Activities Page Integration', () => {
     });
 
     it('should render full content when user is authenticated', () => {
-      const { useAuth } = require('@/contexts/AuthContext');
-      useAuth.mockReturnValue({
+      (useAuth as jest.Mock).mockReturnValue({
         user: {
           id: 'test-user',
           email: 'test@example.com',
@@ -308,33 +306,33 @@ describe('Activities Page Integration', () => {
 
   describe('Responsive Layout', () => {
     it('should apply correct background colors for desktop and mobile', () => {
-      const { container } = render(<ActivitiesPage />);
+      render(<ActivitiesPage />);
 
-      const mainContent = container.querySelector('.min-h-screen');
+      const mainContent = document.querySelector('.min-h-screen');
       expect(mainContent).toHaveClass('bg-white');
       expect(mainContent).toHaveClass('md:bg-gray-50');
     });
 
     it('should apply correct padding for mobile and desktop', () => {
-      const { container } = render(<ActivitiesPage />);
+      render(<ActivitiesPage />);
 
-      const contentArea = container.querySelector('.pb-32');
+      const contentArea = document.querySelector('.pb-32');
       expect(contentArea).toHaveClass('pb-32'); // Mobile bottom padding
       expect(contentArea).toHaveClass('md:pb-8'); // Desktop bottom padding
     });
 
     it('should have max-width container for content', () => {
-      const { container } = render(<ActivitiesPage />);
+      render(<ActivitiesPage />);
 
-      const contentContainer = container.querySelector('.max-w-5xl');
+      const contentContainer = document.querySelector('.max-w-5xl');
       expect(contentContainer).toBeInTheDocument();
       expect(contentContainer).toHaveClass('mx-auto'); // Centered
     });
 
     it('should have responsive horizontal padding', () => {
-      const { container } = render(<ActivitiesPage />);
+      render(<ActivitiesPage />);
 
-      const contentContainer = container.querySelector('.max-w-5xl');
+      const contentContainer = document.querySelector('.max-w-5xl');
       expect(contentContainer).toHaveClass('px-4');
       expect(contentContainer).toHaveClass('md:px-6');
     });
@@ -344,8 +342,7 @@ describe('Activities Page Integration', () => {
     it('should wrap ActivityList in Suspense', () => {
       // This test verifies that the Suspense wrapper exists by checking
       // that the page can handle loading states gracefully
-      const { useProjects } = require('@/contexts/ProjectsContext');
-      useProjects.mockReturnValue({
+      (useProjects as jest.Mock).mockReturnValue({
         projects: null,
         isLoading: true,
         error: null,
@@ -362,8 +359,7 @@ describe('Activities Page Integration', () => {
 
   describe('Error State Handling', () => {
     it('should handle error state from ProjectsContext', () => {
-      const { useProjects } = require('@/contexts/ProjectsContext');
-      useProjects.mockReturnValue({
+      (useProjects as jest.Mock).mockReturnValue({
         projects: null,
         isLoading: false,
         error: 'Failed to load activities',
@@ -393,26 +389,25 @@ describe('Activities Page Integration', () => {
 
   describe('Page Accessibility', () => {
     it('should have proper page structure with main content area', () => {
-      const { container } = render(<ActivitiesPage />);
+      render(<ActivitiesPage />);
 
       // Should have a min-h-screen container for full viewport height
-      const pageContainer = container.querySelector('.min-h-screen');
+      const pageContainer = document.querySelector('.min-h-screen');
       expect(pageContainer).toBeInTheDocument();
     });
 
     it('should have proper spacing for content readability', () => {
-      const { container } = render(<ActivitiesPage />);
+      render(<ActivitiesPage />);
 
-      const contentArea = container.querySelector('.py-4');
+      const contentArea = document.querySelector('.py-4');
       expect(contentArea).toBeInTheDocument();
     });
   });
 
   describe('Component Integration', () => {
     it('should pass onEditActivity handler to ActivityList', () => {
-      const { useRouter } = require('next/navigation');
       const mockPush = jest.fn();
-      useRouter.mockReturnValue({
+      (useRouter as jest.Mock).mockReturnValue({
         push: mockPush,
       });
 
@@ -429,7 +424,7 @@ describe('Activities Page Integration', () => {
     });
 
     it('should integrate all layout components in correct hierarchy', () => {
-      const { container } = render(<ActivitiesPage />);
+      render(<ActivitiesPage />);
 
       // Check that all major components are present
       expect(screen.getByTestId('protected-route')).toBeInTheDocument();

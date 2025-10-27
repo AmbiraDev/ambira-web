@@ -56,6 +56,7 @@ const SessionCardSkeleton: React.FC = () => (
 interface FeedProps {
   filters?: FeedFilters;
   className?: string;
+  initialLimit?: number;
   showEndMessage?: boolean;
   showGroupInfo?: boolean;
 }
@@ -63,6 +64,7 @@ interface FeedProps {
 export const Feed: React.FC<FeedProps> = ({
   filters = {},
   className = '',
+  initialLimit: _initialLimit = 10,
   showEndMessage = true,
   showGroupInfo = false,
 }) => {
@@ -160,7 +162,7 @@ export const Feed: React.FC<FeedProps> = ({
 
         let response;
         if (cachedData) {
-          response = cachedData as { sessions: any[] };
+          response = cachedData as { sessions: SessionWithDetails[] };
         } else {
           response = await firebaseApi.post.getFeedSessions(
             5,
@@ -202,7 +204,13 @@ export const Feed: React.FC<FeedProps> = ({
       clearInterval(interval);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [allSessions, filters, queryClient]);
+  }, [
+    allSessions,
+    filters,
+    queryClient,
+    setHasNewSessions,
+    setNewSessionsCount,
+  ]);
 
   // Handle support with optimistic updates via React Query
   const handleSupport = useCallback(
@@ -237,9 +245,14 @@ export const Feed: React.FC<FeedProps> = ({
         await navigator.clipboard.writeText(sessionUrl);
         // Could show success toast here
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       // Silently ignore if user cancels the share dialog
-      if (err?.name === 'AbortError') {
+      if (
+        err &&
+        typeof err === 'object' &&
+        'name' in err &&
+        err.name === 'AbortError'
+      ) {
         return;
       }
       // Could show error toast here
@@ -297,7 +310,8 @@ export const Feed: React.FC<FeedProps> = ({
     );
 
     return unsubscribe;
-  }, [top10SessionIdsString]); // Only re-run when top 10 IDs change
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [top10SessionIdsString]); // Only re-run when top 10 IDs change, allSessions.length is checked but not needed as dependency since top10SessionIdsString already derives from allSessions
 
   // Infinite scroll using IntersectionObserver
   useEffect(() => {

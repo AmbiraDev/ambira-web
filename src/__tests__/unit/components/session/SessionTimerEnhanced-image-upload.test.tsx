@@ -20,7 +20,7 @@ jest.mock('@/lib/imageUpload');
 jest.mock('next/image', () => ({
   __esModule: true,
   default: (props: React.ImgHTMLAttributes<HTMLImageElement>) => {
-    return <img {...props} alt={props.alt || ''} />;
+    return <img {...props} alt={props.alt || ''} data-testid="next-image" />;
   },
 }));
 

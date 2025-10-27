@@ -17,9 +17,10 @@ import { CACHE_KEYS, CACHE_TIMES } from '@/lib/queryClient';
  */
 export function useActiveTimerQuery() {
   const { user, isAuthenticated } = useAuth();
+  const userId = user?.id;
 
   return useQuery({
-    queryKey: CACHE_KEYS.ACTIVE_SESSION(user?.id || 'none'),
+    queryKey: [...CACHE_KEYS.ACTIVE_SESSION(userId || 'none'), userId, user],
     queryFn: async () => {
       if (!user) return null;
 
@@ -43,7 +44,6 @@ export function useActiveTimerQuery() {
     staleTime: CACHE_TIMES.REAL_TIME, // 30 seconds - frequently check for updates
     refetchOnWindowFocus: true, // Refetch when window regains focus
     refetchInterval: 10000, // Check every 10 seconds if session still exists
-     
   });
 }
 

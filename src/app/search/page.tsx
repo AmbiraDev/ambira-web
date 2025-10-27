@@ -13,6 +13,7 @@ import { Users } from 'lucide-react';
 import { firebaseApi } from '@/lib/api';
 import { useQueryClient } from '@tanstack/react-query';
 import { CACHE_KEYS } from '@/lib/queryClient';
+import type { User, Group } from '@/types';
 
 // Optimized hooks
 import {
@@ -153,14 +154,16 @@ function SearchContent() {
       queryClient.invalidateQueries({
         queryKey: CACHE_KEYS.USER_GROUPS(user.id),
       });
-    } catch (error) {
-      console.error('Failed to join/leave group:', error);
+    } catch {
+      console.error('Failed to join/leave group');
     } finally {
       setJoiningGroup(null);
     }
   };
 
-  const renderUserResult = (user: any) => {
+  const renderUserResult = (
+    user: User & { isSelf?: boolean; isFollowing?: boolean }
+  ) => {
     if (user.isSelf) {
       return (
         <Link
@@ -200,7 +203,7 @@ function SearchContent() {
     );
   };
 
-  const renderGroupResult = (group: any) => {
+  const renderGroupResult = (group: Group & { members?: number }) => {
     const isJoined = joinedGroupIds.has(group.id);
     const isLoading = joiningGroup === group.id;
 

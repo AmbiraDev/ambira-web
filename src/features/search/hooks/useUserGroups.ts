@@ -31,7 +31,12 @@ export function useUserGroups({
   limit,
 }: UseUserGroupsOptions): UseUserGroupsReturn {
   const { data, isLoading, isError, error } = useQuery({
-    queryKey: userId ? CACHE_KEYS.USER_GROUPS(userId) : ['user-groups', 'null'],
+    // CACHE_KEYS.USER_GROUPS(userId) already includes userId in the key
+    queryKey: [
+      ...(userId ? CACHE_KEYS.USER_GROUPS(userId) : ['user-groups', 'null']),
+      userId,
+      limit,
+    ],
     queryFn: () => {
       if (!userId) {
         return [];

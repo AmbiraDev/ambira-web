@@ -1,15 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import {
-  MessageSquare,
-  Users,
-  Trophy,
-  Target,
-  ChevronDown,
-  BarChart3,
-} from 'lucide-react';
+import React from 'react';
+import { MessageSquare, Users, Trophy, Target, BarChart3 } from 'lucide-react';
 
 export type GroupTab =
   | 'posts'
@@ -22,9 +14,7 @@ export type GroupTab =
 interface GroupTabsProps {
   activeTab: GroupTab;
   onTabChange: (tab: GroupTab) => void;
-  groupId: string;
   memberCount: number;
-  isAdmin?: boolean;
 }
 
 const tabConfig = {
@@ -63,12 +53,8 @@ const tabConfig = {
 export default function GroupTabs({
   activeTab,
   onTabChange,
-  groupId,
   memberCount,
-  isAdmin = false,
 }: GroupTabsProps) {
-  const [_isMobileMenuOpen, _setIsMobileMenuOpen] = useState(false);
-
   const tabs = Object.entries(tabConfig) as [
     GroupTab,
     (typeof tabConfig)[GroupTab],

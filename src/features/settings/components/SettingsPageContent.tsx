@@ -20,26 +20,21 @@ import {
   Globe,
   Mail,
   Upload,
-  ChevronRight,
   Link as LinkIcon,
   Twitter,
   Github,
   Linkedin,
-  LogOut,
-  Trash2,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import Image from 'next/image';
 import { firebaseUserApi } from '@/lib/api';
 import { toast } from 'sonner';
-import { useRouter } from 'next/navigation';
 import ConfirmDialog from '@/components/ConfirmDialog';
 
 type SettingsTab = 'profile' | 'privacy' | 'notifications' | 'display';
 
 export function SettingsPageContent() {
   const { user, logout } = useAuth();
-  const _router = useRouter();
   const [activeTab, setActiveTab] = useState<SettingsTab>('profile');
   const [formData, setFormData] = useState({
     name: user?.name || '',
@@ -731,7 +726,10 @@ export function SettingsPageContent() {
                           onChange={e =>
                             setFormData({
                               ...formData,
-                              profileVisibility: e.target.value as any,
+                              profileVisibility: e.target.value as
+                                | 'everyone'
+                                | 'followers'
+                                | 'private',
                             })
                           }
                           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] outline-none"

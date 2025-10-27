@@ -34,9 +34,6 @@ export default function ChallengesPage() {
   >('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [_userProgressMap, _setUserProgressMap] = useState<
-    Record<string, number>
-  >({});
 
   // Build filters based on active filter state
   const filters = useMemo(() => {
@@ -81,8 +78,8 @@ export default function ChallengesPage() {
   const handleJoinChallenge = async (challengeId: string) => {
     try {
       await joinChallengeMutation.mutateAsync(challengeId);
-    } catch (error) {
-      console.error('Failed to join challenge:', error);
+    } catch {
+      console.error('Failed to join challenge');
       alert('Failed to join challenge. Please try again.');
     }
   };
@@ -90,8 +87,8 @@ export default function ChallengesPage() {
   const handleLeaveChallenge = async (challengeId: string) => {
     try {
       await leaveChallengeMutation.mutateAsync(challengeId);
-    } catch (error) {
-      console.error('Failed to leave challenge:', error);
+    } catch {
+      console.error('Failed to leave challenge');
       alert('Failed to leave challenge. Please try again.');
     }
   };
@@ -131,7 +128,11 @@ export default function ChallengesPage() {
               return (
                 <button
                   key={tab.key}
-                  onClick={() => setActiveFilter(tab.key as any)}
+                  onClick={() =>
+                    setActiveFilter(
+                      tab.key as 'all' | 'active' | 'upcoming' | 'participating'
+                    )
+                  }
                   className={`flex items-center gap-2 px-4 py-2.5 rounded-lg font-semibold text-sm transition-colors min-h-[44px] ${
                     isActive
                       ? 'bg-[#007AFF] text-white'
@@ -195,7 +196,7 @@ export default function ChallengesPage() {
                 key={challenge.id}
                 challenge={challenge}
                 isParticipating={participatingChallenges.has(challenge.id)}
-                userProgress={_userProgressMap[challenge.id] || 0}
+                userProgress={0}
                 onJoin={() => handleJoinChallenge(challenge.id)}
                 onLeave={() => handleLeaveChallenge(challenge.id)}
                 showActions={!!user}

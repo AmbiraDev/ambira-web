@@ -1,28 +1,44 @@
-import { uploadImage, uploadImages, deleteImage, deleteImages, compressImage } from '../imageUpload';
+import {
+  uploadImage,
+  uploadImages,
+  deleteImage,
+  deleteImages,
+  compressImage,
+} from '../imageUpload';
 import { storage, auth } from '../firebase';
-import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
+import {
+  ref,
+  uploadBytes,
+  getDownloadURL,
+  deleteObject,
+} from 'firebase/storage';
 
 // Mock Firebase modules
 jest.mock('../firebase', () => ({
   storage: {},
   auth: {
     currentUser: {
-      uid: 'test-user-123'
-    }
-  }
+      uid: 'test-user-123',
+    },
+  },
 }));
 
 jest.mock('firebase/storage', () => ({
   ref: jest.fn(),
   uploadBytes: jest.fn(),
   getDownloadURL: jest.fn(),
-  deleteObject: jest.fn()
+  deleteObject: jest.fn(),
 }));
 
 describe('imageUpload utilities', () => {
-  const mockFile = new File(['test content'], 'test-image.jpg', { type: 'image/jpeg' });
-  const mockStorageRef = { fullPath: 'session-images/test-user-123/test-image.jpg' };
-  const mockDownloadURL = 'https://firebasestorage.googleapis.com/test-image.jpg';
+  const mockFile = new File(['test content'], 'test-image.jpg', {
+    type: 'image/jpeg',
+  });
+  const mockStorageRef = {
+    fullPath: 'session-images/test-user-123/test-image.jpg',
+  };
+  const mockDownloadURL =
+    'https://firebasestorage.googleapis.com/test-image.jpg';
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -38,7 +54,7 @@ describe('imageUpload utilities', () => {
 
       expect(result).toEqual({
         url: mockDownloadURL,
-        path: mockStorageRef.fullPath
+        path: mockStorageRef.fullPath,
       });
       expect(ref).toHaveBeenCalled();
       expect(uploadBytes).toHaveBeenCalledWith(mockStorageRef, mockFile);
@@ -47,23 +63,35 @@ describe('imageUpload utilities', () => {
 
     it('should throw error if user is not authenticated', async () => {
       const originalUser = auth.currentUser;
-      (auth as any).currentUser = null;
+      (auth as { currentUser: null | { uid: string } }).currentUser = null;
 
-      await expect(uploadImage(mockFile)).rejects.toThrow('User must be authenticated to upload images');
+      await expect(uploadImage(mockFile)).rejects.toThrow(
+        'User must be authenticated to upload images'
+      );
 
-      (auth as any).currentUser = originalUser;
+      (auth as { currentUser: { uid: string } }).currentUser = originalUser as {
+        uid: string;
+      };
     });
 
     it('should throw error for non-image files', async () => {
-      const textFile = new File(['text content'], 'test.txt', { type: 'text/plain' });
+      const textFile = new File(['text content'], 'test.txt', {
+        type: 'text/plain',
+      });
 
-      await expect(uploadImage(textFile)).rejects.toThrow('File must be an image');
+      await expect(uploadImage(textFile)).rejects.toThrow(
+        'File must be an image'
+      );
     });
 
     it('should throw error for files larger than 5MB', async () => {
-      const largeFile = new File(['x'.repeat(6 * 1024 * 1024)], 'large.jpg', { type: 'image/jpeg' });
+      const largeFile = new File(['x'.repeat(6 * 1024 * 1024)], 'large.jpg', {
+        type: 'image/jpeg',
+      });
 
-      await expect(uploadImage(largeFile)).rejects.toThrow('Image must be less than 5MB');
+      await expect(uploadImage(largeFile)).rejects.toThrow(
+        'Image must be less than 5MB'
+      );
     });
 
     it('should use custom folder path', async () => {
@@ -91,7 +119,9 @@ describe('imageUpload utilities', () => {
     it('should handle upload errors gracefully', async () => {
       (uploadBytes as jest.Mock).mockRejectedValue(new Error('Network error'));
 
-      await expect(uploadImage(mockFile)).rejects.toThrow('Failed to upload image');
+      await expect(uploadImage(mockFile)).rejects.toThrow(
+        'Failed to upload image'
+      );
     });
   });
 
@@ -100,7 +130,7 @@ describe('imageUpload utilities', () => {
       const files = [
         new File(['content1'], 'image1.jpg', { type: 'image/jpeg' }),
         new File(['content2'], 'image2.jpg', { type: 'image/jpeg' }),
-        new File(['content3'], 'image3.jpg', { type: 'image/jpeg' })
+        new File(['content3'], 'image3.jpg', { type: 'image/jpeg' }),
       ];
 
       const results = await uploadImages(files);
@@ -115,10 +145,12 @@ describe('imageUpload utilities', () => {
         new File(['1'], '1.jpg', { type: 'image/jpeg' }),
         new File(['2'], '2.jpg', { type: 'image/jpeg' }),
         new File(['3'], '3.jpg', { type: 'image/jpeg' }),
-        new File(['4'], '4.jpg', { type: 'image/jpeg' })
+        new File(['4'], '4.jpg', { type: 'image/jpeg' }),
       ];
 
-      await expect(uploadImages(files)).rejects.toThrow('Maximum 3 images allowed');
+      await expect(uploadImages(files)).rejects.toThrow(
+        'Maximum 3 images allowed'
+      );
     });
 
     it('should handle empty array', async () => {
@@ -131,7 +163,7 @@ describe('imageUpload utilities', () => {
     it('should upload all images in parallel', async () => {
       const files = [
         new File(['1'], '1.jpg', { type: 'image/jpeg' }),
-        new File(['2'], '2.jpg', { type: 'image/jpeg' })
+        new File(['2'], '2.jpg', { type: 'image/jpeg' }),
       ];
 
       const uploadPromise = uploadImages(files);
@@ -156,17 +188,25 @@ describe('imageUpload utilities', () => {
 
     it('should throw error if user is not authenticated', async () => {
       const originalUser = auth.currentUser;
-      (auth as any).currentUser = null;
+      (auth as { currentUser: null | { uid: string } }).currentUser = null;
 
-      await expect(deleteImage('test-path')).rejects.toThrow('User must be authenticated to delete images');
+      await expect(deleteImage('test-path')).rejects.toThrow(
+        'User must be authenticated to delete images'
+      );
 
-      (auth as any).currentUser = originalUser;
+      (auth as { currentUser: { uid: string } }).currentUser = originalUser as {
+        uid: string;
+      };
     });
 
     it('should handle delete errors gracefully', async () => {
-      (deleteObject as jest.Mock).mockRejectedValue(new Error('File not found'));
+      (deleteObject as jest.Mock).mockRejectedValue(
+        new Error('File not found')
+      );
 
-      await expect(deleteImage('test-path')).rejects.toThrow('Failed to delete image');
+      await expect(deleteImage('test-path')).rejects.toThrow(
+        'Failed to delete image'
+      );
     });
   });
 
@@ -175,7 +215,7 @@ describe('imageUpload utilities', () => {
       const paths = [
         'session-images/user/image1.jpg',
         'session-images/user/image2.jpg',
-        'session-images/user/image3.jpg'
+        'session-images/user/image3.jpg',
       ];
 
       await deleteImages(paths);

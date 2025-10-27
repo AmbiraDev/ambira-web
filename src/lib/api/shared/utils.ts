@@ -24,14 +24,23 @@ export const getErrorMessage = (
 /**
  * Convert Firestore timestamp to JavaScript Date
  */
-export const convertTimestamp = (timestamp: any): Date => {
-  if (timestamp?.toDate) {
+export const convertTimestamp = (
+  timestamp: Timestamp | Date | string | number | unknown
+): Date => {
+  // Check if it's a Firestore Timestamp with toDate method
+  if (
+    timestamp &&
+    typeof timestamp === 'object' &&
+    'toDate' in timestamp &&
+    typeof timestamp.toDate === 'function'
+  ) {
     return timestamp.toDate();
   }
   if (timestamp instanceof Date) {
     return timestamp;
   }
-  return new Date(timestamp);
+  // Fallback for strings, numbers, or other formats
+  return new Date(timestamp as string | number);
 };
 
 /**
@@ -45,13 +54,13 @@ export const convertToTimestamp = (date: Date): Timestamp => {
  * Remove undefined values from object
  * Firestore does not accept undefined values in documents
  */
-export const removeUndefinedFields = <T extends Record<string, any>>(
+export const removeUndefinedFields = <T extends Record<string, unknown>>(
   input: T
-): T => {
+): Partial<T> => {
   const entries = Object.entries(input).filter(
     ([, value]) => value !== undefined
   );
-  return Object.fromEntries(entries) as T;
+  return Object.fromEntries(entries) as Partial<T>;
 };
 
 /**

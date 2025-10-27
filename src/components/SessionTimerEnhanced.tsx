@@ -156,8 +156,8 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
       // Reset custom start time after starting
       setCustomStartTime(null);
       setShowTimePickerModal(false);
-    } catch (error) {
-      console.error('Failed to start timer:', error);
+    } catch {
+      console.error('Failed to start timer');
       alert('Failed to start timer. Please try again.');
     }
   };
@@ -165,16 +165,16 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
   const handlePauseTimer = async () => {
     try {
       await pauseTimer();
-    } catch (error) {
-      console.error('Failed to pause timer:', error);
+    } catch {
+      console.error('Failed to pause timer');
     }
   };
 
   const handleResumeTimer = async () => {
     try {
       await resumeTimer();
-    } catch (error) {
-      console.error('Failed to resume timer:', error);
+    } catch {
+      console.error('Failed to resume timer');
     }
   };
 
@@ -246,8 +246,8 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
         try {
           const uploadResults = await uploadImages(selectedImages);
           imageUrls = uploadResults.map(result => result.url);
-        } catch (error) {
-          console.error('Failed to upload images:', error);
+        } catch {
+          console.error('Failed to upload images');
           alert(
             'Failed to upload images. Session will be saved without images.'
           );
@@ -286,11 +286,11 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
 
       // Navigate to home feed with refresh parameter to trigger immediate refresh
       window.location.href = '/?refresh=true';
-    } catch (error) {
-      console.error('Failed to finish timer:', error);
+    } catch (_error) {
+      console.error('Failed to finish timer');
       const errorMessage =
-        error instanceof Error
-          ? error.message
+        _error instanceof Error
+          ? _error.message
           : 'Failed to save session. Please try again.';
       alert(errorMessage);
     }
@@ -310,8 +310,8 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
       setImagePreviewUrls([]);
       // Route to feed page
       window.location.href = '/';
-    } catch (error) {
-      console.error('Failed to cancel timer:', error);
+    } catch {
+      console.error('Failed to cancel timer');
       alert('Failed to cancel session. Please try again.');
     }
   };
@@ -560,7 +560,11 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                   </label>
                   <select
                     value={visibility}
-                    onChange={e => setVisibility(e.target.value as any)}
+                    onChange={e =>
+                      setVisibility(
+                        e.target.value as 'everyone' | 'followers' | 'private'
+                      )
+                    }
                     className="w-full pl-3 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] appearance-none bg-white min-h-[44px]"
                     style={{
                       backgroundImage:

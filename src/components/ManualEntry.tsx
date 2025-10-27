@@ -73,11 +73,11 @@ export const ManualEntry: React.FC<ManualEntryProps> = ({
   useEffect(() => {
     const loadProjects = async () => {
       try {
-        const _token = getAuthToken();
+        getAuthToken();
         // TODO: Load projects from Firebase
         const projectList: Project[] = []; // await mockProjectApiLocal.getProjects(token);
         setProjects(projectList);
-      } catch (error) {
+      } catch (_error) {
         console.error('Failed to load projects:', error);
       }
     };
@@ -117,7 +117,10 @@ export const ManualEntry: React.FC<ManualEntryProps> = ({
     }
   }, [formData.projectId, formData.title, projects]);
 
-  const handleInputChange = (field: keyof SessionFormData, value: any) => {
+  const handleInputChange = (
+    field: keyof SessionFormData,
+    value: string | number | Date | string[] | undefined
+  ) => {
     setFormData(prev => ({ ...prev, [field]: value }));
 
     // Clear error when user starts typing
@@ -170,7 +173,7 @@ export const ManualEntry: React.FC<ManualEntryProps> = ({
 
     try {
       await onSave(formData);
-    } catch (error) {
+    } catch (_error) {
       console.error('Failed to save session:', error);
       setErrors({ submit: ERROR_MESSAGES.SESSION_SAVE_FAILED });
     }

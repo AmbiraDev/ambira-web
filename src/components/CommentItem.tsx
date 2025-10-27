@@ -83,8 +83,8 @@ export const CommentItem: React.FC<CommentItemProps> = ({
       setIsDeleting(true);
       try {
         await onDelete(comment.id);
-      } catch (error) {
-        console.error('Failed to delete comment:', error);
+      } catch (_err) {
+        console.error('Failed to delete comment:', err);
         setIsDeleting(false);
       }
     }

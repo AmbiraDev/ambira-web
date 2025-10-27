@@ -19,7 +19,7 @@ interface FeedFilterDropdownProps {
 
 export const FeedFilterDropdown: React.FC<FeedFilterDropdownProps> = ({
   selectedFilter,
-  onFilterChange
+  onFilterChange,
 }) => {
   const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
@@ -30,7 +30,10 @@ export const FeedFilterDropdown: React.FC<FeedFilterDropdownProps> = ({
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     };
@@ -53,8 +56,8 @@ export const FeedFilterDropdown: React.FC<FeedFilterDropdownProps> = ({
         setIsLoadingGroups(true);
         const userGroups = await firebaseApi.group.getUserGroups(user.id);
         setGroups(userGroups);
-      } catch (error) {
-        console.error('Failed to fetch groups:', error);
+      } catch (_err) {
+        console.error('Failed to fetch groups:', err);
       } finally {
         setIsLoadingGroups(false);
       }
@@ -72,7 +75,11 @@ export const FeedFilterDropdown: React.FC<FeedFilterDropdownProps> = ({
     if (filter.type === 'group' && selectedFilter.type === 'group') {
       return filter.groupId === selectedFilter.groupId;
     }
-    return filter.type === selectedFilter.type && !filter.groupId && !selectedFilter.groupId;
+    return (
+      filter.type === selectedFilter.type &&
+      !filter.groupId &&
+      !selectedFilter.groupId
+    );
   };
 
   return (
@@ -80,7 +87,7 @@ export const FeedFilterDropdown: React.FC<FeedFilterDropdownProps> = ({
       {/* Dropdown Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        onKeyDown={(e) => {
+        onKeyDown={e => {
           if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault();
             setIsOpen(!isOpen);
@@ -91,9 +98,7 @@ export const FeedFilterDropdown: React.FC<FeedFilterDropdownProps> = ({
         aria-expanded={isOpen}
         aria-haspopup="listbox"
       >
-        <span className="font-semibold">
-          {selectedFilter.label}
-        </span>
+        <span className="font-semibold">{selectedFilter.label}</span>
         <ChevronDown
           className={`w-4 h-4 transition-transform ${
             isOpen ? 'transform rotate-180' : ''
@@ -112,10 +117,8 @@ export const FeedFilterDropdown: React.FC<FeedFilterDropdownProps> = ({
           <div className="py-1">
             {/* All */}
             <button
-              onClick={() =>
-                handleFilterSelect({ type: 'all', label: 'All' })
-              }
-              onKeyDown={(e) => {
+              onClick={() => handleFilterSelect({ type: 'all', label: 'All' })}
+              onKeyDown={e => {
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault();
                   handleFilterSelect({ type: 'all', label: 'All' });
@@ -129,11 +132,13 @@ export const FeedFilterDropdown: React.FC<FeedFilterDropdownProps> = ({
               role="option"
               aria-selected={isSelected({ type: 'all', label: 'All' })}
             >
-              <span className={`${
-                isSelected({ type: 'all', label: 'All' })
-                  ? 'font-medium text-gray-900'
-                  : 'text-gray-700'
-              }`}>
+              <span
+                className={`${
+                  isSelected({ type: 'all', label: 'All' })
+                    ? 'font-medium text-gray-900'
+                    : 'text-gray-700'
+                }`}
+              >
                 All
               </span>
               {isSelected({ type: 'all', label: 'All' }) && (
@@ -146,7 +151,7 @@ export const FeedFilterDropdown: React.FC<FeedFilterDropdownProps> = ({
               onClick={() =>
                 handleFilterSelect({ type: 'following', label: 'Following' })
               }
-              onKeyDown={(e) => {
+              onKeyDown={e => {
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault();
                   handleFilterSelect({ type: 'following', label: 'Following' });
@@ -158,13 +163,18 @@ export const FeedFilterDropdown: React.FC<FeedFilterDropdownProps> = ({
                   : 'hover:bg-gray-50'
               }`}
               role="option"
-              aria-selected={isSelected({ type: 'following', label: 'Following' })}
+              aria-selected={isSelected({
+                type: 'following',
+                label: 'Following',
+              })}
             >
-              <span className={`${
-                isSelected({ type: 'following', label: 'Following' })
-                  ? 'font-medium text-gray-900'
-                  : 'text-gray-700'
-              }`}>
+              <span
+                className={`${
+                  isSelected({ type: 'following', label: 'Following' })
+                    ? 'font-medium text-gray-900'
+                    : 'text-gray-700'
+                }`}
+              >
                 Following
               </span>
               {isSelected({ type: 'following', label: 'Following' }) && (
@@ -177,7 +187,7 @@ export const FeedFilterDropdown: React.FC<FeedFilterDropdownProps> = ({
               onClick={() =>
                 handleFilterSelect({ type: 'user', label: 'My Activities' })
               }
-              onKeyDown={(e) => {
+              onKeyDown={e => {
                 if (e.key === 'Enter' || e.key === ' ') {
                   e.preventDefault();
                   handleFilterSelect({ type: 'user', label: 'My Activities' });
@@ -189,13 +199,18 @@ export const FeedFilterDropdown: React.FC<FeedFilterDropdownProps> = ({
                   : 'hover:bg-gray-50'
               }`}
               role="option"
-              aria-selected={isSelected({ type: 'user', label: 'My Activities' })}
+              aria-selected={isSelected({
+                type: 'user',
+                label: 'My Activities',
+              })}
             >
-              <span className={`${
-                isSelected({ type: 'user', label: 'My Activities' })
-                  ? 'font-medium text-gray-900'
-                  : 'text-gray-700'
-              }`}>
+              <span
+                className={`${
+                  isSelected({ type: 'user', label: 'My Activities' })
+                    ? 'font-medium text-gray-900'
+                    : 'text-gray-700'
+                }`}
+              >
                 My Activities
               </span>
               {isSelected({ type: 'user', label: 'My Activities' }) && (
@@ -218,23 +233,23 @@ export const FeedFilterDropdown: React.FC<FeedFilterDropdownProps> = ({
                 No groups yet
               </div>
             ) : (
-              groups.map((group) => (
+              groups.map(group => (
                 <button
                   key={group.id}
                   onClick={() =>
                     handleFilterSelect({
                       type: 'group',
                       label: group.name,
-                      groupId: group.id
+                      groupId: group.id,
                     })
                   }
-                  onKeyDown={(e) => {
+                  onKeyDown={e => {
                     if (e.key === 'Enter' || e.key === ' ') {
                       e.preventDefault();
                       handleFilterSelect({
                         type: 'group',
                         label: group.name,
-                        groupId: group.id
+                        groupId: group.id,
                       });
                     }
                   }}
@@ -242,7 +257,7 @@ export const FeedFilterDropdown: React.FC<FeedFilterDropdownProps> = ({
                     isSelected({
                       type: 'group',
                       label: group.name,
-                      groupId: group.id
+                      groupId: group.id,
                     })
                       ? 'bg-gray-50'
                       : 'hover:bg-gray-50'
@@ -251,25 +266,29 @@ export const FeedFilterDropdown: React.FC<FeedFilterDropdownProps> = ({
                   aria-selected={isSelected({
                     type: 'group',
                     label: group.name,
-                    groupId: group.id
+                    groupId: group.id,
                   })}
                 >
-                  <span className={`truncate ${
-                    isSelected({
-                      type: 'group',
-                      label: group.name,
-                      groupId: group.id
-                    })
-                      ? 'font-medium text-gray-900'
-                      : 'text-gray-700'
-                  }`}>
+                  <span
+                    className={`truncate ${
+                      isSelected({
+                        type: 'group',
+                        label: group.name,
+                        groupId: group.id,
+                      })
+                        ? 'font-medium text-gray-900'
+                        : 'text-gray-700'
+                    }`}
+                  >
                     {group.name}
                   </span>
                   {isSelected({
                     type: 'group',
                     label: group.name,
-                    groupId: group.id
-                  }) && <Check className="w-5 h-5 flex-shrink-0 ml-2 text-gray-900" />}
+                    groupId: group.id,
+                  }) && (
+                    <Check className="w-5 h-5 flex-shrink-0 ml-2 text-gray-900" />
+                  )}
                 </button>
               ))
             )}

@@ -1,11 +1,10 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Clock, Target, TrendingUp, BarChart3 } from 'lucide-react';
 import { ActivityChart } from './ActivityChart';
 import { ProgressRing } from './ProgressRing';
-import { AnalyticsPeriod, _ProjectStats } from '@/types';
-import { _firebaseProjectApi, _firebaseSessionApi } from '@/lib/api';
+import { AnalyticsPeriod } from '@/types';
 import { useAuth } from '@/hooks/useAuth';
 import { debug } from '@/lib/debug';
 
@@ -51,7 +50,7 @@ export const ProjectAnalytics: React.FC<ProjectAnalyticsProps> = ({
   const [analyticsData, setAnalyticsData] =
     useState<ProjectAnalyticsData | null>(null);
 
-  const loadAnalyticsData = async () => {
+  const loadAnalyticsData = useCallback(async () => {
     if (!user) return;
 
     try {
@@ -64,7 +63,7 @@ export const ProjectAnalytics: React.FC<ProjectAnalyticsProps> = ({
 
       // TODO: Implement getSessionsByProject(projectId, startDate, endDate) in src/lib/api/sessions/
       // This should filter sessions by projectId and date range for analytics
-      const sessions: any[] = [];
+      const sessions: unknown[] = [];
 
       // Calculate cumulative hours data
       const dailyHours: Record<string, number> = {};
@@ -112,7 +111,7 @@ export const ProjectAnalytics: React.FC<ProjectAnalyticsProps> = ({
       const sessionFrequency = Object.entries(weeklyData)
         .sort(([a], [b]) => a.localeCompare(b))
         .slice(-12) // Last 12 weeks
-        .map(([_weekKey, count], index) => ({
+        .map(([, count], index) => ({
           label: `Week ${index + 1}`,
           value: count,
         }));
@@ -165,8 +164,8 @@ export const ProjectAnalytics: React.FC<ProjectAnalyticsProps> = ({
             ? sessionFrequency
             : [{ label: 'This Week', value: sessions.length }],
       });
-    } catch (error) {
-      debug.error('ProjectAnalytics - Failed to load analytics data:', error);
+    } catch {
+      debug.error('ProjectAnalytics - Failed to load analytics data');
       // Fallback to basic data
       setAnalyticsData({
         totalHours: 0,
@@ -185,11 +184,11 @@ export const ProjectAnalytics: React.FC<ProjectAnalyticsProps> = ({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [user, selectedPeriod]);
 
   useEffect(() => {
     loadAnalyticsData();
-  }, [projectId, selectedPeriod, user]);
+  }, [loadAnalyticsData, projectId]);
 
   if (isLoading) {
     return (

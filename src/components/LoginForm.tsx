@@ -21,12 +21,12 @@ export const LoginForm: React.FC = () => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
-    
+
     // Clear field-specific error when user starts typing
     if (errors[name as keyof LoginCredentials]) {
       setErrors(prev => ({ ...prev, [name]: undefined }));
     }
-    
+
     // Clear submit error
     if (submitError) {
       setSubmitError('');
@@ -66,9 +66,10 @@ export const LoginForm: React.FC = () => {
       await login(formData);
 
       // Check for invite context in sessionStorage
-      const inviteContextStr = typeof window !== 'undefined'
-        ? sessionStorage.getItem('inviteContext')
-        : null;
+      const inviteContextStr =
+        typeof window !== 'undefined'
+          ? sessionStorage.getItem('inviteContext')
+          : null;
 
       if (inviteContextStr) {
         try {
@@ -82,16 +83,20 @@ export const LoginForm: React.FC = () => {
             router.push(`/invite/group/${inviteContext.groupId}`);
             return;
           }
-        } catch (err) {
-          console.error('Error parsing invite context:', err);
+        } catch (_error) {
+          console.error('Error parsing invite context:', error);
         }
       }
 
       // Get redirect URL from query params
       const redirectTo = searchParams.get('redirect') || '/';
       router.push(redirectTo);
-    } catch (error) {
-      setSubmitError(error instanceof Error ? error.message : 'Login failed. Please try again.');
+    } catch (_error) {
+      setSubmitError(
+        error instanceof Error
+          ? error.message
+          : 'Login failed. Please try again.'
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -107,7 +112,10 @@ export const LoginForm: React.FC = () => {
 
       <div className="space-y-6">
         <div>
-          <label htmlFor="email" className="block text-sm font-medium text-foreground mb-2">
+          <label
+            htmlFor="email"
+            className="block text-sm font-medium text-foreground mb-2"
+          >
             Email address
           </label>
           <input
@@ -128,7 +136,10 @@ export const LoginForm: React.FC = () => {
         </div>
 
         <div>
-          <label htmlFor="password" className="block text-sm font-medium text-foreground mb-2">
+          <label
+            htmlFor="password"
+            className="block text-sm font-medium text-foreground mb-2"
+          >
             Password
           </label>
           <input

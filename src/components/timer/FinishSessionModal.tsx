@@ -31,7 +31,6 @@ interface FinishSessionModalProps {
   setVisibility: (visibility: 'everyone' | 'followers' | 'private') => void;
   isUploadingImages: boolean;
   onSave: () => void;
-  _onCancel: () => void;
   onResume: () => void;
   onDiscard: () => void;
 }
@@ -58,7 +57,6 @@ export function FinishSessionModal({
   setVisibility,
   isUploadingImages,
   onSave,
-  _onCancel,
   onResume,
   onDiscard,
 }: FinishSessionModalProps) {

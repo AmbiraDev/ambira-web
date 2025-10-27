@@ -42,7 +42,7 @@ export const WeekStreakCalendar: React.FC<WeekStreakCalendarProps> = ({
     const loadWeeklySessions = async () => {
       try {
         // Fetch a generous amount and filter client-side by week range
-        const res = await firebaseApi.session.getSessions(1, 100, {} as any);
+        const res = await firebaseApi.session.getSessions(100, {});
 
         const withinWeek = res.sessions.filter(s => {
           const dt = new Date(s.startTime);
@@ -56,8 +56,8 @@ export const WeekStreakCalendar: React.FC<WeekStreakCalendarProps> = ({
         });
 
         setActiveDates(dateSet);
-      } catch (error) {
-        console.error('❌ Failed to load sessions for week:', error);
+      } catch {
+        console.error('❌ Failed to load sessions for week');
       } finally {
         setIsLoading(false);
       }

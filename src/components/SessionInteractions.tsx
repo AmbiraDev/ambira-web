@@ -23,7 +23,6 @@ interface SessionInteractionsProps {
   isOwnPost?: boolean;
   onCommentClick?: () => void;
   onLikesClick?: () => void;
-  onViewAllCommentsClick?: () => void;
   className?: string;
 }
 
@@ -32,7 +31,6 @@ export const SessionInteractions: React.FC<SessionInteractionsProps> = ({
   supportCount,
   commentCount,
   isSupported,
-  supportedBy: _supportedBy = [],
   onSupport,
   onRemoveSupport,
   onShare,
@@ -40,7 +38,6 @@ export const SessionInteractions: React.FC<SessionInteractionsProps> = ({
   isOwnPost = false,
   onCommentClick,
   onLikesClick,
-  onViewAllCommentsClick,
   className = '',
 }) => {
   const [isSupporting, setIsSupporting] = useState(false);
@@ -58,8 +55,8 @@ export const SessionInteractions: React.FC<SessionInteractionsProps> = ({
       } else {
         await onSupport(sessionId);
       }
-    } catch (error) {
-      console.error('Failed to update support:', error);
+    } catch {
+      console.error('Failed to update support');
     } finally {
       setIsSupporting(false);
     }
@@ -71,8 +68,8 @@ export const SessionInteractions: React.FC<SessionInteractionsProps> = ({
     setIsSharing(true);
     try {
       await onShare(sessionId);
-    } catch (error) {
-      console.error('Failed to share session:', error);
+    } catch {
+      console.error('Failed to share session');
     } finally {
       setIsSharing(false);
       setShowShareMenu(false);
@@ -92,8 +89,8 @@ export const SessionInteractions: React.FC<SessionInteractionsProps> = ({
       await navigator.clipboard.writeText(sessionUrl);
       setShowShareMenu(false);
       // Optional: Show a toast notification here
-    } catch (error) {
-      console.error('Failed to copy link:', error);
+    } catch {
+      console.error('Failed to copy link');
     }
   };
 

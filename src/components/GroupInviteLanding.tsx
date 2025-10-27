@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { Group } from '@/types';
@@ -22,18 +22,7 @@ export default function GroupInviteLanding({
   const [isJoining, setIsJoining] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    loadGroup();
-  }, [groupId]);
-
-  // If user is already logged in, check membership and redirect
-  useEffect(() => {
-    if (!authLoading && user && group) {
-      checkMembershipAndRedirect();
-    }
-  }, [user, authLoading, group]);
-
-  const loadGroup = async () => {
+  const loadGroup = useCallback(async () => {
     try {
       setIsLoading(true);
       const groupData = await firebaseApi.group.getGroup(groupId);
@@ -42,15 +31,35 @@ export default function GroupInviteLanding({
         return;
       }
       setGroup(groupData);
-    } catch (err) {
-      console.error('Error loading group:', err);
+    } catch (_error) {
+      console.error('Error loading group:', _error);
       setError('Failed to load group information');
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [groupId]);
 
-  const checkMembershipAndRedirect = async () => {
+  const handleJoinGroup = useCallback(async () => {
+    if (!user || !group) return;
+
+    try {
+      setIsJoining(true);
+      await firebaseApi.group.joinGroup(group.id, user.id);
+      // Redirect to group page
+      router.push(`/groups/${groupId}`);
+    } catch (err: unknown) {
+      console.error('Error joining group:', err);
+      const errorMessage =
+        err && typeof err === 'object' && 'message' in err
+          ? String(err.message)
+          : 'Failed to join group';
+      setError(errorMessage);
+    } finally {
+      setIsJoining(false);
+    }
+  }, [user, group, router, groupId]);
+
+  const checkMembershipAndRedirect = useCallback(async () => {
     if (!user || !group) return;
 
     // Check if user is already a member
@@ -62,23 +71,18 @@ export default function GroupInviteLanding({
 
     // Not a member, auto-join them
     await handleJoinGroup();
-  };
+  }, [user, group, router, groupId, handleJoinGroup]);
 
-  const handleJoinGroup = async () => {
-    if (!user || !group) return;
+  useEffect(() => {
+    loadGroup();
+  }, [loadGroup]);
 
-    try {
-      setIsJoining(true);
-      await firebaseApi.group.joinGroup(group.id, user.id);
-      // Redirect to group page
-      router.push(`/groups/${groupId}`);
-    } catch (err: unknown) {
-      console.error('Error joining group:', err);
-      setError(err.message || 'Failed to join group');
-    } finally {
-      setIsJoining(false);
+  // If user is already logged in, check membership and redirect
+  useEffect(() => {
+    if (!authLoading && user && group) {
+      checkMembershipAndRedirect();
     }
-  };
+  }, [user, authLoading, group, checkMembershipAndRedirect]);
 
   const handleSignUp = () => {
     // Store invite context in sessionStorage for post-signup redirect
@@ -194,11 +198,13 @@ export default function GroupInviteLanding({
           {/* Group Header */}
           <div className="bg-gradient-to-r from-[#007AFF] to-[#0051D5] px-8 py-12 text-center">
             {/* Group Avatar */}
-            <div className="w-24 h-24 mx-auto mb-4 bg-white rounded-full flex items-center justify-center">
+            <div className="w-24 h-24 mx-auto mb-4 bg-white rounded-full flex items-center justify-center overflow-hidden">
               {group.imageUrl ? (
-                <img
+                <Image
                   src={group.imageUrl}
                   alt={group.name}
+                  width={96}
+                  height={96}
                   className="w-full h-full rounded-full object-cover"
                 />
               ) : (

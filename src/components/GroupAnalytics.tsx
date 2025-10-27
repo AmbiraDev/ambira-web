@@ -33,21 +33,17 @@ export default function GroupAnalytics({
     hoursData: Array<{ date: string; hours: number; members: number }>;
     membershipGrowth: Array<{ date: string; members: number }>;
   } | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
 
   const loadAnalytics = React.useCallback(async () => {
     try {
-      setIsLoading(true);
       const { firebaseApi } = await import('@/lib/api');
       const data = await firebaseApi.group.getGroupAnalytics(
         groupId,
         timeRange
       );
       setAnalyticsData(data);
-    } catch (error) {
+    } catch (_error) {
       console.error('Failed to load analytics:', error);
-    } finally {
-      setIsLoading(false);
     }
   }, [groupId, timeRange]);
 

@@ -35,8 +35,8 @@ const SuggestedUsers: React.FC<SuggestedUsersProps> = ({
 
       const suggestions = await firebaseUserApi.getSuggestedUsers(limit);
       setSuggestions(suggestions);
-    } catch (error) {
-      console.error('Failed to load suggestions:', error);
+    } catch (_error) {
+      console.error('Failed to load suggestions');
       // Don't show error toast for empty database - just set empty array
       if (error instanceof Error && error.message.includes('permissions')) {
         setSuggestions([]);

@@ -138,8 +138,8 @@ export default function ContactPage() {
       setPrivacyAgree(false);
       setErrors({});
       setTouched(new Set());
-    } catch (error) {
-      console.error('Error submitting contact form:', error);
+    } catch {
+      console.error('Error submitting contact form');
       alert(
         'Sorry, there was an error submitting your message. Please try again.'
       );

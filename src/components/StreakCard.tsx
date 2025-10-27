@@ -26,20 +26,11 @@ export const StreakCard: React.FC<StreakCardProps> = ({
       try {
         const stats = await firebaseApi.streak.getStreakStats(userId);
 
-        // Calculate and log time-based info
-        if (stats.lastActivityDate) {
-          const now = new Date();
-          const lastActivity = new Date(stats.lastActivityDate);
-          const _daysSince = Math.floor(
-            (now.getTime() - lastActivity.getTime()) / (1000 * 60 * 60 * 24)
-          );
-        }
-
         // Fetch last 7 days of sessions for detailed logging
         const sessionsResponse = await firebaseApi.session.getSessions(
           1,
           100,
-          {} as any
+          {}
         );
 
         // Get date 7 days ago at start of day
@@ -51,7 +42,7 @@ export const StreakCard: React.FC<StreakCardProps> = ({
         // Create a map of dates to sessions
         const dateMap = new Map<
           string,
-          { totalMinutes: number; sessionCount: number; sessions: any[] }
+          { totalMinutes: number; sessionCount: number; sessions: unknown[] }
         >();
 
         // Initialize all 7 days
@@ -88,30 +79,9 @@ export const StreakCard: React.FC<StreakCardProps> = ({
           }
         });
 
-        // Log each day with formatted output
-        const sortedDates = Array.from(dateMap.entries()).sort((a, b) => {
-          const dateA = new Date(a[0]);
-          const dateB = new Date(b[0]);
-          return dateA.getTime() - dateB.getTime();
-        });
-
-        sortedDates.forEach(([dateKey, data], index) => {
-          const _dayNum = index + 1;
-          const _hours = (data.totalMinutes / 60).toFixed(2);
-          const _isComplete = data.totalMinutes > 0;
-          const date = new Date(dateKey);
-          const _dayName = date.toLocaleDateString('en-US', {
-            weekday: 'short',
-          });
-
-          if (data.sessions.length > 0) {
-            data.sessions.forEach((s, i) => {});
-          }
-        });
-
         setStreakStats(stats);
-      } catch (error) {
-        console.error('Failed to load streak:', error);
+      } catch {
+        console.error('Failed to load streak');
       } finally {
         setIsLoading(false);
       }

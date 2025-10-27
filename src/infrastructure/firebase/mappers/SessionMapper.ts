@@ -239,7 +239,7 @@ export class SessionMapper {
       const batch = docs.slice(i, i + batchSize);
       const batchResults = await Promise.all(
         batch.map(doc =>
-          this.toDomainEnriched(doc).catch(error => {
+          this.toDomainEnriched(doc).catch(_error => {
             // Failed to enrich session - return null to filter out
             return null;
           })

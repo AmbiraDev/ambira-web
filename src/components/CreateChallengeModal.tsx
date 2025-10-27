@@ -173,8 +173,8 @@ export default function CreateChallengeModal({
       });
       setNewReward('');
       setErrors({});
-    } catch (error) {
-      console.error('Failed to create challenge:', error);
+    } catch (_err) {
+      console.error('Failed to create challenge');
       setErrors({ submit: 'Failed to create challenge. Please try again.' });
     }
   };

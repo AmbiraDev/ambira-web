@@ -349,7 +349,7 @@ function CreateActivityContent() {
         throw new Error('Create activity function is not available');
       }
 
-      const _activity = await createActivity.mutateAsync({
+      await createActivity.mutateAsync({
         ...formData,
         name: formData.name.trim(),
         description: formData.description.trim(),
@@ -366,11 +366,11 @@ function CreateActivityContent() {
         // Redirect to the specified path or default to /activities
         router.push(redirectPath || '/activities');
       }, 1500);
-    } catch (error) {
-      console.error('Failed to create activity:', error);
+    } catch (_err) {
+      console.error('Failed to create activity:', err);
       const errorMessage =
-        error instanceof Error
-          ? error.message
+        err instanceof Error
+          ? err.message
           : 'Failed to create activity. Please try again.';
       setErrors({ name: errorMessage });
       setSuccessMessage('');

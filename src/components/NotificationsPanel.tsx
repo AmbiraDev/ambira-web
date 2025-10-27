@@ -21,7 +21,6 @@ import {
   Reply,
   AtSign,
   Check,
-  X,
   Trash2,
 } from 'lucide-react';
 import { Notification } from '@/types';
@@ -59,7 +58,7 @@ export default function NotificationsPanel({
   onClose,
 }: NotificationsPanelProps) {
   // Enable real-time updates for notifications panel
-  const { data: notifications = [], isLoading: _isLoading } = useNotifications({
+  const { data: notifications = [] } = useNotifications({
     realtime: true,
   });
   const unreadCount = useUnreadCount();

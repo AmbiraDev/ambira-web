@@ -56,7 +56,7 @@ export const firebaseGroupApi = {
         createdAt: convertTimestamp(data.createdAt),
         updatedAt: convertTimestamp(data.updatedAt),
       } as Group;
-    } catch (error) {
+    } catch (_error) {
       console.error('Error getting group:', error);
       throw new Error(
         typeof error === 'string' ? error : 'Failed to get group'
@@ -98,7 +98,7 @@ export const firebaseGroupApi = {
         createdAt: new Date(),
         updatedAt: new Date(),
       } as Group;
-    } catch (error) {
+    } catch (_error) {
       console.error('Error creating group:', error);
       throw new Error('Failed to create group');
     }
@@ -119,7 +119,7 @@ export const firebaseGroupApi = {
       };
 
       await updateDoc(docRef, updatePayload);
-    } catch (error) {
+    } catch (_error) {
       console.error('Error updating group:', error);
       throw new Error('Failed to update group');
     }
@@ -132,7 +132,7 @@ export const firebaseGroupApi = {
     try {
       const docRef = doc(db, 'groups', groupId);
       await deleteDoc(docRef);
-    } catch (error) {
+    } catch (_error) {
       console.error('Error deleting group:', error);
       throw new Error('Failed to delete group');
     }
@@ -161,7 +161,7 @@ export const firebaseGroupApi = {
         memberIds: [...memberIds, userId],
         updatedAt: serverTimestamp(),
       });
-    } catch (error) {
+    } catch (_error) {
       console.error('Error adding member to group:', error);
       throw new Error('Failed to add member');
     }
@@ -190,7 +190,7 @@ export const firebaseGroupApi = {
         memberIds: memberIds.filter((id: string) => id !== userId),
         updatedAt: serverTimestamp(),
       });
-    } catch (error) {
+    } catch (_error) {
       console.error('Error removing member from group:', error);
       throw new Error('Failed to remove member');
     }
@@ -207,7 +207,7 @@ export const firebaseGroupApi = {
       );
       const groupService = new GroupService();
       await groupService.joinGroup(groupId, userId);
-    } catch (error) {
+    } catch (_error) {
       console.error('Error joining group:', error);
       throw new Error(
         typeof error === 'string'
@@ -230,7 +230,7 @@ export const firebaseGroupApi = {
       );
       const groupService = new GroupService();
       await groupService.leaveGroup(groupId, userId);
-    } catch (error) {
+    } catch (_error) {
       console.error('Error leaving group:', error);
       throw new Error(
         typeof error === 'string'
@@ -272,7 +272,7 @@ export const firebaseGroupApi = {
         createdAt: g.createdAt,
         updatedAt: g.createdAt, // Use createdAt as fallback
       }));
-    } catch (error) {
+    } catch (_error) {
       console.error('Error getting user groups:', error);
       throw new Error('Failed to get user groups');
     }
@@ -286,7 +286,7 @@ export const firebaseGroupApi = {
       // Note: For production, implement proper text search
       // This is a placeholder implementation
       return [];
-    } catch (error) {
+    } catch (_error) {
       console.error('Error searching groups:', error);
       throw new Error('Failed to search groups');
     }
@@ -296,8 +296,8 @@ export const firebaseGroupApi = {
    * Get group analytics data for a time range
    */
   getGroupAnalytics: async (
-    groupId: string,
-    timeRange: 'week' | 'month' | 'year'
+    _groupId: string,
+    _timeRange: 'week' | 'month' | 'year'
   ): Promise<{
     hoursData: Array<{ date: string; hours: number; members: number }>;
     membershipGrowth: Array<{ date: string; members: number }>;
@@ -309,7 +309,7 @@ export const firebaseGroupApi = {
         hoursData: [],
         membershipGrowth: [],
       };
-    } catch (error) {
+    } catch (_error) {
       console.error('Error getting group analytics:', error);
       throw new Error('Failed to get group analytics');
     }

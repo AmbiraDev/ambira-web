@@ -5,11 +5,26 @@
  * Session creation/deletion is handled in the Sessions feature.
  */
 
-import { useMutation, useQueryClient, UseMutationOptions } from '@tanstack/react-query';
+import {
+  useMutation,
+  useQueryClient,
+  UseMutationOptions,
+} from '@tanstack/react-query';
 import { FeedService, FeedFilters } from '../services/FeedService';
 import { FEED_KEYS, FeedResult } from './useFeed';
+import { SessionWithDetails } from '@/types';
 
 const feedService = new FeedService();
+
+// Infinite query data structure
+interface FeedInfiniteData {
+  pages: Array<{
+    sessions: SessionWithDetails[];
+    hasMore: boolean;
+    nextCursor?: string;
+  }>;
+  pageParams: unknown[];
+}
 
 /**
  * Refresh the feed
@@ -21,16 +36,29 @@ const feedService = new FeedService();
  * refreshMutation.mutate({ userId, filters: { type: 'following' } });
  */
 export function useRefreshFeed(
-  options?: Partial<UseMutationOptions<FeedResult, Error, { userId: string; filters?: FeedFilters }>>
+  options?: Partial<
+    UseMutationOptions<
+      FeedResult,
+      Error,
+      { userId: string; filters?: FeedFilters }
+    >
+  >
 ) {
   const queryClient = useQueryClient();
 
-  return useMutation<FeedResult, Error, { userId: string; filters?: FeedFilters }>({
-    mutationFn: ({ userId, filters }) => feedService.refreshFeed(userId, filters),
+  return useMutation<
+    FeedResult,
+    Error,
+    { userId: string; filters?: FeedFilters }
+  >({
+    mutationFn: ({ userId, filters }) =>
+      feedService.refreshFeed(userId, filters),
 
     onSuccess: (_, { userId, filters = {} }) => {
       // Invalidate the specific feed query
-      queryClient.invalidateQueries({ queryKey: FEED_KEYS.list(userId, filters) });
+      queryClient.invalidateQueries({
+        queryKey: FEED_KEYS.list(userId, filters),
+      });
     },
 
     ...options,
@@ -101,17 +129,21 @@ export function useInvalidateGroupFeed() {
 export function useAddToFeedCache() {
   const queryClient = useQueryClient();
 
-  return (userId: string, filters: FeedFilters, newSession: any) => {
+  return (
+    userId: string,
+    filters: FeedFilters,
+    newSession: SessionWithDetails
+  ) => {
     const queryKey = FEED_KEYS.list(userId, filters);
 
     // Update infinite query cache
-    queryClient.setQueryData<any>(queryKey, (old: any) => {
+    queryClient.setQueryData<FeedInfiniteData>(queryKey, old => {
       if (!old?.pages) return old;
 
       // Add to the first page
       return {
         ...old,
-        pages: old.pages.map((page: any, index: number) => {
+        pages: old.pages.map((page, index) => {
           if (index === 0) {
             return {
               ...page,
@@ -143,14 +175,14 @@ export function useRemoveFromFeedCache() {
     const queryKey = FEED_KEYS.list(userId, filters);
 
     // Update infinite query cache
-    queryClient.setQueryData<any>(queryKey, (old: any) => {
+    queryClient.setQueryData<FeedInfiniteData>(queryKey, old => {
       if (!old?.pages) return old;
 
       return {
         ...old,
-        pages: old.pages.map((page: any) => ({
+        pages: old.pages.map(page => ({
           ...page,
-          sessions: page.sessions.filter((s: any) => s.id !== sessionId),
+          sessions: page.sessions.filter(s => s.id !== sessionId),
         })),
       };
     });

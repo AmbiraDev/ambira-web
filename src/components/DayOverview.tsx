@@ -54,8 +54,8 @@ export default function DayOverview() {
         sessionsCount: todaySessions.length,
         currentStreak: stats?.currentStreak || 0,
       });
-    } catch (error) {
-      console.error('Failed to load today stats:', error);
+    } catch (_err) {
+      console.error('Failed to load today stats:', err);
     } finally {
       setIsLoading(false);
     }

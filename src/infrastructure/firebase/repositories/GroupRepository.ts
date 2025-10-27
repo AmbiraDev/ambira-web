@@ -11,15 +11,12 @@ import {
   getDoc,
   getDocs,
   setDoc,
-  updateDoc,
   deleteDoc,
   query,
   where,
   orderBy,
   limit as limitFn,
   writeBatch,
-  increment,
-  Timestamp
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Group } from '@/domain/entities/Group';
@@ -46,9 +43,11 @@ export class GroupRepository {
       }
 
       return this.mapper.toDomain(docSnap);
-    } catch (error) {
+    } catch (_error) {
       console.error(`Error finding group ${groupId}:`, error);
-      throw new Error(`Failed to find group: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to find group: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -66,9 +65,11 @@ export class GroupRepository {
 
       const snapshot = await getDocs(q);
       return this.mapper.toDomainList(snapshot.docs);
-    } catch (error) {
+    } catch (_error) {
       console.error(`Error finding groups for user ${userId}:`, error);
-      throw new Error(`Failed to find groups: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to find groups: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -86,9 +87,11 @@ export class GroupRepository {
 
       const snapshot = await getDocs(q);
       return this.mapper.toDomainList(snapshot.docs);
-    } catch (error) {
+    } catch (_error) {
       console.error('Error finding public groups:', error);
-      throw new Error(`Failed to find public groups: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to find public groups: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -101,9 +104,11 @@ export class GroupRepository {
       const data = this.mapper.toFirestore(group);
 
       await setDoc(docRef, data, { merge: true });
-    } catch (error) {
+    } catch (_error) {
       console.error(`Error saving group ${group.id}:`, error);
-      throw new Error(`Failed to save group: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to save group: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -121,9 +126,14 @@ export class GroupRepository {
 
       const updatedGroup = group.withAddedMember(userId);
       await this.save(updatedGroup);
-    } catch (error) {
-      console.error(`Error adding member ${userId} to group ${groupId}:`, error);
-      throw new Error(`Failed to add member: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } catch (_error) {
+      console.error(
+        `Error adding member ${userId} to group ${groupId}:`,
+        error
+      );
+      throw new Error(
+        `Failed to add member: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -147,9 +157,14 @@ export class GroupRepository {
 
       batch.set(groupRef, data);
       await batch.commit();
-    } catch (error) {
-      console.error(`Error removing member ${userId} from group ${groupId}:`, error);
-      throw new Error(`Failed to remove member: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    } catch (_error) {
+      console.error(
+        `Error removing member ${userId} from group ${groupId}:`,
+        error
+      );
+      throw new Error(
+        `Failed to remove member: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -160,9 +175,11 @@ export class GroupRepository {
     try {
       const docRef = doc(db, this.collectionName, groupId);
       await deleteDoc(docRef);
-    } catch (error) {
+    } catch (_error) {
       console.error(`Error deleting group ${groupId}:`, error);
-      throw new Error(`Failed to delete group: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to delete group: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -174,7 +191,7 @@ export class GroupRepository {
       const docRef = doc(db, this.collectionName, groupId);
       const docSnap = await getDoc(docRef);
       return docSnap.exists();
-    } catch (error) {
+    } catch (_error) {
       console.error(`Error checking if group ${groupId} exists:`, error);
       return false;
     }
@@ -194,7 +211,7 @@ export class GroupRepository {
 
       const data = docSnap.data();
       return data.memberCount || data.memberIds?.length || 0;
-    } catch (error) {
+    } catch (_error) {
       console.error(`Error getting member count for group ${groupId}:`, error);
       return 0;
     }

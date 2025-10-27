@@ -9,15 +9,13 @@ import { firebaseUserApi } from '@/lib/api';
 import { useAuth } from '@/hooks/useAuth';
 import { UserCardCompact } from '@/components/UserCard';
 import { ArrowLeft, Users as UsersIcon } from 'lucide-react';
+import type { SuggestedUser } from '@/types';
 
 export default function DiscoverPeoplePage() {
   const router = useRouter();
   const { user } = useAuth();
-  const [suggestedUsers, setSuggestedUsers] = useState<any[]>([]);
+  const [suggestedUsers, setSuggestedUsers] = useState<SuggestedUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [_followingUsers, _setFollowingUsers] = useState<Set<string>>(
-    new Set()
-  );
 
   useEffect(() => {
     const loadUsers = async () => {
@@ -29,21 +27,12 @@ export default function DiscoverPeoplePage() {
       try {
         setIsLoading(true);
 
-        // Load the list of users we're already following
-        try {
-          const following = await firebaseUserApi.getFollowing(user.id);
-          const followingIds = new Set(following.map(u => u.id));
-          _setFollowingUsers(followingIds);
-        } catch (error) {
-          console.error('Failed to load following list:', error);
-        }
-
         // Load suggested users (filters by profileVisibility and excludes following)
         // Limit to 5 to avoid revealing total user count
         const suggestions = await firebaseUserApi.getSuggestedUsers(5);
 
         setSuggestedUsers(suggestions);
-      } catch (error) {
+      } catch (error: unknown) {
         console.error('Error loading users:', error);
         setSuggestedUsers([]);
       } finally {
@@ -55,17 +44,6 @@ export default function DiscoverPeoplePage() {
   }, [user]);
 
   const handleFollowChange = (userId: string, isFollowing: boolean) => {
-    // Update following state
-    _setFollowingUsers(prev => {
-      const next = new Set(prev);
-      if (isFollowing) {
-        next.add(userId);
-      } else {
-        next.delete(userId);
-      }
-      return next;
-    });
-
     // Update user data
     setSuggestedUsers(prev =>
       prev.map(u =>

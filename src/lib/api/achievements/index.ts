@@ -13,7 +13,6 @@ import {
   doc,
   getDoc,
   getDocs,
-  setDoc,
   addDoc,
   updateDoc,
   query,
@@ -166,7 +165,7 @@ export const firebaseAchievementApi = {
             earnedAt: convertTimestamp(doc.data().earnedAt),
           }) as Achievement
       );
-    } catch (error) {
+    } catch (_error) {
       const apiError = handleError(error, 'Get achievements', {
         defaultMessage: 'Failed to get achievements',
       });
@@ -244,9 +243,8 @@ export const firebaseAchievementApi = {
         });
       });
 
-
       return progress;
-    } catch (error) {
+    } catch (_error) {
       const apiError = handleError(error, 'Get achievement progress', {
         defaultMessage: 'Failed to get achievement progress',
       });
@@ -289,7 +287,7 @@ export const firebaseAchievementApi = {
         challengesCompleted: 0, // TODO: Get from challenges
         challengesWon: 0, // TODO: Get from challenges
       };
-    } catch (error) {
+    } catch (_error) {
       const apiError = handleError(error, 'Get user achievement data', {
         defaultMessage: 'Failed to get user achievement data',
       });
@@ -396,7 +394,6 @@ export const firebaseAchievementApi = {
         );
       }
 
-
       // Check time-based achievements if recent session provided
       if (userData.recentSession) {
         const sessionHour = userData.recentSession.startTime.getHours();
@@ -423,7 +420,7 @@ export const firebaseAchievementApi = {
       }
 
       return newAchievements;
-    } catch (error) {
+    } catch (_error) {
       const apiError = handleError(error, 'Check achievements', {
         defaultMessage: 'Failed to check achievements',
       });
@@ -471,7 +468,7 @@ export const firebaseAchievementApi = {
         ...achievementData,
         earnedAt: new Date(),
       } as Achievement;
-    } catch (error) {
+    } catch (_error) {
       const apiError = handleError(error, 'Award achievement', {
         defaultMessage: 'Failed to award achievement',
       });
@@ -515,7 +512,7 @@ export const firebaseAchievementApi = {
       await updateDoc(doc(db, 'achievements', achievementId), {
         isShared: true,
       });
-    } catch (error) {
+    } catch (_error) {
       const apiError = handleError(error, 'Share achievement', {
         defaultMessage: 'Failed to share achievement',
       });

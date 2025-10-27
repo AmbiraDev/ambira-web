@@ -12,6 +12,7 @@ import {
   Image as ImageIcon,
 } from 'lucide-react';
 import { QRCodeCanvas } from 'qrcode.react';
+import Image from 'next/image';
 
 interface GroupInviteModalProps {
   group: Group;
@@ -45,8 +46,8 @@ export default function GroupInviteModal({
       await navigator.clipboard.writeText(inviteLink);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error('Failed to copy:', err);
+    } catch (_error) {
+      console.error('Failed to copy:', error);
     }
   };
 
@@ -107,8 +108,8 @@ export default function GroupInviteModal({
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
       });
-    } catch (err) {
-      console.error('Failed to download invite card:', err);
+    } catch (_error) {
+      console.error('Failed to download invite card:', error);
     }
   };
 
@@ -175,11 +176,13 @@ export default function GroupInviteModal({
         <div className="p-6 space-y-6 overflow-y-auto">
           {/* Group Info */}
           <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
-            <div className="w-12 h-12 bg-gradient-to-br from-[#007AFF] to-[#0051D5] rounded-full flex items-center justify-center flex-shrink-0">
+            <div className="w-12 h-12 bg-gradient-to-br from-[#007AFF] to-[#0051D5] rounded-full flex items-center justify-center flex-shrink-0 overflow-hidden">
               {group.imageUrl ? (
-                <img
+                <Image
                   src={group.imageUrl}
                   alt={group.name}
+                  width={48}
+                  height={48}
                   className="w-full h-full rounded-full object-cover"
                 />
               ) : (
@@ -318,11 +321,13 @@ export default function GroupInviteModal({
 
                   {/* Group Info */}
                   <div className="bg-white/10 backdrop-blur-sm rounded-xl p-6 mb-6 text-center">
-                    <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto mb-4">
+                    <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto mb-4 overflow-hidden">
                       {group.imageUrl ? (
-                        <img
+                        <Image
                           src={group.imageUrl}
                           alt={group.name}
+                          width={80}
+                          height={80}
                           className="w-full h-full rounded-full object-cover"
                         />
                       ) : (

@@ -49,8 +49,8 @@ export const SignupForm: React.FC = () => {
         const isAvailable =
           await firebaseAuthApi.checkUsernameAvailability(username);
         setUsernameAvailable(isAvailable);
-      } catch (error) {
-        console.error('Error checking username:', error);
+      } catch {
+        console.error('Error checking username');
         setUsernameAvailable(null);
       } finally {
         setIsCheckingUsername(false);
@@ -163,8 +163,8 @@ export const SignupForm: React.FC = () => {
             router.push(`/invite/group/${inviteContext.groupId}`);
             return;
           }
-        } catch (err) {
-          console.error('Error parsing invite context:', err);
+        } catch {
+          console.error('Error parsing invite context');
         }
       }
 

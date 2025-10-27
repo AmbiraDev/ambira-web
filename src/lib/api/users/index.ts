@@ -21,7 +21,6 @@ import {
   limit as limitFn,
   serverTimestamp,
   Timestamp,
-  setDoc,
 } from 'firebase/firestore';
 
 import {
@@ -160,7 +159,7 @@ export const firebaseUserApi = {
               updatedAt: serverTimestamp(),
             });
           }
-        } catch (error) {
+        } catch (_error) {
           // Handle permission errors silently - this is expected for privacy-protected data
           if (!isPermissionError(error)) {
             handleError(error, 'Recalculate follower counts', {
@@ -186,7 +185,7 @@ export const firebaseUserApi = {
         createdAt: convertTimestamp(userData.createdAt),
         updatedAt: convertTimestamp(userData.updatedAt),
       };
-    } catch (error) {
+    } catch (_error) {
       // Don't log "not found" and privacy errors - these are expected user flows
       const errorMessage =
         error instanceof Error ? error.message : 'Failed to get user profile';
@@ -233,7 +232,7 @@ export const firebaseUserApi = {
         createdAt: convertTimestamp(userData.createdAt),
         updatedAt: convertTimestamp(userData.updatedAt),
       };
-    } catch (error) {
+    } catch (_error) {
       // Handle permission errors for deleted users gracefully
       if (isPermissionError(error)) {
         throw new Error('User not found');
@@ -304,7 +303,7 @@ export const firebaseUserApi = {
       }
 
       return results;
-    } catch (error) {
+    } catch (_error) {
       const apiError = handleError(error, 'Get daily activity', {
         defaultMessage: 'Failed to get daily activity',
       });
@@ -382,7 +381,7 @@ export const firebaseUserApi = {
       }
 
       return results;
-    } catch (error) {
+    } catch (_error) {
       const apiError = handleError(error, 'Get weekly activity', {
         defaultMessage: 'Failed to get weekly activity',
       });
@@ -464,7 +463,7 @@ export const firebaseUserApi = {
       // Sort by hours desc
       results.sort((a, b) => b.hours - a.hours);
       return results;
-    } catch (error) {
+    } catch (_error) {
       const apiError = handleError(error, 'Get project breakdown', {
         defaultMessage: 'Failed to get project breakdown',
       });
@@ -523,7 +522,7 @@ export const firebaseUserApi = {
       const downloadURL = await getDownloadURL(snapshot.ref);
 
       return downloadURL;
-    } catch (error) {
+    } catch (_error) {
       const apiError = handleError(error, 'Upload profile picture', {
         defaultMessage: 'Failed to upload profile picture',
       });
@@ -555,7 +554,7 @@ export const firebaseUserApi = {
       // Delete the file (will fail silently if file doesn't exist)
       try {
         await deleteObject(storageRef);
-      } catch (error) {
+      } catch (_error) {
         // Ignore errors if file doesn't exist
         if (!isNotFoundError(error)) {
           handleError(error, 'Delete old profile picture', {
@@ -563,7 +562,7 @@ export const firebaseUserApi = {
           });
         }
       }
-    } catch (error) {
+    } catch (_error) {
       handleError(error, 'in deleteProfilePicture', {
         severity: ErrorSeverity.WARNING,
       });
@@ -603,7 +602,7 @@ export const firebaseUserApi = {
       }
 
       // Strip undefined values to avoid Firestore errors
-      const cleanData: Record<string, any> = {};
+      const cleanData: Record<string, unknown> = {};
       Object.entries(data).forEach(([key, value]) => {
         if (value !== undefined) {
           cleanData[key] = value;
@@ -641,7 +640,7 @@ export const firebaseUserApi = {
         createdAt: convertTimestamp(userData.createdAt),
         updatedAt: convertTimestamp(userData.updatedAt),
       };
-    } catch (error) {
+    } catch (_error) {
       const apiError = handleError(error, 'Update profile', {
         defaultMessage: ERROR_MESSAGES.PROFILE_UPDATE_FAILED,
       });
@@ -748,7 +747,7 @@ export const firebaseUserApi = {
         mostProductiveHour,
         favoriteProject: undefined,
       };
-    } catch (error) {
+    } catch (_error) {
       handleError(error, 'get user stats', { severity: ErrorSeverity.ERROR });
       // Return default stats instead of throwing error
       return {
@@ -814,7 +813,7 @@ export const firebaseUserApi = {
         doc(db, `social_graph/${currentUserId}/outbound`, targetUserId)
       );
       return socialGraphDoc.exists();
-    } catch (error) {
+    } catch (_error) {
       handleError(error, 'checking follow status', {
         severity: ErrorSeverity.ERROR,
       });
@@ -888,7 +887,7 @@ export const firebaseUserApi = {
       }
 
       return followers;
-    } catch (error) {
+    } catch (_error) {
       // Handle permission errors silently for privacy-protected data
       if (isPermissionError(error)) {
         return [];
@@ -967,7 +966,7 @@ export const firebaseUserApi = {
       }
 
       return following;
-    } catch (error) {
+    } catch (_error) {
       // Handle permission errors silently for privacy-protected data
       if (isPermissionError(error)) {
         return [];
@@ -1016,7 +1015,7 @@ export const firebaseUserApi = {
       });
 
       return { followersCount, followingCount };
-    } catch (error) {
+    } catch (_error) {
       const apiError = handleError(error, 'Sync follower counts', {
         defaultMessage: 'Failed to sync follower counts',
       });
@@ -1035,7 +1034,6 @@ export const firebaseUserApi = {
    */
   searchUsers: async (
     searchTerm: string,
-    page: number = 1,
     limitCount: number = 20
   ): Promise<{
     users: UserSearchResult[];
@@ -1081,7 +1079,7 @@ export const firebaseUserApi = {
 
       // Merge and de-duplicate results, prefer username matches first
       const byId: Record<string, UserSearchResult> = {};
-      const pushDoc = (docSnap: any) => {
+      const pushDoc = (docSnap: unknown) => {
         const userData = docSnap.data();
         byId[docSnap.id] = {
           id: docSnap.id,
@@ -1138,7 +1136,7 @@ export const firebaseUserApi = {
         totalCount: users.length,
         hasMore: users.length === limitCount,
       };
-    } catch (error) {
+    } catch (_error) {
       const apiError = handleError(error, 'Search users', {
         defaultMessage: 'Failed to search users',
       });
@@ -1229,7 +1227,7 @@ export const firebaseUserApi = {
       }
 
       return suggestions;
-    } catch (error) {
+    } catch (_error) {
       handleError(error, 'getting suggested users', {
         severity: ErrorSeverity.ERROR,
       });
@@ -1261,7 +1259,7 @@ export const firebaseUserApi = {
         projectVisibility: userData?.projectVisibility || 'everyone',
         blockedUsers: userData?.blockedUsers || [],
       };
-    } catch (error) {
+    } catch (_error) {
       const apiError = handleError(error, 'Get privacy settings', {
         defaultMessage: 'Failed to get privacy settings',
       });
@@ -1297,7 +1295,7 @@ export const firebaseUserApi = {
         projectVisibility: settings.projectVisibility || 'everyone',
         blockedUsers: settings.blockedUsers || [],
       };
-    } catch (error) {
+    } catch (_error) {
       const apiError = handleError(error, 'Update privacy settings', {
         defaultMessage: 'Failed to update privacy settings',
       });
@@ -1321,7 +1319,7 @@ export const firebaseUserApi = {
       );
       const querySnapshot = await getDocs(usersQuery);
       return querySnapshot.empty;
-    } catch (error) {
+    } catch (_error) {
       // Handle Firebase permission errors gracefully
       if (isPermissionError(error)) {
         handleError(error, 'Check username availability', {
@@ -1366,7 +1364,7 @@ export const firebaseUserApi = {
       for (const userDoc of querySnapshot.docs) {
         try {
           const userData = userDoc.data();
-          const updates: any = { updatedAt: serverTimestamp() };
+          const updates: unknown = { updatedAt: serverTimestamp() };
 
           if (userData.username && !userData.usernameLower) {
             updates.usernameLower = userData.username.toLowerCase();
@@ -1381,7 +1379,7 @@ export const firebaseUserApi = {
             await updateDoc(doc(db, 'users', userDoc.id), updates);
             success++;
           }
-        } catch (error) {
+        } catch (_error) {
           failed++;
           console.error(`Failed to migrate user ${userDoc.id}:`, error);
         }
@@ -1389,7 +1387,7 @@ export const firebaseUserApi = {
 
       const result = { success, failed, total };
       return result;
-    } catch (error) {
+    } catch (_error) {
       const apiError = handleError(error, 'Migrate users to lowercase', {
         defaultMessage: 'Failed to migrate users',
       });
@@ -1509,7 +1507,7 @@ export const firebaseUserApi = {
 
       // 9. Finally, delete the Firebase Auth user
       await auth.currentUser.delete();
-    } catch (error) {
+    } catch (_error) {
       const apiError = handleError(error, 'Delete account', {
         defaultMessage:
           'Failed to delete account. Please try logging out and back in, then try again.',

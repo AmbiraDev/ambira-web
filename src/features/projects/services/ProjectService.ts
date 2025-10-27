@@ -17,7 +17,11 @@ import {
   ProjectStats,
   // ActivityStats,
 } from '@/types';
-import { validateOrThrow, CreateProjectSchema, UpdateProjectSchema } from '@/lib/validation';
+import {
+  validateOrThrow,
+  CreateProjectSchema,
+  UpdateProjectSchema,
+} from '@/lib/validation';
 
 export class ProjectService {
   /**
@@ -26,8 +30,8 @@ export class ProjectService {
   async getProjects(): Promise<Project[]> {
     try {
       return await firebaseApi.project.getProjects();
-    } catch (error) {
-      console.error('Error getting projects:', error);
+    } catch (_err) {
+      console.error('Error getting projects:', _err);
       return [];
     }
   }
@@ -38,8 +42,8 @@ export class ProjectService {
   async getProject(projectId: string): Promise<Project | null> {
     try {
       return await firebaseApi.project.getProjectById(projectId);
-    } catch (error) {
-      console.error('Error getting project:', error);
+    } catch (_err) {
+      console.error('Error getting project:', _err);
       return null;
     }
   }
@@ -50,8 +54,8 @@ export class ProjectService {
   async getProjectStats(projectId: string): Promise<ProjectStats | null> {
     try {
       return await firebaseApi.project.getProjectStats(projectId);
-    } catch (error) {
-      console.error('Error getting project stats:', error);
+    } catch (_err) {
+      console.error('Error getting project stats:', _err);
       return null;
     }
   }
@@ -69,7 +73,10 @@ export class ProjectService {
    */
   async updateProject(projectId: string, data: unknown): Promise<Project> {
     const validated = validateOrThrow(UpdateProjectSchema, data);
-    return firebaseApi.project.updateProject(projectId, validated as UpdateProjectData);
+    return firebaseApi.project.updateProject(
+      projectId,
+      validated as UpdateProjectData
+    );
   }
 
   /**

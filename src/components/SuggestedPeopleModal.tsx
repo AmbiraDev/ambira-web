@@ -5,6 +5,7 @@ import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { firebaseUserApi } from '@/lib/api';
 import { useAuth } from '@/hooks/useAuth';
 import { UserCardCompact } from '@/components/UserCard';
+import type { User } from '@/types';
 
 interface SuggestedPeopleModalProps {
   isOpen: boolean;
@@ -14,9 +15,12 @@ interface SuggestedPeopleModalProps {
 const USERS_PER_PAGE = 10;
 const TOTAL_USERS_TO_FETCH = 100;
 
-export default function SuggestedPeopleModal({ isOpen, onClose }: SuggestedPeopleModalProps) {
+export default function SuggestedPeopleModal({
+  isOpen,
+  onClose,
+}: SuggestedPeopleModalProps) {
   const { user } = useAuth();
-  const [allSuggestedUsers, setAllSuggestedUsers] = useState<any[]>([]);
+  const [allSuggestedUsers, setAllSuggestedUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
 
@@ -28,10 +32,11 @@ export default function SuggestedPeopleModal({ isOpen, onClose }: SuggestedPeopl
       setCurrentPage(0);
 
       // Use the same getSuggestedUsers API as the sidebar
-      const suggestions = await firebaseUserApi.getSuggestedUsers(TOTAL_USERS_TO_FETCH);
+      const suggestions =
+        await firebaseUserApi.getSuggestedUsers(TOTAL_USERS_TO_FETCH);
       setAllSuggestedUsers(suggestions);
-    } catch (error) {
-      console.error('Error loading users:', error);
+    } catch {
+      console.error('Error loading users');
       setAllSuggestedUsers([]);
     } finally {
       setIsLoading(false);
@@ -88,7 +93,7 @@ export default function SuggestedPeopleModal({ isOpen, onClose }: SuggestedPeopl
               isFollowing,
               followersCount: isFollowing
                 ? (u.followersCount || 0) + 1
-                : Math.max(0, (u.followersCount || 0) - 1)
+                : Math.max(0, (u.followersCount || 0) - 1),
             }
           : u
       )
@@ -104,7 +109,7 @@ export default function SuggestedPeopleModal({ isOpen, onClose }: SuggestedPeopl
     >
       <div
         className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[80vh] flex flex-col"
-        onClick={(e) => e.stopPropagation()}
+        onClick={e => e.stopPropagation()}
       >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
@@ -130,12 +135,16 @@ export default function SuggestedPeopleModal({ isOpen, onClose }: SuggestedPeopl
               <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-3xl">👥</span>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">No suggestions yet</h3>
-              <p className="text-gray-600">Check back later for people to connect with</p>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                No suggestions yet
+              </h3>
+              <p className="text-gray-600">
+                Check back later for people to connect with
+              </p>
             </div>
           ) : (
             <div className="divide-y divide-gray-100">
-              {paginatedUsers.map((suggestedUser) => (
+              {paginatedUsers.map(suggestedUser => (
                 <div key={suggestedUser.id}>
                   <UserCardCompact
                     user={suggestedUser}

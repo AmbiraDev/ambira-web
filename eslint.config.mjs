@@ -28,7 +28,14 @@ const eslintConfig = [
       'prefer-const': 'warn', // Changed to warn for builds
       'no-unused-vars': 'off',
       // Changed to warn for production builds - still caught by `npm run lint`
-      '@typescript-eslint/no-unused-vars': 'warn',
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
+        },
+      ],
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/no-require-imports': 'warn',
       '@typescript-eslint/no-empty-object-type': 'warn', // Allow empty interfaces (common in UI libs)

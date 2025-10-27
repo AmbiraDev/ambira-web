@@ -778,8 +778,8 @@ export default function ProfilePageContent({
                           });
                         }
                         // Automatic cache invalidation handled by mutations
-                      } catch (error) {
-                        console.error('Follow error:', error);
+                      } catch {
+                        console.error('Follow error');
                       }
                     }}
                     disabled={

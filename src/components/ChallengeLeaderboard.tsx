@@ -159,7 +159,7 @@ export default function ChallengeLeaderboard({
       {/* Top 3 Podium */}
       {filteredEntries.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          {filteredEntries.slice(0, 3).map((entry, index) => (
+          {filteredEntries.slice(0, 3).map(entry => (
             <div
               key={entry.userId}
               className={`relative bg-white border-2 rounded-lg p-6 text-center ${

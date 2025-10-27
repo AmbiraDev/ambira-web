@@ -124,7 +124,7 @@ export function useGoogleSignIn() {
       // Navigate to home
       router.push('/');
     },
-    onError: (error: any) => {
+    onError: (error: unknown) => {
       // Special case: redirect in progress (mobile OAuth)
       if (error?.message === 'REDIRECT_IN_PROGRESS') {
         // Don't show error - page will redirect

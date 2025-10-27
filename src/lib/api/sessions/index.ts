@@ -20,11 +20,8 @@ import {
   where,
   orderBy,
   limit as limitFn,
-  startAfter,
   serverTimestamp,
   Timestamp,
-  writeBatch,
-  increment,
   setDoc,
 } from 'firebase/firestore';
 
@@ -47,9 +44,6 @@ import { ERROR_MESSAGES } from '@/config/errorMessages';
 import { convertTimestamp, _removeUndefinedFields } from '../shared/utils';
 import { fetchUserDataForSocialContext } from '../social/helpers';
 
-// Session helpers
-import { populateSessionsWithDetails } from './helpers';
-
 // Import other API modules
 import { firebasePostApi } from './posts';
 import { firebaseChallengeApi } from '../challenges';
@@ -63,9 +57,7 @@ import type {
   Session,
   SessionWithDetails,
   CreateSessionData,
-  SessionFormData,
   SessionFilters,
-  SessionSort,
   SessionListResponse,
   User,
   Project,
@@ -84,7 +76,7 @@ import type {
  * @param status - The status value from Firestore (may be any string)
  * @returns A valid status value: 'active', 'completed', or 'archived'
  */
-function normalizeStatus(status: any): 'active' | 'completed' | 'archived' {
+function normalizeStatus(status: unknown): 'active' | 'completed' | 'archived' {
   if (status === 'completed' || status === 'archived') {
     return status;
   }
@@ -140,7 +132,7 @@ export const firebaseSessionApi = {
 
       // Prepare session data for Firestore
       const activityId = data.activityId || data.projectId || ''; // Support both for backwards compatibility
-      const sessionData: any = {
+      const sessionData: unknown = {
         userId: auth.currentUser.uid,
         activityId: activityId, // New field
         projectId: activityId, // Keep for backwards compatibility
@@ -174,7 +166,7 @@ export const firebaseSessionApi = {
       // This ensures the timer is stopped even if the user navigates away
       try {
         await firebaseSessionApi.clearActiveSession();
-      } catch (error) {
+      } catch (_error) {
         handleError(error, 'clear active session', {
           severity: ErrorSeverity.WARNING,
         });
@@ -191,7 +183,7 @@ export const firebaseSessionApi = {
             startTime: data.startTime,
           }
         );
-      } catch (error) {
+      } catch (_error) {
         handleError(error, 'update challenge progress', {
           severity: ErrorSeverity.WARNING,
         });
@@ -224,7 +216,7 @@ export const firebaseSessionApi = {
       };
 
       return newSession;
-    } catch (error) {
+    } catch (_error) {
       const apiError = handleError(error, 'Create session', {
         defaultMessage: ERROR_MESSAGES.SESSION_SAVE_FAILED,
       });
@@ -265,7 +257,7 @@ export const firebaseSessionApi = {
       }
 
       return { session, post };
-    } catch (error) {
+    } catch (_error) {
       handleError(error, 'in createSessionWithPost', {
         severity: ErrorSeverity.ERROR,
       });
@@ -330,7 +322,7 @@ export const firebaseSessionApi = {
         lastUpdated: serverTimestamp(),
         createdAt: serverTimestamp(),
       });
-    } catch (error) {
+    } catch (_error) {
       const apiError = handleError(error, 'Save active session');
       throw new Error(apiError.userMessage);
     }
@@ -386,7 +378,7 @@ export const firebaseSessionApi = {
         pausedDuration: data.pausedDuration || 0,
         isPaused: !!data.isPaused,
       };
-    } catch (error) {
+    } catch (_error) {
       // If it's a permission error or document doesn't exist, silently return null
       if (isPermissionError(error) || isNotFoundError(error)) {
         return null;
@@ -436,7 +428,7 @@ export const firebaseSessionApi = {
       } catch (_storageError) {
         // Ignore storage errors (e.g., in private browsing mode)
       }
-    } catch (error) {
+    } catch (_error) {
       const apiError = handleError(error, 'Clear active session', {
         defaultMessage: 'Failed to clear active session',
       });
@@ -518,7 +510,7 @@ export const firebaseSessionApi = {
             if (projectDoc.exists()) {
               projectData = projectDoc.data();
             }
-          } catch (error) {
+          } catch (_error) {
             handleError(error, `Fetch project ${projectId}`, {
               severity: ErrorSeverity.WARNING,
             });
@@ -579,7 +571,7 @@ export const firebaseSessionApi = {
       }
 
       return sessions;
-    } catch (error) {
+    } catch (_error) {
       handleError(error, 'get user sessions', {
         severity: ErrorSeverity.ERROR,
       });
@@ -625,7 +617,7 @@ export const firebaseSessionApi = {
 
       const querySnapshot = await withTimeout(getDocs(sessionsQuery));
       return querySnapshot.size;
-    } catch (error) {
+    } catch (_error) {
       handleError(error, 'get user sessions count', {
         severity: ErrorSeverity.ERROR,
       });
@@ -643,7 +635,6 @@ export const firebaseSessionApi = {
    * @throws Error if user is not authenticated or fetch fails
    */
   getSessions: async (
-    page: number = 1,
     limitCount: number = 20,
     filters: SessionFilters = {}
   ): Promise<SessionListResponse> => {
@@ -703,7 +694,7 @@ export const firebaseSessionApi = {
         totalCount: sessions.length,
         hasMore: querySnapshot.docs.length === limitCount,
       };
-    } catch (error) {
+    } catch (_error) {
       const apiError = handleError(error, 'Get sessions', {
         defaultMessage: ERROR_MESSAGES.SESSION_LOAD_FAILED,
       });
@@ -739,7 +730,7 @@ export const firebaseSessionApi = {
       }
 
       // Prepare update data
-      const updateData: any = {
+      const updateData: unknown = {
         updatedAt: serverTimestamp(),
       };
 
@@ -766,7 +757,7 @@ export const firebaseSessionApi = {
       );
 
       await updateDoc(sessionRef, updateData);
-    } catch (error) {
+    } catch (_error) {
       const apiError = handleError(error, 'Update session', {
         defaultMessage: ERROR_MESSAGES.SESSION_UPDATE_FAILED,
       });
@@ -798,7 +789,7 @@ export const firebaseSessionApi = {
       }
 
       await deleteDoc(sessionRef);
-    } catch (error) {
+    } catch (_error) {
       const apiError = handleError(error, 'Delete session', {
         defaultMessage: ERROR_MESSAGES.SESSION_DELETE_FAILED,
       });
@@ -855,7 +846,7 @@ export const firebaseSessionApi = {
         createdAt: convertTimestamp(data.createdAt),
         updatedAt: convertTimestamp(data.updatedAt),
       };
-    } catch (error) {
+    } catch (_error) {
       const apiError = handleError(error, 'Get session', {
         defaultMessage: ERROR_MESSAGES.SESSION_LOAD_FAILED,
       });
@@ -972,7 +963,7 @@ export const firebaseSessionApi = {
         activity: activity || defaultActivity,
         project: activity || defaultActivity,
       };
-    } catch (error) {
+    } catch (_error) {
       // Don't log permission errors - these are expected for private/restricted sessions
       const silent = isPermissionError(error);
       const apiError = handleError(error, 'Get session with details', {

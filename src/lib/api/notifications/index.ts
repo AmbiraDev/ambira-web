@@ -25,7 +25,7 @@ import {
 } from 'firebase/firestore';
 
 // Local Firebase config
-import { db, _auth } from '@/lib/firebase';
+import { db } from '@/lib/firebase';
 
 // Error handling
 import { handleError, ErrorSeverity } from '@/lib/errorHandler';
@@ -61,7 +61,7 @@ export const firebaseNotificationApi = {
         ...notification,
         createdAt: new Date(),
       };
-    } catch (error) {
+    } catch (_error) {
       const apiError = handleError(error, 'Create notification', {
         defaultMessage: 'Failed to create notification',
       });
@@ -108,7 +108,7 @@ export const firebaseNotificationApi = {
       });
 
       return notifications;
-    } catch (error) {
+    } catch (_error) {
       const apiError = handleError(error, 'Get notifications', {
         defaultMessage: 'Failed to get notifications',
       });
@@ -123,7 +123,7 @@ export const firebaseNotificationApi = {
         isRead: true,
         updatedAt: serverTimestamp(),
       });
-    } catch (error) {
+    } catch (_error) {
       const apiError = handleError(error, 'Mark notification as read', {
         defaultMessage: 'Failed to mark notification as read',
       });
@@ -151,7 +151,7 @@ export const firebaseNotificationApi = {
       });
 
       await batch.commit();
-    } catch (error) {
+    } catch (_error) {
       const apiError = handleError(error, 'Mark all notifications as read', {
         defaultMessage: 'Failed to mark all notifications as read',
       });
@@ -163,7 +163,7 @@ export const firebaseNotificationApi = {
   deleteNotification: async (notificationId: string): Promise<void> => {
     try {
       await deleteDoc(doc(db, 'notifications', notificationId));
-    } catch (error) {
+    } catch (_error) {
       const apiError = handleError(error, 'Delete notification', {
         defaultMessage: 'Failed to delete notification',
       });
@@ -182,7 +182,7 @@ export const firebaseNotificationApi = {
 
       const snapshot = await getDocs(notificationsQuery);
       return snapshot.size;
-    } catch (error) {
+    } catch (_error) {
       const apiError = handleError(error, 'Get unread count', {
         defaultMessage: 'Failed to get unread count',
       });
@@ -197,8 +197,7 @@ export const challengeNotifications = {
   notifyCompletion: async (
     challengeId: string,
     userId: string,
-    challengeName: string,
-    challengeType: string
+    challengeName: string
   ): Promise<void> => {
     try {
       const notification: Omit<Notification, 'id' | 'createdAt'> = {
@@ -211,7 +210,7 @@ export const challengeNotifications = {
       };
 
       await firebaseNotificationApi.createNotification(notification);
-    } catch (error) {
+    } catch (_error) {
       handleError(error, 'send completion notification', {
         severity: ErrorSeverity.ERROR,
       });
@@ -255,7 +254,7 @@ export const challengeNotifications = {
       });
 
       await batch.commit();
-    } catch (error) {
+    } catch (_error) {
       handleError(error, 'send participant joined notifications', {
         severity: ErrorSeverity.ERROR,
       });
@@ -294,7 +293,7 @@ export const challengeNotifications = {
       });
 
       await batch.commit();
-    } catch (error) {
+    } catch (_error) {
       handleError(error, 'send ending soon notifications', {
         severity: ErrorSeverity.ERROR,
       });
@@ -337,7 +336,7 @@ export const challengeNotifications = {
       });
 
       await batch.commit();
-    } catch (error) {
+    } catch (_error) {
       handleError(error, 'send new challenge notifications', {
         severity: ErrorSeverity.ERROR,
       });
@@ -366,7 +365,7 @@ export const challengeNotifications = {
 
         await firebaseNotificationApi.createNotification(notification);
       }
-    } catch (error) {
+    } catch (_error) {
       handleError(error, 'send rank change notification', {
         severity: ErrorSeverity.ERROR,
       });
@@ -401,7 +400,7 @@ export const challengeNotifications = {
           break; // Only send one milestone notification at a time
         }
       }
-    } catch (error) {
+    } catch (_error) {
       handleError(error, 'send milestone notification', {
         severity: ErrorSeverity.ERROR,
       });

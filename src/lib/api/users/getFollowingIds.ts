@@ -45,7 +45,7 @@ export async function getFollowingIds(userId: string): Promise<Set<string>> {
     });
 
     return new Set(followingIds);
-  } catch (error) {
+  } catch (_error) {
     console.error('Error fetching following IDs:', error);
     return new Set(); // Return empty set on error
   }

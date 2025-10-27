@@ -18,7 +18,8 @@ describe('Group Schemas', () => {
     it('should validate valid group data with all required fields', () => {
       const input = {
         name: 'Productivity Masters',
-        description: 'A group for people who want to improve their productivity and build better work habits.',
+        description:
+          'A group for people who want to improve their productivity and build better work habits.',
         category: 'work' as const,
         type: 'professional' as const,
         privacySetting: 'public' as const,
@@ -74,7 +75,7 @@ describe('Group Schemas', () => {
 
       expect(result.success).toBe(false);
       if (!result.success) {
-        const paths = result.errors.map((e) => e.path);
+        const paths = result.errors.map(e => e.path);
         expect(paths).toContain('name');
       }
     });
@@ -91,7 +92,7 @@ describe('Group Schemas', () => {
 
       expect(result.success).toBe(false);
       if (!result.success) {
-        const paths = result.errors.map((e) => e.path);
+        const paths = result.errors.map(e => e.path);
         expect(paths).toContain('description');
       }
     });
@@ -108,7 +109,7 @@ describe('Group Schemas', () => {
 
       expect(result.success).toBe(false);
       if (!result.success) {
-        const paths = result.errors.map((e) => e.path);
+        const paths = result.errors.map(e => e.path);
         expect(paths).toContain('category');
       }
     });
@@ -125,7 +126,7 @@ describe('Group Schemas', () => {
 
       expect(result.success).toBe(false);
       if (!result.success) {
-        const paths = result.errors.map((e) => e.path);
+        const paths = result.errors.map(e => e.path);
         expect(paths).toContain('type');
       }
     });
@@ -142,7 +143,7 @@ describe('Group Schemas', () => {
 
       expect(result.success).toBe(false);
       if (!result.success) {
-        const paths = result.errors.map((e) => e.path);
+        const paths = result.errors.map(e => e.path);
         expect(paths).toContain('privacySetting');
       }
     });
@@ -272,9 +273,15 @@ describe('Group Schemas', () => {
     });
 
     it('should validate all category enum values', () => {
-      const categories = ['work', 'study', 'side-project', 'learning', 'other'] as const;
+      const categories = [
+        'work',
+        'study',
+        'side-project',
+        'learning',
+        'other',
+      ] as const;
 
-      categories.forEach((category) => {
+      categories.forEach(category => {
         const input = {
           name: 'Test Group',
           description: 'Test description that is long enough',
@@ -296,7 +303,7 @@ describe('Group Schemas', () => {
       const input = {
         name: 'Test Group',
         description: 'Test description that is long enough',
-        category: 'invalid-category' as any,
+        category: 'invalid-category' as unknown as typeof input.category,
         type: 'professional' as const,
         privacySetting: 'public' as const,
       };
@@ -310,9 +317,14 @@ describe('Group Schemas', () => {
     });
 
     it('should validate all type enum values', () => {
-      const types = ['just-for-fun', 'professional', 'competitive', 'other'] as const;
+      const types = [
+        'just-for-fun',
+        'professional',
+        'competitive',
+        'other',
+      ] as const;
 
-      types.forEach((type) => {
+      types.forEach(type => {
         const input = {
           name: 'Test Group',
           description: 'Test description that is long enough',
@@ -335,7 +347,7 @@ describe('Group Schemas', () => {
         name: 'Test Group',
         description: 'Test description that is long enough',
         category: 'work' as const,
-        type: 'invalid-type' as any,
+        type: 'invalid-type' as unknown as typeof input.type,
         privacySetting: 'public' as const,
       };
 
@@ -350,7 +362,7 @@ describe('Group Schemas', () => {
     it('should validate all privacySetting enum values', () => {
       const privacySettings = ['public', 'approval-required'] as const;
 
-      privacySettings.forEach((privacySetting) => {
+      privacySettings.forEach(privacySetting => {
         const input = {
           name: 'Test Group',
           description: 'Test description that is long enough',
@@ -374,7 +386,7 @@ describe('Group Schemas', () => {
         description: 'Test description that is long enough',
         category: 'work' as const,
         type: 'professional' as const,
-        privacySetting: 'private' as any,
+        privacySetting: 'private' as unknown as typeof input.privacySetting,
       };
 
       const result = validate(CreateGroupSchema, input);
@@ -466,7 +478,9 @@ describe('Group Schemas', () => {
       expect(result.success).toBe(true);
       if (result.success) {
         expect(result.data.name).toBe('Test Group');
-        expect(result.data.description).toBe('Test description that is long enough');
+        expect(result.data.description).toBe(
+          'Test description that is long enough'
+        );
       }
     });
   });
@@ -541,7 +555,7 @@ describe('Group Schemas', () => {
 
     it('should fail for invalid category', () => {
       const input = {
-        category: 'invalid' as any,
+        category: 'invalid' as unknown as typeof input.category,
       };
 
       const result = validate(UpdateGroupSchema, input);
@@ -554,7 +568,7 @@ describe('Group Schemas', () => {
 
     it('should fail for invalid type', () => {
       const input = {
-        type: 'invalid' as any,
+        type: 'invalid' as unknown as typeof input.type,
       };
 
       const result = validate(UpdateGroupSchema, input);
@@ -567,7 +581,7 @@ describe('Group Schemas', () => {
 
     it('should fail for invalid privacySetting', () => {
       const input = {
-        privacySetting: 'invalid' as any,
+        privacySetting: 'invalid' as unknown as typeof input.privacySetting,
       };
 
       const result = validate(UpdateGroupSchema, input);
@@ -589,7 +603,9 @@ describe('Group Schemas', () => {
       expect(result.success).toBe(true);
       if (result.success) {
         expect(result.data.name).toBe('Updated Name');
-        expect(result.data.description).toBe('Updated description is long enough');
+        expect(result.data.description).toBe(
+          'Updated description is long enough'
+        );
       }
     });
   });
@@ -630,7 +646,7 @@ describe('Group Schemas', () => {
 
       expect(result.success).toBe(false);
       if (!result.success) {
-        const paths = result.errors.map((e) => e.path);
+        const paths = result.errors.map(e => e.path);
         expect(paths).toContain('groupId');
       }
     });
@@ -684,7 +700,7 @@ describe('Group Schemas', () => {
       const input = {
         groupId: '550e8400-e29b-41d4-a716-446655440000',
         userId: '660e8400-e29b-41d4-a716-446655440001',
-        role: 'owner' as any,
+        role: 'owner' as unknown as typeof input.role,
       };
 
       const result = validate(GroupRoleSchema, input);
@@ -704,7 +720,7 @@ describe('Group Schemas', () => {
 
       expect(result.success).toBe(false);
       if (!result.success) {
-        const paths = result.errors.map((e) => e.path);
+        const paths = result.errors.map(e => e.path);
         expect(paths).toContain('userId');
         expect(paths).toContain('role');
       }
@@ -742,7 +758,7 @@ describe('Group Schemas', () => {
 
     it('should fail for invalid category', () => {
       const input = {
-        category: 'invalid' as any,
+        category: 'invalid' as unknown as typeof input.category,
       };
 
       const result = validate(GroupFiltersSchema, input);
@@ -801,7 +817,7 @@ describe('Group Schemas', () => {
 
     it('should fail for invalid field', () => {
       const input = {
-        field: 'invalid' as any,
+        field: 'invalid' as unknown as typeof input.field,
         direction: 'asc' as const,
       };
 

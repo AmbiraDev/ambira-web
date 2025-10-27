@@ -88,15 +88,15 @@ export function useProfileByUsername(
     queryFn: async () => {
       try {
         return await profileService.getProfileByUsername(username);
-      } catch (error: unknown) {
+      } catch (err: unknown) {
         // Return null for not found/permission errors instead of throwing
         if (
-          error?.message?.includes('not found') ||
-          error?.message?.includes('private')
+          (err as { message?: string })?.message?.includes('not found') ||
+          (err as { message?: string })?.message?.includes('private')
         ) {
           return null;
         }
-        throw error;
+        throw err;
       }
     },
     staleTime: STANDARD_CACHE_TIMES.LONG, // 15 minutes
@@ -215,8 +215,9 @@ export function useFollowers(
     queryFn: async () => {
       try {
         return await profileService.getFollowers(userId);
-      } catch (_error) {
+      } catch (_err) {
         // Return empty array on permission errors
+        console.error('Error fetching followers:', _err);
         return [];
       }
     },
@@ -242,8 +243,9 @@ export function useFollowing(
     queryFn: async () => {
       try {
         return await profileService.getFollowing(userId);
-      } catch (_error) {
+      } catch (_err) {
         // Return empty array on permission errors
+        console.error('Error fetching following:', _err);
         return [];
       }
     },
@@ -293,6 +295,7 @@ export function useCanViewProfile(
       ...PROFILE_KEYS.detail(profileUser?.id || ''),
       'canView',
       viewerId,
+      profileUser,
     ],
     queryFn: () => {
       if (!profileUser) return false;

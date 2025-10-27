@@ -45,12 +45,14 @@ function ActivityDetailContent({ activityId }: { activityId: string }) {
         await firebaseApi.session.getSessionWithDetails(activityId);
       setSession(sessionData as unknown as SessionWithDetails);
     } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       const isPermissionError =
-        error?.message?.includes('permission') ||
-        error?.message?.includes('Permission');
+        errorMessage.includes('permission') ||
+        errorMessage.includes('Permission');
       const isNotFound =
-        error?.message?.includes('not found') ||
-        error?.message?.includes('Not found');
+        errorMessage.includes('not found') ||
+        errorMessage.includes('Not found');
 
       if (isPermissionError || isNotFound) {
         setSession(null);
@@ -68,9 +70,11 @@ function ActivityDetailContent({ activityId }: { activityId: string }) {
       const response = await firebaseApi.comment.getSessionComments(activityId);
       setComments(response.comments);
     } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       const isPermissionError =
-        error?.message?.includes('permission') ||
-        error?.message?.includes('Permission');
+        errorMessage.includes('permission') ||
+        errorMessage.includes('Permission');
       if (!isPermissionError) {
         console.error('Error loading comments:', error);
       }
@@ -88,8 +92,8 @@ function ActivityDetailContent({ activityId }: { activityId: string }) {
         await firebaseApi.post.supportSession(session.id);
       }
       await loadSessionData();
-    } catch (error) {
-      console.error('Error toggling support:', error);
+    } catch {
+      console.error('Error toggling support');
     } finally {
       setIsSupporting(false);
     }
@@ -107,8 +111,8 @@ function ActivityDetailContent({ activityId }: { activityId: string }) {
       setNewComment('');
       await loadComments();
       await loadSessionData();
-    } catch (error) {
-      console.error('Error posting comment:', error);
+    } catch {
+      console.error('Error posting comment');
     } finally {
       setIsPostingComment(false);
     }

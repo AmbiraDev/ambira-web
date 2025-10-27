@@ -442,7 +442,7 @@ describe('Google Sign-In - Error Scenarios', () => {
 
     try {
       await firebaseAuthApi.signInWithGoogle();
-    } catch (error) {
+    } catch (_error) {
       // Expected
     }
 

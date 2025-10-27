@@ -33,7 +33,7 @@ function getStorage(type: 'local' | 'session'): Storage | null {
     storage.setItem(testKey, 'test');
     storage.removeItem(testKey);
     return storage;
-  } catch (e) {
+  } catch (_e) {
     debug.warn(`${type}Storage is not available:`, e);
     return null;
   }
@@ -45,7 +45,11 @@ function getStorage(type: 'local' | 'session'): Storage | null {
 export class LocalCache {
   private static readonly PREFIX = `${STORAGE_PREFIX}${CACHE_VERSION}_`;
 
-  static set<T>(key: string, data: T, ttlMs: number = CACHE_TIMES.DAILY): void {
+  static set<T>(
+    key: string,
+    data: T,
+    _ttlMs: number = CACHE_TIMES.DAILY
+  ): void {
     const storage = getStorage('local');
     if (!storage) return;
 
@@ -72,7 +76,7 @@ export class LocalCache {
     }
   }
 
-  static get<T>(key: string, ttlMs: number = CACHE_TIMES.DAILY): T | null {
+  static get<T>(key: string, _ttlMs: number = CACHE_TIMES.DAILY): T | null {
     const storage = getStorage('local');
     if (!storage) return null;
 
@@ -90,13 +94,13 @@ export class LocalCache {
 
       // Check TTL
       const age = Date.now() - item.timestamp;
-      if (age > ttlMs) {
+      if (age > _ttlMs) {
         storage.removeItem(`${this.PREFIX}${key}`);
         return null;
       }
 
       return item.data;
-    } catch (e) {
+    } catch (_e) {
       debug.warn('Failed to retrieve cached data:', e);
       return null;
     }
@@ -119,7 +123,7 @@ export class LocalCache {
           storage.removeItem(key);
         }
       });
-    } catch (e) {
+    } catch (_e) {
       debug.warn('Failed to clear cache:', e);
     }
   }
@@ -149,7 +153,7 @@ export class LocalCache {
           storage.removeItem(key);
         }
       });
-    } catch (e) {
+    } catch (_e) {
       debug.warn('Failed to clear expired cache:', e);
     }
   }
@@ -172,7 +176,7 @@ export class SessionCache {
         version: CACHE_VERSION,
       };
       storage.setItem(`${this.PREFIX}${key}`, JSON.stringify(item));
-    } catch (e) {
+    } catch (_e) {
       debug.warn('Failed to cache data in session:', e);
     }
   }
@@ -194,7 +198,7 @@ export class SessionCache {
       }
 
       return item.data;
-    } catch (e) {
+    } catch (_e) {
       debug.warn('Failed to retrieve cached data from session:', e);
       return null;
     }
@@ -217,7 +221,7 @@ export class SessionCache {
           storage.removeItem(key);
         }
       });
-    } catch (e) {
+    } catch (_e) {
       debug.warn('Failed to clear session cache:', e);
     }
   }
@@ -234,13 +238,13 @@ interface MemoryCacheItem<T> {
  * In-memory cache for ultra-fast access (cleared on page refresh)
  */
 export class MemoryCache {
-  private static cache = new Map<string, MemoryCacheItem<any>>();
+  private static cache = new Map<string, MemoryCacheItem<unknown>>();
   private static readonly MAX_SIZE = 100; // Prevent memory leaks
 
   static set<T>(
     key: string,
     data: T,
-    ttlMs: number = CACHE_TIMES.MEDIUM
+    _ttlMs: number = CACHE_TIMES.MEDIUM
   ): void {
     // If cache is too large, remove oldest items
     if (this.cache.size >= this.MAX_SIZE) {
@@ -256,12 +260,12 @@ export class MemoryCache {
     });
   }
 
-  static get<T>(key: string, ttlMs: number = CACHE_TIMES.MEDIUM): T | null {
+  static get<T>(key: string, _ttlMs: number = CACHE_TIMES.MEDIUM): T | null {
     const item = this.cache.get(key);
     if (!item) return null;
 
     const age = Date.now() - item.timestamp;
-    if (age > ttlMs) {
+    if (age > _ttlMs) {
       this.cache.delete(key);
       return null;
     }
@@ -277,10 +281,10 @@ export class MemoryCache {
     this.cache.clear();
   }
 
-  static clearExpired(ttlMs: number = CACHE_TIMES.MEDIUM): void {
+  static clearExpired(_ttlMs: number = CACHE_TIMES.MEDIUM): void {
     const now = Date.now();
     for (const [key, item] of this.cache.entries()) {
-      if (now - item.timestamp > ttlMs) {
+      if (now - item.timestamp > _ttlMs) {
         this.cache.delete(key);
       }
     }
@@ -298,18 +302,18 @@ interface PendingQuery<T> {
  * Prevents duplicate concurrent requests for the same data
  */
 export class QueryDeduplicator {
-  private static pending = new Map<string, PendingQuery<any>>();
+  private static pending = new Map<string, PendingQuery<unknown>>();
 
   static async dedupe<T>(
     key: string,
     queryFn: () => Promise<T>,
-    ttlMs: number = 1000
+    _ttlMs: number = 1000
   ): Promise<T> {
     // Check if there's a pending request for this key
     const existing = this.pending.get(key);
     if (existing) {
       const age = Date.now() - existing.timestamp;
-      if (age < ttlMs) {
+      if (age < _ttlMs) {
         // Return the existing promise
         return existing.promise;
       }

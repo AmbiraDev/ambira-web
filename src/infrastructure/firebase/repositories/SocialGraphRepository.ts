@@ -24,7 +24,7 @@ export class SocialGraphRepository {
           followingIds = outboundSnapshot.docs.map(doc => doc.id);
           return followingIds;
         }
-      } catch (_socialGraphError) {
+      } catch (__socialGraphError) {
         // If social_graph doesn't exist, fall through to legacy follows
       }
 
@@ -41,7 +41,7 @@ export class SocialGraphRepository {
       });
 
       return followingIds;
-    } catch (error) {
+    } catch (_error) {
       console.error(`Error getting following IDs for user ${userId}:`, error);
       throw new Error(
         `Failed to get following IDs: ${error instanceof Error ? error.message : 'Unknown error'}`
@@ -65,7 +65,7 @@ export class SocialGraphRepository {
           followerIds = inboundSnapshot.docs.map(doc => doc.id);
           return followerIds;
         }
-      } catch (_socialGraphError) {
+      } catch (__socialGraphError) {
         // If social_graph doesn't exist, fall through to legacy follows
       }
 
@@ -82,7 +82,7 @@ export class SocialGraphRepository {
       });
 
       return followerIds;
-    } catch (error) {
+    } catch (_error) {
       console.error(`Error getting follower IDs for user ${userId}:`, error);
       throw new Error(
         `Failed to get follower IDs: ${error instanceof Error ? error.message : 'Unknown error'}`
@@ -132,7 +132,7 @@ export class SocialGraphRepository {
       }
 
       return Array.from(allMemberIds);
-    } catch (error) {
+    } catch (_error) {
       console.error(
         `Error getting group member IDs for user ${userId}:`,
         error
@@ -150,7 +150,7 @@ export class SocialGraphRepository {
     try {
       const followingIds = await this.getFollowingIds(followerId);
       return followingIds.includes(followingId);
-    } catch (error) {
+    } catch (_error) {
       console.error(
         `Error checking if ${followerId} follows ${followingId}:`,
         error

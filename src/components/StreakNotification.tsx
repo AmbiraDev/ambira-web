@@ -12,7 +12,7 @@ interface StreakNotificationProps {
 
 export const StreakNotification: React.FC<StreakNotificationProps> = ({
   userId,
-  onDismiss
+  onDismiss,
 }) => {
   const [streakStats, setStreakStats] = useState<StreakStats | null>(null);
   const [isVisible, setIsVisible] = useState(false);
@@ -23,13 +23,13 @@ export const StreakNotification: React.FC<StreakNotificationProps> = ({
       try {
         const stats = await firebaseApi.streak.getStreakStats(userId);
         setStreakStats(stats);
-        
+
         // Show notification if streak is at risk and has a meaningful streak
         if (stats.streakAtRisk && stats.currentStreak > 0) {
           setIsVisible(true);
         }
-      } catch (error) {
-        console.error('Failed to load streak:', error);
+      } catch {
+        console.error('Failed to load streak');
       }
     };
 
@@ -53,23 +53,27 @@ export const StreakNotification: React.FC<StreakNotificationProps> = ({
             <AlertTriangle className="w-4 h-4 text-red-500 absolute -top-1 -right-1" />
           </div>
         </div>
-        
+
         <div className="flex-1">
           <h3 className="font-bold text-gray-900 mb-1">
             Don't break your streak!
           </h3>
           <p className="text-sm text-gray-600 mb-2">
-            You're on a <span className="font-semibold text-orange-600">{streakStats.currentStreak} day streak</span>. 
-            Complete a session today to keep it going!
+            You're on a{' '}
+            <span className="font-semibold text-orange-600">
+              {streakStats.currentStreak} day streak
+            </span>
+            . Complete a session today to keep it going!
           </p>
-          
+
           {streakStats.nextMilestone && (
             <p className="text-xs text-gray-500">
-              Only {streakStats.nextMilestone - streakStats.currentStreak} days until your next milestone! 🎯
+              Only {streakStats.nextMilestone - streakStats.currentStreak} days
+              until your next milestone! 🎯
             </p>
           )}
         </div>
-        
+
         <button
           onClick={handleDismiss}
           className="flex-shrink-0 text-gray-400 hover:text-gray-600 transition-colors"
@@ -77,7 +81,7 @@ export const StreakNotification: React.FC<StreakNotificationProps> = ({
           <X className="w-5 h-5" />
         </button>
       </div>
-      
+
       <div className="mt-3 flex gap-2">
         <button
           onClick={handleDismiss}

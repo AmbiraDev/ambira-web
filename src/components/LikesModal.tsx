@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
+import Image from 'next/image';
 import { X } from 'lucide-react';
 import { User } from '@/types';
 import { firebaseApi } from '@/lib/api';
@@ -21,7 +22,6 @@ export const LikesModal: React.FC<LikesModalProps> = ({
   isOpen,
   onClose,
   userIds,
-  totalLikes,
 }) => {
   const { user: currentUser } = useAuth();
   const [users, setUsers] = useState<UserWithFollowStatus[]>([]);
@@ -30,34 +30,10 @@ export const LikesModal: React.FC<LikesModalProps> = ({
     Record<string, boolean>
   >({});
 
-  useEffect(() => {
-    if (isOpen && userIds.length > 0) {
-      loadUsers();
-    } else if (!isOpen) {
-      // Reset state when modal closes
-      setUsers([]);
-      setFollowingStates({});
-    }
-  }, [isOpen, userIds.join(',')]); // Use join to properly detect array changes
+  // Extract complex expression to separate variable
+  const userIdsKey = userIds.join(',');
 
-  // Handle ESC key to close modal
-  useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen) {
-        onClose();
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener('keydown', handleEscape);
-    }
-
-    return () => {
-      document.removeEventListener('keydown', handleEscape);
-    };
-  }, [isOpen, onClose]);
-
-  const loadUsers = async () => {
+  const loadUsers = useCallback(async () => {
     setIsLoading(true);
     try {
       // Fetch user data for each user ID
@@ -78,7 +54,7 @@ export const LikesModal: React.FC<LikesModalProps> = ({
                 user.id
               );
               followStatuses[user.id] = isFollowing;
-            } catch (_error) {
+            } catch {
               followStatuses[user.id] = false;
             }
           })
@@ -87,12 +63,40 @@ export const LikesModal: React.FC<LikesModalProps> = ({
       }
 
       setUsers(validUsers);
-    } catch (error) {
+    } catch (_error) {
       console.error('Failed to load users:', error);
     } finally {
       setIsLoading(false);
     }
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userIdsKey, currentUser]);
+
+  useEffect(() => {
+    if (isOpen && userIds.length > 0) {
+      loadUsers();
+    } else if (!isOpen) {
+      // Reset state when modal closes
+      setUsers([]);
+      setFollowingStates({});
+    }
+  }, [isOpen, userIdsKey, userIds.length, loadUsers]); // Include all dependencies
+
+  // Handle ESC key to close modal
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscape);
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [isOpen, onClose]);
 
   const handleFollowToggle = async (userId: string) => {
     if (!currentUser) return;
@@ -111,7 +115,7 @@ export const LikesModal: React.FC<LikesModalProps> = ({
       } else {
         await firebaseApi.user.followUser(userId);
       }
-    } catch (error) {
+    } catch (_error) {
       console.error('Failed to toggle follow:', error);
       // Revert on error
       setFollowingStates(prev => {
@@ -167,11 +171,13 @@ export const LikesModal: React.FC<LikesModalProps> = ({
                     className="flex items-center gap-3 p-4 hover:bg-gray-50 transition-colors"
                   >
                     {/* Profile picture */}
-                    <div className="w-11 h-11 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center text-white font-semibold flex-shrink-0">
+                    <div className="w-11 h-11 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center text-white font-semibold flex-shrink-0 overflow-hidden">
                       {user.profilePicture ? (
-                        <img
+                        <Image
                           src={user.profilePicture}
                           alt={user.name}
+                          width={44}
+                          height={44}
                           className="w-full h-full rounded-full object-cover"
                         />
                       ) : (

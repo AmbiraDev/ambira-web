@@ -195,8 +195,8 @@ export const EditSessionModal: React.FC<EditSessionModalProps> = ({
         try {
           const uploadResults = await uploadImages(selectedImages);
           newImageUrls = uploadResults.map(result => result.url);
-        } catch (error) {
-          console.error('Failed to upload images:', error);
+        } catch (_err) {
+          console.error('Failed to upload images:', err);
           alert('Failed to upload images. Please try again.');
           setIsSaving(false);
           setIsUploading(false);
@@ -226,8 +226,8 @@ export const EditSessionModal: React.FC<EditSessionModalProps> = ({
       });
 
       onClose();
-    } catch (error) {
-      console.error('Failed to save session:', error);
+    } catch (_err) {
+      console.error('Failed to save session:', err);
       alert('Failed to save session. Please try again.');
     } finally {
       setIsSaving(false);
@@ -236,10 +236,11 @@ export const EditSessionModal: React.FC<EditSessionModalProps> = ({
 
   // Clean up preview URLs on unmount
   useEffect(() => {
+    const urlsToClean = imagePreviewUrls;
     return () => {
-      imagePreviewUrls.forEach(url => URL.revokeObjectURL(url));
+      urlsToClean.forEach(url => URL.revokeObjectURL(url));
     };
-  }, []);
+  }, [imagePreviewUrls]);
 
   const totalImages = existingImages.length + selectedImages.length;
 
@@ -481,7 +482,11 @@ export const EditSessionModal: React.FC<EditSessionModalProps> = ({
           </label>
           <select
             value={visibility}
-            onChange={e => setVisibility(e.target.value as any)}
+            onChange={e =>
+              setVisibility(
+                e.target.value as 'everyone' | 'followers' | 'private'
+              )
+            }
             className="w-full pl-3 pr-8 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] bg-white appearance-none"
           >
             <option value="everyone">Everyone</option>

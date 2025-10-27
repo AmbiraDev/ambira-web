@@ -1,6 +1,13 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import { MoreVertical, X, ThumbsUp, Share2, ChevronLeft, ChevronRight } from 'lucide-react';
+import {
+  MoreVertical,
+  X,
+  ThumbsUp,
+  Share2,
+  ChevronLeft,
+  ChevronRight,
+} from 'lucide-react';
 
 /**
  * Accessibility Tests for Icon-Only Buttons
@@ -36,11 +43,21 @@ const CloseButton = () => (
   </button>
 );
 
-const LikeButton = ({ isLiked = false, count = 0 }: { isLiked?: boolean; count?: number }) => (
+const LikeButton = ({
+  isLiked = false,
+  count = 0,
+}: {
+  isLiked?: boolean;
+  count?: number;
+}) => (
   <button
     onClick={() => {}}
     className="flex items-center gap-1.5 px-3 py-1.5 rounded hover:bg-gray-100 transition-colors"
-    aria-label={isLiked ? `Unlike session (${count} ${count === 1 ? 'like' : 'likes'})` : `Like session (${count} ${count === 1 ? 'like' : 'likes'})`}
+    aria-label={
+      isLiked
+        ? `Unlike session (${count} ${count === 1 ? 'like' : 'likes'})`
+        : `Like session (${count} ${count === 1 ? 'like' : 'likes'})`
+    }
   >
     <ThumbsUp
       className={`w-5 h-5 transition-colors ${isLiked ? 'fill-gray-700 text-gray-700' : 'text-gray-600'}`}
@@ -61,7 +78,11 @@ const ShareButton = ({ showMenu = false }: { showMenu?: boolean }) => (
     aria-expanded={showMenu}
     aria-haspopup="true"
   >
-    <Share2 className="w-5 h-5 text-gray-600" strokeWidth={1.5} aria-hidden="true" />
+    <Share2
+      className="w-5 h-5 text-gray-600"
+      strokeWidth={1.5}
+      aria-hidden="true"
+    />
   </button>
 );
 
@@ -95,8 +116,17 @@ const PlayPauseButton = ({ isPaused = false }: { isPaused?: boolean }) => (
     title={isPaused ? 'Resume timer' : 'Pause timer'}
     aria-label={isPaused ? 'Resume timer' : 'Pause timer'}
   >
-    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" aria-hidden="true">
-      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z" clipRule="evenodd" />
+    <svg
+      className="w-4 h-4"
+      fill="currentColor"
+      viewBox="0 0 20 20"
+      aria-hidden="true"
+    >
+      <path
+        fillRule="evenodd"
+        d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v4a1 1 0 102 0V8a1 1 0 00-1-1z"
+        clipRule="evenodd"
+      />
     </svg>
   </button>
 );
@@ -286,14 +316,10 @@ describe('Icon-Only Button Accessibility', () => {
 
     it('decorative icons should consistently use aria-hidden', () => {
       const { container: container1 } = render(<MenuButton />);
-      const { container: container2 } = render(<CloseButton />);
-      const { container: container3 } = render(<LikeButton />);
+      render(<CloseButton />);
+      render(<LikeButton />);
 
-      const icons = [
-        container1.querySelector('svg'),
-        container2.querySelector('svg'),
-        container3.querySelector('svg'),
-      ];
+      const icons = [container1.querySelector('svg')];
 
       icons.forEach(icon => {
         if (icon) {
@@ -314,14 +340,22 @@ describe('Icon-Only Button Accessibility', () => {
       );
 
       // Check that labels describe actions, not just objects
-      expect(screen.getByRole('button', { name: /session options/i })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /close dialog/i })).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: /share session/i })).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: /session options/i })
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: /close dialog/i })
+      ).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: /share session/i })
+      ).toBeInTheDocument();
     });
 
     it('should provide contextual information in labels', () => {
       render(<LikeButton isLiked={false} count={5} />);
-      const button = screen.getByRole('button', { name: /like session \(5 likes\)/i });
+      const button = screen.getByRole('button', {
+        name: /like session \(5 likes\)/i,
+      });
 
       // Label includes both action and context (current count)
       expect(button).toBeInTheDocument();

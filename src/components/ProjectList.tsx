@@ -19,10 +19,7 @@ interface ProjectListProps {
 
 // const STORAGE_KEY = 'projectViewMode';
 
-export const ProjectList: React.FC<ProjectListProps> = ({
-  _onCreateProject,
-  onEditProject,
-}) => {
+export const ProjectList: React.FC<ProjectListProps> = ({ onEditProject }) => {
   const router = useRouter();
   const { user } = useAuth();
   const { data: projects = [], isLoading, error } = useActivities(user?.id);
@@ -53,8 +50,8 @@ export const ProjectList: React.FC<ProjectListProps> = ({
     try {
       await deleteProjectMutation.mutateAsync(project.id);
       setDeleteConfirm(null);
-    } catch (error) {
-      console.error('Failed to delete project:', error);
+    } catch {
+      console.error('Failed to delete project');
     }
   };
 
@@ -65,16 +62,16 @@ export const ProjectList: React.FC<ProjectListProps> = ({
       } else {
         await archiveProjectMutation.mutateAsync(project.id);
       }
-    } catch (error) {
-      console.error('Failed to archive/restore project:', error);
+    } catch {
+      console.error('Failed to archive/restore project');
     }
   };
 
   const handleRestore = async (project: Project) => {
     try {
       await restoreProjectMutation.mutateAsync(project.id);
-    } catch (error) {
-      console.error('Failed to restore project:', error);
+    } catch {
+      console.error('Failed to restore project');
     }
   };
 
