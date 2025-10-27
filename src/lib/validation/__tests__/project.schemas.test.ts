@@ -128,7 +128,7 @@ describe('Project Schemas', () => {
 
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.errors[0].path).toBe('name');
+        expect(result.errors[0]?.path).toBe('name');
       }
     });
 
@@ -144,7 +144,7 @@ describe('Project Schemas', () => {
 
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.errors[0].path).toBe('name');
+        expect(result.errors[0]?.path).toBe('name');
       }
     });
 
@@ -173,7 +173,7 @@ describe('Project Schemas', () => {
 
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.errors[0].path).toBe('description');
+        expect(result.errors[0]?.path).toBe('description');
       }
     });
 
@@ -189,7 +189,7 @@ describe('Project Schemas', () => {
 
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.errors[0].path).toBe('description');
+        expect(result.errors[0]?.path).toBe('description');
       }
     });
 
@@ -215,7 +215,7 @@ describe('Project Schemas', () => {
         'rgb(255,0,0)', // Wrong format
       ];
 
-      invalidColors.forEach(color => {
+      invalidColors.forEach((color: string) => {
         const input = {
           name: 'Test Project',
           description: 'Test description',
@@ -227,7 +227,7 @@ describe('Project Schemas', () => {
 
         expect(result.success).toBe(false);
         if (!result.success) {
-          expect(result.errors[0].path).toBe('color');
+          expect(result.errors[0]?.path).toBe('color');
         }
       });
     });
@@ -268,7 +268,7 @@ describe('Project Schemas', () => {
 
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.errors[0].path).toBe('weeklyTarget');
+        expect(result.errors[0]?.path).toBe('weeklyTarget');
       }
     });
 
@@ -285,7 +285,7 @@ describe('Project Schemas', () => {
 
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.errors[0].path).toBe('weeklyTarget');
+        expect(result.errors[0]?.path).toBe('weeklyTarget');
       }
     });
 
@@ -330,7 +330,7 @@ describe('Project Schemas', () => {
 
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.errors[0].path).toBe('totalTarget');
+        expect(result.errors[0]?.path).toBe('totalTarget');
       }
     });
 
@@ -347,7 +347,7 @@ describe('Project Schemas', () => {
 
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.errors[0].path).toBe('totalTarget');
+        expect(result.errors[0]?.path).toBe('totalTarget');
       }
     });
 
@@ -401,19 +401,25 @@ describe('Project Schemas', () => {
     });
 
     it('should fail for invalid status value', () => {
-      const input = {
+      const input: {
+        name: string;
+        description: string;
+        icon: string;
+        color: string;
+        status: string;
+      } = {
         name: 'Test Project',
         description: 'Test description',
         icon: '📚',
         color: '#FF3B30',
-        status: 'invalid-status' as unknown as typeof input.status,
+        status: 'invalid-status',
       };
 
       const result = validate(CreateProjectSchema, input);
 
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.errors[0].path).toBe('status');
+        expect(result.errors[0]?.path).toBe('status');
       }
     });
 
@@ -559,7 +565,7 @@ describe('Project Schemas', () => {
 
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.errors[0].path).toBe('name');
+        expect(result.errors[0]?.path).toBe('name');
       }
     });
 
@@ -572,7 +578,7 @@ describe('Project Schemas', () => {
 
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.errors[0].path).toBe('name');
+        expect(result.errors[0]?.path).toBe('name');
       }
     });
 
@@ -585,7 +591,7 @@ describe('Project Schemas', () => {
 
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.errors[0].path).toBe('description');
+        expect(result.errors[0]?.path).toBe('description');
       }
     });
 
@@ -598,7 +604,7 @@ describe('Project Schemas', () => {
 
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.errors[0].path).toBe('description');
+        expect(result.errors[0]?.path).toBe('description');
       }
     });
 
@@ -611,20 +617,20 @@ describe('Project Schemas', () => {
 
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.errors[0].path).toBe('color');
+        expect(result.errors[0]?.path).toBe('color');
       }
     });
 
     it('should fail for weeklyTarget out of range', () => {
       const invalidTargets = [-1, 169, 200];
 
-      invalidTargets.forEach(weeklyTarget => {
+      invalidTargets.forEach((weeklyTarget: number) => {
         const input = { weeklyTarget };
         const result = validate(UpdateProjectSchema, input);
 
         expect(result.success).toBe(false);
         if (!result.success) {
-          expect(result.errors[0].path).toBe('weeklyTarget');
+          expect(result.errors[0]?.path).toBe('weeklyTarget');
         }
       });
     });
@@ -632,27 +638,29 @@ describe('Project Schemas', () => {
     it('should fail for totalTarget out of range', () => {
       const invalidTargets = [-1, 10001, 20000];
 
-      invalidTargets.forEach(totalTarget => {
+      invalidTargets.forEach((totalTarget: number) => {
         const input = { totalTarget };
         const result = validate(UpdateProjectSchema, input);
 
         expect(result.success).toBe(false);
         if (!result.success) {
-          expect(result.errors[0].path).toBe('totalTarget');
+          expect(result.errors[0]?.path).toBe('totalTarget');
         }
       });
     });
 
     it('should fail for invalid status', () => {
-      const input = {
-        status: 'pending' as unknown as typeof input.status,
+      const input: {
+        status: string;
+      } = {
+        status: 'pending',
       };
 
       const result = validate(UpdateProjectSchema, input);
 
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.errors[0].path).toBe('status');
+        expect(result.errors[0]?.path).toBe('status');
       }
     });
 
@@ -746,20 +754,22 @@ describe('Project Schemas', () => {
 
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.errors[0].path).toBe('userId');
+        expect(result.errors[0]?.path).toBe('userId');
       }
     });
 
     it('should fail for invalid status', () => {
-      const input = {
-        status: 'invalid-status' as unknown as typeof input.status,
+      const input: {
+        status: string;
+      } = {
+        status: 'invalid-status',
       };
 
       const result = validate(ProjectFiltersSchema, input);
 
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.errors[0].path).toBe('status');
+        expect(result.errors[0]?.path).toBe('status');
       }
     });
   });
@@ -838,30 +848,36 @@ describe('Project Schemas', () => {
     });
 
     it('should fail for invalid field', () => {
-      const input = {
-        field: 'invalid' as unknown as typeof input.field,
-        direction: 'asc' as const,
+      const input: {
+        field: string;
+        direction: 'asc';
+      } = {
+        field: 'invalid',
+        direction: 'asc',
       };
 
       const result = validate(ProjectSortSchema, input);
 
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.errors[0].path).toBe('field');
+        expect(result.errors[0]?.path).toBe('field');
       }
     });
 
     it('should fail for invalid direction', () => {
-      const input = {
-        field: 'name' as const,
-        direction: 'invalid' as unknown as typeof input.direction,
+      const input: {
+        field: 'name';
+        direction: string;
+      } = {
+        field: 'name',
+        direction: 'invalid',
       };
 
       const result = validate(ProjectSortSchema, input);
 
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.errors[0].path).toBe('direction');
+        expect(result.errors[0]?.path).toBe('direction');
       }
     });
   });

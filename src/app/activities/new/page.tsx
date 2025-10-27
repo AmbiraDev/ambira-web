@@ -366,7 +366,7 @@ function CreateActivityContent() {
         // Redirect to the specified path or default to /activities
         router.push(redirectPath || '/activities');
       }, 1500);
-    } catch (_err) {
+    } catch (err) {
       console.error('Failed to create activity:', err);
       const errorMessage =
         err instanceof Error

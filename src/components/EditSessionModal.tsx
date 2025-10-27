@@ -195,7 +195,7 @@ export const EditSessionModal: React.FC<EditSessionModalProps> = ({
         try {
           const uploadResults = await uploadImages(selectedImages);
           newImageUrls = uploadResults.map(result => result.url);
-        } catch (_err) {
+        } catch (err) {
           console.error('Failed to upload images:', err);
           alert('Failed to upload images. Please try again.');
           setIsSaving(false);
@@ -226,7 +226,7 @@ export const EditSessionModal: React.FC<EditSessionModalProps> = ({
       });
 
       onClose();
-    } catch (_err) {
+    } catch (err) {
       console.error('Failed to save session:', err);
       alert('Failed to save session. Please try again.');
     } finally {

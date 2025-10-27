@@ -330,7 +330,7 @@ export const FollowListContent: React.FC<FollowListContentProps> = ({
         }
       } catch (err: unknown) {
         debug.error(`ProfileTabs - Failed to load ${type}:`, err);
-        setError(err.message || `Failed to load ${type}`);
+        setError(err instanceof Error ? err.message : `Failed to load ${type}`);
       } finally {
         setIsLoading(false);
       }
@@ -454,14 +454,18 @@ export const PostsContent: React.FC<PostsContentProps> = ({
           50
         );
         // Ensure sessions have activity field (backwards compatibility)
-        const sessionsWithActivity = userSessions.map((session: unknown) => ({
-          ...session,
-          activity: session.activity || session.project,
-        }));
+        const sessionsWithActivity = userSessions.map(
+          (session: SessionWithDetails) => ({
+            ...session,
+            activity:
+              (session as SessionWithDetails & { activity?: unknown })
+                .activity || session.project,
+          })
+        );
         setSessions(sessionsWithActivity);
       } catch (err: unknown) {
         debug.error('ProfileTabs - Failed to load sessions:', err);
-        setError(err.message || 'Failed to load posts');
+        setError(err instanceof Error ? err.message : 'Failed to load posts');
       } finally {
         setIsLoadingSessions(false);
       }

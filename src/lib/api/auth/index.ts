@@ -49,7 +49,7 @@ const checkUsernameExists = async (username: string): Promise<boolean> => {
     );
     const snapshot = await getDocs(q);
     return !snapshot.empty;
-  } catch (_error) {
+  } catch (error) {
     handleError(error, 'Check username availability', {
       severity: ErrorSeverity.WARNING,
     });
@@ -76,7 +76,7 @@ const _checkEmailExistsInFirestore = async (
     );
     const snapshot = await getDocs(q);
     return !snapshot.empty;
-  } catch (_error) {
+  } catch (error) {
     handleError(error, 'Check email availability', {
       severity: ErrorSeverity.WARNING,
     });
@@ -205,7 +205,7 @@ export const firebaseAuthApi = {
       const token = await firebaseUser.getIdToken();
 
       return { user, token };
-    } catch (_error) {
+    } catch (error) {
       // Re-throw rate limit errors as-is
       if (error instanceof RateLimitError) {
         throw error;
@@ -286,7 +286,7 @@ export const firebaseAuthApi = {
       const _token = await firebaseUser.getIdToken();
 
       return { user, token: _token };
-    } catch (_error) {
+    } catch (error) {
       // Re-throw rate limit errors as-is
       if (error instanceof RateLimitError) {
         throw error;
@@ -320,23 +320,24 @@ export const firebaseAuthApi = {
         userCredential = await signInWithPopup(auth, provider);
       } catch (popupError: unknown) {
         console.error('[signInWithGoogle] Popup error:', popupError);
-        console.error('[signInWithGoogle] Error code:', popupError.code);
-        console.error('[signInWithGoogle] Error message:', popupError.message);
+        const authError = popupError as { code?: string; message?: string };
+        console.error('[signInWithGoogle] Error code:', authError.code);
+        console.error('[signInWithGoogle] Error message:', authError.message);
 
         // Handle specific error codes
-        if (popupError.code === 'auth/popup-blocked') {
+        if (authError.code === 'auth/popup-blocked') {
           throw new Error(
             'Popup was blocked by your browser. Please allow popups for this site.'
           );
-        } else if (popupError.code === 'auth/popup-closed-by-user') {
+        } else if (authError.code === 'auth/popup-closed-by-user') {
           throw new Error('Sign-in was cancelled.');
-        } else if (popupError.code === 'auth/cancelled-popup-request') {
+        } else if (authError.code === 'auth/cancelled-popup-request') {
           throw new Error('Sign-in was cancelled.');
-        } else if (popupError.code === 'auth/unauthorized-domain') {
+        } else if (authError.code === 'auth/unauthorized-domain') {
           throw new Error(
             'This domain is not authorized for Google Sign-in. Please contact support.'
           );
-        } else if (popupError.code === 'auth/network-request-failed') {
+        } else if (authError.code === 'auth/network-request-failed') {
           throw new Error(
             'Network error. Please check your internet connection and try again.'
           );
@@ -403,20 +404,24 @@ export const firebaseAuthApi = {
       console.error('Google sign-in error:', error);
 
       // Special case: if redirect is in progress, pass through without modification
-      if (error.message === 'REDIRECT_IN_PROGRESS') {
+      if (error instanceof Error && error.message === 'REDIRECT_IN_PROGRESS') {
         throw error;
       }
 
       // If the error is already a custom Error with a message, re-throw it as-is
       if (
         error instanceof Error &&
-        !('code' in (error as Record<string, unknown>))
+        !('code' in (error as unknown as Record<string, unknown>))
       ) {
         throw error;
       }
 
       // Provide more specific error messages for Firebase errors
-      if (error.message && error.message.includes('Firebase Console')) {
+      if (
+        error instanceof Error &&
+        error.message &&
+        error.message.includes('Firebase Console')
+      ) {
         throw error;
       }
 
@@ -434,7 +439,7 @@ export const firebaseAuthApi = {
   logout: async (): Promise<void> => {
     try {
       await signOut(auth);
-    } catch (_error) {
+    } catch (error) {
       const apiError = handleError(error, 'Logout', {
         defaultMessage: 'Logout failed',
       });
@@ -488,7 +493,7 @@ export const firebaseAuthApi = {
         createdAt: convertTimestamp(userData.createdAt),
         updatedAt: convertTimestamp(userData.updatedAt),
       };
-    } catch (_error) {
+    } catch (error) {
       const apiError = handleError(error, 'Get current user', {
         defaultMessage: 'Failed to get current user',
       });
@@ -504,7 +509,7 @@ export const firebaseAuthApi = {
       // Firebase handles token verification automatically
       // We just need to check if user is authenticated
       return !!auth.currentUser;
-    } catch (_error) {
+    } catch {
       return false;
     }
   },
@@ -576,11 +581,20 @@ export const firebaseAuthApi = {
       return { user, token };
     } catch (error: unknown) {
       console.error('[handleGoogleRedirectResult] ERROR:', error);
-      console.error('[handleGoogleRedirectResult] Error details:', {
-        message: error.message,
-        code: error.code,
-        stack: error.stack,
-      });
+
+      // Type-safe error property access
+      if (error && typeof error === 'object') {
+        const errorObj = error as {
+          message?: string;
+          code?: string;
+          stack?: string;
+        };
+        console.error('[handleGoogleRedirectResult] Error details:', {
+          message: errorObj.message,
+          code: errorObj.code,
+          stack: errorObj.stack,
+        });
+      }
 
       const apiError = handleError(error, 'Google sign-in redirect', {
         defaultMessage: 'Google sign-in failed. Please try again.',

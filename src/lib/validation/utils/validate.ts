@@ -178,7 +178,7 @@ export function prepareForFirestore<T extends Record<string, unknown>>(
  */
 export function formatValidationError(error: ValidationError): string {
   if (error.issues.length === 1) {
-    return error.issues[0].message;
+    return error.issues[0]?.message ?? 'Validation failed';
   }
 
   return error.issues

@@ -92,7 +92,9 @@ export function CommentFormExample({
     if (!result.success) {
       // Show first error
       const firstError = result.errors[0];
-      setError(firstError.message);
+      if (firstError) {
+        setError(firstError.message);
+      }
       return;
     }
 
@@ -122,7 +124,7 @@ export function CommentFormExample({
       if (onCommentCreated) {
         onCommentCreated(commentId);
       }
-    } catch (_err) {
+    } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to post comment');
     } finally {
       setIsSubmitting(false);
@@ -210,7 +212,10 @@ export function InlineCommentExample({ sessionId }: { sessionId: string }) {
     const result = validate(CreateCommentSchema, { sessionId, content });
 
     if (!result.success) {
-      setError(result.errors[0].message);
+      const firstError = result.errors[0];
+      if (firstError) {
+        setError(firstError.message);
+      }
       return;
     }
 

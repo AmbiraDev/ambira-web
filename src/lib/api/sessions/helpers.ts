@@ -3,7 +3,12 @@
  * Shared utilities for session operations
  */
 
-import { doc, getDoc } from 'firebase/firestore';
+import {
+  doc,
+  getDoc,
+  DocumentSnapshot,
+  DocumentData,
+} from 'firebase/firestore';
 
 import { db, auth } from '@/lib/firebase';
 import {
@@ -13,7 +18,7 @@ import {
   ErrorSeverity,
 } from '@/lib/errorHandler';
 import { convertTimestamp } from '../shared/utils';
-import type { SessionWithDetails } from '@/types';
+import type { SessionWithDetails, Activity } from '@/types';
 import { DEFAULT_ACTIVITIES } from '@/types';
 
 export const populateSessionsWithDetails = async (
@@ -25,7 +30,15 @@ export const populateSessionsWithDetails = async (
   for (let i = 0; i < sessionDocs.length; i += batchSize) {
     const batch = sessionDocs.slice(i, i + batchSize);
     const batchPromises = batch.map(async sessionDoc => {
-      const sessionData = sessionDoc.data();
+      const sessionDataRaw = sessionDoc.data();
+
+      // Skip if session data doesn't exist
+      if (!sessionDataRaw) {
+        return null;
+      }
+
+      // Type assertion to help TypeScript understand sessionData is non-null after check
+      const sessionData = sessionDataRaw as DocumentData;
 
       // Get user data - skip session if user has been deleted or is inaccessible
       let userDoc;
@@ -33,21 +46,21 @@ export const populateSessionsWithDetails = async (
         userDoc = await getDoc(doc(db, 'users', sessionData.userId));
       } catch (_error) {
         // Handle permission errors for deleted users
-        if (isPermissionError(error) || isNotFoundError(error)) {
+        if (isPermissionError(_error) || isNotFoundError(_error)) {
           return null;
         }
         // Re-throw other errors
-        throw error;
+        throw _error;
       }
 
       if (!userDoc.exists()) {
         // User no longer exists - skip session
         return null;
       }
-      const userData = userDoc.data();
+      const userData = userDoc.data() as DocumentData | undefined;
 
       // Get activity data (check both activityId and projectId for backwards compatibility)
-      let activityData: unknown = null;
+      let activityData: DocumentData | null = null;
       const activityId = sessionData.activityId || sessionData.projectId;
 
       if (activityId) {
@@ -82,7 +95,7 @@ export const populateSessionsWithDetails = async (
               activityData = activityDoc.data();
             }
           } catch (_error) {
-            handleError(error, `Fetch activity ${activityId}`, {
+            handleError(_error, `Fetch activity ${activityId}`, {
               severity: ErrorSeverity.WARNING,
             });
           }
@@ -145,7 +158,7 @@ export const populateSessionsWithDetails = async (
                 ? convertTimestamp(activityData.updatedAt)
                 : new Date(),
             }
-          : {
+          : ({
               id: activityId || '',
               userId: sessionData.userId,
               name: 'Unknown Activity',
@@ -153,9 +166,10 @@ export const populateSessionsWithDetails = async (
               icon: 'flat-color-icons:briefcase',
               color: '#007AFF',
               status: 'active',
+              isDefault: false,
               createdAt: new Date(),
               updatedAt: new Date(),
-            },
+            } as Activity),
         project: activityData
           ? {
               id: activityData.id || activityId || '',
@@ -173,7 +187,7 @@ export const populateSessionsWithDetails = async (
                 ? convertTimestamp(activityData.updatedAt)
                 : new Date(),
             }
-          : {
+          : ({
               id: activityId || '',
               userId: sessionData.userId,
               name: 'Unknown Activity',
@@ -181,9 +195,10 @@ export const populateSessionsWithDetails = async (
               icon: 'flat-color-icons:briefcase',
               color: '#007AFF',
               status: 'active',
+              isDefault: false,
               createdAt: new Date(),
               updatedAt: new Date(),
-            },
+            } as Activity),
       };
 
       return session;

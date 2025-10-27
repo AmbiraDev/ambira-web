@@ -30,6 +30,7 @@ import {
   serverTimestamp,
   runTransaction,
   onSnapshot,
+  DocumentSnapshot,
 } from 'firebase/firestore';
 
 // Local Firebase config
@@ -43,7 +44,7 @@ import {
 } from '@/lib/errorHandler';
 
 // Shared utilities
-import { convertTimestamp, _removeUndefinedFields } from '../shared/utils';
+import { convertTimestamp } from '../shared/utils';
 
 // Session helpers
 import { populateSessionsWithDetails } from './helpers';
@@ -76,13 +77,18 @@ const _processPosts = async (
     const batch = postDocs.slice(i, i + batchSize);
     const batchPromises = batch.map(async postDoc => {
       const postData = postDoc.data();
+      if (!postData) {
+        throw new Error('Post data not found');
+      }
 
       // Get user data
-      const userDoc = await getDoc(doc(db, 'users', postData.userId));
+      const userDoc = await getDoc(doc(db, 'users', postData.userId as string));
       const userData = userDoc.data();
 
       // Get session data
-      const sessionDoc = await getDoc(doc(db, 'sessions', postData.sessionId));
+      const sessionDoc = await getDoc(
+        doc(db, 'sessions', postData.sessionId as string)
+      );
       const sessionData = sessionDoc.data();
 
       // Get project data
@@ -90,13 +96,19 @@ const _processPosts = async (
       if (projectId) {
         try {
           const projectDoc = await getDoc(
-            doc(db, 'projects', postData.userId, 'userProjects', projectId)
+            doc(
+              db,
+              'projects',
+              postData.userId as string,
+              'userProjects',
+              projectId as string
+            )
           );
           if (projectDoc.exists()) {
             // projectData is available if needed
           }
         } catch (_error) {
-          handleError(error, `Fetch project ${projectId}`, {
+          handleError(_error, `Fetch project ${projectId}`, {
             severity: ErrorSeverity.WARNING,
           });
         }
@@ -113,17 +125,19 @@ const _processPosts = async (
       // Build the post with full details
       const post: PostWithDetails = {
         id: postDoc.id,
-        sessionId: postData.sessionId,
-        userId: postData.userId,
-        content: postData.content,
-        supportCount: postData.supportCount || 0,
-        commentCount: postData.commentCount || 0,
+        sessionId: postData.sessionId as string,
+        userId: postData.userId as string,
+        content: postData.content as string,
+        supportCount: (postData.supportCount as number) || 0,
+        commentCount: (postData.commentCount as number) || 0,
         isSupported,
-        visibility: postData.visibility || 'everyone',
+        visibility:
+          (postData.visibility as 'everyone' | 'followers' | 'private') ||
+          'everyone',
         createdAt: convertTimestamp(postData.createdAt),
         updatedAt: convertTimestamp(postData.updatedAt),
         user: {
-          id: postData.userId,
+          id: postData.userId as string,
           email: userData?.email || '',
           name: userData?.name || 'Unknown User',
           username: userData?.username || 'unknown',
@@ -135,28 +149,38 @@ const _processPosts = async (
         },
         session: sessionData
           ? {
-              id: postData.sessionId,
-              userId: postData.userId,
-              activityId: sessionData.activityId || sessionData.projectId || '',
-              projectId: sessionData.projectId || sessionData.activityId || '',
-              title: sessionData.title || 'Untitled Session',
-              description: sessionData.description || '',
-              duration: sessionData.duration || 0,
+              id: postData.sessionId as string,
+              userId: postData.userId as string,
+              activityId:
+                (sessionData.activityId as string) ||
+                (sessionData.projectId as string) ||
+                '',
+              projectId:
+                (sessionData.projectId as string) ||
+                (sessionData.activityId as string) ||
+                '',
+              title: (sessionData.title as string) || 'Untitled Session',
+              description: (sessionData.description as string) || '',
+              duration: (sessionData.duration as number) || 0,
               startTime: convertTimestamp(sessionData.startTime) || new Date(),
-              tags: sessionData.tags || [],
-              visibility: sessionData.visibility || 'everyone',
-              showStartTime: sessionData.showStartTime,
-              howFelt: sessionData.howFelt,
-              privateNotes: sessionData.privateNotes,
-              isArchived: sessionData.isArchived || false,
-              supportCount: sessionData.supportCount || 0,
-              commentCount: sessionData.commentCount || 0,
+              tags: (sessionData.tags as string[]) || [],
+              visibility:
+                (sessionData.visibility as
+                  | 'everyone'
+                  | 'followers'
+                  | 'private') || 'everyone',
+              showStartTime: sessionData.showStartTime as boolean | undefined,
+              howFelt: sessionData.howFelt as number | undefined,
+              privateNotes: sessionData.privateNotes as string | undefined,
+              isArchived: (sessionData.isArchived as boolean) || false,
+              supportCount: (sessionData.supportCount as number) || 0,
+              commentCount: (sessionData.commentCount as number) || 0,
               createdAt: convertTimestamp(sessionData.createdAt) || new Date(),
               updatedAt: convertTimestamp(sessionData.updatedAt) || new Date(),
             }
           : ({
-              id: postData.sessionId,
-              userId: postData.userId,
+              id: postData.sessionId as string,
+              userId: postData.userId as string,
               activityId: '',
               projectId: '',
               title: 'Session Not Found',
@@ -220,7 +244,7 @@ export const firebasePostApi = {
         updatedAt: new Date(),
       };
     } catch (_error) {
-      const apiError = handleError(error, 'Create post', {
+      const apiError = handleError(_error, 'Create post', {
         defaultMessage: 'Failed to create post',
       });
       throw new Error(apiError.userMessage);
@@ -691,10 +715,10 @@ export const firebasePostApi = {
         };
       }
     } catch (_error) {
-      handleError(error, 'in getFeedSessions', {
+      handleError(_error, 'in getFeedSessions', {
         severity: ErrorSeverity.ERROR,
       });
-      const apiError = handleError(error, 'Get feed sessions', {
+      const apiError = handleError(_error, 'Get feed sessions', {
         defaultMessage: 'Failed to get feed sessions',
       });
       throw new Error(apiError.userMessage);
@@ -769,7 +793,7 @@ export const firebasePostApi = {
         });
       }
     } catch (_error) {
-      const apiError = handleError(error, 'Support session', {
+      const apiError = handleError(_error, 'Support session', {
         defaultMessage: 'Failed to support session',
       });
       throw new Error(apiError.userMessage);
@@ -812,7 +836,7 @@ export const firebasePostApi = {
         });
       });
     } catch (_error) {
-      const apiError = handleError(error, 'Remove support', {
+      const apiError = handleError(_error, 'Remove support', {
         defaultMessage: 'Failed to remove support',
       });
       throw new Error(apiError.userMessage);
@@ -849,7 +873,7 @@ export const firebasePostApi = {
         updatedAt: convertTimestamp(postData.updatedAt),
       };
     } catch (_error) {
-      const apiError = handleError(error, 'Update post', {
+      const apiError = handleError(_error, 'Update post', {
         defaultMessage: 'Failed to update post',
       });
       throw new Error(apiError.userMessage);
@@ -873,7 +897,7 @@ export const firebasePostApi = {
 
       await deleteDoc(doc(db, 'posts', postId));
     } catch (_error) {
-      const apiError = handleError(error, 'Delete post', {
+      const apiError = handleError(_error, 'Delete post', {
         defaultMessage: 'Failed to delete post',
       });
       throw new Error(apiError.userMessage);
@@ -988,7 +1012,7 @@ export const firebasePostApi = {
               // projectData is available if needed
             }
           } catch (_error) {
-            handleError(error, `Fetch project ${projectId}`, {
+            handleError(_error, `Fetch project ${projectId}`, {
               severity: ErrorSeverity.WARNING,
             });
           }
@@ -1064,7 +1088,7 @@ export const firebasePostApi = {
 
       return posts;
     } catch (_error) {
-      const apiError = handleError(error, 'Get user posts', {
+      const apiError = handleError(_error, 'Get user posts', {
         defaultMessage: 'Failed to get user posts',
       });
       throw new Error(apiError.userMessage);

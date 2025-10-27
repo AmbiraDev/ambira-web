@@ -699,7 +699,8 @@ export interface UserSearchResult {
   pronouns?: string;
   profilePicture?: string;
   followersCount: number;
-  isFollowing?: boolean;
+  isFollowing: boolean;
+  isSelf: boolean | null;
 }
 
 export interface SuggestedUser {
@@ -712,7 +713,31 @@ export interface SuggestedUser {
   profilePicture?: string;
   followersCount: number;
   reason: string; // Why this user was suggested
-  isFollowing?: boolean;
+  isFollowing: boolean;
+  isSelf?: boolean;
+}
+
+export interface GroupSearchResult {
+  id: string;
+  name: string;
+  description: string;
+  imageUrl?: string;
+  memberCount: number;
+  members: number;
+  category?: string;
+  location?: string;
+}
+
+export interface SuggestedGroup {
+  id: string;
+  name: string;
+  description: string;
+  imageUrl?: string;
+  memberCount: number;
+  members?: number;
+  category?: string;
+  location?: string;
+  reason?: string;
 }
 
 export type ProfileTab = 'overview' | 'achievements' | 'following' | 'posts';

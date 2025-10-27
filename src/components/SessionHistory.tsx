@@ -37,7 +37,7 @@ export const SessionHistory: React.FC = () => {
         // Load projects and user's sessions from Firebase
         const [projectsData, sessionsResp] = await Promise.all([
           firebaseProjectApi.getProjects(),
-          firebaseSessionApi.getSessions(1, 20, {}),
+          firebaseSessionApi.getSessions(20, {}),
         ]);
 
         setProjects(projectsData);
@@ -59,11 +59,10 @@ export const SessionHistory: React.FC = () => {
     const loadSessions = async () => {
       try {
         setIsLoading(true);
-        const sessionsResp = await firebaseSessionApi.getSessions(
-          currentPage,
-          20,
-          { ...filters, search: searchQuery }
-        );
+        const sessionsResp = await firebaseSessionApi.getSessions(20, {
+          ...filters,
+          search: searchQuery,
+        });
 
         setSessions(sessionsResp.sessions);
         setTotalCount(sessionsResp.totalCount);
@@ -104,11 +103,10 @@ export const SessionHistory: React.FC = () => {
       await firebaseSessionApi.deleteSession(deleteConfirmSession);
 
       // Reload sessions from Firebase
-      const sessionsResp = await firebaseSessionApi.getSessions(
-        currentPage,
-        20,
-        { ...filters, search: searchQuery }
-      );
+      const sessionsResp = await firebaseSessionApi.getSessions(20, {
+        ...filters,
+        search: searchQuery,
+      });
       setSessions(sessionsResp.sessions);
       setTotalCount(sessionsResp.totalCount);
       setHasMore(sessionsResp.hasMore);

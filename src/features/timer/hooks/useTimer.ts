@@ -259,7 +259,7 @@ export function useTimer(): UseTimerReturn {
 
   return {
     // Server state
-    activeTimer: activeSession,
+    activeTimer: activeSession ?? null,
     isLoading,
     error: error as Error | null,
 

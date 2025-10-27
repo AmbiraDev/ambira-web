@@ -16,11 +16,13 @@ interface CommentListProps {
   onCommentCountChange?: (count: number) => void;
   showPagination?: boolean;
   commentsPerPage?: number;
+  initialCommentCount?: number;
 }
 
 export const CommentList: React.FC<CommentListProps> = ({
   sessionId,
   onCommentCountChange,
+  initialCommentCount: _initialCommentCount,
 }) => {
   const { user } = useAuth();
   const [showInput, setShowInput] = useState(false);

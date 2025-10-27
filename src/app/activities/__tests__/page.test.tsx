@@ -107,7 +107,7 @@ describe('Activities Page Integration', () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
-    (useAuth as jest.Mock).mockReturnValue({
+    (useAuth as unknown as jest.Mock).mockReturnValue({
       user: {
         id: 'test-user',
         email: 'test@example.com',
@@ -115,7 +115,7 @@ describe('Activities Page Integration', () => {
       },
     });
 
-    (useProjects as jest.Mock).mockReturnValue({
+    (useProjects as unknown as jest.Mock).mockReturnValue({
       projects: mockActivities,
       isLoading: false,
       error: null,
@@ -249,23 +249,22 @@ describe('Activities Page Integration', () => {
       // Temporarily override the mock to capture onError
       const ErrorBoundaryModule = jest.requireMock(
         '@/components/ErrorBoundary'
-      );
-      jest
-        .spyOn(ErrorBoundaryModule, 'ErrorBoundary')
-        .mockImplementation(
-          ({
-            children,
-            onError,
-          }: {
-            children: React.ReactNode;
-            onError?: (error: Error, errorInfo: React.ErrorInfo) => void;
-          }) => {
-            if (onError) {
-              mockOnError.mockImplementation(onError);
-            }
-            return <div data-testid="error-boundary">{children}</div>;
+      ) as {
+        ErrorBoundary: jest.Mock;
+      };
+      type ErrorBoundaryProps = {
+        children: React.ReactNode;
+        onError?: (error: Error, errorInfo: React.ErrorInfo) => void;
+      };
+      ErrorBoundaryModule.ErrorBoundary.mockImplementation(
+        (props: ErrorBoundaryProps) => {
+          const { children, onError } = props;
+          if (onError) {
+            mockOnError.mockImplementation(onError);
           }
-        );
+          return <div data-testid="error-boundary">{children}</div>;
+        }
+      );
 
       render(<ActivitiesPage />);
 
@@ -278,7 +277,7 @@ describe('Activities Page Integration', () => {
 
   describe('Authentication States', () => {
     it('should not render content when user is not authenticated', () => {
-      (useAuth as jest.Mock).mockReturnValue({
+      (useAuth as unknown as jest.Mock).mockReturnValue({
         user: null,
       });
 
@@ -289,7 +288,7 @@ describe('Activities Page Integration', () => {
     });
 
     it('should render full content when user is authenticated', () => {
-      (useAuth as jest.Mock).mockReturnValue({
+      (useAuth as unknown as jest.Mock).mockReturnValue({
         user: {
           id: 'test-user',
           email: 'test@example.com',

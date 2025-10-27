@@ -24,6 +24,7 @@ import {
   UpdateProfileSchema,
   type CreateSessionData,
   type CreateCommentData,
+  type UpdateProfileData,
 } from '@/lib/validation';
 
 /**
@@ -70,7 +71,7 @@ export async function createSessionRoute(request: NextRequest) {
       },
       { status: 201 }
     );
-  } catch (_error) {
+  } catch (error) {
     console.error('Session creation error:', error);
 
     if (isValidationError(error)) {
@@ -128,7 +129,7 @@ export async function createCommentRoute(request: NextRequest) {
       },
       { status: 201 }
     );
-  } catch (_error) {
+  } catch (error) {
     console.error('Comment creation error:', error);
 
     // ValidationError is automatically caught here
@@ -179,7 +180,7 @@ export async function updateProfileRoute(request: NextRequest) {
       success: true,
       data: validatedData,
     });
-  } catch (_error) {
+  } catch (error) {
     if (isValidationError(error)) {
       return NextResponse.json(
         {
@@ -229,7 +230,7 @@ export async function getSessionsRoute(request: NextRequest) {
       sessions: [],
       count: 0,
     });
-  } catch (_error) {
+  } catch (error) {
     if (isValidationError(error)) {
       return NextResponse.json(
         {
@@ -293,7 +294,7 @@ export const POST = withAuth(async (request: NextRequest, userId: string) => {
     });
 
     return NextResponse.json({ success: true });
-  } catch (_error) {
+  } catch (error) {
     if (isValidationError(error)) {
       return NextResponse.json(
         { error: formatValidationError(error) },
@@ -360,7 +361,7 @@ export async function exampleWithErrorHelper(request: NextRequest) {
     // validatedData available for use
 
     return NextResponse.json({ success: true });
-  } catch (_error) {
+  } catch (error) {
     return createErrorResponse(error, 'Failed to create comment');
   }
 }
@@ -421,7 +422,7 @@ export async function typeSafeRouteExample(request: NextRequest) {
       },
       201
     );
-  } catch (_error) {
+  } catch (error) {
     if (isValidationError(error)) {
       return errorResponse(
         'Validation failed',

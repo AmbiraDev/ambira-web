@@ -4,7 +4,12 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useActivities } from '@/hooks/useActivitiesQuery';
 import { firebaseChallengeApi } from '@/lib/api';
-import { Challenge, ChallengeProgress, Group } from '@/types';
+import {
+  Challenge,
+  ChallengeProgress,
+  Group,
+  CreateChallengeData,
+} from '@/types';
 import ChallengeCard from './ChallengeCard';
 import CreateChallengeModal from './CreateChallengeModal';
 import { Button } from '@/components/ui/button';
@@ -65,7 +70,7 @@ export default function GroupChallenges({
         setUserProgress(progressMap);
         setParticipatingChallenges(participatingSet);
       }
-    } catch (_error) {
+    } catch (error) {
       console.error('Failed to load group challenges:', error);
     } finally {
       setIsLoading(false);
@@ -76,7 +81,7 @@ export default function GroupChallenges({
     loadGroupChallenges();
   }, [loadGroupChallenges]);
 
-  const handleCreateChallenge = async (data: { [key: string]: unknown }) => {
+  const handleCreateChallenge = async (data: CreateChallengeData) => {
     try {
       await firebaseChallengeApi.createChallenge({
         ...data,
@@ -84,7 +89,7 @@ export default function GroupChallenges({
       });
       await loadGroupChallenges();
       setShowCreateModal(false);
-    } catch (_error) {
+    } catch (error) {
       console.error('Failed to create challenge:', error);
       throw error;
     }
@@ -94,7 +99,7 @@ export default function GroupChallenges({
     try {
       await firebaseChallengeApi.joinChallenge(challengeId);
       await loadGroupChallenges();
-    } catch (_error) {
+    } catch (error) {
       console.error('Failed to join challenge:', error);
       alert('Failed to join challenge. Please try again.');
     }
@@ -104,7 +109,7 @@ export default function GroupChallenges({
     try {
       await firebaseChallengeApi.leaveChallenge(challengeId);
       await loadGroupChallenges();
-    } catch (_error) {
+    } catch (error) {
       console.error('Failed to leave challenge:', error);
       alert('Failed to leave challenge. Please try again.');
     }

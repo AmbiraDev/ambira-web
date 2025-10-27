@@ -27,7 +27,7 @@ export const PostStats: React.FC<PostStatsProps> = ({
   };
 
   // Task tracking not implemented at session level
-  const completedTasks: unknown[] = [];
+  const completedTasks: Array<{ name: string }> = [];
   const totalTasks = 0;
 
   return (

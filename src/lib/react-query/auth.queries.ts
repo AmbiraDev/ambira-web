@@ -126,7 +126,8 @@ export function useGoogleSignIn() {
     },
     onError: (error: unknown) => {
       // Special case: redirect in progress (mobile OAuth)
-      if (error?.message === 'REDIRECT_IN_PROGRESS') {
+      const err = error as { message?: string };
+      if (err?.message === 'REDIRECT_IN_PROGRESS') {
         // Don't show error - page will redirect
         return;
       }

@@ -180,7 +180,7 @@ export const SessionTimer: React.FC<SessionTimerProps> = ({
 
               setShowFinishModal(false);
               // Timer will be finished by the context
-            } catch {
+            } catch (error) {
               console.error('Failed to save session');
               throw error;
             }

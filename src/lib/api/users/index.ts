@@ -21,6 +21,8 @@ import {
   limit as limitFn,
   serverTimestamp,
   Timestamp,
+  DocumentData,
+  QueryDocumentSnapshot,
 } from 'firebase/firestore';
 
 import {
@@ -159,10 +161,10 @@ export const firebaseUserApi = {
               updatedAt: serverTimestamp(),
             });
           }
-        } catch (_error) {
+        } catch (_err) {
           // Handle permission errors silently - this is expected for privacy-protected data
-          if (!isPermissionError(error)) {
-            handleError(error, 'Recalculate follower counts', {
+          if (!isPermissionError(_err)) {
+            handleError(_err, 'Recalculate follower counts', {
               severity: ErrorSeverity.WARNING,
             });
           }
@@ -185,22 +187,22 @@ export const firebaseUserApi = {
         createdAt: convertTimestamp(userData.createdAt),
         updatedAt: convertTimestamp(userData.updatedAt),
       };
-    } catch (_error) {
+    } catch (_err) {
       // Don't log "not found" and privacy errors - these are expected user flows
       const errorMessage =
-        error instanceof Error ? error.message : 'Failed to get user profile';
+        _err instanceof Error ? _err.message : 'Failed to get user profile';
       const isExpectedError =
         errorMessage === 'User not found' ||
         errorMessage === 'This profile is private' ||
         errorMessage === 'This profile is only visible to followers';
 
       if (!isExpectedError) {
-        handleError(error, 'Get user profile', {
+        handleError(_err, 'Get user profile', {
           defaultMessage: ERROR_MESSAGES.PROFILE_LOAD_FAILED,
         });
       }
 
-      throw error;
+      throw _err;
     }
   },
 
@@ -234,10 +236,10 @@ export const firebaseUserApi = {
       };
     } catch (_error) {
       // Handle permission errors for deleted users gracefully
-      if (isPermissionError(error)) {
+      if (isPermissionError(_error)) {
         throw new Error('User not found');
       }
-      const apiError = handleError(error, 'Get user by ID', {
+      const apiError = handleError(_error, 'Get user by ID', {
         defaultMessage: 'Failed to get user',
       });
       throw new Error(apiError.userMessage);
@@ -304,7 +306,7 @@ export const firebaseUserApi = {
 
       return results;
     } catch (_error) {
-      const apiError = handleError(error, 'Get daily activity', {
+      const apiError = handleError(_error, 'Get daily activity', {
         defaultMessage: 'Failed to get daily activity',
       });
       throw new Error(apiError.userMessage);
@@ -382,7 +384,7 @@ export const firebaseUserApi = {
 
       return results;
     } catch (_error) {
-      const apiError = handleError(error, 'Get weekly activity', {
+      const apiError = handleError(_error, 'Get weekly activity', {
         defaultMessage: 'Failed to get weekly activity',
       });
       throw new Error(apiError.userMessage);
@@ -464,7 +466,7 @@ export const firebaseUserApi = {
       results.sort((a, b) => b.hours - a.hours);
       return results;
     } catch (_error) {
-      const apiError = handleError(error, 'Get project breakdown', {
+      const apiError = handleError(_error, 'Get project breakdown', {
         defaultMessage: 'Failed to get project breakdown',
       });
       throw new Error(apiError.userMessage);
@@ -523,7 +525,7 @@ export const firebaseUserApi = {
 
       return downloadURL;
     } catch (_error) {
-      const apiError = handleError(error, 'Upload profile picture', {
+      const apiError = handleError(_error, 'Upload profile picture', {
         defaultMessage: 'Failed to upload profile picture',
       });
       throw new Error(apiError.userMessage);
@@ -556,14 +558,14 @@ export const firebaseUserApi = {
         await deleteObject(storageRef);
       } catch (_error) {
         // Ignore errors if file doesn't exist
-        if (!isNotFoundError(error)) {
-          handleError(error, 'Delete old profile picture', {
+        if (!isNotFoundError(_error)) {
+          handleError(_error, 'Delete old profile picture', {
             severity: ErrorSeverity.WARNING,
           });
         }
       }
     } catch (_error) {
-      handleError(error, 'in deleteProfilePicture', {
+      handleError(_error, 'in deleteProfilePicture', {
         severity: ErrorSeverity.WARNING,
       });
       // Don't throw error - this is a cleanup operation
@@ -610,7 +612,7 @@ export const firebaseUserApi = {
       });
 
       // Add lowercase fields for searchability
-      if (cleanData.name) {
+      if (cleanData.name && typeof cleanData.name === 'string') {
         cleanData.nameLower = cleanData.name.toLowerCase();
       }
 
@@ -641,7 +643,7 @@ export const firebaseUserApi = {
         updatedAt: convertTimestamp(userData.updatedAt),
       };
     } catch (_error) {
-      const apiError = handleError(error, 'Update profile', {
+      const apiError = handleError(_error, 'Update profile', {
         defaultMessage: ERROR_MESSAGES.PROFILE_UPDATE_FAILED,
       });
       throw new Error(apiError.userMessage);
@@ -748,7 +750,7 @@ export const firebaseUserApi = {
         favoriteProject: undefined,
       };
     } catch (_error) {
-      handleError(error, 'get user stats', { severity: ErrorSeverity.ERROR });
+      handleError(_error, 'get user stats', { severity: ErrorSeverity.ERROR });
       // Return default stats instead of throwing error
       return {
         totalHours: 0,
@@ -814,7 +816,7 @@ export const firebaseUserApi = {
       );
       return socialGraphDoc.exists();
     } catch (_error) {
-      handleError(error, 'checking follow status', {
+      handleError(_error, 'checking follow status', {
         severity: ErrorSeverity.ERROR,
       });
       return false;
@@ -889,11 +891,11 @@ export const firebaseUserApi = {
       return followers;
     } catch (_error) {
       // Handle permission errors silently for privacy-protected data
-      if (isPermissionError(error)) {
+      if (isPermissionError(_error)) {
         return [];
       }
-      console.error('[getFollowers] Error:', error);
-      const apiError = handleError(error, 'Fetch followers', {
+      console.error('[getFollowers] Error:', _error);
+      const apiError = handleError(_error, 'Fetch followers', {
         defaultMessage: ERROR_MESSAGES.PROFILE_LOAD_FAILED,
       });
       throw new Error(apiError.userMessage);
@@ -968,11 +970,11 @@ export const firebaseUserApi = {
       return following;
     } catch (_error) {
       // Handle permission errors silently for privacy-protected data
-      if (isPermissionError(error)) {
+      if (isPermissionError(_error)) {
         return [];
       }
-      console.error('[getFollowing] Error:', error);
-      const apiError = handleError(error, 'Fetch following', {
+      console.error('[getFollowing] Error:', _error);
+      const apiError = handleError(_error, 'Fetch following', {
         defaultMessage: ERROR_MESSAGES.PROFILE_LOAD_FAILED,
       });
       throw new Error(apiError.userMessage);
@@ -1016,7 +1018,7 @@ export const firebaseUserApi = {
 
       return { followersCount, followingCount };
     } catch (_error) {
-      const apiError = handleError(error, 'Sync follower counts', {
+      const apiError = handleError(_error, 'Sync follower counts', {
         defaultMessage: 'Failed to sync follower counts',
       });
       throw new Error(apiError.userMessage);
@@ -1079,7 +1081,7 @@ export const firebaseUserApi = {
 
       // Merge and de-duplicate results, prefer username matches first
       const byId: Record<string, UserSearchResult> = {};
-      const pushDoc = (docSnap: unknown) => {
+      const pushDoc = (docSnap: QueryDocumentSnapshot<DocumentData>) => {
         const userData = docSnap.data();
         byId[docSnap.id] = {
           id: docSnap.id,
@@ -1137,7 +1139,7 @@ export const firebaseUserApi = {
         hasMore: users.length === limitCount,
       };
     } catch (_error) {
-      const apiError = handleError(error, 'Search users', {
+      const apiError = handleError(_error, 'Search users', {
         defaultMessage: 'Failed to search users',
       });
       throw new Error(apiError.userMessage);
@@ -1228,10 +1230,10 @@ export const firebaseUserApi = {
 
       return suggestions;
     } catch (_error) {
-      handleError(error, 'getting suggested users', {
+      handleError(_error, 'getting suggested users', {
         severity: ErrorSeverity.ERROR,
       });
-      const apiError = handleError(error, 'Get suggested users', {
+      const apiError = handleError(_error, 'Get suggested users', {
         defaultMessage: 'Failed to get suggested users',
       });
       throw new Error(apiError.userMessage);
@@ -1260,7 +1262,7 @@ export const firebaseUserApi = {
         blockedUsers: userData?.blockedUsers || [],
       };
     } catch (_error) {
-      const apiError = handleError(error, 'Get privacy settings', {
+      const apiError = handleError(_error, 'Get privacy settings', {
         defaultMessage: 'Failed to get privacy settings',
       });
       throw new Error(apiError.userMessage);
@@ -1296,7 +1298,7 @@ export const firebaseUserApi = {
         blockedUsers: settings.blockedUsers || [],
       };
     } catch (_error) {
-      const apiError = handleError(error, 'Update privacy settings', {
+      const apiError = handleError(_error, 'Update privacy settings', {
         defaultMessage: 'Failed to update privacy settings',
       });
       throw new Error(apiError.userMessage);
@@ -1321,15 +1323,15 @@ export const firebaseUserApi = {
       return querySnapshot.empty;
     } catch (_error) {
       // Handle Firebase permission errors gracefully
-      if (isPermissionError(error)) {
-        handleError(error, 'Check username availability', {
+      if (isPermissionError(_error)) {
+        handleError(_error, 'Check username availability', {
           severity: ErrorSeverity.WARNING,
         });
         // In case of permission error, assume username is available to allow registration to proceed
         // The actual uniqueness will be enforced by Firebase Auth and server-side validation
         return true;
       }
-      const apiError = handleError(error, 'Check username availability');
+      const apiError = handleError(_error, 'Check username availability');
       throw new Error(
         apiError.userMessage ||
           'Unable to verify username availability. Please try again.'
@@ -1364,7 +1366,9 @@ export const firebaseUserApi = {
       for (const userDoc of querySnapshot.docs) {
         try {
           const userData = userDoc.data();
-          const updates: unknown = { updatedAt: serverTimestamp() };
+          const updates: DocumentData = {
+            updatedAt: serverTimestamp(),
+          };
 
           if (userData.username && !userData.usernameLower) {
             updates.usernameLower = userData.username.toLowerCase();
@@ -1381,14 +1385,14 @@ export const firebaseUserApi = {
           }
         } catch (_error) {
           failed++;
-          console.error(`Failed to migrate user ${userDoc.id}:`, error);
+          console.error(`Failed to migrate user ${userDoc.id}:`, _error);
         }
       }
 
       const result = { success, failed, total };
       return result;
     } catch (_error) {
-      const apiError = handleError(error, 'Migrate users to lowercase', {
+      const apiError = handleError(_error, 'Migrate users to lowercase', {
         defaultMessage: 'Failed to migrate users',
       });
       throw new Error(apiError.userMessage);
@@ -1508,7 +1512,7 @@ export const firebaseUserApi = {
       // 9. Finally, delete the Firebase Auth user
       await auth.currentUser.delete();
     } catch (_error) {
-      const apiError = handleError(error, 'Delete account', {
+      const apiError = handleError(_error, 'Delete account', {
         defaultMessage:
           'Failed to delete account. Please try logging out and back in, then try again.',
       });

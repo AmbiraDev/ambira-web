@@ -16,6 +16,7 @@ import {
   where,
   orderBy,
   limit as limitFn,
+  increment,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { User } from '@/domain/entities/User';
@@ -42,7 +43,7 @@ export class UserRepository {
       }
 
       return this.mapper.toDomain(docSnap);
-    } catch (_error) {
+    } catch (error) {
       console.error(`Error finding user ${userId}:`, error);
       throw new Error(
         `Failed to find user: ${error instanceof Error ? error.message : 'Unknown error'}`
@@ -72,7 +73,7 @@ export class UserRepository {
         return null;
       }
       return this.mapper.toDomain(doc);
-    } catch (_error) {
+    } catch (error) {
       console.error(`Error finding user by username ${username}:`, error);
       throw new Error(
         `Failed to find user: ${error instanceof Error ? error.message : 'Unknown error'}`
@@ -102,7 +103,7 @@ export class UserRepository {
 
       const results = await Promise.all(batches);
       return results.flat();
-    } catch (_error) {
+    } catch (error) {
       console.error('Error finding users by IDs:', error);
       throw new Error(
         `Failed to find users: ${error instanceof Error ? error.message : 'Unknown error'}`
@@ -140,7 +141,7 @@ export class UserRepository {
 
       const snapshot = await getDocs(q);
       return this.mapper.toDomainList(snapshot.docs);
-    } catch (_error) {
+    } catch (error) {
       console.error(
         `Error searching users by username prefix ${prefix}:`,
         error
@@ -160,7 +161,7 @@ export class UserRepository {
       const data = this.mapper.toFirestore(user);
 
       await setDoc(docRef, data, { merge: true });
-    } catch (_error) {
+    } catch (error) {
       console.error(`Error saving user ${user.id}:`, error);
       throw new Error(
         `Failed to save user: ${error instanceof Error ? error.message : 'Unknown error'}`
@@ -177,7 +178,7 @@ export class UserRepository {
       await updateDoc(docRef, {
         followerCount: increment(delta),
       });
-    } catch (_error) {
+    } catch (error) {
       console.error(`Error updating follower count for user ${userId}:`, error);
       throw new Error(
         `Failed to update follower count: ${error instanceof Error ? error.message : 'Unknown error'}`
@@ -194,7 +195,7 @@ export class UserRepository {
       await updateDoc(docRef, {
         followingCount: increment(delta),
       });
-    } catch (_error) {
+    } catch (error) {
       console.error(
         `Error updating following count for user ${userId}:`,
         error
@@ -213,7 +214,7 @@ export class UserRepository {
       const docRef = doc(db, this.collectionName, userId);
       const docSnap = await getDoc(docRef);
       return docSnap.exists();
-    } catch (_error) {
+    } catch (error) {
       console.error(`Error checking if user ${userId} exists:`, error);
       return false;
     }
@@ -226,7 +227,7 @@ export class UserRepository {
     try {
       const user = await this.findByUsername(username);
       return user === null;
-    } catch (_error) {
+    } catch (error) {
       console.error(
         `Error checking username availability for ${username}:`,
         error

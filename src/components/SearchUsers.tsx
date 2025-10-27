@@ -45,7 +45,6 @@ export const SearchUsers: React.FC<SearchUsersProps> = ({
         setIsLoading(true);
         const response = await firebaseUserApi.searchUsers(
           searchQuery,
-          page,
           maxResults
         );
 
@@ -72,32 +71,29 @@ export const SearchUsers: React.FC<SearchUsersProps> = ({
 
   // Debounced search using useRef
   const debouncedSearchRef = useRef(
-    debounce((searchQuery: string, page: number) => {
-      performSearch(searchQuery, page);
+    debounce((searchQuery: string) => {
+      performSearch(searchQuery, 1);
     }, 300)
   );
 
   // Update debounced function when performSearch changes
   useEffect(() => {
-    debouncedSearchRef.current = debounce(
-      (searchQuery: string, page: number) => {
-        performSearch(searchQuery, page);
-      },
-      300
-    );
+    debouncedSearchRef.current = debounce((searchQuery: string) => {
+      performSearch(searchQuery, 1);
+    }, 300);
   }, [performSearch]);
 
   // Search effect
   useEffect(() => {
     setCurrentPage(1);
-    debouncedSearchRef.current(query, 1);
+    debouncedSearchRef.current(query);
   }, [query]);
 
   const handleLoadMore = () => {
     if (hasMore && !isLoading) {
       const nextPage = currentPage + 1;
       setCurrentPage(nextPage);
-      debouncedSearchRef.current(query, nextPage);
+      performSearch(query, nextPage);
     }
   };
 
@@ -301,13 +297,13 @@ export const SearchUsersModal: React.FC<SearchUsersModalProps> = ({
 };
 
 // Debounce utility function
-function debounce<T extends (...args: unknown[]) => void>(
-  func: T,
+function debounce(
+  func: (searchQuery: string) => void,
   wait: number
-): (...args: Parameters<T>) => void {
+): (searchQuery: string) => void {
   let timeout: NodeJS.Timeout;
-  return (...args: Parameters<T>) => {
+  return (searchQuery: string) => {
     clearTimeout(timeout);
-    timeout = setTimeout(() => func(...args), wait);
+    timeout = setTimeout(() => func(searchQuery), wait);
   };
 }

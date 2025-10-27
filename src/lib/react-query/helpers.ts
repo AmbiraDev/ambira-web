@@ -39,7 +39,9 @@ export function createCacheKeyFactory<
 
   const factory = Object.entries(keys).reduce(
     (acc, [key, fn]) => {
-      acc[key] = (...args: Parameters<typeof fn>) => {
+      // Type assertion necessary for dynamic key assignment with generic type parameters
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (acc as any)[key] = (...args: Parameters<typeof fn>) => {
         const base = all();
         const suffix = fn(...args);
         return [...base, ...suffix] as const;

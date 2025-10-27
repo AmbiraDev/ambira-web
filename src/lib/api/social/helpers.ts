@@ -78,8 +78,8 @@ export const updateSocialGraph = async (
       if (action === 'unfollow' && !isFollowing) return;
 
       const now = new Date();
-      const currentUserUpdate: unknown = { updatedAt: now };
-      const targetUserUpdate: unknown = { updatedAt: now };
+      const currentUserUpdate: Record<string, unknown> = { updatedAt: now };
+      const targetUserUpdate: Record<string, unknown> = { updatedAt: now };
 
       // NOW DO ALL WRITES
       if (action === 'follow') {
@@ -154,7 +154,7 @@ export const updateSocialGraph = async (
         });
       }
     }
-  } catch (_error) {
+  } catch (error: unknown) {
     const apiError = handleError(
       error,
       `${action.charAt(0).toUpperCase() + action.slice(1)} user`
@@ -175,7 +175,7 @@ export const fetchUserDataForSocialContext = async (
       return null;
     }
     return userDoc.data();
-  } catch (_error) {
+  } catch (error: unknown) {
     if (isPermissionError(error) || isNotFoundError(error)) {
       return null;
     }

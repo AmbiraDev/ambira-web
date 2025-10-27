@@ -163,7 +163,7 @@ export class FeedService {
   private async getGroupMembersUnfollowedFeed(
     currentUserId: string,
     limit: number,
-    _cursor?: string
+    cursor?: string
   ): Promise<FeedResult> {
     // Get all group member IDs
     const groupMemberIds =

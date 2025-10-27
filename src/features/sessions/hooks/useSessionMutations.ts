@@ -66,7 +66,7 @@ export function useDeleteSession(
   return useMutation<void, Error, string, DeleteSessionContext>({
     mutationFn: sessionId => sessionService.deleteSession(sessionId),
 
-    onMutate: async sessionId => {
+    onMutate: async (sessionId: string): Promise<DeleteSessionContext> => {
       // Cancel outgoing queries
       await queryClient.cancelQueries({ queryKey: ['feed'] });
       await queryClient.cancelQueries({
@@ -77,7 +77,7 @@ export function useDeleteSession(
       const previousFeedData = queryClient.getQueriesData({
         queryKey: ['feed'],
       });
-      const previousSession = queryClient.getQueryData(
+      const previousSession = queryClient.getQueryData<Session>(
         SESSION_KEYS.detail(sessionId)
       );
 
@@ -174,7 +174,7 @@ export function useSupportSession(
       const previousFeedData = queryClient.getQueriesData({
         queryKey: ['feed'],
       });
-      const previousSession = queryClient.getQueryData(
+      const previousSession = queryClient.getQueryData<Session>(
         SESSION_KEYS.detail(sessionId)
       );
 
@@ -319,7 +319,7 @@ export function useUpdateSession(
         queryKey: SESSION_KEYS.detail(sessionId),
       });
 
-      const previousSession = queryClient.getQueryData(
+      const previousSession = queryClient.getQueryData<Session>(
         SESSION_KEYS.detail(sessionId)
       );
 

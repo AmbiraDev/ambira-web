@@ -63,7 +63,7 @@ export const ProjectAnalytics: React.FC<ProjectAnalyticsProps> = ({
 
       // TODO: Implement getSessionsByProject(projectId, startDate, endDate) in src/lib/api/sessions/
       // This should filter sessions by projectId and date range for analytics
-      const sessions: unknown[] = [];
+      const sessions: Array<{ createdAt: string; duration: number }> = [];
 
       // Calculate cumulative hours data
       const dailyHours: Record<string, number> = {};

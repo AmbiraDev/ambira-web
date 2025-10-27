@@ -37,7 +37,7 @@ export async function checkChallengesEndingSoon(): Promise<void> {
       }
     }
   } catch (_error) {
-    console.error('Error checking challenges ending soon:', error);
+    console.error('Error checking challenges ending soon:', _error);
   }
 }
 
@@ -54,7 +54,7 @@ export async function checkRankChanges(challengeId: string): Promise<void> {
     // For now, we'll skip rank change notifications as they require storing previous ranks
     // This could be implemented with a separate collection to track rank history
   } catch (_error) {
-    console.error('Error checking rank changes:', error);
+    console.error('Error checking rank changes:', _error);
   }
 }
 
@@ -71,8 +71,7 @@ export async function testChallengeNotifications(
     await challengeNotifications.notifyCompletion(
       challengeId,
       userId,
-      'Test Challenge',
-      'hours'
+      'Test Challenge'
     );
 
     // Test milestone notification
@@ -84,6 +83,6 @@ export async function testChallengeNotifications(
       100
     );
   } catch (_error) {
-    console.error('Error sending test notifications:', error);
+    console.error('Error sending test notifications:', _error);
   }
 }

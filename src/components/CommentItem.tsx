@@ -13,6 +13,7 @@ interface CommentItemProps {
   onDelete?: (commentId: string) => Promise<void>;
   onLike?: (commentId: string, action: 'like' | 'unlike') => void;
   currentUserId?: string;
+  sessionId?: string;
 }
 
 export const CommentItem: React.FC<CommentItemProps> = ({
@@ -20,6 +21,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({
   onDelete,
   onLike,
   currentUserId,
+  sessionId: _sessionId,
 }) => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [isLiking, setIsLiking] = useState(false);
@@ -83,7 +85,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({
       setIsDeleting(true);
       try {
         await onDelete(comment.id);
-      } catch (_err) {
+      } catch (err) {
         console.error('Failed to delete comment:', err);
         setIsDeleting(false);
       }

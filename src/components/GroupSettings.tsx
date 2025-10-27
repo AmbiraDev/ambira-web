@@ -107,7 +107,7 @@ export default function GroupSettings({
 
     try {
       await onUpdate(formData);
-    } catch (_error) {
+    } catch (error) {
       console.error('Error updating group:', error);
     }
   };
@@ -124,7 +124,7 @@ export default function GroupSettings({
     try {
       await onAddAdmin(newAdminUsername.trim());
       setNewAdminUsername('');
-    } catch (_error) {
+    } catch (error) {
       console.error('Error adding admin:', error);
     }
   };

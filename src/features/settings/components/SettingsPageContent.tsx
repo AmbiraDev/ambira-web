@@ -151,7 +151,9 @@ export function SettingsPageContent() {
       toast.success('Profile picture updated!');
     } catch (err: unknown) {
       console.error('Upload error:', err);
-      toast.error(err?.message || 'Failed to upload photo');
+      const errorMessage =
+        err instanceof Error ? err.message : 'Failed to upload photo';
+      toast.error(errorMessage);
     } finally {
       setIsUploadingPhoto(false);
     }
@@ -191,7 +193,9 @@ export function SettingsPageContent() {
         window.location.reload();
       }, 1000);
     } catch (err: unknown) {
-      toast.error(err?.message || 'Failed to update profile');
+      const errorMessage =
+        err instanceof Error ? err.message : 'Failed to update profile';
+      toast.error(errorMessage);
       setIsSaving(false);
     }
   };
@@ -210,7 +214,11 @@ export function SettingsPageContent() {
         window.location.reload();
       }, 1000);
     } catch (err: unknown) {
-      toast.error(err?.message || 'Failed to update privacy settings');
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : 'Failed to update privacy settings';
+      toast.error(errorMessage);
       setIsSaving(false);
     }
   };
@@ -220,7 +228,9 @@ export function SettingsPageContent() {
       await logout();
       toast.success('Logged out successfully');
     } catch (err: unknown) {
-      toast.error(err?.message || 'Failed to log out');
+      const errorMessage =
+        err instanceof Error ? err.message : 'Failed to log out';
+      toast.error(errorMessage);
     }
   };
 
@@ -235,7 +245,9 @@ export function SettingsPageContent() {
       // The logout will happen automatically as part of deleteAccount
     } catch (err: unknown) {
       console.error('Delete account error:', err);
-      toast.error(err?.message || 'Failed to delete account');
+      const errorMessage =
+        err instanceof Error ? err.message : 'Failed to delete account';
+      toast.error(errorMessage);
       setIsDeleting(false);
       setShowDeleteConfirm(false);
     }

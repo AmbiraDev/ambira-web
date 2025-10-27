@@ -95,12 +95,12 @@ describe('Rate Limiting', () => {
       try {
         checkRateLimit(testUserId, 'SUPPORT');
         fail('Should have thrown RateLimitError');
-      } catch (_error) {
-        expect(error).toBeInstanceOf(RateLimitError);
-        if (error instanceof RateLimitError) {
-          expect(error.retryAfter).toBeGreaterThan(0);
-          expect(error.limit).toBe(limit);
-          expect(error.message).toContain('slow down');
+      } catch (err) {
+        expect(err).toBeInstanceOf(RateLimitError);
+        if (err instanceof RateLimitError) {
+          expect(err.retryAfter).toBeGreaterThan(0);
+          expect(err.limit).toBe(limit);
+          expect(err.message).toContain('slow down');
         }
       }
     });
@@ -112,9 +112,9 @@ describe('Rate Limiting', () => {
       for (let i = 0; i <= limit; i++) {
         try {
           checkRateLimit(testUserId + '-backoff', 'COMMENT');
-        } catch (_error) {
-          if (error instanceof RateLimitError) {
-            const firstRetryAfter = error.retryAfter;
+        } catch (err) {
+          if (err instanceof RateLimitError) {
+            const firstRetryAfter = err.retryAfter;
 
             // Try again (second violation)
             try {

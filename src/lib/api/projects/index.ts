@@ -75,7 +75,7 @@ export const firebaseProjectApi = {
 
       return projects;
     } catch (_error) {
-      const apiError = handleError(error, 'Get projects', {
+      const apiError = handleError(_error, 'Get projects', {
         defaultMessage: 'Failed to get projects',
       });
       throw new Error(apiError.userMessage);
@@ -92,7 +92,7 @@ export const firebaseProjectApi = {
       // Rate limitFn project creation
       checkRateLimit(auth.currentUser.uid, 'PROJECT_CREATE');
 
-      const _projectData = removeUndefinedFields({
+      const projectData = removeUndefinedFields({
         ...data,
         status: 'active',
         createdAt: serverTimestamp(),
@@ -118,7 +118,7 @@ export const firebaseProjectApi = {
         updatedAt: new Date(),
       };
     } catch (_error) {
-      const apiError = handleError(error, 'Create project', {
+      const apiError = handleError(_error, 'Create project', {
         defaultMessage: 'Failed to create project',
       });
       throw new Error(apiError.userMessage);
@@ -149,7 +149,17 @@ export const firebaseProjectApi = {
       const projectDoc = await getDoc(
         doc(db, 'projects', auth.currentUser.uid, 'userProjects', id)
       );
-      const _projectData = projectDoc.data()!;
+      const projectData = projectDoc.data() as {
+        name: string;
+        description: string;
+        icon: string;
+        color: string;
+        weeklyTarget?: number;
+        totalTarget?: number;
+        status?: string;
+        createdAt: unknown;
+        updatedAt: unknown;
+      };
 
       return {
         id,
@@ -160,12 +170,14 @@ export const firebaseProjectApi = {
         color: projectData.color,
         weeklyTarget: projectData.weeklyTarget,
         totalTarget: projectData.totalTarget,
-        status: projectData.status || 'active',
+        status:
+          (projectData.status as 'active' | 'completed' | 'archived') ||
+          'active',
         createdAt: convertTimestamp(projectData.createdAt),
         updatedAt: convertTimestamp(projectData.updatedAt),
       };
     } catch (_error) {
-      const apiError = handleError(error, 'Update project', {
+      const apiError = handleError(_error, 'Update project', {
         defaultMessage: 'Failed to update project',
       });
       throw new Error(apiError.userMessage);
@@ -183,7 +195,7 @@ export const firebaseProjectApi = {
         doc(db, 'projects', auth.currentUser.uid, 'userProjects', id)
       );
     } catch (_error) {
-      const apiError = handleError(error, 'Delete project', {
+      const apiError = handleError(_error, 'Delete project', {
         defaultMessage: 'Failed to delete project',
       });
       throw new Error(apiError.userMessage);
@@ -220,7 +232,7 @@ export const firebaseProjectApi = {
         updatedAt: convertTimestamp(data.updatedAt),
       };
     } catch (_error) {
-      const apiError = handleError(error, 'Get project by ID', {
+      const apiError = handleError(_error, 'Get project by ID', {
         defaultMessage: 'Failed to get project',
       });
       throw new Error(apiError.userMessage);
@@ -302,7 +314,7 @@ export const firebaseProjectApi = {
         lastSessionDate,
       };
     } catch (_error) {
-      const apiError = handleError(error, 'Get project stats', {
+      const apiError = handleError(_error, 'Get project stats', {
         defaultMessage: 'Failed to get project stats',
       });
       throw new Error(apiError.userMessage);

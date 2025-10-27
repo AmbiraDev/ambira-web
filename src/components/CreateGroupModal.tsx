@@ -134,7 +134,7 @@ export default function CreateGroupModal({
         bannerUrl: '',
       });
       setErrors({});
-    } catch (_err) {
+    } catch (err) {
       console.error('Error creating group:', err);
     }
   };

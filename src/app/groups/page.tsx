@@ -204,7 +204,7 @@ export default function GroupsPage() {
     try {
       await joinGroupMutation.mutateAsync({ groupId, userId: user.id });
       // Automatic cache invalidation handled by mutation
-    } catch (_err) {
+    } catch (err) {
       console.error('Failed to join group:', err);
     }
   };

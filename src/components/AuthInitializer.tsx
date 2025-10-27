@@ -63,7 +63,7 @@ export function AuthInitializer({ children }: AuthInitializerProps) {
           navigateToHome();
           return; // Exit early - redirect handled
         }
-      } catch (_err) {
+      } catch (err) {
         console.error('[AuthInitializer] ❌ Google redirect error:', err);
         // Continue with normal auth flow even if redirect check fails
         setIsInitializing(false);
@@ -90,7 +90,7 @@ export function AuthInitializer({ children }: AuthInitializerProps) {
               // Clear React Query cache
               queryClient.setQueryData(AUTH_KEYS.session(), null);
             }
-          } catch (_err) {
+          } catch (err) {
             console.error('[AuthInitializer] ❌ Auth state change error:', err);
 
             // On error, assume user is not authenticated

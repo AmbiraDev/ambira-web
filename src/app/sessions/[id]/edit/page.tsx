@@ -47,7 +47,7 @@ function SessionEditContent({ sessionId }: { sessionId: string }) {
       setSession(sessionData);
     } catch (err: unknown) {
       console.error('Error loading session:', err);
-      setError(err.message || 'Failed to load session');
+      setError(err instanceof Error ? err.message : 'Failed to load session');
     } finally {
       setIsLoading(false);
     }

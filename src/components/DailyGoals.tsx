@@ -96,7 +96,7 @@ function DailyGoals() {
         );
 
         setGoals(dailyGoals);
-      } catch (_err) {
+      } catch (err) {
         console.error('Failed to load daily goals:', err);
         setGoals([]);
       } finally {

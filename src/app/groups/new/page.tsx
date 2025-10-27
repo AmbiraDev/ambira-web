@@ -134,10 +134,10 @@ export default function CreateGroupPage() {
       // Navigate to the new group page
       router.push(`/groups/${newGroup.id}`);
     } catch (_error) {
-      console.error('Error creating group:', error);
+      console.error('Error creating group:', _error);
       setError(
-        error instanceof Error
-          ? error.message
+        _error instanceof Error
+          ? _error.message
           : 'Failed to create group. Please try again.'
       );
       setIsSubmitting(false);

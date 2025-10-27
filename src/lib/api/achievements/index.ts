@@ -166,7 +166,7 @@ export const firebaseAchievementApi = {
           }) as Achievement
       );
     } catch (_error) {
-      const apiError = handleError(error, 'Get achievements', {
+      const apiError = handleError(_error, 'Get achievements', {
         defaultMessage: 'Failed to get achievements',
       });
       throw new Error(apiError.userMessage);
@@ -245,7 +245,7 @@ export const firebaseAchievementApi = {
 
       return progress;
     } catch (_error) {
-      const apiError = handleError(error, 'Get achievement progress', {
+      const apiError = handleError(_error, 'Get achievement progress', {
         defaultMessage: 'Failed to get achievement progress',
       });
       throw new Error(apiError.userMessage);
@@ -288,7 +288,7 @@ export const firebaseAchievementApi = {
         challengesWon: 0, // TODO: Get from challenges
       };
     } catch (_error) {
-      const apiError = handleError(error, 'Get user achievement data', {
+      const apiError = handleError(_error, 'Get user achievement data', {
         defaultMessage: 'Failed to get user achievement data',
       });
       throw new Error(apiError.userMessage);
@@ -421,7 +421,7 @@ export const firebaseAchievementApi = {
 
       return newAchievements;
     } catch (_error) {
-      const apiError = handleError(error, 'Check achievements', {
+      const apiError = handleError(_error, 'Check achievements', {
         defaultMessage: 'Failed to check achievements',
       });
       throw new Error(apiError.userMessage);
@@ -469,7 +469,7 @@ export const firebaseAchievementApi = {
         earnedAt: new Date(),
       } as Achievement;
     } catch (_error) {
-      const apiError = handleError(error, 'Award achievement', {
+      const apiError = handleError(_error, 'Award achievement', {
         defaultMessage: 'Failed to award achievement',
       });
       throw new Error(apiError.userMessage);
@@ -513,7 +513,7 @@ export const firebaseAchievementApi = {
         isShared: true,
       });
     } catch (_error) {
-      const apiError = handleError(error, 'Share achievement', {
+      const apiError = handleError(_error, 'Share achievement', {
         defaultMessage: 'Failed to share achievement',
       });
       throw new Error(apiError.userMessage);

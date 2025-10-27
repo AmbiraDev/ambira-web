@@ -330,7 +330,6 @@ export const SessionCard: React.FC<SessionCardProps> = ({
         isOwnPost={session.userId === user?.id}
         onCommentClick={() => setShowCommentsModal(true)}
         onLikesClick={() => setShowLikesModal(true)}
-        onViewAllCommentsClick={() => setShowCommentsModal(true)}
       />
 
       {/* Top Comments Section */}

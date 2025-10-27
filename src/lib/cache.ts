@@ -33,8 +33,8 @@ function getStorage(type: 'local' | 'session'): Storage | null {
     storage.setItem(testKey, 'test');
     storage.removeItem(testKey);
     return storage;
-  } catch (_e) {
-    debug.warn(`${type}Storage is not available:`, e);
+  } catch (_error) {
+    debug.warn(`${type}Storage is not available:`, _error);
     return null;
   }
 }
@@ -60,7 +60,7 @@ export class LocalCache {
         version: CACHE_VERSION,
       };
       storage.setItem(`${this.PREFIX}${key}`, JSON.stringify(item));
-    } catch (_e) {
+    } catch (_error) {
       // Storage might be full, try to clear old items
       this.clearExpired();
       try {
@@ -100,8 +100,8 @@ export class LocalCache {
       }
 
       return item.data;
-    } catch (_e) {
-      debug.warn('Failed to retrieve cached data:', e);
+    } catch (_error) {
+      debug.warn('Failed to retrieve cached data:', _error);
       return null;
     }
   }
@@ -123,8 +123,8 @@ export class LocalCache {
           storage.removeItem(key);
         }
       });
-    } catch (_e) {
-      debug.warn('Failed to clear cache:', e);
+    } catch (_error) {
+      debug.warn('Failed to clear cache:', _error);
     }
   }
 
@@ -148,13 +148,13 @@ export class LocalCache {
           if (now - item.timestamp > CACHE_TIMES.WEEKLY) {
             storage.removeItem(key);
           }
-        } catch (_e) {
+        } catch (_error) {
           // Invalid item, remove it
           storage.removeItem(key);
         }
       });
-    } catch (_e) {
-      debug.warn('Failed to clear expired cache:', e);
+    } catch (_error) {
+      debug.warn('Failed to clear expired cache:', _error);
     }
   }
 }
@@ -176,8 +176,8 @@ export class SessionCache {
         version: CACHE_VERSION,
       };
       storage.setItem(`${this.PREFIX}${key}`, JSON.stringify(item));
-    } catch (_e) {
-      debug.warn('Failed to cache data in session:', e);
+    } catch (_error) {
+      debug.warn('Failed to cache data in session:', _error);
     }
   }
 
@@ -198,8 +198,8 @@ export class SessionCache {
       }
 
       return item.data;
-    } catch (_e) {
-      debug.warn('Failed to retrieve cached data from session:', e);
+    } catch (_error) {
+      debug.warn('Failed to retrieve cached data from session:', _error);
       return null;
     }
   }
@@ -221,8 +221,8 @@ export class SessionCache {
           storage.removeItem(key);
         }
       });
-    } catch (_e) {
-      debug.warn('Failed to clear session cache:', e);
+    } catch (_error) {
+      debug.warn('Failed to clear session cache:', _error);
     }
   }
 }
@@ -270,7 +270,7 @@ export class MemoryCache {
       return null;
     }
 
-    return item.data;
+    return item.data as T;
   }
 
   static remove(key: string): void {
@@ -315,7 +315,7 @@ export class QueryDeduplicator {
       const age = Date.now() - existing.timestamp;
       if (age < _ttlMs) {
         // Return the existing promise
-        return existing.promise;
+        return existing.promise as Promise<T>;
       }
     }
 

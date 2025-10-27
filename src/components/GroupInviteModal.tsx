@@ -46,7 +46,7 @@ export default function GroupInviteModal({
       await navigator.clipboard.writeText(inviteLink);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    } catch (_error) {
+    } catch (error) {
       console.error('Failed to copy:', error);
     }
   };
@@ -108,7 +108,7 @@ export default function GroupInviteModal({
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
       });
-    } catch (_error) {
+    } catch (error) {
       console.error('Failed to download invite card:', error);
     }
   };

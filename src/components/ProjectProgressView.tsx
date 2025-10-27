@@ -36,7 +36,7 @@ export const ProjectProgressView: React.FC<ProjectProgressViewProps> = ({
   const loadSessions = useCallback(async () => {
     try {
       setIsLoading(true);
-      const response = await firebaseSessionApi.getSessions(1, 500, {
+      const response = await firebaseSessionApi.getSessions(500, {
         projectId,
       });
       setSessions(response.sessions);
@@ -344,12 +344,17 @@ export const ProjectProgressView: React.FC<ProjectProgressViewProps> = ({
                 stroke="#007AFF"
                 strokeWidth={2}
                 isAnimationActive={false}
-                dot={(props: unknown) => {
+                dot={(props: {
+                  cx?: number;
+                  cy?: number;
+                  index?: number;
+                  payload?: ChartDataPoint;
+                }) => {
                   const { cx, cy, index, payload } = props;
                   const isLast = index === chartData.length - 1;
                   return (
                     <circle
-                      key={`dot-${index}-${payload.name}`}
+                      key={`dot-${index}-${payload?.name || 'unknown'}`}
                       cx={cx}
                       cy={cy}
                       r={isLast ? 6 : 4}

@@ -92,7 +92,7 @@ export function ProfileUpdateExample({
 
     // Handle nested socialLinks fields
     if (name.startsWith('socialLinks.')) {
-      const field = name.split('.')[1];
+      const field = name.split('.')[1] as string;
       setFormData(prev => ({
         ...prev,
         socialLinks: {
@@ -187,7 +187,7 @@ export function ProfileUpdateExample({
 
       setSubmitSuccess(true);
       setHasChanges(false);
-    } catch (_error) {
+    } catch (error) {
       setSubmitError(
         error instanceof Error ? error.message : 'Failed to update profile'
       );

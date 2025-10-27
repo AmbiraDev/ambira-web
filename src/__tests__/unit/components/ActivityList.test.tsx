@@ -84,23 +84,25 @@ describe('ActivityList Component', () => {
     jest.clearAllMocks();
     // Set default mock implementation
     mockUseProjects.mockReturnValue({
-      projects: mockActivities,
+      data: mockActivities,
       isLoading: false,
       error: null,
-      deleteProject: mockDeleteProject,
-      archiveProject: mockArchiveProject,
-    });
+      isSuccess: true,
+      isError: false,
+      refetch: jest.fn(),
+    } as any);
   });
 
   describe('Loading State', () => {
     it('should display loading skeleton', () => {
       mockUseProjects.mockReturnValue({
-        projects: null,
+        data: undefined,
         isLoading: true,
         error: null,
-        deleteProject: mockDeleteProject,
-        archiveProject: mockArchiveProject,
-      });
+        isSuccess: false,
+        isError: false,
+        refetch: jest.fn(),
+      } as any);
 
       const { container } = render(<ActivityList />);
 
@@ -111,12 +113,13 @@ describe('ActivityList Component', () => {
 
     it('should show 6 skeleton cards in loading state', () => {
       mockUseProjects.mockReturnValue({
-        projects: null,
+        data: undefined,
         isLoading: true,
         error: null,
-        deleteProject: mockDeleteProject,
-        archiveProject: mockArchiveProject,
-      });
+        isSuccess: false,
+        isError: false,
+        refetch: jest.fn(),
+      } as any);
 
       const { container } = render(<ActivityList />);
 
@@ -128,12 +131,13 @@ describe('ActivityList Component', () => {
   describe('Error State', () => {
     it('should display error message when loading fails', () => {
       mockUseProjects.mockReturnValue({
-        projects: null,
+        data: undefined,
         isLoading: false,
-        error: 'Failed to load activities',
-        deleteProject: jest.fn(),
-        archiveProject: jest.fn(),
-      });
+        error: new Error('Failed to load activities'),
+        isSuccess: false,
+        isError: true,
+        refetch: jest.fn(),
+      } as any);
 
       render(<ActivityList />);
 
@@ -145,12 +149,13 @@ describe('ActivityList Component', () => {
 
     it('should display retry button in error state', () => {
       mockUseProjects.mockReturnValue({
-        projects: null,
+        data: undefined,
         isLoading: false,
-        error: 'Failed to load activities',
-        deleteProject: jest.fn(),
-        archiveProject: jest.fn(),
-      });
+        error: new Error('Failed to load activities'),
+        isSuccess: false,
+        isError: true,
+        refetch: jest.fn(),
+      } as any);
 
       render(<ActivityList />);
 
@@ -160,12 +165,13 @@ describe('ActivityList Component', () => {
 
     it('should reload page when retry button is clicked', () => {
       mockUseProjects.mockReturnValue({
-        projects: null,
+        data: undefined,
         isLoading: false,
-        error: 'Failed to load activities',
-        deleteProject: jest.fn(),
-        archiveProject: jest.fn(),
-      });
+        error: new Error('Failed to load activities'),
+        isSuccess: false,
+        isError: true,
+        refetch: jest.fn(),
+      } as any);
 
       // Simply verify the reload button exists and is clickable
       // We can't easily test window.location.reload() in jsdom
@@ -182,12 +188,13 @@ describe('ActivityList Component', () => {
   describe('Empty State', () => {
     it('should display empty state when no activities exist', () => {
       mockUseProjects.mockReturnValue({
-        projects: [],
+        data: [],
         isLoading: false,
         error: null,
-        deleteProject: jest.fn(),
-        archiveProject: jest.fn(),
-      });
+        isSuccess: true,
+        isError: false,
+        refetch: jest.fn(),
+      } as any);
 
       render(<ActivityList />);
 
@@ -200,12 +207,13 @@ describe('ActivityList Component', () => {
 
     it('should display create button in empty state', () => {
       mockUseProjects.mockReturnValue({
-        projects: [],
+        data: [],
         isLoading: false,
         error: null,
-        deleteProject: jest.fn(),
-        archiveProject: jest.fn(),
-      });
+        isSuccess: true,
+        isError: false,
+        refetch: jest.fn(),
+      } as any);
 
       render(<ActivityList />);
 
@@ -217,12 +225,13 @@ describe('ActivityList Component', () => {
 
     it('should navigate to new activity page when create button is clicked', () => {
       mockUseProjects.mockReturnValue({
-        projects: [],
+        data: [],
         isLoading: false,
         error: null,
-        deleteProject: jest.fn(),
-        archiveProject: jest.fn(),
-      });
+        isSuccess: true,
+        isError: false,
+        refetch: jest.fn(),
+      } as any);
 
       render(<ActivityList />);
 
@@ -238,12 +247,13 @@ describe('ActivityList Component', () => {
   describe('Activities Display', () => {
     beforeEach(() => {
       mockUseProjects.mockReturnValue({
-        projects: mockActivities,
+        data: mockActivities,
         isLoading: false,
         error: null,
-        deleteProject: jest.fn(),
-        archiveProject: jest.fn(),
-      });
+        isSuccess: true,
+        isError: false,
+        refetch: jest.fn(),
+      } as any);
     });
 
     it('should display activity count', () => {
@@ -254,12 +264,13 @@ describe('ActivityList Component', () => {
 
     it('should display singular form for one activity', () => {
       mockUseProjects.mockReturnValue({
-        projects: [mockActivities[0]],
+        data: [mockActivities[0]],
         isLoading: false,
         error: null,
-        deleteProject: jest.fn(),
-        archiveProject: jest.fn(),
-      });
+        isSuccess: true,
+        isError: false,
+        refetch: jest.fn(),
+      } as any);
 
       render(<ActivityList />);
 
@@ -288,12 +299,13 @@ describe('ActivityList Component', () => {
   describe('Accessibility - ARIA Labels', () => {
     beforeEach(() => {
       mockUseProjects.mockReturnValue({
-        projects: [],
+        data: [],
         isLoading: false,
         error: null,
-        deleteProject: jest.fn(),
-        archiveProject: jest.fn(),
-      });
+        isSuccess: true,
+        isError: false,
+        refetch: jest.fn(),
+      } as any);
     });
 
     it('should have aria-label on new activity button', () => {
@@ -328,12 +340,13 @@ describe('ActivityList Component', () => {
   describe('Accessibility - Touch Targets', () => {
     beforeEach(() => {
       mockUseProjects.mockReturnValue({
-        projects: [],
+        data: [],
         isLoading: false,
         error: null,
-        deleteProject: jest.fn(),
-        archiveProject: jest.fn(),
-      });
+        isSuccess: true,
+        isError: false,
+        refetch: jest.fn(),
+      } as any);
     });
 
     it('should meet minimum 44x44px touch target for create button in empty state', () => {
@@ -347,12 +360,13 @@ describe('ActivityList Component', () => {
 
     it('should meet minimum 44px height for modal buttons', () => {
       mockUseProjects.mockReturnValue({
-        projects: mockActivities,
+        data: mockActivities,
         isLoading: false,
         error: null,
-        deleteProject: jest.fn(),
-        archiveProject: jest.fn(),
-      });
+        isSuccess: true,
+        isError: false,
+        refetch: jest.fn(),
+      } as any);
 
       render(<ActivityList onEditActivity={jest.fn()} />);
 
@@ -384,12 +398,13 @@ describe('ActivityList Component', () => {
   describe('Delete Confirmation Modal', () => {
     beforeEach(() => {
       mockUseProjects.mockReturnValue({
-        projects: mockActivities,
+        data: mockActivities,
         isLoading: false,
         error: null,
-        deleteProject: jest.fn(),
-        archiveProject: jest.fn(),
-      });
+        isSuccess: true,
+        isError: false,
+        refetch: jest.fn(),
+      } as any);
     });
 
     it('should open delete modal when delete is clicked', () => {
@@ -492,12 +507,13 @@ describe('ActivityList Component', () => {
     it('should call deleteProject when Delete is confirmed', async () => {
       const mockDeleteProject = jest.fn().mockResolvedValue(undefined);
       mockUseProjects.mockReturnValue({
-        projects: mockActivities,
+        data: mockActivities,
         isLoading: false,
         error: null,
-        deleteProject: mockDeleteProject,
-        archiveProject: jest.fn(),
-      });
+        isSuccess: true,
+        isError: false,
+        refetch: jest.fn(),
+      } as any);
 
       render(<ActivityList onEditActivity={jest.fn()} />);
 
@@ -522,12 +538,13 @@ describe('ActivityList Component', () => {
     it('should show success toast after successful delete', async () => {
       const localMockDeleteProject = jest.fn().mockResolvedValue(undefined);
       mockUseProjects.mockReturnValue({
-        projects: mockActivities,
+        data: mockActivities,
         isLoading: false,
         error: null,
-        deleteProject: localMockDeleteProject,
-        archiveProject: jest.fn(),
-      });
+        isSuccess: true,
+        isError: false,
+        refetch: jest.fn(),
+      } as any);
 
       render(<ActivityList onEditActivity={jest.fn()} />);
 
@@ -556,12 +573,13 @@ describe('ActivityList Component', () => {
         .fn()
         .mockRejectedValue(new Error('Delete failed'));
       mockUseProjects.mockReturnValue({
-        projects: mockActivities,
+        data: mockActivities,
         isLoading: false,
         error: null,
-        deleteProject: localMockDeleteProject,
-        archiveProject: jest.fn(),
-      });
+        isSuccess: true,
+        isError: false,
+        refetch: jest.fn(),
+      } as any);
 
       const consoleSpy = jest
         .spyOn(console, 'error')
@@ -595,23 +613,25 @@ describe('ActivityList Component', () => {
   describe('Archive/Restore Functionality', () => {
     beforeEach(() => {
       mockUseProjects.mockReturnValue({
-        projects: mockActivities,
+        data: mockActivities,
         isLoading: false,
         error: null,
-        deleteProject: jest.fn(),
-        archiveProject: jest.fn().mockResolvedValue(undefined),
-      });
+        isSuccess: true,
+        isError: false,
+        refetch: jest.fn(),
+      } as any);
     });
 
     it('should call archiveProject when Archive is clicked on active activity', async () => {
       const mockArchiveProject = jest.fn().mockResolvedValue(undefined);
       mockUseProjects.mockReturnValue({
-        projects: mockActivities,
+        data: mockActivities,
         isLoading: false,
         error: null,
-        deleteProject: jest.fn(),
-        archiveProject: mockArchiveProject,
-      });
+        isSuccess: true,
+        isError: false,
+        refetch: jest.fn(),
+      } as any);
 
       render(<ActivityList onEditActivity={jest.fn()} />);
 
@@ -655,12 +675,13 @@ describe('ActivityList Component', () => {
         .fn()
         .mockRejectedValue(new Error('Archive failed'));
       mockUseProjects.mockReturnValue({
-        projects: mockActivities,
+        data: mockActivities,
         isLoading: false,
         error: null,
-        deleteProject: jest.fn(),
-        archiveProject: localMockArchiveProject,
-      });
+        isSuccess: true,
+        isError: false,
+        refetch: jest.fn(),
+      } as any);
 
       const consoleSpy = jest
         .spyOn(console, 'error')
@@ -693,12 +714,13 @@ describe('ActivityList Component', () => {
       const mockEditHandler = jest.fn();
 
       mockUseProjects.mockReturnValue({
-        projects: mockActivities,
+        data: mockActivities,
         isLoading: false,
         error: null,
-        deleteProject: jest.fn(),
-        archiveProject: jest.fn(),
-      });
+        isSuccess: true,
+        isError: false,
+        refetch: jest.fn(),
+      } as any);
 
       render(<ActivityList onEditActivity={mockEditHandler} />);
 
@@ -719,12 +741,13 @@ describe('ActivityList Component', () => {
   describe('New Activity Navigation', () => {
     it('should navigate to new activity page', () => {
       mockUseProjects.mockReturnValue({
-        projects: mockActivities,
+        data: mockActivities,
         isLoading: false,
         error: null,
-        deleteProject: jest.fn(),
-        archiveProject: jest.fn(),
-      });
+        isSuccess: true,
+        isError: false,
+        refetch: jest.fn(),
+      } as any);
 
       render(<ActivityList />);
 

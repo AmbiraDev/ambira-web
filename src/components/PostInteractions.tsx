@@ -5,6 +5,7 @@ import React, { useState } from 'react';
 interface PostInteractionsProps {
   postId: string;
   commentCount: number;
+  supportCount?: number;
   isSupported: boolean;
   onSupport: (postId: string) => Promise<void>;
   onRemoveSupport: (postId: string) => Promise<void>;
@@ -16,6 +17,7 @@ interface PostInteractionsProps {
 export const PostInteractions: React.FC<PostInteractionsProps> = ({
   postId,
   commentCount,
+  supportCount: _supportCount,
   isSupported,
   onSupport,
   onRemoveSupport,

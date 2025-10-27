@@ -30,7 +30,7 @@ export const FeedLayout: React.FC<FeedLayoutProps> = ({ className = '' }) => {
         await firebaseApi.user.getSuggestedUsers(5);
 
         setUserStats(stats);
-      } catch (_err) {
+      } catch (err) {
         console.error('Failed to load feed data:', err);
       } finally {
         setIsLoadingStats(false);

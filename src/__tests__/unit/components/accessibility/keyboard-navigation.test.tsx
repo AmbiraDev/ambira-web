@@ -467,10 +467,12 @@ describe('Feed Page Keyboard Navigation', () => {
 
   describe('Loading State Keyboard Behavior', () => {
     it('should maintain keyboard accessibility during loading states', async () => {
-      const useFeedInfinite = (await import('@/features/feed/hooks'))
-        .useFeedInfinite;
+      const feedHooks = await import('@/features/feed/hooks');
+      const useFeedInfinite = feedHooks.useFeedInfinite as jest.MockedFunction<
+        typeof feedHooks.useFeedInfinite
+      >;
       useFeedInfinite.mockReturnValue({
-        data: null,
+        data: undefined,
         isLoading: true,
         error: null,
         refetch: jest.fn(),
@@ -478,7 +480,7 @@ describe('Feed Page Keyboard Navigation', () => {
         fetchNextPage: jest.fn(),
         hasNextPage: false,
         isFetchingNextPage: false,
-      });
+      } as any);
 
       render(<Feed />);
 
@@ -494,11 +496,13 @@ describe('Feed Page Keyboard Navigation', () => {
 
   describe('Error State Keyboard Behavior', () => {
     it('should provide keyboard-accessible error recovery', async () => {
-      const useFeedInfinite = (await import('@/features/feed/hooks'))
-        .useFeedInfinite;
+      const feedHooks = await import('@/features/feed/hooks');
+      const useFeedInfinite = feedHooks.useFeedInfinite as jest.MockedFunction<
+        typeof feedHooks.useFeedInfinite
+      >;
 
       useFeedInfinite.mockReturnValue({
-        data: null,
+        data: undefined,
         isLoading: false,
         error: new Error('Failed to load'),
         refetch: jest.fn(),
@@ -506,7 +510,7 @@ describe('Feed Page Keyboard Navigation', () => {
         fetchNextPage: jest.fn(),
         hasNextPage: false,
         isFetchingNextPage: false,
-      });
+      } as any);
 
       render(<Feed />);
 

@@ -115,11 +115,18 @@ export function useActivityStats(
       weekStart.setHours(0, 0, 0, 0);
 
       snapshot.forEach(doc => {
-        const data: unknown = doc.data();
+        const data = doc.data() as {
+          duration?: number;
+          startTime?: { toDate?: () => Date } | Date | string;
+        };
         const duration = safeNumber(data.duration, 0);
-        const start = data.startTime?.toDate
-          ? data.startTime.toDate()
-          : new Date(data.startTime);
+        const start =
+          data.startTime &&
+          typeof data.startTime === 'object' &&
+          'toDate' in data.startTime &&
+          data.startTime.toDate
+            ? data.startTime.toDate()
+            : new Date(data.startTime as string | Date);
         totalSeconds += duration;
         sessionCount += 1;
         if (start >= weekStart) weeklySeconds += duration;

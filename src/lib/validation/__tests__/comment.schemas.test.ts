@@ -81,7 +81,7 @@ describe('Comment Schemas', () => {
 
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.errors[0].path).toBe('content');
+        expect(result.errors[0]?.path).toBe('content');
       }
     });
 
@@ -95,7 +95,7 @@ describe('Comment Schemas', () => {
 
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.errors[0].path).toBe('content');
+        expect(result.errors[0]?.path).toBe('content');
       }
     });
 
@@ -120,7 +120,7 @@ describe('Comment Schemas', () => {
 
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.errors[0].path).toBe('sessionId');
+        expect(result.errors[0]?.path).toBe('sessionId');
       }
     });
 
@@ -135,7 +135,7 @@ describe('Comment Schemas', () => {
 
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.errors[0].path).toBe('parentCommentId');
+        expect(result.errors[0]?.path).toBe('parentCommentId');
       }
     });
 
@@ -229,7 +229,7 @@ describe('Comment Schemas', () => {
 
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.errors[0].path).toBe('content');
+        expect(result.errors[0]?.path).toBe('content');
       }
     });
 
@@ -242,7 +242,7 @@ describe('Comment Schemas', () => {
 
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.errors[0].path).toBe('content');
+        expect(result.errors[0]?.path).toBe('content');
       }
     });
 
@@ -268,7 +268,7 @@ describe('Comment Schemas', () => {
 
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.errors[0].path).toBe('isEdited');
+        expect(result.errors[0]?.path).toBe('isEdited');
       }
     });
   });
@@ -308,7 +308,7 @@ describe('Comment Schemas', () => {
 
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.errors[0].path).toBe('commentId');
+        expect(result.errors[0]?.path).toBe('commentId');
       }
     });
   });
@@ -400,7 +400,7 @@ describe('Comment Schemas', () => {
 
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.errors[0].path).toBe('sessionId');
+        expect(result.errors[0]?.path).toBe('sessionId');
       }
     });
   });
@@ -479,8 +479,8 @@ describe('Comment Schemas', () => {
     });
 
     it('should fail for invalid field value', () => {
-      const input = {
-        field: 'invalidField' as unknown as typeof input.field,
+      const input: { field: string; direction: 'asc' } = {
+        field: 'invalidField',
         direction: 'asc' as const,
       };
 
@@ -488,21 +488,21 @@ describe('Comment Schemas', () => {
 
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.errors[0].path).toBe('field');
+        expect(result.errors[0]?.path).toBe('field');
       }
     });
 
     it('should fail for invalid direction value', () => {
-      const input = {
+      const input: { field: 'createdAt'; direction: string } = {
         field: 'createdAt' as const,
-        direction: 'invalid' as unknown as typeof input.direction,
+        direction: 'invalid',
       };
 
       const result = validate(CommentSortSchema, input);
 
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.errors[0].path).toBe('direction');
+        expect(result.errors[0]?.path).toBe('direction');
       }
     });
   });

@@ -36,7 +36,7 @@ async function isActuallyHeic(file: File): Promise<boolean> {
       signature.startsWith('ftypmif1')
     ); // mif1 is also used for HEIF
   } catch (_error) {
-    debug.error('Error checking file signature:', error);
+    debug.error('Error checking file signature:', _error);
     return false;
   }
 }
@@ -87,7 +87,7 @@ async function convertHeicToJpeg(file: File): Promise<File> {
 
     return convertedFile;
   } catch (_error) {
-    debug.error('Failed to convert HEIC:', error);
+    debug.error('Failed to convert HEIC:', _error);
     throw new Error(
       'Failed to convert HEIC image. Please use JPG or PNG format.'
     );
@@ -141,8 +141,8 @@ export async function uploadImage(
     const _sizeMB = (processedFile.size / 1024 / 1024).toFixed(1);
     try {
       processedFile = await compressToSize(processedFile, 5);
-    } catch (error: unknown) {
-      debug.error('Compression failed:', error);
+    } catch (_error: unknown) {
+      debug.error('Compression failed:', _error);
       throw new Error('Failed to compress image. Please try a smaller file.');
     }
   }
@@ -176,12 +176,13 @@ export async function uploadImage(
     ]);
 
     return result;
-  } catch (error: unknown) {
-    debug.error('Error uploading image:', error);
+  } catch (_error: unknown) {
+    debug.error('Error uploading image:', _error);
 
     // Check if this is a timeout error
+    const error = _error as { message?: string; code?: string };
     if (error.message === TIMEOUT_ERRORS.IMAGE_UPLOAD) {
-      throw error; // Re-throw timeout errors with user-friendly message
+      throw _error; // Re-throw timeout errors with user-friendly message
     }
 
     if (error.code === 'storage/unauthorized') {
@@ -222,7 +223,7 @@ export async function deleteImage(path: string): Promise<void> {
     const storageRef = ref(storage, path);
     await deleteObject(storageRef);
   } catch (_error) {
-    debug.error('Error deleting image:', error);
+    debug.error('Error deleting image:', _error);
     throw new Error('Failed to delete image');
   }
 }
@@ -310,7 +311,7 @@ export async function compressImage(
             quality
           );
         } catch (_error) {
-          reject(error);
+          reject(_error);
         }
       };
 

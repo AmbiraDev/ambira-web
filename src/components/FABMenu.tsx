@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { ManualEntry } from './ManualEntry';
 import { firebaseApi } from '@/lib/api';
+import { SessionFormData } from '@/types';
 
 export const FABMenu: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -15,12 +16,7 @@ export const FABMenu: React.FC = () => {
     setIsOpen(false);
   };
 
-  const handleSaveSession = async (data: {
-    visibility: string;
-    description?: string;
-    title: string;
-    [key: string]: unknown;
-  }) => {
+  const handleSaveSession = async (data: SessionFormData) => {
     try {
       setIsLoading(true);
 
@@ -38,7 +34,7 @@ export const FABMenu: React.FC = () => {
       }
 
       setShowManualEntry(false);
-    } catch (_err) {
+    } catch (err) {
       console.error('Failed to save session:', err);
       throw err;
     } finally {

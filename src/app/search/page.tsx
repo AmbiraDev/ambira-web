@@ -13,7 +13,13 @@ import { Users } from 'lucide-react';
 import { firebaseApi } from '@/lib/api';
 import { useQueryClient } from '@tanstack/react-query';
 import { CACHE_KEYS } from '@/lib/queryClient';
-import type { User, Group } from '@/types';
+import type {
+  Group,
+  UserSearchResult,
+  SuggestedUser,
+  GroupSearchResult,
+  SuggestedGroup,
+} from '@/types';
 
 // Optimized hooks
 import {
@@ -89,19 +95,19 @@ function SearchContent() {
     });
 
   // Enhance search results with following/joined status
-  const enhancedUsers = useMemo(() => {
+  const enhancedUsers = useMemo((): UserSearchResult[] => {
     if (!hasSearchQuery) return [];
 
     return searchUsers
       .map(u => ({
         ...u,
         isFollowing: followingIds.has(u.id),
-        isSelf: user && u.id === user.id,
+        isSelf: user && u.id === user.id ? true : null,
       }))
       .sort((a, b) => (b.isSelf ? 1 : 0) - (a.isSelf ? 1 : 0));
   }, [searchUsers, followingIds, user, hasSearchQuery]);
 
-  const enhancedSuggestedUsers = useMemo(() => {
+  const enhancedSuggestedUsers = useMemo((): SuggestedUser[] => {
     return suggestedUsers.map(u => ({
       ...u,
       isFollowing: followingIds.has(u.id),
@@ -161,10 +167,8 @@ function SearchContent() {
     }
   };
 
-  const renderUserResult = (
-    user: User & { isSelf?: boolean; isFollowing?: boolean }
-  ) => {
-    if (user.isSelf) {
+  const renderUserResult = (user: UserSearchResult | SuggestedUser) => {
+    if ('isSelf' in user && user.isSelf) {
       return (
         <Link
           key={user.id}
@@ -203,7 +207,9 @@ function SearchContent() {
     );
   };
 
-  const renderGroupResult = (group: Group & { members?: number }) => {
+  const renderGroupResult = (
+    group: GroupSearchResult | SuggestedGroup | (Group & { members?: number })
+  ) => {
     const isJoined = joinedGroupIds.has(group.id);
     const isLoading = joiningGroup === group.id;
 

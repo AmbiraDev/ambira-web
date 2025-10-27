@@ -32,7 +32,7 @@ import { handleError, isPermissionError } from '@/lib/errorHandler';
 import { convertTimestamp } from '../shared/utils';
 
 // Types
-import type { _User, StreakData, StreakStats } from '@/types';
+import type { StreakData, StreakStats } from '@/types';
 
 // ============================================================================
 // PUBLIC API
@@ -93,7 +93,7 @@ export const firebaseStreakApi = {
       };
     } catch (_error) {
       // Handle permission errors gracefully - return empty streak
-      if (isPermissionError(error)) {
+      if (isPermissionError(_error)) {
         return {
           userId,
           currentStreak: 0,
@@ -105,7 +105,7 @@ export const firebaseStreakApi = {
         };
       }
 
-      const apiError = handleError(error, 'Get streak data', {
+      const apiError = handleError(_error, 'Get streak data', {
         defaultMessage: 'Failed to get streak data',
       });
       throw new Error(apiError.userMessage);
@@ -240,7 +240,7 @@ export const firebaseStreakApi = {
       };
 
       return result;
-    } catch (_error) {
+    } catch (error: unknown) {
       console.error('=== FIREBASE API: Error in getStreakStats ===', error);
       const apiError = handleError(error, 'Get streak stats', {
         defaultMessage: 'Failed to get streak stats',
@@ -361,7 +361,7 @@ export const firebaseStreakApi = {
 
       return updatedStreak;
     } catch (_error) {
-      const apiError = handleError(error, 'Update streak', {
+      const apiError = handleError(_error, 'Update streak', {
         defaultMessage: 'Failed to update streak',
       });
       throw new Error(apiError.userMessage);
@@ -390,7 +390,7 @@ export const firebaseStreakApi = {
 
       return newVisibility;
     } catch (_error) {
-      const apiError = handleError(error, 'Toggle streak visibility', {
+      const apiError = handleError(_error, 'Toggle streak visibility', {
         defaultMessage: 'Failed to toggle streak visibility',
       });
       throw new Error(apiError.userMessage);
@@ -418,7 +418,7 @@ export const firebaseStreakApi = {
         isPublic,
       });
     } catch (_error) {
-      const apiError = handleError(error, 'Update streak visibility', {
+      const apiError = handleError(_error, 'Update streak visibility', {
         defaultMessage: 'Failed to update streak visibility',
       });
       throw new Error(apiError.userMessage);
@@ -447,7 +447,7 @@ export const firebaseStreakApi = {
         lastActivityDate: Timestamp.fromDate(new Date()),
       });
     } catch (_error) {
-      const apiError = handleError(error, 'Restore streak', {
+      const apiError = handleError(_error, 'Restore streak', {
         defaultMessage: 'Failed to restore streak',
       });
       throw new Error(apiError.userMessage);

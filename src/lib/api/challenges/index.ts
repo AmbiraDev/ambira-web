@@ -28,7 +28,7 @@ import {
 import { db, auth } from '@/lib/firebase';
 
 // Error handling
-import { handleError } from '@/lib/errorHandler';
+import { handleError, ErrorSeverity } from '@/lib/errorHandler';
 
 // Error messages
 import { ERROR_MESSAGES } from '@/config/errorMessages';
@@ -46,6 +46,7 @@ import type {
   ChallengeLeaderboard,
   ChallengeLeaderboardEntry,
   ChallengeStats,
+  Session,
 } from '@/types';
 
 // ============================================================================
@@ -93,7 +94,7 @@ export const firebaseChallengeApi = {
         updatedAt: new Date(),
       };
     } catch (_error) {
-      const apiError = handleError(error, 'Create challenge', {
+      const apiError = handleError(_error, 'Create challenge', {
         defaultMessage: ERROR_MESSAGES.UNKNOWN_ERROR,
       });
       throw new Error(apiError.userMessage);
@@ -129,7 +130,7 @@ export const firebaseChallengeApi = {
         rewards: data.rewards,
       };
     } catch (_error) {
-      const apiError = handleError(error, 'Get challenge', {
+      const apiError = handleError(_error, 'Get challenge', {
         defaultMessage: ERROR_MESSAGES.CHALLENGE_LOAD_FAILED,
       });
       throw new Error(apiError.userMessage);
@@ -210,7 +211,7 @@ export const firebaseChallengeApi = {
           } catch (_error) {
             // If we can't check participation, skip this challenge
             handleError(
-              error,
+              _error,
               `Check participation for challenge ${challengeDoc.id}`,
               { severity: ErrorSeverity.WARNING }
             );
@@ -240,8 +241,10 @@ export const firebaseChallengeApi = {
 
       return challenges;
     } catch (_error) {
-      handleError(error, 'in getChallenges', { severity: ErrorSeverity.ERROR });
-      const apiError = handleError(error, 'Get challenges', {
+      handleError(_error, 'in getChallenges', {
+        severity: ErrorSeverity.ERROR,
+      });
+      const apiError = handleError(_error, 'Get challenges', {
         defaultMessage: ERROR_MESSAGES.CHALLENGE_LOAD_FAILED,
       });
       throw new Error(apiError.userMessage);
@@ -302,7 +305,7 @@ export const firebaseChallengeApi = {
 
       await batch.commit();
     } catch (_error) {
-      const apiError = handleError(error, 'Join challenge', {
+      const apiError = handleError(_error, 'Join challenge', {
         defaultMessage: ERROR_MESSAGES.CHALLENGE_JOIN_FAILED,
       });
       throw new Error(apiError.userMessage);
@@ -339,7 +342,7 @@ export const firebaseChallengeApi = {
 
       await batch.commit();
     } catch (_error) {
-      const apiError = handleError(error, 'Leave challenge', {
+      const apiError = handleError(_error, 'Leave challenge', {
         defaultMessage: ERROR_MESSAGES.CHALLENGE_LEAVE_FAILED,
       });
       throw new Error(apiError.userMessage);
@@ -397,7 +400,7 @@ export const firebaseChallengeApi = {
           }
         } catch (_error) {
           handleError(
-            error,
+            _error,
             `Load user data for participant ${participantData.userId}`,
             { severity: ErrorSeverity.WARNING }
           );
@@ -410,7 +413,7 @@ export const firebaseChallengeApi = {
         lastUpdated: new Date(),
       };
     } catch (_error) {
-      const apiError = handleError(error, 'Get challenge leaderboard', {
+      const apiError = handleError(_error, 'Get challenge leaderboard', {
         defaultMessage: ERROR_MESSAGES.CHALLENGE_LOAD_FAILED,
       });
       throw new Error(apiError.userMessage);
@@ -470,7 +473,7 @@ export const firebaseChallengeApi = {
         lastUpdated: convertTimestamp(participantData.updatedAt) || new Date(),
       };
     } catch (_error) {
-      const apiError = handleError(error, 'Get challenge progress', {
+      const apiError = handleError(_error, 'Get challenge progress', {
         defaultMessage: ERROR_MESSAGES.CHALLENGE_LOAD_FAILED,
       });
       throw new Error(apiError.userMessage);
@@ -480,7 +483,7 @@ export const firebaseChallengeApi = {
   // Update challenge progress (called when sessions are logged)
   updateChallengeProgress: async (
     userId: string,
-    sessionData: unknown
+    sessionData: Session
   ): Promise<void> => {
     try {
       // Get all active challenges the user is participating in
@@ -559,7 +562,7 @@ export const firebaseChallengeApi = {
             ? newProgress >= challengeData.goalValue
             : false;
 
-          const updateData: unknown = {
+          const updateData: Record<string, unknown> = {
             progress: newProgress,
             updatedAt: serverTimestamp(),
           };
@@ -575,7 +578,7 @@ export const firebaseChallengeApi = {
 
       await batch.commit();
     } catch (_error) {
-      handleError(error, 'update challenge progress', {
+      handleError(_error, 'update challenge progress', {
         severity: ErrorSeverity.ERROR,
       });
       // Don't throw error to avoid breaking session creation
@@ -632,7 +635,7 @@ export const firebaseChallengeApi = {
         daysRemaining,
       };
     } catch (_error) {
-      const apiError = handleError(error, 'Get challenge stats', {
+      const apiError = handleError(_error, 'Get challenge stats', {
         defaultMessage: 'Failed to get challenge stats',
       });
       throw new Error(apiError.userMessage);
@@ -683,7 +686,7 @@ export const firebaseChallengeApi = {
       // Return updated challenge
       return await firebaseChallengeApi.getChallenge(challengeId);
     } catch (_error) {
-      const apiError = handleError(error, 'Update challenge', {
+      const apiError = handleError(_error, 'Update challenge', {
         defaultMessage: 'Failed to update challenge',
       });
       throw new Error(apiError.userMessage);
@@ -739,7 +742,7 @@ export const firebaseChallengeApi = {
 
       await batch.commit();
     } catch (_error) {
-      const apiError = handleError(error, 'Delete challenge', {
+      const apiError = handleError(_error, 'Delete challenge', {
         defaultMessage: 'Failed to delete challenge',
       });
       throw new Error(apiError.userMessage);
@@ -826,10 +829,10 @@ export const firebaseChallengeApi = {
 
       return challenges;
     } catch (_error) {
-      handleError(error, 'in searchChallenges', {
+      handleError(_error, 'in searchChallenges', {
         severity: ErrorSeverity.ERROR,
       });
-      const apiError = handleError(error, 'Search challenges', {
+      const apiError = handleError(_error, 'Search challenges', {
         defaultMessage: 'Failed to search challenges',
       });
       throw new Error(apiError.userMessage);
@@ -858,7 +861,7 @@ export const firebaseChallengeApi = {
             await firebaseChallengeApi.getChallenge(challengeId);
           challenges.push(challenge);
         } catch (_error) {
-          handleError(error, `Load challenge ${challengeId}`, {
+          handleError(_error, `Load challenge ${challengeId}`, {
             severity: ErrorSeverity.WARNING,
           });
         }
@@ -869,7 +872,7 @@ export const firebaseChallengeApi = {
 
       return challenges;
     } catch (_error) {
-      const apiError = handleError(error, 'Get user challenges', {
+      const apiError = handleError(_error, 'Get user challenges', {
         defaultMessage: 'Failed to get user challenges',
       });
       throw new Error(apiError.userMessage);

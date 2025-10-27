@@ -29,10 +29,20 @@ describe('ProtectedRoute', () => {
   });
 
   it('should render children when user is authenticated', async () => {
-    mockUseAuth.mockReturnValue({
+    (mockUseAuth as jest.Mock).mockReturnValue({
+      user: { id: 'test-user' },
+      currentUser: { id: 'test-user' },
       isAuthenticated: true,
       isLoading: false,
-    });
+      login: jest.fn(),
+      signup: jest.fn(),
+      signInWithGoogle: jest.fn(),
+      logout: jest.fn(),
+      loginMutation: {},
+      signupMutation: {},
+      googleSignInMutation: {},
+      logoutMutation: {},
+    } as any);
 
     render(
       <ProtectedRoute>
@@ -48,10 +58,20 @@ describe('ProtectedRoute', () => {
   });
 
   it('should redirect to login when user is not authenticated', async () => {
-    mockUseAuth.mockReturnValue({
+    (mockUseAuth as jest.Mock).mockReturnValue({
+      user: null,
+      currentUser: null,
       isAuthenticated: false,
       isLoading: false,
-    });
+      login: jest.fn(),
+      signup: jest.fn(),
+      signInWithGoogle: jest.fn(),
+      logout: jest.fn(),
+      loginMutation: {},
+      signupMutation: {},
+      googleSignInMutation: {},
+      logoutMutation: {},
+    } as any);
 
     render(
       <ProtectedRoute>
@@ -67,10 +87,20 @@ describe('ProtectedRoute', () => {
   });
 
   it('should show loading spinner while checking authentication', () => {
-    mockUseAuth.mockReturnValue({
+    (mockUseAuth as jest.Mock).mockReturnValue({
+      user: null,
+      currentUser: null,
       isAuthenticated: false,
       isLoading: true,
-    });
+      login: jest.fn(),
+      signup: jest.fn(),
+      signInWithGoogle: jest.fn(),
+      logout: jest.fn(),
+      loginMutation: {},
+      signupMutation: {},
+      googleSignInMutation: {},
+      logoutMutation: {},
+    } as any);
 
     render(
       <ProtectedRoute>
@@ -84,10 +114,20 @@ describe('ProtectedRoute', () => {
   });
 
   it('should show loading spinner while checking authentication status', () => {
-    mockUseAuth.mockReturnValue({
+    (mockUseAuth as jest.Mock).mockReturnValue({
+      user: null,
+      currentUser: null,
       isAuthenticated: false,
       isLoading: true,
-    });
+      login: jest.fn(),
+      signup: jest.fn(),
+      signInWithGoogle: jest.fn(),
+      logout: jest.fn(),
+      loginMutation: {},
+      signupMutation: {},
+      googleSignInMutation: {},
+      logoutMutation: {},
+    } as any);
 
     render(
       <ProtectedRoute>
@@ -100,10 +140,20 @@ describe('ProtectedRoute', () => {
   });
 
   it('should not render children when not authenticated', async () => {
-    mockUseAuth.mockReturnValue({
+    (mockUseAuth as jest.Mock).mockReturnValue({
+      user: null,
+      currentUser: null,
       isAuthenticated: false,
       isLoading: false,
-    });
+      login: jest.fn(),
+      signup: jest.fn(),
+      signInWithGoogle: jest.fn(),
+      logout: jest.fn(),
+      loginMutation: {},
+      signupMutation: {},
+      googleSignInMutation: {},
+      logoutMutation: {},
+    } as any);
 
     render(
       <ProtectedRoute>
@@ -118,10 +168,20 @@ describe('ProtectedRoute', () => {
 
   it('should handle authentication state changes', async () => {
     // Start with loading
-    mockUseAuth.mockReturnValue({
+    (mockUseAuth as jest.Mock).mockReturnValue({
+      user: null,
+      currentUser: null,
       isAuthenticated: false,
       isLoading: true,
-    });
+      login: jest.fn(),
+      signup: jest.fn(),
+      signInWithGoogle: jest.fn(),
+      logout: jest.fn(),
+      loginMutation: {},
+      signupMutation: {},
+      googleSignInMutation: {},
+      logoutMutation: {},
+    } as any);
 
     const { rerender } = render(
       <ProtectedRoute>
@@ -132,10 +192,20 @@ describe('ProtectedRoute', () => {
     expect(screen.getByText('Loading...')).toBeInTheDocument();
 
     // Then become authenticated
-    mockUseAuth.mockReturnValue({
+    (mockUseAuth as jest.Mock).mockReturnValue({
+      user: { id: 'test-user' },
+      currentUser: { id: 'test-user' },
       isAuthenticated: true,
       isLoading: false,
-    });
+      login: jest.fn(),
+      signup: jest.fn(),
+      signInWithGoogle: jest.fn(),
+      logout: jest.fn(),
+      loginMutation: {},
+      signupMutation: {},
+      googleSignInMutation: {},
+      logoutMutation: {},
+    } as any);
 
     rerender(
       <ProtectedRoute>
@@ -152,10 +222,20 @@ describe('ProtectedRoute', () => {
 
   it('should handle authentication state changes to unauthenticated', async () => {
     // Start with loading
-    mockUseAuth.mockReturnValue({
+    (mockUseAuth as jest.Mock).mockReturnValue({
+      user: null,
+      currentUser: null,
       isAuthenticated: false,
       isLoading: true,
-    });
+      login: jest.fn(),
+      signup: jest.fn(),
+      signInWithGoogle: jest.fn(),
+      logout: jest.fn(),
+      loginMutation: {},
+      signupMutation: {},
+      googleSignInMutation: {},
+      logoutMutation: {},
+    } as any);
 
     const { rerender } = render(
       <ProtectedRoute>
@@ -166,10 +246,20 @@ describe('ProtectedRoute', () => {
     expect(screen.getByText('Loading...')).toBeInTheDocument();
 
     // Then become unauthenticated
-    mockUseAuth.mockReturnValue({
+    (mockUseAuth as jest.Mock).mockReturnValue({
+      user: null,
+      currentUser: null,
       isAuthenticated: false,
       isLoading: false,
-    });
+      login: jest.fn(),
+      signup: jest.fn(),
+      signInWithGoogle: jest.fn(),
+      logout: jest.fn(),
+      loginMutation: {},
+      signupMutation: {},
+      googleSignInMutation: {},
+      logoutMutation: {},
+    } as any);
 
     rerender(
       <ProtectedRoute>
@@ -193,10 +283,20 @@ describe('ProtectedRoute', () => {
       usePathname: () => '/protected-page?param=value&other=test',
     }));
 
-    mockUseAuth.mockReturnValue({
+    (mockUseAuth as jest.Mock).mockReturnValue({
+      user: null,
+      currentUser: null,
       isAuthenticated: false,
       isLoading: false,
-    });
+      login: jest.fn(),
+      signup: jest.fn(),
+      signInWithGoogle: jest.fn(),
+      logout: jest.fn(),
+      loginMutation: {},
+      signupMutation: {},
+      googleSignInMutation: {},
+      logoutMutation: {},
+    } as any);
 
     render(
       <ProtectedRoute>

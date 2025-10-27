@@ -83,7 +83,7 @@ export function useFeedInfinite(
     queryFn: ({ pageParam }) =>
       feedService.getFeed(currentUserId, filters, {
         limit: 20,
-        _cursor: pageParam as string | undefined,
+        cursor: pageParam as string | undefined,
       }),
     getNextPageParam: lastPage => {
       return lastPage.hasMore ? lastPage.nextCursor : undefined;

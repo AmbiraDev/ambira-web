@@ -39,12 +39,12 @@ describe('Validation Utilities', () => {
       try {
         validateOrThrow(TestSchema, input);
         fail('Should have thrown ValidationError');
-      } catch (_error) {
-        expect(error).toBeInstanceOf(ValidationError);
-        if (error instanceof ValidationError) {
-          expect(error.issues).toHaveLength(2);
-          expect(error.issues[0].path).toBe('name');
-          expect(error.issues[1].path).toBe('age');
+      } catch (err) {
+        expect(err).toBeInstanceOf(ValidationError);
+        if (err instanceof ValidationError) {
+          expect(err.issues).toHaveLength(2);
+          expect(err.issues[0]?.path).toBe('name');
+          expect(err.issues[1]?.path).toBe('age');
         }
       }
     });
@@ -72,7 +72,7 @@ describe('Validation Utilities', () => {
       expect(result.success).toBe(false);
       if (!result.success) {
         expect(result.errors).toHaveLength(1);
-        expect(result.errors[0].path).toBe('email');
+        expect(result.errors[0]?.path).toBe('email');
       }
     });
   });

@@ -12,7 +12,7 @@ import {
 import { StatsCard } from './StatsCard';
 import { ActivityChart } from './ActivityChart';
 import { HeatmapCalendar } from './HeatmapCalendar';
-import { AnalyticsPeriod, Session } from '@/types';
+import { AnalyticsPeriod, Session, SessionFilters } from '@/types';
 import { firebaseSessionApi } from '@/lib/api';
 
 interface PersonalAnalyticsDashboardProps {
@@ -41,12 +41,12 @@ export const PersonalAnalyticsDashboard: React.FC<
   const loadSessions = useCallback(async () => {
     try {
       setIsLoading(true);
-      const filters: unknown = {};
+      const filters: SessionFilters = {};
       if (projectId) {
         filters.projectId = projectId;
       }
 
-      const response = await firebaseSessionApi.getSessions(1, 500, filters);
+      const response = await firebaseSessionApi.getSessions(500, filters);
 
       // Filter by selected period
       const cutoffDate = new Date();

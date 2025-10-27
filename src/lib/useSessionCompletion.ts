@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { firebaseApi } from './api';
-import { Session, Achievement } from '@/types';
+import { Session, Achievement, CreateSessionData } from '@/types';
 
 export const useSessionCompletion = () => {
   const [newAchievements, setNewAchievements] = useState<Achievement[]>([]);
@@ -9,7 +9,7 @@ export const useSessionCompletion = () => {
   const queryClient = useQueryClient();
 
   const completeSession = async (
-    sessionData: unknown,
+    sessionData: CreateSessionData,
     userId: string
   ): Promise<{ session: Session; achievements: Achievement[] }> => {
     setIsProcessing(true);
@@ -44,9 +44,9 @@ export const useSessionCompletion = () => {
       queryClient.invalidateQueries({ queryKey: ['sessions', 'feed'] });
 
       return { session, achievements };
-    } catch (_error) {
-      console.error('Failed to complete session:', error);
-      throw error;
+    } catch (_err) {
+      console.error('Failed to complete session:', _err);
+      throw _err;
     } finally {
       setIsProcessing(false);
     }

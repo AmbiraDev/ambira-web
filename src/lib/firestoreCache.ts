@@ -296,15 +296,15 @@ export class PaginationCache<T> {
 
   constructor(private pageSize: number = 20) {}
 
-  setPage(_cursor: string, items: T[]): void {
+  setPage(cursor: string, items: T[]): void {
     this.pages.set(cursor, items);
   }
 
-  getPage(_cursor: string): T[] | null {
+  getPage(cursor: string): T[] | null {
     return this.pages.get(cursor) ?? null;
   }
 
-  setCursor(page: string, _cursor: unknown): void {
+  setCursor(page: string, cursor: unknown): void {
     this.cursors.set(page, cursor);
   }
 

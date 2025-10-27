@@ -174,15 +174,17 @@ export const SignupForm: React.FC = () => {
       console.error('Signup error:', error);
 
       // Handle specific Firebase errors with user-friendly messages
-      if (error.message?.includes('auth/email-already-in-use')) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      if (errorMessage.includes('auth/email-already-in-use')) {
         setSubmitError(
           'This email address is already registered. Please try logging in instead or use a different email.'
         );
-      } else if (error.message?.includes('auth/weak-password')) {
+      } else if (errorMessage.includes('auth/weak-password')) {
         setSubmitError(
           'Password is too weak. Please choose a stronger password with at least 6 characters.'
         );
-      } else if (error.message?.includes('auth/invalid-email')) {
+      } else if (errorMessage.includes('auth/invalid-email')) {
         setSubmitError('Please enter a valid email address.');
       } else {
         setSubmitError(

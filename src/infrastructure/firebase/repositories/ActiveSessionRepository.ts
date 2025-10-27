@@ -44,7 +44,7 @@ export class ActiveSessionRepository {
         return null;
       }
       return this.mapper.toDomain(doc);
-    } catch (_error) {
+    } catch (error) {
       console.error(`Error getting active session for user ${userId}:`, error);
       throw new Error(
         `Failed to get active session: ${error instanceof Error ? error.message : 'Unknown error'}`
@@ -65,7 +65,7 @@ export class ActiveSessionRepository {
       const data = this.mapper.toFirestore(session);
 
       await setDoc(docRef, data);
-    } catch (_error) {
+    } catch (error) {
       console.error(`Error saving active session ${session.id}:`, error);
       throw new Error(
         `Failed to save active session: ${error instanceof Error ? error.message : 'Unknown error'}`
@@ -80,7 +80,7 @@ export class ActiveSessionRepository {
     try {
       const docRef = doc(db, `users/${userId}/activeSession`, sessionId);
       await deleteDoc(docRef);
-    } catch (_error) {
+    } catch (error) {
       console.error(`Error deleting active session ${sessionId}:`, error);
       throw new Error(
         `Failed to delete active session: ${error instanceof Error ? error.message : 'Unknown error'}`
@@ -99,7 +99,7 @@ export class ActiveSessionRepository {
       const deletePromises = snapshot.docs.map(doc => deleteDoc(doc.ref));
 
       await Promise.all(deletePromises);
-    } catch (_error) {
+    } catch (error) {
       console.error(
         `Error clearing active sessions for user ${userId}:`,
         error
@@ -117,7 +117,7 @@ export class ActiveSessionRepository {
     try {
       const session = await this.getActiveSession(userId);
       return session !== null;
-    } catch (_error) {
+    } catch (error) {
       console.error(`Error checking active session for user ${userId}:`, error);
       return false;
     }

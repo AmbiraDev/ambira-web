@@ -83,7 +83,8 @@ describe('useCommentLike', () => {
       await waitFor(() => {
         const updatedData = queryClient.getQueryData(
           COMMENT_KEYS.list(sessionId)
-        ) as {
+        );
+        type CommentData = {
           comments: Array<{
             id: string;
             content: string;
@@ -92,11 +93,15 @@ describe('useCommentLike', () => {
           }>;
           hasMore: boolean;
         };
-        expect(updatedData.comments[0].isLiked).toBe(true);
-        expect(updatedData.comments[0].likeCount).toBe(6);
+        expect(updatedData).toBeDefined();
+        const data = updatedData as CommentData;
+        expect(data.comments[0]).toBeDefined();
+        expect(data.comments[0]!.isLiked).toBe(true);
+        expect(data.comments[0]!.likeCount).toBe(6);
         // Other comment should remain unchanged
-        expect(updatedData.comments[1].isLiked).toBe(false);
-        expect(updatedData.comments[1].likeCount).toBe(3);
+        expect(data.comments[1]).toBeDefined();
+        expect(data.comments[1]!.isLiked).toBe(false);
+        expect(data.comments[1]!.likeCount).toBe(3);
       });
     });
 
@@ -166,7 +171,8 @@ describe('useCommentLike', () => {
       await waitFor(() => {
         const updatedData = queryClient.getQueryData(
           COMMENT_KEYS.list(sessionId)
-        ) as {
+        );
+        type CommentData = {
           comments: Array<{
             id: string;
             content: string;
@@ -175,8 +181,11 @@ describe('useCommentLike', () => {
           }>;
           hasMore: boolean;
         };
-        expect(updatedData.comments[0].isLiked).toBe(false);
-        expect(updatedData.comments[0].likeCount).toBe(5);
+        expect(updatedData).toBeDefined();
+        const data = updatedData as CommentData;
+        expect(data.comments[0]).toBeDefined();
+        expect(data.comments[0]!.isLiked).toBe(false);
+        expect(data.comments[0]!.likeCount).toBe(5);
       });
     });
 
@@ -209,7 +218,8 @@ describe('useCommentLike', () => {
       await waitFor(() => {
         const updatedData = queryClient.getQueryData(
           COMMENT_KEYS.list(sessionId)
-        ) as {
+        );
+        type CommentData = {
           comments: Array<{
             id: string;
             content: string;
@@ -218,8 +228,11 @@ describe('useCommentLike', () => {
           }>;
           hasMore: boolean;
         };
-        expect(updatedData.comments[0].likeCount).toBe(0);
-        expect(updatedData.comments[0].likeCount).toBeGreaterThanOrEqual(0);
+        expect(updatedData).toBeDefined();
+        const data = updatedData as CommentData;
+        expect(data.comments[0]).toBeDefined();
+        expect(data.comments[0]!.likeCount).toBe(0);
+        expect(data.comments[0]!.likeCount).toBeGreaterThanOrEqual(0);
       });
     });
   });
@@ -257,9 +270,8 @@ describe('useCommentLike', () => {
       });
 
       // Data should be rolled back to original state
-      const finalData = queryClient.getQueryData(
-        COMMENT_KEYS.list(sessionId)
-      ) as {
+      const finalData = queryClient.getQueryData(COMMENT_KEYS.list(sessionId));
+      type CommentData = {
         comments: Array<{
           id: string;
           content: string;
@@ -268,8 +280,11 @@ describe('useCommentLike', () => {
         }>;
         hasMore: boolean;
       };
-      expect(finalData.comments[0].isLiked).toBe(false);
-      expect(finalData.comments[0].likeCount).toBe(5);
+      expect(finalData).toBeDefined();
+      const data = finalData as CommentData;
+      expect(data.comments[0]).toBeDefined();
+      expect(data.comments[0]?.isLiked).toBe(false);
+      expect(data.comments[0]?.likeCount).toBe(5);
     });
 
     it('should handle missing comments data gracefully', async () => {
@@ -322,7 +337,10 @@ describe('useCommentLike', () => {
       // Like
       result.current.mutate({ commentId, action: 'like' });
       await waitFor(() => {
-        const data = queryClient.getQueryData(COMMENT_KEYS.list(sessionId)) as {
+        const queryData = queryClient.getQueryData(
+          COMMENT_KEYS.list(sessionId)
+        );
+        type CommentData = {
           comments: Array<{
             id: string;
             content: string;
@@ -331,14 +349,20 @@ describe('useCommentLike', () => {
           }>;
           hasMore: boolean;
         };
-        expect(data.comments[0].isLiked).toBe(true);
-        expect(data.comments[0].likeCount).toBe(6);
+        expect(queryData).toBeDefined();
+        const data = queryData as CommentData;
+        expect(data.comments[0]).toBeDefined();
+        expect(data.comments[0]?.isLiked).toBe(true);
+        expect(data.comments[0]?.likeCount).toBe(6);
       });
 
       // Unlike
       result.current.mutate({ commentId, action: 'unlike' });
       await waitFor(() => {
-        const data = queryClient.getQueryData(COMMENT_KEYS.list(sessionId)) as {
+        const queryData = queryClient.getQueryData(
+          COMMENT_KEYS.list(sessionId)
+        );
+        type CommentData = {
           comments: Array<{
             id: string;
             content: string;
@@ -347,8 +371,11 @@ describe('useCommentLike', () => {
           }>;
           hasMore: boolean;
         };
-        expect(data.comments[0].isLiked).toBe(false);
-        expect(data.comments[0].likeCount).toBe(5);
+        expect(queryData).toBeDefined();
+        const data = queryData as CommentData;
+        expect(data.comments[0]).toBeDefined();
+        expect(data.comments[0]?.isLiked).toBe(false);
+        expect(data.comments[0]?.likeCount).toBe(5);
       });
     });
 
@@ -385,7 +412,10 @@ describe('useCommentLike', () => {
       result.current.mutate({ commentId: 'comment-1', action: 'like' });
 
       await waitFor(() => {
-        const data = queryClient.getQueryData(COMMENT_KEYS.list(sessionId)) as {
+        const queryData = queryClient.getQueryData(
+          COMMENT_KEYS.list(sessionId)
+        );
+        type CommentData = {
           comments: Array<{
             id: string;
             content: string;
@@ -394,11 +424,15 @@ describe('useCommentLike', () => {
           }>;
           hasMore: boolean;
         };
-        expect(data.comments[0].isLiked).toBe(true);
-        expect(data.comments[0].likeCount).toBe(6);
+        expect(queryData).toBeDefined();
+        const data = queryData as CommentData;
+        expect(data.comments[0]).toBeDefined();
+        expect(data.comments[0]?.isLiked).toBe(true);
+        expect(data.comments[0]?.likeCount).toBe(6);
         // Second comment should be unchanged
-        expect(data.comments[1].isLiked).toBe(false);
-        expect(data.comments[1].likeCount).toBe(3);
+        expect(data.comments[1]).toBeDefined();
+        expect(data.comments[1]!.isLiked).toBe(false);
+        expect(data.comments[1]!.likeCount).toBe(3);
       });
     });
   });

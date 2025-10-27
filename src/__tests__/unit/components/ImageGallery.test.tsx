@@ -28,7 +28,7 @@ describe('ImageGallery', () => {
   });
 
   it('should render nothing when images is undefined', () => {
-    const { container } = render(<ImageGallery images={undefined} />);
+    const { container } = render(<ImageGallery images={undefined as any} />);
     expect(container.firstChild).toBeNull();
   });
 

@@ -42,7 +42,8 @@ export function useSearchUsers({
       if (!trimmedTerm) {
         return { users: [], totalCount: 0, hasMore: false };
       }
-      return firebaseUserApi.searchUsers(trimmedTerm, page, limit);
+      // searchUsers only takes searchTerm and limit (not page)
+      return firebaseUserApi.searchUsers(trimmedTerm, limit);
     },
     enabled: enabled && trimmedTerm.length > 0,
     staleTime: CACHE_TIMES.MEDIUM, // 5 minutes

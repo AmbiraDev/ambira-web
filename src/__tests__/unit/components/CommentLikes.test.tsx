@@ -60,7 +60,6 @@ describe('CommentLikes', () => {
       renderWithProviders(
         <CommentItem
           comment={mockComment}
-          sessionId="session-1"
           currentUserId="user-1"
           onLike={jest.fn()}
         />
@@ -77,7 +76,6 @@ describe('CommentLikes', () => {
       renderWithProviders(
         <CommentItem
           comment={commentWithNoLikes}
-          sessionId="session-1"
           currentUserId="user-1"
           onLike={jest.fn()}
         />
@@ -92,7 +90,6 @@ describe('CommentLikes', () => {
       renderWithProviders(
         <CommentItem
           comment={likedComment}
-          sessionId="session-1"
           currentUserId="user-1"
           onLike={jest.fn()}
         />
@@ -106,7 +103,6 @@ describe('CommentLikes', () => {
       renderWithProviders(
         <CommentItem
           comment={mockComment}
-          sessionId="session-1"
           currentUserId="user-1"
           onLike={jest.fn()}
         />
@@ -118,14 +114,12 @@ describe('CommentLikes', () => {
 
     it('should not display like button when currentUserId is not provided', () => {
       renderWithProviders(
-        <CommentItem
-          comment={mockComment}
-          sessionId="session-1"
-          onLike={jest.fn()}
-        />
+        <CommentItem comment={mockComment} onLike={jest.fn()} />
       );
 
-      expect(screen.queryByRole('button', { name: /heart/i })).not.toBeInTheDocument();
+      expect(
+        screen.queryByRole('button', { name: /heart/i })
+      ).not.toBeInTheDocument();
     });
   });
 
@@ -136,7 +130,6 @@ describe('CommentLikes', () => {
       renderWithProviders(
         <CommentItem
           comment={mockComment}
-          sessionId="session-1"
           currentUserId="user-1"
           onLike={onLike}
         />
@@ -155,7 +148,6 @@ describe('CommentLikes', () => {
       renderWithProviders(
         <CommentItem
           comment={likedComment}
-          sessionId="session-1"
           currentUserId="user-1"
           onLike={onLike}
         />
@@ -169,11 +161,7 @@ describe('CommentLikes', () => {
 
     it('should not call onLike when button is disabled (no onLike handler)', () => {
       renderWithProviders(
-        <CommentItem
-          comment={mockComment}
-          sessionId="session-1"
-          currentUserId="user-1"
-        />
+        <CommentItem comment={mockComment} currentUserId="user-1" />
       );
 
       const heartButton = screen.getByRole('button');
@@ -189,7 +177,6 @@ describe('CommentLikes', () => {
       renderWithProviders(
         <CommentItem
           comment={mockComment}
-          sessionId="session-1"
           currentUserId="user-1"
           onLike={onLike}
         />
@@ -214,7 +201,6 @@ describe('CommentLikes', () => {
       renderWithProviders(
         <CommentItem
           comment={popularComment}
-          sessionId="session-1"
           currentUserId="user-1"
           onLike={jest.fn()}
         />
@@ -229,7 +215,6 @@ describe('CommentLikes', () => {
       renderWithProviders(
         <CommentItem
           comment={invalidComment}
-          sessionId="session-1"
           currentUserId="user-1"
           onLike={jest.fn()}
         />
@@ -245,7 +230,6 @@ describe('CommentLikes', () => {
       renderWithProviders(
         <CommentItem
           comment={mockComment}
-          sessionId="session-1"
           currentUserId="user-1"
           onLike={jest.fn()}
         />
@@ -258,11 +242,7 @@ describe('CommentLikes', () => {
 
     it('should indicate disabled state properly', () => {
       renderWithProviders(
-        <CommentItem
-          comment={mockComment}
-          sessionId="session-1"
-          currentUserId="user-1"
-        />
+        <CommentItem comment={mockComment} currentUserId="user-1" />
       );
 
       const heartButton = screen.getByRole('button');
@@ -275,13 +255,14 @@ describe('CommentLikes', () => {
       renderWithProviders(
         <CommentItem
           comment={mockComment}
-          sessionId="session-1"
           currentUserId="user-1"
           onLike={jest.fn()}
         />
       );
 
-      expect(screen.getByText('Great work on this session!')).toBeInTheDocument();
+      expect(
+        screen.getByText('Great work on this session!')
+      ).toBeInTheDocument();
       expect(screen.getByText('Jane Commenter')).toBeInTheDocument();
       expect(screen.getByText('5')).toBeInTheDocument();
     });
@@ -296,7 +277,6 @@ describe('CommentLikes', () => {
       renderWithProviders(
         <CommentItem
           comment={newComment}
-          sessionId="session-1"
           currentUserId="user-1"
           onLike={jest.fn()}
         />

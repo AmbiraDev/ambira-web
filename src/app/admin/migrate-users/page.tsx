@@ -28,7 +28,7 @@ export default function MigrateUsersPage() {
       const migrationResult = await firebaseUserApi.migrateUsersToLowercase();
       setResult(migrationResult);
     } catch (_error) {
-      setError(error instanceof Error ? error.message : 'Migration failed');
+      setError(_error instanceof Error ? _error.message : 'Migration failed');
     } finally {
       setIsRunning(false);
     }

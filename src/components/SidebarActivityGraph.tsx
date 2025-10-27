@@ -39,7 +39,7 @@ function SidebarActivityGraph() {
 
     try {
       setIsLoading(true);
-      const response = await firebaseSessionApi.getSessions(1, 500, {});
+      const response = await firebaseSessionApi.getSessions(500, {});
       setSessions(response.sessions);
     } catch {
       console.error('Failed to load sessions');
@@ -209,7 +209,7 @@ function SidebarActivityGraph() {
                 }}
                 labelStyle={{ color: 'white', marginBottom: '4px' }}
                 formatter={(value: unknown) => [
-                  `${value.toFixed(1)} hrs`,
+                  `${typeof value === 'number' ? value.toFixed(1) : '0.0'} hrs`,
                   'Time',
                 ]}
                 cursor={{

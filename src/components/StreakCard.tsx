@@ -27,11 +27,7 @@ export const StreakCard: React.FC<StreakCardProps> = ({
         const stats = await firebaseApi.streak.getStreakStats(userId);
 
         // Fetch last 7 days of sessions for detailed logging
-        const sessionsResponse = await firebaseApi.session.getSessions(
-          1,
-          100,
-          {}
-        );
+        const sessionsResponse = await firebaseApi.session.getSessions(100, {});
 
         // Get date 7 days ago at start of day
         const today = new Date();
@@ -40,9 +36,17 @@ export const StreakCard: React.FC<StreakCardProps> = ({
         sevenDaysAgo.setDate(today.getDate() - 6); // Include today = 7 days total
 
         // Create a map of dates to sessions
+        type SessionData = {
+          duration: number;
+          startTime: Date | string;
+        };
         const dateMap = new Map<
           string,
-          { totalMinutes: number; sessionCount: number; sessions: unknown[] }
+          {
+            totalMinutes: number;
+            sessionCount: number;
+            sessions: SessionData[];
+          }
         >();
 
         // Initialize all 7 days
@@ -62,7 +66,7 @@ export const StreakCard: React.FC<StreakCardProps> = ({
         }
 
         // Filter sessions from last 7 days and group by date
-        sessionsResponse.sessions.forEach(session => {
+        sessionsResponse.sessions.forEach((session: SessionData) => {
           const sessionDate = new Date(session.startTime);
           if (sessionDate >= sevenDaysAgo && sessionDate <= new Date()) {
             const dateKey = sessionDate.toLocaleDateString('en-US', {

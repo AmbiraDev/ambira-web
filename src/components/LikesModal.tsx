@@ -63,7 +63,7 @@ export const LikesModal: React.FC<LikesModalProps> = ({
       }
 
       setUsers(validUsers);
-    } catch (_error) {
+    } catch (error) {
       console.error('Failed to load users:', error);
     } finally {
       setIsLoading(false);
@@ -115,7 +115,7 @@ export const LikesModal: React.FC<LikesModalProps> = ({
       } else {
         await firebaseApi.user.followUser(userId);
       }
-    } catch (_error) {
+    } catch (error) {
       console.error('Failed to toggle follow:', error);
       // Revert on error
       setFollowingStates(prev => {

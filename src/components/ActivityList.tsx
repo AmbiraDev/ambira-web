@@ -38,7 +38,7 @@ export const ActivityList: React.FC<ActivityListProps> = ({
       await deleteActivityMutation.mutateAsync(activity.id);
       toast.success(`Activity "${activity.name}" deleted successfully`);
       setDeleteConfirm(null);
-    } catch (_err) {
+    } catch (err) {
       console.error('Failed to delete activity:', err);
       toast.error('Failed to delete activity. Please try again.');
     }
@@ -48,7 +48,7 @@ export const ActivityList: React.FC<ActivityListProps> = ({
     try {
       await archiveActivityMutation.mutateAsync(activity.id);
       toast.success(`Activity "${activity.name}" archived successfully`);
-    } catch (_err) {
+    } catch (err) {
       console.error('Failed to archive activity:', err);
       toast.error('Failed to archive activity. Please try again.');
     }
@@ -58,7 +58,7 @@ export const ActivityList: React.FC<ActivityListProps> = ({
     try {
       await restoreActivityMutation.mutateAsync(activity.id);
       toast.success(`Activity "${activity.name}" restored successfully`);
-    } catch (_err) {
+    } catch (err) {
       console.error('Failed to restore activity:', err);
       toast.error('Failed to restore activity. Please try again.');
     }

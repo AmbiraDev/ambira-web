@@ -5,7 +5,7 @@ import { X, ChevronLeft, ChevronRight } from 'lucide-react';
 import { firebaseUserApi } from '@/lib/api';
 import { useAuth } from '@/hooks/useAuth';
 import { UserCardCompact } from '@/components/UserCard';
-import type { User } from '@/types';
+import type { SuggestedUser } from '@/types';
 
 interface SuggestedPeopleModalProps {
   isOpen: boolean;
@@ -20,7 +20,9 @@ export default function SuggestedPeopleModal({
   onClose,
 }: SuggestedPeopleModalProps) {
   const { user } = useAuth();
-  const [allSuggestedUsers, setAllSuggestedUsers] = useState<User[]>([]);
+  const [allSuggestedUsers, setAllSuggestedUsers] = useState<SuggestedUser[]>(
+    []
+  );
   const [isLoading, setIsLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
 

@@ -44,13 +44,13 @@ export class SessionService {
     filters?: SessionFilters
   ): Promise<Session[]> {
     try {
-      const result = await firebaseApi.session.getSessions(1, 100, {
+      const result = await firebaseApi.session.getSessions(100, {
         userId,
         ...filters,
       });
       return result.sessions;
-    } catch (_err) {
-      console.error('Error getting user sessions:', _err);
+    } catch (err) {
+      console.error('Error getting user sessions:', err);
       return [];
     }
   }

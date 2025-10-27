@@ -42,7 +42,7 @@ import { checkRateLimit } from '@/lib/rateLimit';
 import { ERROR_MESSAGES } from '@/config/errorMessages';
 
 // Shared utilities
-import { convertTimestamp, _removeUndefinedFields } from '../shared/utils';
+import { convertTimestamp } from '../shared/utils';
 
 // Social helpers
 import {
@@ -91,7 +91,7 @@ export const firebaseCommentApi = {
         match => match[1]
       );
 
-      const commentData: unknown = {
+      const commentData: Record<string, unknown> = {
         sessionId: data.sessionId,
         userId,
         content: data.content,
@@ -224,7 +224,7 @@ export const firebaseCommentApi = {
         user: buildCommentUserDetails(userId, userData || null),
       };
     } catch (_error) {
-      const apiError = handleError(error, 'Create comment', {
+      const apiError = handleError(_error, 'Create comment', {
         defaultMessage: ERROR_MESSAGES.COMMENT_POST_FAILED,
       });
       throw new Error(apiError.userMessage);
@@ -276,7 +276,7 @@ export const firebaseCommentApi = {
         updatedAt: new Date(),
       } as Comment;
     } catch (_error) {
-      const apiError = handleError(error, 'Update comment', {
+      const apiError = handleError(_error, 'Update comment', {
         defaultMessage: ERROR_MESSAGES.COMMENT_POST_FAILED,
       });
       throw new Error(apiError.userMessage);
@@ -340,7 +340,7 @@ export const firebaseCommentApi = {
         });
       }
     } catch (_error) {
-      const apiError = handleError(error, 'Delete comment', {
+      const apiError = handleError(_error, 'Delete comment', {
         defaultMessage: ERROR_MESSAGES.COMMENT_DELETE_FAILED,
       });
       throw new Error(apiError.userMessage);
@@ -382,7 +382,7 @@ export const firebaseCommentApi = {
         likeCount: increment(1),
       });
     } catch (_error) {
-      const apiError = handleError(error, 'Like comment', {
+      const apiError = handleError(_error, 'Like comment', {
         defaultMessage: 'Failed to like comment',
       });
       throw new Error(apiError.userMessage);
@@ -420,7 +420,7 @@ export const firebaseCommentApi = {
         likeCount: increment(-1),
       });
     } catch (_error) {
-      const apiError = handleError(error, 'Unlike comment', {
+      const apiError = handleError(_error, 'Unlike comment', {
         defaultMessage: 'Failed to unlike comment',
       });
       throw new Error(apiError.userMessage);
@@ -526,7 +526,7 @@ export const firebaseCommentApi = {
         comments,
         hasMore,
       };
-    } catch (_error) {
+    } catch (error: unknown) {
       // Handle permission errors gracefully - return empty comments
       if (isPermissionError(error)) {
         // Don't log permission errors - they're expected for restricted sessions
@@ -649,7 +649,7 @@ export const firebaseCommentApi = {
         nextCursor: hasMore && lastDocInResult ? lastDocInResult.id : undefined,
       };
     } catch (_error) {
-      const apiError = handleError(error, 'Get comments', {
+      const apiError = handleError(_error, 'Get comments', {
         defaultMessage: ERROR_MESSAGES.COMMENT_LOAD_FAILED,
       });
       throw new Error(apiError.userMessage);
@@ -719,7 +719,7 @@ export const firebaseCommentApi = {
 
       return replies;
     } catch (_error) {
-      const apiError = handleError(error, 'Get replies', {
+      const apiError = handleError(_error, 'Get replies', {
         defaultMessage: ERROR_MESSAGES.COMMENT_LOAD_FAILED,
       });
       throw new Error(apiError.userMessage);
@@ -798,7 +798,7 @@ export const firebaseCommentApi = {
       );
 
       return comments;
-    } catch (_error) {
+    } catch (error: unknown) {
       // Handle permission errors gracefully - return empty array
       if (isPermissionError(error)) {
         return [];

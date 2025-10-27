@@ -72,18 +72,18 @@ describe('Session Schemas', () => {
 
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.errors[0].path).toBe('activityId');
+        expect(result.errors[0]?.path).toBe('activityId');
       }
     });
 
     it('should fail for invalid duration', () => {
-      const inputs = [
+      const inputs: Array<{ duration: number }> = [
         { duration: 0 }, // Too short
         { duration: -100 }, // Negative
         { duration: 90000 }, // Too long (> 24 hours)
       ];
 
-      inputs.forEach(durationInput => {
+      inputs.forEach((durationInput: { duration: number }) => {
         const input = {
           activityId: '550e8400-e29b-41d4-a716-446655440000',
           title: 'Test',
@@ -95,7 +95,7 @@ describe('Session Schemas', () => {
 
         expect(result.success).toBe(false);
         if (!result.success) {
-          expect(result.errors[0].path).toBe('duration');
+          expect(result.errors[0]?.path).toBe('duration');
         }
       });
     });
@@ -112,31 +112,41 @@ describe('Session Schemas', () => {
 
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.errors[0].path).toBe('title');
+        expect(result.errors[0]?.path).toBe('title');
       }
     });
 
     it('should fail for invalid visibility', () => {
-      const input = {
+      const input: {
+        activityId: string;
+        title: string;
+        duration: number;
+        startTime: Date;
+        visibility: string;
+      } = {
         activityId: '550e8400-e29b-41d4-a716-446655440000',
         title: 'Test',
         duration: 3600,
         startTime: new Date(),
-        visibility: 'invalid' as unknown as typeof input.visibility,
+        visibility: 'invalid',
       };
 
       const result = validate(CreateSessionSchema, input);
 
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.errors[0].path).toBe('visibility');
+        expect(result.errors[0]?.path).toBe('visibility');
       }
     });
 
     it('should fail for invalid howFelt rating', () => {
-      const inputs = [{ howFelt: 0 }, { howFelt: 6 }, { howFelt: -1 }];
+      const inputs: Array<{ howFelt: number }> = [
+        { howFelt: 0 },
+        { howFelt: 6 },
+        { howFelt: -1 },
+      ];
 
-      inputs.forEach(ratingInput => {
+      inputs.forEach((ratingInput: { howFelt: number }) => {
         const input = {
           activityId: '550e8400-e29b-41d4-a716-446655440000',
           title: 'Test',
@@ -149,7 +159,7 @@ describe('Session Schemas', () => {
 
         expect(result.success).toBe(false);
         if (!result.success) {
-          expect(result.errors[0].path).toBe('howFelt');
+          expect(result.errors[0]?.path).toBe('howFelt');
         }
       });
     });

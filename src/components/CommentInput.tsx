@@ -10,6 +10,8 @@ interface CommentInputProps {
   onSubmit: (content: string) => Promise<void>;
   autoFocus?: boolean;
   initialValue?: string;
+  sessionId?: string;
+  onCancel?: () => void;
 }
 
 export const CommentInput: React.FC<CommentInputProps> = ({
@@ -17,6 +19,8 @@ export const CommentInput: React.FC<CommentInputProps> = ({
   onSubmit,
   autoFocus = false,
   initialValue = '',
+  sessionId: _sessionId,
+  onCancel: _onCancel,
 }) => {
   const maxCharacters = 1000;
   const [content, setContent] = useState(initialValue);
@@ -53,7 +57,7 @@ export const CommentInput: React.FC<CommentInputProps> = ({
         try {
           const results = await firebaseUserApi.searchUsers(mentionQuery, 5);
           setMentionSuggestions(results.users);
-        } catch (_err) {
+        } catch (err) {
           console.error('Failed to search users:', err);
           setMentionSuggestions([]);
         }
@@ -158,7 +162,7 @@ export const CommentInput: React.FC<CommentInputProps> = ({
       setContent('');
       setShowMentions(false);
       setMentionQuery('');
-    } catch (_err) {
+    } catch (err) {
       console.error('Failed to submit comment:', err);
     } finally {
       setIsSubmitting(false);

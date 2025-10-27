@@ -152,9 +152,11 @@ describe('Google Sign-In - Redirect Flow (Mobile)', () => {
 
     try {
       await firebaseAuthApi.signInWithGoogle();
-    } catch (error: unknown) {
+    } catch (error) {
       // Should throw REDIRECT_IN_PROGRESS
-      expect(error.message).toBe('REDIRECT_IN_PROGRESS');
+      if (error instanceof Error) {
+        expect(error.message).toBe('REDIRECT_IN_PROGRESS');
+      }
     }
 
     expect(mockSignInWithRedirect).toHaveBeenCalled();
@@ -178,7 +180,7 @@ describe('Google Sign-In - Redirect Flow (Mobile)', () => {
 
     try {
       await firebaseAuthApi.signInWithGoogle();
-    } catch (error: unknown) {
+    } catch {
       // Expected REDIRECT_IN_PROGRESS
     }
 
@@ -262,8 +264,10 @@ describe('Google Sign-In - Popup Flow (Desktop)', () => {
 
     try {
       await firebaseAuthApi.signInWithGoogle();
-    } catch (error: unknown) {
-      expect(error.message).toBe('REDIRECT_IN_PROGRESS');
+    } catch (error) {
+      if (error instanceof Error) {
+        expect(error.message).toBe('REDIRECT_IN_PROGRESS');
+      }
     }
 
     expect(mockSignInWithPopup).toHaveBeenCalled();
@@ -351,7 +355,6 @@ describe('Google Sign-In - Redirect Result Handling', () => {
     // Mock Firestore - user doesn't exist
     const mockGetDoc = getDoc as jest.Mock;
     const mockSetDoc = setDoc as jest.Mock;
-    const mockQuery = query as jest.Mock;
     const mockGetDocs = getDocs as jest.Mock;
     mockGetDoc.mockResolvedValue({
       exists: () => false,
@@ -359,7 +362,7 @@ describe('Google Sign-In - Redirect Result Handling', () => {
     });
 
     // Mock username check query - no existing users
-    getDocs.mockResolvedValue({
+    mockGetDocs.mockResolvedValue({
       empty: true,
       docs: [],
     });

@@ -42,7 +42,7 @@ export default function GroupAnalytics({
         timeRange
       );
       setAnalyticsData(data);
-    } catch (_error) {
+    } catch (error) {
       console.error('Failed to load analytics:', error);
     }
   }, [groupId, timeRange]);

@@ -191,8 +191,8 @@ function SessionShareContent({ sessionId }: { sessionId: string }) {
         await handleExport();
       }
     } catch (_error) {
-      console.error('Failed to share image:', error);
-      if ((error as Error).name !== 'AbortError') {
+      console.error('Failed to share image:', _error);
+      if (!(_error instanceof Error && _error.name === 'AbortError')) {
         setExportError('Failed to share. Downloading instead...');
         await handleExport();
       }
@@ -483,7 +483,7 @@ function SessionShareContent({ sessionId }: { sessionId: string }) {
         {/* Images */}
         {session.images && session.images.length > 0 && (
           <div style={{ marginBottom: '32px' }}>
-            {session.images.length === 1 ? (
+            {session.images.length === 1 && session.images[0] ? (
               <div
                 style={{
                   width: '100%',

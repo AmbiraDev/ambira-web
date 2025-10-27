@@ -86,29 +86,32 @@ export function useCreateComment(
       );
 
       // Update feed caches
-      queryClient.setQueriesData<FeedData>({ queryKey: ['feed'] }, old => {
-        if (!old) return old;
+      queryClient.setQueriesData<FeedData>(
+        { queryKey: ['feed'] },
+        (old: FeedData | undefined): FeedData | undefined => {
+          if (!old) return old;
 
-        if (Array.isArray(old)) {
-          return old.map(updateSessionCommentCount);
-        } else if ('sessions' in old && old.sessions) {
-          return {
-            ...old,
-            sessions: old.sessions.map(updateSessionCommentCount),
-          };
-        } else if ('pages' in old && old.pages) {
-          // Handle infinite query
-          return {
-            ...old,
-            pages: old.pages.map(page => ({
-              ...page,
-              sessions: page.sessions.map(updateSessionCommentCount),
-            })),
-          };
+          if (Array.isArray(old)) {
+            return old.map(updateSessionCommentCount) as SessionWithDetails[];
+          } else if ('sessions' in old && old.sessions) {
+            return {
+              ...old,
+              sessions: old.sessions.map(updateSessionCommentCount),
+            } as FeedArrayData;
+          } else if ('pages' in old && old.pages) {
+            // Handle infinite query
+            return {
+              ...old,
+              pages: old.pages.map(page => ({
+                ...page,
+                sessions: page.sessions.map(updateSessionCommentCount),
+              })),
+            } as FeedInfiniteData;
+          }
+
+          return old;
         }
-
-        return old;
-      });
+      );
     },
 
     ...options,
@@ -281,28 +284,31 @@ export function useDeleteComment(
       );
 
       // Update feed caches
-      queryClient.setQueriesData<FeedData>({ queryKey: ['feed'] }, old => {
-        if (!old) return old;
+      queryClient.setQueriesData<FeedData>(
+        { queryKey: ['feed'] },
+        (old: FeedData | undefined): FeedData | undefined => {
+          if (!old) return old;
 
-        if (Array.isArray(old)) {
-          return old.map(updateSessionCommentCount);
-        } else if ('sessions' in old && old.sessions) {
-          return {
-            ...old,
-            sessions: old.sessions.map(updateSessionCommentCount),
-          };
-        } else if ('pages' in old && old.pages) {
-          return {
-            ...old,
-            pages: old.pages.map(page => ({
-              ...page,
-              sessions: page.sessions.map(updateSessionCommentCount),
-            })),
-          };
+          if (Array.isArray(old)) {
+            return old.map(updateSessionCommentCount) as SessionWithDetails[];
+          } else if ('sessions' in old && old.sessions) {
+            return {
+              ...old,
+              sessions: old.sessions.map(updateSessionCommentCount),
+            } as FeedArrayData;
+          } else if ('pages' in old && old.pages) {
+            return {
+              ...old,
+              pages: old.pages.map(page => ({
+                ...page,
+                sessions: page.sessions.map(updateSessionCommentCount),
+              })),
+            } as FeedInfiniteData;
+          }
+
+          return old;
         }
-
-        return old;
-      });
+      );
     },
 
     ...options,
@@ -333,7 +339,7 @@ export function useCommentLike(
         }
       } catch (error: unknown) {
         // If already liked/unliked, treat as success (idempotent)
-        const errorMsg = error.message || String(error);
+        const errorMsg = error instanceof Error ? error.message : String(error);
         if (
           errorMsg.includes('Already liked') ||
           errorMsg.includes('not liked')

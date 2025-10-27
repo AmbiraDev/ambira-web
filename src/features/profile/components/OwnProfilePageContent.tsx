@@ -478,12 +478,24 @@ export function OwnProfilePageContent() {
   };
 
   // Custom tooltip formatter
-  const CustomTooltip = ({ active, payload, label }: unknown) => {
+  interface TooltipPayloadEntry {
+    color?: string;
+    name?: string;
+    value?: number | string;
+  }
+
+  interface CustomTooltipProps {
+    active?: boolean;
+    payload?: TooltipPayloadEntry[];
+    label?: string;
+  }
+
+  const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-white border border-gray-200 rounded-lg shadow-lg p-3">
           <p className="text-sm font-medium text-gray-900 mb-2">{label}</p>
-          {payload.map((entry: unknown, index: number) => (
+          {payload.map((entry, index: number) => (
             <p key={index} className="text-sm" style={{ color: entry.color }}>
               <span className="font-semibold">{entry.name}</span>: {entry.value}
             </p>

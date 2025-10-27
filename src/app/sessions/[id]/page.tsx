@@ -42,7 +42,7 @@ function SessionDetailContent({ sessionId }: { sessionId: string }) {
       setSession(sessionData as unknown as SessionWithDetails);
     } catch (err: unknown) {
       console.error('Error loading session:', err);
-      setError(err.message || 'Failed to load session');
+      setError(err instanceof Error ? err.message : 'Failed to load session');
     } finally {
       setIsLoading(false);
     }
@@ -107,7 +107,7 @@ function SessionDetailContent({ sessionId }: { sessionId: string }) {
         alert('Link copied to clipboard!');
       }
     } catch (err: unknown) {
-      if (err.name === 'AbortError') {
+      if (err instanceof Error && err.name === 'AbortError') {
         return;
       }
       console.error('Failed to share session:', err);

@@ -132,7 +132,7 @@ export function SessionFormExample() {
         visibility: 'everyone',
         allowComments: true,
       });
-    } catch (_error) {
+    } catch (error) {
       setSubmitError(
         error instanceof Error ? error.message : 'Failed to create session'
       );

@@ -279,7 +279,7 @@ export async function withErrorHandling<T>(
   try {
     return await operation();
   } catch (_error) {
-    const apiError = handleError(error, context, options);
+    const apiError = handleError(_error, context, options);
 
     if (options.onError) {
       options.onError(apiError);
@@ -305,14 +305,14 @@ export async function withNullOnError<T>(
     return await operation();
   } catch (_error) {
     const shouldReturnNull =
-      (options.nullOnPermissionDenied && isPermissionError(error)) ||
-      (options.nullOnNotFound && isNotFoundError(error));
+      (options.nullOnPermissionDenied && isPermissionError(_error)) ||
+      (options.nullOnNotFound && isNotFoundError(_error));
 
     if (shouldReturnNull) {
       return null;
     }
 
-    const apiError = handleError(error, context);
+    const apiError = handleError(_error, context);
     throw new Error(apiError.userMessage);
   }
 }
