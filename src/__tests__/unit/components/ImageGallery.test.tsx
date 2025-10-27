@@ -8,14 +8,14 @@ jest.mock('next/image', () => ({
   default: (props: any) => {
     // eslint-disable-next-line jsx-a11y/alt-text, @next/next/no-img-element
     return <img {...props} />;
-  }
+  },
 }));
 
 describe('ImageGallery', () => {
   const mockImages = [
     'https://example.com/image1.jpg',
     'https://example.com/image2.jpg',
-    'https://example.com/image3.jpg'
+    'https://example.com/image3.jpg',
   ];
 
   beforeEach(() => {
@@ -232,7 +232,9 @@ describe('ImageGallery', () => {
   });
 
   it('should apply custom className', () => {
-    const { container } = render(<ImageGallery images={mockImages} className="custom-class" />);
+    const { container } = render(
+      <ImageGallery images={mockImages} className="custom-class" />
+    );
 
     expect(container.firstChild).toHaveClass('custom-class');
   });

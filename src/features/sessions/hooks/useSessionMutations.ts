@@ -4,7 +4,11 @@
  * All write operations for sessions (delete, support, update).
  */
 
-import { useMutation, useQueryClient, UseMutationOptions } from '@tanstack/react-query';
+import {
+  useMutation,
+  useQueryClient,
+  UseMutationOptions,
+} from '@tanstack/react-query';
 import { SessionService, SupportSessionData } from '../services/SessionService';
 import { SESSION_KEYS } from './useSessions';
 import { Session } from '@/types';
@@ -34,21 +38,29 @@ interface UpdateSessionContext {
  * deleteMutation.mutate(sessionId);
  */
 export function useDeleteSession(
-  options?: Partial<UseMutationOptions<void, Error, string, DeleteSessionContext>>
+  options?: Partial<
+    UseMutationOptions<void, Error, string, DeleteSessionContext>
+  >
 ) {
   const queryClient = useQueryClient();
 
   return useMutation<void, Error, string, DeleteSessionContext>({
-    mutationFn: (sessionId) => sessionService.deleteSession(sessionId),
+    mutationFn: sessionId => sessionService.deleteSession(sessionId),
 
-    onMutate: async (sessionId) => {
+    onMutate: async sessionId => {
       // Cancel outgoing queries
       await queryClient.cancelQueries({ queryKey: ['feed'] });
-      await queryClient.cancelQueries({ queryKey: SESSION_KEYS.detail(sessionId) });
+      await queryClient.cancelQueries({
+        queryKey: SESSION_KEYS.detail(sessionId),
+      });
 
       // Snapshot
-      const previousFeedData = queryClient.getQueriesData({ queryKey: ['feed'] });
-      const previousSession = queryClient.getQueryData(SESSION_KEYS.detail(sessionId));
+      const previousFeedData = queryClient.getQueriesData({
+        queryKey: ['feed'],
+      });
+      const previousSession = queryClient.getQueryData(
+        SESSION_KEYS.detail(sessionId)
+      );
 
       // Optimistically remove from feed
       queryClient.setQueriesData<any>({ queryKey: ['feed'] }, (old: any) => {
@@ -78,22 +90,27 @@ export function useDeleteSession(
       return { previousFeedData, previousSession };
     },
 
-    onError: (error, sessionId, context) => {
+    onError: (error, sessionId, context: DeleteSessionContext | undefined) => {
       // Rollback
       if (context?.previousFeedData) {
-        context.previousFeedData.forEach(([queryKey, data]) => {
+        context.previousFeedData.forEach(([queryKey, data]: [any, any]) => {
           queryClient.setQueryData(queryKey, data);
         });
       }
       if (context?.previousSession) {
-        queryClient.setQueryData(SESSION_KEYS.detail(sessionId), context.previousSession);
+        queryClient.setQueryData(
+          SESSION_KEYS.detail(sessionId),
+          context.previousSession
+        );
       }
     },
 
     onSettled: (_, __, sessionId) => {
       // Invalidate all related queries
       queryClient.invalidateQueries({ queryKey: ['feed'] });
-      queryClient.invalidateQueries({ queryKey: SESSION_KEYS.detail(sessionId) });
+      queryClient.invalidateQueries({
+        queryKey: SESSION_KEYS.detail(sessionId),
+      });
       queryClient.invalidateQueries({ queryKey: SESSION_KEYS.all() });
     },
 
@@ -111,7 +128,9 @@ export function useDeleteSession(
  */
 export function useSupportSession(
   currentUserId?: string,
-  options?: Partial<UseMutationOptions<void, Error, SupportSessionData, SupportSessionContext>>
+  options?: Partial<
+    UseMutationOptions<void, Error, SupportSessionData, SupportSessionContext>
+  >
 ) {
   const queryClient = useQueryClient();
 
@@ -127,11 +146,17 @@ export function useSupportSession(
     onMutate: async ({ sessionId, action }) => {
       // Cancel outgoing queries
       await queryClient.cancelQueries({ queryKey: ['feed'] });
-      await queryClient.cancelQueries({ queryKey: SESSION_KEYS.detail(sessionId) });
+      await queryClient.cancelQueries({
+        queryKey: SESSION_KEYS.detail(sessionId),
+      });
 
       // Snapshot
-      const previousFeedData = queryClient.getQueriesData({ queryKey: ['feed'] });
-      const previousSession = queryClient.getQueryData(SESSION_KEYS.detail(sessionId));
+      const previousFeedData = queryClient.getQueriesData({
+        queryKey: ['feed'],
+      });
+      const previousSession = queryClient.getQueryData(
+        SESSION_KEYS.detail(sessionId)
+      );
 
       const increment = action === 'support' ? 1 : -1;
 
@@ -201,22 +226,31 @@ export function useSupportSession(
       return { previousFeedData, previousSession };
     },
 
-    onError: (error, { sessionId }, context) => {
+    onError: (
+      error,
+      { sessionId },
+      context: SupportSessionContext | undefined
+    ) => {
       // Rollback
       if (context?.previousFeedData) {
-        context.previousFeedData.forEach(([queryKey, data]) => {
+        context.previousFeedData.forEach(([queryKey, data]: [any, any]) => {
           queryClient.setQueryData(queryKey, data);
         });
       }
       if (context?.previousSession) {
-        queryClient.setQueryData(SESSION_KEYS.detail(sessionId), context.previousSession);
+        queryClient.setQueryData(
+          SESSION_KEYS.detail(sessionId),
+          context.previousSession
+        );
       }
     },
 
     onSettled: (_, __, { sessionId }) => {
       // Refetch to ensure consistency
       queryClient.invalidateQueries({ queryKey: ['feed'] });
-      queryClient.invalidateQueries({ queryKey: SESSION_KEYS.detail(sessionId) });
+      queryClient.invalidateQueries({
+        queryKey: SESSION_KEYS.detail(sessionId),
+      });
     },
 
     ...options,
@@ -235,18 +269,33 @@ export function useSupportSession(
  */
 export function useUpdateSession(
   options?: Partial<
-    UseMutationOptions<void, Error, { sessionId: string; data: Partial<Session> }, UpdateSessionContext>
+    UseMutationOptions<
+      void,
+      Error,
+      { sessionId: string; data: Partial<Session> },
+      UpdateSessionContext
+    >
   >
 ) {
   const queryClient = useQueryClient();
 
-  return useMutation<void, Error, { sessionId: string; data: Partial<Session> }, UpdateSessionContext>({
-    mutationFn: ({ sessionId, data }) => sessionService.updateSession(sessionId, data),
+  return useMutation<
+    void,
+    Error,
+    { sessionId: string; data: Partial<Session> },
+    UpdateSessionContext
+  >({
+    mutationFn: ({ sessionId, data }) =>
+      sessionService.updateSession(sessionId, data),
 
     onMutate: async ({ sessionId, data }) => {
-      await queryClient.cancelQueries({ queryKey: SESSION_KEYS.detail(sessionId) });
+      await queryClient.cancelQueries({
+        queryKey: SESSION_KEYS.detail(sessionId),
+      });
 
-      const previousSession = queryClient.getQueryData(SESSION_KEYS.detail(sessionId));
+      const previousSession = queryClient.getQueryData(
+        SESSION_KEYS.detail(sessionId)
+      );
 
       // Optimistically update
       queryClient.setQueryData<Session | null>(
@@ -260,14 +309,23 @@ export function useUpdateSession(
       return { previousSession };
     },
 
-    onError: (error, { sessionId }, context) => {
+    onError: (
+      error,
+      { sessionId },
+      context: UpdateSessionContext | undefined
+    ) => {
       if (context?.previousSession) {
-        queryClient.setQueryData(SESSION_KEYS.detail(sessionId), context.previousSession);
+        queryClient.setQueryData(
+          SESSION_KEYS.detail(sessionId),
+          context.previousSession
+        );
       }
     },
 
     onSuccess: (_, { sessionId }) => {
-      queryClient.invalidateQueries({ queryKey: SESSION_KEYS.detail(sessionId) });
+      queryClient.invalidateQueries({
+        queryKey: SESSION_KEYS.detail(sessionId),
+      });
       queryClient.invalidateQueries({ queryKey: ['feed'] });
       queryClient.invalidateQueries({ queryKey: SESSION_KEYS.all() });
     },
@@ -288,7 +346,9 @@ export function useInvalidateSession() {
 
   return (sessionId: string) => {
     queryClient.invalidateQueries({ queryKey: SESSION_KEYS.detail(sessionId) });
-    queryClient.invalidateQueries({ queryKey: SESSION_KEYS.detailWithData(sessionId) });
+    queryClient.invalidateQueries({
+      queryKey: SESSION_KEYS.detailWithData(sessionId),
+    });
   };
 }
 

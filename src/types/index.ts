@@ -206,7 +206,14 @@ export interface FeedResponse {
 }
 
 export interface FeedFilters {
-  type?: 'following' | 'trending' | 'recent' | 'user' | 'group' | 'all' | 'group-members-unfollowed';
+  type?:
+    | 'following'
+    | 'trending'
+    | 'recent'
+    | 'user'
+    | 'group'
+    | 'all'
+    | 'group-members-unfollowed';
   activityId?: string; // Changed from projectId
   projectId?: string; // Backwards compatibility
   userId?: string;

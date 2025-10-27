@@ -26,10 +26,7 @@ import {
   getRedirectResult,
 } from 'firebase/auth';
 import { db, auth } from '@/lib/firebase';
-import {
-  handleError,
-  ErrorSeverity,
-} from '@/lib/errorHandler';
+import { handleError, ErrorSeverity } from '@/lib/errorHandler';
 import { checkRateLimit, RateLimitError } from '@/lib/rateLimit';
 import { convertTimestamp } from '../shared/utils';
 import type {
@@ -312,9 +309,8 @@ export const firebaseAuthApi = {
 
       // Set custom parameters
       provider.setCustomParameters({
-        prompt: 'select_account'
+        prompt: 'select_account',
       });
-
 
       let userCredential;
 
@@ -328,7 +324,9 @@ export const firebaseAuthApi = {
 
         // Handle specific error codes
         if (popupError.code === 'auth/popup-blocked') {
-          throw new Error('Popup was blocked by your browser. Please allow popups for this site.');
+          throw new Error(
+            'Popup was blocked by your browser. Please allow popups for this site.'
+          );
         } else if (popupError.code === 'auth/popup-closed-by-user') {
           throw new Error('Sign-in was cancelled.');
         } else if (popupError.code === 'auth/cancelled-popup-request') {
@@ -581,7 +579,7 @@ export const firebaseAuthApi = {
       console.error('[handleGoogleRedirectResult] Error details:', {
         message: error.message,
         code: error.code,
-        stack: error.stack
+        stack: error.stack,
       });
 
       const apiError = handleError(error, 'Google sign-in redirect', {

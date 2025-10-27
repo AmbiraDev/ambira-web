@@ -273,19 +273,23 @@ export const firebaseProjectApi = {
         }
       });
 
-      const averageSessionDuration = sessionCount > 0 ? totalHours / sessionCount : 0;
+      const averageSessionDuration =
+        sessionCount > 0 ? totalHours / sessionCount : 0;
 
       // Calculate streak (simplified - just checks if there was activity in the last 2 days)
       const twoDaysAgo = new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000);
-      const currentStreak = lastSessionDate && lastSessionDate >= twoDaysAgo ? 1 : 0;
+      const currentStreak =
+        lastSessionDate && lastSessionDate >= twoDaysAgo ? 1 : 0;
 
       // Get project to check targets
       const project = await firebaseProjectApi.getProjectById(id);
       const weeklyTarget = project?.weeklyTarget || 0;
       const totalTarget = project?.totalTarget || 0;
 
-      const weeklyProgressPercentage = weeklyTarget > 0 ? (weeklyHours / weeklyTarget) * 100 : 0;
-      const totalProgressPercentage = totalTarget > 0 ? (totalHours / totalTarget) * 100 : 0;
+      const weeklyProgressPercentage =
+        weeklyTarget > 0 ? (weeklyHours / weeklyTarget) * 100 : 0;
+      const totalProgressPercentage =
+        totalTarget > 0 ? (totalHours / totalTarget) * 100 : 0;
 
       return {
         totalHours,

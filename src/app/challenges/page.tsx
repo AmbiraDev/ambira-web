@@ -6,7 +6,7 @@ import { ChallengeFilters } from '@/types';
 import {
   useChallenges,
   useJoinChallenge,
-  useLeaveChallenge
+  useLeaveChallenge,
 } from '@/features/challenges/hooks';
 import Header from '@/components/HeaderComponent';
 import ChallengeCard from '@/components/ChallengeCard';

@@ -6,11 +6,21 @@
  */
 
 import { Session } from '@/domain/entities/Session';
-import { FeedRepository, FeedResult } from '@/infrastructure/firebase/repositories/FeedRepository';
+import {
+  FeedRepository,
+  FeedResult,
+} from '@/infrastructure/firebase/repositories/FeedRepository';
 import { SocialGraphRepository } from '@/infrastructure/firebase/repositories/SocialGraphRepository';
 import { SessionRepository } from '@/infrastructure/firebase/repositories/SessionRepository';
 
-export type FeedType = 'following' | 'all' | 'user' | 'group' | 'recent' | 'group-members-unfollowed';
+export type FeedType =
+  | 'following'
+  | 'trending'
+  | 'all'
+  | 'user'
+  | 'group'
+  | 'recent'
+  | 'group-members-unfollowed';
 
 export interface FeedFilters {
   type?: FeedType;
@@ -82,7 +92,8 @@ export class FeedService {
     cursor?: string
   ): Promise<FeedResult> {
     // Get list of following
-    const followingIds = await this.socialGraphRepo.getFollowingIds(currentUserId);
+    const followingIds =
+      await this.socialGraphRepo.getFollowingIds(currentUserId);
 
     if (followingIds.length === 0) {
       return { sessions: [], hasMore: false };
@@ -118,7 +129,10 @@ export class FeedService {
     return {
       sessions,
       hasMore: sessions.length >= limit,
-      nextCursor: sessions.length >= limit ? sessions[sessions.length - 1]?.id : undefined
+      nextCursor:
+        sessions.length >= limit
+          ? sessions[sessions.length - 1]?.id
+          : undefined,
     };
   }
 
@@ -136,7 +150,10 @@ export class FeedService {
     return {
       sessions,
       hasMore: sessions.length >= limit,
-      nextCursor: sessions.length >= limit ? sessions[sessions.length - 1]?.id : undefined
+      nextCursor:
+        sessions.length >= limit
+          ? sessions[sessions.length - 1]?.id
+          : undefined,
     };
   }
 
@@ -149,14 +166,16 @@ export class FeedService {
     cursor?: string
   ): Promise<FeedResult> {
     // Get all group member IDs
-    const groupMemberIds = await this.socialGraphRepo.getGroupMemberIds(currentUserId);
+    const groupMemberIds =
+      await this.socialGraphRepo.getGroupMemberIds(currentUserId);
 
     if (groupMemberIds.length === 0) {
       return { sessions: [], hasMore: false };
     }
 
     // Get following IDs
-    const followingIds = await this.socialGraphRepo.getFollowingIds(currentUserId);
+    const followingIds =
+      await this.socialGraphRepo.getFollowingIds(currentUserId);
 
     // Fetch sessions from unfollowed group members
     return this.feedRepo.getFeedForGroupMembersUnfollowed(

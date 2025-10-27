@@ -1,11 +1,11 @@
 /**
  * Posts API Module (LEGACY)
- * 
+ *
  * ⚠️ DEPRECATED: Posts are now sessions. This module exists for backward compatibility only.
- * 
+ *
  * Sessions ARE the primary content type, not posts. All post operations
  * delegate to session operations.
- * 
+ *
  * @deprecated Use firebaseSessionApi instead
  */
 
@@ -38,7 +38,11 @@ import {
 import { db, auth } from '@/lib/firebase';
 
 // Error handling
-import { handleError, ErrorSeverity, isPermissionError } from '@/lib/errorHandler';
+import {
+  handleError,
+  ErrorSeverity,
+  isPermissionError,
+} from '@/lib/errorHandler';
 
 // Shared utilities
 import { convertTimestamp, removeUndefinedFields } from '../shared/utils';
@@ -301,7 +305,10 @@ export const firebasePostApi = {
 
         // Try new social_graph structure first
         try {
-          const outboundRef = collection(db, `social_graph/${auth.currentUser.uid}/outbound`);
+          const outboundRef = collection(
+            db,
+            `social_graph/${auth.currentUser.uid}/outbound`
+          );
           const outboundSnapshot = await getDocs(outboundRef);
 
           if (!outboundSnapshot.empty) {
@@ -451,7 +458,10 @@ export const firebasePostApi = {
 
         // Try new social_graph structure first
         try {
-          const outboundRef = collection(db, `social_graph/${auth.currentUser.uid}/outbound`);
+          const outboundRef = collection(
+            db,
+            `social_graph/${auth.currentUser.uid}/outbound`
+          );
           const outboundSnapshot = await getDocs(outboundRef);
 
           if (!outboundSnapshot.empty) {
@@ -482,7 +492,9 @@ export const firebasePostApi = {
           where('status', '==', 'active')
         );
         const membershipSnapshot = await getDocs(membershipQuery);
-        const userGroupIds = membershipSnapshot.docs.map(doc => doc.data().groupId);
+        const userGroupIds = membershipSnapshot.docs.map(
+          doc => doc.data().groupId
+        );
 
         if (userGroupIds.length === 0) {
           return { sessions: [], hasMore: false, nextCursor: undefined };
@@ -500,7 +512,10 @@ export const firebasePostApi = {
           groupMembersSnapshot.docs.forEach(doc => {
             const memberId = doc.data().userId;
             // Exclude current user and people they follow
-            if (memberId !== auth.currentUser!.uid && !followingIds.includes(memberId)) {
+            if (
+              memberId !== auth.currentUser!.uid &&
+              !followingIds.includes(memberId)
+            ) {
               if (!allGroupMemberIds.includes(memberId)) {
                 allGroupMemberIds.push(memberId);
               }
@@ -598,7 +613,10 @@ export const firebasePostApi = {
 
         // Try new social_graph structure first
         try {
-          const outboundRef = collection(db, `social_graph/${auth.currentUser.uid}/outbound`);
+          const outboundRef = collection(
+            db,
+            `social_graph/${auth.currentUser.uid}/outbound`
+          );
           const outboundSnapshot = await getDocs(outboundRef);
 
           if (!outboundSnapshot.empty) {
@@ -730,7 +748,9 @@ export const firebasePostApi = {
 
         // Only notify if supporting someone else's session
         if (sessionData && sessionData.userId !== auth.currentUser.uid) {
-          const currentUserDoc = await getDoc(doc(db, 'users', auth.currentUser.uid));
+          const currentUserDoc = await getDoc(
+            doc(db, 'users', auth.currentUser.uid)
+          );
           const userData = currentUserDoc.data();
 
           await addDoc(collection(db, 'notifications'), {
@@ -1005,8 +1025,10 @@ export const firebasePostApi = {
             ? {
                 id: postData.sessionId,
                 userId: postData.userId,
-                activityId: sessionData.activityId || sessionData.projectId || '',
-                projectId: sessionData.projectId || sessionData.activityId || '',
+                activityId:
+                  sessionData.activityId || sessionData.projectId || '',
+                projectId:
+                  sessionData.projectId || sessionData.activityId || '',
                 title: sessionData.title || 'Untitled Session',
                 description: sessionData.description || '',
                 duration: sessionData.duration || 0,
@@ -1015,7 +1037,7 @@ export const firebasePostApi = {
                 tags: sessionData.tags || [],
                 visibility: sessionData.visibility || 'everyone',
                 showStartTime: sessionData.showStartTime,
-                  howFelt: sessionData.howFelt,
+                howFelt: sessionData.howFelt,
                 privateNotes: sessionData.privateNotes,
                 isArchived: sessionData.isArchived || false,
                 supportCount: sessionData.supportCount || 0,
@@ -1041,7 +1063,7 @@ export const firebasePostApi = {
                 commentCount: 0,
                 createdAt: new Date(),
                 updatedAt: new Date(),
-              } as Session)
+              } as Session),
         });
       }
 

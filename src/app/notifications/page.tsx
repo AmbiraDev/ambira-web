@@ -1,10 +1,27 @@
 'use client';
 
 import React, { useState } from 'react';
-import { ArrowLeft, Trash2, UserPlus, Heart, MessageCircle, Reply, AtSign, Users, Trophy, Bell } from 'lucide-react';
+import {
+  ArrowLeft,
+  Trash2,
+  UserPlus,
+  Heart,
+  MessageCircle,
+  Reply,
+  AtSign,
+  Users,
+  Trophy,
+  Bell,
+} from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
-import { useNotifications, useUnreadCount, useMarkNotificationRead, useMarkAllNotificationsRead, useDeleteNotification } from '@/hooks/useNotifications';
+import {
+  useNotifications,
+  useUnreadCount,
+  useMarkNotificationRead,
+  useMarkAllNotificationsRead,
+  useDeleteNotification,
+} from '@/hooks/useNotifications';
 import MobileHeader from '@/components/MobileHeader';
 import Header from '@/components/HeaderComponent';
 import BottomNavigation from '@/components/BottomNavigation';
@@ -16,7 +33,7 @@ function SwipeableNotificationItem({
   notification,
   onDelete,
   onMarkRead,
-  onClick
+  onClick,
 }: {
   notification: Notification;
   onDelete: (id: string) => void;
@@ -82,7 +99,7 @@ function SwipeableNotificationItem({
   };
 
   const getNotificationIcon = (type: Notification['type']) => {
-    const iconClass = "w-5 h-5 text-gray-600";
+    const iconClass = 'w-5 h-5 text-gray-600';
 
     switch (type) {
       case 'follow':
@@ -111,7 +128,11 @@ function SwipeableNotificationItem({
         className="absolute right-0 top-0 bottom-0 flex items-center justify-end bg-red-500 px-6"
         style={{
           width: `${Math.max(swipeOffset, 0)}px`,
-          transition: isDeleting ? 'none' : swipeOffset === deleteThreshold ? 'width 0.2s ease-out' : 'none'
+          transition: isDeleting
+            ? 'none'
+            : swipeOffset === deleteThreshold
+              ? 'width 0.2s ease-out'
+              : 'none',
         }}
       >
         <button
@@ -138,7 +159,7 @@ function SwipeableNotificationItem({
             ? 'all 0.3s ease-out'
             : swipeOffset === deleteThreshold || swipeOffset === 0
               ? 'transform 0.2s ease-out'
-              : 'none'
+              : 'none',
         }}
       >
         <div className="flex items-start gap-4 p-4">
@@ -161,14 +182,18 @@ function SwipeableNotificationItem({
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-2">
               <div className="flex-1">
-                <p className={`text-base text-gray-900 ${!notification.isRead ? 'font-semibold' : 'font-medium'}`}>
+                <p
+                  className={`text-base text-gray-900 ${!notification.isRead ? 'font-semibold' : 'font-medium'}`}
+                >
                   {notification.title}
                 </p>
                 <p className="text-sm text-gray-600 mt-1">
                   {notification.message}
                 </p>
                 <p className="text-xs text-gray-500 mt-2">
-                  {formatDistanceToNow(notification.createdAt, { addSuffix: true })}
+                  {formatDistanceToNow(notification.createdAt, {
+                    addSuffix: true,
+                  })}
                 </p>
               </div>
             </div>
@@ -182,7 +207,9 @@ function SwipeableNotificationItem({
 export default function NotificationsPage() {
   const router = useRouter();
   const { user } = useAuth();
-  const { data: notifications = [], isLoading } = useNotifications({ realtime: true });
+  const { data: notifications = [], isLoading } = useNotifications({
+    realtime: true,
+  });
   const unreadCount = useUnreadCount();
   const markAsReadMutation = useMarkNotificationRead();
   const markAllAsReadMutation = useMarkAllNotificationsRead();
@@ -248,9 +275,13 @@ export default function NotificationsPage() {
         <div className="w-full max-w-2xl px-4">
           <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
             <div className="p-6 border-b border-gray-200">
-              <h1 className="text-2xl font-bold text-gray-900">Notifications</h1>
+              <h1 className="text-2xl font-bold text-gray-900">
+                Notifications
+              </h1>
               <p className="text-sm text-gray-600 mt-1">
-                {unreadCount > 0 ? `${unreadCount} unread notification${unreadCount !== 1 ? 's' : ''}` : 'All caught up!'}
+                {unreadCount > 0
+                  ? `${unreadCount} unread notification${unreadCount !== 1 ? 's' : ''}`
+                  : 'All caught up!'}
               </p>
             </div>
 
@@ -264,7 +295,7 @@ export default function NotificationsPage() {
                   <p className="text-gray-600">No notifications yet</p>
                 </div>
               ) : (
-                notifications.map((notification) => (
+                notifications.map(notification => (
                   <SwipeableNotificationItem
                     key={notification.id}
                     notification={notification}
@@ -303,14 +334,16 @@ export default function NotificationsPage() {
             <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4">
               <span className="text-4xl">🔔</span>
             </div>
-            <p className="text-lg font-semibold text-gray-900 mb-2">No notifications</p>
+            <p className="text-lg font-semibold text-gray-900 mb-2">
+              No notifications
+            </p>
             <p className="text-gray-600 text-center">
               When you get notifications, they'll show up here
             </p>
           </div>
         ) : (
           <div>
-            {notifications.map((notification) => (
+            {notifications.map(notification => (
               <SwipeableNotificationItem
                 key={notification.id}
                 notification={notification}

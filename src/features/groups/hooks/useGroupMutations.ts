@@ -5,7 +5,11 @@
  * Includes optimistic updates and cache invalidation.
  */
 
-import { useMutation, useQueryClient, UseMutationOptions } from '@tanstack/react-query';
+import {
+  useMutation,
+  useQueryClient,
+  UseMutationOptions,
+} from '@tanstack/react-query';
 import { GroupService } from '../services/GroupService';
 import { GROUPS_KEYS } from './useGroups';
 
@@ -22,21 +26,32 @@ const groupService = new GroupService();
  * joinMutation.mutate({ groupId: '123', userId: 'user-456' });
  */
 export function useJoinGroup(
-  options?: Partial<UseMutationOptions<void, Error, { groupId: string; userId: string }>>
+  options?: Partial<
+    UseMutationOptions<void, Error, { groupId: string; userId: string }>
+  >
 ) {
   const queryClient = useQueryClient();
 
   return useMutation<void, Error, { groupId: string; userId: string }>({
-    mutationFn: ({ groupId, userId }) => groupService.joinGroup(groupId, userId),
+    mutationFn: ({ groupId, userId }) =>
+      groupService.joinGroup(groupId, userId),
 
     onMutate: async ({ groupId, userId }) => {
       // Cancel outgoing queries
-      await queryClient.cancelQueries({ queryKey: GROUPS_KEYS.detail(groupId) });
-      await queryClient.cancelQueries({ queryKey: GROUPS_KEYS.userGroups(userId) });
+      await queryClient.cancelQueries({
+        queryKey: GROUPS_KEYS.detail(groupId),
+      });
+      await queryClient.cancelQueries({
+        queryKey: GROUPS_KEYS.userGroups(userId),
+      });
 
       // Snapshot previous values for rollback
-      const previousGroup = queryClient.getQueryData(GROUPS_KEYS.detail(groupId));
-      const previousUserGroups = queryClient.getQueryData(GROUPS_KEYS.userGroups(userId));
+      const previousGroup = queryClient.getQueryData(
+        GROUPS_KEYS.detail(groupId)
+      );
+      const previousUserGroups = queryClient.getQueryData(
+        GROUPS_KEYS.userGroups(userId)
+      );
 
       // Optimistically update group member count
       queryClient.setQueryData(GROUPS_KEYS.detail(groupId), (old: any) => {
@@ -53,17 +68,29 @@ export function useJoinGroup(
     onError: (error, variables, context) => {
       // Rollback on error
       if (context && 'previousGroup' in context && context.previousGroup) {
-        queryClient.setQueryData(GROUPS_KEYS.detail(variables.groupId), context.previousGroup);
+        queryClient.setQueryData(
+          GROUPS_KEYS.detail(variables.groupId),
+          context.previousGroup
+        );
       }
-      if (context && 'previousUserGroups' in context && context.previousUserGroups) {
-        queryClient.setQueryData(GROUPS_KEYS.userGroups(variables.userId), context.previousUserGroups);
+      if (
+        context &&
+        'previousUserGroups' in context &&
+        context.previousUserGroups
+      ) {
+        queryClient.setQueryData(
+          GROUPS_KEYS.userGroups(variables.userId),
+          context.previousUserGroups
+        );
       }
     },
 
     onSuccess: (_, { groupId, userId }) => {
       // Invalidate relevant caches
       queryClient.invalidateQueries({ queryKey: GROUPS_KEYS.detail(groupId) });
-      queryClient.invalidateQueries({ queryKey: GROUPS_KEYS.userGroups(userId) });
+      queryClient.invalidateQueries({
+        queryKey: GROUPS_KEYS.userGroups(userId),
+      });
       queryClient.invalidateQueries({ queryKey: GROUPS_KEYS.stats(groupId) });
     },
 
@@ -79,21 +106,32 @@ export function useJoinGroup(
  * leaveMutation.mutate({ groupId: '123', userId: 'user-456' });
  */
 export function useLeaveGroup(
-  options?: Partial<UseMutationOptions<void, Error, { groupId: string; userId: string }>>
+  options?: Partial<
+    UseMutationOptions<void, Error, { groupId: string; userId: string }>
+  >
 ) {
   const queryClient = useQueryClient();
 
   return useMutation<void, Error, { groupId: string; userId: string }>({
-    mutationFn: ({ groupId, userId }) => groupService.leaveGroup(groupId, userId),
+    mutationFn: ({ groupId, userId }) =>
+      groupService.leaveGroup(groupId, userId),
 
     onMutate: async ({ groupId, userId }) => {
       // Cancel outgoing queries
-      await queryClient.cancelQueries({ queryKey: GROUPS_KEYS.detail(groupId) });
-      await queryClient.cancelQueries({ queryKey: GROUPS_KEYS.userGroups(userId) });
+      await queryClient.cancelQueries({
+        queryKey: GROUPS_KEYS.detail(groupId),
+      });
+      await queryClient.cancelQueries({
+        queryKey: GROUPS_KEYS.userGroups(userId),
+      });
 
       // Snapshot previous values
-      const previousGroup = queryClient.getQueryData(GROUPS_KEYS.detail(groupId));
-      const previousUserGroups = queryClient.getQueryData(GROUPS_KEYS.userGroups(userId));
+      const previousGroup = queryClient.getQueryData(
+        GROUPS_KEYS.detail(groupId)
+      );
+      const previousUserGroups = queryClient.getQueryData(
+        GROUPS_KEYS.userGroups(userId)
+      );
 
       // Optimistically update group
       queryClient.setQueryData(GROUPS_KEYS.detail(groupId), (old: any) => {
@@ -116,17 +154,29 @@ export function useLeaveGroup(
     onError: (error, variables, context) => {
       // Rollback on error
       if (context && 'previousGroup' in context && context.previousGroup) {
-        queryClient.setQueryData(GROUPS_KEYS.detail(variables.groupId), context.previousGroup);
+        queryClient.setQueryData(
+          GROUPS_KEYS.detail(variables.groupId),
+          context.previousGroup
+        );
       }
-      if (context && 'previousUserGroups' in context && context.previousUserGroups) {
-        queryClient.setQueryData(GROUPS_KEYS.userGroups(variables.userId), context.previousUserGroups);
+      if (
+        context &&
+        'previousUserGroups' in context &&
+        context.previousUserGroups
+      ) {
+        queryClient.setQueryData(
+          GROUPS_KEYS.userGroups(variables.userId),
+          context.previousUserGroups
+        );
       }
     },
 
     onSuccess: (_, { groupId, userId }) => {
       // Invalidate relevant caches
       queryClient.invalidateQueries({ queryKey: GROUPS_KEYS.detail(groupId) });
-      queryClient.invalidateQueries({ queryKey: GROUPS_KEYS.userGroups(userId) });
+      queryClient.invalidateQueries({
+        queryKey: GROUPS_KEYS.userGroups(userId),
+      });
       queryClient.invalidateQueries({ queryKey: GROUPS_KEYS.stats(groupId) });
     },
 

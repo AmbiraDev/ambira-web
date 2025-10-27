@@ -1,5 +1,11 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
+import {
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+  within,
+} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ActivityCard } from '@/components/ActivityCard';
 import { Activity, ActivityStats } from '@/types';
@@ -72,17 +78,33 @@ describe('ActivityCard Component', () => {
 
   describe('Accessibility - ARIA Labels and Attributes', () => {
     it('should have proper aria-label for menu button', () => {
-      render(<ActivityCard activity={mockActivity} stats={mockStats} {...mockHandlers} />);
+      render(
+        <ActivityCard
+          activity={mockActivity}
+          stats={mockStats}
+          {...mockHandlers}
+        />
+      );
 
-      const menuButton = screen.getByRole('button', { name: /open activity menu/i });
+      const menuButton = screen.getByRole('button', {
+        name: /open activity menu/i,
+      });
       expect(menuButton).toBeInTheDocument();
       expect(menuButton).toHaveAttribute('aria-label', 'Open activity menu');
     });
 
     it('should have aria-expanded state on menu button', () => {
-      render(<ActivityCard activity={mockActivity} stats={mockStats} {...mockHandlers} />);
+      render(
+        <ActivityCard
+          activity={mockActivity}
+          stats={mockStats}
+          {...mockHandlers}
+        />
+      );
 
-      const menuButton = screen.getByRole('button', { name: /open activity menu/i });
+      const menuButton = screen.getByRole('button', {
+        name: /open activity menu/i,
+      });
       expect(menuButton).toHaveAttribute('aria-expanded', 'false');
 
       fireEvent.click(menuButton);
@@ -90,36 +112,74 @@ describe('ActivityCard Component', () => {
     });
 
     it('should have aria-haspopup on menu button', () => {
-      render(<ActivityCard activity={mockActivity} stats={mockStats} {...mockHandlers} />);
+      render(
+        <ActivityCard
+          activity={mockActivity}
+          stats={mockStats}
+          {...mockHandlers}
+        />
+      );
 
-      const menuButton = screen.getByRole('button', { name: /open activity menu/i });
+      const menuButton = screen.getByRole('button', {
+        name: /open activity menu/i,
+      });
       expect(menuButton).toHaveAttribute('aria-haspopup', 'true');
     });
 
     it('should have proper ARIA attributes on weekly progress bar', () => {
-      render(<ActivityCard activity={mockActivity} stats={mockStats} {...mockHandlers} />);
+      render(
+        <ActivityCard
+          activity={mockActivity}
+          stats={mockStats}
+          {...mockHandlers}
+        />
+      );
 
-      const weeklyProgressBar = screen.getByRole('progressbar', { name: /weekly progress/i });
+      const weeklyProgressBar = screen.getByRole('progressbar', {
+        name: /weekly progress/i,
+      });
       expect(weeklyProgressBar).toHaveAttribute('aria-valuenow', '55'); // 5.5/10 * 100
       expect(weeklyProgressBar).toHaveAttribute('aria-valuemin', '0');
       expect(weeklyProgressBar).toHaveAttribute('aria-valuemax', '100');
-      expect(weeklyProgressBar).toHaveAttribute('aria-label', 'Weekly progress: 5.5 hours of 10 hours');
+      expect(weeklyProgressBar).toHaveAttribute(
+        'aria-label',
+        'Weekly progress: 5.5 hours of 10 hours'
+      );
     });
 
     it('should have proper ARIA attributes on total progress bar', () => {
-      render(<ActivityCard activity={mockActivity} stats={mockStats} {...mockHandlers} />);
+      render(
+        <ActivityCard
+          activity={mockActivity}
+          stats={mockStats}
+          {...mockHandlers}
+        />
+      );
 
-      const totalProgressBar = screen.getByRole('progressbar', { name: /total progress/i });
+      const totalProgressBar = screen.getByRole('progressbar', {
+        name: /total progress/i,
+      });
       expect(totalProgressBar).toHaveAttribute('aria-valuenow', '42'); // 42.3/100 * 100
       expect(totalProgressBar).toHaveAttribute('aria-valuemin', '0');
       expect(totalProgressBar).toHaveAttribute('aria-valuemax', '100');
-      expect(totalProgressBar).toHaveAttribute('aria-label', 'Total progress: 42.3 hours of 100 hours');
+      expect(totalProgressBar).toHaveAttribute(
+        'aria-label',
+        'Total progress: 42.3 hours of 100 hours'
+      );
     });
 
     it('should have role="menu" on dropdown menu', () => {
-      render(<ActivityCard activity={mockActivity} stats={mockStats} {...mockHandlers} />);
+      render(
+        <ActivityCard
+          activity={mockActivity}
+          stats={mockStats}
+          {...mockHandlers}
+        />
+      );
 
-      const menuButton = screen.getByRole('button', { name: /open activity menu/i });
+      const menuButton = screen.getByRole('button', {
+        name: /open activity menu/i,
+      });
       fireEvent.click(menuButton);
 
       const menu = screen.getByRole('menu');
@@ -127,9 +187,17 @@ describe('ActivityCard Component', () => {
     });
 
     it('should have role="menuitem" on menu items', () => {
-      render(<ActivityCard activity={mockActivity} stats={mockStats} {...mockHandlers} />);
+      render(
+        <ActivityCard
+          activity={mockActivity}
+          stats={mockStats}
+          {...mockHandlers}
+        />
+      );
 
-      const menuButton = screen.getByRole('button', { name: /open activity menu/i });
+      const menuButton = screen.getByRole('button', {
+        name: /open activity menu/i,
+      });
       fireEvent.click(menuButton);
 
       const menuItems = screen.getAllByRole('menuitem');
@@ -139,9 +207,17 @@ describe('ActivityCard Component', () => {
 
   describe('Accessibility - Touch Target Sizing', () => {
     it('should meet minimum 44x44px touch target for menu button', () => {
-      render(<ActivityCard activity={mockActivity} stats={mockStats} {...mockHandlers} />);
+      render(
+        <ActivityCard
+          activity={mockActivity}
+          stats={mockStats}
+          {...mockHandlers}
+        />
+      );
 
-      const menuButton = screen.getByRole('button', { name: /open activity menu/i });
+      const menuButton = screen.getByRole('button', {
+        name: /open activity menu/i,
+      });
       expect(menuButton).toHaveClass('min-h-[44px]');
       expect(menuButton).toHaveClass('min-w-[44px]');
     });
@@ -150,9 +226,17 @@ describe('ActivityCard Component', () => {
   describe('Accessibility - Keyboard Navigation', () => {
     it('should open menu with Enter key', async () => {
       const user = userEvent.setup();
-      render(<ActivityCard activity={mockActivity} stats={mockStats} {...mockHandlers} />);
+      render(
+        <ActivityCard
+          activity={mockActivity}
+          stats={mockStats}
+          {...mockHandlers}
+        />
+      );
 
-      const menuButton = screen.getByRole('button', { name: /open activity menu/i });
+      const menuButton = screen.getByRole('button', {
+        name: /open activity menu/i,
+      });
       menuButton.focus();
 
       await user.keyboard('{Enter}');
@@ -163,9 +247,17 @@ describe('ActivityCard Component', () => {
 
     it('should open menu with Space key', async () => {
       const user = userEvent.setup();
-      render(<ActivityCard activity={mockActivity} stats={mockStats} {...mockHandlers} />);
+      render(
+        <ActivityCard
+          activity={mockActivity}
+          stats={mockStats}
+          {...mockHandlers}
+        />
+      );
 
-      const menuButton = screen.getByRole('button', { name: /open activity menu/i });
+      const menuButton = screen.getByRole('button', {
+        name: /open activity menu/i,
+      });
       menuButton.focus();
 
       await user.keyboard(' ');
@@ -176,9 +268,17 @@ describe('ActivityCard Component', () => {
 
     it('should close menu with Escape key', async () => {
       const user = userEvent.setup();
-      render(<ActivityCard activity={mockActivity} stats={mockStats} {...mockHandlers} />);
+      render(
+        <ActivityCard
+          activity={mockActivity}
+          stats={mockStats}
+          {...mockHandlers}
+        />
+      );
 
-      const menuButton = screen.getByRole('button', { name: /open activity menu/i });
+      const menuButton = screen.getByRole('button', {
+        name: /open activity menu/i,
+      });
       await user.click(menuButton);
 
       expect(screen.getByRole('menu')).toBeInTheDocument();
@@ -192,15 +292,29 @@ describe('ActivityCard Component', () => {
 
     it('should navigate menu items with ArrowDown key', async () => {
       const user = userEvent.setup();
-      render(<ActivityCard activity={mockActivity} stats={mockStats} {...mockHandlers} />);
+      render(
+        <ActivityCard
+          activity={mockActivity}
+          stats={mockStats}
+          {...mockHandlers}
+        />
+      );
 
-      const menuButton = screen.getByRole('button', { name: /open activity menu/i });
+      const menuButton = screen.getByRole('button', {
+        name: /open activity menu/i,
+      });
       await user.click(menuButton);
 
       const menuItems = screen.getAllByRole('menuitem');
       const firstItem = menuItems[0];
       const secondItem = menuItems[1];
-      if (!firstItem || !secondItem || !(firstItem instanceof HTMLElement) || !(secondItem instanceof HTMLElement)) return;
+      if (
+        !firstItem ||
+        !secondItem ||
+        !(firstItem instanceof HTMLElement) ||
+        !(secondItem instanceof HTMLElement)
+      )
+        return;
       firstItem.focus();
 
       await user.keyboard('{ArrowDown}');
@@ -210,15 +324,29 @@ describe('ActivityCard Component', () => {
 
     it('should navigate menu items with ArrowUp key', async () => {
       const user = userEvent.setup();
-      render(<ActivityCard activity={mockActivity} stats={mockStats} {...mockHandlers} />);
+      render(
+        <ActivityCard
+          activity={mockActivity}
+          stats={mockStats}
+          {...mockHandlers}
+        />
+      );
 
-      const menuButton = screen.getByRole('button', { name: /open activity menu/i });
+      const menuButton = screen.getByRole('button', {
+        name: /open activity menu/i,
+      });
       await user.click(menuButton);
 
       const menuItems = screen.getAllByRole('menuitem');
       const firstItem = menuItems[0];
       const secondItem = menuItems[1];
-      if (!firstItem || !secondItem || !(firstItem instanceof HTMLElement) || !(secondItem instanceof HTMLElement)) return;
+      if (
+        !firstItem ||
+        !secondItem ||
+        !(firstItem instanceof HTMLElement) ||
+        !(secondItem instanceof HTMLElement)
+      )
+        return;
       secondItem.focus();
 
       await user.keyboard('{ArrowUp}');
@@ -228,15 +356,29 @@ describe('ActivityCard Component', () => {
 
     it('should wrap around when navigating down from last menu item', async () => {
       const user = userEvent.setup();
-      render(<ActivityCard activity={mockActivity} stats={mockStats} {...mockHandlers} />);
+      render(
+        <ActivityCard
+          activity={mockActivity}
+          stats={mockStats}
+          {...mockHandlers}
+        />
+      );
 
-      const menuButton = screen.getByRole('button', { name: /open activity menu/i });
+      const menuButton = screen.getByRole('button', {
+        name: /open activity menu/i,
+      });
       await user.click(menuButton);
 
       const menuItems = screen.getAllByRole('menuitem');
       const firstItem = menuItems[0];
       const lastItem = menuItems[2];
-      if (!firstItem || !lastItem || !(firstItem instanceof HTMLElement) || !(lastItem instanceof HTMLElement)) return;
+      if (
+        !firstItem ||
+        !lastItem ||
+        !(firstItem instanceof HTMLElement) ||
+        !(lastItem instanceof HTMLElement)
+      )
+        return;
       lastItem.focus(); // Last item
 
       await user.keyboard('{ArrowDown}');
@@ -246,15 +388,29 @@ describe('ActivityCard Component', () => {
 
     it('should wrap around when navigating up from first menu item', async () => {
       const user = userEvent.setup();
-      render(<ActivityCard activity={mockActivity} stats={mockStats} {...mockHandlers} />);
+      render(
+        <ActivityCard
+          activity={mockActivity}
+          stats={mockStats}
+          {...mockHandlers}
+        />
+      );
 
-      const menuButton = screen.getByRole('button', { name: /open activity menu/i });
+      const menuButton = screen.getByRole('button', {
+        name: /open activity menu/i,
+      });
       await user.click(menuButton);
 
       const menuItems = screen.getAllByRole('menuitem');
       const firstItem = menuItems[0];
       const lastItem = menuItems[2];
-      if (!firstItem || !lastItem || !(firstItem instanceof HTMLElement) || !(lastItem instanceof HTMLElement)) return;
+      if (
+        !firstItem ||
+        !lastItem ||
+        !(firstItem instanceof HTMLElement) ||
+        !(lastItem instanceof HTMLElement)
+      )
+        return;
       firstItem.focus(); // First item
 
       await user.keyboard('{ArrowUp}');
@@ -264,9 +420,17 @@ describe('ActivityCard Component', () => {
 
     it('should activate menu item with Enter key', async () => {
       const user = userEvent.setup();
-      render(<ActivityCard activity={mockActivity} stats={mockStats} {...mockHandlers} />);
+      render(
+        <ActivityCard
+          activity={mockActivity}
+          stats={mockStats}
+          {...mockHandlers}
+        />
+      );
 
-      const menuButton = screen.getByRole('button', { name: /open activity menu/i });
+      const menuButton = screen.getByRole('button', {
+        name: /open activity menu/i,
+      });
       await user.click(menuButton);
 
       const editButton = screen.getByRole('menuitem', { name: /edit/i });
@@ -279,9 +443,17 @@ describe('ActivityCard Component', () => {
 
     it('should activate menu item with Space key', async () => {
       const user = userEvent.setup();
-      render(<ActivityCard activity={mockActivity} stats={mockStats} {...mockHandlers} />);
+      render(
+        <ActivityCard
+          activity={mockActivity}
+          stats={mockStats}
+          {...mockHandlers}
+        />
+      );
 
-      const menuButton = screen.getByRole('button', { name: /open activity menu/i });
+      const menuButton = screen.getByRole('button', {
+        name: /open activity menu/i,
+      });
       await user.click(menuButton);
 
       const editButton = screen.getByRole('menuitem', { name: /edit/i });
@@ -295,18 +467,34 @@ describe('ActivityCard Component', () => {
 
   describe('Accessibility - Focus States', () => {
     it('should have visible focus indicator on menu button', () => {
-      render(<ActivityCard activity={mockActivity} stats={mockStats} {...mockHandlers} />);
+      render(
+        <ActivityCard
+          activity={mockActivity}
+          stats={mockStats}
+          {...mockHandlers}
+        />
+      );
 
-      const menuButton = screen.getByRole('button', { name: /open activity menu/i });
+      const menuButton = screen.getByRole('button', {
+        name: /open activity menu/i,
+      });
       expect(menuButton).toHaveClass('focus-visible:opacity-100');
       expect(menuButton).toHaveClass('focus-visible:ring-2');
       expect(menuButton).toHaveClass('focus-visible:ring-[#007AFF]');
     });
 
     it('should have visible focus indicator on menu items', () => {
-      render(<ActivityCard activity={mockActivity} stats={mockStats} {...mockHandlers} />);
+      render(
+        <ActivityCard
+          activity={mockActivity}
+          stats={mockStats}
+          {...mockHandlers}
+        />
+      );
 
-      const menuButton = screen.getByRole('button', { name: /open activity menu/i });
+      const menuButton = screen.getByRole('button', {
+        name: /open activity menu/i,
+      });
       fireEvent.click(menuButton);
 
       const menuItems = screen.getAllByRole('menuitem');
@@ -319,21 +507,39 @@ describe('ActivityCard Component', () => {
 
   describe('Component Rendering', () => {
     it('should render activity card with all props', () => {
-      render(<ActivityCard activity={mockActivity} stats={mockStats} {...mockHandlers} />);
+      render(
+        <ActivityCard
+          activity={mockActivity}
+          stats={mockStats}
+          {...mockHandlers}
+        />
+      );
 
       expect(screen.getByText('Writing Project')).toBeInTheDocument();
       expect(screen.getByText('Daily writing practice')).toBeInTheDocument();
     });
 
     it('should render weekly progress section when weeklyTarget is set', () => {
-      render(<ActivityCard activity={mockActivity} stats={mockStats} {...mockHandlers} />);
+      render(
+        <ActivityCard
+          activity={mockActivity}
+          stats={mockStats}
+          {...mockHandlers}
+        />
+      );
 
       expect(screen.getByText(/this week/i)).toBeInTheDocument();
       expect(screen.getByText(/5.5h \/ 10h/i)).toBeInTheDocument();
     });
 
     it('should render total progress section when totalTarget is set', () => {
-      render(<ActivityCard activity={mockActivity} stats={mockStats} {...mockHandlers} />);
+      render(
+        <ActivityCard
+          activity={mockActivity}
+          stats={mockStats}
+          {...mockHandlers}
+        />
+      );
 
       expect(screen.getByText(/total/i)).toBeInTheDocument();
       expect(screen.getByText(/42.3h \/ 100h/i)).toBeInTheDocument();
@@ -341,14 +547,26 @@ describe('ActivityCard Component', () => {
 
     it('should not render weekly progress when weeklyTarget is not set', () => {
       const activityNoWeekly = { ...mockActivity, weeklyTarget: undefined };
-      render(<ActivityCard activity={activityNoWeekly} stats={mockStats} {...mockHandlers} />);
+      render(
+        <ActivityCard
+          activity={activityNoWeekly}
+          stats={mockStats}
+          {...mockHandlers}
+        />
+      );
 
       expect(screen.queryByText(/this week/i)).not.toBeInTheDocument();
     });
 
     it('should not render total progress when totalTarget is not set', () => {
       const activityNoTotal = { ...mockActivity, totalTarget: undefined };
-      render(<ActivityCard activity={activityNoTotal} stats={mockStats} {...mockHandlers} />);
+      render(
+        <ActivityCard
+          activity={activityNoTotal}
+          stats={mockStats}
+          {...mockHandlers}
+        />
+      );
 
       expect(screen.queryByText(/total/i)).not.toBeInTheDocument();
     });
@@ -357,7 +575,7 @@ describe('ActivityCard Component', () => {
       const activityNoTargets = {
         ...mockActivity,
         weeklyTarget: undefined,
-        totalTarget: undefined
+        totalTarget: undefined,
       };
       // Render without stats prop and no targets
       render(<ActivityCard activity={activityNoTargets} {...mockHandlers} />);
@@ -370,7 +588,13 @@ describe('ActivityCard Component', () => {
 
     it('should show progress when stats are provided', () => {
       // Simpler test - just verify that when stats are provided, they render
-      render(<ActivityCard activity={mockActivity} stats={mockStats} {...mockHandlers} />);
+      render(
+        <ActivityCard
+          activity={mockActivity}
+          stats={mockStats}
+          {...mockHandlers}
+        />
+      );
 
       // Should show progress bars instead of loading state
       const progressBars = screen.getAllByRole('progressbar');
@@ -378,22 +602,42 @@ describe('ActivityCard Component', () => {
     });
 
     it('should display Archive button for active activities', () => {
-      render(<ActivityCard activity={mockActivity} stats={mockStats} {...mockHandlers} />);
+      render(
+        <ActivityCard
+          activity={mockActivity}
+          stats={mockStats}
+          {...mockHandlers}
+        />
+      );
 
-      const menuButton = screen.getByRole('button', { name: /open activity menu/i });
+      const menuButton = screen.getByRole('button', {
+        name: /open activity menu/i,
+      });
       fireEvent.click(menuButton);
 
-      expect(screen.getByRole('menuitem', { name: /archive/i })).toBeInTheDocument();
+      expect(
+        screen.getByRole('menuitem', { name: /archive/i })
+      ).toBeInTheDocument();
     });
 
     it('should display Restore button for archived activities', () => {
       const archivedActivity = { ...mockActivity, status: 'archived' as const };
-      render(<ActivityCard activity={archivedActivity} stats={mockStats} {...mockHandlers} />);
+      render(
+        <ActivityCard
+          activity={archivedActivity}
+          stats={mockStats}
+          {...mockHandlers}
+        />
+      );
 
-      const menuButton = screen.getByRole('button', { name: /open activity menu/i });
+      const menuButton = screen.getByRole('button', {
+        name: /open activity menu/i,
+      });
       fireEvent.click(menuButton);
 
-      expect(screen.getByRole('menuitem', { name: /restore/i })).toBeInTheDocument();
+      expect(
+        screen.getByRole('menuitem', { name: /restore/i })
+      ).toBeInTheDocument();
     });
 
     it('should handle zero hours in progress display', () => {
@@ -406,7 +650,13 @@ describe('ActivityCard Component', () => {
         totalProgressPercentage: 0,
         averageSessionDuration: 0,
       };
-      render(<ActivityCard activity={mockActivity} stats={zeroStats} {...mockHandlers} />);
+      render(
+        <ActivityCard
+          activity={mockActivity}
+          stats={zeroStats}
+          {...mockHandlers}
+        />
+      );
 
       expect(screen.getByText(/0.0h \/ 10h/i)).toBeInTheDocument();
       expect(screen.getByText(/0.0h \/ 100h/i)).toBeInTheDocument();
@@ -422,7 +672,13 @@ describe('ActivityCard Component', () => {
         totalProgressPercentage: 0,
         averageSessionDuration: 3,
       };
-      render(<ActivityCard activity={mockActivity} stats={overStats} {...mockHandlers} />);
+      render(
+        <ActivityCard
+          activity={mockActivity}
+          stats={overStats}
+          {...mockHandlers}
+        />
+      );
 
       const progressBars = screen.getAllByRole('progressbar');
       progressBars.forEach(bar => {
@@ -434,7 +690,13 @@ describe('ActivityCard Component', () => {
 
   describe('Icon Rendering', () => {
     it('should render icon from IconRenderer', () => {
-      const { container } = render(<ActivityCard activity={mockActivity} stats={mockStats} {...mockHandlers} />);
+      const { container } = render(
+        <ActivityCard
+          activity={mockActivity}
+          stats={mockStats}
+          {...mockHandlers}
+        />
+      );
 
       // IconRenderer should be rendering an icon
       const iconContainer = container.querySelector('.w-14.h-14.rounded-xl');
@@ -442,27 +704,52 @@ describe('ActivityCard Component', () => {
     });
 
     it('should apply correct color to icon container', () => {
-      const { container } = render(<ActivityCard activity={mockActivity} stats={mockStats} {...mockHandlers} />);
+      const { container } = render(
+        <ActivityCard
+          activity={mockActivity}
+          stats={mockStats}
+          {...mockHandlers}
+        />
+      );
 
       const iconContainer = container.querySelector('.w-14.h-14.rounded-xl');
-      expect(iconContainer).toHaveAttribute('style', expect.stringContaining('background-color'));
+      expect(iconContainer).toHaveAttribute(
+        'style',
+        expect.stringContaining('background-color')
+      );
     });
   });
 
   describe('Menu Interactions', () => {
     it('should open menu on button click', () => {
-      render(<ActivityCard activity={mockActivity} stats={mockStats} {...mockHandlers} />);
+      render(
+        <ActivityCard
+          activity={mockActivity}
+          stats={mockStats}
+          {...mockHandlers}
+        />
+      );
 
-      const menuButton = screen.getByRole('button', { name: /open activity menu/i });
+      const menuButton = screen.getByRole('button', {
+        name: /open activity menu/i,
+      });
       fireEvent.click(menuButton);
 
       expect(screen.getByRole('menu')).toBeInTheDocument();
     });
 
     it('should close menu on second button click', () => {
-      render(<ActivityCard activity={mockActivity} stats={mockStats} {...mockHandlers} />);
+      render(
+        <ActivityCard
+          activity={mockActivity}
+          stats={mockStats}
+          {...mockHandlers}
+        />
+      );
 
-      const menuButton = screen.getByRole('button', { name: /open activity menu/i });
+      const menuButton = screen.getByRole('button', {
+        name: /open activity menu/i,
+      });
       fireEvent.click(menuButton);
       fireEvent.click(menuButton);
 
@@ -470,9 +757,17 @@ describe('ActivityCard Component', () => {
     });
 
     it('should close menu when clicking outside', () => {
-      render(<ActivityCard activity={mockActivity} stats={mockStats} {...mockHandlers} />);
+      render(
+        <ActivityCard
+          activity={mockActivity}
+          stats={mockStats}
+          {...mockHandlers}
+        />
+      );
 
-      const menuButton = screen.getByRole('button', { name: /open activity menu/i });
+      const menuButton = screen.getByRole('button', {
+        name: /open activity menu/i,
+      });
       fireEvent.click(menuButton);
 
       expect(screen.getByRole('menu')).toBeInTheDocument();
@@ -483,9 +778,17 @@ describe('ActivityCard Component', () => {
     });
 
     it('should call onEdit when Edit is clicked', () => {
-      render(<ActivityCard activity={mockActivity} stats={mockStats} {...mockHandlers} />);
+      render(
+        <ActivityCard
+          activity={mockActivity}
+          stats={mockStats}
+          {...mockHandlers}
+        />
+      );
 
-      const menuButton = screen.getByRole('button', { name: /open activity menu/i });
+      const menuButton = screen.getByRole('button', {
+        name: /open activity menu/i,
+      });
       fireEvent.click(menuButton);
 
       const editButton = screen.getByRole('menuitem', { name: /edit/i });
@@ -495,9 +798,17 @@ describe('ActivityCard Component', () => {
     });
 
     it('should call onArchive when Archive is clicked', () => {
-      render(<ActivityCard activity={mockActivity} stats={mockStats} {...mockHandlers} />);
+      render(
+        <ActivityCard
+          activity={mockActivity}
+          stats={mockStats}
+          {...mockHandlers}
+        />
+      );
 
-      const menuButton = screen.getByRole('button', { name: /open activity menu/i });
+      const menuButton = screen.getByRole('button', {
+        name: /open activity menu/i,
+      });
       fireEvent.click(menuButton);
 
       const archiveButton = screen.getByRole('menuitem', { name: /archive/i });
@@ -507,9 +818,17 @@ describe('ActivityCard Component', () => {
     });
 
     it('should call onDelete when Delete is clicked', () => {
-      render(<ActivityCard activity={mockActivity} stats={mockStats} {...mockHandlers} />);
+      render(
+        <ActivityCard
+          activity={mockActivity}
+          stats={mockStats}
+          {...mockHandlers}
+        />
+      );
 
-      const menuButton = screen.getByRole('button', { name: /open activity menu/i });
+      const menuButton = screen.getByRole('button', {
+        name: /open activity menu/i,
+      });
       fireEvent.click(menuButton);
 
       const deleteButton = screen.getByRole('menuitem', { name: /delete/i });
@@ -519,9 +838,17 @@ describe('ActivityCard Component', () => {
     });
 
     it('should close menu after selecting an action', () => {
-      render(<ActivityCard activity={mockActivity} stats={mockStats} {...mockHandlers} />);
+      render(
+        <ActivityCard
+          activity={mockActivity}
+          stats={mockStats}
+          {...mockHandlers}
+        />
+      );
 
-      const menuButton = screen.getByRole('button', { name: /open activity menu/i });
+      const menuButton = screen.getByRole('button', {
+        name: /open activity menu/i,
+      });
       fireEvent.click(menuButton);
 
       const editButton = screen.getByRole('menuitem', { name: /edit/i });
@@ -534,11 +861,17 @@ describe('ActivityCard Component', () => {
       const mockLinkClick = jest.fn();
       render(
         <div onClick={mockLinkClick}>
-          <ActivityCard activity={mockActivity} stats={mockStats} {...mockHandlers} />
+          <ActivityCard
+            activity={mockActivity}
+            stats={mockStats}
+            {...mockHandlers}
+          />
         </div>
       );
 
-      const menuButton = screen.getByRole('button', { name: /open activity menu/i });
+      const menuButton = screen.getByRole('button', {
+        name: /open activity menu/i,
+      });
       fireEvent.click(menuButton);
 
       // Parent click handler should not be called
@@ -558,7 +891,13 @@ describe('ActivityCard Component', () => {
 
     it('should handle undefined stats gracefully', () => {
       // Component should render without crashing when stats are undefined
-      const { container } = render(<ActivityCard activity={mockActivity} stats={undefined} {...mockHandlers} />);
+      const { container } = render(
+        <ActivityCard
+          activity={mockActivity}
+          stats={undefined}
+          {...mockHandlers}
+        />
+      );
 
       // Should render successfully
       expect(container).toBeInTheDocument();
@@ -568,7 +907,13 @@ describe('ActivityCard Component', () => {
 
   describe('Color Contrast and Visual Design', () => {
     it('should use correct Tailwind color classes for progress bars', () => {
-      render(<ActivityCard activity={mockActivity} stats={mockStats} {...mockHandlers} />);
+      render(
+        <ActivityCard
+          activity={mockActivity}
+          stats={mockStats}
+          {...mockHandlers}
+        />
+      );
 
       const progressBars = screen.getAllByRole('progressbar');
       progressBars.forEach(bar => {
@@ -581,7 +926,13 @@ describe('ActivityCard Component', () => {
 
       colors.forEach(color => {
         const activity = { ...mockActivity, color };
-        const { container, unmount } = render(<ActivityCard activity={activity} stats={mockStats} {...mockHandlers} />);
+        const { container, unmount } = render(
+          <ActivityCard
+            activity={activity}
+            stats={mockStats}
+            {...mockHandlers}
+          />
+        );
 
         // Icon container should have correct background color
         const iconContainer = container.querySelector('.w-14.h-14.rounded-xl');

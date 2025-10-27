@@ -477,13 +477,20 @@ export const firebaseCommentApi = {
       const snapshot: QuerySnapshot<DocumentData> = await getDocs(q);
 
       // Filter for top-level comments only (no parentId)
-      const topLevelDocs: QueryDocumentSnapshot<DocumentData>[] = snapshot.docs.filter((doc: QueryDocumentSnapshot<DocumentData>) => !doc.data().parentId);
+      const topLevelDocs: QueryDocumentSnapshot<DocumentData>[] =
+        snapshot.docs.filter(
+          (doc: QueryDocumentSnapshot<DocumentData>) => !doc.data().parentId
+        );
 
       const hasMore: boolean = topLevelDocs.length > limitCount;
-      const docs: QueryDocumentSnapshot<DocumentData>[] = hasMore ? topLevelDocs.slice(0, -1) : topLevelDocs;
+      const docs: QueryDocumentSnapshot<DocumentData>[] = hasMore
+        ? topLevelDocs.slice(0, -1)
+        : topLevelDocs;
 
       // Get all comment likes for current user in one query
-      const commentIds: string[] = docs.map((d: QueryDocumentSnapshot<DocumentData>) => d.id);
+      const commentIds: string[] = docs.map(
+        (d: QueryDocumentSnapshot<DocumentData>) => d.id
+      );
       let likedCommentIds = new Set<string>();
       if (commentIds.length > 0) {
         const likesQuery = query(
@@ -589,13 +596,20 @@ export const firebaseCommentApi = {
       const snapshot: QuerySnapshot<DocumentData> = await getDocs(q);
 
       // Filter for top-level comments only (no parentId)
-      const topLevelDocs: QueryDocumentSnapshot<DocumentData>[] = snapshot.docs.filter((doc: QueryDocumentSnapshot<DocumentData>) => !doc.data().parentId);
+      const topLevelDocs: QueryDocumentSnapshot<DocumentData>[] =
+        snapshot.docs.filter(
+          (doc: QueryDocumentSnapshot<DocumentData>) => !doc.data().parentId
+        );
 
       const hasMore: boolean = topLevelDocs.length > limitCount;
-      const docs: QueryDocumentSnapshot<DocumentData>[] = hasMore ? topLevelDocs.slice(0, -1) : topLevelDocs;
+      const docs: QueryDocumentSnapshot<DocumentData>[] = hasMore
+        ? topLevelDocs.slice(0, -1)
+        : topLevelDocs;
 
       // Get all comment likes for current user in one query
-      const commentIds: string[] = docs.map((d: QueryDocumentSnapshot<DocumentData>) => d.id);
+      const commentIds: string[] = docs.map(
+        (d: QueryDocumentSnapshot<DocumentData>) => d.id
+      );
       let likedCommentIds = new Set<string>();
       if (commentIds.length > 0) {
         const likesQuery = query(
@@ -633,7 +647,8 @@ export const firebaseCommentApi = {
         })
       );
 
-      const lastDocInResult: QueryDocumentSnapshot<DocumentData> | undefined = docs[docs.length - 1];
+      const lastDocInResult: QueryDocumentSnapshot<DocumentData> | undefined =
+        docs[docs.length - 1];
       return {
         comments,
         hasMore,
@@ -805,4 +820,3 @@ export const firebaseCommentApi = {
 };
 
 // ==================== GROUP API ====================
-

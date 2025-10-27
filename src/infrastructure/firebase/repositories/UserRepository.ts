@@ -17,7 +17,7 @@ import {
   orderBy,
   limit as limitFn,
   writeBatch,
-  increment
+  increment,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { User } from '@/domain/entities/User';
@@ -46,7 +46,9 @@ export class UserRepository {
       return this.mapper.toDomain(docSnap);
     } catch (error) {
       console.error(`Error finding user ${userId}:`, error);
-      throw new Error(`Failed to find user: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to find user: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -74,7 +76,9 @@ export class UserRepository {
       return this.mapper.toDomain(doc);
     } catch (error) {
       console.error(`Error finding user by username ${username}:`, error);
-      throw new Error(`Failed to find user: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to find user: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -102,7 +106,9 @@ export class UserRepository {
       return results.flat();
     } catch (error) {
       console.error('Error finding users by IDs:', error);
-      throw new Error(`Failed to find users: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to find users: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -137,8 +143,13 @@ export class UserRepository {
       const snapshot = await getDocs(q);
       return this.mapper.toDomainList(snapshot.docs);
     } catch (error) {
-      console.error(`Error searching users by username prefix ${prefix}:`, error);
-      throw new Error(`Failed to search users: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.error(
+        `Error searching users by username prefix ${prefix}:`,
+        error
+      );
+      throw new Error(
+        `Failed to search users: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -153,7 +164,9 @@ export class UserRepository {
       await setDoc(docRef, data, { merge: true });
     } catch (error) {
       console.error(`Error saving user ${user.id}:`, error);
-      throw new Error(`Failed to save user: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to save user: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -164,11 +177,13 @@ export class UserRepository {
     try {
       const docRef = doc(db, this.collectionName, userId);
       await updateDoc(docRef, {
-        followerCount: increment(delta)
+        followerCount: increment(delta),
       });
     } catch (error) {
       console.error(`Error updating follower count for user ${userId}:`, error);
-      throw new Error(`Failed to update follower count: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to update follower count: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -179,11 +194,16 @@ export class UserRepository {
     try {
       const docRef = doc(db, this.collectionName, userId);
       await updateDoc(docRef, {
-        followingCount: increment(delta)
+        followingCount: increment(delta),
       });
     } catch (error) {
-      console.error(`Error updating following count for user ${userId}:`, error);
-      throw new Error(`Failed to update following count: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.error(
+        `Error updating following count for user ${userId}:`,
+        error
+      );
+      throw new Error(
+        `Failed to update following count: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -209,7 +229,10 @@ export class UserRepository {
       const user = await this.findByUsername(username);
       return user === null;
     } catch (error) {
-      console.error(`Error checking username availability for ${username}:`, error);
+      console.error(
+        `Error checking username availability for ${username}:`,
+        error
+      );
       return false;
     }
   }

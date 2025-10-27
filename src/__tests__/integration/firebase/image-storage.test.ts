@@ -3,8 +3,21 @@
  * Tests actual Firebase Storage and Firestore integration
  */
 
-import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
-import { doc, setDoc, getDoc, addDoc, collection, serverTimestamp, Timestamp } from 'firebase/firestore';
+import {
+  ref,
+  uploadBytes,
+  getDownloadURL,
+  deleteObject,
+} from 'firebase/storage';
+import {
+  doc,
+  setDoc,
+  getDoc,
+  addDoc,
+  collection,
+  serverTimestamp,
+  Timestamp,
+} from 'firebase/firestore';
 
 // Mock Firebase before importing
 jest.mock('@/lib/firebase', () => ({
@@ -13,9 +26,9 @@ jest.mock('@/lib/firebase', () => ({
   auth: {
     currentUser: {
       uid: 'test-user-123',
-      getIdToken: jest.fn().mockResolvedValue('mock-token')
-    }
-  }
+      getIdToken: jest.fn().mockResolvedValue('mock-token'),
+    },
+  },
 }));
 
 // Mock Firebase Storage
@@ -23,7 +36,7 @@ jest.mock('firebase/storage', () => ({
   ref: jest.fn(),
   uploadBytes: jest.fn(),
   getDownloadURL: jest.fn(),
-  deleteObject: jest.fn()
+  deleteObject: jest.fn(),
 }));
 
 // Mock Firestore
@@ -38,13 +51,13 @@ jest.mock('firebase/firestore', () => ({
   getDocs: jest.fn(),
   serverTimestamp: jest.fn(() => new Date()),
   Timestamp: {
-    fromDate: (date: Date) => date
+    fromDate: (date: Date) => date,
   },
   writeBatch: jest.fn(),
   updateDoc: jest.fn(),
   increment: jest.fn(),
   orderBy: jest.fn(),
-  limit: jest.fn()
+  limit: jest.fn(),
 }));
 
 describe('Firebase Image Storage Integration', () => {
@@ -65,9 +78,14 @@ describe('Firebase Image Storage Integration', () => {
 
   describe('Firebase Storage Upload', () => {
     it('should upload image to Firebase Storage and return download URL', async () => {
-      const mockFile = new File(['test-content'], 'test.jpg', { type: 'image/jpeg' });
-      const mockStorageRef = { fullPath: 'session-images/test-user-123/12345_abc.jpg' };
-      const mockDownloadURL = 'https://firebasestorage.googleapis.com/v0/b/project.appspot.com/o/session-images%2Ftest-user-123%2F12345_abc.jpg?alt=media&token=abc123';
+      const mockFile = new File(['test-content'], 'test.jpg', {
+        type: 'image/jpeg',
+      });
+      const mockStorageRef = {
+        fullPath: 'session-images/test-user-123/12345_abc.jpg',
+      };
+      const mockDownloadURL =
+        'https://firebasestorage.googleapis.com/v0/b/project.appspot.com/o/session-images%2Ftest-user-123%2F12345_abc.jpg?alt=media&token=abc123';
 
       (ref as jest.Mock).mockReturnValue(mockStorageRef);
       (uploadBytes as jest.Mock).mockResolvedValue({ ref: mockStorageRef });
@@ -83,7 +101,7 @@ describe('Firebase Image Storage Integration', () => {
       // Verify result structure
       expect(result).toEqual({
         url: mockDownloadURL,
-        path: mockStorageRef.fullPath
+        path: mockStorageRef.fullPath,
       });
 
       // Verify URL is a proper Firebase Storage URL
@@ -92,11 +110,17 @@ describe('Firebase Image Storage Integration', () => {
     });
 
     it('should store images in user-specific folder', async () => {
-      const mockFile = new File(['content'], 'photo.jpg', { type: 'image/jpeg' });
+      const mockFile = new File(['content'], 'photo.jpg', {
+        type: 'image/jpeg',
+      });
 
-      (ref as jest.Mock).mockReturnValue({ fullPath: 'session-images/test-user-123/photo.jpg' });
+      (ref as jest.Mock).mockReturnValue({
+        fullPath: 'session-images/test-user-123/photo.jpg',
+      });
       (uploadBytes as jest.Mock).mockResolvedValue({});
-      (getDownloadURL as jest.Mock).mockResolvedValue('https://storage.url/photo.jpg');
+      (getDownloadURL as jest.Mock).mockResolvedValue(
+        'https://storage.url/photo.jpg'
+      );
 
       await uploadImage(mockFile);
 
@@ -109,12 +133,18 @@ describe('Firebase Image Storage Integration', () => {
     });
 
     it('should handle Firebase Storage upload failures', async () => {
-      const mockFile = new File(['content'], 'test.jpg', { type: 'image/jpeg' });
+      const mockFile = new File(['content'], 'test.jpg', {
+        type: 'image/jpeg',
+      });
 
       (ref as jest.Mock).mockReturnValue({});
-      (uploadBytes as jest.Mock).mockRejectedValue(new Error('Storage quota exceeded'));
+      (uploadBytes as jest.Mock).mockRejectedValue(
+        new Error('Storage quota exceeded')
+      );
 
-      await expect(uploadImage(mockFile)).rejects.toThrow('Failed to upload image');
+      await expect(uploadImage(mockFile)).rejects.toThrow(
+        'Failed to upload image'
+      );
     });
 
     it('should delete image from Firebase Storage', async () => {
@@ -143,9 +173,9 @@ describe('Firebase Image Storage Integration', () => {
         taskIds: [],
         images: [
           'https://firebasestorage.googleapis.com/image1.jpg',
-          'https://firebasestorage.googleapis.com/image2.jpg'
+          'https://firebasestorage.googleapis.com/image2.jpg',
         ],
-        visibility: 'everyone' as const
+        visibility: 'everyone' as const,
       };
 
       const mockDocRef = { id: 'session-123' };
@@ -153,7 +183,7 @@ describe('Firebase Image Storage Integration', () => {
       (addDoc as jest.Mock).mockResolvedValue(mockDocRef);
       (getDoc as jest.Mock).mockResolvedValue({
         exists: () => false,
-        data: () => ({})
+        data: () => ({}),
       });
       (collection as jest.Mock).mockReturnValue('sessions-collection');
 
@@ -180,7 +210,7 @@ describe('Firebase Image Storage Integration', () => {
         startTime: new Date(),
         taskIds: [],
         images: [],
-        visibility: 'private' as const
+        visibility: 'private' as const,
       };
 
       const mockDocRef = { id: 'session-456' };
@@ -188,7 +218,7 @@ describe('Firebase Image Storage Integration', () => {
       (addDoc as jest.Mock).mockResolvedValue(mockDocRef);
       (getDoc as jest.Mock).mockResolvedValue({
         exists: () => false,
-        data: () => ({})
+        data: () => ({}),
       });
 
       const session = await firebaseSessionApi.createSession(mockSessionData);
@@ -212,21 +242,23 @@ describe('Firebase Image Storage Integration', () => {
         images: [
           'https://firebasestorage.googleapis.com/image1.jpg',
           'https://firebasestorage.googleapis.com/image2.jpg',
-          'https://firebasestorage.googleapis.com/image3.jpg'
+          'https://firebasestorage.googleapis.com/image3.jpg',
         ],
         supportCount: 5,
         commentCount: 2,
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
       };
 
       (getDoc as jest.Mock).mockResolvedValue({
         exists: () => true,
         id: 'session-789',
-        data: () => mockFirestoreData
+        data: () => mockFirestoreData,
       });
 
-      const sessionDoc = await getDoc(doc({} as any, 'sessions', 'session-789'));
+      const sessionDoc = await getDoc(
+        doc({} as any, 'sessions', 'session-789')
+      );
 
       expect(sessionDoc.exists()).toBe(true);
 
@@ -244,16 +276,18 @@ describe('Firebase Image Storage Integration', () => {
         duration: 1800,
         // No images field
         supportCount: 0,
-        commentCount: 0
+        commentCount: 0,
       };
 
       (getDoc as jest.Mock).mockResolvedValue({
         exists: () => true,
         id: 'legacy-session',
-        data: () => mockLegacyData
+        data: () => mockLegacyData,
       });
 
-      const sessionDoc = await getDoc(doc({} as any, 'sessions', 'legacy-session'));
+      const sessionDoc = await getDoc(
+        doc({} as any, 'sessions', 'legacy-session')
+      );
       const data = sessionDoc.data();
 
       // Should gracefully handle missing images field
@@ -267,15 +301,17 @@ describe('Firebase Image Storage Integration', () => {
       // Step 1: Upload images to Firebase Storage
       const imageFiles = [
         new File(['img1'], 'photo1.jpg', { type: 'image/jpeg' }),
-        new File(['img2'], 'photo2.jpg', { type: 'image/jpeg' })
+        new File(['img2'], 'photo2.jpg', { type: 'image/jpeg' }),
       ];
 
       const mockUrls = [
         'https://firebasestorage.googleapis.com/image1.jpg?token=abc',
-        'https://firebasestorage.googleapis.com/image2.jpg?token=def'
+        'https://firebasestorage.googleapis.com/image2.jpg?token=def',
       ];
 
-      (ref as jest.Mock).mockReturnValue({ fullPath: 'session-images/user/img.jpg' });
+      (ref as jest.Mock).mockReturnValue({
+        fullPath: 'session-images/user/img.jpg',
+      });
       (uploadBytes as jest.Mock).mockResolvedValue({});
       (getDownloadURL as jest.Mock)
         .mockResolvedValueOnce(mockUrls[0])
@@ -303,13 +339,13 @@ describe('Firebase Image Storage Integration', () => {
         startTime: new Date(),
         taskIds: [],
         images: imageUrls,
-        visibility: 'everyone' as const
+        visibility: 'everyone' as const,
       };
 
       (addDoc as jest.Mock).mockResolvedValue({ id: 'new-session' });
       (getDoc as jest.Mock).mockResolvedValue({
         exists: () => false,
-        data: () => ({})
+        data: () => ({}),
       });
 
       const session = await firebaseSessionApi.createSession(sessionData);
@@ -327,7 +363,7 @@ describe('Firebase Image Storage Integration', () => {
     it('should handle partial upload failure', async () => {
       const imageFiles = [
         new File(['img1'], 'photo1.jpg', { type: 'image/jpeg' }),
-        new File(['img2'], 'photo2.jpg', { type: 'image/jpeg' })
+        new File(['img2'], 'photo2.jpg', { type: 'image/jpeg' }),
       ];
 
       (ref as jest.Mock).mockReturnValue({ fullPath: 'path' });
@@ -338,7 +374,9 @@ describe('Firebase Image Storage Integration', () => {
       const imageUploadModule = await import('@/lib/imageUpload');
 
       // Upload should fail when any image fails
-      await expect(imageUploadModule.uploadImages(imageFiles)).rejects.toThrow();
+      await expect(
+        imageUploadModule.uploadImages(imageFiles)
+      ).rejects.toThrow();
     });
   });
 
@@ -346,11 +384,13 @@ describe('Firebase Image Storage Integration', () => {
     it('should verify Firebase Storage URL format', () => {
       const validUrls = [
         'https://firebasestorage.googleapis.com/v0/b/project.appspot.com/o/path?alt=media&token=abc',
-        'https://storage.googleapis.com/project.appspot.com/path/image.jpg'
+        'https://storage.googleapis.com/project.appspot.com/path/image.jpg',
       ];
 
       validUrls.forEach(url => {
-        expect(url).toMatch(/^https:\/\/(firebasestorage|storage)\.googleapis\.com/);
+        expect(url).toMatch(
+          /^https:\/\/(firebasestorage|storage)\.googleapis\.com/
+        );
       });
     });
 
@@ -358,7 +398,7 @@ describe('Firebase Image Storage Integration', () => {
       const invalidUrls = [
         'http://example.com/image.jpg', // Not HTTPS
         'blob:http://localhost/abc', // Blob URL (only for preview)
-        'data:image/png;base64,...' // Data URL
+        'data:image/png;base64,...', // Data URL
       ];
 
       invalidUrls.forEach(url => {
@@ -369,25 +409,35 @@ describe('Firebase Image Storage Integration', () => {
 
   describe('Firestore Security Rules Compliance', () => {
     it('should only allow authenticated users to upload', async () => {
-      const mockFile = new File(['content'], 'test.jpg', { type: 'image/jpeg' });
+      const mockFile = new File(['content'], 'test.jpg', {
+        type: 'image/jpeg',
+      });
 
       // Simulate unauthenticated user
       const firebase = await import('@/lib/firebase');
       const originalUser = firebase.auth.currentUser;
       (firebase.auth as any).currentUser = null;
 
-      await expect(uploadImage(mockFile)).rejects.toThrow('User must be authenticated');
+      await expect(uploadImage(mockFile)).rejects.toThrow(
+        'User must be authenticated'
+      );
 
       // Restore
       (firebase.auth as any).currentUser = originalUser;
     });
 
     it('should store images in user-scoped path', async () => {
-      const mockFile = new File(['content'], 'test.jpg', { type: 'image/jpeg' });
+      const mockFile = new File(['content'], 'test.jpg', {
+        type: 'image/jpeg',
+      });
 
-      (ref as jest.Mock).mockReturnValue({ fullPath: 'session-images/test-user-123/test.jpg' });
+      (ref as jest.Mock).mockReturnValue({
+        fullPath: 'session-images/test-user-123/test.jpg',
+      });
       (uploadBytes as jest.Mock).mockResolvedValue({});
-      (getDownloadURL as jest.Mock).mockResolvedValue('https://storage.url/test.jpg');
+      (getDownloadURL as jest.Mock).mockResolvedValue(
+        'https://storage.url/test.jpg'
+      );
 
       await uploadImage(mockFile);
 
@@ -403,12 +453,14 @@ describe('Firebase Image Storage Integration', () => {
       const files = [
         new File(['1'], '1.jpg', { type: 'image/jpeg' }),
         new File(['2'], '2.jpg', { type: 'image/jpeg' }),
-        new File(['3'], '3.jpg', { type: 'image/jpeg' })
+        new File(['3'], '3.jpg', { type: 'image/jpeg' }),
       ];
 
       (ref as jest.Mock).mockReturnValue({ fullPath: 'path' });
       (uploadBytes as jest.Mock).mockResolvedValue({});
-      (getDownloadURL as jest.Mock).mockResolvedValue('https://url.com/img.jpg');
+      (getDownloadURL as jest.Mock).mockResolvedValue(
+        'https://url.com/img.jpg'
+      );
 
       const imageUploadModule = await import('@/lib/imageUpload');
 
@@ -426,7 +478,7 @@ describe('Firebase Image Storage Integration', () => {
     it('should generate unique filenames to prevent collisions', async () => {
       const files = [
         new File(['1'], 'photo.jpg', { type: 'image/jpeg' }),
-        new File(['2'], 'photo.jpg', { type: 'image/jpeg' }) // Same name
+        new File(['2'], 'photo.jpg', { type: 'image/jpeg' }), // Same name
       ];
 
       const capturedPaths: string[] = [];
@@ -436,7 +488,9 @@ describe('Firebase Image Storage Integration', () => {
         return { fullPath: path };
       });
       (uploadBytes as jest.Mock).mockResolvedValue({});
-      (getDownloadURL as jest.Mock).mockResolvedValue('https://url.com/img.jpg');
+      (getDownloadURL as jest.Mock).mockResolvedValue(
+        'https://url.com/img.jpg'
+      );
 
       const imageUploadModule = await import('@/lib/imageUpload');
       await imageUploadModule.uploadImages(files);

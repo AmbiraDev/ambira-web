@@ -12,7 +12,11 @@ import { useQuery, UseQueryOptions } from '@tanstack/react-query';
 import { GroupService } from '../services/GroupService';
 import { Group as DomainGroup } from '@/domain/entities/Group';
 import { Group as UIGroup } from '@/types';
-import { LeaderboardEntry, TimePeriod, GroupStats } from '../types/groups.types';
+import {
+  LeaderboardEntry,
+  TimePeriod,
+  GroupStats,
+} from '../types/groups.types';
 
 // Singleton service instance
 const groupService = new GroupService();
@@ -29,7 +33,8 @@ function adaptDomainGroupToUI(domainGroup: DomainGroup): UIGroup {
     description: domainGroup.description,
     category: domainGroup.category,
     type: 'professional', // Default type - can be made configurable
-    privacySetting: domainGroup.privacy === 'public' ? 'public' : 'approval-required',
+    privacySetting:
+      domainGroup.privacy === 'public' ? 'public' : 'approval-required',
     memberCount: domainGroup.getMemberCount(),
     adminUserIds: Array.from(domainGroup.adminUserIds),
     memberIds: Array.from(domainGroup.memberIds),
@@ -60,11 +65,13 @@ export const GROUPS_KEYS = {
   list: (filters?: string) => [...GROUPS_KEYS.lists(), { filters }] as const,
   details: () => [...GROUPS_KEYS.all(), 'detail'] as const,
   detail: (id: string) => [...GROUPS_KEYS.details(), id] as const,
-  userGroups: (userId: string) => [...GROUPS_KEYS.all(), 'user', userId] as const,
+  userGroups: (userId: string) =>
+    [...GROUPS_KEYS.all(), 'user', userId] as const,
   publicGroups: () => [...GROUPS_KEYS.lists(), 'public'] as const,
   leaderboard: (groupId: string, period: TimePeriod) =>
     [...GROUPS_KEYS.detail(groupId), 'leaderboard', period] as const,
-  stats: (groupId: string) => [...GROUPS_KEYS.detail(groupId), 'stats'] as const,
+  stats: (groupId: string) =>
+    [...GROUPS_KEYS.detail(groupId), 'stats'] as const,
 };
 
 // ==================== CACHE TIMES ====================
@@ -259,12 +266,16 @@ export function useGroupSearch(
       // Get all public groups and filter client-side
       const domainGroups = await groupService.getPublicGroups(limit);
       const filtered = domainGroups.filter(group => {
-        const matchesName = !filters.name ||
+        const matchesName =
+          !filters.name ||
           group.name.toLowerCase().includes(filters.name.toLowerCase());
-        const matchesLocation = !filters.location ||
-          group.location?.toLowerCase().includes(filters.location.toLowerCase());
-        const matchesCategory = !filters.category ||
-          group.category === filters.category;
+        const matchesLocation =
+          !filters.location ||
+          group.location
+            ?.toLowerCase()
+            .includes(filters.location.toLowerCase());
+        const matchesCategory =
+          !filters.category || group.category === filters.category;
         return matchesName && matchesLocation && matchesCategory;
       });
       return adaptDomainGroupsToUI(filtered);

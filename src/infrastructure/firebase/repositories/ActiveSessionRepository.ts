@@ -14,7 +14,7 @@ import {
   deleteDoc,
   query,
   where,
-  limit as limitFn
+  limit as limitFn,
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { ActiveSession } from '@/domain/entities/ActiveSession';
@@ -48,7 +48,9 @@ export class ActiveSessionRepository {
       return this.mapper.toDomain(doc);
     } catch (error) {
       console.error(`Error getting active session for user ${userId}:`, error);
-      throw new Error(`Failed to get active session: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to get active session: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -57,13 +59,19 @@ export class ActiveSessionRepository {
    */
   async saveActiveSession(session: ActiveSession): Promise<void> {
     try {
-      const docRef = doc(db, `users/${session.userId}/activeSession`, session.id);
+      const docRef = doc(
+        db,
+        `users/${session.userId}/activeSession`,
+        session.id
+      );
       const data = this.mapper.toFirestore(session);
 
       await setDoc(docRef, data);
     } catch (error) {
       console.error(`Error saving active session ${session.id}:`, error);
-      throw new Error(`Failed to save active session: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to save active session: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -76,7 +84,9 @@ export class ActiveSessionRepository {
       await deleteDoc(docRef);
     } catch (error) {
       console.error(`Error deleting active session ${sessionId}:`, error);
-      throw new Error(`Failed to delete active session: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to delete active session: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -88,14 +98,17 @@ export class ActiveSessionRepository {
       const activeSessionRef = collection(db, `users/${userId}/activeSession`);
       const snapshot = await getDocs(activeSessionRef);
 
-      const deletePromises = snapshot.docs.map(doc =>
-        deleteDoc(doc.ref)
-      );
+      const deletePromises = snapshot.docs.map(doc => deleteDoc(doc.ref));
 
       await Promise.all(deletePromises);
     } catch (error) {
-      console.error(`Error clearing active sessions for user ${userId}:`, error);
-      throw new Error(`Failed to clear active sessions: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.error(
+        `Error clearing active sessions for user ${userId}:`,
+        error
+      );
+      throw new Error(
+        `Failed to clear active sessions: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 

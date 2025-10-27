@@ -16,7 +16,6 @@ import { Group, UpdateGroupData, CreateGroupData } from '@/types';
 import { doc, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { removeUndefinedFields } from '../shared/utils';
-import { v4 as uuidv4 } from 'uuid';
 
 // Singleton instances
 const groupService = new GroupService();
@@ -32,7 +31,8 @@ function adaptDomainGroupToUI(domainGroup: DomainGroup): Group {
     description: domainGroup.description,
     category: domainGroup.category,
     type: 'professional', // Default type
-    privacySetting: domainGroup.privacy === 'public' ? 'public' : 'approval-required',
+    privacySetting:
+      domainGroup.privacy === 'public' ? 'public' : 'approval-required',
     memberCount: domainGroup.getMemberCount(),
     adminUserIds: Array.from(domainGroup.adminUserIds),
     memberIds: Array.from(domainGroup.memberIds),
@@ -79,7 +79,10 @@ async function getPublicGroups(limit?: number): Promise<Group[]> {
  * Note: This is a direct Firestore update, bypassing the domain layer.
  * For new code, consider adding proper update methods to GroupService.
  */
-async function updateGroup(groupId: string, data: UpdateGroupData): Promise<void> {
+async function updateGroup(
+  groupId: string,
+  data: UpdateGroupData
+): Promise<void> {
   try {
     const groupRef = doc(db, 'groups', groupId);
 
@@ -92,7 +95,9 @@ async function updateGroup(groupId: string, data: UpdateGroupData): Promise<void
     await updateDoc(groupRef, cleanData);
   } catch (error) {
     console.error(`Error updating group ${groupId}:`, error);
-    throw new Error(`Failed to update group: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new Error(
+      `Failed to update group: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
   }
 }
 
@@ -120,14 +125,20 @@ async function canUserJoin(groupId: string, userId: string): Promise<boolean> {
 /**
  * Check if user can invite to group
  */
-async function canUserInvite(groupId: string, userId: string): Promise<boolean> {
+async function canUserInvite(
+  groupId: string,
+  userId: string
+): Promise<boolean> {
   return groupService.canUserInvite(groupId, userId);
 }
 
 /**
  * Create a new group
  */
-async function createGroup(data: CreateGroupData, userId: string): Promise<Group> {
+async function createGroup(
+  data: CreateGroupData,
+  userId: string
+): Promise<Group> {
   try {
     // Generate unique group ID
     const groupId = uuidv4();
@@ -154,7 +165,9 @@ async function createGroup(data: CreateGroupData, userId: string): Promise<Group
     return adaptDomainGroupToUI(domainGroup);
   } catch (error) {
     console.error('Error creating group:', error);
-    throw new Error(`Failed to create group: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    throw new Error(
+      `Failed to create group: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
   }
 }
 

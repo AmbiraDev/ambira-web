@@ -6,7 +6,11 @@
  * When they are implemented, these hooks will handle the React Query integration.
  */
 
-import { useMutation, useQueryClient, UseMutationOptions } from '@tanstack/react-query';
+import {
+  useMutation,
+  useQueryClient,
+  UseMutationOptions,
+} from '@tanstack/react-query';
 import { ProfileService } from '../services/ProfileService';
 import { PROFILE_KEYS } from './useProfile';
 
@@ -23,23 +27,43 @@ const profileService = new ProfileService();
  * followMutation.mutate({ currentUserId, targetUserId });
  */
 export function useFollowUser(
-  options?: Partial<UseMutationOptions<void, Error, { currentUserId: string; targetUserId: string }>>
+  options?: Partial<
+    UseMutationOptions<
+      void,
+      Error,
+      { currentUserId: string; targetUserId: string }
+    >
+  >
 ) {
   const queryClient = useQueryClient();
 
-  return useMutation<void, Error, { currentUserId: string; targetUserId: string }>({
+  return useMutation<
+    void,
+    Error,
+    { currentUserId: string; targetUserId: string }
+  >({
     mutationFn: ({ currentUserId, targetUserId }) =>
       profileService.followUser(currentUserId, targetUserId),
 
     onMutate: async ({ currentUserId, targetUserId }) => {
       // Cancel outgoing queries
-      await queryClient.cancelQueries({ queryKey: PROFILE_KEYS.detail(targetUserId) });
-      await queryClient.cancelQueries({ queryKey: PROFILE_KEYS.following(currentUserId) });
-      await queryClient.cancelQueries({ queryKey: PROFILE_KEYS.followers(targetUserId) });
+      await queryClient.cancelQueries({
+        queryKey: PROFILE_KEYS.detail(targetUserId),
+      });
+      await queryClient.cancelQueries({
+        queryKey: PROFILE_KEYS.following(currentUserId),
+      });
+      await queryClient.cancelQueries({
+        queryKey: PROFILE_KEYS.followers(targetUserId),
+      });
 
       // Snapshot previous values
-      const previousProfile = queryClient.getQueryData(PROFILE_KEYS.detail(targetUserId));
-      const previousFollowing = queryClient.getQueryData(PROFILE_KEYS.following(currentUserId));
+      const previousProfile = queryClient.getQueryData(
+        PROFILE_KEYS.detail(targetUserId)
+      );
+      const previousFollowing = queryClient.getQueryData(
+        PROFILE_KEYS.following(currentUserId)
+      );
 
       // Optimistically update isFollowing
       queryClient.setQueryData(
@@ -48,13 +72,16 @@ export function useFollowUser(
       );
 
       // Optimistically update follower count on profile
-      queryClient.setQueryData(PROFILE_KEYS.detail(targetUserId), (old: any) => {
-        if (!old) return old;
-        return {
-          ...old,
-          followerCount: (old.followerCount || 0) + 1,
-        };
-      });
+      queryClient.setQueryData(
+        PROFILE_KEYS.detail(targetUserId),
+        (old: any) => {
+          if (!old) return old;
+          return {
+            ...old,
+            followerCount: (old.followerCount || 0) + 1,
+          };
+        }
+      );
 
       return { previousProfile, previousFollowing };
     },
@@ -67,23 +94,36 @@ export function useFollowUser(
           context.previousProfile
         );
       }
-      if (context && 'previousFollowing' in context && context.previousFollowing) {
+      if (
+        context &&
+        'previousFollowing' in context &&
+        context.previousFollowing
+      ) {
         queryClient.setQueryData(
           PROFILE_KEYS.following(variables.currentUserId),
           context.previousFollowing
         );
       }
       queryClient.setQueryData(
-        PROFILE_KEYS.isFollowing(variables.currentUserId, variables.targetUserId),
+        PROFILE_KEYS.isFollowing(
+          variables.currentUserId,
+          variables.targetUserId
+        ),
         false
       );
     },
 
     onSuccess: (_, { currentUserId, targetUserId }) => {
       // Invalidate relevant caches
-      queryClient.invalidateQueries({ queryKey: PROFILE_KEYS.detail(targetUserId) });
-      queryClient.invalidateQueries({ queryKey: PROFILE_KEYS.following(currentUserId) });
-      queryClient.invalidateQueries({ queryKey: PROFILE_KEYS.followers(targetUserId) });
+      queryClient.invalidateQueries({
+        queryKey: PROFILE_KEYS.detail(targetUserId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: PROFILE_KEYS.following(currentUserId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: PROFILE_KEYS.followers(targetUserId),
+      });
       queryClient.invalidateQueries({
         queryKey: PROFILE_KEYS.isFollowing(currentUserId, targetUserId),
       });
@@ -104,22 +144,40 @@ export function useFollowUser(
  * unfollowMutation.mutate({ currentUserId, targetUserId });
  */
 export function useUnfollowUser(
-  options?: Partial<UseMutationOptions<void, Error, { currentUserId: string; targetUserId: string }>>
+  options?: Partial<
+    UseMutationOptions<
+      void,
+      Error,
+      { currentUserId: string; targetUserId: string }
+    >
+  >
 ) {
   const queryClient = useQueryClient();
 
-  return useMutation<void, Error, { currentUserId: string; targetUserId: string }>({
+  return useMutation<
+    void,
+    Error,
+    { currentUserId: string; targetUserId: string }
+  >({
     mutationFn: ({ currentUserId, targetUserId }) =>
       profileService.unfollowUser(currentUserId, targetUserId),
 
     onMutate: async ({ currentUserId, targetUserId }) => {
       // Cancel outgoing queries
-      await queryClient.cancelQueries({ queryKey: PROFILE_KEYS.detail(targetUserId) });
-      await queryClient.cancelQueries({ queryKey: PROFILE_KEYS.following(currentUserId) });
-      await queryClient.cancelQueries({ queryKey: PROFILE_KEYS.followers(targetUserId) });
+      await queryClient.cancelQueries({
+        queryKey: PROFILE_KEYS.detail(targetUserId),
+      });
+      await queryClient.cancelQueries({
+        queryKey: PROFILE_KEYS.following(currentUserId),
+      });
+      await queryClient.cancelQueries({
+        queryKey: PROFILE_KEYS.followers(targetUserId),
+      });
 
       // Snapshot previous values
-      const previousProfile = queryClient.getQueryData(PROFILE_KEYS.detail(targetUserId));
+      const previousProfile = queryClient.getQueryData(
+        PROFILE_KEYS.detail(targetUserId)
+      );
 
       // Optimistically update isFollowing
       queryClient.setQueryData(
@@ -128,13 +186,16 @@ export function useUnfollowUser(
       );
 
       // Optimistically update follower count on profile
-      queryClient.setQueryData(PROFILE_KEYS.detail(targetUserId), (old: any) => {
-        if (!old) return old;
-        return {
-          ...old,
-          followerCount: Math.max(0, (old.followerCount || 0) - 1),
-        };
-      });
+      queryClient.setQueryData(
+        PROFILE_KEYS.detail(targetUserId),
+        (old: any) => {
+          if (!old) return old;
+          return {
+            ...old,
+            followerCount: Math.max(0, (old.followerCount || 0) - 1),
+          };
+        }
+      );
 
       return { previousProfile };
     },
@@ -148,16 +209,25 @@ export function useUnfollowUser(
         );
       }
       queryClient.setQueryData(
-        PROFILE_KEYS.isFollowing(variables.currentUserId, variables.targetUserId),
+        PROFILE_KEYS.isFollowing(
+          variables.currentUserId,
+          variables.targetUserId
+        ),
         true
       );
     },
 
     onSuccess: (_, { currentUserId, targetUserId }) => {
       // Invalidate relevant caches
-      queryClient.invalidateQueries({ queryKey: PROFILE_KEYS.detail(targetUserId) });
-      queryClient.invalidateQueries({ queryKey: PROFILE_KEYS.following(currentUserId) });
-      queryClient.invalidateQueries({ queryKey: PROFILE_KEYS.followers(targetUserId) });
+      queryClient.invalidateQueries({
+        queryKey: PROFILE_KEYS.detail(targetUserId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: PROFILE_KEYS.following(currentUserId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: PROFILE_KEYS.followers(targetUserId),
+      });
       queryClient.invalidateQueries({
         queryKey: PROFILE_KEYS.isFollowing(currentUserId, targetUserId),
       });

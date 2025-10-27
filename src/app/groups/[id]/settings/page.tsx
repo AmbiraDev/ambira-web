@@ -26,7 +26,12 @@ export default function GroupSettingsPage() {
     name: '',
     description: '',
     location: '',
-    category: 'other' as 'work' | 'study' | 'side-project' | 'learning' | 'other',
+    category: 'other' as
+      | 'work'
+      | 'study'
+      | 'side-project'
+      | 'learning'
+      | 'other',
     type: 'other' as 'just-for-fun' | 'professional' | 'competitive' | 'other',
     privacySetting: 'public' as 'public' | 'approval-required',
     imageUrl: '',
@@ -95,13 +100,17 @@ export default function GroupSettingsPage() {
       if (groupImages.length > 0) {
         try {
           const imageFile = groupImages[0];
-          if (imageFile) {
+          if (imageFile !== undefined) {
             const result = await uploadImage(imageFile, 'group-images');
             imageUrl = result.url;
           }
         } catch (uploadError) {
           console.error('Error uploading group image:', uploadError);
-          setError(uploadError instanceof Error ? uploadError.message : 'Failed to upload group image');
+          setError(
+            uploadError instanceof Error
+              ? uploadError.message
+              : 'Failed to upload group image'
+          );
           setIsSaving(false);
           return;
         }
@@ -134,8 +143,12 @@ export default function GroupSettingsPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Please log in</h1>
-          <p className="text-gray-600">You need to be logged in to edit groups.</p>
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">
+            Please log in
+          </h1>
+          <p className="text-gray-600">
+            You need to be logged in to edit groups.
+          </p>
         </div>
       </div>
     );
@@ -161,7 +174,9 @@ export default function GroupSettingsPage() {
         <Header />
         <div className="max-w-3xl mx-auto px-4 py-8">
           <div className="text-center">
-            <h1 className="text-2xl font-bold text-gray-900 mb-4">Group not found</h1>
+            <h1 className="text-2xl font-bold text-gray-900 mb-4">
+              Group not found
+            </h1>
             <button
               onClick={() => router.push('/groups')}
               className="bg-[#007AFF] text-white px-4 py-2 rounded-lg hover:bg-[#0051D5]"
@@ -183,7 +198,10 @@ export default function GroupSettingsPage() {
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Edit Group</h1>
         </div>
 
-        <form onSubmit={handleSubmit} className="bg-white rounded-lg border border-gray-200 p-8">
+        <form
+          onSubmit={handleSubmit}
+          className="bg-white rounded-lg border border-gray-200 p-8"
+        >
           {/* Image Upload */}
           <div className="mb-8">
             <label className="block text-sm font-semibold text-gray-900 mb-2">
@@ -205,7 +223,9 @@ export default function GroupSettingsPage() {
               placeholder="Upload group picture"
               disabled={isSaving}
             />
-            <p className="text-xs text-gray-500 mt-2">Recommended size: 248×248 px (max 5MB)</p>
+            <p className="text-xs text-gray-500 mt-2">
+              Recommended size: 248×248 px (max 5MB)
+            </p>
           </div>
 
           <p className="text-sm text-gray-600 mb-6 italic">
@@ -214,7 +234,10 @@ export default function GroupSettingsPage() {
 
           {/* Group Name */}
           <div className="mb-6">
-            <label htmlFor="name" className="block text-sm font-semibold text-gray-900 mb-2">
+            <label
+              htmlFor="name"
+              className="block text-sm font-semibold text-gray-900 mb-2"
+            >
               Group Name *
             </label>
             <input
@@ -222,7 +245,7 @@ export default function GroupSettingsPage() {
               id="name"
               required
               value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              onChange={e => setFormData({ ...formData, name: e.target.value })}
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:border-transparent"
               placeholder="Enter group name"
             />
@@ -230,14 +253,19 @@ export default function GroupSettingsPage() {
 
           {/* Location */}
           <div className="mb-6">
-            <label htmlFor="location" className="block text-sm font-semibold text-gray-900 mb-2">
+            <label
+              htmlFor="location"
+              className="block text-sm font-semibold text-gray-900 mb-2"
+            >
               Location
             </label>
             <input
               type="text"
               id="location"
               value={formData.location}
-              onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+              onChange={e =>
+                setFormData({ ...formData, location: e.target.value })
+              }
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:border-transparent"
               placeholder="Enter location"
             />
@@ -245,13 +273,18 @@ export default function GroupSettingsPage() {
 
           {/* Category */}
           <div className="mb-6">
-            <label htmlFor="category" className="block text-sm font-semibold text-gray-900 mb-2">
+            <label
+              htmlFor="category"
+              className="block text-sm font-semibold text-gray-900 mb-2"
+            >
               Category
             </label>
             <select
               id="category"
               value={formData.category}
-              onChange={(e) => setFormData({ ...formData, category: e.target.value as any })}
+              onChange={e =>
+                setFormData({ ...formData, category: e.target.value as any })
+              }
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:border-transparent bg-white"
             >
               <option value="work">Work</option>
@@ -264,13 +297,18 @@ export default function GroupSettingsPage() {
 
           {/* Type */}
           <div className="mb-6">
-            <label htmlFor="type" className="block text-sm font-semibold text-gray-900 mb-2">
+            <label
+              htmlFor="type"
+              className="block text-sm font-semibold text-gray-900 mb-2"
+            >
               Group Type
             </label>
             <select
               id="type"
               value={formData.type}
-              onChange={(e) => setFormData({ ...formData, type: e.target.value as any })}
+              onChange={e =>
+                setFormData({ ...formData, type: e.target.value as any })
+              }
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:border-transparent bg-white"
             >
               <option value="just-for-fun">Just For Fun</option>
@@ -282,14 +320,17 @@ export default function GroupSettingsPage() {
 
           {/* Description */}
           <div className="mb-8">
-            <label htmlFor="description" className="block text-sm font-semibold text-gray-900 mb-2">
+            <label
+              htmlFor="description"
+              className="block text-sm font-semibold text-gray-900 mb-2"
+            >
               Description *
             </label>
             <textarea
               id="description"
               required
               value={formData.description}
-              onChange={(e) => {
+              onChange={e => {
                 // Limit to 4 lines (3 newlines)
                 const newlineCount = (e.target.value.match(/\n/g) || []).length;
                 if (newlineCount <= 3) {
@@ -301,7 +342,9 @@ export default function GroupSettingsPage() {
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#007AFF] focus:border-transparent resize-none"
               placeholder="Describe your group"
             />
-            <p className="text-xs text-gray-500 mt-1">{formData.description.length}/200 characters</p>
+            <p className="text-xs text-gray-500 mt-1">
+              {formData.description.length}/200 characters
+            </p>
           </div>
 
           {/* Error Message */}

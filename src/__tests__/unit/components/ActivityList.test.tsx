@@ -128,7 +128,6 @@ describe('ActivityList Component', () => {
 
   describe('Error State', () => {
     it('should display error message when loading fails', () => {
-      
       useProjects.mockReturnValue({
         projects: null,
         isLoading: false,
@@ -136,17 +135,16 @@ describe('ActivityList Component', () => {
         deleteProject: jest.fn(),
         archiveProject: jest.fn(),
       });
-
-      
 
       render(<ActivityList />);
 
       expect(screen.getByText(/error loading activities/i)).toBeInTheDocument();
-      expect(screen.getByText(/failed to load activities/i)).toBeInTheDocument();
+      expect(
+        screen.getByText(/failed to load activities/i)
+      ).toBeInTheDocument();
     });
 
     it('should display retry button in error state', () => {
-      
       useProjects.mockReturnValue({
         projects: null,
         isLoading: false,
@@ -154,8 +152,6 @@ describe('ActivityList Component', () => {
         deleteProject: jest.fn(),
         archiveProject: jest.fn(),
       });
-
-      
 
       render(<ActivityList />);
 
@@ -164,7 +160,6 @@ describe('ActivityList Component', () => {
     });
 
     it('should reload page when retry button is clicked', () => {
-
       useProjects.mockReturnValue({
         projects: null,
         isLoading: false,
@@ -187,7 +182,6 @@ describe('ActivityList Component', () => {
 
   describe('Empty State', () => {
     it('should display empty state when no activities exist', () => {
-
       useProjects.mockReturnValue({
         projects: [],
         isLoading: false,
@@ -200,11 +194,12 @@ describe('ActivityList Component', () => {
 
       expect(screen.getByText(/no activities yet/i)).toBeInTheDocument();
       // Check for the button specifically to avoid matching text in multiple places
-      expect(screen.getByRole('button', { name: /create your first activity/i })).toBeInTheDocument();
+      expect(
+        screen.getByRole('button', { name: /create your first activity/i })
+      ).toBeInTheDocument();
     });
 
     it('should display create button in empty state', () => {
-      
       useProjects.mockReturnValue({
         projects: [],
         isLoading: false,
@@ -213,11 +208,11 @@ describe('ActivityList Component', () => {
         archiveProject: jest.fn(),
       });
 
-      
-
       render(<ActivityList />);
 
-      const createButton = screen.getByRole('button', { name: /create your first activity/i });
+      const createButton = screen.getByRole('button', {
+        name: /create your first activity/i,
+      });
       expect(createButton).toBeInTheDocument();
     });
 
@@ -232,7 +227,9 @@ describe('ActivityList Component', () => {
 
       render(<ActivityList />);
 
-      const createButton = screen.getByRole('button', { name: /create your first activity/i });
+      const createButton = screen.getByRole('button', {
+        name: /create your first activity/i,
+      });
       fireEvent.click(createButton);
 
       expect(mockPush).toHaveBeenCalledWith('/activities/new');
@@ -241,7 +238,6 @@ describe('ActivityList Component', () => {
 
   describe('Activities Display', () => {
     beforeEach(() => {
-      
       useProjects.mockReturnValue({
         projects: mockActivities,
         isLoading: false,
@@ -249,8 +245,6 @@ describe('ActivityList Component', () => {
         deleteProject: jest.fn(),
         archiveProject: jest.fn(),
       });
-
-      
     });
 
     it('should display activity count', () => {
@@ -260,7 +254,6 @@ describe('ActivityList Component', () => {
     });
 
     it('should display singular form for one activity', () => {
-      
       useProjects.mockReturnValue({
         projects: [mockActivities[0]],
         isLoading: false,
@@ -295,7 +288,6 @@ describe('ActivityList Component', () => {
 
   describe('Accessibility - ARIA Labels', () => {
     beforeEach(() => {
-      
       useProjects.mockReturnValue({
         projects: [],
         isLoading: false,
@@ -303,22 +295,27 @@ describe('ActivityList Component', () => {
         deleteProject: jest.fn(),
         archiveProject: jest.fn(),
       });
-
-      
     });
 
     it('should have aria-label on new activity button', () => {
       render(<ActivityList />);
 
-      const newButton = screen.getByRole('button', { name: /create new activity/i });
+      const newButton = screen.getByRole('button', {
+        name: /create new activity/i,
+      });
       expect(newButton).toHaveAttribute('aria-label', 'Create new activity');
     });
 
     it('should have aria-label on create first activity button', () => {
       render(<ActivityList />);
 
-      const createButton = screen.getByRole('button', { name: /create your first activity/i });
-      expect(createButton).toHaveAttribute('aria-label', 'Create your first activity');
+      const createButton = screen.getByRole('button', {
+        name: /create your first activity/i,
+      });
+      expect(createButton).toHaveAttribute(
+        'aria-label',
+        'Create your first activity'
+      );
     });
 
     it('should mark decorative icons as aria-hidden', () => {
@@ -331,7 +328,6 @@ describe('ActivityList Component', () => {
 
   describe('Accessibility - Touch Targets', () => {
     beforeEach(() => {
-      
       useProjects.mockReturnValue({
         projects: [],
         isLoading: false,
@@ -339,19 +335,18 @@ describe('ActivityList Component', () => {
         deleteProject: jest.fn(),
         archiveProject: jest.fn(),
       });
-
-      
     });
 
     it('should meet minimum 44x44px touch target for create button in empty state', () => {
       render(<ActivityList />);
 
-      const createButton = screen.getByRole('button', { name: /create your first activity/i });
+      const createButton = screen.getByRole('button', {
+        name: /create your first activity/i,
+      });
       expect(createButton).toHaveClass('min-h-[44px]');
     });
 
     it('should meet minimum 44px height for modal buttons', () => {
-      
       useProjects.mockReturnValue({
         projects: mockActivities,
         isLoading: false,
@@ -363,7 +358,9 @@ describe('ActivityList Component', () => {
       render(<ActivityList onEditActivity={jest.fn()} />);
 
       // Open menu and trigger delete
-      const menuButtons = screen.getAllByRole('button', { name: /open activity menu/i });
+      const menuButtons = screen.getAllByRole('button', {
+        name: /open activity menu/i,
+      });
       const firstMenuButton = menuButtons[0];
       if (!firstMenuButton || !(firstMenuButton instanceof Element)) return;
       fireEvent.click(firstMenuButton);
@@ -373,8 +370,12 @@ describe('ActivityList Component', () => {
 
       // Check modal buttons
       const modalButtons = screen.getAllByRole('button');
-      const cancelButton = modalButtons.find(btn => btn.textContent === 'Cancel');
-      const confirmButton = modalButtons.find(btn => btn.textContent === 'Delete');
+      const cancelButton = modalButtons.find(
+        btn => btn.textContent === 'Cancel'
+      );
+      const confirmButton = modalButtons.find(
+        btn => btn.textContent === 'Delete'
+      );
 
       expect(cancelButton).toHaveClass('min-h-[44px]');
       expect(confirmButton).toHaveClass('min-h-[44px]');
@@ -383,7 +384,6 @@ describe('ActivityList Component', () => {
 
   describe('Delete Confirmation Modal', () => {
     beforeEach(() => {
-      
       useProjects.mockReturnValue({
         projects: mockActivities,
         isLoading: false,
@@ -391,14 +391,14 @@ describe('ActivityList Component', () => {
         deleteProject: jest.fn(),
         archiveProject: jest.fn(),
       });
-
-      
     });
 
     it('should open delete modal when delete is clicked', () => {
       render(<ActivityList onEditActivity={jest.fn()} />);
 
-      const menuButtons = screen.getAllByRole('button', { name: /open activity menu/i });
+      const menuButtons = screen.getAllByRole('button', {
+        name: /open activity menu/i,
+      });
       const firstMenuButton = menuButtons[0];
       if (!firstMenuButton || !(firstMenuButton instanceof Element)) return;
       fireEvent.click(firstMenuButton);
@@ -413,7 +413,9 @@ describe('ActivityList Component', () => {
     it('should display activity name in delete confirmation', () => {
       render(<ActivityList onEditActivity={jest.fn()} />);
 
-      const menuButtons = screen.getAllByRole('button', { name: /open activity menu/i });
+      const menuButtons = screen.getAllByRole('button', {
+        name: /open activity menu/i,
+      });
       const firstMenuButton = menuButtons[0];
       if (!firstMenuButton || !(firstMenuButton instanceof Element)) return;
       fireEvent.click(firstMenuButton);
@@ -427,7 +429,9 @@ describe('ActivityList Component', () => {
     it('should close modal when Cancel is clicked', () => {
       render(<ActivityList onEditActivity={jest.fn()} />);
 
-      const menuButtons = screen.getAllByRole('button', { name: /open activity menu/i });
+      const menuButtons = screen.getAllByRole('button', {
+        name: /open activity menu/i,
+      });
       const firstMenuButton = menuButtons[0];
       if (!firstMenuButton) return;
       fireEvent.click(firstMenuButton);
@@ -444,7 +448,9 @@ describe('ActivityList Component', () => {
     it('should close modal when clicking backdrop', () => {
       render(<ActivityList onEditActivity={jest.fn()} />);
 
-      const menuButtons = screen.getAllByRole('button', { name: /open activity menu/i });
+      const menuButtons = screen.getAllByRole('button', {
+        name: /open activity menu/i,
+      });
       const firstMenuButton = menuButtons[0];
       if (!firstMenuButton) return;
       fireEvent.click(firstMenuButton);
@@ -452,7 +458,8 @@ describe('ActivityList Component', () => {
       const deleteButton = screen.getByRole('menuitem', { name: /delete/i });
       fireEvent.click(deleteButton);
 
-      const backdrop = screen.getByText(/delete activity/i).parentElement?.parentElement;
+      const backdrop =
+        screen.getByText(/delete activity/i).parentElement?.parentElement;
       if (backdrop) {
         fireEvent.click(backdrop);
       }
@@ -464,7 +471,9 @@ describe('ActivityList Component', () => {
       const user = userEvent.setup();
       render(<ActivityList onEditActivity={jest.fn()} />);
 
-      const menuButtons = screen.getAllByRole('button', { name: /open activity menu/i });
+      const menuButtons = screen.getAllByRole('button', {
+        name: /open activity menu/i,
+      });
       const firstMenuButton = menuButtons[0];
       if (!firstMenuButton) return;
       fireEvent.click(firstMenuButton);
@@ -472,7 +481,8 @@ describe('ActivityList Component', () => {
       const deleteButton = screen.getByRole('menuitem', { name: /delete/i });
       fireEvent.click(deleteButton);
 
-      const backdrop = screen.getByText(/delete activity/i).parentElement?.parentElement;
+      const backdrop =
+        screen.getByText(/delete activity/i).parentElement?.parentElement;
       if (backdrop) {
         fireEvent.keyDown(backdrop, { key: 'Escape' });
       }
@@ -481,7 +491,6 @@ describe('ActivityList Component', () => {
     });
 
     it('should call deleteProject when Delete is confirmed', async () => {
-
       const mockDeleteProject = jest.fn().mockResolvedValue(undefined);
       useProjects.mockReturnValue({
         projects: mockActivities,
@@ -493,7 +502,9 @@ describe('ActivityList Component', () => {
 
       render(<ActivityList onEditActivity={jest.fn()} />);
 
-      const menuButtons = screen.getAllByRole('button', { name: /open activity menu/i });
+      const menuButtons = screen.getAllByRole('button', {
+        name: /open activity menu/i,
+      });
       const firstMenuButton = menuButtons[0];
       if (!firstMenuButton) return;
       fireEvent.click(firstMenuButton);
@@ -510,7 +521,6 @@ describe('ActivityList Component', () => {
     });
 
     it('should show success toast after successful delete', async () => {
-
       const localMockDeleteProject = jest.fn().mockResolvedValue(undefined);
       useProjects.mockReturnValue({
         projects: mockActivities,
@@ -522,7 +532,9 @@ describe('ActivityList Component', () => {
 
       render(<ActivityList onEditActivity={jest.fn()} />);
 
-      const menuButtons = screen.getAllByRole('button', { name: /open activity menu/i });
+      const menuButtons = screen.getAllByRole('button', {
+        name: /open activity menu/i,
+      });
       const firstMenuButton = menuButtons[0];
       if (!firstMenuButton) return;
       fireEvent.click(firstMenuButton);
@@ -534,13 +546,16 @@ describe('ActivityList Component', () => {
       fireEvent.click(confirmButton);
 
       await waitFor(() => {
-        expect(mockSuccessToast).toHaveBeenCalledWith('Activity "Writing" deleted successfully');
+        expect(mockSuccessToast).toHaveBeenCalledWith(
+          'Activity "Writing" deleted successfully'
+        );
       });
     });
 
     it('should show error toast on delete failure', async () => {
-
-      const localMockDeleteProject = jest.fn().mockRejectedValue(new Error('Delete failed'));
+      const localMockDeleteProject = jest
+        .fn()
+        .mockRejectedValue(new Error('Delete failed'));
       useProjects.mockReturnValue({
         projects: mockActivities,
         isLoading: false,
@@ -549,11 +564,15 @@ describe('ActivityList Component', () => {
         archiveProject: jest.fn(),
       });
 
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      const consoleSpy = jest
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
 
       render(<ActivityList onEditActivity={jest.fn()} />);
 
-      const menuButtons = screen.getAllByRole('button', { name: /open activity menu/i });
+      const menuButtons = screen.getAllByRole('button', {
+        name: /open activity menu/i,
+      });
       const firstMenuButton = menuButtons[0];
       if (!firstMenuButton) return;
       fireEvent.click(firstMenuButton);
@@ -565,7 +584,9 @@ describe('ActivityList Component', () => {
       fireEvent.click(confirmButton);
 
       await waitFor(() => {
-        expect(mockErrorToast).toHaveBeenCalledWith('Failed to delete activity. Please try again.');
+        expect(mockErrorToast).toHaveBeenCalledWith(
+          'Failed to delete activity. Please try again.'
+        );
       });
 
       consoleSpy.mockRestore();
@@ -574,7 +595,6 @@ describe('ActivityList Component', () => {
 
   describe('Archive/Restore Functionality', () => {
     beforeEach(() => {
-      
       useProjects.mockReturnValue({
         projects: mockActivities,
         isLoading: false,
@@ -582,12 +602,9 @@ describe('ActivityList Component', () => {
         deleteProject: jest.fn(),
         archiveProject: jest.fn().mockResolvedValue(undefined),
       });
-
-      
     });
 
     it('should call archiveProject when Archive is clicked on active activity', async () => {
-      
       const mockArchiveProject = jest.fn().mockResolvedValue(undefined);
       useProjects.mockReturnValue({
         projects: mockActivities,
@@ -599,7 +616,9 @@ describe('ActivityList Component', () => {
 
       render(<ActivityList onEditActivity={jest.fn()} />);
 
-      const menuButtons = screen.getAllByRole('button', { name: /open activity menu/i });
+      const menuButtons = screen.getAllByRole('button', {
+        name: /open activity menu/i,
+      });
       const firstMenuButton = menuButtons[0]; // First activity (active)
       if (!firstMenuButton) return;
       fireEvent.click(firstMenuButton);
@@ -613,10 +632,11 @@ describe('ActivityList Component', () => {
     });
 
     it('should show success toast after archiving', async () => {
-
       render(<ActivityList onEditActivity={jest.fn()} />);
 
-      const menuButtons = screen.getAllByRole('button', { name: /open activity menu/i });
+      const menuButtons = screen.getAllByRole('button', {
+        name: /open activity menu/i,
+      });
       const firstMenuButton = menuButtons[0];
       if (!firstMenuButton) return;
       fireEvent.click(firstMenuButton);
@@ -625,13 +645,16 @@ describe('ActivityList Component', () => {
       fireEvent.click(archiveButton);
 
       await waitFor(() => {
-        expect(mockSuccessToast).toHaveBeenCalledWith('Activity "Writing" archived successfully');
+        expect(mockSuccessToast).toHaveBeenCalledWith(
+          'Activity "Writing" archived successfully'
+        );
       });
     });
 
     it('should show error toast on archive failure', async () => {
-
-      const localMockArchiveProject = jest.fn().mockRejectedValue(new Error('Archive failed'));
+      const localMockArchiveProject = jest
+        .fn()
+        .mockRejectedValue(new Error('Archive failed'));
       useProjects.mockReturnValue({
         projects: mockActivities,
         isLoading: false,
@@ -640,11 +663,15 @@ describe('ActivityList Component', () => {
         archiveProject: localMockArchiveProject,
       });
 
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+      const consoleSpy = jest
+        .spyOn(console, 'error')
+        .mockImplementation(() => {});
 
       render(<ActivityList onEditActivity={jest.fn()} />);
 
-      const menuButtons = screen.getAllByRole('button', { name: /open activity menu/i });
+      const menuButtons = screen.getAllByRole('button', {
+        name: /open activity menu/i,
+      });
       const firstMenuButton = menuButtons[0];
       if (!firstMenuButton) return;
       fireEvent.click(firstMenuButton);
@@ -653,7 +680,9 @@ describe('ActivityList Component', () => {
       fireEvent.click(archiveButton);
 
       await waitFor(() => {
-        expect(mockErrorToast).toHaveBeenCalledWith('Failed to archive activity. Please try again.');
+        expect(mockErrorToast).toHaveBeenCalledWith(
+          'Failed to archive activity. Please try again.'
+        );
       });
 
       consoleSpy.mockRestore();
@@ -664,7 +693,6 @@ describe('ActivityList Component', () => {
     it('should call onEditActivity when edit is clicked', () => {
       const mockEditHandler = jest.fn();
 
-      
       useProjects.mockReturnValue({
         projects: mockActivities,
         isLoading: false,
@@ -673,11 +701,11 @@ describe('ActivityList Component', () => {
         archiveProject: jest.fn(),
       });
 
-      
-
       render(<ActivityList onEditActivity={mockEditHandler} />);
 
-      const menuButtons = screen.getAllByRole('button', { name: /open activity menu/i });
+      const menuButtons = screen.getAllByRole('button', {
+        name: /open activity menu/i,
+      });
       const firstMenuButton = menuButtons[0];
       if (!firstMenuButton) return;
       fireEvent.click(firstMenuButton);
@@ -701,7 +729,9 @@ describe('ActivityList Component', () => {
 
       render(<ActivityList />);
 
-      const newButton = screen.getByRole('button', { name: /create new activity/i });
+      const newButton = screen.getByRole('button', {
+        name: /create new activity/i,
+      });
       fireEvent.click(newButton);
 
       expect(mockPush).toHaveBeenCalledWith('/activities/new');

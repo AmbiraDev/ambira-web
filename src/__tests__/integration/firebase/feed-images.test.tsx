@@ -5,18 +5,26 @@
 
 import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
-import { getDocs, query, where, orderBy, limit, getDoc, doc } from 'firebase/firestore';
+import {
+  getDocs,
+  query,
+  where,
+  orderBy,
+  limit,
+  getDoc,
+  doc,
+} from 'firebase/firestore';
 
 // Mock Firebase
 jest.mock('@/lib/firebase', () => ({
   auth: {
     currentUser: {
       uid: 'test-user-123',
-      getIdToken: jest.fn().mockResolvedValue('token')
-    }
+      getIdToken: jest.fn().mockResolvedValue('token'),
+    },
   },
   db: { _type: 'firestore' },
-  storage: { _type: 'storage' }
+  storage: { _type: 'storage' },
 }));
 
 jest.mock('firebase/firestore', () => ({
@@ -32,12 +40,12 @@ jest.mock('firebase/firestore', () => ({
   serverTimestamp: jest.fn(() => new Date()),
   Timestamp: {
     fromDate: (date: Date) => date,
-    now: () => new Date()
+    now: () => new Date(),
   },
   writeBatch: jest.fn(),
   setDoc: jest.fn(),
   updateDoc: jest.fn(),
-  increment: jest.fn()
+  increment: jest.fn(),
 }));
 
 // Mock Next.js
@@ -46,12 +54,12 @@ jest.mock('next/image', () => ({
   default: (props: any) => {
     // eslint-disable-next-line jsx-a11y/alt-text, @next/next/no-img-element
     return <img {...props} />;
-  }
+  },
 }));
 
 jest.mock('next/link', () => ({
   __esModule: true,
-  default: ({ children, href }: any) => <a href={href}>{children}</a>
+  default: ({ children, href }: any) => <a href={href}>{children}</a>,
 }));
 
 // Import after all mocks are set
@@ -78,12 +86,12 @@ describe('Firebase Feed Images Integration', () => {
           visibility: 'everyone',
           images: [
             'https://firebasestorage.googleapis.com/v0/b/project.appspot.com/o/session-images%2Fuser1%2Fimage1.jpg?alt=media&token=abc',
-            'https://firebasestorage.googleapis.com/v0/b/project.appspot.com/o/session-images%2Fuser1%2Fimage2.jpg?alt=media&token=def'
+            'https://firebasestorage.googleapis.com/v0/b/project.appspot.com/o/session-images%2Fuser1%2Fimage2.jpg?alt=media&token=def',
           ],
           supportCount: 5,
           commentCount: 3,
           createdAt: new Date('2024-01-01'),
-          updatedAt: new Date('2024-01-01')
+          updatedAt: new Date('2024-01-01'),
         },
         {
           id: 'session2',
@@ -100,8 +108,8 @@ describe('Firebase Feed Images Integration', () => {
           supportCount: 2,
           commentCount: 1,
           createdAt: new Date('2024-01-02'),
-          updatedAt: new Date('2024-01-02')
-        }
+          updatedAt: new Date('2024-01-02'),
+        },
       ];
 
       // Mock Firestore query
@@ -109,20 +117,20 @@ describe('Firebase Feed Images Integration', () => {
         docs: mockSessionsData.map(data => ({
           id: data.id,
           data: () => data,
-          exists: () => true
-        }))
+          exists: () => true,
+        })),
       });
 
       // Mock user data
-      (getDoc as jest.Mock).mockImplementation((docRef) => {
+      (getDoc as jest.Mock).mockImplementation(docRef => {
         return Promise.resolve({
           exists: () => true,
           data: () => ({
             name: 'Test User',
             username: 'testuser',
             email: 'test@example.com',
-            profilePicture: 'https://example.com/avatar.jpg'
-          })
+            profilePicture: 'https://example.com/avatar.jpg',
+          }),
         });
       });
 
@@ -141,7 +149,9 @@ describe('Firebase Feed Images Integration', () => {
       expect(sessionWithImages).toBeDefined();
       expect(sessionWithImages!.images).toBeDefined();
       expect(sessionWithImages!.images!).toHaveLength(2);
-      expect(sessionWithImages!.images?.[0]).toContain('firebasestorage.googleapis.com');
+      expect(sessionWithImages!.images?.[0]).toContain(
+        'firebasestorage.googleapis.com'
+      );
       expect(sessionWithImages!.images?.[0]).toContain('?alt=media&token=');
 
       // Verify second session has no images
@@ -161,15 +171,17 @@ describe('Firebase Feed Images Integration', () => {
         supportCount: 0,
         commentCount: 0,
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
       };
 
       (getDocs as jest.Mock).mockResolvedValue({
-        docs: [{
-          id: mockLegacySession.id,
-          data: () => mockLegacySession,
-          exists: () => true
-        }]
+        docs: [
+          {
+            id: mockLegacySession.id,
+            data: () => mockLegacySession,
+            exists: () => true,
+          },
+        ],
       });
 
       (getDoc as jest.Mock).mockResolvedValue({
@@ -177,8 +189,8 @@ describe('Firebase Feed Images Integration', () => {
         data: () => ({
           name: 'User',
           username: 'user',
-          email: 'user@example.com'
-        })
+          email: 'user@example.com',
+        }),
       });
 
       (query as jest.Mock).mockReturnValue('mock-query');
@@ -195,7 +207,7 @@ describe('Firebase Feed Images Integration', () => {
       const orderedImages = [
         'https://firebasestorage.googleapis.com/image1.jpg',
         'https://firebasestorage.googleapis.com/image2.jpg',
-        'https://firebasestorage.googleapis.com/image3.jpg'
+        'https://firebasestorage.googleapis.com/image3.jpg',
       ];
 
       const mockSession = {
@@ -208,15 +220,17 @@ describe('Firebase Feed Images Integration', () => {
         supportCount: 0,
         commentCount: 0,
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
       };
 
       (getDocs as jest.Mock).mockResolvedValue({
-        docs: [{
-          id: mockSession.id,
-          data: () => mockSession,
-          exists: () => true
-        }]
+        docs: [
+          {
+            id: mockSession.id,
+            data: () => mockSession,
+            exists: () => true,
+          },
+        ],
       });
 
       (getDoc as jest.Mock).mockResolvedValue({
@@ -224,8 +238,8 @@ describe('Firebase Feed Images Integration', () => {
         data: () => ({
           name: 'User',
           username: 'user',
-          email: 'user@example.com'
-        })
+          email: 'user@example.com',
+        }),
       });
 
       (query as jest.Mock).mockReturnValue('mock-query');
@@ -253,7 +267,7 @@ describe('Firebase Feed Images Integration', () => {
           supportCount: 0,
           commentCount: 0,
           createdAt: new Date(),
-          updatedAt: new Date()
+          updatedAt: new Date(),
         },
         {
           id: 's2',
@@ -265,29 +279,37 @@ describe('Firebase Feed Images Integration', () => {
           supportCount: 0,
           commentCount: 0,
           createdAt: new Date(),
-          updatedAt: new Date()
-        }
+          updatedAt: new Date(),
+        },
       ];
 
       (getDocs as jest.Mock).mockResolvedValue({
         docs: mockSessions.map(s => ({
           id: s.id,
           data: () => s,
-          exists: () => true
-        }))
+          exists: () => true,
+        })),
       });
 
       (getDoc as jest.Mock).mockResolvedValue({
         exists: () => true,
-        data: () => ({ name: 'User', username: 'user', email: 'user@example.com' })
+        data: () => ({
+          name: 'User',
+          username: 'user',
+          email: 'user@example.com',
+        }),
       });
 
       (query as jest.Mock).mockReturnValue('mock-query');
 
       const result = await firebaseSessionApi.getSessions(10);
 
-      const withImages = result.sessions.filter((s: any) => s.images && s.images.length > 0);
-      const withoutImages = result.sessions.filter((s: any) => !s.images || s.images.length === 0);
+      const withImages = result.sessions.filter(
+        (s: any) => s.images && s.images.length > 0
+      );
+      const withoutImages = result.sessions.filter(
+        (s: any) => !s.images || s.images.length === 0
+      );
 
       expect(withImages).toHaveLength(1);
       expect(withoutImages).toHaveLength(1);
@@ -302,26 +324,32 @@ describe('Firebase Feed Images Integration', () => {
         title: 'Session',
         duration: 3600,
         images: [
-          'https://firebasestorage.googleapis.com/v0/b/project.appspot.com/o/path?alt=media&token=abc'
+          'https://firebasestorage.googleapis.com/v0/b/project.appspot.com/o/path?alt=media&token=abc',
         ],
         visibility: 'everyone',
         supportCount: 0,
         commentCount: 0,
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
       };
 
       (getDocs as jest.Mock).mockResolvedValue({
-        docs: [{
-          id: mockSession.id,
-          data: () => mockSession,
-          exists: () => true
-        }]
+        docs: [
+          {
+            id: mockSession.id,
+            data: () => mockSession,
+            exists: () => true,
+          },
+        ],
       });
 
       (getDoc as jest.Mock).mockResolvedValue({
         exists: () => true,
-        data: () => ({ name: 'User', username: 'user', email: 'user@example.com' })
+        data: () => ({
+          name: 'User',
+          username: 'user',
+          email: 'user@example.com',
+        }),
       });
 
       (query as jest.Mock).mockReturnValue('mock-query');
@@ -346,26 +374,32 @@ describe('Firebase Feed Images Integration', () => {
         images: [
           'https://firebasestorage.googleapis.com/image1.jpg',
           'https://firebasestorage.googleapis.com/image2.jpg',
-          'https://firebasestorage.googleapis.com/image3.jpg'
+          'https://firebasestorage.googleapis.com/image3.jpg',
         ],
         visibility: 'everyone',
         supportCount: 0,
         commentCount: 0,
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
       };
 
       (getDocs as jest.Mock).mockResolvedValue({
-        docs: [{
-          id: mockSession.id,
-          data: () => mockSession,
-          exists: () => true
-        }]
+        docs: [
+          {
+            id: mockSession.id,
+            data: () => mockSession,
+            exists: () => true,
+          },
+        ],
       });
 
       (getDoc as jest.Mock).mockResolvedValue({
         exists: () => true,
-        data: () => ({ name: 'User', username: 'user', email: 'user@example.com' })
+        data: () => ({
+          name: 'User',
+          username: 'user',
+          email: 'user@example.com',
+        }),
       });
 
       (query as jest.Mock).mockReturnValue('mock-query');
@@ -395,18 +429,18 @@ describe('Firebase Feed Images Integration', () => {
           visibility: 'everyone',
           images: [
             'https://firebasestorage.googleapis.com/image1.jpg',
-            'https://firebasestorage.googleapis.com/image2.jpg'
+            'https://firebasestorage.googleapis.com/image2.jpg',
           ],
           supportCount: 5,
           commentCount: 3,
           createdAt: new Date(),
-          updatedAt: new Date()
+          updatedAt: new Date(),
         }),
-        exists: () => true
+        exists: () => true,
       };
 
       // Mock user data fetch
-      (getDoc as jest.Mock).mockImplementation((docRef) => {
+      (getDoc as jest.Mock).mockImplementation(docRef => {
         const path = JSON.stringify(docRef);
         if (path.includes('users')) {
           return Promise.resolve({
@@ -415,8 +449,8 @@ describe('Firebase Feed Images Integration', () => {
               name: 'Test User',
               username: 'testuser',
               email: 'test@example.com',
-              profilePicture: 'https://example.com/avatar.jpg'
-            })
+              profilePicture: 'https://example.com/avatar.jpg',
+            }),
           });
         }
         if (path.includes('projects')) {
@@ -425,13 +459,13 @@ describe('Firebase Feed Images Integration', () => {
             data: () => ({
               name: 'Test Project',
               icon: '📝',
-              color: '#007AFF'
-            })
+              color: '#007AFF',
+            }),
           });
         }
         return Promise.resolve({
           exists: () => false,
-          data: () => ({})
+          data: () => ({}),
         });
       });
 
@@ -440,7 +474,7 @@ describe('Firebase Feed Images Integration', () => {
 
       // This function is not exported, but we can test through getFeedSessions
       (getDocs as jest.Mock).mockResolvedValue({
-        docs: [mockSessionDoc]
+        docs: [mockSessionDoc],
       });
 
       (query as jest.Mock).mockReturnValue('mock-query');
@@ -453,7 +487,10 @@ describe('Firebase Feed Images Integration', () => {
       expect(firstSession?.images).toBeDefined();
       expect(firstSession?.images).toHaveLength(2);
       expect((result.sessions[0] as any).user).toBeDefined();
-      expect((result.sessions[0] as any).activity || (result.sessions[0] as any).project).toBeDefined();
+      expect(
+        (result.sessions[0] as any).activity ||
+          (result.sessions[0] as any).project
+      ).toBeDefined();
     });
   });
 
@@ -465,28 +502,35 @@ describe('Firebase Feed Images Integration', () => {
         projectId: `proj${i}`,
         title: `Session ${i}`,
         duration: 3600,
-        images: i % 2 === 0 ? [
-          `https://firebasestorage.googleapis.com/image${i}_1.jpg`,
-          `https://firebasestorage.googleapis.com/image${i}_2.jpg`
-        ] : [],
+        images:
+          i % 2 === 0
+            ? [
+                `https://firebasestorage.googleapis.com/image${i}_1.jpg`,
+                `https://firebasestorage.googleapis.com/image${i}_2.jpg`,
+              ]
+            : [],
         visibility: 'everyone',
         supportCount: i,
         commentCount: i * 2,
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
       }));
 
       (getDocs as jest.Mock).mockResolvedValue({
         docs: mockSessions.map(s => ({
           id: s.id,
           data: () => s,
-          exists: () => true
-        }))
+          exists: () => true,
+        })),
       });
 
       (getDoc as jest.Mock).mockResolvedValue({
         exists: () => true,
-        data: () => ({ name: 'User', username: 'user', email: 'user@example.com' })
+        data: () => ({
+          name: 'User',
+          username: 'user',
+          email: 'user@example.com',
+        }),
       });
 
       (query as jest.Mock).mockReturnValue('mock-query');
@@ -499,7 +543,9 @@ describe('Firebase Feed Images Integration', () => {
       expect(result.sessions).toHaveLength(20);
 
       // Verify alternating image presence
-      const withImages = result.sessions.filter((s: any) => s.images && s.images.length > 0);
+      const withImages = result.sessions.filter(
+        (s: any) => s.images && s.images.length > 0
+      );
       expect(withImages).toHaveLength(10);
 
       // Should complete reasonably fast

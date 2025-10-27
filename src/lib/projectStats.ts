@@ -13,19 +13,19 @@ export function calculateProjectStats(
 
   // Calculate total hours
   const totalHours = projectSessions.reduce((total, session) => {
-    return total + (session.duration / 3600); // Convert seconds to hours
+    return total + session.duration / 3600; // Convert seconds to hours
   }, 0);
 
   // Calculate weekly hours (last 7 days)
   const oneWeekAgo = new Date();
   oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-  
-  const weeklySessions = projectSessions.filter(session =>
-    new Date(session.createdAt) >= oneWeekAgo
+
+  const weeklySessions = projectSessions.filter(
+    session => new Date(session.createdAt) >= oneWeekAgo
   );
-  
+
   const weeklyHours = weeklySessions.reduce((total, session) => {
-    return total + (session.duration / 3600);
+    return total + session.duration / 3600;
   }, 0);
 
   // Calculate session count
@@ -35,23 +35,25 @@ export function calculateProjectStats(
   const currentStreak = calculateCurrentStreak(projectSessions);
 
   // Calculate progress percentages
-  const weeklyProgressPercentage = weeklyTarget 
+  const weeklyProgressPercentage = weeklyTarget
     ? Math.min(100, (weeklyHours / weeklyTarget) * 100)
     : 0;
-    
-  const totalProgressPercentage = totalTarget 
+
+  const totalProgressPercentage = totalTarget
     ? Math.min(100, (totalHours / totalTarget) * 100)
     : 0;
 
   // Calculate average session duration (in minutes)
-  const averageSessionDuration = sessionCount > 0 
-    ? (totalHours * 60) / sessionCount
-    : 0;
+  const averageSessionDuration =
+    sessionCount > 0 ? (totalHours * 60) / sessionCount : 0;
 
   // Find last session date
-  const lastSessionDate = projectSessions.length > 0
-    ? new Date(Math.max(...projectSessions.map(s => new Date(s.createdAt).getTime())))
-    : undefined;
+  const lastSessionDate =
+    projectSessions.length > 0
+      ? new Date(
+          Math.max(...projectSessions.map(s => new Date(s.createdAt).getTime()))
+        )
+      : undefined;
 
   return {
     totalHours,
@@ -75,7 +77,7 @@ function calculateCurrentStreak(sessions: Session[]): number {
   const sortedSessions = sessions
     .map(session => ({
       date: new Date(session.createdAt).toDateString(),
-      timestamp: new Date(session.createdAt).getTime()
+      timestamp: new Date(session.createdAt).getTime(),
     }))
     .sort((a, b) => b.timestamp - a.timestamp);
 
@@ -139,9 +141,9 @@ export function calculateProjectedCompletion(
 
   const remainingHours = totalTarget - totalHours;
   const weeksToComplete = remainingHours / weeklyHours;
-  
+
   const completionDate = new Date();
-  completionDate.setDate(completionDate.getDate() + (weeksToComplete * 7));
+  completionDate.setDate(completionDate.getDate() + weeksToComplete * 7);
 
   return completionDate;
 }
@@ -154,14 +156,14 @@ export function calculateWeeklyAverage(
   weeks: number = 4
 ): number {
   const cutoffDate = new Date();
-  cutoffDate.setDate(cutoffDate.getDate() - (weeks * 7));
+  cutoffDate.setDate(cutoffDate.getDate() - weeks * 7);
 
-  const recentSessions = sessions.filter(session =>
-    new Date(session.createdAt) >= cutoffDate
+  const recentSessions = sessions.filter(
+    session => new Date(session.createdAt) >= cutoffDate
   );
 
   const totalHours = recentSessions.reduce((total, session) => {
-    return total + (session.duration / 3600);
+    return total + session.duration / 3600;
   }, 0);
 
   return totalHours / weeks;
@@ -174,25 +176,35 @@ export function getProductivityInsights(stats: ProjectStats): string[] {
   const insights: string[] = [];
 
   if (stats.currentStreak >= 7) {
-    insights.push(`🔥 Amazing! You've maintained a ${stats.currentStreak}-day streak!`);
+    insights.push(
+      `🔥 Amazing! You've maintained a ${stats.currentStreak}-day streak!`
+    );
   } else if (stats.currentStreak >= 3) {
     insights.push(`Great job! You're on a ${stats.currentStreak}-day streak.`);
   }
 
   if (stats.weeklyHours > 20) {
-    insights.push(`📈 High productivity this week with ${stats.weeklyHours.toFixed(1)} hours logged!`);
+    insights.push(
+      `📈 High productivity this week with ${stats.weeklyHours.toFixed(1)} hours logged!`
+    );
   } else if (stats.weeklyHours < 5) {
     insights.push(`💡 Consider adding more focused time to reach your goals.`);
   }
 
   if (stats.averageSessionDuration > 90) {
-    insights.push(`🎯 Excellent focus! Your average session is ${Math.round(stats.averageSessionDuration)} minutes.`);
+    insights.push(
+      `🎯 Excellent focus! Your average session is ${Math.round(stats.averageSessionDuration)} minutes.`
+    );
   } else if (stats.averageSessionDuration < 30) {
-    insights.push(`⏰ Try longer sessions for deeper work and better progress.`);
+    insights.push(
+      `⏰ Try longer sessions for deeper work and better progress.`
+    );
   }
 
   if (stats.totalProgressPercentage > 75) {
-    insights.push(`🏆 You're ${stats.totalProgressPercentage.toFixed(1)}% to your total goal!`);
+    insights.push(
+      `🏆 You're ${stats.totalProgressPercentage.toFixed(1)}% to your total goal!`
+    );
   }
 
   return insights;

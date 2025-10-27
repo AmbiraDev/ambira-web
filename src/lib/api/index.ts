@@ -47,10 +47,16 @@ export { firebaseChallengeApi } from './challenges';
 export { firebaseStreakApi } from './streaks';
 
 // Achievements Module
-export { firebaseAchievementApi, ACHIEVEMENT_DEFINITIONS } from './achievements';
+export {
+  firebaseAchievementApi,
+  ACHIEVEMENT_DEFINITIONS,
+} from './achievements';
 
 // Notifications Module
-export { firebaseNotificationApi, challengeNotifications } from './notifications';
+export {
+  firebaseNotificationApi,
+  challengeNotifications,
+} from './notifications';
 
 // Groups Module
 export { firebaseGroupApi } from './groups';
@@ -84,7 +90,10 @@ import { firebaseCommentApi } from './social/comments';
 import { firebaseChallengeApi } from './challenges';
 import { firebaseStreakApi } from './streaks';
 import { firebaseAchievementApi } from './achievements';
-import { firebaseNotificationApi, challengeNotifications } from './notifications';
+import {
+  firebaseNotificationApi,
+  challengeNotifications,
+} from './notifications';
 import { firebaseGroupApi } from './groups';
 
 /**

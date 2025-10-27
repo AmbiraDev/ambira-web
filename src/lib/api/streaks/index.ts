@@ -69,7 +69,9 @@ export const firebaseStreakApi = {
         try {
           await setDoc(doc(db, 'streaks', userId), {
             ...initialStreak,
-            lastActivityDate: Timestamp.fromDate(initialStreak.lastActivityDate),
+            lastActivityDate: Timestamp.fromDate(
+              initialStreak.lastActivityDate
+            ),
           });
         } catch (createError) {
           // If we can't create (permission denied), just return the empty streak
@@ -123,7 +125,6 @@ export const firebaseStreakApi = {
    */
   getStreakStats: async (userId: string): Promise<StreakStats> => {
     try {
-
       // Fetch sessions to calculate actual streak from data
       const sessionsQuery = query(
         collection(db, 'sessions'),
@@ -137,7 +138,6 @@ export const firebaseStreakApi = {
         startTime: convertTimestamp(doc.data().startTime),
       }));
 
-
       // Group sessions by day (YYYY-MM-DD)
       const sessionsByDay = new Map<string, boolean>();
       sessions.forEach(session => {
@@ -146,14 +146,12 @@ export const firebaseStreakApi = {
         sessionsByDay.set(dayKey, true);
       });
 
-
       // Calculate current streak by going backwards from today
       const now = new Date();
       const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
       let currentStreak = 0;
-      let checkDate = new Date(today);
+      const checkDate = new Date(today);
       let lastActivityDate: Date | null = null;
-
 
       // Start checking from today, going backwards
       for (let i = 0; i < 365; i++) {
@@ -184,7 +182,6 @@ export const firebaseStreakApi = {
         checkDate.setDate(checkDate.getDate() - 1);
       }
 
-
       // Calculate longest streak and total days
       const sortedDays = Array.from(sessionsByDay.keys()).sort();
       let longestStreak = 0;
@@ -202,7 +199,9 @@ export const firebaseStreakApi = {
           // First day
           tempStreak = 1;
         } else {
-          const daysDiff = Math.floor((currentDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24));
+          const daysDiff = Math.floor(
+            (currentDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24)
+          );
           if (daysDiff === 1) {
             // Consecutive day
             tempStreak++;
@@ -218,13 +217,14 @@ export const firebaseStreakApi = {
 
       const totalStreakDays = sessionsByDay.size;
 
-
       // Determine if streak is at risk
       const daysSinceActivity = lastActivityDate
-        ? Math.floor((today.getTime() - lastActivityDate.getTime()) / (1000 * 60 * 60 * 24))
+        ? Math.floor(
+            (today.getTime() - lastActivityDate.getTime()) /
+              (1000 * 60 * 60 * 24)
+          )
         : 999;
       const streakAtRisk = currentStreak > 0 && daysSinceActivity >= 1;
-
 
       // Calculate next milestone
       const milestones = [7, 30, 100, 365, 500, 1000];
@@ -232,7 +232,6 @@ export const firebaseStreakApi = {
         milestones.find(m => m > currentStreak) ||
         milestones[milestones.length - 1] ||
         1000; // Fallback to 1000 if array is empty
-
 
       const result: StreakStats = {
         currentStreak,
@@ -242,7 +241,6 @@ export const firebaseStreakApi = {
         streakAtRisk,
         nextMilestone,
       };
-
 
       return result;
     } catch (error) {
@@ -268,7 +266,6 @@ export const firebaseStreakApi = {
     sessionDate: Date
   ): Promise<StreakData> => {
     try {
-
       const streakData = await firebaseStreakApi.getStreakData(userId);
 
       const sessionDay = new Date(
@@ -282,12 +279,10 @@ export const firebaseStreakApi = {
         streakData.lastActivityDate.getDate()
       );
 
-
       const daysDiff = Math.floor(
         (sessionDay.getTime() - lastActivityDay.getTime()) /
           (1000 * 60 * 60 * 24)
       );
-
 
       let newCurrentStreak = streakData.currentStreak;
       let newLongestStreak = streakData.longestStreak;
@@ -295,8 +290,10 @@ export const firebaseStreakApi = {
 
       // Special case: If current streak is 0 (first session ever or after long break)
       // Check if this is truly the first session or if we're restarting
-      const isFirstEverSession = streakData.currentStreak === 0 && streakData.totalStreakDays === 0;
-      const isRestartingStreak = streakData.currentStreak === 0 && streakData.totalStreakDays > 0;
+      const isFirstEverSession =
+        streakData.currentStreak === 0 && streakData.totalStreakDays === 0;
+      const isRestartingStreak =
+        streakData.currentStreak === 0 && streakData.totalStreakDays > 0;
 
       if (isFirstEverSession || isRestartingStreak) {
         // First session or restarting - start streak at 1
@@ -365,7 +362,6 @@ export const firebaseStreakApi = {
         lastActivityDate: Timestamp.fromDate(sessionDate),
       });
 
-
       return updatedStreak;
     } catch (error) {
       const apiError = handleError(error, 'Update streak', {
@@ -412,7 +408,10 @@ export const firebaseStreakApi = {
    * @returns Promise that resolves when visibility is updated
    * @throws Error if user is not authorized or update fails
    */
-  updateStreakVisibility: async (userId: string, isPublic: boolean): Promise<void> => {
+  updateStreakVisibility: async (
+    userId: string,
+    isPublic: boolean
+  ): Promise<void> => {
     try {
       if (!auth.currentUser || auth.currentUser.uid !== userId) {
         throw new Error('Unauthorized');
@@ -458,4 +457,3 @@ export const firebaseStreakApi = {
     }
   },
 };
-

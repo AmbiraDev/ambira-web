@@ -5,7 +5,7 @@ import { useAuth } from '@/hooks/useAuth';
 import {
   useUserGroups,
   usePublicGroups,
-  useJoinGroup
+  useJoinGroup,
 } from '@/features/groups/hooks';
 import Header from '@/components/HeaderComponent';
 import MobileHeader from '@/components/MobileHeader';
@@ -13,7 +13,14 @@ import BottomNavigation from '@/components/BottomNavigation';
 import GroupCard from '@/components/GroupCard';
 import { GroupListItem } from '@/components/GroupListItem';
 import { Group } from '@/types';
-import { Users, Search, ChevronLeft, ChevronRight, Loader2, X } from 'lucide-react';
+import {
+  Users,
+  Search,
+  ChevronLeft,
+  ChevronRight,
+  Loader2,
+  X,
+} from 'lucide-react';
 import Link from 'next/link';
 
 // Category filter options
@@ -51,33 +58,47 @@ export default function GroupsPage() {
   });
 
   // Use new group hooks
-  const { data: userGroups = [], isLoading: isLoadingUserGroups } = useUserGroups(user?.id || '', {
-    enabled: !!user?.id,
-  });
+  const { data: userGroups = [], isLoading: isLoadingUserGroups } =
+    useUserGroups(user?.id || '', {
+      enabled: !!user?.id,
+    });
 
-  const { data: allPublicGroups = [], isLoading: isLoadingSuggested } = usePublicGroups(undefined, {
-    enabled: !!user,
-  });
+  const { data: allPublicGroups = [], isLoading: isLoadingSuggested } =
+    usePublicGroups(undefined, {
+      enabled: !!user,
+    });
 
   const joinGroupMutation = useJoinGroup();
   const isLoading = isLoadingUserGroups || isLoadingSuggested;
 
   // Client-side filtering for search
-  const hasActiveFilters = !!(searchFilters.name || searchFilters.location || searchFilters.category);
+  const hasActiveFilters = !!(
+    searchFilters.name ||
+    searchFilters.location ||
+    searchFilters.category
+  );
 
   const filteredSearchResults = useMemo(() => {
     if (!hasActiveFilters) return [];
 
-    return allPublicGroups.filter(group => {
-      const matchesName = searchFilters.name === '' ||
-        group.name.toLowerCase().includes(searchFilters.name.toLowerCase());
-      const matchesLocation = searchFilters.location === '' ||
-        (group.location?.toLowerCase().includes(searchFilters.location.toLowerCase()) ?? false);
-      const matchesCategory = searchFilters.category === '' ||
-        group.category === searchFilters.category;
+    return allPublicGroups
+      .filter(group => {
+        const matchesName =
+          searchFilters.name === '' ||
+          group.name.toLowerCase().includes(searchFilters.name.toLowerCase());
+        const matchesLocation =
+          searchFilters.location === '' ||
+          (group.location
+            ?.toLowerCase()
+            .includes(searchFilters.location.toLowerCase()) ??
+            false);
+        const matchesCategory =
+          searchFilters.category === '' ||
+          group.category === searchFilters.category;
 
-      return matchesName && matchesLocation && matchesCategory;
-    }).slice(0, SEARCH_RESULTS_LIMIT);
+        return matchesName && matchesLocation && matchesCategory;
+      })
+      .slice(0, SEARCH_RESULTS_LIMIT);
   }, [allPublicGroups, searchFilters]);
 
   // Update search results when filtered results change
@@ -103,7 +124,9 @@ export default function GroupsPage() {
       // Use client-side filtered results
       if (filteredSearchResults.length > 0) {
         setSearchResults(filteredSearchResults);
-        setSearchStatus(`Found ${filteredSearchResults.length} ${filteredSearchResults.length === 1 ? 'group' : 'groups'}`);
+        setSearchStatus(
+          `Found ${filteredSearchResults.length} ${filteredSearchResults.length === 1 ? 'group' : 'groups'}`
+        );
       } else {
         setSearchStatus('No groups found');
       }
@@ -188,8 +211,12 @@ export default function GroupsPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Please log in to view groups</h1>
-          <p className="text-gray-600">You need to be logged in to join groups and challenges.</p>
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">
+            Please log in to view groups
+          </h1>
+          <p className="text-gray-600">
+            You need to be logged in to join groups and challenges.
+          </p>
         </div>
       </div>
     );
@@ -206,7 +233,9 @@ export default function GroupsPage() {
         {/* Page Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-xl md:text-2xl font-bold text-gray-900">Groups</h1>
+            <h1 className="text-xl md:text-2xl font-bold text-gray-900">
+              Groups
+            </h1>
           </div>
           <Link
             href="/groups/new"
@@ -234,10 +263,12 @@ export default function GroupsPage() {
           </div>
         ) : (
           <div className="mb-8">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">My Groups</h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              My Groups
+            </h2>
             {userGroups.length > 0 ? (
               <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3">
-                {userGroups.map((group) => (
+                {userGroups.map(group => (
                   <GroupCard
                     key={group.id}
                     group={group}
@@ -249,14 +280,21 @@ export default function GroupsPage() {
             ) : (
               <div className="text-center py-12 px-4 bg-white border border-gray-200 rounded-lg">
                 <div className="max-w-md mx-auto">
-                  <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" aria-hidden="true" />
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">You haven't joined any groups yet</h3>
+                  <Users
+                    className="w-16 h-16 text-gray-300 mx-auto mb-4"
+                    aria-hidden="true"
+                  />
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                    You haven't joined any groups yet
+                  </h3>
                   <p className="text-gray-600 mb-6">
-                    Join groups to connect with like-minded people, participate in challenges, and stay motivated!
+                    Join groups to connect with like-minded people, participate
+                    in challenges, and stay motivated!
                   </p>
                   <button
                     onClick={() => {
-                      const discoverSection = document.getElementById('discover-groups');
+                      const discoverSection =
+                        document.getElementById('discover-groups');
                       discoverSection?.scrollIntoView({ behavior: 'smooth' });
                     }}
                     aria-label="Scroll to discover groups section"
@@ -272,7 +310,12 @@ export default function GroupsPage() {
         )}
 
         {/* Screen reader announcements for search status */}
-        <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+        <div
+          className="sr-only"
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+        >
           {searchStatus}
         </div>
 
@@ -284,7 +327,9 @@ export default function GroupsPage() {
               placeholder="Group Name"
               aria-label="Search by group name"
               value={searchFilters.name}
-              onChange={(e) => setSearchFilters({ ...searchFilters, name: e.target.value })}
+              onChange={e =>
+                setSearchFilters({ ...searchFilters, name: e.target.value })
+              }
               className="min-h-[44px] px-4 py-2 border border-gray-300 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] focus-visible:ring-offset-2 bg-white"
             />
             <input
@@ -292,12 +337,16 @@ export default function GroupsPage() {
               placeholder="Location"
               aria-label="Filter by location"
               value={searchFilters.location}
-              onChange={(e) => setSearchFilters({ ...searchFilters, location: e.target.value })}
+              onChange={e =>
+                setSearchFilters({ ...searchFilters, location: e.target.value })
+              }
               className="min-h-[44px] px-4 py-2 border border-gray-300 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] focus-visible:ring-offset-2 bg-white"
             />
             <select
               value={searchFilters.category}
-              onChange={(e) => setSearchFilters({ ...searchFilters, category: e.target.value })}
+              onChange={e =>
+                setSearchFilters({ ...searchFilters, category: e.target.value })
+              }
               aria-label="Filter by category"
               className="min-h-[44px] px-4 py-2 border border-gray-300 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] focus-visible:ring-offset-2 bg-white"
             >
@@ -310,12 +359,17 @@ export default function GroupsPage() {
             <button
               onClick={handleSearch}
               disabled={isSearching}
-              aria-label={isSearching ? "Searching for groups" : "Search groups"}
+              aria-label={
+                isSearching ? 'Searching for groups' : 'Search groups'
+              }
               className="min-h-[44px] px-6 py-2 bg-[#007AFF] text-white text-sm font-semibold rounded-lg hover:bg-[#0051D5] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] focus-visible:ring-offset-2"
             >
               {isSearching ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
+                  <Loader2
+                    className="w-4 h-4 animate-spin"
+                    aria-hidden="true"
+                  />
                   Searching...
                 </>
               ) : (
@@ -330,7 +384,9 @@ export default function GroupsPage() {
           {/* Active Filters Display */}
           {hasActiveFilters && (
             <div className="mt-3 flex flex-wrap items-center gap-2">
-              <span className="text-sm text-gray-600 font-medium">Active filters:</span>
+              <span className="text-sm text-gray-600 font-medium">
+                Active filters:
+              </span>
               {searchFilters.name && (
                 <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#007AFF] text-white text-xs font-semibold rounded-full transition-all duration-200 hover:bg-[#0051D5]">
                   Name: {searchFilters.name}
@@ -357,7 +413,12 @@ export default function GroupsPage() {
               )}
               {searchFilters.category && (
                 <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#007AFF] text-white text-xs font-semibold rounded-full transition-all duration-200 hover:bg-[#0051D5]">
-                  Category: {categoryOptions.find(opt => opt.value === searchFilters.category)?.label}
+                  Category:{' '}
+                  {
+                    categoryOptions.find(
+                      opt => opt.value === searchFilters.category
+                    )?.label
+                  }
                   <button
                     onClick={() => clearFilter('category')}
                     aria-label="Remove category filter"
@@ -402,9 +463,11 @@ export default function GroupsPage() {
           </div>
         ) : hasSearched && searchResults.length > 0 ? (
           <div>
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Search Results</h2>
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              Search Results
+            </h2>
             <div className="space-y-4">
-              {searchResults.map((group) => {
+              {searchResults.map(group => {
                 const isJoined = userGroups.some(g => g.id === group.id);
                 return (
                   <GroupListItem
@@ -420,60 +483,78 @@ export default function GroupsPage() {
           </div>
         ) : hasSearched && !isSearching && searchResults.length === 0 ? (
           <div className="text-center py-12">
-            <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" aria-hidden="true" />
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">No groups found</h2>
+            <Users
+              className="w-16 h-16 text-gray-300 mx-auto mb-4"
+              aria-hidden="true"
+            />
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">
+              No groups found
+            </h2>
             <p className="text-gray-600">Try adjusting your search filters</p>
           </div>
         ) : !hasSearched ? (
           allPublicGroups.length > 0 ? (
-          <div id="discover-groups">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Discover Groups</h2>
-            <div className="space-y-4">
-              {paginatedGroups.map((group) => {
-                const isJoined = userGroups.some(g => g.id === group.id);
-                return (
-                  <GroupListItem
-                    key={group.id}
-                    group={group}
-                    isJoined={isJoined}
-                    isJoining={joinGroupMutation.isPending}
-                    onJoinGroup={handleJoinGroup}
-                  />
-                );
-              })}
-            </div>
-
-            {/* Pagination Controls */}
-            {allPublicGroups.length > GROUPS_PER_PAGE && (
-              <div className="mt-4 flex items-center justify-between">
-                <button
-                  onClick={goToPreviousPage}
-                  disabled={currentPage === 0}
-                  className="min-h-[44px] min-w-[44px] p-2 rounded-lg hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] focus-visible:ring-offset-2"
-                  aria-label="Previous page"
-                >
-                  <ChevronLeft className="w-5 h-5 text-gray-700" aria-hidden="true" />
-                </button>
-
-                <span className="text-sm text-gray-600 font-medium">
-                  Page {currentPage + 1} of {totalPages}
-                </span>
-
-                <button
-                  onClick={goToNextPage}
-                  disabled={currentPage >= totalPages - 1}
-                  className="min-h-[44px] min-w-[44px] p-2 rounded-lg hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] focus-visible:ring-offset-2"
-                  aria-label="Next page"
-                >
-                  <ChevronRight className="w-5 h-5 text-gray-700" aria-hidden="true" />
-                </button>
+            <div id="discover-groups">
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                Discover Groups
+              </h2>
+              <div className="space-y-4">
+                {paginatedGroups.map(group => {
+                  const isJoined = userGroups.some(g => g.id === group.id);
+                  return (
+                    <GroupListItem
+                      key={group.id}
+                      group={group}
+                      isJoined={isJoined}
+                      isJoining={joinGroupMutation.isPending}
+                      onJoinGroup={handleJoinGroup}
+                    />
+                  );
+                })}
               </div>
-            )}
-          </div>
+
+              {/* Pagination Controls */}
+              {allPublicGroups.length > GROUPS_PER_PAGE && (
+                <div className="mt-4 flex items-center justify-between">
+                  <button
+                    onClick={goToPreviousPage}
+                    disabled={currentPage === 0}
+                    className="min-h-[44px] min-w-[44px] p-2 rounded-lg hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] focus-visible:ring-offset-2"
+                    aria-label="Previous page"
+                  >
+                    <ChevronLeft
+                      className="w-5 h-5 text-gray-700"
+                      aria-hidden="true"
+                    />
+                  </button>
+
+                  <span className="text-sm text-gray-600 font-medium">
+                    Page {currentPage + 1} of {totalPages}
+                  </span>
+
+                  <button
+                    onClick={goToNextPage}
+                    disabled={currentPage >= totalPages - 1}
+                    className="min-h-[44px] min-w-[44px] p-2 rounded-lg hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200 flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#007AFF] focus-visible:ring-offset-2"
+                    aria-label="Next page"
+                  >
+                    <ChevronRight
+                      className="w-5 h-5 text-gray-700"
+                      aria-hidden="true"
+                    />
+                  </button>
+                </div>
+              )}
+            </div>
           ) : (
             <div className="text-center py-12">
-              <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" aria-hidden="true" />
-              <h2 className="text-xl font-semibold text-gray-900 mb-2">No groups available</h2>
+              <Users
+                className="w-16 h-16 text-gray-300 mx-auto mb-4"
+                aria-hidden="true"
+              />
+              <h2 className="text-xl font-semibold text-gray-900 mb-2">
+                No groups available
+              </h2>
               <p className="text-gray-600">Be the first to create a group!</p>
             </div>
           )

@@ -172,7 +172,7 @@ export async function uploadImage(
     // Race between upload and timeout
     const result = await Promise.race([
       uploadPromise,
-      createTimeout(TIMEOUTS.IMAGE_UPLOAD, TIMEOUT_ERRORS.IMAGE_UPLOAD)
+      createTimeout(TIMEOUTS.IMAGE_UPLOAD, TIMEOUT_ERRORS.IMAGE_UPLOAD),
     ]);
 
     return result;

@@ -22,14 +22,17 @@ export function GroupDetailPage({ groupId }: GroupDetailPageProps) {
   const { user } = useAuth();
   const { group, isLoading, error } = useGroupDetails(groupId);
 
-  const [activeTab, setActiveTab] = useState<'leaderboard' | 'members'>('leaderboard');
+  const [activeTab, setActiveTab] = useState<'leaderboard' | 'members'>(
+    'leaderboard'
+  );
 
   // Dynamic metadata using useEffect for client component
   React.useEffect(() => {
     if (group) {
       document.title = `${group.name} - Ambira`;
 
-      const description = group.description || `Join ${group.name} group and connect with others`;
+      const description =
+        group.description || `Join ${group.name} group and connect with others`;
 
       let metaDescription = document.querySelector('meta[name="description"]');
       if (!metaDescription) {
@@ -48,7 +51,9 @@ export function GroupDetailPage({ groupId }: GroupDetailPageProps) {
       }
       ogTitle.setAttribute('content', group.name);
 
-      let ogDescription = document.querySelector('meta[property="og:description"]');
+      let ogDescription = document.querySelector(
+        'meta[property="og:description"]'
+      );
       if (!ogDescription) {
         ogDescription = document.createElement('meta');
         ogDescription.setAttribute('property', 'og:description');
@@ -81,7 +86,9 @@ export function GroupDetailPage({ groupId }: GroupDetailPageProps) {
       }
       twitterTitle.setAttribute('content', `${group.name} - Ambira`);
 
-      let twitterDescription = document.querySelector('meta[name="twitter:description"]');
+      let twitterDescription = document.querySelector(
+        'meta[name="twitter:description"]'
+      );
       if (!twitterDescription) {
         twitterDescription = document.createElement('meta');
         twitterDescription.setAttribute('name', 'twitter:description');
@@ -95,8 +102,12 @@ export function GroupDetailPage({ groupId }: GroupDetailPageProps) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Please log in to view groups</h1>
-          <p className="text-gray-600">You need to be logged in to view group details.</p>
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">
+            Please log in to view groups
+          </h1>
+          <p className="text-gray-600">
+            You need to be logged in to view group details.
+          </p>
         </div>
       </div>
     );
@@ -193,10 +204,14 @@ export function GroupDetailPage({ groupId }: GroupDetailPageProps) {
               <div className="flex-1 min-w-0 w-full">
                 {/* Group Name and Action Buttons */}
                 <div className="flex items-center gap-2 sm:gap-3 mb-2 flex-wrap">
-                  <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">{group.name}</h1>
+                  <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+                    {group.name}
+                  </h1>
                   {isAdmin && (
                     <button
-                      onClick={() => router.push(`/groups/${group.id}/settings`)}
+                      onClick={() =>
+                        router.push(`/groups/${group.id}/settings`)
+                      }
                       className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                       aria-label="Edit group"
                     >
@@ -208,7 +223,9 @@ export function GroupDetailPage({ groupId }: GroupDetailPageProps) {
                 {/* Category and Location */}
                 <div className="flex flex-wrap items-center gap-3 sm:gap-4 mb-3">
                   <div className="flex items-center gap-2">
-                    <span className="text-xl sm:text-2xl">{getCategoryIcon()}</span>
+                    <span className="text-xl sm:text-2xl">
+                      {getCategoryIcon()}
+                    </span>
                     <span className="text-xs sm:text-sm text-gray-600 capitalize">
                       {group.category.replace('-', ' ')}
                     </span>
@@ -233,7 +250,8 @@ export function GroupDetailPage({ groupId }: GroupDetailPageProps) {
 
                 {/* Member Count */}
                 <div className="text-sm text-gray-600">
-                  {group.getMemberCount()} member{group.getMemberCount() !== 1 ? 's' : ''}
+                  {group.getMemberCount()} member
+                  {group.getMemberCount() !== 1 ? 's' : ''}
                 </div>
               </div>
             </div>
@@ -241,7 +259,10 @@ export function GroupDetailPage({ groupId }: GroupDetailPageProps) {
 
           {/* Tabs */}
           <div className="border-b border-gray-200 mb-6 -mx-4 sm:mx-0">
-            <nav className="flex gap-4 sm:gap-8 overflow-x-auto px-4 sm:px-0" aria-label="Group tabs">
+            <nav
+              className="flex gap-4 sm:gap-8 overflow-x-auto px-4 sm:px-0"
+              aria-label="Group tabs"
+            >
               <button
                 onClick={() => setActiveTab('leaderboard')}
                 className={`pb-3 px-1 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
@@ -269,16 +290,21 @@ export function GroupDetailPage({ groupId }: GroupDetailPageProps) {
           <div>
             {activeTab === 'leaderboard' && (
               <div>
-                <h2 className="text-xl font-bold text-gray-900 mb-4">Group Leaderboard</h2>
+                <h2 className="text-xl font-bold text-gray-900 mb-4">
+                  Group Leaderboard
+                </h2>
                 <p className="text-gray-500 text-center py-12">
-                  Leaderboard functionality will be added when SessionRepository is ready.
+                  Leaderboard functionality will be added when SessionRepository
+                  is ready.
                 </p>
               </div>
             )}
 
             {activeTab === 'members' && (
               <div>
-                <h2 className="text-xl font-bold text-gray-900 mb-4">Members</h2>
+                <h2 className="text-xl font-bold text-gray-900 mb-4">
+                  Members
+                </h2>
                 <p className="text-gray-500 text-center py-12">
                   Member list will be displayed here.
                 </p>

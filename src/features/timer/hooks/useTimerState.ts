@@ -96,7 +96,8 @@ export function useTimerState({
       isPaused: isPaused,
       elapsedSeconds: Math.max(0, elapsed),
       currentProject: currentProject,
-      activeTimerId: activeSession.activityId || activeSession.projectId || null,
+      activeTimerId:
+        activeSession.activityId || activeSession.projectId || null,
     }));
   }, [activeSession, currentProject]);
 
@@ -160,14 +161,18 @@ export function useTimerState({
   }, [timerState.activeTimerId]);
 
   // Format time as HH:MM:SS
-  const getFormattedTime = useCallback((seconds?: number): string => {
-    const timeToFormat = seconds !== undefined ? seconds : timerState.elapsedSeconds;
-    const hours = Math.floor(timeToFormat / 3600);
-    const minutes = Math.floor((timeToFormat % 3600) / 60);
-    const secs = timeToFormat % 60;
+  const getFormattedTime = useCallback(
+    (seconds?: number): string => {
+      const timeToFormat =
+        seconds !== undefined ? seconds : timerState.elapsedSeconds;
+      const hours = Math.floor(timeToFormat / 3600);
+      const minutes = Math.floor((timeToFormat % 3600) / 60);
+      const secs = timeToFormat % 60;
 
-    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  }, [timerState.elapsedSeconds]);
+      return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    },
+    [timerState.elapsedSeconds]
+  );
 
   return {
     ...timerState,

@@ -17,10 +17,12 @@ const sessionService = new SessionService();
 export const SESSION_KEYS = {
   all: () => ['sessions'] as const,
   lists: () => [...SESSION_KEYS.all(), 'list'] as const,
-  list: (filters?: SessionFilters) => [...SESSION_KEYS.lists(), { filters }] as const,
+  list: (filters?: SessionFilters) =>
+    [...SESSION_KEYS.lists(), { filters }] as const,
   details: () => [...SESSION_KEYS.all(), 'detail'] as const,
   detail: (id: string) => [...SESSION_KEYS.details(), id] as const,
-  detailWithData: (id: string) => [...SESSION_KEYS.detail(id), 'with-details'] as const,
+  detailWithData: (id: string) =>
+    [...SESSION_KEYS.detail(id), 'with-details'] as const,
   userSessions: (userId: string, filters?: SessionFilters) =>
     [...SESSION_KEYS.all(), 'user', userId, filters] as const,
 };
@@ -75,7 +77,10 @@ export function useSessionWithDetails(
  */
 export function useUserSessions(
   userId: string,
-  filtersOrOptions?: SessionFilters | Partial<UseQueryOptions<Session[], Error>> | null,
+  filtersOrOptions?:
+    | SessionFilters
+    | Partial<UseQueryOptions<Session[], Error>>
+    | null,
   options?: Partial<UseQueryOptions<Session[], Error>>
 ) {
   // Handle overloaded parameters: if second param has 'enabled', it's options not filters
@@ -84,7 +89,9 @@ export function useUserSessions(
 
   if (filtersOrOptions && 'enabled' in filtersOrOptions) {
     actualFilters = undefined;
-    actualOptions = filtersOrOptions as Partial<UseQueryOptions<Session[], Error>>;
+    actualOptions = filtersOrOptions as Partial<
+      UseQueryOptions<Session[], Error>
+    >;
   } else {
     actualFilters = filtersOrOptions as SessionFilters | undefined;
     actualOptions = options;

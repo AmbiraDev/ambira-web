@@ -28,7 +28,6 @@ const typeOptions = [
   { value: 'other', label: 'Other' },
 ];
 
-
 export default function CreateGroupPage() {
   const router = useRouter();
   const { user } = useAuth();
@@ -105,13 +104,17 @@ export default function CreateGroupPage() {
       if (groupImages.length > 0) {
         try {
           const imageFile = groupImages[0];
-          if (imageFile) {
+          if (imageFile !== undefined) {
             const result = await uploadImage(imageFile, 'group-images');
             imageUrl = result.url;
           }
         } catch (uploadError) {
           console.error('Error uploading group image:', uploadError);
-          setError(uploadError instanceof Error ? uploadError.message : 'Failed to upload group image');
+          setError(
+            uploadError instanceof Error
+              ? uploadError.message
+              : 'Failed to upload group image'
+          );
           setIsSubmitting(false);
           return;
         }
@@ -123,13 +126,20 @@ export default function CreateGroupPage() {
         imageUrl,
       };
 
-      const newGroup = await firebaseApi.group.createGroup(groupDataWithImage, user.id);
+      const newGroup = await firebaseApi.group.createGroup(
+        groupDataWithImage,
+        user.id
+      );
 
       // Navigate to the new group page
       router.push(`/groups/${newGroup.id}`);
     } catch (err) {
       console.error('Error creating group:', err);
-      setError(err instanceof Error ? err.message : 'Failed to create group. Please try again.');
+      setError(
+        err instanceof Error
+          ? err.message
+          : 'Failed to create group. Please try again.'
+      );
       setIsSubmitting(false);
     }
   };
@@ -138,8 +148,12 @@ export default function CreateGroupPage() {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Please log in</h1>
-          <p className="text-gray-600">You need to be logged in to create a group.</p>
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">
+            Please log in
+          </h1>
+          <p className="text-gray-600">
+            You need to be logged in to create a group.
+          </p>
         </div>
       </div>
     );
@@ -164,9 +178,12 @@ export default function CreateGroupPage() {
 
         {/* Page Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Create Group</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            Create Group
+          </h1>
           <p className="text-sm text-gray-600">
-            Fields marked with <span className="text-red-500">*</span> are required
+            Fields marked with <span className="text-red-500">*</span> are
+            required
           </p>
         </div>
 
@@ -196,37 +213,47 @@ export default function CreateGroupPage() {
               placeholder="Upload group picture"
               disabled={isSubmitting}
             />
-            <p className="text-xs text-gray-500 mt-1">Optional - Add a picture to represent your group</p>
+            <p className="text-xs text-gray-500 mt-1">
+              Optional - Add a picture to represent your group
+            </p>
           </div>
 
           {/* Group Name */}
           <div>
-            <label htmlFor="name" className="block text-sm font-semibold text-gray-900 mb-2">
+            <label
+              htmlFor="name"
+              className="block text-sm font-semibold text-gray-900 mb-2"
+            >
               Group Name <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
               id="name"
               value={formData.name}
-              onChange={(e) => handleChange('name', e.target.value)}
+              onChange={e => handleChange('name', e.target.value)}
               placeholder="e.g., Morning Productivity Club"
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] bg-white transition-colors"
               maxLength={60}
               disabled={isSubmitting}
             />
-            <p className="text-xs text-gray-500 mt-1">{formData.name.length}/60 characters</p>
+            <p className="text-xs text-gray-500 mt-1">
+              {formData.name.length}/60 characters
+            </p>
           </div>
 
           {/* Location */}
           <div>
-            <label htmlFor="location" className="block text-sm font-semibold text-gray-900 mb-2">
+            <label
+              htmlFor="location"
+              className="block text-sm font-semibold text-gray-900 mb-2"
+            >
               Location
             </label>
             <input
               type="text"
               id="location"
               value={formData.location || ''}
-              onChange={(e) => handleChange('location', e.target.value)}
+              onChange={e => handleChange('location', e.target.value)}
               placeholder="e.g., San Francisco, CA"
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] bg-white transition-colors"
               disabled={isSubmitting}
@@ -235,17 +262,20 @@ export default function CreateGroupPage() {
 
           {/* Category */}
           <div>
-            <label htmlFor="category" className="block text-sm font-semibold text-gray-900 mb-2">
+            <label
+              htmlFor="category"
+              className="block text-sm font-semibold text-gray-900 mb-2"
+            >
               Category
             </label>
             <select
               id="category"
               value={formData.category}
-              onChange={(e) => handleChange('category', e.target.value)}
+              onChange={e => handleChange('category', e.target.value)}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] bg-white transition-colors"
               disabled={isSubmitting}
             >
-              {categoryOptions.map((option) => (
+              {categoryOptions.map(option => (
                 <option key={option.value} value={option.value}>
                   {option.label}
                 </option>
@@ -255,17 +285,20 @@ export default function CreateGroupPage() {
 
           {/* Group Type */}
           <div>
-            <label htmlFor="type" className="block text-sm font-semibold text-gray-900 mb-2">
+            <label
+              htmlFor="type"
+              className="block text-sm font-semibold text-gray-900 mb-2"
+            >
               Group Type
             </label>
             <select
               id="type"
               value={formData.type}
-              onChange={(e) => handleChange('type', e.target.value)}
+              onChange={e => handleChange('type', e.target.value)}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] bg-white transition-colors"
               disabled={isSubmitting}
             >
-              {typeOptions.map((option) => (
+              {typeOptions.map(option => (
                 <option key={option.value} value={option.value}>
                   {option.label}
                 </option>
@@ -275,20 +308,25 @@ export default function CreateGroupPage() {
 
           {/* Description */}
           <div>
-            <label htmlFor="description" className="block text-sm font-semibold text-gray-900 mb-2">
+            <label
+              htmlFor="description"
+              className="block text-sm font-semibold text-gray-900 mb-2"
+            >
               Description <span className="text-red-500">*</span>
             </label>
             <textarea
               id="description"
               value={formData.description}
-              onChange={(e) => handleChange('description', e.target.value)}
+              onChange={e => handleChange('description', e.target.value)}
               placeholder="Tell people what your group is about..."
               rows={4}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#007AFF] focus:border-[#007AFF] bg-white transition-colors resize-none"
               maxLength={200}
               disabled={isSubmitting}
             />
-            <p className="text-xs text-gray-500 mt-1">{formData.description.length}/200 characters</p>
+            <p className="text-xs text-gray-500 mt-1">
+              {formData.description.length}/200 characters
+            </p>
           </div>
 
           {/* Form Actions */}

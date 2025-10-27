@@ -1163,7 +1163,10 @@ export const firebaseUserApi = {
       }
 
       // Get list of users we're already following directly from social_graph
-      const outboundRef = collection(db, `social_graph/${auth.currentUser.uid}/outbound`);
+      const outboundRef = collection(
+        db,
+        `social_graph/${auth.currentUser.uid}/outbound`
+      );
       const outboundSnapshot = await getDocs(outboundRef);
       const followingIds = new Set(outboundSnapshot.docs.map(doc => doc.id));
 
@@ -1362,7 +1365,6 @@ export const firebaseUserApi = {
       let failed = 0;
       const total = querySnapshot.size;
 
-
       for (const userDoc of querySnapshot.docs) {
         try {
           const userData = userDoc.data();
@@ -1480,8 +1482,7 @@ export const firebaseUserApi = {
       try {
         const streakRef = doc(db, 'streaks', userId);
         await deleteDoc(streakRef);
-      } catch (error) {
-      }
+      } catch (error) {}
 
       // 6. Delete user's active session data
       try {
@@ -1493,8 +1494,7 @@ export const firebaseUserApi = {
           'current'
         );
         await deleteDoc(activeSessionRef);
-      } catch (error) {
-      }
+      } catch (error) {}
 
       // 7. Delete profile picture from storage if it exists
       try {
@@ -1504,8 +1504,7 @@ export const firebaseUserApi = {
           const storageRef = ref(storage, `profile-pictures/${userId}`);
           await deleteObject(storageRef);
         }
-      } catch (error) {
-      }
+      } catch (error) {}
 
       // 8. Delete the user document from Firestore
       await deleteDoc(doc(db, 'users', userId));
@@ -1521,4 +1520,3 @@ export const firebaseUserApi = {
     }
   },
 };
-

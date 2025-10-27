@@ -39,9 +39,13 @@ export class TimerService {
    */
   async startTimer(data: StartTimerData): Promise<ActiveSession> {
     // Business rule: Can't start a timer if one is already active
-    const existingSession = await this.activeSessionRepo.getActiveSession(data.userId);
+    const existingSession = await this.activeSessionRepo.getActiveSession(
+      data.userId
+    );
     if (existingSession) {
-      throw new Error('An active timer already exists. Please stop or complete the current session first.');
+      throw new Error(
+        'An active timer already exists. Please stop or complete the current session first.'
+      );
     }
 
     // Create new active session
@@ -249,7 +253,10 @@ export class TimerService {
       );
 
       await this.sessionRepo.save(completedSession);
-      await this.activeSessionRepo.deleteActiveSession(session.userId, session.id);
+      await this.activeSessionRepo.deleteActiveSession(
+        session.userId,
+        session.id
+      );
     } catch (error) {
       console.error('Error auto-completing stale session:', error);
       // Don't throw - this is a background cleanup operation

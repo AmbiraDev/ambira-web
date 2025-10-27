@@ -33,43 +33,45 @@ jest.mock('next/navigation', () => ({
 jest.mock('@/features/feed/hooks', () => ({
   useFeedInfinite: jest.fn(() => ({
     data: {
-      pages: [{
-        sessions: [
-          {
-            id: 'session-1',
-            userId: 'user-1',
-            title: 'First Test Session',
-            description: 'Test description',
-            duration: 3600,
-            supportCount: 5,
-            commentCount: 2,
-            createdAt: new Date(),
-            user: {
-              id: 'user-1',
-              name: 'Test User',
-              displayName: 'Test User',
-              username: 'testuser',
+      pages: [
+        {
+          sessions: [
+            {
+              id: 'session-1',
+              userId: 'user-1',
+              title: 'First Test Session',
+              description: 'Test description',
+              duration: 3600,
+              supportCount: 5,
+              commentCount: 2,
+              createdAt: new Date(),
+              user: {
+                id: 'user-1',
+                name: 'Test User',
+                displayName: 'Test User',
+                username: 'testuser',
+              },
             },
-          },
-          {
-            id: 'session-2',
-            userId: 'user-2',
-            title: 'Second Test Session',
-            description: 'Another test',
-            duration: 1800,
-            supportCount: 3,
-            commentCount: 1,
-            createdAt: new Date(),
-            user: {
-              id: 'user-2',
-              name: 'Another User',
-              displayName: 'Another User',
-              username: 'anotheruser',
+            {
+              id: 'session-2',
+              userId: 'user-2',
+              title: 'Second Test Session',
+              description: 'Another test',
+              duration: 1800,
+              supportCount: 3,
+              commentCount: 1,
+              createdAt: new Date(),
+              user: {
+                id: 'user-2',
+                name: 'Another User',
+                displayName: 'Another User',
+                username: 'anotheruser',
+              },
             },
-          },
-        ],
-        nextCursor: null,
-      }],
+          ],
+          nextCursor: null,
+        },
+      ],
     },
     isLoading: false,
     error: null,
@@ -121,7 +123,7 @@ describe('Feed Page Keyboard Navigation', () => {
 
       // Tab through interactive elements
       await user.tab();
-      let focusedElement = document.activeElement;
+      const focusedElement = document.activeElement;
 
       // Verify focus moves to interactive elements (buttons, links)
       expect(focusedElement?.tagName).toMatch(/BUTTON|A|INPUT/);
@@ -192,7 +194,9 @@ describe('Feed Page Keyboard Navigation', () => {
             await user.tab();
           }
 
-          const isFocusInCard = buttonsInCard.some(btn => btn === document.activeElement);
+          const isFocusInCard = buttonsInCard.some(
+            btn => btn === document.activeElement
+          );
           // Focus should either be in the same card or have moved to next card
           expect(document.activeElement).toBeDefined();
         }
@@ -263,7 +267,9 @@ describe('Feed Page Keyboard Navigation', () => {
       render(<Feed />);
 
       // If there are any menu buttons, try opening them
-      const menuButtons = screen.queryAllByRole('button', { name: /options|menu|more/i });
+      const menuButtons = screen.queryAllByRole('button', {
+        name: /options|menu|more/i,
+      });
 
       if (menuButtons.length > 0) {
         const menuButton = menuButtons[0];
@@ -287,7 +293,9 @@ describe('Feed Page Keyboard Navigation', () => {
       const user = userEvent.setup();
       render(<Feed />);
 
-      const likeButtons = screen.queryAllByRole('button', { name: /like|support/i });
+      const likeButtons = screen.queryAllByRole('button', {
+        name: /like|support/i,
+      });
 
       if (likeButtons.length > 0) {
         const likeButton = likeButtons[0];
@@ -308,7 +316,9 @@ describe('Feed Page Keyboard Navigation', () => {
       const user = userEvent.setup();
       render(<Feed />);
 
-      const likeButtons = screen.queryAllByRole('button', { name: /like|support/i });
+      const likeButtons = screen.queryAllByRole('button', {
+        name: /like|support/i,
+      });
 
       if (likeButtons.length > 0) {
         const likeButton = likeButtons[0];
@@ -370,7 +380,9 @@ describe('Feed Page Keyboard Navigation', () => {
       const user = userEvent.setup();
       render(<Feed />);
 
-      const menuButtons = screen.queryAllByRole('button', { name: /options|menu|more/i });
+      const menuButtons = screen.queryAllByRole('button', {
+        name: /options|menu|more/i,
+      });
 
       if (menuButtons.length > 0) {
         const menuButton = menuButtons[0];
@@ -392,7 +404,9 @@ describe('Feed Page Keyboard Navigation', () => {
       const { container } = render(<Feed />);
 
       // Check for ARIA landmarks or semantic HTML
-      const landmarks = container.querySelectorAll('[role="main"], main, [role="feed"], [role="list"]');
+      const landmarks = container.querySelectorAll(
+        '[role="main"], main, [role="feed"], [role="list"]'
+      );
 
       // Feed should use appropriate semantic structure
       expect(landmarks.length).toBeGreaterThan(0);
@@ -410,8 +424,12 @@ describe('Feed Page Keyboard Navigation', () => {
         </div>
       );
 
-      const enabledButton1 = screen.getByRole('button', { name: /enabled button 1/i });
-      const enabledButton2 = screen.getByRole('button', { name: /enabled button 2/i });
+      const enabledButton1 = screen.getByRole('button', {
+        name: /enabled button 1/i,
+      });
+      const enabledButton2 = screen.getByRole('button', {
+        name: /enabled button 2/i,
+      });
 
       enabledButton1.focus();
       await user.tab();
@@ -424,9 +442,15 @@ describe('Feed Page Keyboard Navigation', () => {
       const user = userEvent.setup();
       const handleClick = jest.fn();
 
-      render(<button disabled onClick={handleClick}>Disabled Button</button>);
+      render(
+        <button disabled onClick={handleClick}>
+          Disabled Button
+        </button>
+      );
 
-      const disabledButton = screen.getByRole('button', { name: /disabled button/i });
+      const disabledButton = screen.getByRole('button', {
+        name: /disabled button/i,
+      });
 
       // Try to activate with Enter
       disabledButton.focus();
@@ -522,7 +546,9 @@ describe('Feed Keyboard Shortcuts', () => {
     render(<Feed />);
 
     // Check if there are any elements with accesskey or other shortcut indicators
-    const elementsWithShortcuts = document.querySelectorAll('[accesskey], [data-shortcut]');
+    const elementsWithShortcuts = document.querySelectorAll(
+      '[accesskey], [data-shortcut]'
+    );
 
     // If shortcuts exist, they should be documented and discoverable
     // This test passes to document that shortcuts should be tested if implemented

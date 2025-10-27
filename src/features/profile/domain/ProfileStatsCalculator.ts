@@ -32,7 +32,10 @@ export class ProfileStatsCalculator {
   /**
    * Calculate chart data for a given time period
    */
-  calculateChartData(sessions: Session[], period: TimePeriod): ChartDataPoint[] {
+  calculateChartData(
+    sessions: Session[],
+    period: TimePeriod
+  ): ChartDataPoint[] {
     const now = new Date();
     const data: ChartDataPoint[] = [];
 
@@ -81,16 +84,22 @@ export class ProfileStatsCalculator {
         return sessionDate >= day && sessionDate < nextDay;
       });
 
-      const hoursWorked = daySessions.reduce((sum, s) => sum + s.getDurationInHours(), 0);
-      const avgDuration = daySessions.length > 0
-        ? daySessions.reduce((sum, s) => sum + s.duration, 0) / daySessions.length / 60
-        : 0;
+      const hoursWorked = daySessions.reduce(
+        (sum, s) => sum + s.getDurationInHours(),
+        0
+      );
+      const avgDuration =
+        daySessions.length > 0
+          ? daySessions.reduce((sum, s) => sum + s.duration, 0) /
+            daySessions.length /
+            60
+          : 0;
 
       data.push({
         name: `${dayNames[day.getDay()].slice(0, 3)} ${day.getDate()}`,
         hours: Number(hoursWorked.toFixed(2)),
         sessions: daySessions.length,
-        avgDuration: Math.round(avgDuration)
+        avgDuration: Math.round(avgDuration),
       });
     }
 
@@ -109,7 +118,7 @@ export class ProfileStatsCalculator {
 
     for (let i = weeks - 1; i >= 0; i--) {
       const weekStart = new Date(now);
-      weekStart.setDate(weekStart.getDate() - (i * 7) - weekStart.getDay());
+      weekStart.setDate(weekStart.getDate() - i * 7 - weekStart.getDay());
       weekStart.setHours(0, 0, 0, 0);
 
       const weekEnd = new Date(weekStart);
@@ -120,20 +129,39 @@ export class ProfileStatsCalculator {
         return sessionDate >= weekStart && sessionDate < weekEnd;
       });
 
-      const hoursWorked = weekSessions.reduce((sum, s) => sum + s.getDurationInHours(), 0);
-      const avgDuration = weekSessions.length > 0
-        ? weekSessions.reduce((sum, s) => sum + s.duration, 0) / weekSessions.length / 60
-        : 0;
+      const hoursWorked = weekSessions.reduce(
+        (sum, s) => sum + s.getDurationInHours(),
+        0
+      );
+      const avgDuration =
+        weekSessions.length > 0
+          ? weekSessions.reduce((sum, s) => sum + s.duration, 0) /
+            weekSessions.length /
+            60
+          : 0;
 
       // Format as "Week of Mon DD"
-      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const monthNames = [
+        'Jan',
+        'Feb',
+        'Mar',
+        'Apr',
+        'May',
+        'Jun',
+        'Jul',
+        'Aug',
+        'Sep',
+        'Oct',
+        'Nov',
+        'Dec',
+      ];
       const weekLabel = `Week of ${monthNames[weekStart.getMonth()]} ${weekStart.getDate()}`;
 
       data.push({
         name: weekLabel,
         hours: Number(hoursWorked.toFixed(2)),
         sessions: weekSessions.length,
-        avgDuration: Math.round(avgDuration)
+        avgDuration: Math.round(avgDuration),
       });
     }
 
@@ -148,7 +176,20 @@ export class ProfileStatsCalculator {
     months: number,
     now: Date
   ): ChartDataPoint[] {
-    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const monthNames = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
     const data: ChartDataPoint[] = [];
 
     for (let i = months - 1; i >= 0; i--) {
@@ -160,16 +201,22 @@ export class ProfileStatsCalculator {
         return sessionDate >= monthStart && sessionDate < monthEnd;
       });
 
-      const hoursWorked = monthSessions.reduce((sum, s) => sum + s.getDurationInHours(), 0);
-      const avgDuration = monthSessions.length > 0
-        ? monthSessions.reduce((sum, s) => sum + s.duration, 0) / monthSessions.length / 60
-        : 0;
+      const hoursWorked = monthSessions.reduce(
+        (sum, s) => sum + s.getDurationInHours(),
+        0
+      );
+      const avgDuration =
+        monthSessions.length > 0
+          ? monthSessions.reduce((sum, s) => sum + s.duration, 0) /
+            monthSessions.length /
+            60
+          : 0;
 
       data.push({
         name: monthNames[monthStart.getMonth()],
         hours: Number(hoursWorked.toFixed(2)),
         sessions: monthSessions.length,
-        avgDuration: Math.round(avgDuration)
+        avgDuration: Math.round(avgDuration),
       });
     }
 
@@ -187,7 +234,7 @@ export class ProfileStatsCalculator {
         averageSessionDuration: 0,
         longestSession: 0,
         currentStreak: 0,
-        longestStreak: 0
+        longestStreak: 0,
       };
     }
 
@@ -211,21 +258,24 @@ export class ProfileStatsCalculator {
       averageSessionDuration: Math.round(averageSessionDuration),
       longestSession,
       currentStreak,
-      longestStreak
+      longestStreak,
     };
   }
 
   /**
    * Calculate current and longest streak
    */
-  private calculateStreaks(sessions: Session[]): { currentStreak: number; longestStreak: number } {
+  private calculateStreaks(sessions: Session[]): {
+    currentStreak: number;
+    longestStreak: number;
+  } {
     if (sessions.length === 0) {
       return { currentStreak: 0, longestStreak: 0 };
     }
 
     // Sort sessions by date (most recent first)
-    const sortedSessions = [...sessions].sort((a, b) =>
-      b.createdAt.getTime() - a.createdAt.getTime()
+    const sortedSessions = [...sessions].sort(
+      (a, b) => b.createdAt.getTime() - a.createdAt.getTime()
     );
 
     // Get unique dates
@@ -250,8 +300,10 @@ export class ProfileStatsCalculator {
       const mostRecentDate = new Date(dates[0]);
       mostRecentDate.setHours(0, 0, 0, 0);
 
-      if (mostRecentDate.getTime() === today.getTime() ||
-          mostRecentDate.getTime() === yesterday.getTime()) {
+      if (
+        mostRecentDate.getTime() === today.getTime() ||
+        mostRecentDate.getTime() === yesterday.getTime()
+      ) {
         currentStreak = 1;
 
         // Count consecutive days
@@ -261,7 +313,9 @@ export class ProfileStatsCalculator {
           const currDate = new Date(dates[i]);
           currDate.setHours(0, 0, 0, 0);
 
-          const dayDiff = Math.round((prevDate.getTime() - currDate.getTime()) / (1000 * 60 * 60 * 24));
+          const dayDiff = Math.round(
+            (prevDate.getTime() - currDate.getTime()) / (1000 * 60 * 60 * 24)
+          );
 
           if (dayDiff === 1) {
             currentStreak++;
@@ -282,7 +336,9 @@ export class ProfileStatsCalculator {
       const currDate = new Date(dates[i]);
       currDate.setHours(0, 0, 0, 0);
 
-      const dayDiff = Math.round((prevDate.getTime() - currDate.getTime()) / (1000 * 60 * 60 * 24));
+      const dayDiff = Math.round(
+        (prevDate.getTime() - currDate.getTime()) / (1000 * 60 * 60 * 24)
+      );
 
       if (dayDiff === 1) {
         tempStreak++;
@@ -305,17 +361,21 @@ export class ProfileStatsCalculator {
       return sessions;
     }
 
-    return sessions.filter(s =>
-      s.activityId === activityId ||
-      s.projectId === activityId ||
-      s.groupIds.includes(activityId)
+    return sessions.filter(
+      s =>
+        s.activityId === activityId ||
+        s.projectId === activityId ||
+        s.groupIds.includes(activityId)
     );
   }
 
   /**
    * Get top activities by hours
    */
-  getTopActivities(sessions: Session[], limit: number = 5): Array<{ id: string; hours: number; sessions: number }> {
+  getTopActivities(
+    sessions: Session[],
+    limit: number = 5
+  ): Array<{ id: string; hours: number; sessions: number }> {
     const activityMap = new Map<string, { hours: number; sessions: number }>();
 
     sessions.forEach(s => {
@@ -324,7 +384,7 @@ export class ProfileStatsCalculator {
 
       activityMap.set(id, {
         hours: existing.hours + s.getDurationInHours(),
-        sessions: existing.sessions + 1
+        sessions: existing.sessions + 1,
       });
     });
 

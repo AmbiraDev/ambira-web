@@ -14,7 +14,10 @@ export function cn(...inputs: ClassValue[]) {
  * NOTE: DO NOT use `new Date("YYYY-MM-DDTHH:MM")` as it interprets the time as UTC!
  * This function correctly parses the date components to create a Date in local time.
  */
-export function parseLocalDateTime(dateString: string, timeString: string): Date {
+export function parseLocalDateTime(
+  dateString: string,
+  timeString: string
+): Date {
   const dateParts = dateString.split('-').map(Number);
   const timeParts = timeString.split(':').map(Number);
 
