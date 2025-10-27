@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { UserSearchResult, SuggestedUser } from '@/types';
@@ -64,12 +64,15 @@ export const UserCard: React.FC<UserCardProps> = ({
   };
 
   const getReasonBadge = (reason: string) => {
-    const reasonMap: Record<string, { label: string; variant: 'default' | 'secondary' | 'outline' }> = {
-      'mutual_followers': { label: 'Mutual followers', variant: 'secondary' },
-      'similar_interests': { label: 'Similar interests', variant: 'default' },
-      'popular_user': { label: 'Popular user', variant: 'outline' },
-      'location_based': { label: 'Near you', variant: 'secondary' },
-      'activity_based': { label: 'Similar activity', variant: 'default' },
+    const reasonMap: Record<
+      string,
+      { label: string; variant: 'default' | 'secondary' | 'outline' }
+    > = {
+      mutual_followers: { label: 'Mutual followers', variant: 'secondary' },
+      similar_interests: { label: 'Similar interests', variant: 'default' },
+      popular_user: { label: 'Popular user', variant: 'outline' },
+      location_based: { label: 'Near you', variant: 'secondary' },
+      activity_based: { label: 'Similar activity', variant: 'default' },
     };
 
     return reasonMap[reason] || { label: reason, variant: 'outline' };
@@ -89,14 +92,20 @@ export const UserCard: React.FC<UserCardProps> = ({
   const isSearchVariant = variant === 'search';
 
   return (
-    <div className={
-      isSearchVariant
-        ? "bg-white hover:bg-gray-50 rounded-lg transition-colors p-3"
-        : "bg-card-background rounded-lg border border-border p-4 hover:shadow-md transition-shadow"
-    }>
+    <div
+      className={
+        isSearchVariant
+          ? 'bg-white hover:bg-gray-50 rounded-lg transition-colors p-3'
+          : 'bg-card-background rounded-lg border border-border p-4 hover:shadow-md transition-shadow'
+      }
+    >
       <div className="flex items-start gap-3">
         {/* Avatar */}
-        <Link href={`/profile/${user.username}`} className="flex-shrink-0" onClick={(e) => e.stopPropagation()}>
+        <Link
+          href={`/profile/${user.username}`}
+          className="flex-shrink-0"
+          onClick={e => e.stopPropagation()}
+        >
           {user.profilePicture ? (
             <Image
               src={user.profilePicture}
@@ -117,20 +126,29 @@ export const UserCard: React.FC<UserCardProps> = ({
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between">
             <div className="min-w-0 flex-1">
-              <Link href={`/profile/${user.username}`} onClick={(e) => e.stopPropagation()}>
-                <h3 className={
-                  isSearchVariant
-                    ? "font-semibold text-sm text-gray-900 hover:text-[#007AFF] truncate"
-                    : "font-semibold text-foreground hover:text-primary transition-colors truncate"
-                }>
+              <Link
+                href={`/profile/${user.username}`}
+                onClick={e => e.stopPropagation()}
+              >
+                <h3
+                  className={
+                    isSearchVariant
+                      ? 'font-semibold text-sm text-gray-900 hover:text-[#007AFF] truncate'
+                      : 'font-semibold text-foreground hover:text-primary transition-colors truncate'
+                  }
+                >
                   {user.name}
                 </h3>
               </Link>
-              <p className={
-                isSearchVariant
-                  ? "text-xs text-gray-500 truncate"
-                  : "text-sm text-muted-foreground"
-              }>@{user.username}</p>
+              <p
+                className={
+                  isSearchVariant
+                    ? 'text-xs text-gray-500 truncate'
+                    : 'text-sm text-muted-foreground'
+                }
+              >
+                @{user.username}
+              </p>
 
               {user.bio && !isSearchVariant && (
                 <p className="text-sm text-foreground mt-1 line-clamp-2">
@@ -143,11 +161,13 @@ export const UserCard: React.FC<UserCardProps> = ({
                 <div className="flex items-center gap-3 mt-2">
                   <div className="flex items-center gap-1 text-xs text-muted-foreground">
                     <Users className="w-3 h-3" />
-                    <span>{formatFollowerCount(user.followersCount)} followers</span>
+                    <span>
+                      {formatFollowerCount(user.followersCount)} followers
+                    </span>
                   </div>
 
                   {/* Suggestion reason */}
-                  {('reason' in user && user.reason) ? (
+                  {'reason' in user && user.reason ? (
                     <Badge
                       variant={getReasonBadge(user.reason).variant}
                       className="text-xs"
@@ -157,7 +177,7 @@ export const UserCard: React.FC<UserCardProps> = ({
                   ) : null}
 
                   {/* Location if available */}
-                  {('location' in user && user.location) ? (
+                  {'location' in user && user.location ? (
                     <div className="flex items-center gap-1 text-xs text-muted-foreground">
                       <MapPin className="w-3 h-3" />
                       <span>{user.location as string}</span>
@@ -186,7 +206,7 @@ export const UserCard: React.FC<UserCardProps> = ({
                   <Button
                     onClick={handleFollow}
                     disabled={isLoading}
-                    variant={isFollowing ? "outline" : "default"}
+                    variant={isFollowing ? 'outline' : 'default'}
                     size="sm"
                     className="flex items-center gap-1 min-w-[80px]"
                   >
@@ -223,6 +243,11 @@ export const UserCardCompact: React.FC<UserCardProps> = ({
   const { user: currentUser } = useAuth();
   const [isFollowing, setIsFollowing] = useState(user.isFollowing || false);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Sync state when user.isFollowing prop changes
+  useEffect(() => {
+    setIsFollowing(user.isFollowing || false);
+  }, [user.isFollowing]);
 
   const isOwnProfile = currentUser?.id === user.id;
   const canFollow = !isOwnProfile && currentUser && variant !== 'follower';
@@ -263,7 +288,10 @@ export const UserCardCompact: React.FC<UserCardProps> = ({
 
   return (
     <div className="flex items-center justify-between p-3 hover:bg-muted/50 rounded-lg transition-colors">
-      <Link href={`/profile/${user.username}`} className="flex items-center gap-3 flex-1 min-w-0">
+      <Link
+        href={`/profile/${user.username}`}
+        className="flex items-center gap-3 flex-1 min-w-0"
+      >
         {/* Avatar */}
         {user.profilePicture ? (
           <Image
@@ -283,7 +311,9 @@ export const UserCardCompact: React.FC<UserCardProps> = ({
         {/* User Info */}
         <div className="min-w-0 flex-1">
           <h4 className="font-medium text-foreground truncate">{user.name}</h4>
-          <p className="text-sm text-muted-foreground truncate">@{user.username}</p>
+          <p className="text-sm text-muted-foreground truncate">
+            @{user.username}
+          </p>
         </div>
       </Link>
 
@@ -292,7 +322,7 @@ export const UserCardCompact: React.FC<UserCardProps> = ({
         <Button
           onClick={handleFollow}
           disabled={isLoading}
-          variant={isFollowing ? "outline" : "default"}
+          variant={isFollowing ? 'outline' : 'default'}
           size="sm"
           className="flex items-center gap-1 min-w-[70px]"
         >

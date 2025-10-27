@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import { AuthInitializer } from '@/components/AuthInitializer';
+import { DataPrefetcher } from '@/components/DataPrefetcher';
 import { QueryProvider } from '@/providers/QueryProvider';
 import { Toaster } from 'sonner';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
@@ -88,8 +89,14 @@ export default function RootLayout({
           <PWAInstaller />
           <QueryProvider>
             <AuthInitializer>
+              <DataPrefetcher />
               {children}
-              <Toaster position="bottom-right" expand={false} richColors closeButton />
+              <Toaster
+                position="bottom-right"
+                expand={false}
+                richColors
+                closeButton
+              />
             </AuthInitializer>
           </QueryProvider>
           <Analytics />
