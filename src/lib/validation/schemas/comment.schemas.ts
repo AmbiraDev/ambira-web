@@ -6,23 +6,32 @@
  */
 
 import * as v from 'valibot';
-import { UuidSchema } from '../utils/common-schemas';
+
+/**
+ * Firebase ID schema - accepts Firebase's 20-character alphanumeric IDs
+ * Firebase uses custom IDs, not UUIDs
+ */
+const FirebaseIdSchema = v.pipe(
+  v.string('ID is required'),
+  v.nonEmpty('ID cannot be empty'),
+  v.regex(/^[a-zA-Z0-9]{18,28}$/, 'Invalid Firebase ID format')
+);
 
 /**
  * Schema for creating a new comment
  */
 export const CreateCommentSchema = v.object({
   // Required fields
-  sessionId: UuidSchema,
+  sessionId: FirebaseIdSchema,
   content: v.pipe(
     v.string('Comment content is required'),
     v.nonEmpty('Comment cannot be empty'),
     v.maxLength(2000, 'Comment cannot exceed 2000 characters'),
-    v.transform((str) => str.trim())
+    v.transform(str => str.trim())
   ),
 
   // Optional fields
-  parentCommentId: v.optional(UuidSchema), // For nested replies
+  parentId: v.optional(FirebaseIdSchema), // For nested replies
 });
 
 /**
@@ -34,7 +43,7 @@ export const UpdateCommentSchema = v.object({
       v.string(),
       v.nonEmpty('Comment cannot be empty'),
       v.maxLength(2000, 'Comment cannot exceed 2000 characters'),
-      v.transform((str) => str.trim())
+      v.transform(str => str.trim())
     )
   ),
   isEdited: v.optional(v.boolean()),
@@ -44,16 +53,16 @@ export const UpdateCommentSchema = v.object({
  * Schema for comment like/unlike operations
  */
 export const CommentLikeSchema = v.object({
-  commentId: UuidSchema,
+  commentId: FirebaseIdSchema,
 });
 
 /**
  * Schema for comment filters
  */
 export const CommentFiltersSchema = v.object({
-  sessionId: v.optional(UuidSchema),
-  userId: v.optional(UuidSchema),
-  parentCommentId: v.optional(UuidSchema),
+  sessionId: v.optional(FirebaseIdSchema),
+  userId: v.optional(FirebaseIdSchema),
+  parentCommentId: v.optional(FirebaseIdSchema),
   includeReplies: v.optional(v.boolean()),
 });
 

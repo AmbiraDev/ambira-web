@@ -15,7 +15,7 @@ describe('Comment Schemas', () => {
   describe('CreateCommentSchema', () => {
     it('should validate valid comment data', () => {
       const input = {
-        sessionId: '550e8400-e29b-41d4-a716-446655440000',
+        sessionId: 'abc123def456ghi789jk',
         content: 'Great session! Keep up the good work.',
       };
 
@@ -28,18 +28,18 @@ describe('Comment Schemas', () => {
       }
     });
 
-    it('should validate comment with parentCommentId for replies', () => {
+    it('should validate comment with parentId for replies', () => {
       const input = {
-        sessionId: '550e8400-e29b-41d4-a716-446655440000',
+        sessionId: 'abc123def456ghi789jk',
         content: 'Thanks for the reply!',
-        parentCommentId: '660e8400-e29b-41d4-a716-446655440001',
+        parentId: 'xyz987uvw654rst321po',
       };
 
       const result = validate(CreateCommentSchema, input);
 
       expect(result.success).toBe(true);
       if (result.success) {
-        expect(result.data.parentCommentId).toBe(input.parentCommentId);
+        expect(result.data.parentId).toBe(input.parentId);
       }
     });
 
@@ -59,7 +59,7 @@ describe('Comment Schemas', () => {
 
     it('should fail for missing content', () => {
       const input = {
-        sessionId: '550e8400-e29b-41d4-a716-446655440000',
+        sessionId: 'abc123def456ghi789jk',
       };
 
       const result = validate(CreateCommentSchema, input);
@@ -73,7 +73,7 @@ describe('Comment Schemas', () => {
 
     it('should fail for empty content', () => {
       const input = {
-        sessionId: '550e8400-e29b-41d4-a716-446655440000',
+        sessionId: 'abc123def456ghi789jk',
         content: '',
       };
 
@@ -87,7 +87,7 @@ describe('Comment Schemas', () => {
 
     it('should fail for content exceeding 2000 characters', () => {
       const input = {
-        sessionId: '550e8400-e29b-41d4-a716-446655440000',
+        sessionId: 'abc123def456ghi789jk',
         content: 'A'.repeat(2001), // Max is 2000
       };
 
@@ -101,7 +101,7 @@ describe('Comment Schemas', () => {
 
     it('should allow content at exactly 2000 characters', () => {
       const input = {
-        sessionId: '550e8400-e29b-41d4-a716-446655440000',
+        sessionId: 'abc123def456ghi789jk',
         content: 'A'.repeat(2000), // Exactly max
       };
 
@@ -124,24 +124,24 @@ describe('Comment Schemas', () => {
       }
     });
 
-    it('should fail for invalid parentCommentId format', () => {
+    it('should fail for invalid parentId format', () => {
       const input = {
-        sessionId: '550e8400-e29b-41d4-a716-446655440000',
+        sessionId: 'abc123def456ghi789jk',
         content: 'Reply to comment',
-        parentCommentId: 'invalid-uuid',
+        parentId: 'invalid-id',
       };
 
       const result = validate(CreateCommentSchema, input);
 
       expect(result.success).toBe(false);
       if (!result.success) {
-        expect(result.errors[0]?.path).toBe('parentCommentId');
+        expect(result.errors[0]?.path).toBe('parentId');
       }
     });
 
     it('should trim content whitespace', () => {
       const input = {
-        sessionId: '550e8400-e29b-41d4-a716-446655440000',
+        sessionId: 'abc123def456ghi789jk',
         content: '  Great session!  ',
       };
 
@@ -155,7 +155,7 @@ describe('Comment Schemas', () => {
 
     it('should pass nonEmpty but trim to empty string', () => {
       const input = {
-        sessionId: '550e8400-e29b-41d4-a716-446655440000',
+        sessionId: 'abc123def456ghi789jk',
         content: '   ',
       };
 
@@ -276,7 +276,7 @@ describe('Comment Schemas', () => {
   describe('CommentLikeSchema', () => {
     it('should validate valid commentId', () => {
       const input = {
-        commentId: '550e8400-e29b-41d4-a716-446655440000',
+        commentId: 'abc123def456ghi789jk',
       };
 
       const result = validate(CommentLikeSchema, input);
@@ -324,7 +324,7 @@ describe('Comment Schemas', () => {
 
     it('should validate sessionId filter', () => {
       const input = {
-        sessionId: '550e8400-e29b-41d4-a716-446655440000',
+        sessionId: 'abc123def456ghi789jk',
       };
 
       const result = validate(CommentFiltersSchema, input);
@@ -337,7 +337,7 @@ describe('Comment Schemas', () => {
 
     it('should validate userId filter', () => {
       const input = {
-        userId: '660e8400-e29b-41d4-a716-446655440001',
+        userId: 'xyz987uvw654rst321po',
       };
 
       const result = validate(CommentFiltersSchema, input);
@@ -350,7 +350,7 @@ describe('Comment Schemas', () => {
 
     it('should validate parentCommentId filter', () => {
       const input = {
-        parentCommentId: '770e8400-e29b-41d4-a716-446655440002',
+        parentCommentId: 'qwe456rty789uio012as',
       };
 
       const result = validate(CommentFiltersSchema, input);
@@ -376,8 +376,8 @@ describe('Comment Schemas', () => {
 
     it('should validate multiple filters together', () => {
       const input = {
-        sessionId: '550e8400-e29b-41d4-a716-446655440000',
-        userId: '660e8400-e29b-41d4-a716-446655440001',
+        sessionId: 'abc123def456ghi789jk',
+        userId: 'xyz987uvw654rst321po',
         includeReplies: false,
       };
 
