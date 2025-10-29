@@ -6,6 +6,7 @@ import { defineConfig, devices } from '@playwright/test';
  */
 export default defineConfig({
   testDir: './e2e',
+  outputDir: 'docs/playwright-artifacts/test-results',
 
   /* Run tests in files in parallel */
   fullyParallel: true,
@@ -22,11 +23,14 @@ export default defineConfig({
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: process.env.CI
     ? [
-        ['html', { outputFolder: 'playwright-report' }],
-        ['junit', { outputFile: 'playwright-report/junit.xml' }],
+        ['html', { outputFolder: 'docs/playwright-artifacts/report' }],
+        ['junit', { outputFile: 'docs/playwright-artifacts/report/junit.xml' }],
         ['list']
       ]
-    : [['html'], ['list']],
+    : [
+        ['html', { outputFolder: 'docs/playwright-artifacts/report' }],
+        ['list'],
+      ],
 
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
