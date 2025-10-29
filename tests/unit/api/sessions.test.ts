@@ -1,38 +1,48 @@
 import { firebaseSessionApi } from '@/lib/api/sessions';
 import type { CreateSessionData } from '@/types';
 
-const collectionMock = jest.fn((..._args: unknown[]) => ({}));
-const docMock = jest.fn((..._args: unknown[]) => ({}));
-const addDocMock = jest.fn();
-const setDocMock = jest.fn();
-const getDocMock = jest.fn();
-const deleteDocMock = jest.fn();
-
-const createTimestamp = (date: Date) => ({
-  toDate: () => date,
-});
-
 jest.mock('@/lib/firebase', () => ({
   db: {},
   auth: { currentUser: { uid: 'author' } },
 }));
 
 jest.mock('firebase/firestore', () => {
-  const Timestamp = {
-    fromDate: (date: Date) => createTimestamp(date),
+  const mockTimestamp = {
+    fromDate: (date: Date) => ({
+      toDate: () => date,
+    }),
   };
 
-  return {
-    collection: collectionMock,
-    doc: docMock,
-    addDoc: addDocMock,
-    setDoc: setDocMock,
-    getDoc: getDocMock,
-    deleteDoc: deleteDocMock,
-    serverTimestamp: () => new Date(),
-    Timestamp,
+  const mockModule = {
+    collection: jest.fn(() => ({})),
+    doc: jest.fn(() => ({})),
+    addDoc: jest.fn(),
+    setDoc: jest.fn(),
+    getDoc: jest.fn(),
+    deleteDoc: jest.fn(),
+    serverTimestamp: jest.fn(() => new Date()),
+    Timestamp: mockTimestamp,
   };
+
+  (
+    globalThis as unknown as { __firestoreMocks: typeof mockModule }
+  ).__firestoreMocks = mockModule;
+
+  return mockModule;
 });
+
+const firestoreMocks = jest.requireMock('firebase/firestore') as {
+  collection: jest.Mock;
+  doc: jest.Mock;
+  addDoc: jest.Mock;
+  setDoc: jest.Mock;
+  getDoc: jest.Mock;
+  deleteDoc: jest.Mock;
+  serverTimestamp: jest.Mock;
+  Timestamp: { fromDate: (date: Date) => { toDate: () => Date } };
+};
+
+const { addDoc: addDocMock } = firestoreMocks;
 
 jest.mock('@/lib/api/shared/utils', () => ({
   convertTimestamp: (value: unknown) => {
@@ -59,28 +69,40 @@ jest.mock('@/lib/api/challenges', () => ({
   },
 }));
 
-const checkRateLimitMock = jest.fn();
-
 jest.mock('@/lib/rateLimit', () => ({
-  checkRateLimit: checkRateLimitMock,
+  checkRateLimit: jest.fn(),
 }));
 
-const handleErrorMock = jest.fn(
-  (
-    _error: unknown,
-    _context: string,
-    options?: { defaultMessage?: string }
-  ) => ({
-    userMessage: options?.defaultMessage || 'handled error',
-  })
-);
+const { checkRateLimit: checkRateLimitMock } = jest.requireMock(
+  '@/lib/rateLimit'
+) as {
+  checkRateLimit: jest.Mock;
+};
 
-jest.mock('@/lib/errorHandler', () => ({
-  handleError: handleErrorMock,
-  isPermissionError: jest.fn(() => false),
-  isNotFoundError: jest.fn(() => false),
-  ErrorSeverity: { WARNING: 'warning' },
-}));
+jest.mock('@/lib/errorHandler', () => {
+  const handleError = jest.fn(
+    (
+      _error: unknown,
+      _context: string,
+      options?: { defaultMessage?: string }
+    ) => ({
+      userMessage: options?.defaultMessage || 'handled error',
+    })
+  );
+
+  return {
+    handleError,
+    isPermissionError: jest.fn(() => false),
+    isNotFoundError: jest.fn(() => false),
+    ErrorSeverity: { WARNING: 'warning' },
+  };
+});
+
+const { handleError: handleErrorMock } = jest.requireMock(
+  '@/lib/errorHandler'
+) as {
+  handleError: jest.Mock;
+};
 
 describe('firebaseSessionApi - createSession', () => {
   const basePayload: CreateSessionData = {

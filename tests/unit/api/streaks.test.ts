@@ -1,38 +1,53 @@
 import { firebaseStreakApi } from '@/lib/api/streaks';
 
-const collectionMock = jest.fn((..._args: unknown[]) => ({}));
-const docMock = jest.fn((..._args: unknown[]) => ({}));
-const getDocMock = jest.fn();
-const setDocMock = jest.fn();
-const getDocsMock = jest.fn();
-const queryMock = jest.fn();
-
-const createTimestamp = (date: Date) => ({
-  toDate: () => date,
-});
-
-const mockTimestamp = {
-  fromDate: (date: Date) => createTimestamp(date),
-};
-
 jest.mock('@/lib/firebase', () => ({
   db: {},
   auth: { currentUser: { uid: 'user-auth' } },
 }));
 
-jest.mock('firebase/firestore', () => ({
-  collection: collectionMock,
-  doc: docMock,
-  getDoc: getDocMock,
-  getDocs: getDocsMock,
-  setDoc: setDocMock,
-  updateDoc: jest.fn(),
-  Timestamp: mockTimestamp,
-  query: queryMock,
-  where: (...args: unknown[]) => ({ type: 'where', args }),
-  orderBy: (...args: unknown[]) => ({ type: 'orderBy', args }),
-  limit: (...args: unknown[]) => ({ type: 'limit', args }),
-}));
+jest.mock('firebase/firestore', () => {
+  const timestamp = {
+    fromDate: (date: Date) => ({
+      toDate: () => date,
+    }),
+  };
+
+  const mockModule = {
+    collection: jest.fn(() => ({})),
+    doc: jest.fn(() => ({})),
+    getDoc: jest.fn(),
+    getDocs: jest.fn(),
+    setDoc: jest.fn(),
+    updateDoc: jest.fn(),
+    Timestamp: timestamp,
+    query: jest.fn(),
+    where: jest.fn((...args: unknown[]) => ({ type: 'where', args })),
+    orderBy: jest.fn((...args: unknown[]) => ({ type: 'orderBy', args })),
+    limit: jest.fn((...args: unknown[]) => ({ type: 'limit', args })),
+  };
+
+  return mockModule;
+});
+
+const streakFirestoreMocks = jest.requireMock('firebase/firestore') as {
+  collection: jest.Mock;
+  doc: jest.Mock;
+  getDoc: jest.Mock;
+  getDocs: jest.Mock;
+  setDoc: jest.Mock;
+  updateDoc: jest.Mock;
+  Timestamp: { fromDate: (date: Date) => { toDate: () => Date } };
+  query: jest.Mock;
+  where: jest.Mock;
+  orderBy: jest.Mock;
+  limit: jest.Mock;
+};
+
+const getDocMock = streakFirestoreMocks.getDoc;
+const setDocMock = streakFirestoreMocks.setDoc;
+const getDocsMock = streakFirestoreMocks.getDocs;
+const queryMock = streakFirestoreMocks.query;
+const mockTimestamp = streakFirestoreMocks.Timestamp;
 
 jest.mock('@/lib/api/shared/utils', () => ({
   convertTimestamp: (value: unknown) => {
