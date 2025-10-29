@@ -126,8 +126,7 @@ test.describe('Authentication Pages - Smoke Tests', () => {
       await page.waitForLoadState('domcontentloaded');
 
       // Check if we're on mobile viewport
-      const viewport = page.viewportSize();
-      const isMobile = viewport && viewport.width < 768;
+      const _viewport = page.viewportSize();
 
       // Check if page has focusable content (buttons, links, inputs)
       const focusableElements = page.locator(
@@ -228,7 +227,7 @@ test.describe('Authentication Pages - Smoke Tests', () => {
         // Use try-catch because ProtectedRoute may redirect before domcontentloaded
         try {
           await page.goto(route, { waitUntil: 'domcontentloaded' });
-        } catch (error) {
+        } catch (_error) {
           // Redirect happened before domcontentloaded - this is expected
           // Continue with the test to verify we landed on the correct page
         }

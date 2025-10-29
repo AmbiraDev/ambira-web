@@ -135,8 +135,7 @@ test.describe('Timer Page - Smoke Tests', () => {
     await page.waitForLoadState('domcontentloaded');
 
     // Check if we're on mobile viewport
-    const viewport = page.viewportSize();
-    const isMobile = viewport && viewport.width < 768;
+    const _viewport = page.viewportSize();
 
     // Check if page has focusable content (buttons, links, inputs)
     const focusableElements = page.locator(

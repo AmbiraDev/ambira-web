@@ -1,5 +1,6 @@
 import { Page } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import type { AxeResults, NodeResult, Result } from 'axe-core';
 
 /**
  * Run accessibility scan on the current page
@@ -18,7 +19,7 @@ export async function runAccessibilityScan(
 
   // Exclude specific selectors if provided
   if (options?.exclude) {
-    options.exclude.forEach((selector) => {
+    options.exclude.forEach(selector => {
       builder.exclude(selector);
     });
   }
@@ -39,15 +40,17 @@ export async function runAccessibilityScan(
  * @param violations - Array of axe violations
  * @returns Formatted string with violation details
  */
-export function formatA11yViolations(violations: any[]): string {
+export function formatA11yViolations(
+  violations: AxeResults['violations']
+): string {
   if (violations.length === 0) {
     return 'No accessibility violations found';
   }
 
   return violations
-    .map((violation) => {
+    .map((violation: Result) => {
       const nodes = violation.nodes
-        .map((node: any) => {
+        .map((node: NodeResult) => {
           const target = node.target.join(', ');
           const html = node.html.substring(0, 100);
           return `    Target: ${target}\n    HTML: ${html}${node.html.length > 100 ? '...' : ''}`;
@@ -91,7 +94,9 @@ export async function checkBasicAccessibility(page: Page) {
   checks.hasHeadings = headings > 0;
 
   // Check for skip link
-  const skipLink = await page.locator('a[href="#main"], a[href="#content"]').count();
+  const skipLink = await page
+    .locator('a[href="#main"], a[href="#content"]')
+    .count();
   checks.hasSkipLink = skipLink > 0;
 
   return checks;

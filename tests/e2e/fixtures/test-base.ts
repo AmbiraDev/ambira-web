@@ -17,14 +17,15 @@ export const test = base.extend<TestFixtures>({
    * Usage: test('my test', async ({ page, makeAxeBuilder }) => { ... })
    */
   makeAxeBuilder: async ({ page }, use) => {
-    const makeAxeBuilder = () =>
+    const buildAxe = () =>
       new AxeBuilder({ page })
         // Exclude third-party content from accessibility scans
         .exclude('#third-party-widget')
         // Set options for the scan
         .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']);
 
-    await use(makeAxeBuilder);
+    // eslint-disable-next-line react-hooks/rules-of-hooks -- Playwright fixture API parameter is named `use`
+    await use(buildAxe);
   },
 });
 
