@@ -3,10 +3,24 @@ name: CI
 on:
   pull_request:
     branches:
-      - main
+      - '**'
+    types:
+      - opened
+      - reopened
+      - closed
   push:
     branches:
-      - main
+      - '**'
+  release:
+    types:
+      - created
+      - published
+      - edited
+  workflow_dispatch: # run the following from the root: gh workflow run ci.yml --ref <branch_name> --field reason="Hotfix deploy"
+    inputs:
+      reason:
+        description: 'Hotfix deploy'
+        required: false
 
 jobs:
   # Install dependencies once and cache for all jobs
@@ -104,6 +118,7 @@ jobs:
           cache: 'npm'
 
       - name: Restore node_modules cache
+        id: restore-unit-node-modules
         uses: actions/cache@v4
         with:
           path: node_modules
@@ -111,25 +126,25 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-modules-
 
-      - name: Run unit tests
-        run: npm test
+      - name: Install dependencies (fallback)
+        if: steps.restore-unit-node-modules.outputs.cache-hit != 'true'
+        run: npm ci
+
+      - name: Run unit tests with coverage
+        run: npm test -- tests/unit -- --coverage --coverageDirectory=docs/test-coverage/unit
 
       - name: Upload coverage reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: coverage-report
-          path: coverage/
+          path: docs/test-coverage/unit
           retention-days: 7
-
-  # Run Playwright smoke tests in parallel (conditional on tests existing)
-  playwright:
-    name: Playwright Smoke Tests
-    runs-on: ubuntu-latest
+  
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest    
     needs: install
-    # Only run if playwright.config.ts exists
-    if: hashFiles('playwright.config.ts') != ''
-    timeout-minutes: 15
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -141,12 +156,60 @@ jobs:
           cache: 'npm'
 
       - name: Restore node_modules cache
+        id: restore-integration-node-modules
         uses: actions/cache@v4
         with:
           path: node_modules
           key: ${{ runner.os }}-node-modules-${{ hashFiles('package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-modules-
+
+      - name: Install dependencies (fallback)
+        if: steps.restore-integration-node-modules.outputs.cache-hit != 'true'
+        run: npm ci
+
+      - name: Run integration tests with coverage
+        run: npm test -- tests/integration -- --coverage --coverageDirectory=docs/test-coverage/integration
+
+      - name: Upload coverage reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: docs/test-coverage/integration
+          retention-days: 7
+
+
+  # Run Playwright smoke tests in parallel (conditional on tests existing)
+  playwright-tests:
+    name: Playwright Smoke Tests
+    runs-on: ubuntu-latest
+    needs: install
+    # Only run if playwright.config.ts exists
+    # if: hashFiles('playwright.config.ts') != ''
+    # timeout-minutes: 15
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Restore node_modules cache
+        id: restore-playwright-node-modules
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-modules-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-modules-
+
+      - name: Install dependencies (fallback)
+        if: steps.restore-playwright-node-modules.outputs.cache-hit != 'true'
+        run: npm ci
 
       - name: Get Playwright version
         id: playwright-version
@@ -184,7 +247,7 @@ jobs:
           timeout 60 bash -c 'until curl -f http://localhost:3000 > /dev/null 2>&1; do sleep 2; done'
 
       - name: Run Playwright smoke tests
-        run: npx playwright test --project=chromium
+        run: npx playwright test tests/e2e/smoke --project=chromium
         env:
           CI: true
 
@@ -193,7 +256,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report
-          path: playwright-report/
+          path: docs/playwright-artifacts/report
           retention-days: 7
 
       - name: Upload test results
@@ -201,14 +264,14 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: playwright-results
-          path: test-results/
+          path: docs/playwright-artifacts/test-results
           retention-days: 7
 
   # Build job runs after all checks pass
   build:
     name: Build Application
     runs-on: ubuntu-latest
-    needs: [lint, type-check, unit-tests]
+    needs: [lint, type-check, unit-tests, integration-tests, playwright-tests]
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -230,9 +293,15 @@ jobs:
       - name: Build application
         run: npm run build
 
+      - name: Stage build artifacts
+        run: |
+          rm -rf docs/artifacts/next
+          mkdir -p docs/artifacts
+          cp -R .next docs/artifacts/next
+
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
           name: build
-          path: .next/
+          path: docs/artifacts/next
           retention-days: 7
