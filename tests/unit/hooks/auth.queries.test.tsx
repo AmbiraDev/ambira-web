@@ -88,6 +88,7 @@ describe('auth react-query hooks', () => {
         email: 'new@example.com',
         password: 'secret',
         name: 'New User',
+        username: 'new-user',
       });
     });
 

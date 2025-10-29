@@ -33,15 +33,13 @@ jest.mock(
   })
 );
 
-const baseUser: User = {
-  id: 'profile-1',
-  email: 'test@example.com',
-  name: 'Test User',
-  username: 'test',
-  createdAt: new Date(),
-  updatedAt: new Date(),
-  profileVisibility: 'everyone',
-};
+const baseUser = new User(
+  'profile-1',
+  'test',
+  'Test User',
+  'test@example.com',
+  new Date()
+);
 
 describe('ProfileService', () => {
   const service = new ProfileService();
@@ -63,10 +61,19 @@ describe('ProfileService', () => {
   });
 
   it('enforces follower-only privacy checks', async () => {
-    const profileUser: User = {
-      ...baseUser,
-      profileVisibility: 'followers',
-    };
+    const profileUser = new User(
+      baseUser.id,
+      baseUser.username,
+      baseUser.name,
+      baseUser.email,
+      baseUser.createdAt,
+      baseUser.bio,
+      baseUser.location,
+      baseUser.profilePicture,
+      baseUser.followerCount,
+      baseUser.followingCount,
+      'followers'
+    );
 
     isFollowing.mockResolvedValueOnce(true);
     await expect(service.canViewProfile(profileUser, 'viewer')).resolves.toBe(

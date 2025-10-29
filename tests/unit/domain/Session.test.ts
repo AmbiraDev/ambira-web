@@ -22,6 +22,7 @@ function createSession() {
     ['user-2'],
     true,
     new Date('2024-01-01T11:30:00Z'),
+    new Date('2024-01-01T09:00:00Z'),
     ['writing'],
     true,
     'energized',

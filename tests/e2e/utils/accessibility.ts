@@ -14,7 +14,7 @@ export async function runAccessibilityScan(
     exclude?: string[];
     disableRules?: string[];
   }
-) {
+): Promise<AxeResults> {
   const builder = new AxeBuilder({ page });
 
   // Exclude specific selectors if provided
@@ -30,9 +30,7 @@ export async function runAccessibilityScan(
   }
 
   // Run the accessibility scan
-  const results = await builder.analyze();
-
-  return results;
+  return builder.analyze();
 }
 
 /**
@@ -49,6 +47,9 @@ export function formatA11yViolations(
 
   return violations
     .map((violation: Result) => {
+      const impactLabel = violation.impact
+        ? violation.impact.toUpperCase()
+        : 'UNKNOWN';
       const nodes = violation.nodes
         .map((node: NodeResult) => {
           const target = node.target.join(', ');
@@ -58,7 +59,7 @@ export function formatA11yViolations(
         .join('\n\n');
 
       return `
-[${violation.impact.toUpperCase()}] ${violation.id}: ${violation.help}
+[${impactLabel}] ${violation.id}: ${violation.help}
   Description: ${violation.description}
   WCAG: ${violation.tags.filter((tag: string) => tag.startsWith('wcag')).join(', ')}
   Affected elements (${violation.nodes.length}):

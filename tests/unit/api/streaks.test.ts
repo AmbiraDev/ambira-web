@@ -1,17 +1,17 @@
 import { firebaseStreakApi } from '@/lib/api/streaks';
 
-const getDoc = jest.fn();
-const setDoc = jest.fn();
-const getDocs = jest.fn();
-const collection = jest.fn(() => ({}));
-const doc = jest.fn(() => ({}));
-const query = jest.fn(() => ({}));
+const collectionMock = jest.fn((..._args: unknown[]) => ({}));
+const docMock = jest.fn((..._args: unknown[]) => ({}));
+const getDocMock = jest.fn();
+const setDocMock = jest.fn();
+const getDocsMock = jest.fn();
+const queryMock = jest.fn();
 
 const createTimestamp = (date: Date) => ({
   toDate: () => date,
 });
 
-const Timestamp = {
+const mockTimestamp = {
   fromDate: (date: Date) => createTimestamp(date),
 };
 
@@ -20,25 +20,19 @@ jest.mock('@/lib/firebase', () => ({
   auth: { currentUser: { uid: 'user-auth' } },
 }));
 
-jest.mock('firebase/firestore', () => {
-  const Timestamp = {
-    fromDate: (date: Date) => createTimestamp(date),
-  };
-
-  return {
-    collection: (...args: unknown[]) => collection(...args),
-    doc: (...args: unknown[]) => doc(...args),
-    getDoc: (...args: unknown[]) => getDoc(...args),
-    getDocs: (...args: unknown[]) => getDocs(...args),
-    setDoc: (...args: unknown[]) => setDoc(...args),
-    updateDoc: jest.fn(),
-    Timestamp,
-    query: (...args: unknown[]) => query(...args),
-    where: (...args: unknown[]) => ({ type: 'where', args }),
-    orderBy: (...args: unknown[]) => ({ type: 'orderBy', args }),
-    limit: (...args: unknown[]) => ({ type: 'limit', args }),
-  };
-});
+jest.mock('firebase/firestore', () => ({
+  collection: collectionMock,
+  doc: docMock,
+  getDoc: getDocMock,
+  getDocs: getDocsMock,
+  setDoc: setDocMock,
+  updateDoc: jest.fn(),
+  Timestamp: mockTimestamp,
+  query: queryMock,
+  where: (...args: unknown[]) => ({ type: 'where', args }),
+  orderBy: (...args: unknown[]) => ({ type: 'orderBy', args }),
+  limit: (...args: unknown[]) => ({ type: 'limit', args }),
+}));
 
 jest.mock('@/lib/api/shared/utils', () => ({
   convertTimestamp: (value: unknown) => {
@@ -62,14 +56,14 @@ describe('firebaseStreakApi', () => {
   });
 
   it('initialises empty streaks when no record exists', async () => {
-    getDoc.mockResolvedValueOnce({
+    getDocMock.mockResolvedValueOnce({
       exists: () => false,
     });
-    setDoc.mockResolvedValueOnce(undefined);
+    setDocMock.mockResolvedValueOnce(undefined);
 
     const data = await firebaseStreakApi.getStreakData('new-user');
 
-    expect(setDoc).toHaveBeenCalled();
+    expect(setDocMock).toHaveBeenCalled();
     expect(data).toMatchObject({
       userId: 'new-user',
       currentStreak: 0,
@@ -78,9 +72,11 @@ describe('firebaseStreakApi', () => {
   });
 
   it('hydrates persisted streak data', async () => {
-    const lastActivity = Timestamp.fromDate(new Date('2024-01-01T12:00:00Z'));
+    const lastActivity = mockTimestamp.fromDate(
+      new Date('2024-01-01T12:00:00Z')
+    );
 
-    getDoc.mockResolvedValueOnce({
+    getDocMock.mockResolvedValueOnce({
       exists: () => true,
       data: () => ({
         userId: 'user',
@@ -103,16 +99,16 @@ describe('firebaseStreakApi', () => {
   });
 
   it('suppresses permission errors when creating default streaks', async () => {
-    getDoc.mockResolvedValueOnce({
+    getDocMock.mockResolvedValueOnce({
       exists: () => false,
     });
     const permissionError = { code: 'permission-denied' };
-    setDoc.mockRejectedValueOnce(permissionError);
+    setDocMock.mockRejectedValueOnce(permissionError);
 
     const data = await firebaseStreakApi.getStreakData('restricted');
 
     expect(data.currentStreak).toBe(0);
-    expect(setDoc).toHaveBeenCalled();
+    expect(setDocMock).toHaveBeenCalled();
   });
 
   it('calculates streak statistics from recent sessions', async () => {
@@ -122,25 +118,25 @@ describe('firebaseStreakApi', () => {
     const sessions = [
       {
         data: () => ({
-          startTime: Timestamp.fromDate(new Date('2024-01-07T09:00:00Z')),
+          startTime: mockTimestamp.fromDate(new Date('2024-01-07T09:00:00Z')),
         }),
       },
       {
         data: () => ({
-          startTime: Timestamp.fromDate(new Date('2024-01-06T09:00:00Z')),
+          startTime: mockTimestamp.fromDate(new Date('2024-01-06T09:00:00Z')),
         }),
       },
       {
         data: () => ({
-          startTime: Timestamp.fromDate(new Date('2024-01-04T09:00:00Z')),
+          startTime: mockTimestamp.fromDate(new Date('2024-01-04T09:00:00Z')),
         }),
       },
     ];
-    getDocs.mockResolvedValueOnce({ docs: sessions });
+    getDocsMock.mockResolvedValueOnce({ docs: sessions });
 
     const stats = await firebaseStreakApi.getStreakStats('user-1');
 
-    expect(query).toHaveBeenCalled();
+    expect(queryMock).toHaveBeenCalled();
     expect(stats.currentStreak).toBeGreaterThanOrEqual(2);
     expect(stats.longestStreak).toBeGreaterThanOrEqual(stats.currentStreak);
 

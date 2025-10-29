@@ -1,11 +1,12 @@
 import { firebaseSessionApi } from '@/lib/api/sessions';
+import type { CreateSessionData } from '@/types';
 
-const addDoc = jest.fn();
-const setDoc = jest.fn();
-const getDoc = jest.fn();
-const deleteDoc = jest.fn();
-const collection = jest.fn(() => ({}));
-const doc = jest.fn(() => ({}));
+const collectionMock = jest.fn((..._args: unknown[]) => ({}));
+const docMock = jest.fn((..._args: unknown[]) => ({}));
+const addDocMock = jest.fn();
+const setDocMock = jest.fn();
+const getDocMock = jest.fn();
+const deleteDocMock = jest.fn();
 
 const createTimestamp = (date: Date) => ({
   toDate: () => date,
@@ -22,12 +23,12 @@ jest.mock('firebase/firestore', () => {
   };
 
   return {
-    collection: (...args: unknown[]) => collection(...args),
-    doc: (...args: unknown[]) => doc(...args),
-    addDoc: (...args: unknown[]) => addDoc(...args),
-    setDoc: (...args: unknown[]) => setDoc(...args),
-    getDoc: (...args: unknown[]) => getDoc(...args),
-    deleteDoc: (...args: unknown[]) => deleteDoc(...args),
+    collection: collectionMock,
+    doc: docMock,
+    addDoc: addDocMock,
+    setDoc: setDocMock,
+    getDoc: getDocMock,
+    deleteDoc: deleteDocMock,
     serverTimestamp: () => new Date(),
     Timestamp,
   };
@@ -58,25 +59,32 @@ jest.mock('@/lib/api/challenges', () => ({
   },
 }));
 
-const checkRateLimit = jest.fn();
+const checkRateLimitMock = jest.fn();
 
 jest.mock('@/lib/rateLimit', () => ({
-  checkRateLimit: (...args: unknown[]) => checkRateLimit(...args),
+  checkRateLimit: checkRateLimitMock,
 }));
 
-const handleError = jest.fn((_error, _context, options) => ({
-  userMessage: options?.defaultMessage || 'handled error',
-}));
+const handleErrorMock = jest.fn(
+  (
+    _error: unknown,
+    _context: string,
+    options?: { defaultMessage?: string }
+  ) => ({
+    userMessage: options?.defaultMessage || 'handled error',
+  })
+);
 
 jest.mock('@/lib/errorHandler', () => ({
-  handleError: (...args: unknown[]) => handleError(...args),
+  handleError: handleErrorMock,
   isPermissionError: jest.fn(() => false),
   isNotFoundError: jest.fn(() => false),
   ErrorSeverity: { WARNING: 'warning' },
 }));
 
 describe('firebaseSessionApi - createSession', () => {
-  const basePayload = {
+  const basePayload: CreateSessionData = {
+    activityId: 'project-1',
     projectId: 'project-1',
     title: 'Morning Writing',
     description: 'Focused writing session',
@@ -89,7 +97,7 @@ describe('firebaseSessionApi - createSession', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    addDoc.mockResolvedValue({ id: 'session-123' });
+    addDocMock.mockResolvedValue({ id: 'session-123' });
     (
       firebaseSessionApi.clearActiveSession as jest.Mock | undefined
     )?.mockRestore?.();
@@ -97,7 +105,7 @@ describe('firebaseSessionApi - createSession', () => {
       .spyOn(firebaseSessionApi, 'clearActiveSession')
       .mockResolvedValue(undefined);
     updateChallengeProgress.mockResolvedValue(undefined);
-    checkRateLimit.mockReturnValue(undefined);
+    checkRateLimitMock.mockReturnValue(undefined);
   });
 
   afterEach(() => {
@@ -107,8 +115,8 @@ describe('firebaseSessionApi - createSession', () => {
   it('persists sessions and triggers challenge updates', async () => {
     const session = await firebaseSessionApi.createSession(basePayload);
 
-    expect(checkRateLimit).toHaveBeenCalledWith('author', 'SESSION_CREATE');
-    expect(addDoc).toHaveBeenCalledWith(
+    expect(checkRateLimitMock).toHaveBeenCalledWith('author', 'SESSION_CREATE');
+    expect(addDocMock).toHaveBeenCalledWith(
       expect.anything(),
       expect.objectContaining({
         userId: 'author',
@@ -128,20 +136,24 @@ describe('firebaseSessionApi - createSession', () => {
   });
 
   it('omits optional session fields when not provided', async () => {
-    const payload = { ...basePayload, howFelt: undefined, images: undefined };
+    const payload: CreateSessionData = {
+      ...basePayload,
+      howFelt: undefined,
+      images: undefined,
+    };
     await firebaseSessionApi.createSession(payload);
 
-    const stored = addDoc.mock.calls[0]?.[1] as Record<string, unknown>;
+    const stored = addDocMock.mock.calls[0]?.[1] as Record<string, unknown>;
     expect('howFelt' in stored).toBe(false);
     expect(stored.images).toEqual([]);
   });
 
   it('surfaces friendly errors when creation fails', async () => {
-    addDoc.mockRejectedValueOnce(new Error('write denied'));
+    addDocMock.mockRejectedValueOnce(new Error('write denied'));
 
     await expect(firebaseSessionApi.createSession(basePayload)).rejects.toThrow(
       /Failed to save session/
     );
-    expect(handleError).toHaveBeenCalled();
+    expect(handleErrorMock).toHaveBeenCalled();
   });
 });

@@ -1,4 +1,4 @@
-import type { FeedResult } from '@/features/feed/services/FeedService';
+import type { FeedResult } from '@/infrastructure/firebase/repositories/FeedRepository';
 import { Session } from '@/domain/entities/Session';
 import { FeedService } from '@/features/feed/services/FeedService';
 
