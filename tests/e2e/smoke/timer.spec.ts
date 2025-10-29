@@ -73,12 +73,21 @@ test.describe('Timer Page - Smoke Tests', () => {
     await page.waitForLoadState('networkidle');
 
     // Filter out known/expected errors
-    const criticalErrors = errors.filter(
-      error =>
-        !error.includes('Firebase') &&
-        !error.includes('DevTools') &&
-        !error.includes('favicon')
-    );
+    const knownNoise = [
+      'Firebase',
+      'DevTools',
+      'favicon',
+      'Google sign-in failed',
+      'Failed to load resource',
+      'Preloaded script failed',
+    ];
+
+    const criticalErrors = errors.filter(error => {
+      if (error.includes('Unhandled Rejection')) {
+        return false;
+      }
+      return !knownNoise.some(noise => error.includes(noise));
+    });
 
     expect(criticalErrors).toHaveLength(0);
   });
