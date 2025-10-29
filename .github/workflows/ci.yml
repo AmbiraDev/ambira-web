@@ -239,6 +239,7 @@ jobs:
           key: ${{ runner.os }}-next-${{ hashFiles('package-lock.json', 'next.config.ts', 'tsconfig.json') }}-${{ github.ref_name }}
           restore-keys: |
             ${{ runner.os }}-next-${{ hashFiles('package-lock.json', 'next.config.ts', 'tsconfig.json') }}-
+          save-always: true
 
       - name: Build application
         run: npm run build
@@ -305,6 +306,7 @@ jobs:
           key: ${{ runner.os }}-next-${{ hashFiles('package-lock.json', 'next.config.ts', 'tsconfig.json') }}-${{ github.ref_name }}
           restore-keys: |
             ${{ runner.os }}-next-${{ hashFiles('package-lock.json', 'next.config.ts', 'tsconfig.json') }}-
+          save-always: true
 
       - name: Build application
         run: npm run build
