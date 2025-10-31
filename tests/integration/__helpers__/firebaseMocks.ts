@@ -343,10 +343,18 @@ export function createMockFirebaseApi(
     // Project API
     projects: {
       create: jest.fn(async (projectData: any) => {
+        // Validate required fields
+        if (!projectData.name) throw new Error('Project name required');
+        if (!projectData.userId) throw new Error('User ID required');
+
+        const now = new Date();
         const newProject: Project = {
           id: `project-${Date.now()}`,
           ...projectData,
+          isArchived: projectData.isArchived ?? false,
+          activities: projectData.activities ?? [],
           createdAt: new Date(),
+          updatedAt: now,
         };
         store.createProject(newProject);
         return newProject;

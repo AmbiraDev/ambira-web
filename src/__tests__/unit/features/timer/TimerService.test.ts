@@ -15,26 +15,34 @@ import { SessionRepository } from '@/infrastructure/firebase/repositories/Sessio
 import { ActiveSession } from '@/domain/entities/ActiveSession';
 import { Session } from '@/domain/entities/Session';
 
+// Create mock instances
+const mockActiveSessionRepoInstance = {
+  getActiveSession: jest.fn(),
+  saveActiveSession: jest.fn(),
+  deleteActiveSession: jest.fn(),
+} as unknown as jest.Mocked<ActiveSessionRepository>;
+
+const mockSessionRepoInstance = {
+  save: jest.fn(),
+  findById: jest.fn(),
+} as unknown as jest.Mocked<SessionRepository>;
+
 // Mock the repositories
-jest.mock('@/infrastructure/firebase/repositories/ActiveSessionRepository');
-jest.mock('@/infrastructure/firebase/repositories/SessionRepository');
+jest.mock(
+  '@/infrastructure/firebase/repositories/ActiveSessionRepository',
+  () => ({
+    ActiveSessionRepository: jest.fn(() => mockActiveSessionRepoInstance),
+  })
+);
+jest.mock('@/infrastructure/firebase/repositories/SessionRepository', () => ({
+  SessionRepository: jest.fn(() => mockSessionRepoInstance),
+}));
 
 describe('TimerService', () => {
   let timerService: TimerService;
-  let mockActiveSessionRepo: jest.Mocked<ActiveSessionRepository>;
-  let mockSessionRepo: jest.Mocked<SessionRepository>;
 
   beforeEach(() => {
     jest.clearAllMocks();
-
-    // Setup mocks
-    mockActiveSessionRepo = ActiveSessionRepository as jest.Mocked<
-      typeof ActiveSessionRepository
-    >;
-    mockSessionRepo = SessionRepository as jest.Mocked<
-      typeof SessionRepository
-    >;
-
     timerService = new TimerService();
   });
 
@@ -47,21 +55,10 @@ describe('TimerService', () => {
         title: 'Test Session',
       };
 
-      const mockActiveSession = new ActiveSession(
-        'session-789',
-        'user-123',
-        'project-456',
-        new Date(),
-        'running',
-        0
+      mockActiveSessionRepoInstance.getActiveSession.mockResolvedValue(null);
+      mockActiveSessionRepoInstance.saveActiveSession.mockResolvedValue(
+        undefined
       );
-
-      jest
-        .spyOn(timerService as any, 'activeSessionRepo', 'get')
-        .mockReturnValue({
-          getActiveSession: jest.fn().mockResolvedValue(null),
-          saveActiveSession: jest.fn().mockResolvedValue(undefined),
-        } as any);
 
       // ACT
       const result = await timerService.startTimer(startData);
@@ -89,11 +86,9 @@ describe('TimerService', () => {
         0
       );
 
-      jest
-        .spyOn(timerService as any, 'activeSessionRepo', 'get')
-        .mockReturnValue({
-          getActiveSession: jest.fn().mockResolvedValue(existingSession),
-        } as any);
+      mockActiveSessionRepoInstance.getActiveSession.mockResolvedValue(
+        existingSession
+      );
 
       // ACT & ASSERT
       await expect(timerService.startTimer(startData)).rejects.toThrow(
@@ -103,19 +98,18 @@ describe('TimerService', () => {
 
     it('should support custom start time', async () => {
       // ARRANGE
-      const customStart = new Date('2024-01-01T10:00:00');
+      const now = new Date();
+      const customStart = new Date(now.getTime() - 30 * 60 * 1000); // 30 minutes ago
       const startData: StartTimerData = {
         userId: 'user-123',
         projectId: 'project-456',
         customStartTime: customStart,
       };
 
-      jest
-        .spyOn(timerService as any, 'activeSessionRepo', 'get')
-        .mockReturnValue({
-          getActiveSession: jest.fn().mockResolvedValue(null),
-          saveActiveSession: jest.fn().mockResolvedValue(undefined),
-        } as any);
+      mockActiveSessionRepoInstance.getActiveSession.mockResolvedValue(null);
+      mockActiveSessionRepoInstance.saveActiveSession.mockResolvedValue(
+        undefined
+      );
 
       // ACT
       const result = await timerService.startTimer(startData);
@@ -137,12 +131,12 @@ describe('TimerService', () => {
         0
       );
 
-      jest
-        .spyOn(timerService as any, 'activeSessionRepo', 'get')
-        .mockReturnValue({
-          getActiveSession: jest.fn().mockResolvedValue(activeSession),
-          saveActiveSession: jest.fn().mockResolvedValue(undefined),
-        } as any);
+      mockActiveSessionRepoInstance.getActiveSession.mockResolvedValue(
+        activeSession
+      );
+      mockActiveSessionRepoInstance.saveActiveSession.mockResolvedValue(
+        undefined
+      );
 
       // ACT
       const result = await timerService.pauseTimer('user-123');
@@ -153,11 +147,7 @@ describe('TimerService', () => {
 
     it('should throw error if no active timer', async () => {
       // ARRANGE
-      jest
-        .spyOn(timerService as any, 'activeSessionRepo', 'get')
-        .mockReturnValue({
-          getActiveSession: jest.fn().mockResolvedValue(null),
-        } as any);
+      mockActiveSessionRepoInstance.getActiveSession.mockResolvedValue(null);
 
       // ACT & ASSERT
       await expect(timerService.pauseTimer('user-123')).rejects.toThrow(
@@ -167,20 +157,20 @@ describe('TimerService', () => {
 
     it('should throw error if timer already paused', async () => {
       // ARRANGE
+      const now = new Date();
       const pausedSession = new ActiveSession(
         'session-789',
         'user-123',
         'project-456',
-        new Date(),
+        now,
         'paused',
-        100
+        100,
+        now
       );
 
-      jest
-        .spyOn(timerService as any, 'activeSessionRepo', 'get')
-        .mockReturnValue({
-          getActiveSession: jest.fn().mockResolvedValue(pausedSession),
-        } as any);
+      mockActiveSessionRepoInstance.getActiveSession.mockResolvedValue(
+        pausedSession
+      );
 
       // ACT & ASSERT
       await expect(timerService.pauseTimer('user-123')).rejects.toThrow(
@@ -192,21 +182,23 @@ describe('TimerService', () => {
   describe('resumeTimer', () => {
     it('should resume a paused timer', async () => {
       // ARRANGE
+      const now = new Date();
       const pausedSession = new ActiveSession(
         'session-789',
         'user-123',
         'project-456',
-        new Date(),
+        now,
         'paused',
-        100
+        100,
+        now
       );
 
-      jest
-        .spyOn(timerService as any, 'activeSessionRepo', 'get')
-        .mockReturnValue({
-          getActiveSession: jest.fn().mockResolvedValue(pausedSession),
-          saveActiveSession: jest.fn().mockResolvedValue(undefined),
-        } as any);
+      mockActiveSessionRepoInstance.getActiveSession.mockResolvedValue(
+        pausedSession
+      );
+      mockActiveSessionRepoInstance.saveActiveSession.mockResolvedValue(
+        undefined
+      );
 
       // ACT
       const result = await timerService.resumeTimer('user-123');
@@ -217,11 +209,7 @@ describe('TimerService', () => {
 
     it('should throw error if no active timer', async () => {
       // ARRANGE
-      jest
-        .spyOn(timerService as any, 'activeSessionRepo', 'get')
-        .mockReturnValue({
-          getActiveSession: jest.fn().mockResolvedValue(null),
-        } as any);
+      mockActiveSessionRepoInstance.getActiveSession.mockResolvedValue(null);
 
       // ACT & ASSERT
       await expect(timerService.resumeTimer('user-123')).rejects.toThrow(
@@ -240,11 +228,9 @@ describe('TimerService', () => {
         0
       );
 
-      jest
-        .spyOn(timerService as any, 'activeSessionRepo', 'get')
-        .mockReturnValue({
-          getActiveSession: jest.fn().mockResolvedValue(runningSession),
-        } as any);
+      mockActiveSessionRepoInstance.getActiveSession.mockResolvedValue(
+        runningSession
+      );
 
       // ACT & ASSERT
       await expect(timerService.resumeTimer('user-123')).rejects.toThrow(
@@ -256,25 +242,23 @@ describe('TimerService', () => {
   describe('completeTimer', () => {
     it('should complete timer and save as session', async () => {
       // ARRANGE
+      const now = new Date();
       const activeSession = new ActiveSession(
         'session-789',
         'user-123',
         'project-456',
-        new Date('2024-01-01T10:00:00'),
+        now,
         'running',
         0
       );
 
-      jest
-        .spyOn(timerService as any, 'activeSessionRepo', 'get')
-        .mockReturnValue({
-          getActiveSession: jest.fn().mockResolvedValue(activeSession),
-          deleteActiveSession: jest.fn().mockResolvedValue(undefined),
-        } as any);
-
-      jest.spyOn(timerService as any, 'sessionRepo', 'get').mockReturnValue({
-        save: jest.fn().mockResolvedValue(undefined),
-      } as any);
+      mockActiveSessionRepoInstance.getActiveSession.mockResolvedValue(
+        activeSession
+      );
+      mockActiveSessionRepoInstance.deleteActiveSession.mockResolvedValue(
+        undefined
+      );
+      mockSessionRepoInstance.save.mockResolvedValue(undefined);
 
       // ACT
       const result = await timerService.completeTimer('user-123', {
@@ -290,11 +274,7 @@ describe('TimerService', () => {
 
     it('should throw error if no active timer to complete', async () => {
       // ARRANGE
-      jest
-        .spyOn(timerService as any, 'activeSessionRepo', 'get')
-        .mockReturnValue({
-          getActiveSession: jest.fn().mockResolvedValue(null),
-        } as any);
+      mockActiveSessionRepoInstance.getActiveSession.mockResolvedValue(null);
 
       // ACT & ASSERT
       await expect(timerService.completeTimer('user-123')).rejects.toThrow(
@@ -304,11 +284,12 @@ describe('TimerService', () => {
 
     it('should use provided title and description', async () => {
       // ARRANGE
+      const now = new Date();
       const activeSession = new ActiveSession(
         'session-789',
         'user-123',
         'project-456',
-        new Date('2024-01-01T10:00:00'),
+        now,
         'running',
         0
       );
@@ -319,16 +300,13 @@ describe('TimerService', () => {
         visibility: 'private',
       };
 
-      jest
-        .spyOn(timerService as any, 'activeSessionRepo', 'get')
-        .mockReturnValue({
-          getActiveSession: jest.fn().mockResolvedValue(activeSession),
-          deleteActiveSession: jest.fn().mockResolvedValue(undefined),
-        } as any);
-
-      jest.spyOn(timerService as any, 'sessionRepo', 'get').mockReturnValue({
-        save: jest.fn().mockResolvedValue(undefined),
-      } as any);
+      mockActiveSessionRepoInstance.getActiveSession.mockResolvedValue(
+        activeSession
+      );
+      mockActiveSessionRepoInstance.deleteActiveSession.mockResolvedValue(
+        undefined
+      );
+      mockSessionRepoInstance.save.mockResolvedValue(undefined);
 
       // ACT
       const result = await timerService.completeTimer('user-123', completeData);
@@ -351,32 +329,25 @@ describe('TimerService', () => {
         0
       );
 
-      const deleteActiveSessionSpy = jest.fn().mockResolvedValue(undefined);
-
-      jest
-        .spyOn(timerService as any, 'activeSessionRepo', 'get')
-        .mockReturnValue({
-          getActiveSession: jest.fn().mockResolvedValue(activeSession),
-          deleteActiveSession: deleteActiveSessionSpy,
-        } as any);
+      mockActiveSessionRepoInstance.getActiveSession.mockResolvedValue(
+        activeSession
+      );
+      mockActiveSessionRepoInstance.deleteActiveSession.mockResolvedValue(
+        undefined
+      );
 
       // ACT
       await timerService.stopTimer('user-123');
 
       // ASSERT
-      expect(deleteActiveSessionSpy).toHaveBeenCalledWith(
-        'user-123',
-        'session-789'
-      );
+      expect(
+        mockActiveSessionRepoInstance.deleteActiveSession
+      ).toHaveBeenCalledWith('user-123', 'session-789');
     });
 
     it('should throw error if no active timer to stop', async () => {
       // ARRANGE
-      jest
-        .spyOn(timerService as any, 'activeSessionRepo', 'get')
-        .mockReturnValue({
-          getActiveSession: jest.fn().mockResolvedValue(null),
-        } as any);
+      mockActiveSessionRepoInstance.getActiveSession.mockResolvedValue(null);
 
       // ACT & ASSERT
       await expect(timerService.stopTimer('user-123')).rejects.toThrow(
@@ -397,12 +368,12 @@ describe('TimerService', () => {
         0
       );
 
-      jest
-        .spyOn(timerService as any, 'activeSessionRepo', 'get')
-        .mockReturnValue({
-          getActiveSession: jest.fn().mockResolvedValue(activeSession),
-          deleteActiveSession: jest.fn().mockResolvedValue(undefined),
-        } as any);
+      mockActiveSessionRepoInstance.getActiveSession.mockResolvedValue(
+        activeSession
+      );
+      mockActiveSessionRepoInstance.deleteActiveSession.mockResolvedValue(
+        undefined
+      );
 
       // ACT
       await timerService.cancelTimer('user-123');
@@ -424,11 +395,9 @@ describe('TimerService', () => {
         0
       );
 
-      jest
-        .spyOn(timerService as any, 'activeSessionRepo', 'get')
-        .mockReturnValue({
-          getActiveSession: jest.fn().mockResolvedValue(activeSession),
-        } as any);
+      mockActiveSessionRepoInstance.getActiveSession.mockResolvedValue(
+        activeSession
+      );
 
       // ACT
       const result = await timerService.getActiveSession('user-123');
@@ -439,11 +408,7 @@ describe('TimerService', () => {
 
     it('should return null if no active session', async () => {
       // ARRANGE
-      jest
-        .spyOn(timerService as any, 'activeSessionRepo', 'get')
-        .mockReturnValue({
-          getActiveSession: jest.fn().mockResolvedValue(null),
-        } as any);
+      mockActiveSessionRepoInstance.getActiveSession.mockResolvedValue(null);
 
       // ACT
       const result = await timerService.getActiveSession('user-123');
@@ -465,12 +430,12 @@ describe('TimerService', () => {
         0
       );
 
-      jest
-        .spyOn(timerService as any, 'activeSessionRepo', 'get')
-        .mockReturnValue({
-          getActiveSession: jest.fn().mockResolvedValue(activeSession),
-          saveActiveSession: jest.fn().mockResolvedValue(undefined),
-        } as any);
+      mockActiveSessionRepoInstance.getActiveSession.mockResolvedValue(
+        activeSession
+      );
+      mockActiveSessionRepoInstance.saveActiveSession.mockResolvedValue(
+        undefined
+      );
 
       // ACT
       const result = await timerService.updateTimerMetadata(
@@ -485,11 +450,7 @@ describe('TimerService', () => {
 
     it('should throw error if no active timer', async () => {
       // ARRANGE
-      jest
-        .spyOn(timerService as any, 'activeSessionRepo', 'get')
-        .mockReturnValue({
-          getActiveSession: jest.fn().mockResolvedValue(null),
-        } as any);
+      mockActiveSessionRepoInstance.getActiveSession.mockResolvedValue(null);
 
       // ACT & ASSERT
       await expect(
@@ -501,26 +462,29 @@ describe('TimerService', () => {
   describe('adjustStartTime', () => {
     it('should adjust start time to earlier time', async () => {
       // ARRANGE
+      const now = new Date();
+      const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
       const activeSession = new ActiveSession(
         'session-789',
         'user-123',
         'project-456',
-        new Date('2024-01-01T12:00:00'),
+        oneHourAgo,
         'running',
         0
       );
 
-      jest
-        .spyOn(timerService as any, 'activeSessionRepo', 'get')
-        .mockReturnValue({
-          getActiveSession: jest.fn().mockResolvedValue(activeSession),
-          saveActiveSession: jest.fn().mockResolvedValue(undefined),
-        } as any);
+      mockActiveSessionRepoInstance.getActiveSession.mockResolvedValue(
+        activeSession
+      );
+      mockActiveSessionRepoInstance.saveActiveSession.mockResolvedValue(
+        undefined
+      );
 
       // ACT
+      const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000);
       const result = await timerService.adjustStartTime(
         'user-123',
-        new Date('2024-01-01T10:00:00')
+        twoHoursAgo
       );
 
       // ASSERT
@@ -531,22 +495,16 @@ describe('TimerService', () => {
       // ARRANGE
       const futureTime = new Date(Date.now() + 10000);
 
-      jest
-        .spyOn(timerService as any, 'activeSessionRepo', 'get')
-        .mockReturnValue({
-          getActiveSession: jest
-            .fn()
-            .mockResolvedValue(
-              new ActiveSession(
-                'session-789',
-                'user-123',
-                'project-456',
-                new Date(),
-                'running',
-                0
-              )
-            ),
-        } as any);
+      mockActiveSessionRepoInstance.getActiveSession.mockResolvedValue(
+        new ActiveSession(
+          'session-789',
+          'user-123',
+          'project-456',
+          new Date(),
+          'running',
+          0
+        )
+      );
 
       // ACT & ASSERT
       await expect(
@@ -556,11 +514,7 @@ describe('TimerService', () => {
 
     it('should throw error if no active timer', async () => {
       // ARRANGE
-      jest
-        .spyOn(timerService as any, 'activeSessionRepo', 'get')
-        .mockReturnValue({
-          getActiveSession: jest.fn().mockResolvedValue(null),
-        } as any);
+      mockActiveSessionRepoInstance.getActiveSession.mockResolvedValue(null);
 
       // ACT & ASSERT
       await expect(
@@ -581,38 +535,33 @@ describe('TimerService', () => {
         0
       );
 
-      const saveSessionSpy = jest.fn().mockResolvedValue(undefined);
-
-      jest
-        .spyOn(timerService as any, 'activeSessionRepo', 'get')
-        .mockReturnValue({
-          getActiveSession: jest.fn().mockResolvedValue(activeSession),
-          saveActiveSession: saveSessionSpy,
-        } as any);
+      mockActiveSessionRepoInstance.getActiveSession.mockResolvedValue(
+        activeSession
+      );
+      mockActiveSessionRepoInstance.saveActiveSession.mockResolvedValue(
+        undefined
+      );
 
       // ACT
       await timerService.autoSaveSession('user-123');
 
       // ASSERT
-      expect(saveSessionSpy).toHaveBeenCalledWith(activeSession);
+      expect(
+        mockActiveSessionRepoInstance.saveActiveSession
+      ).toHaveBeenCalledWith(activeSession);
     });
 
     it('should do nothing if no active session', async () => {
       // ARRANGE
-      const saveSessionSpy = jest.fn();
-
-      jest
-        .spyOn(timerService as any, 'activeSessionRepo', 'get')
-        .mockReturnValue({
-          getActiveSession: jest.fn().mockResolvedValue(null),
-          saveActiveSession: saveSessionSpy,
-        } as any);
+      mockActiveSessionRepoInstance.getActiveSession.mockResolvedValue(null);
 
       // ACT
       await timerService.autoSaveSession('user-123');
 
       // ASSERT
-      expect(saveSessionSpy).not.toHaveBeenCalled();
+      expect(
+        mockActiveSessionRepoInstance.saveActiveSession
+      ).not.toHaveBeenCalled();
     });
   });
 });

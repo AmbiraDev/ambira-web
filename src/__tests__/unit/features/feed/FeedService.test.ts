@@ -15,15 +15,40 @@ import { SocialGraphRepository } from '@/infrastructure/firebase/repositories/So
 import { SessionRepository } from '@/infrastructure/firebase/repositories/SessionRepository';
 import { SessionWithDetails } from '@/types';
 
-jest.mock('@/infrastructure/firebase/repositories/FeedRepository');
-jest.mock('@/infrastructure/firebase/repositories/SocialGraphRepository');
-jest.mock('@/infrastructure/firebase/repositories/SessionRepository');
+// Create mock instances
+const mockFeedRepo = {
+  getPublicFeed: jest.fn(),
+  getFeedForFollowing: jest.fn(),
+  getUserFeed: jest.fn(),
+  getGroupFeed: jest.fn(),
+  getFeedForGroupMembersUnfollowed: jest.fn(),
+} as unknown as jest.Mocked<FeedRepository>;
+
+const mockSocialGraphRepo = {
+  getFollowingIds: jest.fn(),
+  getGroupMemberIds: jest.fn(),
+} as unknown as jest.Mocked<SocialGraphRepository>;
+
+const mockSessionRepo = {
+  findByUserId: jest.fn(),
+  findByGroupId: jest.fn(),
+} as unknown as jest.Mocked<SessionRepository>;
+
+jest.mock('@/infrastructure/firebase/repositories/FeedRepository', () => ({
+  FeedRepository: jest.fn(() => mockFeedRepo),
+}));
+jest.mock(
+  '@/infrastructure/firebase/repositories/SocialGraphRepository',
+  () => ({
+    SocialGraphRepository: jest.fn(() => mockSocialGraphRepo),
+  })
+);
+jest.mock('@/infrastructure/firebase/repositories/SessionRepository', () => ({
+  SessionRepository: jest.fn(() => mockSessionRepo),
+}));
 
 describe('FeedService', () => {
   let feedService: FeedService;
-  let mockFeedRepo: jest.Mocked<FeedRepository>;
-  let mockSocialGraphRepo: jest.Mocked<SocialGraphRepository>;
-  let mockSessionRepo: jest.Mocked<SessionRepository>;
 
   const mockSession: SessionWithDetails = {
     id: 'session-1',
@@ -55,15 +80,6 @@ describe('FeedService', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-
-    mockFeedRepo = FeedRepository as jest.Mocked<typeof FeedRepository>;
-    mockSocialGraphRepo = SocialGraphRepository as jest.Mocked<
-      typeof SocialGraphRepository
-    >;
-    mockSessionRepo = SessionRepository as jest.Mocked<
-      typeof SessionRepository
-    >;
-
     feedService = new FeedService();
   });
 
@@ -75,13 +91,11 @@ describe('FeedService', () => {
         hasMore: false,
       };
 
-      jest.spyOn(feedService as any, 'socialGraphRepo', 'get').mockReturnValue({
-        getFollowingIds: jest.fn().mockResolvedValue(['user-2', 'user-3']),
-      } as any);
-
-      jest.spyOn(feedService as any, 'feedRepo', 'get').mockReturnValue({
-        getFeedForFollowing: jest.fn().mockResolvedValue(mockResult),
-      } as any);
+      mockSocialGraphRepo.getFollowingIds.mockResolvedValue([
+        'user-2',
+        'user-3',
+      ]);
+      mockFeedRepo.getFeedForFollowing.mockResolvedValue(mockResult);
 
       // ACT
       const result = await feedService.getFeed('user-1', { type: 'following' });
@@ -93,9 +107,7 @@ describe('FeedService', () => {
 
     it('should return empty feed if not following anyone', async () => {
       // ARRANGE
-      jest.spyOn(feedService as any, 'socialGraphRepo', 'get').mockReturnValue({
-        getFollowingIds: jest.fn().mockResolvedValue([]),
-      } as any);
+      mockSocialGraphRepo.getFollowingIds.mockResolvedValue([]);
 
       // ACT
       const result = await feedService.getFeed('user-1', { type: 'following' });
@@ -114,9 +126,7 @@ describe('FeedService', () => {
         hasMore: true,
       };
 
-      jest.spyOn(feedService as any, 'feedRepo', 'get').mockReturnValue({
-        getPublicFeed: jest.fn().mockResolvedValue(mockResult),
-      } as any);
+      mockFeedRepo.getPublicFeed.mockResolvedValue(mockResult);
 
       // ACT
       const result = await feedService.getFeed('user-1', { type: 'all' });
@@ -134,9 +144,7 @@ describe('FeedService', () => {
         nextCursor: 'next-cursor',
       };
 
-      jest.spyOn(feedService as any, 'feedRepo', 'get').mockReturnValue({
-        getPublicFeed: jest.fn().mockResolvedValue(mockResult),
-      } as any);
+      mockFeedRepo.getPublicFeed.mockResolvedValue(mockResult);
 
       // ACT
       const result = await feedService.getFeed(
@@ -153,14 +161,7 @@ describe('FeedService', () => {
   describe('getFeed - user', () => {
     it('should get user feed', async () => {
       // ARRANGE
-      const mockResult = {
-        sessions: [mockSession],
-        hasMore: false,
-      };
-
-      jest.spyOn(feedService as any, 'sessionRepo', 'get').mockReturnValue({
-        findByUserId: jest.fn().mockResolvedValue([mockSession]),
-      } as any);
+      mockSessionRepo.findByUserId.mockResolvedValue([mockSession]);
 
       // ACT
       const result = await feedService.getFeed('user-1', {
@@ -183,14 +184,7 @@ describe('FeedService', () => {
   describe('getFeed - group', () => {
     it('should get group feed', async () => {
       // ARRANGE
-      const mockResult = {
-        sessions: [mockSession],
-        hasMore: false,
-      };
-
-      jest.spyOn(feedService as any, 'sessionRepo', 'get').mockReturnValue({
-        findByGroupId: jest.fn().mockResolvedValue([mockSession]),
-      } as any);
+      mockSessionRepo.findByGroupId.mockResolvedValue([mockSession]);
 
       // ACT
       const result = await feedService.getFeed('user-1', {
@@ -218,16 +212,14 @@ describe('FeedService', () => {
         hasMore: false,
       };
 
-      jest.spyOn(feedService as any, 'socialGraphRepo', 'get').mockReturnValue({
-        getGroupMemberIds: jest.fn().mockResolvedValue(['user-2', 'user-3']),
-        getFollowingIds: jest.fn().mockResolvedValue(['user-2']),
-      } as any);
-
-      jest.spyOn(feedService as any, 'feedRepo', 'get').mockReturnValue({
-        getFeedForGroupMembersUnfollowed: jest
-          .fn()
-          .mockResolvedValue(mockResult),
-      } as any);
+      mockSocialGraphRepo.getGroupMemberIds.mockResolvedValue([
+        'user-2',
+        'user-3',
+      ]);
+      mockSocialGraphRepo.getFollowingIds.mockResolvedValue(['user-2']);
+      mockFeedRepo.getFeedForGroupMembersUnfollowed.mockResolvedValue(
+        mockResult
+      );
 
       // ACT
       const result = await feedService.getFeed('user-1', {
@@ -240,9 +232,7 @@ describe('FeedService', () => {
 
     it('should return empty feed if no group members', async () => {
       // ARRANGE
-      jest.spyOn(feedService as any, 'socialGraphRepo', 'get').mockReturnValue({
-        getGroupMemberIds: jest.fn().mockResolvedValue([]),
-      } as any);
+      mockSocialGraphRepo.getGroupMemberIds.mockResolvedValue([]);
 
       // ACT
       const result = await feedService.getFeed('user-1', {
@@ -263,9 +253,7 @@ describe('FeedService', () => {
         hasMore: true,
       };
 
-      jest.spyOn(feedService as any, 'feedRepo', 'get').mockReturnValue({
-        getPublicFeed: jest.fn().mockResolvedValue(mockResult),
-      } as any);
+      mockFeedRepo.getPublicFeed.mockResolvedValue(mockResult);
 
       // ACT
       const result = await feedService.getFeed(
@@ -296,13 +284,8 @@ describe('FeedService', () => {
         hasMore: false,
       };
 
-      jest.spyOn(feedService as any, 'socialGraphRepo', 'get').mockReturnValue({
-        getFollowingIds: jest.fn().mockResolvedValue(['user-2']),
-      } as any);
-
-      jest.spyOn(feedService as any, 'feedRepo', 'get').mockReturnValue({
-        getFeedForFollowing: jest.fn().mockResolvedValue(mockResult),
-      } as any);
+      mockSocialGraphRepo.getFollowingIds.mockResolvedValue(['user-2']);
+      mockFeedRepo.getFeedForFollowing.mockResolvedValue(mockResult);
 
       // ACT
       const result = await feedService.refreshFeed('user-1', {

@@ -18,29 +18,44 @@ jest.mock('@/features/groups/domain/LeaderboardCalculator');
 
 describe('GroupService', () => {
   let groupService: GroupService;
+  let mockGroupRepoInstance: jest.Mocked<GroupRepository>;
 
   const mockGroup = new Group(
     'group-1',
     'Test Group',
     'A test group',
+    'work',
     'public',
-    ['user-1', 'user-2'],
     ['user-1'],
-    new Date(),
-    0
+    ['user-1'],
+    'user-1',
+    new Date()
   );
 
   beforeEach(() => {
     jest.clearAllMocks();
+
+    // Create mock repo instance
+    mockGroupRepoInstance = {
+      findById: jest.fn(),
+      findByMemberId: jest.fn(),
+      findPublic: jest.fn(),
+      addMember: jest.fn(),
+      save: jest.fn(),
+    } as any;
+
+    // Mock the repository constructor
+    (
+      GroupRepository as jest.MockedClass<typeof GroupRepository>
+    ).mockImplementation(() => mockGroupRepoInstance);
+
     groupService = new GroupService();
   });
 
   describe('getGroupDetails', () => {
     it('should get group by ID', async () => {
       // ARRANGE
-      jest.spyOn(groupService as any, 'groupRepo', 'get').mockReturnValue({
-        findById: jest.fn().mockResolvedValue(mockGroup),
-      } as any);
+      mockGroupRepoInstance.findById.mockResolvedValue(mockGroup);
 
       // ACT
       const result = await groupService.getGroupDetails('group-1');
@@ -52,9 +67,7 @@ describe('GroupService', () => {
 
     it('should return null if group not found', async () => {
       // ARRANGE
-      jest.spyOn(groupService as any, 'groupRepo', 'get').mockReturnValue({
-        findById: jest.fn().mockResolvedValue(null),
-      } as any);
+      mockGroupRepoInstance.findById.mockResolvedValue(null);
 
       // ACT
       const result = await groupService.getGroupDetails('nonexistent');
@@ -73,17 +86,16 @@ describe('GroupService', () => {
           'group-2',
           'Group 2',
           'Description',
+          'study',
           'public',
+          ['user-1', 'user-3'],
           ['user-1'],
-          ['user-1'],
-          new Date(),
-          1
+          'user-1',
+          new Date()
         ),
       ];
 
-      jest.spyOn(groupService as any, 'groupRepo', 'get').mockReturnValue({
-        findByMemberId: jest.fn().mockResolvedValue(mockGroups),
-      } as any);
+      mockGroupRepoInstance.findByMemberId.mockResolvedValue(mockGroups);
 
       // ACT
       const result = await groupService.getUserGroups('user-1');
@@ -95,9 +107,7 @@ describe('GroupService', () => {
 
     it('should support limit parameter', async () => {
       // ARRANGE
-      jest.spyOn(groupService as any, 'groupRepo', 'get').mockReturnValue({
-        findByMemberId: jest.fn().mockResolvedValue([mockGroup]),
-      } as any);
+      mockGroupRepoInstance.findByMemberId.mockResolvedValue([mockGroup]);
 
       // ACT
       await groupService.getUserGroups('user-1', 10);
@@ -108,9 +118,7 @@ describe('GroupService', () => {
 
     it('should return empty array if user not in any groups', async () => {
       // ARRANGE
-      jest.spyOn(groupService as any, 'groupRepo', 'get').mockReturnValue({
-        findByMemberId: jest.fn().mockResolvedValue([]),
-      } as any);
+      mockGroupRepoInstance.findByMemberId.mockResolvedValue([]);
 
       // ACT
       const result = await groupService.getUserGroups('user-1');
@@ -129,31 +137,28 @@ describe('GroupService', () => {
           'group-2',
           'Public Group',
           'Description',
+          'learning',
           'public',
+          ['user-2', 'user-3'],
           ['user-2'],
-          ['user-2'],
-          new Date(),
-          1
+          'user-2',
+          new Date()
         ),
       ];
 
-      jest.spyOn(groupService as any, 'groupRepo', 'get').mockReturnValue({
-        findPublic: jest.fn().mockResolvedValue(publicGroups),
-      } as any);
+      mockGroupRepoInstance.findPublic.mockResolvedValue(publicGroups);
 
       // ACT
       const result = await groupService.getPublicGroups();
 
       // ASSERT
       expect(result).toHaveLength(2);
-      expect(result[0].visibility).toBe('public');
+      expect(result[0].privacy).toBe('public');
     });
 
     it('should support limit parameter', async () => {
       // ARRANGE
-      jest.spyOn(groupService as any, 'groupRepo', 'get').mockReturnValue({
-        findPublic: jest.fn().mockResolvedValue([mockGroup]),
-      } as any);
+      mockGroupRepoInstance.findPublic.mockResolvedValue([mockGroup]);
 
       // ACT
       await groupService.getPublicGroups(20);
@@ -164,9 +169,7 @@ describe('GroupService', () => {
 
     it('should return empty array if no public groups', async () => {
       // ARRANGE
-      jest.spyOn(groupService as any, 'groupRepo', 'get').mockReturnValue({
-        findPublic: jest.fn().mockResolvedValue([]),
-      } as any);
+      mockGroupRepoInstance.findPublic.mockResolvedValue([]);
 
       // ACT
       const result = await groupService.getPublicGroups();
@@ -179,27 +182,26 @@ describe('GroupService', () => {
   describe('joinGroup', () => {
     it('should join a group successfully', async () => {
       // ARRANGE
-      const joinData = { groupId: 'group-1' };
+      const validUuid = '550e8400-e29b-41d4-a716-446655440000';
+      const joinData = { groupId: validUuid };
 
-      jest.spyOn(groupService as any, 'groupRepo', 'get').mockReturnValue({
-        findById: jest.fn().mockResolvedValue(mockGroup),
-        addMember: jest.fn().mockResolvedValue(undefined),
-      } as any);
+      mockGroupRepoInstance.findById.mockResolvedValue(mockGroup);
+      mockGroupRepoInstance.addMember.mockResolvedValue(undefined);
+      mockGroupRepoInstance.save.mockResolvedValue(undefined);
 
       // ACT
       await groupService.joinGroup(joinData, 'user-2');
 
       // ASSERT - Should complete without error
-      expect(true).toBe(true);
+      expect(mockGroupRepoInstance.save).toHaveBeenCalled();
     });
 
     it('should throw error if group not found', async () => {
       // ARRANGE
-      const joinData = { groupId: 'nonexistent' };
+      const validUuid = '550e8400-e29b-41d4-a716-446655440000';
+      const joinData = { groupId: validUuid };
 
-      jest.spyOn(groupService as any, 'groupRepo', 'get').mockReturnValue({
-        findById: jest.fn().mockResolvedValue(null),
-      } as any);
+      mockGroupRepoInstance.findById.mockResolvedValue(null);
 
       // ACT & ASSERT
       await expect(groupService.joinGroup(joinData, 'user-2')).rejects.toThrow(
@@ -209,11 +211,10 @@ describe('GroupService', () => {
 
     it('should throw error if already a member', async () => {
       // ARRANGE
-      const joinData = { groupId: 'group-1' };
+      const validUuid = '550e8400-e29b-41d4-a716-446655440000';
+      const joinData = { groupId: validUuid };
 
-      jest.spyOn(groupService as any, 'groupRepo', 'get').mockReturnValue({
-        findById: jest.fn().mockResolvedValue(mockGroup),
-      } as any);
+      mockGroupRepoInstance.findById.mockResolvedValue(mockGroup);
 
       // ACT & ASSERT
       await expect(groupService.joinGroup(joinData, 'user-1')).rejects.toThrow(

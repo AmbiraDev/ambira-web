@@ -14,15 +14,15 @@ describe('CommentService', () => {
   let commentService: CommentService;
 
   const mockComment: CommentWithDetails = {
-    id: 'comment-1',
-    sessionId: 'session-1',
-    userId: 'user-1',
+    id: 'comment1234567890123',
+    sessionId: 'session1234567890123',
+    userId: 'user1234567890123456',
     content: 'Great work!',
     likeCount: 3,
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date('2024-01-01'),
     user: {
-      id: 'user-1',
+      id: 'user1234567890123456',
       name: 'Test User',
       email: 'test@example.com',
       avatar: 'https://example.com/avatar.jpg',
@@ -38,7 +38,7 @@ describe('CommentService', () => {
     it('should get all comments for a session', async () => {
       // ARRANGE
       const mockResponse = {
-        comments: [mockComment, { ...mockComment, id: 'comment-2' }],
+        comments: [mockComment, { ...mockComment, id: 'comment1234567890124' }],
         hasMore: false,
       };
 
@@ -47,13 +47,15 @@ describe('CommentService', () => {
       );
 
       // ACT
-      const result = await commentService.getSessionComments('session-1');
+      const result = await commentService.getSessionComments(
+        'session1234567890123'
+      );
 
       // ASSERT
       expect(result.comments).toHaveLength(2);
       expect(result.hasMore).toBe(false);
       expect(firebaseApi.comment.getSessionComments).toHaveBeenCalledWith(
-        'session-1',
+        'session1234567890123',
         20
       );
     });
@@ -70,11 +72,11 @@ describe('CommentService', () => {
       );
 
       // ACT
-      await commentService.getSessionComments('session-1', 50);
+      await commentService.getSessionComments('session1234567890123', 50);
 
       // ASSERT
       expect(firebaseApi.comment.getSessionComments).toHaveBeenCalledWith(
-        'session-1',
+        'session1234567890123',
         50
       );
     });
@@ -86,7 +88,9 @@ describe('CommentService', () => {
       );
 
       // ACT
-      const result = await commentService.getSessionComments('session-1');
+      const result = await commentService.getSessionComments(
+        'session1234567890123'
+      );
 
       // ASSERT
       expect(result.comments).toEqual([]);
@@ -97,8 +101,8 @@ describe('CommentService', () => {
   describe('createComment', () => {
     it('should create comment with valid data', async () => {
       // ARRANGE
-      const createData: CreateCommentData = {
-        sessionId: 'session-1',
+      const createData = {
+        sessionId: 'session1234567890123',
         content: 'New comment',
       };
 
@@ -116,11 +120,12 @@ describe('CommentService', () => {
 
     it('should validate comment data', async () => {
       // ARRANGE
-      const invalidData = { sessionId: 'session-1', content: '' };
+      const invalidData = { sessionId: 'session1234567890123', content: '' };
 
       // ACT & ASSERT
       try {
         await commentService.createComment(invalidData);
+        fail('Should have thrown validation error');
       } catch (_err) {
         // Expected validation error
       }
@@ -135,7 +140,7 @@ describe('CommentService', () => {
       // ACT & ASSERT
       await expect(
         commentService.createComment({
-          sessionId: 'session-1',
+          sessionId: 'session1234567890123',
           content: 'Test',
         })
       ).rejects.toThrow();
@@ -150,13 +155,13 @@ describe('CommentService', () => {
       );
 
       // ACT
-      await commentService.updateComment('comment-1', {
+      await commentService.updateComment('comment1234567890123', {
         content: 'Updated comment',
       });
 
       // ASSERT
       expect(firebaseApi.comment.updateComment).toHaveBeenCalledWith(
-        'comment-1',
+        'comment1234567890123',
         { content: 'Updated comment' }
       );
     });
@@ -167,7 +172,8 @@ describe('CommentService', () => {
 
       // ACT & ASSERT
       try {
-        await commentService.updateComment('comment-1', invalidData);
+        await commentService.updateComment('comment1234567890123', invalidData);
+        fail('Should have thrown validation error');
       } catch (_err) {
         // Expected validation error
       }
@@ -181,7 +187,7 @@ describe('CommentService', () => {
 
       // ACT & ASSERT
       await expect(
-        commentService.updateComment('comment-1', { content: 'New' })
+        commentService.updateComment('comment1234567890123', { content: 'New' })
       ).rejects.toThrow('Update failed');
     });
   });
@@ -194,11 +200,11 @@ describe('CommentService', () => {
       );
 
       // ACT
-      await commentService.deleteComment('comment-1');
+      await commentService.deleteComment('comment1234567890123');
 
       // ASSERT
       expect(firebaseApi.comment.deleteComment).toHaveBeenCalledWith(
-        'comment-1'
+        'comment1234567890123'
       );
     });
 
@@ -209,9 +215,9 @@ describe('CommentService', () => {
       );
 
       // ACT & ASSERT
-      await expect(commentService.deleteComment('comment-1')).rejects.toThrow(
-        'Delete failed'
-      );
+      await expect(
+        commentService.deleteComment('comment1234567890123')
+      ).rejects.toThrow('Delete failed');
     });
   });
 
@@ -223,10 +229,12 @@ describe('CommentService', () => {
       );
 
       // ACT
-      await commentService.likeComment('comment-1');
+      await commentService.likeComment('comment1234567890123');
 
       // ASSERT
-      expect(firebaseApi.comment.likeComment).toHaveBeenCalledWith('comment-1');
+      expect(firebaseApi.comment.likeComment).toHaveBeenCalledWith(
+        'comment1234567890123'
+      );
     });
 
     it('should propagate API errors', async () => {
@@ -236,9 +244,9 @@ describe('CommentService', () => {
       );
 
       // ACT & ASSERT
-      await expect(commentService.likeComment('comment-1')).rejects.toThrow(
-        'Like failed'
-      );
+      await expect(
+        commentService.likeComment('comment1234567890123')
+      ).rejects.toThrow('Like failed');
     });
   });
 
@@ -250,11 +258,11 @@ describe('CommentService', () => {
       );
 
       // ACT
-      await commentService.unlikeComment('comment-1');
+      await commentService.unlikeComment('comment1234567890123');
 
       // ASSERT
       expect(firebaseApi.comment.unlikeComment).toHaveBeenCalledWith(
-        'comment-1'
+        'comment1234567890123'
       );
     });
 
@@ -265,9 +273,9 @@ describe('CommentService', () => {
       );
 
       // ACT & ASSERT
-      await expect(commentService.unlikeComment('comment-1')).rejects.toThrow(
-        'Unlike failed'
-      );
+      await expect(
+        commentService.unlikeComment('comment1234567890123')
+      ).rejects.toThrow('Unlike failed');
     });
   });
 });

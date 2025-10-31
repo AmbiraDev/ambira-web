@@ -14,15 +14,15 @@ describe('CommentService', () => {
   let commentService: CommentService;
 
   const mockComment: CommentWithDetails = {
-    id: 'comment-1',
-    sessionId: 'session-1',
-    userId: 'user-1',
+    id: 'comment123456789012345',
+    sessionId: 'session12345678901234',
+    userId: 'user123456789012345678',
     content: 'Great work!',
     likeCount: 3,
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date('2024-01-01'),
     user: {
-      id: 'user-1',
+      id: 'user123456789012345678',
       name: 'Test User',
       email: 'test@example.com',
       avatar: 'https://example.com/avatar.jpg',
@@ -47,13 +47,15 @@ describe('CommentService', () => {
       );
 
       // ACT
-      const result = await commentService.getSessionComments('session-1');
+      const result = await commentService.getSessionComments(
+        'session12345678901234'
+      );
 
       // ASSERT
       expect(result.comments).toHaveLength(2);
       expect(result.hasMore).toBe(false);
       expect(firebaseApi.comment.getSessionComments).toHaveBeenCalledWith(
-        'session-1',
+        'session12345678901234',
         20
       );
     });
@@ -70,11 +72,11 @@ describe('CommentService', () => {
       );
 
       // ACT
-      await commentService.getSessionComments('session-1', 50);
+      await commentService.getSessionComments('session12345678901234', 50);
 
       // ASSERT
       expect(firebaseApi.comment.getSessionComments).toHaveBeenCalledWith(
-        'session-1',
+        'session12345678901234',
         50
       );
     });
@@ -86,7 +88,9 @@ describe('CommentService', () => {
       );
 
       // ACT
-      const result = await commentService.getSessionComments('session-1');
+      const result = await commentService.getSessionComments(
+        'session12345678901234'
+      );
 
       // ASSERT
       expect(result.comments).toEqual([]);
@@ -98,7 +102,7 @@ describe('CommentService', () => {
     it('should create comment with valid data', async () => {
       // ARRANGE
       const createData: CreateCommentData = {
-        sessionId: 'session-1',
+        sessionId: 'session12345678901234',
         content: 'New comment',
       };
 
@@ -116,7 +120,7 @@ describe('CommentService', () => {
 
     it('should validate comment data', async () => {
       // ARRANGE
-      const invalidData = { sessionId: 'session-1', content: '' };
+      const invalidData = { sessionId: 'session12345678901234', content: '' };
 
       // ACT & ASSERT
       try {
@@ -135,7 +139,7 @@ describe('CommentService', () => {
       // ACT & ASSERT
       await expect(
         commentService.createComment({
-          sessionId: 'session-1',
+          sessionId: 'session12345678901234',
           content: 'Test',
         })
       ).rejects.toThrow();

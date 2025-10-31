@@ -171,16 +171,13 @@ describe('User Domain Entity', () => {
       expect(user.getDisplayName()).toBe('John Doe');
     });
 
-    it('should fallback to username when name is empty', () => {
-      const user = new User(
-        'user-123',
-        'johndoe',
-        '',
-        'john@example.com',
-        new Date()
-      );
-      // Will throw due to validation, so this test won't execute
-      // But included for documentation
+    it('should reject empty name during construction', () => {
+      // Empty name is not allowed due to validation
+      // The User entity enforces that name cannot be empty
+      expect(
+        () =>
+          new User('user-123', 'johndoe', '', 'john@example.com', new Date())
+      ).toThrow('Name cannot be empty');
     });
   });
 

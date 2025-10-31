@@ -179,11 +179,11 @@ describe('ProjectService', () => {
   describe('createProject', () => {
     it('should create project with valid data', async () => {
       // ARRANGE
-      const createData: CreateProjectData = {
+      const createData = {
         name: 'New Project',
         description: 'Description',
+        icon: 'briefcase',
         color: '#007AFF',
-        category: 'work',
       };
 
       const newProject = { ...mockProject, name: 'New Project' };
@@ -210,6 +210,7 @@ describe('ProjectService', () => {
       // Validation should occur before API call
       try {
         await projectService.createProject(invalidData);
+        fail('Should have thrown validation error');
       } catch (_err) {
         // Expected to throw validation error
       }
@@ -222,9 +223,13 @@ describe('ProjectService', () => {
       );
 
       // ACT & ASSERT
-      await expect(
-        projectService.createProject({ name: 'New' })
-      ).rejects.toThrow();
+      const validData = {
+        name: 'New',
+        description: 'New project',
+        icon: 'briefcase',
+        color: '#007AFF',
+      };
+      await expect(projectService.createProject(validData)).rejects.toThrow();
     });
   });
 

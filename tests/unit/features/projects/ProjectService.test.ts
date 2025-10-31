@@ -182,8 +182,8 @@ describe('ProjectService', () => {
       const createData: CreateProjectData = {
         name: 'New Project',
         description: 'Description',
+        icon: 'work',
         color: '#007AFF',
-        category: 'work',
       };
 
       const newProject = { ...mockProject, name: 'New Project' };
