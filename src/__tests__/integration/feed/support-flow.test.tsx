@@ -61,8 +61,9 @@ describe('Integration: Support Flow', () => {
           id: 'user-456',
           email: 'other@example.com',
           username: 'otheruser',
-          displayName: 'Other User',
+          name: 'Other User',
           createdAt: new Date(),
+          updatedAt: new Date(),
         },
       },
     ];
@@ -112,8 +113,9 @@ describe('Integration: Support Flow', () => {
           id: 'user-456',
           email: 'other@example.com',
           username: 'otheruser',
-          displayName: 'Other User',
+          name: 'Other User',
           createdAt: new Date(),
+          updatedAt: new Date(),
         },
       },
     ];
@@ -155,8 +157,9 @@ describe('Integration: Support Flow', () => {
           id: 'user-456',
           email: 'other@example.com',
           username: 'otheruser',
-          displayName: 'Other User',
+          name: 'Other User',
           createdAt: new Date(),
+          updatedAt: new Date(),
         },
       },
     ];
@@ -178,7 +181,7 @@ describe('Integration: Support Flow', () => {
     );
 
     const { result: result2 } = renderHook(
-      () => useFeedInfinite('user-123', { type: 'everyone' }),
+      () => useFeedInfinite('user-123', { type: 'all' }),
       { wrapper }
     );
 
@@ -204,8 +207,9 @@ describe('Integration: Support Flow', () => {
           id: 'user-456',
           email: 'other@example.com',
           username: 'otheruser',
-          displayName: 'Other User',
+          name: 'Other User',
           createdAt: new Date(),
+          updatedAt: new Date(),
         },
       },
     ];
@@ -246,8 +250,9 @@ describe('Integration: Support Flow', () => {
           id: 'user-456',
           email: 'other@example.com',
           username: 'otheruser',
-          displayName: 'Other User',
+          name: 'Other User',
           createdAt: new Date(),
+          updatedAt: new Date(),
         },
       },
     ];

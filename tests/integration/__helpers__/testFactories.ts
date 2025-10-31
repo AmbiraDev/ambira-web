@@ -4,6 +4,9 @@
  * Provides factory functions to create realistic test data for integration testing.
  */
 
+ 
+// Note: 'any' types are acceptable in test factories for flexibility with partial overrides
+
 import { User, Session, Project, Group, Challenge, Activity } from '@/types';
 
 let userIdCounter = 1;

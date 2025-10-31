@@ -61,8 +61,9 @@ describe('Integration: Filter Flow', () => {
           id: 'user-456',
           email: 'other@example.com',
           username: 'otheruser',
-          displayName: 'Other User',
+          name: 'Other User',
           createdAt: new Date(),
+          updatedAt: new Date(),
         },
       },
     ];
@@ -83,8 +84,9 @@ describe('Integration: Filter Flow', () => {
           id: 'user-789',
           email: 'another@example.com',
           username: 'anotheruser',
-          displayName: 'Another User',
+          name: 'Another User',
           createdAt: new Date(),
+          updatedAt: new Date(),
         },
       },
     ];

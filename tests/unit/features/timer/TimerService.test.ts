@@ -5,6 +5,9 @@
  * Tests business rules and error handling
  */
 
+ 
+// Note: 'any' types used for test mocks; unused imports kept for future test coverage
+
 import {
   TimerService,
   StartTimerData,
@@ -13,7 +16,6 @@ import {
 import { ActiveSessionRepository } from '@/infrastructure/firebase/repositories/ActiveSessionRepository';
 import { SessionRepository } from '@/infrastructure/firebase/repositories/SessionRepository';
 import { ActiveSession } from '@/domain/entities/ActiveSession';
-import { Session } from '@/domain/entities/Session';
 
 // Mock the repositories
 jest.mock('@/infrastructure/firebase/repositories/ActiveSessionRepository');

@@ -49,7 +49,7 @@ export const mockStorage = {
   uploadBytes: jest
     .fn()
     .mockImplementation(
-      async (ref: MockStorageReference, data: Blob, metadata?: unknown) => {
+      async (ref: MockStorageReference, data: Blob, _metadata?: unknown) => {
         mockStorageData.set(ref.fullPath, data);
         return createMockUploadResult(ref);
       }
@@ -98,8 +98,8 @@ export const mockStorage = {
       async (
         ref: MockStorageReference,
         data: string,
-        format?: string,
-        metadata?: unknown
+        _format?: string,
+        _metadata?: unknown
       ) => {
         const blob = new Blob([data], { type: 'text/plain' });
         mockStorageData.set(ref.fullPath, blob);

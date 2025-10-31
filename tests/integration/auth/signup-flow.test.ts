@@ -10,8 +10,9 @@
  * - Error handling
  */
 
-import { renderHook, waitFor } from '@testing-library/react';
-import { useAuth } from '@/hooks/useAuth';
+ 
+// Note: 'any' types used for test mocks; unused imports kept for future test coverage
+
 import {
   createTestQueryClient,
   TestProviders,

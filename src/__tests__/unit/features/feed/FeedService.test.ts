@@ -50,32 +50,21 @@ jest.mock('@/infrastructure/firebase/repositories/SessionRepository', () => ({
 describe('FeedService', () => {
   let feedService: FeedService;
 
-  const mockSession: SessionWithDetails = {
+  const mockSession: Session = {
     id: 'session-1',
     userId: 'user-1',
     projectId: 'project-1',
+    activityId: 'activity-1',
     duration: 3600,
-    startedAt: new Date(),
-    completedAt: new Date(),
+    startTime: new Date(),
     title: 'Work Session',
     description: 'Description',
     visibility: 'everyone',
     supportCount: 5,
     commentCount: 2,
-    activityId: 'activity-1',
-    tags: [],
-    groupIds: [],
-    user: {
-      id: 'user-1',
-      name: 'Test User',
-      email: 'test@example.com',
-      avatar: 'https://example.com/avatar.jpg',
-    },
-    activity: {
-      id: 'activity-1',
-      name: 'Work',
-      color: '#007AFF',
-    },
+    isArchived: false,
+    createdAt: new Date(),
+    updatedAt: new Date(),
   };
 
   beforeEach(() => {

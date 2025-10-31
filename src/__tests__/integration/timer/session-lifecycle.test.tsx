@@ -115,14 +115,15 @@ describe('Integration: Session Lifecycle', () => {
       id: 'session-1',
       userId: 'user-123',
       projectId: 'project-1',
+      activityId: 'project-1',
       title: 'Test Session',
-      startedAt: startTime,
-      completedAt: new Date('2024-01-01T11:00:00'),
+      startTime: startTime,
       duration: 3600, // 1 hour
       description: 'Test description',
       visibility: 'everyone',
       supportCount: 0,
       commentCount: 0,
+      isArchived: false,
       createdAt: new Date(),
       updatedAt: new Date(),
     };

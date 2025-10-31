@@ -9,6 +9,9 @@
  * - Remove access to protected routes
  */
 
+ 
+// Note: 'any' types used for test mocks and query client flexibility
+
 import {
   createTestQueryClient,
   createMockFirebaseApi,

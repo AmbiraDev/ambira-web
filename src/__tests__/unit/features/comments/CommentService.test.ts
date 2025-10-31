@@ -25,7 +25,9 @@ describe('CommentService', () => {
       id: 'user1234567890123456',
       name: 'Test User',
       email: 'test@example.com',
-      avatar: 'https://example.com/avatar.jpg',
+      username: 'testuser',
+      createdAt: new Date('2024-01-01'),
+      updatedAt: new Date('2024-01-01'),
     },
   };
 

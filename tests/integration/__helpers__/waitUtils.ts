@@ -4,6 +4,9 @@
  * Provides helper functions for waiting and timing in integration tests.
  */
 
+ 
+// Note: 'any' types are acceptable in test utilities to support various query types
+
 import { waitFor } from '@testing-library/react';
 
 /**

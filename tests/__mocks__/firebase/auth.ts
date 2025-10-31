@@ -93,7 +93,7 @@ export const mockAuth = {
 
   signInWithPopup: jest
     .fn()
-    .mockImplementation(async (auth: Auth, provider: unknown) => {
+    .mockImplementation(async (_auth: Auth, _provider: unknown) => {
       const user = createMockUser({
         email: 'google@example.com',
         displayName: 'Google User',

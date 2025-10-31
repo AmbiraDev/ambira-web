@@ -8,6 +8,9 @@
  * - Feed updates based on follow status
  */
 
+ 
+// Note: 'any' types used for test mocks
+
 import {
   createTestQueryClient,
   createMockFirebaseApi,

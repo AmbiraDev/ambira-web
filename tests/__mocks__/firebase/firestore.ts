@@ -8,7 +8,6 @@ import type {
   QueryDocumentSnapshot,
   DocumentSnapshot,
   QuerySnapshot,
-  FieldValue,
   Timestamp,
 } from 'firebase/firestore';
 
@@ -258,10 +257,7 @@ export const mockFirestore = {
     }
   },
 
-  query: (
-    ref: MockCollectionReference | MockQuery,
-    ...constraints: unknown[]
-  ) => {
+  query: (ref: MockCollectionReference | MockQuery) => {
     const collectionPath =
       ref instanceof MockCollectionReference ? ref.path : ref['collectionPath'];
     const data = mockDataStore.get(collectionPath) || new Map();

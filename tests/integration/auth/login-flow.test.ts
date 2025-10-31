@@ -10,7 +10,9 @@
  * - Error handling (invalid credentials)
  */
 
-import { waitFor } from '@testing-library/react';
+ 
+// Note: 'any' types used for test mocks and query client flexibility
+
 import {
   createTestQueryClient,
   createMockFirebaseApi,
@@ -18,7 +20,6 @@ import {
   resetFirebaseStore,
   createTestUser,
   resetFactoryCounters,
-  waitForCacheUpdate,
 } from '../__helpers__';
 
 // Mock Firebase API
@@ -43,7 +44,7 @@ describe('Integration: User Login Flow', () => {
     // Reset mock implementations to default
     mockFirebaseApi.auth.signIn.mockReset();
     mockFirebaseApi.auth.signIn.mockImplementation(
-      async (email: string, password: string) => {
+      async (email: string, _password: string) => {
         const user = Array.from(testFirebaseStore['users'].values()).find(
           u => u.email === email
         );
@@ -175,7 +176,7 @@ describe('Integration: User Login Flow', () => {
     // Mock rate limiting after 3 failed attempts
     let attemptCount = 0;
     mockFirebaseApi.auth.signIn.mockImplementation(
-      async (email: string, password: string) => {
+      async (_email: string, _password: string) => {
         attemptCount++;
         if (attemptCount > 3) {
           throw new Error('Too many login attempts. Please try again later.');
@@ -209,7 +210,7 @@ describe('Integration: User Login Flow', () => {
 
     // Mock case-insensitive lookup
     mockFirebaseApi.auth.signIn.mockImplementationOnce(
-      async (email: string, password: string) => {
+      async (email: string, _password: string) => {
         const user = Array.from(testFirebaseStore['users'].values()).find(
           u => u.email.toLowerCase() === email.toLowerCase()
         );

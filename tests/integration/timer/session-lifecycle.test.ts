@@ -8,6 +8,9 @@
  * - Cancel timer
  */
 
+ 
+// Note: 'any' types used for test mocks; unused vars acceptable in test setup
+
 import {
   createTestQueryClient,
   createMockFirebaseApi,

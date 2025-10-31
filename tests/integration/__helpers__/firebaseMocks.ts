@@ -5,6 +5,10 @@
  * These mocks maintain state across operations within a test to verify workflows.
  */
 
+ 
+// Note: 'any' types are acceptable in test mocks to maintain flexibility
+// and avoid overly complex type definitions for test data structures
+
 import { User, Session, Project, Group, Challenge } from '@/types';
 
 // Counter for unique project IDs
@@ -276,7 +280,7 @@ export function createMockFirebaseApi(
   return {
     // Auth API
     auth: {
-      signIn: jest.fn(async (email: string, password: string) => {
+      signIn: jest.fn(async (email: string, _password: string) => {
         const user = Array.from(store['users'].values()).find(
           u => u.email === email
         );

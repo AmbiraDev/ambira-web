@@ -51,7 +51,6 @@ interface TestProvidersProps {
 export function TestProviders({
   children,
   queryClient: providedQueryClient,
-  initialRoute = '/',
 }: TestProvidersProps) {
   const queryClient = providedQueryClient || createTestQueryClient();
 

@@ -7,6 +7,9 @@
  * - Project appears in project list
  */
 
+ 
+// Note: 'any' types used for test mocks; unused vars acceptable in test setup
+
 import {
   createTestQueryClient,
   createMockFirebaseApi,
