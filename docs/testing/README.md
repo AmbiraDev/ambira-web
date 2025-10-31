@@ -4,15 +4,25 @@ Comprehensive testing documentation for the Ambira application.
 
 ## 📚 Documentation Index
 
-### Quick Start
+### Essential Starting Points
 
-- **[Quick Start Guide](./QUICKSTART.md)** - Get started with E2E testing in 5 minutes
+- **[Testing Handbook](./TESTING_HANDBOOK.md)** - Your complete testing reference (recommended starting point)
+- **[Quick Start Guide](./QUICKSTART.md)** - Get started with testing in 5 minutes
 
-### Detailed Guides
+### Comprehensive Type-Specific Guides
+
+- **[Testing Strategy](./TESTING_STRATEGY.md)** - High-level philosophy and quality standards
+- **[Main Test Suite](../../src/__tests__/README.md)** - Overview of unit, integration, and contract tests
+- **[Unit Tests Guide](../../src/__tests__/unit/README.md)** - Component and function testing patterns
+- **[Integration Tests Guide](../../src/__tests__/integration/README.md)** - Workflow and feature testing
+- **[Contract Tests Guide](../../src/__tests__/contract/README.md)** - API and data structure validation
+- **[Mocks Guide](../../src/__tests__/__mocks__/README.md)** - Shared mocks and test factories
+
+### CI/CD and Advanced Topics
 
 - **[Playwright CI/CD Setup](./playwright-ci-setup.md)** - Complete CI/CD integration guide
 - **[E2E Test Suite](../../e2e/README.md)** - Comprehensive E2E testing documentation
-- **[Unit Test Suite](../../src/__tests__/README.md)** - Unit and integration testing guide
+- **[ESLint Standards](./eslint-standards.md)** - Linting and code quality rules
 
 ## 🎯 Testing Strategy
 

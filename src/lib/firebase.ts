@@ -13,18 +13,16 @@ import { getFirestore, type Firestore } from 'firebase/firestore';
 import { getStorage, type FirebaseStorage } from 'firebase/storage';
 import { debug } from './debug';
 
-const requiredEnvVars = [
-  'NEXT_PUBLIC_FIREBASE_API_KEY',
-  'NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN',
-  'NEXT_PUBLIC_FIREBASE_PROJECT_ID',
-  'NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET',
-  'NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID',
-  'NEXT_PUBLIC_FIREBASE_APP_ID',
-] as const;
-
-const missingEnvVars = requiredEnvVars.filter(key => !process.env[key]);
-
-const isFirebaseConfigured = missingEnvVars.length === 0;
+// Check if all required Firebase env vars are present
+// Must use direct references (not dynamic lookups) for Next.js build-time replacement
+const isFirebaseConfigured = Boolean(
+  process.env.NEXT_PUBLIC_FIREBASE_API_KEY &&
+    process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN &&
+    process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID &&
+    process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET &&
+    process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID &&
+    process.env.NEXT_PUBLIC_FIREBASE_APP_ID
+);
 
 let appInstance: FirebaseApp | undefined;
 let authInstance: Auth;
@@ -54,8 +52,8 @@ if (isFirebaseConfigured) {
   }
 } else {
   debug.warn(
-    '[Firebase] Missing configuration environment variables. Firebase features are disabled. Missing:',
-    missingEnvVars.join(', ')
+    '[Firebase] Missing configuration environment variables. Firebase features are disabled.',
+    'Required: NEXT_PUBLIC_FIREBASE_* env vars'
   );
 
   const createUnavailableProxy = <T extends object>(serviceName: string) =>
