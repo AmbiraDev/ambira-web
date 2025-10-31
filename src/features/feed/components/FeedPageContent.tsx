@@ -202,7 +202,7 @@ export function FeedPageContent() {
                           </p>
                         </div>
                         <Feed
-                          filters={{ type: 'recent' }}
+                          filters={{ type: 'group-members-unfollowed' }}
                           key="suggested-feed"
                           initialLimit={10}
                           showEndMessage={true}
