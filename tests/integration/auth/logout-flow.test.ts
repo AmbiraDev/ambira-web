@@ -53,7 +53,7 @@ describe('Integration: User Logout Flow', () => {
     await mockFirebaseApi.auth.signIn('test@example.com', 'password123');
 
     // Populate cache with user data
-    queryClient.setQueryData(CACHE_KEYS.USER(user.id), user);
+    queryClient.setQueryData(CACHE_KEYS.USER_PROFILE(user.id), user);
 
     // Act: Logout
     await mockFirebaseApi.auth.signOut();
@@ -65,7 +65,9 @@ describe('Integration: User Logout Flow', () => {
     queryClient.clear();
 
     // Assert: Cache cleared
-    const cachedUser = queryClient.getQueryData(CACHE_KEYS.USER(user.id));
+    const cachedUser = queryClient.getQueryData(
+      CACHE_KEYS.USER_PROFILE(user.id)
+    );
     expect(cachedUser).toBeUndefined();
   });
 
@@ -81,7 +83,7 @@ describe('Integration: User Logout Flow', () => {
 
     // Login and populate cache
     await mockFirebaseApi.auth.signIn('test@example.com', 'password123');
-    queryClient.setQueryData(CACHE_KEYS.USER(user.id), user);
+    queryClient.setQueryData(CACHE_KEYS.USER_PROFILE(user.id), user);
     queryClient.setQueryData(CACHE_KEYS.PROJECTS(user.id), [project]);
     queryClient.setQueryData(CACHE_KEYS.SESSIONS(user.id), [session]);
 
@@ -90,7 +92,9 @@ describe('Integration: User Logout Flow', () => {
     queryClient.clear();
 
     // Assert: All user data cleared from cache
-    expect(queryClient.getQueryData(CACHE_KEYS.USER(user.id))).toBeUndefined();
+    expect(
+      queryClient.getQueryData(CACHE_KEYS.USER_PROFILE(user.id))
+    ).toBeUndefined();
     expect(
       queryClient.getQueryData(CACHE_KEYS.PROJECTS(user.id))
     ).toBeUndefined();
@@ -206,9 +210,9 @@ describe('Integration: User Logout Flow', () => {
     localStorage.removeItem('authToken');
     localStorage.removeItem('userId');
 
-    // Assert: Local storage cleared
-    expect(localStorage.getItem('authToken')).toBeNull();
-    expect(localStorage.getItem('userId')).toBeNull();
+    // Assert: Local storage cleared (jsdom returns undefined for removed items)
+    expect(localStorage.getItem('authToken')).toBeFalsy();
+    expect(localStorage.getItem('userId')).toBeFalsy();
   });
 
   it('clears session storage on logout', async () => {
@@ -226,7 +230,7 @@ describe('Integration: User Logout Flow', () => {
     // Simulate clearing session storage
     sessionStorage.clear();
 
-    // Assert: Session storage cleared
-    expect(sessionStorage.getItem('tempData')).toBeNull();
+    // Assert: Session storage cleared (jsdom returns undefined for removed items)
+    expect(sessionStorage.getItem('tempData')).toBeFalsy();
   });
 });

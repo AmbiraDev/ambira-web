@@ -7,6 +7,13 @@
 
 import { User, Session, Project, Group, Challenge } from '@/types';
 
+// Counter for unique project IDs
+let mockProjectCounter = 0;
+
+export function resetMockProjectCounter() {
+  mockProjectCounter = 0;
+}
+
 /**
  * In-memory Firebase store for integration tests
  */
@@ -349,7 +356,7 @@ export function createMockFirebaseApi(
 
         const now = new Date();
         const newProject: Project = {
-          id: `project-${Date.now()}`,
+          id: `project-${Date.now()}-${mockProjectCounter++}`,
           ...projectData,
           isArchived: projectData.isArchived ?? false,
           activities: projectData.activities ?? [],

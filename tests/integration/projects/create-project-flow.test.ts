@@ -14,6 +14,7 @@ import {
   resetFirebaseStore,
   createTestUser,
   resetFactoryCounters,
+  resetMockProjectCounter,
 } from '../__helpers__';
 import { CACHE_KEYS } from '@/lib/queryClient';
 
@@ -34,6 +35,7 @@ describe('Integration: Create Project Flow', () => {
     queryClient = createTestQueryClient();
     resetFirebaseStore();
     resetFactoryCounters();
+    resetMockProjectCounter();
     jest.clearAllMocks();
 
     user = createTestUser({ email: 'user@test.com' });

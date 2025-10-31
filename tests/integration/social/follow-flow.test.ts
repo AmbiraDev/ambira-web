@@ -154,8 +154,11 @@ describe('Integration: Follow/Unfollow Flow', () => {
 
   it('updates cache after follow/unfollow', async () => {
     // Arrange: Set users in cache
-    queryClient.setQueryData(CACHE_KEYS.USER(user.id), user);
-    queryClient.setQueryData(CACHE_KEYS.USER(targetUser.id), targetUser);
+    queryClient.setQueryData(CACHE_KEYS.USER_PROFILE(user.id), user);
+    queryClient.setQueryData(
+      CACHE_KEYS.USER_PROFILE(targetUser.id),
+      targetUser
+    );
 
     // Act: Follow
     await mockFirebaseApi.social.follow(user.id, targetUser.id);
@@ -163,13 +166,18 @@ describe('Integration: Follow/Unfollow Flow', () => {
     // Update cache
     const updatedFollower = testFirebaseStore.getUser(user.id);
     const updatedFollowing = testFirebaseStore.getUser(targetUser.id);
-    queryClient.setQueryData(CACHE_KEYS.USER(user.id), updatedFollower);
-    queryClient.setQueryData(CACHE_KEYS.USER(targetUser.id), updatedFollowing);
+    queryClient.setQueryData(CACHE_KEYS.USER_PROFILE(user.id), updatedFollower);
+    queryClient.setQueryData(
+      CACHE_KEYS.USER_PROFILE(targetUser.id),
+      updatedFollowing
+    );
 
     // Assert: Cache reflects follow
-    const cachedFollower = queryClient.getQueryData(CACHE_KEYS.USER(user.id));
+    const cachedFollower = queryClient.getQueryData(
+      CACHE_KEYS.USER_PROFILE(user.id)
+    );
     const cachedFollowing = queryClient.getQueryData(
-      CACHE_KEYS.USER(targetUser.id)
+      CACHE_KEYS.USER_PROFILE(targetUser.id)
     );
 
     expect(cachedFollower.followingCount).toBe(1);

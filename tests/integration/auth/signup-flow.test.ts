@@ -136,8 +136,8 @@ describe('Integration: User Signup Flow', () => {
   });
 
   it('validates required fields during signup', async () => {
-    // Mock validation
-    mockFirebaseApi.auth.signUp.mockImplementationOnce(async (data: any) => {
+    // Mock validation - use mockImplementation (not Once) for all calls in this test
+    mockFirebaseApi.auth.signUp.mockImplementation(async (data: any) => {
       if (!data.email) throw new Error('Email is required');
       if (!data.username) throw new Error('Username is required');
       if (!data.password) throw new Error('Password is required');

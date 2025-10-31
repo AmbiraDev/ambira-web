@@ -40,6 +40,17 @@ describe('Integration: User Login Flow', () => {
     resetFirebaseStore();
     resetFactoryCounters();
     jest.clearAllMocks();
+    // Reset mock implementations to default
+    mockFirebaseApi.auth.signIn.mockReset();
+    mockFirebaseApi.auth.signIn.mockImplementation(
+      async (email: string, password: string) => {
+        const user = Array.from(testFirebaseStore['users'].values()).find(
+          u => u.email === email
+        );
+        if (!user) throw new Error('Invalid credentials');
+        return user;
+      }
+    );
   });
 
   afterEach(() => {
