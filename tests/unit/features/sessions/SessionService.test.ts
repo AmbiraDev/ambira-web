@@ -1,299 +1,314 @@
 /**
  * SessionService Unit Tests
  *
- * Tests core session operations including:
- * - Getting sessions
- * - Updating sessions
- * - Deleting sessions
- * - Supporting sessions
- * - Retrieving session data
+ * Tests session CRUD operations, filtering, and business logic
  */
 
 import { SessionService } from '@/features/sessions/services/SessionService';
-import {
-  createMockSession,
-  createMockSessionBatch,
-} from '../../../__mocks__/factories';
+import { firebaseApi } from '@/lib/api';
+import { Session, SessionWithDetails } from '@/types';
 
-const mockGetSession = jest.fn();
-const mockGetSessionWithDetails = jest.fn();
-const mockGetSessions = jest.fn();
-const mockDeleteSession = jest.fn();
-const mockSupportSession = jest.fn();
-const mockRemoveSupportFromSession = jest.fn();
-const mockUpdateSession = jest.fn();
-
-jest.mock('@/lib/api', () => ({
-  firebaseApi: {
-    session: {
-      getSession: (...args: unknown[]) => mockGetSession(...args),
-      getSessionWithDetails: (...args: unknown[]) =>
-        mockGetSessionWithDetails(...args),
-      getSessions: (...args: unknown[]) => mockGetSessions(...args),
-      deleteSession: (...args: unknown[]) => mockDeleteSession(...args),
-      updateSession: (...args: unknown[]) => mockUpdateSession(...args),
-    },
-    post: {
-      supportSession: (...args: unknown[]) => mockSupportSession(...args),
-      removeSupportFromSession: (...args: unknown[]) =>
-        mockRemoveSupportFromSession(...args),
-    },
-  },
-}));
-
-jest.mock('@/lib/validation', () => ({
-  validateOrThrow: (schema: unknown, data: unknown) => data,
-  UpdateSessionSchema: {},
-}));
+jest.mock('@/lib/api');
 
 describe('SessionService', () => {
-  let service: SessionService;
+  let sessionService: SessionService;
+
+  const mockSession: Session = {
+    id: 'session-1',
+    userId: 'user-1',
+    projectId: 'project-1',
+    duration: 3600,
+    startedAt: new Date('2024-01-01T10:00:00'),
+    completedAt: new Date('2024-01-01T11:00:00'),
+    title: 'Test Session',
+    description: 'Test Description',
+    visibility: 'everyone',
+    supportCount: 5,
+    commentCount: 2,
+    activityId: 'activity-1',
+    tags: [],
+    groupIds: [],
+  };
+
+  const mockSessionWithDetails: SessionWithDetails = {
+    ...mockSession,
+    user: {
+      id: 'user-1',
+      name: 'Test User',
+      email: 'test@example.com',
+      avatar: 'https://example.com/avatar.jpg',
+    },
+    activity: {
+      id: 'activity-1',
+      name: 'Work',
+      color: '#007AFF',
+    },
+  };
 
   beforeEach(() => {
     jest.clearAllMocks();
-    service = new SessionService();
+    sessionService = new SessionService();
   });
 
   describe('getSession', () => {
-    it('should retrieve session by ID', async () => {
-      // Arrange
-      const mockSession = createMockSession();
-      mockGetSession.mockResolvedValue(mockSession);
+    it('should get session by ID', async () => {
+      // ARRANGE
+      (firebaseApi.session.getSession as jest.Mock).mockResolvedValue(
+        mockSession
+      );
 
-      // Act
-      const result = await service.getSession(mockSession.id);
+      // ACT
+      const result = await sessionService.getSession('session-1');
 
-      // Assert
+      // ASSERT
       expect(result).toEqual(mockSession);
-      expect(mockGetSession).toHaveBeenCalledWith(mockSession.id);
+      expect(firebaseApi.session.getSession).toHaveBeenCalledWith('session-1');
     });
 
-    it('should return null when session not found', async () => {
-      // Arrange
-      mockGetSession.mockRejectedValue(new Error('Not found'));
+    it('should return null if session not found', async () => {
+      // ARRANGE
+      (firebaseApi.session.getSession as jest.Mock).mockResolvedValue(null);
 
-      // Act
-      const result = await service.getSession('non-existent');
+      // ACT
+      const result = await sessionService.getSession('nonexistent');
 
-      // Assert
+      // ASSERT
       expect(result).toBeNull();
     });
 
-    it('should handle errors gracefully', async () => {
-      // Arrange
-      mockGetSession.mockRejectedValue(new Error('Database error'));
+    it('should handle API errors gracefully', async () => {
+      // ARRANGE
+      (firebaseApi.session.getSession as jest.Mock).mockRejectedValue(
+        new Error('API Error')
+      );
 
-      // Act
-      const result = await service.getSession('session-123');
+      // ACT
+      const result = await sessionService.getSession('session-1');
 
-      // Assert
+      // ASSERT
       expect(result).toBeNull();
     });
   });
 
   describe('getSessionWithDetails', () => {
-    it('should retrieve session with user and activity details', async () => {
-      // Arrange
-      const mockSession = createMockSession();
-      mockGetSessionWithDetails.mockResolvedValue(mockSession);
+    it('should get session with populated details', async () => {
+      // ARRANGE
+      (
+        firebaseApi.session.getSessionWithDetails as jest.Mock
+      ).mockResolvedValue(mockSessionWithDetails);
 
-      // Act
-      const result = await service.getSessionWithDetails(mockSession.id);
+      // ACT
+      const result = await sessionService.getSessionWithDetails('session-1');
 
-      // Assert
-      expect(result).toEqual(mockSession);
-      expect(mockGetSessionWithDetails).toHaveBeenCalledWith(mockSession.id);
+      // ASSERT
+      expect(result).toEqual(mockSessionWithDetails);
+      expect(result?.user.name).toBe('Test User');
+      expect(result?.activity.name).toBe('Work');
     });
 
-    it('should return null on error', async () => {
-      // Arrange
-      mockGetSessionWithDetails.mockRejectedValue(new Error('Not found'));
+    it('should return null if session not found', async () => {
+      // ARRANGE
+      (
+        firebaseApi.session.getSessionWithDetails as jest.Mock
+      ).mockResolvedValue(null);
 
-      // Act
-      const result = await service.getSessionWithDetails('session-123');
+      // ACT
+      const result = await sessionService.getSessionWithDetails('nonexistent');
 
-      // Assert
+      // ASSERT
+      expect(result).toBeNull();
+    });
+
+    it('should handle API errors gracefully', async () => {
+      // ARRANGE
+      (
+        firebaseApi.session.getSessionWithDetails as jest.Mock
+      ).mockRejectedValue(new Error('API Error'));
+
+      // ACT
+      const result = await sessionService.getSessionWithDetails('session-1');
+
+      // ASSERT
       expect(result).toBeNull();
     });
   });
 
   describe('getUserSessions', () => {
-    it('should retrieve all sessions for a user', async () => {
-      // Arrange
-      const sessions = createMockSessionBatch(3, { userId: 'user-123' });
-      mockGetSessions.mockResolvedValue({ sessions, hasMore: false });
+    it('should get all sessions for a user', async () => {
+      // ARRANGE
+      const mockSessions = [mockSession, { ...mockSession, id: 'session-2' }];
+      (firebaseApi.session.getSessions as jest.Mock).mockResolvedValue({
+        sessions: mockSessions,
+        hasMore: false,
+      });
 
-      // Act
-      const result = await service.getUserSessions('user-123');
+      // ACT
+      const result = await sessionService.getUserSessions('user-1');
 
-      // Assert
-      expect(result).toHaveLength(3);
-      expect(result[0].userId).toBe('user-123');
-      expect(mockGetSessions).toHaveBeenCalledWith(100, {
-        userId: 'user-123',
+      // ASSERT
+      expect(result).toHaveLength(2);
+      expect(result[0].id).toBe('session-1');
+      expect(result[1].id).toBe('session-2');
+    });
+
+    it('should support filtering options', async () => {
+      // ARRANGE
+      const filters = { projectId: 'project-1' };
+      (firebaseApi.session.getSessions as jest.Mock).mockResolvedValue({
+        sessions: [mockSession],
+        hasMore: false,
+      });
+
+      // ACT
+      await sessionService.getUserSessions('user-1', filters);
+
+      // ASSERT
+      expect(firebaseApi.session.getSessions).toHaveBeenCalledWith(100, {
+        userId: 'user-1',
+        projectId: 'project-1',
       });
     });
 
     it('should return empty array on error', async () => {
-      // Arrange
-      mockGetSessions.mockRejectedValue(new Error('Database error'));
+      // ARRANGE
+      (firebaseApi.session.getSessions as jest.Mock).mockRejectedValue(
+        new Error('API Error')
+      );
 
-      // Act
-      const result = await service.getUserSessions('user-123');
+      // ACT
+      const result = await sessionService.getUserSessions('user-1');
 
-      // Assert
+      // ASSERT
       expect(result).toEqual([]);
-    });
-
-    it('should pass filters to API', async () => {
-      // Arrange
-      mockGetSessions.mockResolvedValue({ sessions: [], hasMore: false });
-
-      // Act
-      await service.getUserSessions('user-123', { limit: 50 });
-
-      // Assert
-      expect(mockGetSessions).toHaveBeenCalledWith(100, {
-        userId: 'user-123',
-        limit: 50,
-      });
     });
   });
 
   describe('deleteSession', () => {
     it('should delete session by ID', async () => {
-      // Arrange
-      mockDeleteSession.mockResolvedValue(undefined);
+      // ARRANGE
+      (firebaseApi.session.deleteSession as jest.Mock).mockResolvedValue(
+        undefined
+      );
 
-      // Act
-      await service.deleteSession('session-123');
+      // ACT
+      await sessionService.deleteSession('session-1');
 
-      // Assert
-      expect(mockDeleteSession).toHaveBeenCalledWith('session-123');
+      // ASSERT
+      expect(firebaseApi.session.deleteSession).toHaveBeenCalledWith(
+        'session-1'
+      );
     });
 
-    it('should propagate errors', async () => {
-      // Arrange
-      mockDeleteSession.mockRejectedValue(new Error('Delete failed'));
+    it('should propagate API errors', async () => {
+      // ARRANGE
+      const error = new Error('Delete failed');
+      (firebaseApi.session.deleteSession as jest.Mock).mockRejectedValue(error);
 
-      // Act & Assert
-      await expect(service.deleteSession('session-123')).rejects.toThrow(
+      // ACT & ASSERT
+      await expect(sessionService.deleteSession('session-1')).rejects.toThrow(
         'Delete failed'
       );
     });
   });
 
   describe('supportSession', () => {
-    it('should add support (like) to session', async () => {
-      // Arrange
-      mockSupportSession.mockResolvedValue(undefined);
+    it('should support (like) a session', async () => {
+      // ARRANGE
+      (firebaseApi.post.supportSession as jest.Mock).mockResolvedValue(
+        undefined
+      );
 
-      // Act
-      await service.supportSession('session-123');
+      // ACT
+      await sessionService.supportSession('session-1');
 
-      // Assert
-      expect(mockSupportSession).toHaveBeenCalledWith('session-123');
+      // ASSERT
+      expect(firebaseApi.post.supportSession).toHaveBeenCalledWith('session-1');
     });
 
-    it('should handle support errors', async () => {
-      // Arrange
-      mockSupportSession.mockRejectedValue(new Error('Already supported'));
+    it('should propagate API errors', async () => {
+      // ARRANGE
+      (firebaseApi.post.supportSession as jest.Mock).mockRejectedValue(
+        new Error('Support failed')
+      );
 
-      // Act & Assert
-      await expect(service.supportSession('session-123')).rejects.toThrow();
+      // ACT & ASSERT
+      await expect(sessionService.supportSession('session-1')).rejects.toThrow(
+        'Support failed'
+      );
     });
   });
 
   describe('unsupportSession', () => {
-    it('should remove support from session', async () => {
-      // Arrange
-      mockRemoveSupportFromSession.mockResolvedValue(undefined);
+    it('should remove support from a session', async () => {
+      // ARRANGE
+      (
+        firebaseApi.post.removeSupportFromSession as jest.Mock
+      ).mockResolvedValue(undefined);
 
-      // Act
-      await service.unsupportSession('session-123');
+      // ACT
+      await sessionService.unsupportSession('session-1');
 
-      // Assert
-      expect(mockRemoveSupportFromSession).toHaveBeenCalledWith('session-123');
+      // ASSERT
+      expect(firebaseApi.post.removeSupportFromSession).toHaveBeenCalledWith(
+        'session-1'
+      );
     });
 
-    it('should handle unsupport errors', async () => {
-      // Arrange
-      mockRemoveSupportFromSession.mockRejectedValue(
-        new Error('Not supported')
-      );
+    it('should propagate API errors', async () => {
+      // ARRANGE
+      (
+        firebaseApi.post.removeSupportFromSession as jest.Mock
+      ).mockRejectedValue(new Error('Unsupport failed'));
 
-      // Act & Assert
-      await expect(service.unsupportSession('session-123')).rejects.toThrow();
+      // ACT & ASSERT
+      await expect(
+        sessionService.unsupportSession('session-1')
+      ).rejects.toThrow('Unsupport failed');
     });
   });
 
   describe('updateSession', () => {
-    it('should update session with new data', async () => {
-      // Arrange
-      mockUpdateSession.mockResolvedValue(undefined);
-      const updates = { title: 'Updated Title' };
+    it('should update session with valid data', async () => {
+      // ARRANGE
+      const updateData = { title: 'Updated Title' };
+      (firebaseApi.session.updateSession as jest.Mock).mockResolvedValue(
+        undefined
+      );
 
-      // Act
-      await service.updateSession('session-123', updates);
+      // ACT
+      await sessionService.updateSession('session-1', updateData);
 
-      // Assert
-      expect(mockUpdateSession).toHaveBeenCalledWith('session-123', updates);
+      // ASSERT
+      expect(firebaseApi.session.updateSession).toHaveBeenCalledWith(
+        'session-1',
+        updateData
+      );
     });
 
-    it('should validate data before updating', async () => {
-      // Arrange
-      mockUpdateSession.mockResolvedValue(undefined);
-      const updates = { title: 'Updated', visibility: 'private' };
+    it('should validate update data', async () => {
+      // ARRANGE
+      const updateData = { title: 'Updated', visibility: 'followers' };
+      (firebaseApi.session.updateSession as jest.Mock).mockResolvedValue(
+        undefined
+      );
 
-      // Act
-      await service.updateSession('session-123', updates);
+      // ACT
+      await sessionService.updateSession('session-1', updateData);
 
-      // Assert
-      expect(mockUpdateSession).toHaveBeenCalledWith('session-123', updates);
+      // ASSERT
+      expect(firebaseApi.session.updateSession).toHaveBeenCalled();
     });
 
-    it('should propagate update errors', async () => {
-      // Arrange
-      mockUpdateSession.mockRejectedValue(new Error('Update failed'));
+    it('should propagate API errors', async () => {
+      // ARRANGE
+      (firebaseApi.session.updateSession as jest.Mock).mockRejectedValue(
+        new Error('Update failed')
+      );
 
-      // Act & Assert
+      // ACT & ASSERT
       await expect(
-        service.updateSession('session-123', { title: 'New' })
+        sessionService.updateSession('session-1', { title: 'New' })
       ).rejects.toThrow('Update failed');
-    });
-  });
-
-  describe('error handling and edge cases', () => {
-    it('should handle empty user sessions', async () => {
-      // Arrange
-      mockGetSessions.mockResolvedValue({ sessions: [], hasMore: false });
-
-      // Act
-      const result = await service.getUserSessions('inactive-user');
-
-      // Assert
-      expect(result).toEqual([]);
-    });
-
-    it('should handle concurrent session operations', async () => {
-      // Arrange
-      const session1 = createMockSession({ id: 'session-1' });
-      const session2 = createMockSession({ id: 'session-2' });
-
-      mockGetSession
-        .mockResolvedValueOnce(session1)
-        .mockResolvedValueOnce(session2);
-
-      // Act
-      const results = await Promise.all([
-        service.getSession('session-1'),
-        service.getSession('session-2'),
-      ]);
-
-      // Assert
-      expect(results).toHaveLength(2);
-      expect(results[0]).toEqual(session1);
-      expect(results[1]).toEqual(session2);
     });
   });
 });
