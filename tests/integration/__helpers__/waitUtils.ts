@@ -4,7 +4,6 @@
  * Provides helper functions for waiting and timing in integration tests.
  */
 
- 
 // Note: 'any' types are acceptable in test utilities to support various query types
 
 import { waitFor } from '@testing-library/react';
@@ -139,7 +138,12 @@ export async function waitForElement(
     { timeout: options?.timeout || 3000 }
   );
 
-  return element as HTMLElement;
+  // At this point, element is guaranteed to be non-null due to toBeInTheDocument assertion
+  if (!element) {
+    throw new Error('Element not found after waitFor');
+  }
+
+  return element;
 }
 
 /**

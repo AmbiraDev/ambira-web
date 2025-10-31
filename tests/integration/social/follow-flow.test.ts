@@ -8,7 +8,6 @@
  * - Feed updates based on follow status
  */
 
- 
 // Note: 'any' types used for test mocks
 
 import {
@@ -74,7 +73,7 @@ describe('Integration: Follow/Unfollow Flow', () => {
     const following = testFirebaseStore.getUser(targetUser.id);
 
     expect(follower?.followingCount).toBe(1);
-    expect(following?.followerCount).toBe(1);
+    expect(following?.followersCount).toBe(1);
   });
 
   it('unfollows user and decrements counts', async () => {
@@ -84,7 +83,7 @@ describe('Integration: Follow/Unfollow Flow', () => {
     const followerBefore = testFirebaseStore.getUser(user.id);
     const followingBefore = testFirebaseStore.getUser(targetUser.id);
     expect(followerBefore?.followingCount).toBe(1);
-    expect(followingBefore?.followerCount).toBe(1);
+    expect(followingBefore?.followersCount).toBe(1);
 
     // Act: Unfollow
     await mockFirebaseApi.social.unfollow(user.id, targetUser.id);
@@ -103,7 +102,7 @@ describe('Integration: Follow/Unfollow Flow', () => {
     const followingAfter = testFirebaseStore.getUser(targetUser.id);
 
     expect(followerAfter?.followingCount).toBe(0);
-    expect(followingAfter?.followerCount).toBe(0);
+    expect(followingAfter?.followersCount).toBe(0);
   });
 
   it('handles multiple users following same target', async () => {
@@ -125,7 +124,7 @@ describe('Integration: Follow/Unfollow Flow', () => {
 
     // Assert: Target has 3 followers
     const target = testFirebaseStore.getUser(targetUser.id);
-    expect(target?.followerCount).toBe(3);
+    expect(target?.followersCount).toBe(3);
   });
 
   it('prevents duplicate follow', async () => {
@@ -184,7 +183,7 @@ describe('Integration: Follow/Unfollow Flow', () => {
     );
 
     expect(cachedFollower.followingCount).toBe(1);
-    expect(cachedFollowing.followerCount).toBe(1);
+    expect(cachedFollowing.followersCount).toBe(1);
   });
 
   it('prevents self-follow', async () => {
@@ -206,7 +205,7 @@ describe('Integration: Follow/Unfollow Flow', () => {
 
   it('follower count never goes negative', async () => {
     // Arrange: User with 0 followers
-    expect(targetUser.followerCount).toBe(0);
+    expect(targetUser.followersCount).toBe(0);
 
     // Mock to prevent negative
     mockFirebaseApi.social.unfollow.mockImplementationOnce(
@@ -224,7 +223,7 @@ describe('Integration: Follow/Unfollow Flow', () => {
 
     // Assert: Count still 0
     const target = testFirebaseStore.getUser(targetUser.id);
-    expect(target?.followerCount).toBe(0);
+    expect(target?.followersCount).toBe(0);
   });
 
   it('persists follow state across page refresh', async () => {
@@ -243,6 +242,6 @@ describe('Integration: Follow/Unfollow Flow', () => {
     const follower = testFirebaseStore.getUser(user.id);
     const following = testFirebaseStore.getUser(targetUser.id);
     expect(follower?.followingCount).toBe(1);
-    expect(following?.followerCount).toBe(1);
+    expect(following?.followersCount).toBe(1);
   });
 });

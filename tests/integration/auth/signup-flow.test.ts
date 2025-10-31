@@ -10,7 +10,6 @@
  * - Error handling
  */
 
- 
 // Note: 'any' types used for test mocks; unused imports kept for future test coverage
 
 import {
@@ -63,7 +62,7 @@ describe('Integration: User Signup Flow', () => {
     const signupData = {
       email: 'newuser@test.com',
       username: 'newuser',
-      displayName: 'New User',
+      name: 'New User',
       password: 'password123',
     };
 
@@ -103,7 +102,7 @@ describe('Integration: User Signup Flow', () => {
       mockFirebaseApi.auth.signUp({
         email: 'existing@test.com',
         username: 'newuser',
-        displayName: 'New User',
+        name: 'New User',
         password: 'password123',
       })
     ).rejects.toThrow('Email already exists');
@@ -130,7 +129,7 @@ describe('Integration: User Signup Flow', () => {
       mockFirebaseApi.auth.signUp({
         email: 'newuser@test.com',
         username: 'existinguser',
-        displayName: 'New User',
+        name: 'New User',
         password: 'password123',
       })
     ).rejects.toThrow('Username already taken');
@@ -149,7 +148,7 @@ describe('Integration: User Signup Flow', () => {
     await expect(
       mockFirebaseApi.auth.signUp({
         username: 'user',
-        displayName: 'User',
+        name: 'User',
         password: 'pass',
       } as any)
     ).rejects.toThrow('Email is required');
@@ -158,7 +157,7 @@ describe('Integration: User Signup Flow', () => {
     await expect(
       mockFirebaseApi.auth.signUp({
         email: 'user@test.com',
-        displayName: 'User',
+        name: 'User',
         password: 'pass',
       } as any)
     ).rejects.toThrow('Username is required');
@@ -168,7 +167,7 @@ describe('Integration: User Signup Flow', () => {
       mockFirebaseApi.auth.signUp({
         email: 'user@test.com',
         username: 'user',
-        displayName: 'User',
+        name: 'User',
       } as any)
     ).rejects.toThrow('Password is required');
   });
@@ -178,12 +177,12 @@ describe('Integration: User Signup Flow', () => {
     const newUser = await mockFirebaseApi.auth.signUp({
       email: 'user@test.com',
       username: 'testuser',
-      displayName: 'Test User',
+      name: 'Test User',
       password: 'password123',
     });
 
     // Assert: Default values set
-    expect(newUser.followerCount).toBe(0);
+    expect(newUser.followersCount).toBe(0);
     expect(newUser.followingCount).toBe(0);
     expect(newUser.createdAt).toBeInstanceOf(Date);
     expect(newUser.id).toBeDefined();
@@ -200,7 +199,7 @@ describe('Integration: User Signup Flow', () => {
       mockFirebaseApi.auth.signUp({
         email: 'user@test.com',
         username: 'testuser',
-        displayName: 'Test User',
+        name: 'Test User',
         password: 'password123',
       })
     ).rejects.toThrow('Network error');
@@ -216,7 +215,7 @@ describe('Integration: User Signup Flow', () => {
       const sanitizedUser = createTestUser({
         email: data.email.toLowerCase().trim(),
         username: data.username.toLowerCase().trim(),
-        displayName: data.displayName.trim(),
+        name: data.name.trim(),
       });
       testFirebaseStore.createUser(sanitizedUser);
       return sanitizedUser;
@@ -226,13 +225,13 @@ describe('Integration: User Signup Flow', () => {
     const newUser = await mockFirebaseApi.auth.signUp({
       email: '  USER@TEST.COM  ',
       username: '  TestUser  ',
-      displayName: '  Test User  ',
+      name: '  Test User  ',
       password: 'password123',
     });
 
     // Assert: Data sanitized
     expect(newUser.email).toBe('user@test.com');
     expect(newUser.username).toBe('testuser');
-    expect(newUser.displayName).toBe('Test User');
+    expect(newUser.name).toBe('Test User');
   });
 });

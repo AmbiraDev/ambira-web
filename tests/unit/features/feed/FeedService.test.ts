@@ -5,14 +5,13 @@
  * Tests pagination and filter logic
  */
 
- 
 // Note: 'any' types used for test mocks; unused imports kept for future test coverage
 
 import { FeedService, FeedType } from '@/features/feed/services/FeedService';
 import { FeedRepository } from '@/infrastructure/firebase/repositories/FeedRepository';
 import { SocialGraphRepository } from '@/infrastructure/firebase/repositories/SocialGraphRepository';
 import { SessionRepository } from '@/infrastructure/firebase/repositories/SessionRepository';
-import { SessionWithDetails } from '@/types';
+import { Session } from '@/domain/entities/Session';
 
 jest.mock('@/infrastructure/firebase/repositories/FeedRepository');
 jest.mock('@/infrastructure/firebase/repositories/SocialGraphRepository');
@@ -24,22 +23,20 @@ describe('FeedService', () => {
   let mockSocialGraphRepoInstance: jest.Mocked<SocialGraphRepository>;
   let mockSessionRepoInstance: jest.Mocked<SessionRepository>;
 
-  const mockSession: Session = {
-    id: 'session-1',
-    userId: 'user-1',
-    projectId: 'project-1',
-    activityId: 'activity-1',
-    duration: 3600,
-    startTime: new Date(),
-    title: 'Work Session',
-    description: 'Description',
-    visibility: 'everyone',
-    supportCount: 5,
-    commentCount: 2,
-    isArchived: false,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  };
+  const mockSession = new Session(
+    'session-1',
+    'user-1',
+    'project-1',
+    'activity-1',
+    3600,
+    new Date(),
+    'Work Session',
+    'Description',
+    'everyone',
+    5,
+    2,
+    []
+  );
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -117,8 +114,22 @@ describe('FeedService', () => {
   describe('getFeed - public/trending/recent/all', () => {
     it('should get public feed', async () => {
       // ARRANGE
+      const mockSession2 = new Session(
+        'session-2',
+        'user-1',
+        'project-1',
+        'activity-1',
+        3600,
+        new Date(),
+        'Work Session',
+        'Description',
+        'everyone',
+        5,
+        2,
+        []
+      );
       const mockResult = {
-        sessions: [mockSession, { ...mockSession, id: 'session-2' }],
+        sessions: [mockSession, mockSession2],
         hasMore: true,
       };
 

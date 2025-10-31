@@ -34,6 +34,7 @@ function createMockUploadResult(ref: MockStorageReference): UploadResult {
       updated: new Date().toISOString(),
       md5Hash: 'mock-md5-hash',
       contentType: 'image/jpeg',
+      downloadTokens: ['mock-download-token'],
     },
   };
 }
@@ -42,7 +43,8 @@ function createMockUploadResult(ref: MockStorageReference): UploadResult {
 export const mockStorage = {
   ref: jest.fn().mockImplementation((storage: unknown, path?: string) => {
     const fullPath = path || '';
-    const name = fullPath.split('/').pop() || '';
+    const pathParts = fullPath.split('/');
+    const name = pathParts[pathParts.length - 1] || '';
     return new MockStorageReference(fullPath, name);
   }),
 
@@ -133,10 +135,10 @@ export const mockStorage = {
           .replace(/^\//, '');
         const parts = relativePath.split('/');
 
-        if (parts.length === 1) {
+        if (parts.length === 1 && parts[0]) {
           // Direct child file
           items.push(new MockStorageReference(path, parts[0]));
-        } else {
+        } else if (parts[0]) {
           // Directory
           const prefix = `${ref.fullPath}/${parts[0]}`;
           if (!prefixes.find(p => p.fullPath === prefix)) {
@@ -167,13 +169,14 @@ export const mockStorage = {
         updated: new Date().toISOString(),
         md5Hash: 'mock-md5-hash',
         contentType: 'image/jpeg',
+        downloadTokens: undefined,
       };
     }),
 
   updateMetadata: jest
     .fn()
     .mockImplementation(
-      async (ref: MockStorageReference, metadata: unknown) => {
+      async (ref: MockStorageReference, metadata: Record<string, unknown>) => {
         if (!mockStorageData.has(ref.fullPath)) {
           throw new Error('storage/object-not-found');
         }
@@ -189,6 +192,7 @@ export const mockStorage = {
           updated: new Date().toISOString(),
           md5Hash: 'mock-md5-hash',
           contentType: 'image/jpeg',
+          downloadTokens: undefined,
           ...metadata,
         };
       }

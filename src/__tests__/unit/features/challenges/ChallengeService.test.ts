@@ -48,6 +48,7 @@ describe('ChallengeService', () => {
           updatedAt: new Date(),
         },
         progress: 1000,
+        isCompleted: true,
       },
       {
         rank: 2,
@@ -61,6 +62,7 @@ describe('ChallengeService', () => {
           updatedAt: new Date(),
         },
         progress: 900,
+        isCompleted: false,
       },
     ],
     lastUpdated: new Date(),
@@ -108,6 +110,7 @@ describe('ChallengeService', () => {
 
       // ASSERT
       expect(result).toHaveLength(2);
+      expect(result[0]).toBeDefined();
       expect(result[0]?.name).toBe('Most Active');
       expect(firebaseApi.challenge.getChallenges).toHaveBeenCalled();
     });
@@ -199,7 +202,8 @@ describe('ChallengeService', () => {
       // ASSERT
       expect(result).toEqual(mockLeaderboard);
       expect(result?.entries).toHaveLength(2);
-      expect(result?.entries[0].rank).toBe(1);
+      expect(result?.entries[0]).toBeDefined();
+      expect(result?.entries[0]?.rank).toBe(1);
     });
 
     it('should return null if leaderboard not found', async () => {

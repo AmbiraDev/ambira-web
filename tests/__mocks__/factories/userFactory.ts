@@ -15,7 +15,7 @@ interface CreateUserOptions {
   bio?: string;
   location?: string;
   profilePicture?: string;
-  followerCount?: number;
+  followersCount?: number;
   followingCount?: number;
   profileVisibility?: ProfileVisibility;
 }
@@ -35,7 +35,7 @@ export function createMockUser(options: CreateUserOptions = {}): User {
     options.bio,
     options.location,
     options.profilePicture,
-    options.followerCount ?? 0,
+    options.followersCount ?? 0,
     options.followingCount ?? 0,
     options.profileVisibility ?? 'everyone'
   );
@@ -60,13 +60,13 @@ export function createMockUserBatch(
  * Create a user with followers (social context)
  */
 export function createMockUserWithFollowers(
-  followerCount: number = 10,
+  followersCount: number = 10,
   followingCount: number = 5,
   options: CreateUserOptions = {}
 ): User {
   return createMockUser({
     ...options,
-    followerCount,
+    followersCount,
     followingCount,
   });
 }

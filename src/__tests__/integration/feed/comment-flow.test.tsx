@@ -50,6 +50,18 @@ describe('Integration: Comment Flow', () => {
     <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
   );
 
+  const mockActivity = {
+    id: 'activity-1',
+    userId: 'user-456',
+    name: 'Work',
+    description: 'Work activities',
+    icon: 'work',
+    color: '#007AFF',
+    status: 'active' as const,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+
   it('should add comment and update comment count', async () => {
     const mockSessions: SessionWithDetails[] = [
       {
@@ -75,17 +87,7 @@ describe('Integration: Comment Flow', () => {
           updatedAt: new Date(),
           createdAt: new Date(),
         },
-        activity: {
-          id: 'activity-1',
-          userId: 'user-456',
-          name: 'Work',
-          description: 'Work activities',
-          icon: 'work',
-          color: '#007AFF',
-          status: 'active',
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        },
+        activity: mockActivity,
       },
     ];
 
@@ -118,11 +120,15 @@ describe('Integration: Comment Flow', () => {
         id: 'session-1',
         userId: 'user-456',
         projectId: 'project-1',
+        activityId: 'activity-1',
         title: 'Test Session',
+        duration: 3600,
+        startTime: new Date(),
         visibility: 'everyone',
         supportCount: 0,
         commentCount: 5,
         isSupported: false,
+        isArchived: false,
         createdAt: new Date(),
         updatedAt: new Date(),
         user: {
@@ -133,6 +139,7 @@ describe('Integration: Comment Flow', () => {
           updatedAt: new Date(),
           createdAt: new Date(),
         },
+        activity: mockActivity,
       },
     ];
 

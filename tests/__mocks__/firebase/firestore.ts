@@ -8,7 +8,7 @@ import type {
   QueryDocumentSnapshot,
   DocumentSnapshot,
   QuerySnapshot,
-  Timestamp,
+  Timestamp as FirestoreTimestamp,
 } from 'firebase/firestore';
 
 // In-memory data store for mock Firestore
@@ -81,13 +81,13 @@ export class MockQuery {
           case '!=':
             return fieldValue !== clause.value;
           case '>':
-            return fieldValue > clause.value;
+            return (fieldValue as any) > (clause.value as any);
           case '>=':
-            return fieldValue >= clause.value;
+            return (fieldValue as any) >= (clause.value as any);
           case '<':
-            return fieldValue < clause.value;
+            return (fieldValue as any) < (clause.value as any);
           case '<=':
-            return fieldValue <= clause.value;
+            return (fieldValue as any) <= (clause.value as any);
           case 'in':
             return (
               Array.isArray(clause.value) && clause.value.includes(fieldValue)
@@ -147,7 +147,13 @@ function createMockQueryDocumentSnapshot(
     data: () => data,
     get: (field: string) => data[field],
     ref: new MockDocumentReference(collectionPath, id),
-  } as QueryDocumentSnapshot;
+    metadata: {
+      hasPendingWrites: false,
+      fromCache: false,
+      isEqual: () => false,
+    },
+    toJSON: () => ({ id, ...data }),
+  } as unknown as QueryDocumentSnapshot;
 }
 
 // Create mock document snapshot
@@ -162,7 +168,13 @@ function createMockDocumentSnapshot(
     data: () => data || undefined,
     get: (field: string) => (data ? data[field] : undefined),
     ref: new MockDocumentReference(collectionPath, id),
-  } as DocumentSnapshot;
+    metadata: {
+      hasPendingWrites: false,
+      fromCache: false,
+      isEqual: () => false,
+    },
+    toJSON: () => (data ? { id, ...data } : { id }),
+  } as unknown as DocumentSnapshot;
 }
 
 // Create mock query snapshot
@@ -296,19 +308,17 @@ export const mockFirestore = {
   }),
   serverTimestamp: () => ({ _type: 'serverTimestamp' }),
 
-  // Timestamp
-  Timestamp: {
-    now: () => ({
-      toDate: () => new Date(),
-      seconds: Math.floor(Date.now() / 1000),
-      nanoseconds: 0,
-    }),
-    fromDate: (date: Date) => ({
-      toDate: () => date,
-      seconds: Math.floor(date.getTime() / 1000),
-      nanoseconds: 0,
-    }),
-  },
+  // Timestamp mock functions
+  TimestampNow: () => ({
+    toDate: () => new Date(),
+    seconds: Math.floor(Date.now() / 1000),
+    nanoseconds: 0,
+  }),
+  TimestampFromDate: (date: Date) => ({
+    toDate: () => date,
+    seconds: Math.floor(date.getTime() / 1000),
+    nanoseconds: 0,
+  }),
 
   // Utility to clear all data
   _clearAll: () => {
@@ -348,4 +358,9 @@ export const increment = mockFirestore.increment;
 export const arrayUnion = mockFirestore.arrayUnion;
 export const arrayRemove = mockFirestore.arrayRemove;
 export const serverTimestamp = mockFirestore.serverTimestamp;
-export const Timestamp = mockFirestore.Timestamp;
+
+// Export Timestamp as an object matching Firebase's API
+export const Timestamp = {
+  now: mockFirestore.TimestampNow,
+  fromDate: mockFirestore.TimestampFromDate,
+};

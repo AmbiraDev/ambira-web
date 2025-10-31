@@ -102,7 +102,7 @@ describe('GroupService', () => {
 
       // ASSERT
       expect(result).toHaveLength(2);
-      expect(result[0].name).toBe('Test Group');
+      expect(result[0]?.name).toBe('Test Group');
     });
 
     it('should support limit parameter', async () => {
@@ -153,7 +153,7 @@ describe('GroupService', () => {
 
       // ASSERT
       expect(result).toHaveLength(2);
-      expect(result[0].privacy).toBe('public');
+      expect(result[0]?.privacy).toBe('public');
     });
 
     it('should support limit parameter', async () => {

@@ -8,7 +8,6 @@
  * - Support state persists
  */
 
- 
 // Note: 'any' types used for test mocks; unused vars acceptable in test setup
 
 import {
@@ -56,7 +55,7 @@ describe('Integration: Session Support Flow', () => {
       username: 'user2',
     });
     project = createTestProject(otherUser.id);
-    activity = createTestActivity(project.id);
+    activity = createTestActivity(otherUser.id);
     session = createTestSession(otherUser.id, project.id, activity.id, {
       title: 'Great work session',
       supportCount: 0,

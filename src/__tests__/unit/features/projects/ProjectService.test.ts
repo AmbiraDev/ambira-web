@@ -25,19 +25,19 @@ describe('ProjectService', () => {
     description: 'Work Sessions',
     color: '#007AFF',
     icon: 'briefcase',
-    category: 'work',
     status: 'active',
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date('2024-01-01'),
   };
 
   const mockProjectStats: ProjectStats = {
-    projectId: 'project-1',
-    totalSessions: 10,
-    totalDuration: 36000,
-    avgDuration: 3600,
-    longestSession: 7200,
+    totalHours: 10,
+    weeklyHours: 3,
     sessionCount: 10,
+    currentStreak: 5,
+    weeklyProgressPercentage: 75,
+    totalProgressPercentage: 50,
+    averageSessionDuration: 3600,
     lastSessionDate: new Date('2024-01-10'),
   };
 
@@ -62,8 +62,8 @@ describe('ProjectService', () => {
 
       // ASSERT
       expect(result).toHaveLength(2);
-      expect(result[0].name).toBe('Work');
-      expect(result[1].name).toBe('Exercise');
+      expect(result[0]?.name).toBe('Work');
+      expect(result[1]?.name).toBe('Exercise');
     });
 
     it('should return empty array when no projects', async () => {
@@ -145,8 +145,8 @@ describe('ProjectService', () => {
 
       // ASSERT
       expect(result).toEqual(mockProjectStats);
-      expect(result?.totalSessions).toBe(10);
-      expect(result?.totalDuration).toBe(36000);
+      expect(result?.totalHours).toBe(10);
+      expect(result?.sessionCount).toBe(10);
     });
 
     it('should return null if stats not found', async () => {

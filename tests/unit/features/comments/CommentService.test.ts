@@ -19,13 +19,17 @@ describe('CommentService', () => {
     userId: 'user123456789012345678',
     content: 'Great work!',
     likeCount: 3,
+    replyCount: 0,
+    isEdited: false,
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date('2024-01-01'),
     user: {
       id: 'user123456789012345678',
       name: 'Test User',
       email: 'test@example.com',
-      avatar: 'https://example.com/avatar.jpg',
+      username: 'testuser',
+      createdAt: new Date('2024-01-01'),
+      updatedAt: new Date('2024-01-01'),
     },
   };
 

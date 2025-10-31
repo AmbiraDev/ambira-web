@@ -13,7 +13,7 @@ import {
 import { FeedRepository } from '@/infrastructure/firebase/repositories/FeedRepository';
 import { SocialGraphRepository } from '@/infrastructure/firebase/repositories/SocialGraphRepository';
 import { SessionRepository } from '@/infrastructure/firebase/repositories/SessionRepository';
-import { SessionWithDetails } from '@/types';
+import { Session } from '@/domain/entities/Session';
 
 // Create mock instances
 const mockFeedRepo = {
@@ -50,22 +50,20 @@ jest.mock('@/infrastructure/firebase/repositories/SessionRepository', () => ({
 describe('FeedService', () => {
   let feedService: FeedService;
 
-  const mockSession: Session = {
-    id: 'session-1',
-    userId: 'user-1',
-    projectId: 'project-1',
-    activityId: 'activity-1',
-    duration: 3600,
-    startTime: new Date(),
-    title: 'Work Session',
-    description: 'Description',
-    visibility: 'everyone',
-    supportCount: 5,
-    commentCount: 2,
-    isArchived: false,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  };
+  const mockSession = new Session(
+    'session-1',
+    'user-1',
+    'project-1',
+    'activity-1',
+    3600,
+    new Date(),
+    'Work Session',
+    'Description',
+    'everyone',
+    5,
+    2,
+    []
+  );
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -110,8 +108,21 @@ describe('FeedService', () => {
   describe('getFeed - public/trending/recent/all', () => {
     it('should get public feed', async () => {
       // ARRANGE
+      const session2 = new Session(
+        'session-2',
+        mockSession.userId,
+        mockSession.projectId,
+        mockSession.activityId,
+        mockSession.duration,
+        mockSession.createdAt,
+        mockSession.title,
+        mockSession.description,
+        mockSession.visibility,
+        mockSession.supportCount,
+        mockSession.commentCount
+      );
       const mockResult = {
-        sessions: [mockSession, { ...mockSession, id: 'session-2' }],
+        sessions: [mockSession, session2],
         hasMore: true,
       };
 

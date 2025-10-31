@@ -5,7 +5,6 @@
  * These mocks maintain state across operations within a test to verify workflows.
  */
 
- 
 // Note: 'any' types are acceptable in test mocks to maintain flexibility
 // and avoid overly complex type definitions for test data structures
 
@@ -140,7 +139,7 @@ export class InMemoryFirebaseStore {
       follower.followingCount = (follower.followingCount || 0) + 1;
     }
     if (following) {
-      following.followerCount = (following.followerCount || 0) + 1;
+      following.followersCount = (following.followersCount || 0) + 1;
     }
   }
 
@@ -156,7 +155,10 @@ export class InMemoryFirebaseStore {
       follower.followingCount = Math.max(0, (follower.followingCount || 0) - 1);
     }
     if (following) {
-      following.followerCount = Math.max(0, (following.followerCount || 0) - 1);
+      following.followersCount = Math.max(
+        0,
+        (following.followersCount || 0) - 1
+      );
     }
   }
 
@@ -292,9 +294,10 @@ export function createMockFirebaseApi(
           id: `user-${Date.now()}`,
           email: data.email,
           username: data.username,
-          displayName: data.displayName || data.username,
+          name: data.name || data.username,
           createdAt: new Date(),
-          followerCount: 0,
+          updatedAt: new Date(),
+          followersCount: 0,
           followingCount: 0,
         };
         store.createUser(newUser);
@@ -361,9 +364,11 @@ export function createMockFirebaseApi(
         const now = new Date();
         const newProject: Project = {
           id: `project-${Date.now()}-${mockProjectCounter++}`,
+          description: '',
+          icon: 'folder',
+          color: '#007AFF',
           ...projectData,
-          isArchived: projectData.isArchived ?? false,
-          activities: projectData.activities ?? [],
+          status: projectData.status ?? 'active',
           createdAt: new Date(),
           updatedAt: now,
         };

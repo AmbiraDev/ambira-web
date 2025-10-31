@@ -20,14 +20,17 @@ describe('ChallengeService', () => {
 
   const mockChallenge: Challenge = {
     id: 'challenge-1',
-    title: 'Most Active',
+    name: 'Most Active',
     type: 'most-activity',
     description: 'Complete 10 sessions',
     startDate: new Date('2024-01-01'),
     endDate: new Date('2024-01-31'),
-    groupId: null,
+    groupId: undefined,
     participantCount: 100,
+    createdByUserId: 'admin-1',
+    isActive: true,
     createdAt: new Date('2024-01-01'),
+    updatedAt: new Date('2024-01-01'),
   };
 
   const mockLeaderboard: ChallengeLeaderboard = {
@@ -36,33 +39,53 @@ describe('ChallengeService', () => {
       {
         rank: 1,
         userId: 'user-1',
-        displayName: 'User 1',
-        score: 1000,
+        user: {
+          id: 'user-1',
+          email: 'user1@example.com',
+          name: 'User 1',
+          username: 'user1',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        progress: 1000,
+        isCompleted: true,
       },
       {
         rank: 2,
         userId: 'user-2',
-        displayName: 'User 2',
-        score: 900,
+        user: {
+          id: 'user-2',
+          email: 'user2@example.com',
+          name: 'User 2',
+          username: 'user2',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        progress: 900,
+        isCompleted: false,
       },
     ],
+    lastUpdated: new Date(),
   };
 
   const mockProgress: ChallengeProgress = {
     challengeId: 'challenge-1',
     userId: 'user-1',
-    currentScore: 1000,
-    targetScore: 1000,
-    percentComplete: 100,
-    status: 'completed',
+    currentValue: 1000,
+    targetValue: 1000,
+    percentage: 100,
+    rank: 1,
+    isCompleted: true,
+    lastUpdated: new Date(),
   };
 
   const mockStats: ChallengeStats = {
-    challengeId: 'challenge-1',
     totalParticipants: 100,
     completedParticipants: 50,
-    avgScore: 750,
-    highestScore: 1000,
+    averageProgress: 750,
+    topPerformers: [],
+    timeRemaining: 86400,
+    daysRemaining: 1,
   };
 
   beforeEach(() => {
@@ -75,7 +98,7 @@ describe('ChallengeService', () => {
       // ARRANGE
       const mockChallenges = [
         mockChallenge,
-        { ...mockChallenge, id: 'challenge-2', title: 'Fastest' },
+        { ...mockChallenge, id: 'challenge-2', name: 'Fastest' },
       ];
 
       (firebaseApi.challenge.getChallenges as jest.Mock).mockResolvedValue(
@@ -87,7 +110,8 @@ describe('ChallengeService', () => {
 
       // ASSERT
       expect(result).toHaveLength(2);
-      expect(result[0].title).toBe('Most Active');
+      expect(result[0]).toBeDefined();
+      expect(result[0]?.name).toBe('Most Active');
       expect(firebaseApi.challenge.getChallenges).toHaveBeenCalled();
     });
 
@@ -178,7 +202,8 @@ describe('ChallengeService', () => {
       // ASSERT
       expect(result).toEqual(mockLeaderboard);
       expect(result?.entries).toHaveLength(2);
-      expect(result?.entries[0].rank).toBe(1);
+      expect(result?.entries[0]).toBeDefined();
+      expect(result?.entries[0]?.rank).toBe(1);
     });
 
     it('should return null if leaderboard not found', async () => {
@@ -225,8 +250,8 @@ describe('ChallengeService', () => {
 
       // ASSERT
       expect(result).toEqual(mockProgress);
-      expect(result?.percentComplete).toBe(100);
-      expect(result?.status).toBe('completed');
+      expect(result?.percentage).toBe(100);
+      expect(result?.isCompleted).toBe(true);
     });
 
     it('should return null if progress not found', async () => {

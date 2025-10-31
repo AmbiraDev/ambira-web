@@ -18,8 +18,7 @@ describe('SessionService', () => {
     userId: 'user-1',
     projectId: 'project-1',
     duration: 3600,
-    startedAt: new Date('2024-01-01T10:00:00'),
-    completedAt: new Date('2024-01-01T11:00:00'),
+    startTime: new Date('2024-01-01T10:00:00'),
     title: 'Test Session',
     description: 'Test Description',
     visibility: 'everyone',
@@ -27,7 +26,9 @@ describe('SessionService', () => {
     commentCount: 2,
     activityId: 'activity-1',
     tags: [],
-    groupIds: [],
+    isArchived: false,
+    createdAt: new Date('2024-01-01T10:00:00'),
+    updatedAt: new Date('2024-01-01T11:00:00'),
   };
 
   const mockSessionWithDetails: SessionWithDetails = {
@@ -36,12 +37,20 @@ describe('SessionService', () => {
       id: 'user-1',
       name: 'Test User',
       email: 'test@example.com',
-      avatar: 'https://example.com/avatar.jpg',
+      username: 'testuser',
+      createdAt: new Date('2024-01-01'),
+      updatedAt: new Date('2024-01-01'),
     },
     activity: {
       id: 'activity-1',
+      userId: 'user-1',
       name: 'Work',
+      description: 'Work activity',
+      icon: 'briefcase',
       color: '#007AFF',
+      status: 'active',
+      createdAt: new Date('2024-01-01'),
+      updatedAt: new Date('2024-01-01'),
     },
   };
 
@@ -147,8 +156,8 @@ describe('SessionService', () => {
 
       // ASSERT
       expect(result).toHaveLength(2);
-      expect(result[0].id).toBe('session-1');
-      expect(result[1].id).toBe('session-2');
+      expect(result[0]?.id).toBe('session-1');
+      expect(result[1]?.id).toBe('session-2');
     });
 
     it('should support filtering options', async () => {

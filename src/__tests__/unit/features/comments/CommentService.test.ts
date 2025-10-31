@@ -19,6 +19,8 @@ describe('CommentService', () => {
     userId: 'user1234567890123456',
     content: 'Great work!',
     likeCount: 3,
+    replyCount: 0,
+    isEdited: false,
     createdAt: new Date('2024-01-01'),
     updatedAt: new Date('2024-01-01'),
     user: {

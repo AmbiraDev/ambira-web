@@ -10,7 +10,6 @@
  * - Error handling (invalid credentials)
  */
 
- 
 // Note: 'any' types used for test mocks and query client flexibility
 
 import {
@@ -123,7 +122,7 @@ describe('Integration: User Login Flow', () => {
     // Arrange: Create existing user
     const existingUser = createTestUser({
       email: 'test@example.com',
-      followerCount: 10,
+      followersCount: 10,
       followingCount: 5,
     });
     testFirebaseStore.createUser(existingUser);
@@ -135,7 +134,7 @@ describe('Integration: User Login Flow', () => {
     );
 
     // Assert: User data complete
-    expect(loggedInUser.followerCount).toBe(10);
+    expect(loggedInUser.followersCount).toBe(10);
     expect(loggedInUser.followingCount).toBe(5);
   });
 

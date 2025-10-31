@@ -127,8 +127,12 @@ export const mockAuth = {
     .fn()
     .mockImplementation(async (user: User, newEmail: string) => {
       if (mockCurrentUser) {
-        mockCurrentUser.email = newEmail;
-        notifyAuthStateListeners(mockCurrentUser);
+        // Create a new user object with updated email since email is read-only
+        const updatedUser = createMockUser({
+          ...mockCurrentUser,
+          email: newEmail,
+        });
+        notifyAuthStateListeners(updatedUser);
       }
     }),
 

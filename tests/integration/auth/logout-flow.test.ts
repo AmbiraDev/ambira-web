@@ -9,7 +9,6 @@
  * - Remove access to protected routes
  */
 
- 
 // Note: 'any' types used for test mocks and query client flexibility
 
 import {
@@ -19,6 +18,7 @@ import {
   resetFirebaseStore,
   createTestUser,
   createTestProject,
+  createTestActivity,
   createTestSession,
   resetFactoryCounters,
 } from '../__helpers__';
@@ -78,7 +78,8 @@ describe('Integration: User Logout Flow', () => {
     // Arrange: Create user with data
     const user = createTestUser({ email: 'test@example.com' });
     const project = createTestProject(user.id);
-    const session = createTestSession(user.id, project.id, 'activity-1');
+    const activity = createTestActivity(user.id);
+    const session = createTestSession(user.id, project.id, activity.id);
 
     testFirebaseStore.createUser(user);
     testFirebaseStore.createProject(project);

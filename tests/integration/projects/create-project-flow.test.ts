@@ -7,7 +7,6 @@
  * - Project appears in project list
  */
 
- 
 // Note: 'any' types used for test mocks; unused vars acceptable in test setup
 
 import {
@@ -79,7 +78,9 @@ describe('Integration: Create Project Flow', () => {
       async (data: any) => {
         if (!data.name) throw new Error('Project name required');
         if (!data.userId) throw new Error('User ID required');
-        return testFirebaseStore.getProjects(user.id)[0];
+        const project = testFirebaseStore.getProjects(user.id)[0];
+        if (!project) throw new Error('No project found');
+        return project;
       }
     );
 
@@ -126,10 +127,9 @@ describe('Integration: Create Project Flow', () => {
     });
 
     // Assert: Defaults applied
-    expect(project.isArchived).toBe(false);
+    expect(project.status).toBe('active');
     expect(project.createdAt).toBeInstanceOf(Date);
     expect(project.updatedAt).toBeInstanceOf(Date);
-    expect(project.activities).toEqual([]);
   });
 
   it('allows multiple projects for same user', async () => {

@@ -8,7 +8,6 @@
  * - Cancel timer
  */
 
- 
 // Note: 'any' types used for test mocks; unused vars acceptable in test setup
 
 import {
@@ -52,7 +51,7 @@ describe('Integration: Timer Session Lifecycle', () => {
     // Setup test data
     user = createTestUser({ email: 'test@example.com' });
     project = createTestProject(user.id, { name: 'Test Project' });
-    activity = createTestActivity(project.id, { name: 'Development' });
+    activity = createTestActivity(user.id, { name: 'Development' });
 
     testFirebaseStore.createUser(user);
     testFirebaseStore.createProject(project);
@@ -317,7 +316,9 @@ describe('Integration: Timer Session Lifecycle', () => {
           // Minimum 1 minute
           throw new Error('Session too short');
         }
-        return testFirebaseStore.getSessions()[0];
+        const session = testFirebaseStore.getSessions()[0];
+        if (!session) throw new Error('No session found');
+        return session;
       }
     );
 

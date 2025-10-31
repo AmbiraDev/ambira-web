@@ -4,7 +4,6 @@
  * Provides factory functions to create realistic test data for integration testing.
  */
 
- 
 // Note: 'any' types are acceptable in test factories for flexibility with partial overrides
 
 import { User, Session, Project, Group, Challenge, Activity } from '@/types';
@@ -39,21 +38,19 @@ export function createTestUser(overrides?: Partial<User>): User {
     id,
     email: overrides?.email || `${username}@test.com`,
     username,
-    displayName: overrides?.displayName || username,
+    name: overrides?.name || username,
     bio: overrides?.bio,
-    photoURL: overrides?.photoURL,
+    profilePicture: overrides?.profilePicture,
     createdAt: overrides?.createdAt || new Date(),
-    followerCount: overrides?.followerCount || 0,
+    updatedAt: overrides?.updatedAt || new Date(),
+    followersCount: overrides?.followersCount || 0,
     followingCount: overrides?.followingCount || 0,
-    profileVisibility: overrides?.profileVisibility || 'everyone',
-    activityVisibility: overrides?.activityVisibility || 'everyone',
-    projectVisibility: overrides?.projectVisibility || 'everyone',
     ...overrides,
   };
 }
 
 /**
- * Create a test project
+ * Create a test project (Activity)
  */
 export function createTestProject(
   userId: string,
@@ -65,13 +62,12 @@ export function createTestProject(
     id,
     userId,
     name: overrides?.name || `Test Project ${projectIdCounter}`,
-    description: overrides?.description,
+    description: overrides?.description || '',
     color: overrides?.color || '#007AFF',
     icon: overrides?.icon || 'folder',
-    isArchived: overrides?.isArchived || false,
+    status: overrides?.status || 'active',
     createdAt: overrides?.createdAt || new Date(),
     updatedAt: overrides?.updatedAt || new Date(),
-    activities: overrides?.activities || [],
     ...overrides,
   };
 }
@@ -80,19 +76,19 @@ export function createTestProject(
  * Create a test activity
  */
 export function createTestActivity(
-  projectId: string,
+  userId: string,
   overrides?: Partial<Activity>
 ): Activity {
   const id = `activity-${activityIdCounter++}`;
 
   return {
     id,
-    projectId,
+    userId,
     name: overrides?.name || `Test Activity ${activityIdCounter}`,
-    description: overrides?.description,
-    color: overrides?.color,
-    icon: overrides?.icon,
-    isArchived: overrides?.isArchived || false,
+    description: overrides?.description || '',
+    color: overrides?.color || '#007AFF',
+    icon: overrides?.icon || 'folder',
+    status: overrides?.status || 'active',
     createdAt: overrides?.createdAt || new Date(),
     updatedAt: overrides?.updatedAt || new Date(),
     ...overrides,
@@ -121,6 +117,7 @@ export function createTestSession(
     description: overrides?.description,
     duration,
     startTime,
+    isArchived: overrides?.isArchived || false,
     createdAt: overrides?.createdAt || new Date(),
     updatedAt: overrides?.updatedAt || new Date(),
     visibility: overrides?.visibility || 'everyone',
@@ -131,7 +128,6 @@ export function createTestSession(
     privateNotes: overrides?.privateNotes,
     images: overrides?.images || [],
     showStartTime: overrides?.showStartTime !== false,
-    publishToFeeds: overrides?.publishToFeeds !== false,
     ...overrides,
   };
 }
@@ -140,7 +136,7 @@ export function createTestSession(
  * Create a test group
  */
 export function createTestGroup(
-  creatorId: string,
+  createdByUserId: string,
   overrides?: Partial<Group>
 ): Group {
   const id = `group-${groupIdCounter++}`;
@@ -148,12 +144,14 @@ export function createTestGroup(
   return {
     id,
     name: overrides?.name || `Test Group ${groupIdCounter}`,
-    description: overrides?.description,
-    creatorId,
-    adminIds: overrides?.adminIds || [creatorId],
-    memberIds: overrides?.memberIds || [creatorId],
+    description: overrides?.description || '',
+    createdByUserId,
+    adminUserIds: overrides?.adminUserIds || [createdByUserId],
+    memberIds: overrides?.memberIds || [createdByUserId],
     memberCount: overrides?.memberCount || 1,
-    privacy: overrides?.privacy || 'public',
+    privacySetting: overrides?.privacySetting || 'public',
+    category: overrides?.category || 'other',
+    type: overrides?.type || 'just-for-fun',
     createdAt: overrides?.createdAt || new Date(),
     updatedAt: overrides?.updatedAt || new Date(),
     imageUrl: overrides?.imageUrl,
@@ -165,7 +163,7 @@ export function createTestGroup(
  * Create a test challenge
  */
 export function createTestChallenge(
-  creatorId: string,
+  createdByUserId: string,
   overrides?: Partial<Challenge>
 ): Challenge {
   const id = `challenge-${challengeIdCounter++}`;
@@ -175,18 +173,18 @@ export function createTestChallenge(
 
   return {
     id,
-    title: overrides?.title || `Test Challenge ${challengeIdCounter}`,
-    description: overrides?.description,
+    name: overrides?.name || `Test Challenge ${challengeIdCounter}`,
+    description: overrides?.description || '',
     type: overrides?.type || 'most-activity',
     startDate,
     endDate,
-    creatorId,
+    createdByUserId,
     groupId: overrides?.groupId,
     participantCount: overrides?.participantCount || 0,
-    status: overrides?.status || 'active',
+    isActive: overrides?.isActive !== false,
     createdAt: overrides?.createdAt || new Date(),
     updatedAt: overrides?.updatedAt || new Date(),
-    goal: overrides?.goal,
+    goalValue: overrides?.goalValue,
     rules: overrides?.rules,
     ...overrides,
   };
@@ -260,7 +258,7 @@ export function createCompleteTestUser(): {
 } {
   const user = createTestUser();
   const project = createTestProject(user.id);
-  const activity = createTestActivity(project.id);
+  const activity = createTestActivity(user.id);
   const sessions = createTestSessions(user.id, project.id, activity.id, 3);
 
   return {

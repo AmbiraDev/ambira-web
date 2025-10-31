@@ -65,6 +65,15 @@ export {
   resetCommentFactory,
 } from './commentFactory';
 
+// Import reset functions for use in resetAllFactories
+import { resetSessionFactory } from './sessionFactory';
+import { resetUserFactory } from './userFactory';
+import { resetActiveSessionFactory } from './activeSessionFactory';
+import { resetActivityFactory } from './activityFactory';
+import { resetGroupFactory } from './groupFactory';
+import { resetChallengeFactory as resetChallenge } from './challengeFactory';
+import { resetCommentFactory as resetComment } from './commentFactory';
+
 // Reset all factories
 export function resetAllFactories() {
   resetSessionFactory();
@@ -72,6 +81,6 @@ export function resetAllFactories() {
   resetActiveSessionFactory();
   resetActivityFactory();
   resetGroupFactory();
-  resetChallengeFactory();
-  resetCommentFactory();
+  resetChallenge();
+  resetComment();
 }

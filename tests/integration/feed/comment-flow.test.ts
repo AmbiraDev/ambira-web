@@ -8,7 +8,6 @@
  * - Real-time comment updates
  */
 
- 
 // Note: 'any' types used for test mocks; unused vars acceptable in test setup
 
 import {
@@ -52,7 +51,7 @@ describe('Integration: Session Comment Flow', () => {
 
     user = createTestUser({ email: 'user@test.com' });
     const project = createTestProject(user.id);
-    const activity = createTestActivity(project.id);
+    const activity = createTestActivity(user.id);
     session = createTestSession(user.id, project.id, activity.id, {
       commentCount: 0,
     });

@@ -18,16 +18,18 @@ describe('StreakService', () => {
     currentStreak: 7,
     longestStreak: 30,
     lastActivityDate: new Date('2024-01-10'),
-    totalDays: 45,
+    totalStreakDays: 45,
+    streakHistory: [],
     isPublic: true,
   };
 
   const mockStreakStats: StreakStats = {
-    userId: 'user-1',
     currentStreak: 7,
     longestStreak: 30,
-    totalActiveDays: 45,
-    streakPercentage: 58.3,
+    totalStreakDays: 45,
+    lastActivityDate: new Date('2024-01-10'),
+    streakAtRisk: false,
+    nextMilestone: 30,
   };
 
   beforeEach(() => {

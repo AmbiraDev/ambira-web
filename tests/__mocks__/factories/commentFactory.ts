@@ -28,15 +28,26 @@ export function createMockComment(overrides: Partial<Comment> = {}): Comment {
 export function createMockCommentWithDetails(
   overrides: Partial<CommentWithDetails> = {}
 ): CommentWithDetails {
-  const user = overrides.user || createMockUser({ id: overrides.userId });
+  const domainUser = overrides.user
+    ? undefined
+    : createMockUser({ id: overrides.userId });
+  const typesUser: import('@/types').User = overrides.user || {
+    id: domainUser!.id,
+    username: domainUser!.username,
+    name: domainUser!.name,
+    email: domainUser!.email,
+    createdAt: domainUser!.createdAt,
+    updatedAt: domainUser!.createdAt, // Use createdAt as default for updatedAt
+  };
+
   const comment = createMockComment({
     ...overrides,
-    userId: user.id,
+    userId: typesUser.id,
   });
 
   return {
     ...comment,
-    user,
+    user: typesUser,
     replies: overrides.replies,
   };
 }
