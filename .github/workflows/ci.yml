@@ -179,7 +179,6 @@ jobs:
           path: docs/test-coverage/integration
           retention-days: 7
 
-
   # Run Playwright smoke tests in parallel (conditional on tests existing)
   playwright-tests:
     name: Playwright Smoke Tests

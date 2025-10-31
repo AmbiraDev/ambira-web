@@ -1,5 +1,6 @@
 import { Page } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import type { AxeResults, NodeResult, Result } from 'axe-core';
 
 /**
  * Run accessibility scan on the current page
@@ -13,12 +14,12 @@ export async function runAccessibilityScan(
     exclude?: string[];
     disableRules?: string[];
   }
-) {
+): Promise<AxeResults> {
   const builder = new AxeBuilder({ page });
 
   // Exclude specific selectors if provided
   if (options?.exclude) {
-    options.exclude.forEach((selector) => {
+    options.exclude.forEach(selector => {
       builder.exclude(selector);
     });
   }
@@ -29,9 +30,7 @@ export async function runAccessibilityScan(
   }
 
   // Run the accessibility scan
-  const results = await builder.analyze();
-
-  return results;
+  return builder.analyze();
 }
 
 /**
@@ -39,15 +38,20 @@ export async function runAccessibilityScan(
  * @param violations - Array of axe violations
  * @returns Formatted string with violation details
  */
-export function formatA11yViolations(violations: any[]): string {
+export function formatA11yViolations(
+  violations: AxeResults['violations']
+): string {
   if (violations.length === 0) {
     return 'No accessibility violations found';
   }
 
   return violations
-    .map((violation) => {
+    .map((violation: Result) => {
+      const impactLabel = violation.impact
+        ? violation.impact.toUpperCase()
+        : 'UNKNOWN';
       const nodes = violation.nodes
-        .map((node: any) => {
+        .map((node: NodeResult) => {
           const target = node.target.join(', ');
           const html = node.html.substring(0, 100);
           return `    Target: ${target}\n    HTML: ${html}${node.html.length > 100 ? '...' : ''}`;
@@ -55,7 +59,7 @@ export function formatA11yViolations(violations: any[]): string {
         .join('\n\n');
 
       return `
-[${violation.impact.toUpperCase()}] ${violation.id}: ${violation.help}
+[${impactLabel}] ${violation.id}: ${violation.help}
   Description: ${violation.description}
   WCAG: ${violation.tags.filter((tag: string) => tag.startsWith('wcag')).join(', ')}
   Affected elements (${violation.nodes.length}):
@@ -91,7 +95,9 @@ export async function checkBasicAccessibility(page: Page) {
   checks.hasHeadings = headings > 0;
 
   // Check for skip link
-  const skipLink = await page.locator('a[href="#main"], a[href="#content"]').count();
+  const skipLink = await page
+    .locator('a[href="#main"], a[href="#content"]')
+    .count();
   checks.hasSkipLink = skipLink > 0;
 
   return checks;

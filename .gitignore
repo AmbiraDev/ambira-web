@@ -53,3 +53,8 @@ serviceAccountKey.json
 # Playwright
 playwright-report/
 test-results/
+
+# Backup files
+*.backup
+*.bak
+*~

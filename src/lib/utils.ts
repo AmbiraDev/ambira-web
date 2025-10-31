@@ -46,6 +46,10 @@ export function parseLocalDateTime(
  * safeNumber(Infinity, 0) // 0
  */
 export const safeNumber = (value: unknown, fallback: number = 0): number => {
+  // Handle null and undefined explicitly to respect fallback
+  if (value === null || value === undefined) {
+    return fallback;
+  }
   const num = Number(value);
   return isNaN(num) || !isFinite(num) ? fallback : num;
 };
@@ -104,4 +108,54 @@ export const safeParseFloat = (
  */
 export function isEmpty<T>(arr: T[] | null | undefined): boolean {
   return !arr || arr.length === 0;
+}
+
+/**
+ * Format elapsed time in seconds to HH:MM:SS format
+ * Re-export from formatters for backward compatibility
+ *
+ * @param seconds - Elapsed time in seconds
+ * @returns Formatted time string in HH:MM:SS format
+ */
+export function formatDuration(seconds: number): string {
+  const absSeconds = Math.abs(seconds);
+  const hours = Math.floor(absSeconds / 3600);
+  const minutes = Math.floor((absSeconds % 3600) / 60);
+  const secs = Math.floor(absSeconds % 60);
+
+  const hoursStr = hours.toString().padStart(2, '0');
+  const minutesStr = minutes.toString().padStart(2, '0');
+  const secsStr = secs.toString().padStart(2, '0');
+
+  return `${hoursStr}:${minutesStr}:${secsStr}`;
+}
+
+/**
+ * Format a date as a simple date string
+ * Re-export from formatters for backward compatibility
+ *
+ * @param date - The date to format
+ * @param options - Intl.DateTimeFormatOptions for customization
+ * @returns Formatted date string
+ */
+export function formatDate(
+  date: Date | string,
+  options: Intl.DateTimeFormatOptions = {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  }
+): string {
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  return dateObj.toLocaleDateString('en-US', options);
+}
+
+/**
+ * Parse ISO date string to Date object
+ *
+ * @param dateString - ISO date string (YYYY-MM-DD or ISO full format)
+ * @returns Date object
+ */
+export function parseISO(dateString: string): Date {
+  return new Date(dateString);
 }

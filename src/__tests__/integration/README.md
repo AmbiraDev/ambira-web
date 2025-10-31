@@ -1,333 +1,747 @@
-# Integration Tests
+# Integration Tests Guide
 
-Integration tests verify how multiple components, services, or external systems work together to achieve complete user workflows.
+Comprehensive guide for writing integration tests that verify multi-component workflows and feature interactions.
 
-## What to Test
+## Overview
 
-### Multi-Component Workflows
-- Complete user journeys (sign up → login → dashboard)
-- Data flow between components
-- Component communication
-- State synchronization
+Integration tests verify that multiple components, services, and systems work together correctly. Unlike unit tests that test components in isolation, integration tests exercise real workflows and interactions.
 
-### External Service Integration
-- Firebase authentication flows
-- Firestore CRUD operations
-- Storage upload/download
-- Real-time listeners
-- API integrations
+### When to Write Integration Tests
 
-### Data Persistence
-- Session storage
-- Local storage
-- IndexedDB
-- Firebase persistence
+Write integration tests for:
 
-## Test Categories
+- Complete user workflows (e.g., login -> create session -> upload image)
+- Firebase integration with components and services
+- React Query with API/database calls
+- File upload and processing workflows
+- Authentication and authorization flows
+- Data synchronization between components
+- Real-time features (subscriptions, listeners)
 
-### auth/
-Authentication integration tests:
-- Google Sign-In (redirect and popup flows)
-- Email/password authentication
-- Session management
-- Token refresh
+## Test Structure
 
-### firebase/
-Firebase service integration tests:
-- Feed with images from Firestore
-- Image storage integration
-- Session data persistence
-- Real-time updates
+```
+integration/
+├── README.md                      # This file
+├── auth/                          # Authentication flows
+│   └── google-signin.test.ts
+├── firebase/                      # Firebase integration
+│   ├── feed-images.test.tsx
+│   ├── image-storage.test.ts
+│   └── session-images-firestore.test.ts
+└── image-upload/                  # File upload workflows
+    ├── upload-flow-simple.test.ts
+    └── upload-flow.test.tsx
+```
 
-### image-upload/
-Complete image upload workflows:
-- File selection and validation
-- Upload progress tracking
-- Storage integration
-- URL generation and persistence
+## Setting Up Integration Tests
 
-## Testing Patterns
+### Test Environment Setup
 
-### Testing Authentication Flows
 ```typescript
-import { firebaseAuthApi } from '@/lib/firebaseApi'
-import { signInWithPopup, signInWithRedirect } from 'firebase/auth'
+import { render, screen, waitFor } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { createMockUser, createMockSession } from '@/__tests__/__mocks__/mocks';
+import { firebaseMock } from '@/__tests__/__mocks__/firebaseMock';
 
-describe('Google Sign-In Integration', () => {
-  it('should complete popup flow on desktop', async () => {
+// Create a fresh QueryClient for each test
+const createTestQueryClient = () =>
+  new QueryClient({
+    defaultOptions: {
+      queries: { retry: false }, // Disable retries in tests
+      mutations: { retry: false },
+    },
+  });
+
+const TestWrapper = ({ children }) => (
+  <QueryClientProvider client={createTestQueryClient()}>
+    {children}
+  </QueryClientProvider>
+);
+
+describe('Integration: User Workflow', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('should complete user workflow', async () => {
+    render(<App />, { wrapper: TestWrapper });
+    // Test implementation
+  });
+});
+```
+
+## Authentication Flows
+
+### Google Sign-In Integration
+
+```typescript
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { GoogleSignIn } from '@/components/auth/GoogleSignIn';
+import * as authService from '@/services/authService';
+
+jest.mock('@/services/authService');
+
+describe('Integration: Google Sign-In Flow', () => {
+  it('should sign in user with Google', async () => {
     const mockUser = {
-      uid: 'test-uid',
-      email: 'test@example.com',
-      displayName: 'Test User'
-    }
+      uid: 'user-123',
+      email: 'user@gmail.com',
+      displayName: 'Test User',
+      photoURL: 'https://example.com/photo.jpg',
+    };
 
-    (signInWithPopup as jest.Mock).mockResolvedValue({
-      user: mockUser
-    })
+    const mockSignIn = jest.fn().mockResolvedValue(mockUser);
+    (authService.signInWithGoogle as jest.Mock) = mockSignIn;
 
-    const result = await firebaseAuthApi.signInWithGoogle()
+    render(<GoogleSignIn />);
 
-    expect(signInWithPopup).toHaveBeenCalled()
-    expect(result.user.email).toBe('test@example.com')
-  })
+    const signInButton = screen.getByRole('button', { name: /sign in with google/i });
+    await userEvent.click(signInButton);
 
-  it('should use redirect flow on mobile', async () => {
-    // Mock mobile user agent
-    Object.defineProperty(navigator, 'userAgent', {
-      value: 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_0)',
-      writable: true
-    })
+    await waitFor(() => {
+      expect(mockSignIn).toHaveBeenCalled();
+    });
 
-    (signInWithRedirect as jest.Mock).mockResolvedValue(undefined)
+    // Verify user is logged in
+    await waitFor(() => {
+      expect(screen.getByText(/welcome, test user/i)).toBeInTheDocument();
+    });
+  });
 
-    try {
-      await firebaseAuthApi.signInWithGoogle()
-    } catch (error) {
-      expect(error.message).toBe('REDIRECT_IN_PROGRESS')
-    }
+  it('should handle sign-in errors', async () => {
+    const mockError = new Error('Google sign-in failed');
+    (authService.signInWithGoogle as jest.Mock).mockRejectedValue(mockError);
 
-    expect(signInWithRedirect).toHaveBeenCalled()
-  })
-})
+    render(<GoogleSignIn />);
+
+    const signInButton = screen.getByRole('button', { name: /sign in with google/i });
+    await userEvent.click(signInButton);
+
+    await waitFor(() => {
+      expect(screen.getByText(/failed to sign in/i)).toBeInTheDocument();
+    });
+  });
+
+  it('should create user profile after sign-in', async () => {
+    const mockUser = {
+      uid: 'user-123',
+      email: 'newuser@gmail.com',
+      displayName: 'New User',
+    };
+
+    (authService.signInWithGoogle as jest.Mock).mockResolvedValue(mockUser);
+
+    const mockCreateProfile = jest.fn().mockResolvedValue({ success: true });
+    (authService.createUserProfile as jest.Mock) = mockCreateProfile;
+
+    render(<GoogleSignIn />);
+
+    await userEvent.click(screen.getByRole('button', { name: /sign in/i }));
+
+    await waitFor(() => {
+      expect(mockCreateProfile).toHaveBeenCalledWith(mockUser);
+    });
+  });
+});
 ```
 
-### Testing Firebase Operations
-```typescript
-import { getDocs, query, where } from 'firebase/firestore'
-import { firebaseSessionApi } from '@/lib/firebaseApi'
+## Firebase Integration
 
-describe('Firebase Feed Images Integration', () => {
-  it('should load sessions with images from Firestore', async () => {
+### Reading Data from Firestore
+
+```typescript
+import { render, screen, waitFor } from '@testing-library/react';
+import { FeedPage } from '@/components/FeedPage';
+import { firebaseMock } from '@/__tests__/__mocks__/firebaseMock';
+import { createMockSession } from '@/__tests__/__mocks__/mocks';
+
+jest.mock('firebase/firestore');
+
+describe('Integration: Feed - Reading Sessions from Firestore', () => {
+  it('should load and display sessions from Firestore', async () => {
     const mockSessions = [
-      {
-        id: 'session1',
-        userId: 'user1',
-        title: 'Work Session',
-        images: [
-          'https://firebasestorage.googleapis.com/image1.jpg',
-          'https://firebasestorage.googleapis.com/image2.jpg'
-        ],
-        visibility: 'everyone'
-      }
-    ]
+      createMockSession({ id: 'session-1', title: 'Morning Coding' }),
+      createMockSession({ id: 'session-2', title: 'Afternoon Design' }),
+    ];
 
-    (getDocs as jest.Mock).mockResolvedValue({
-      docs: mockSessions.map(s => ({
-        id: s.id,
-        data: () => s,
-        exists: () => true
-      }))
-    })
+    // Mock Firestore response
+    firebaseMock.db
+      .collection('sessions')
+      .where.mockReturnValue({
+        orderBy: jest.fn().mockReturnValue({
+          onSnapshot: jest.fn().mockImplementation((callback) => {
+            callback({
+              docs: mockSessions.map((session) => ({
+                id: session.id,
+                data: () => session,
+              })),
+            });
+            return jest.fn(); // Unsubscribe function
+          }),
+        }),
+      });
 
-    const result = await firebaseSessionApi.getSessions(20)
+    render(<FeedPage />);
 
-    expect(result.sessions).toHaveLength(1)
-    expect(result.sessions[0].images).toHaveLength(2)
-    expect(result.sessions[0].images[0]).toContain('firebasestorage.googleapis.com')
-  })
-})
+    await waitFor(() => {
+      expect(screen.getByText('Morning Coding')).toBeInTheDocument();
+      expect(screen.getByText('Afternoon Design')).toBeInTheDocument();
+    });
+  });
+
+  it('should handle empty feed', async () => {
+    firebaseMock.db
+      .collection('sessions')
+      .where.mockReturnValue({
+        orderBy: jest.fn().mockReturnValue({
+          onSnapshot: jest.fn().mockImplementation((callback) => {
+            callback({ docs: [] });
+            return jest.fn();
+          }),
+        }),
+      });
+
+    render(<FeedPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/no sessions found/i)).toBeInTheDocument();
+    });
+  });
+
+  it('should handle loading state', async () => {
+    firebaseMock.db
+      .collection('sessions')
+      .where.mockReturnValue({
+        orderBy: jest.fn().mockReturnValue({
+          onSnapshot: jest.fn(),
+        }),
+      });
+
+    render(<FeedPage />);
+
+    expect(screen.getByRole('progressbar')).toBeInTheDocument();
+
+    // Eventually should load
+    await waitFor(() => {
+      expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
+    });
+  });
+});
 ```
 
-### Testing Upload Workflows
+### Writing Data to Firestore
+
 ```typescript
-import { uploadImage } from '@/lib/imageUpload'
-import { ref, uploadBytesResumable } from 'firebase/storage'
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { SessionCreationForm } from '@/components/SessionCreationForm';
+import { firebaseMock } from '@/__tests__/__mocks__/firebaseMock';
 
-describe('Image Upload Flow Integration', () => {
-  it('should upload image and return URL', async () => {
-    const mockFile = new File(['image data'], 'test.jpg', {
-      type: 'image/jpeg'
-    })
+jest.mock('firebase/firestore');
 
-    const mockUploadTask = {
-      on: jest.fn((event, onProgress, onError, onComplete) => {
-        // Simulate successful upload
-        setTimeout(() => onComplete(), 100)
+describe('Integration: Session Creation - Writing to Firestore', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    firebaseMock.db.collection('sessions').add.mockResolvedValue({
+      id: 'new-session-id',
+    });
+  });
+
+  it('should create session in Firestore', async () => {
+    render(<SessionCreationForm />);
+
+    await userEvent.type(screen.getByLabelText(/title/i), 'My Session');
+    await userEvent.type(screen.getByLabelText(/description/i), 'Working on features');
+    await userEvent.type(screen.getByLabelText(/duration/i), '120');
+
+    await userEvent.click(screen.getByRole('button', { name: /create/i }));
+
+    await waitFor(() => {
+      expect(firebaseMock.db.collection).toHaveBeenCalledWith('sessions');
+      expect(firebaseMock.db.collection().add).toHaveBeenCalledWith(
+        expect.objectContaining({
+          title: 'My Session',
+          description: 'Working on features',
+          duration: 120,
+        })
+      );
+    });
+
+    expect(screen.getByText(/session created successfully/i)).toBeInTheDocument();
+  });
+
+  it('should handle Firestore write errors', async () => {
+    firebaseMock.db
+      .collection('sessions')
+      .add.mockRejectedValue(new Error('Write failed'));
+
+    render(<SessionCreationForm />);
+
+    await userEvent.type(screen.getByLabelText(/title/i), 'My Session');
+    await userEvent.click(screen.getByRole('button', { name: /create/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText(/failed to create session/i)).toBeInTheDocument();
+    });
+  });
+
+  it('should show loading state during creation', async () => {
+    let resolveAdd: Function;
+    firebaseMock.db.collection('sessions').add.mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          resolveAdd = resolve;
+        })
+    );
+
+    render(<SessionCreationForm />);
+
+    await userEvent.type(screen.getByLabelText(/title/i), 'My Session');
+    await userEvent.click(screen.getByRole('button', { name: /create/i }));
+
+    // While loading
+    expect(screen.getByRole('button')).toBeDisabled();
+    expect(screen.getByText(/creating/i)).toBeInTheDocument();
+
+    // After completion
+    resolveAdd!({ id: 'new-id' });
+
+    await waitFor(() => {
+      expect(screen.getByText(/session created/i)).toBeInTheDocument();
+    });
+  });
+});
+```
+
+## React Query Integration
+
+### Testing Data Fetching
+
+```typescript
+import { render, screen, waitFor } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { UserList } from '@/components/UserList';
+import * as userService from '@/services/userService';
+
+jest.mock('@/services/userService');
+
+describe('Integration: User List - React Query Data Fetching', () => {
+  let queryClient: QueryClient;
+
+  beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: { queries: { retry: false } },
+    });
+  });
+
+  it('should fetch and display users', async () => {
+    const mockUsers = [
+      { id: '1', name: 'User 1' },
+      { id: '2', name: 'User 2' },
+    ];
+
+    (userService.getUsers as jest.Mock).mockResolvedValue(mockUsers);
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <UserList />
+      </QueryClientProvider>
+    );
+
+    // Loading state
+    expect(screen.getByRole('progressbar')).toBeInTheDocument();
+
+    // Data loaded
+    await waitFor(() => {
+      expect(screen.getByText('User 1')).toBeInTheDocument();
+      expect(screen.getByText('User 2')).toBeInTheDocument();
+    });
+  });
+
+  it('should handle query errors', async () => {
+    (userService.getUsers as jest.Mock).mockRejectedValue(
+      new Error('Failed to fetch')
+    );
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <UserList />
+      </QueryClientProvider>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText(/error loading users/i)).toBeInTheDocument();
+    });
+  });
+
+  it('should refetch on demand', async () => {
+    const mockUsers = [{ id: '1', name: 'User 1' }];
+    (userService.getUsers as jest.Mock).mockResolvedValue(mockUsers);
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <UserList />
+      </QueryClientProvider>
+    );
+
+    await waitFor(() => {
+      expect(screen.getByText('User 1')).toBeInTheDocument();
+    });
+
+    const refetchButton = screen.getByRole('button', { name: /refresh/i });
+    await userEvent.click(refetchButton);
+
+    expect(userService.getUsers).toHaveBeenCalledTimes(2);
+  });
+});
+```
+
+### Testing Mutations
+
+```typescript
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { CreateProjectForm } from '@/components/CreateProjectForm';
+import * as projectService from '@/services/projectService';
+
+jest.mock('@/services/projectService');
+
+describe('Integration: Create Project - React Query Mutations', () => {
+  let queryClient: QueryClient;
+
+  beforeEach(() => {
+    queryClient = new QueryClient({
+      defaultOptions: { mutations: { retry: false } },
+    });
+  });
+
+  it('should create project and update cache', async () => {
+    const newProject = { id: 'proj-1', name: 'New Project', emoji: '🚀' };
+
+    (projectService.createProject as jest.Mock).mockResolvedValue(newProject);
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <CreateProjectForm />
+      </QueryClientProvider>
+    );
+
+    await userEvent.type(screen.getByLabelText(/project name/i), 'New Project');
+    await userEvent.click(screen.getByRole('button', { name: /create/i }));
+
+    await waitFor(() => {
+      expect(projectService.createProject).toHaveBeenCalledWith({
+        name: 'New Project',
+      });
+    });
+
+    expect(screen.getByText(/project created/i)).toBeInTheDocument();
+  });
+
+  it('should handle mutation errors', async () => {
+    (projectService.createProject as jest.Mock).mockRejectedValue(
+      new Error('Name already exists')
+    );
+
+    render(
+      <QueryClientProvider client={queryClient}>
+        <CreateProjectForm />
+      </QueryClientProvider>
+    );
+
+    await userEvent.type(screen.getByLabelText(/project name/i), 'Duplicate');
+    await userEvent.click(screen.getByRole('button', { name: /create/i }));
+
+    await waitFor(() => {
+      expect(screen.getByText(/name already exists/i)).toBeInTheDocument();
+    });
+  });
+});
+```
+
+## Image Upload and Storage
+
+### File Upload Workflow
+
+```typescript
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { ImageUploadForm } from '@/components/ImageUploadForm';
+import * as storageService from '@/services/storageService';
+
+jest.mock('@/services/storageService');
+
+describe('Integration: Image Upload Workflow', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  it('should upload image and display it', async () => {
+    const imageUrl = 'https://example.com/uploaded-image.jpg';
+
+    (storageService.uploadImage as jest.Mock).mockResolvedValue({
+      url: imageUrl,
+      id: 'image-1',
+    });
+
+    render(<ImageUploadForm onSuccess={jest.fn()} />);
+
+    const file = new File(['image data'], 'photo.jpg', { type: 'image/jpeg' });
+    const input = screen.getByLabelText(/upload image/i) as HTMLInputElement;
+
+    await userEvent.upload(input, file);
+
+    // Show loading state
+    expect(screen.getByText(/uploading/i)).toBeInTheDocument();
+
+    // Image uploaded
+    await waitFor(() => {
+      const image = screen.getByAltText(/uploaded/i) as HTMLImageElement;
+      expect(image.src).toBe(imageUrl);
+    });
+  });
+
+  it('should validate file type', async () => {
+    render(<ImageUploadForm />);
+
+    const file = new File(['text'], 'document.txt', { type: 'text/plain' });
+    const input = screen.getByLabelText(/upload image/i) as HTMLInputElement;
+
+    await userEvent.upload(input, file);
+
+    expect(screen.getByText(/only image files allowed/i)).toBeInTheDocument();
+    expect(storageService.uploadImage).not.toHaveBeenCalled();
+  });
+
+  it('should validate file size', async () => {
+    render(<ImageUploadForm maxSize={1000000} />); // 1MB max
+
+    // Create a 2MB file
+    const largeFile = new File(
+      [new ArrayBuffer(2000000)],
+      'large.jpg',
+      { type: 'image/jpeg' }
+    );
+    const input = screen.getByLabelText(/upload image/i) as HTMLInputElement;
+
+    await userEvent.upload(input, largeFile);
+
+    expect(screen.getByText(/file too large/i)).toBeInTheDocument();
+    expect(storageService.uploadImage).not.toHaveBeenCalled();
+  });
+
+  it('should handle upload errors', async () => {
+    (storageService.uploadImage as jest.Mock).mockRejectedValue(
+      new Error('Upload failed')
+    );
+
+    render(<ImageUploadForm />);
+
+    const file = new File(['image'], 'photo.jpg', { type: 'image/jpeg' });
+    const input = screen.getByLabelText(/upload image/i) as HTMLInputElement;
+
+    await userEvent.upload(input, file);
+
+    await waitFor(() => {
+      expect(screen.getByText(/failed to upload image/i)).toBeInTheDocument();
+    });
+  });
+});
+```
+
+### Image Processing
+
+```typescript
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { SessionImageUpload } from '@/components/SessionImageUpload';
+import * as imageService from '@/services/imageService';
+
+jest.mock('@/services/imageService');
+
+describe('Integration: Session Image Upload and Processing', () => {
+  it('should upload, compress, and store image', async () => {
+    const originalFile = new File(['original'], 'original.jpg', {
+      type: 'image/jpeg',
+    });
+
+    const processedUrl = 'https://example.com/compressed.jpg';
+
+    (imageService.processAndUpload as jest.Mock).mockResolvedValue({
+      url: processedUrl,
+      thumbnailUrl: 'https://example.com/thumb.jpg',
+    });
+
+    render(<SessionImageUpload sessionId="session-1" />);
+
+    const input = screen.getByLabelText(/add image/i) as HTMLInputElement;
+    await userEvent.upload(input, originalFile);
+
+    await waitFor(() => {
+      const image = screen.getByAltText(/session image/i) as HTMLImageElement;
+      expect(image.src).toBe(processedUrl);
+    });
+
+    expect(imageService.processAndUpload).toHaveBeenCalledWith(
+      originalFile,
+      expect.objectContaining({
+        sessionId: 'session-1',
       })
-    }
-
-    (uploadBytesResumable as jest.Mock).mockReturnValue(mockUploadTask)
-
-    const url = await uploadImage(mockFile, 'user-123')
-
-    expect(url).toContain('firebasestorage.googleapis.com')
-    expect(ref).toHaveBeenCalledWith(
-      expect.anything(),
-      expect.stringContaining('user-123')
-    )
-  })
-})
+    );
+  });
+});
 ```
 
-## Mocking Strategies
+## Complete User Workflows
 
-### Partial Firebase Mocks
-For integration tests, you may want to mock only certain Firebase operations while testing others:
+### Session Creation Workflow
 
 ```typescript
-// Mock only authentication, test Firestore
-jest.mock('firebase/auth', () => ({
-  signInWithPopup: jest.fn(),
-  signInWithRedirect: jest.fn(),
-  getAuth: jest.fn(() => ({ currentUser: mockUser }))
-}))
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { SessionCreationWizard } from '@/components/SessionCreationWizard';
+import * as sessionService from '@/services/sessionService';
+import * as storageService from '@/services/storageService';
 
-// Real Firestore operations (mocked with test data)
-jest.mock('firebase/firestore', () => ({
-  getDocs: jest.fn(),
-  getDoc: jest.fn(),
-  setDoc: jest.fn(),
-  // ... actual implementation with test data
-}))
+jest.mock('@/services/sessionService');
+jest.mock('@/services/storageService');
+
+describe('Integration: Complete Session Creation Workflow', () => {
+  it('should create session with images', async () => {
+    (sessionService.createSession as jest.Mock).mockResolvedValue({
+      id: 'session-1',
+    });
+
+    (storageService.uploadImage as jest.Mock).mockResolvedValue({
+      url: 'https://example.com/image.jpg',
+    });
+
+    render(<SessionCreationWizard />);
+
+    // Step 1: Enter session details
+    await userEvent.type(screen.getByLabelText(/project/i), 'My Project');
+    await userEvent.type(screen.getByLabelText(/duration/i), '60');
+    await userEvent.click(screen.getByRole('button', { name: /next/i }));
+
+    // Step 2: Add images
+    const file = new File(['image'], 'photo.jpg', { type: 'image/jpeg' });
+    const input = screen.getByLabelText(/upload image/i) as HTMLInputElement;
+    await userEvent.upload(input, file);
+
+    await waitFor(() => {
+      expect(screen.getByAltText(/uploaded/i)).toBeInTheDocument();
+    });
+
+    // Step 3: Review and submit
+    await userEvent.click(screen.getByRole('button', { name: /next/i }));
+    await userEvent.click(screen.getByRole('button', { name: /submit/i }));
+
+    // Verify session was created
+    await waitFor(() => {
+      expect(sessionService.createSession).toHaveBeenCalled();
+      expect(storageService.uploadImage).toHaveBeenCalled();
+      expect(screen.getByText(/session created successfully/i)).toBeInTheDocument();
+    });
+  });
+});
 ```
-
-### Simulate Network Delays
-```typescript
-it('should show loading state during upload', async () => {
-  const mockUploadTask = {
-    on: jest.fn((event, onProgress, onError, onComplete) => {
-      // Simulate slow upload with progress
-      setTimeout(() => onProgress({ bytesTransferred: 50, totalBytes: 100 }), 100)
-      setTimeout(() => onComplete(), 500)
-    })
-  }
-
-  render(<ImageUpload />)
-  // Test loading states and progress updates
-})
-```
-
-## Common Scenarios
-
-### 1. Authentication Flow
-- User initiates sign-in
-- Firebase authenticates
-- User profile is created/loaded
-- User is redirected to dashboard
-
-### 2. Image Upload Flow
-- User selects image
-- Image is validated
-- Upload to Firebase Storage begins
-- Progress is tracked
-- URL is generated
-- URL is saved to Firestore
-- UI updates with new image
-
-### 3. Feed Loading Flow
-- Component mounts
-- Fetch sessions from Firestore
-- Populate user/project data
-- Load images from Storage URLs
-- Render feed items
-- Handle pagination
 
 ## Best Practices
 
-### 1. Test Complete Workflows
+### 1. Test Real User Workflows
+
+Focus on what users actually do, not implementation details:
+
 ```typescript
-it('should complete full session creation with image', async () => {
-  // 1. Start timer
-  // 2. Upload image
-  // 3. Complete session
-  // 4. Verify Firestore document
-  // 5. Verify Storage file
-  // 6. Verify UI update
-})
+// Good - tests actual workflow
+it('should complete login flow', async () => {
+  render(<LoginFlow />);
+  await userEvent.type(emailInput, 'user@example.com');
+  await userEvent.type(passwordInput, 'password');
+  await userEvent.click(loginButton);
+  // Verify logged in state
+});
+
+// Avoid - tests implementation
+it('should call setUser in state', async () => {
+  // testing React internals
+});
 ```
 
-### 2. Mock External Services Realistically
+### 2. Mock External Dependencies
+
 ```typescript
-// Simulate realistic error conditions
-(uploadBytesResumable as jest.Mock).mockImplementation(() => ({
-  on: jest.fn((event, onProgress, onError) => {
-    setTimeout(() => onError(new Error('Network error')), 100)
-  })
-}))
+// Mock Firebase and API calls
+jest.mock('firebase/firestore');
+jest.mock('@/services/userService');
+
+// But keep component logic real
+// This tests how components work together
 ```
 
-### 3. Clean Up After Tests
+### 3. Test Error Scenarios
+
 ```typescript
-afterEach(async () => {
-  // Clear mock calls
-  jest.clearAllMocks()
-
-  // Clean up any created resources
-  // (In production, use Firebase emulator for real cleanup)
-})
+// Always test failures
+it('should show error message when upload fails', async () => {
+  (uploadService.upload as jest.Mock).mockRejectedValue(
+    new Error('Network error')
+  );
+  // Verify error handling
+});
 ```
 
-### 4. Test Error Paths
+### 4. Use Realistic Test Data
+
 ```typescript
-it('should handle upload failure gracefully', async () => {
-  (uploadBytesResumable as jest.Mock).mockImplementation(() => {
-    throw new Error('Upload failed')
-  })
+// Good - realistic data
+const mockUser = createMockUser({
+  name: 'John Doe',
+  email: 'john@example.com',
+});
 
-  await expect(uploadImage(file, userId)).rejects.toThrow('Upload failed')
-})
+// Avoid - incomplete test data
+const mockUser = { id: '1' };
 ```
 
-## Running Integration Tests
+## Debugging Integration Tests
 
-```bash
-# Run all integration tests
-npm test -- integration/
+### Enable Debug Output
 
-# Run specific integration category
-npm test -- integration/auth/
-npm test -- integration/firebase/
-npm test -- integration/image-upload/
-
-# Run with verbose output
-npm test -- --verbose integration/
-
-# Watch mode
-npm test -- --watch integration/
-```
-
-## Debugging Tips
-
-### 1. Add Console Logging
 ```typescript
-it('should upload image', async () => {
-  console.log('Starting upload test...')
-  const result = await uploadImage(file)
-  console.log('Upload result:', result)
-  expect(result).toBeDefined()
-})
+it('should work correctly', () => {
+  const { debug } = render(<Component />);
+
+  // Print entire DOM
+  debug();
+
+  // Print specific element
+  debug(screen.getByRole('button'));
+});
 ```
 
-### 2. Increase Timeout for Slow Operations
+### Check Mock Calls
+
 ```typescript
-it('should complete long-running upload', async () => {
-  // Increase timeout to 10 seconds
-  jest.setTimeout(10000)
+it('should call service', async () => {
+  (myService.fetch as jest.Mock).mockResolvedValue({ data: [] });
 
-  const result = await uploadLargeFile(file)
-  expect(result).toBeDefined()
-}, 10000)
+  render(<Component />);
+
+  // Check how many times called
+  console.log(myService.fetch.mock.calls.length);
+
+  // Check what arguments were passed
+  console.log(myService.fetch.mock.calls[0]);
+});
 ```
 
-### 3. Test Individual Steps
-```typescript
-describe('Image Upload Flow', () => {
-  it('step 1: validates file', () => { ... })
-  it('step 2: uploads to storage', () => { ... })
-  it('step 3: saves URL to Firestore', () => { ... })
-  it('step 4: updates UI', () => { ... })
-})
-```
+## Next Steps
 
-## Migration from Old Structure
-
-Previously, integration tests were located in:
-- `src/__tests__/integration/` - General integration tests
-- `src/__tests__/auth/` - Auth-specific tests
-
-They have been reorganized into:
-- `integration/auth/` - Authentication flows
-- `integration/firebase/` - Firebase service tests
-- `integration/image-upload/` - Image upload workflows
-
-All imports and paths remain the same relative to `src/`.
+- [Main Test Guide](../README.md) - Back to overview
+- [Unit Tests Guide](../unit/README.md) - Individual component testing
+- [Contract Tests Guide](../contract/README.md) - API contract validation
+- [Mocks Guide](../__mocks__/README.md) - Using shared mocks

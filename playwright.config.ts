@@ -5,7 +5,7 @@ import { defineConfig, devices } from '@playwright/test';
  * @see https://playwright.dev/docs/test-configuration
  */
 export default defineConfig({
-  testDir: './e2e',
+  testDir: './tests/e2e',
   outputDir: 'docs/playwright-artifacts/test-results',
 
   /* Run tests in files in parallel */
@@ -25,7 +25,7 @@ export default defineConfig({
     ? [
         ['html', { outputFolder: 'docs/playwright-artifacts/report' }],
         ['junit', { outputFile: 'docs/playwright-artifacts/report/junit.xml' }],
-        ['list']
+        ['list'],
       ]
     : [
         ['html', { outputFolder: 'docs/playwright-artifacts/report' }],
@@ -53,7 +53,7 @@ export default defineConfig({
       name: 'chromium',
       use: {
         ...devices['Desktop Chrome'],
-        viewport: { width: 1440, height: 900 }
+        viewport: { width: 1440, height: 900 },
       },
     },
 

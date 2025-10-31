@@ -455,3 +455,38 @@ if (typeof window !== 'undefined') {
     LocalCache.clearExpired();
   }, CACHE_TIMES.MEDIUM); // Every 5 minutes
 }
+
+// ==================== SIMPLE CACHE API ====================
+
+/**
+ * Simple in-memory cache operations for testing and convenience
+ */
+const simpleCache = new Map<string, unknown>();
+
+/**
+ * Get a value from the simple in-memory cache
+ */
+export function getFromCache<T = unknown>(key: string): T | undefined {
+  return simpleCache.get(key) as T | undefined;
+}
+
+/**
+ * Set a value in the simple in-memory cache
+ */
+export function setInCache<T = unknown>(key: string, value: T): void {
+  simpleCache.set(key, value);
+}
+
+/**
+ * Check if a key exists in the simple in-memory cache
+ */
+export function cacheHasKey(key: string): boolean {
+  return simpleCache.has(key);
+}
+
+/**
+ * Clear all values from the simple in-memory cache
+ */
+export function clearCache(): void {
+  simpleCache.clear();
+}

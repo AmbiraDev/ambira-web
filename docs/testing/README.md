@@ -4,13 +4,25 @@ Comprehensive testing documentation for the Ambira application.
 
 ## 📚 Documentation Index
 
-### Quick Start
-- **[Quick Start Guide](./QUICKSTART.md)** - Get started with E2E testing in 5 minutes
+### Essential Starting Points
 
-### Detailed Guides
+- **[Testing Handbook](./TESTING_HANDBOOK.md)** - Your complete testing reference (recommended starting point)
+- **[Quick Start Guide](./QUICKSTART.md)** - Get started with testing in 5 minutes
+
+### Comprehensive Type-Specific Guides
+
+- **[Testing Strategy](./TESTING_STRATEGY.md)** - High-level philosophy and quality standards
+- **[Main Test Suite](../../src/__tests__/README.md)** - Overview of unit, integration, and contract tests
+- **[Unit Tests Guide](../../src/__tests__/unit/README.md)** - Component and function testing patterns
+- **[Integration Tests Guide](../../src/__tests__/integration/README.md)** - Workflow and feature testing
+- **[Contract Tests Guide](../../src/__tests__/contract/README.md)** - API and data structure validation
+- **[Mocks Guide](../../src/__tests__/__mocks__/README.md)** - Shared mocks and test factories
+
+### CI/CD and Advanced Topics
+
 - **[Playwright CI/CD Setup](./playwright-ci-setup.md)** - Complete CI/CD integration guide
 - **[E2E Test Suite](../../e2e/README.md)** - Comprehensive E2E testing documentation
-- **[Unit Test Suite](../../src/__tests__/README.md)** - Unit and integration testing guide
+- **[ESLint Standards](./eslint-standards.md)** - Linting and code quality rules
 
 ## 🎯 Testing Strategy
 
@@ -99,7 +111,7 @@ npm run test:smoke
 
 ### Current Coverage
 
-- **Unit Tests**: 80% minimum (branches, functions, lines, statements)
+- **Unit Tests**: 95% minimum (branches, functions, lines, statements)
 - **Critical Paths**: 100% (via smoke tests)
 - **Accessibility**: 100% WCAG 2.1 Level AA compliance
 
@@ -119,6 +131,7 @@ npm run test:e2e:report
 ## ♿ Accessibility Testing
 
 All critical pages are tested for:
+
 - WCAG 2.0 Level A & AA
 - WCAG 2.1 Level A & AA
 - Color contrast
@@ -137,6 +150,7 @@ All critical pages are tested for:
 ### Automated Testing
 
 Tests run automatically on:
+
 - Every pull request
 - Every push to main branch
 - Manual workflow dispatch
@@ -153,6 +167,7 @@ Tests run automatically on:
 ### Test Reports
 
 Reports are available in GitHub Actions:
+
 - HTML test reports
 - Screenshots of failures
 - Video recordings
@@ -160,19 +175,34 @@ Reports are available in GitHub Actions:
 
 ## 📖 Documentation Links
 
-### Getting Started
-- [Quick Start Guide](./QUICKSTART.md) - 5-minute setup
-- [E2E README](../../e2e/README.md) - Comprehensive E2E guide
-- [Unit Test README](../../src/__tests__/README.md) - Unit testing guide
+### Strategic Guides
 
-### CI/CD
-- [Playwright CI Setup](./playwright-ci-setup.md) - CI/CD integration
+- **[Testing Strategy](./TESTING_STRATEGY.md)** - High-level testing philosophy and standards
+- **[Quick Start Guide](./QUICKSTART.md)** - 5-minute setup
+
+### Test Type Guides
+
+- **[Main Test Suite Guide](../../src/__tests__/README.md)** - Overview of all test types
+- **[Unit Tests Guide](../../src/__tests__/unit/README.md)** - Component and function testing
+- **[Integration Tests Guide](../../src/__tests__/integration/README.md)** - Workflow and feature testing
+- **[Contract Tests Guide](../../src/__tests__/contract/README.md)** - API and data structure validation
+
+### Testing Utilities
+
+- **[Mocks Guide](../../src/__tests__/__mocks__/README.md)** - Shared mocks and test factories
+- **[Fixtures Guide](../../src/__tests__/fixtures/README.md)** - Test data management
+
+### End-to-End Testing
+
+- **[E2E README](../../e2e/README.md)** - Comprehensive Playwright guide
+- **[Playwright CI Setup](./playwright-ci-setup.md)** - CI/CD integration for E2E tests
+
+### Configuration & Workflow
+
 - [Main CI Workflow](../../.github/workflows/ci.yml) - GitHub Actions config
 - [Playwright Workflow](../../.github/workflows/playwright.yml) - Standalone E2E workflow
-
-### Configuration
 - [Playwright Config](../../playwright.config.ts) - Playwright settings
-- [Jest Config](../../jest.config.js) - Jest settings
+- [Jest Config](../../jest.config.ts) - Jest settings
 - [Package Scripts](../../package.json) - Available npm scripts
 
 ## 🎓 Best Practices
@@ -180,6 +210,7 @@ Reports are available in GitHub Actions:
 ### Writing Tests
 
 1. **Test behavior, not implementation**
+
    ```typescript
    // Good ✅
    await page.getByRole('button', { name: 'Submit' }).click();
@@ -189,18 +220,21 @@ Reports are available in GitHub Actions:
    ```
 
 2. **Include accessibility checks**
+
    ```typescript
    const results = await makeAxeBuilder().analyze();
    expect(results.violations).toHaveLength(0);
    ```
 
 3. **Test responsive design**
+
    ```typescript
    await page.setViewportSize({ width: 375, height: 667 });
    // ... test mobile view
    ```
 
 4. **Use descriptive test names**
+
    ```typescript
    test('should display error when email is invalid');
    ```
@@ -223,21 +257,25 @@ Reports are available in GitHub Actions:
 ### Common Issues
 
 **Tests pass locally but fail in CI**
+
 - Add explicit waits: `await page.waitForLoadState('networkidle')`
 - Check environment variables are set
 - Review CI logs for specific errors
 
 **Flaky tests**
+
 - Use Playwright's auto-waiting
 - Avoid fixed timeouts
 - Mock external dependencies
 
 **Accessibility violations**
+
 - Check HTML report for details
 - Review element markup
 - Fix ARIA attributes and labels
 
 **Slow tests**
+
 - Remove unnecessary waits
 - Run only critical tests in smoke suite
 - Optimize page load performance
@@ -262,6 +300,7 @@ Reports are available in GitHub Actions:
 ## 🤝 Contributing
 
 When adding tests:
+
 1. Choose appropriate test type (unit/integration/E2E)
 2. Follow existing patterns and conventions
 3. Include accessibility checks for UI tests
