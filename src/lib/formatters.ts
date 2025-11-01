@@ -83,6 +83,56 @@ export function formatTime12Hour(date: Date | string): string {
 }
 
 /**
+ * Format elapsed time in seconds to HH:MM:SS format
+ * Used in timer displays for active sessions
+ *
+ * @param seconds - Elapsed time in seconds
+ * @returns Formatted time string in HH:MM:SS format
+ */
+export function formatElapsedTime(seconds: number): string {
+  const absSeconds = Math.abs(seconds);
+  const hours = Math.floor(absSeconds / 3600);
+  const minutes = Math.floor((absSeconds % 3600) / 60);
+  const secs = Math.floor(absSeconds % 60);
+
+  const hoursStr = hours.toString().padStart(2, '0');
+  const minutesStr = minutes.toString().padStart(2, '0');
+  const secsStr = secs.toString().padStart(2, '0');
+
+  return `${hoursStr}:${minutesStr}:${secsStr}`;
+}
+
+/**
+ * Format duration in seconds to hours with decimal
+ * Examples: "1h", "2.5h", "0.75h"
+ *
+ * @param seconds - Duration in seconds
+ * @returns Formatted duration string in hours
+ */
+export function formatDurationHours(seconds: number): string {
+  const hours = seconds / 3600;
+  if (hours >= 1) {
+    return `${hours.toFixed(1)}h`;
+  }
+  return `${(seconds / 60).toFixed(0)}m`;
+}
+
+/**
+ * Format duration in seconds to minutes
+ * Examples: "1m", "45m", "120m"
+ *
+ * @param seconds - Duration in seconds
+ * @returns Formatted duration string in minutes
+ */
+export function formatDurationMinutes(seconds: number): string {
+  const minutes = Math.floor(seconds / 60);
+  if (minutes === 0) {
+    return `${seconds}s`;
+  }
+  return `${minutes}m`;
+}
+
+/**
  * Format duration in seconds to a human-readable string
  * Examples: "2h 30m", "45m", "1h 5m"
  *
@@ -287,4 +337,15 @@ export function endOfDay(date: Date | string): Date {
     59,
     999
   );
+}
+
+/**
+ * Format a date as a date relative to now (alias for formatTimeAgo)
+ * Examples: "just now", "5m", "2h", "3 days ago", "2w", "1y"
+ *
+ * @param date - The date to format
+ * @returns Relative time string
+ */
+export function formatDateRelative(date: Date | string): string {
+  return formatTimeAgo(date);
 }
