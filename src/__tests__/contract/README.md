@@ -1,378 +1,585 @@
-# Contract Tests
+# Contract Tests Guide
 
-Contract tests validate API interfaces, data structures, and system contracts to ensure consistency and backward compatibility.
+Guide for writing contract tests that validate API responses and data structures.
 
-## What to Test
+## Overview
 
-### API Contracts
-- Method signatures
-- Parameter types and validation
-- Return value shapes
-- Error handling patterns
-- Required vs optional fields
+Contract tests verify that APIs and services return data with the correct structure and types. They catch breaking changes before they cause runtime errors in consuming code.
 
-### Data Models
-- Type definitions
-- Field constraints
-- Business rules
-- Validation logic
+### Benefits
 
-### System Boundaries
-- Inter-service communication
-- Event structures
-- Message formats
-- Protocol compliance
-
-## Contract Test Structure
-
-Contract tests follow the pattern: `service-name.contract.test.ts`
-
-### Current Contracts
-
-#### api/notifications.contract.test.ts
-Tests for the notification system API:
-- Notification type definitions
-- Data structure validation
-- API method availability
-- Challenge notification helpers
-- Milestone calculation logic
-- Rank change logic
-
-#### api/challenges.contract.test.ts
-Tests for the challenges API (if present)
-
-## Testing Patterns
-
-### Validating API Method Signatures
-```typescript
-import { firebaseNotificationApi } from '@/lib/firebaseApi'
-
-describe('API Contract - Notifications', () => {
-  test('should have all required API methods', () => {
-    expect(typeof firebaseNotificationApi.createNotification).toBe('function')
-    expect(typeof firebaseNotificationApi.getUserNotifications).toBe('function')
-    expect(typeof firebaseNotificationApi.markAsRead).toBe('function')
-    expect(typeof firebaseNotificationApi.markAllAsRead).toBe('function')
-    expect(typeof firebaseNotificationApi.deleteNotification).toBe('function')
-    expect(typeof firebaseNotificationApi.getUnreadCount).toBe('function')
-  })
-})
-```
-
-### Validating Data Structures
-```typescript
-import { Notification } from '@/types'
-
-describe('Data Contract - Notification', () => {
-  test('should have valid notification structure', () => {
-    const notification: Notification = {
-      id: 'test-id',
-      userId: 'test-user',
-      type: 'challenge',
-      title: 'Test Notification',
-      message: 'This is a test',
-      challengeId: 'challenge-123',
-      isRead: false,
-      createdAt: new Date()
-    }
-
-    expect(notification.type).toBe('challenge')
-    expect(notification.challengeId).toBe('challenge-123')
-    expect(notification.isRead).toBe(false)
-  })
-
-  test('should support all notification types', () => {
-    const validTypes = [
-      'follow',
-      'session_support',
-      'comment',
-      'mention',
-      'group_invite',
-      'group_join',
-      'challenge_completed',
-      'challenge_joined',
-      'challenge_ending',
-      'challenge_created',
-      'challenge_rank_changed',
-      'challenge_milestone'
-    ]
-
-    validTypes.forEach(type => {
-      const notification: Partial<Notification> = {
-        type: type as any
-      }
-      expect(notification.type).toBe(type)
-    })
-  })
-})
-```
-
-### Validating Business Logic
-```typescript
-describe('Business Logic Contract - Milestones', () => {
-  test('should calculate milestones correctly', () => {
-    const testCases = [
-      { progress: 25, goal: 100, expectedMilestone: 25 },
-      { progress: 50, goal: 100, expectedMilestone: 50 },
-      { progress: 75, goal: 100, expectedMilestone: 75 },
-      { progress: 90, goal: 100, expectedMilestone: 90 }
-    ]
-
-    testCases.forEach(({ progress, goal, expectedMilestone }) => {
-      const percentage = (progress / goal) * 100
-      const milestones = [25, 50, 75, 90]
-
-      let reachedMilestone = null
-      for (const milestone of milestones) {
-        if (percentage >= milestone && percentage < milestone + 5) {
-          reachedMilestone = milestone
-          break
-        }
-      }
-
-      expect(reachedMilestone).toBe(expectedMilestone)
-    })
-  })
-})
-```
-
-### Validating Helper Functions
-```typescript
-import { challengeNotifications } from '@/lib/firebaseApi'
-
-describe('Helper Contract - Challenge Notifications', () => {
-  test('should have all challenge notification methods', () => {
-    expect(typeof challengeNotifications.notifyCompletion).toBe('function')
-    expect(typeof challengeNotifications.notifyParticipantJoined).toBe('function')
-    expect(typeof challengeNotifications.notifyEndingSoon).toBe('function')
-    expect(typeof challengeNotifications.notifyNewChallenge).toBe('function')
-    expect(typeof challengeNotifications.notifyRankChange).toBe('function')
-    expect(typeof challengeNotifications.notifyMilestone).toBe('function')
-  })
-})
-```
+- **Detect Breaking Changes Early** - Catch API changes before deploying
+- **Document Expected Shapes** - Tests serve as data structure documentation
+- **Type Safety** - Ensure returned data matches TypeScript interfaces
+- **Integration Confidence** - Verify that backend and frontend contracts align
 
 ## When to Write Contract Tests
 
-### 1. New API Methods
-When adding new methods to an API:
-```typescript
-describe('New API Method Contract', () => {
-  test('should have getUserStats method', () => {
-    expect(typeof userApi.getUserStats).toBe('function')
-  })
+Write contract tests for:
 
-  test('should return stats with correct shape', async () => {
-    const stats = await userApi.getUserStats('user-123')
+- HTTP API endpoints (REST, GraphQL)
+- Firebase Firestore documents
+- Third-party API integrations
+- Data transformation pipelines
+- Service response validation
 
-    expect(stats).toHaveProperty('totalSessions')
-    expect(stats).toHaveProperty('totalHours')
-    expect(stats).toHaveProperty('longestStreak')
-    expect(typeof stats.totalSessions).toBe('number')
-  })
-})
+## Test Structure
+
+```
+contract/
+├── README.md                      # This file
+└── api/                           # API contract tests
+    ├── challenges.contract.test.ts
+    └── notifications.contract.test.ts
 ```
 
-### 2. Type Changes
-When modifying data types:
+## API Contract Tests
+
+### Basic API Contract Test
+
 ```typescript
-describe('Updated Type Contract', () => {
-  test('Session should include new visibility field', () => {
-    const session: Session = {
-      id: 'session-1',
-      userId: 'user-1',
-      // ... other fields
-      visibility: 'everyone' // New field
+import { getChallenges } from '@/services/challengeService';
+
+describe('Challenges API Contract', () => {
+  it('should return challenges with correct structure', async () => {
+    const response = await getChallenges();
+
+    expect(Array.isArray(response)).toBe(true);
+
+    response.forEach(challenge => {
+      // Verify required fields exist
+      expect(challenge).toHaveProperty('id');
+      expect(challenge).toHaveProperty('title');
+      expect(challenge).toHaveProperty('type');
+      expect(challenge).toHaveProperty('startDate');
+      expect(challenge).toHaveProperty('endDate');
+      expect(challenge).toHaveProperty('participants');
+
+      // Verify types
+      expect(typeof challenge.id).toBe('string');
+      expect(typeof challenge.title).toBe('string');
+      expect(typeof challenge.startDate).toBe('string');
+      expect(Array.isArray(challenge.participants)).toBe(true);
+    });
+  });
+});
+```
+
+### Contract with Enum Validation
+
+```typescript
+import { ChallengeType } from '@/types/challenge';
+import { getChallenges } from '@/services/challengeService';
+
+describe('Challenges API Contract - Types', () => {
+  it('should return valid challenge types', async () => {
+    const validTypes: ChallengeType[] = [
+      'most-activity',
+      'fastest-effort',
+      'longest-session',
+      'group-goal',
+    ];
+
+    const response = await getChallenges();
+
+    response.forEach(challenge => {
+      expect(validTypes).toContain(challenge.type);
+    });
+  });
+
+  it('should never return invalid types', async () => {
+    const response = await getChallenges();
+
+    response.forEach(challenge => {
+      expect(challenge.type).not.toBe('invalid-type');
+      expect(challenge.type).not.toBe('');
+      expect(challenge.type).not.toBeNull();
+    });
+  });
+});
+```
+
+### Contract with Nested Objects
+
+```typescript
+describe('Challenge Detail API Contract', () => {
+  it('should return challenge with nested participants', async () => {
+    const challengeId = 'challenge-1';
+    const challenge = await getChallenge(challengeId);
+
+    // Verify nested structure
+    expect(challenge.participants).toBeDefined();
+    expect(Array.isArray(challenge.participants)).toBe(true);
+
+    challenge.participants.forEach(participant => {
+      expect(participant).toHaveProperty('id');
+      expect(participant).toHaveProperty('userId');
+      expect(participant).toHaveProperty('progress');
+      expect(participant).toHaveProperty('completed');
+
+      expect(typeof participant.id).toBe('string');
+      expect(typeof participant.userId).toBe('string');
+      expect(typeof participant.progress).toBe('number');
+      expect(typeof participant.completed).toBe('boolean');
+
+      // Validate number ranges
+      expect(participant.progress).toBeGreaterThanOrEqual(0);
+      expect(participant.progress).toBeLessThanOrEqual(100);
+    });
+  });
+});
+```
+
+### Contract for Paginated Responses
+
+```typescript
+describe('Sessions List API Contract - Pagination', () => {
+  it('should return paginated sessions with metadata', async () => {
+    const response = await getSessions({ page: 1, limit: 20 });
+
+    // Verify pagination structure
+    expect(response).toHaveProperty('items');
+    expect(response).toHaveProperty('page');
+    expect(response).toHaveProperty('limit');
+    expect(response).toHaveProperty('total');
+    expect(response).toHaveProperty('hasMore');
+
+    // Verify types
+    expect(Array.isArray(response.items)).toBe(true);
+    expect(typeof response.page).toBe('number');
+    expect(typeof response.limit).toBe('number');
+    expect(typeof response.total).toBe('number');
+    expect(typeof response.hasMore).toBe('boolean');
+
+    // Verify data consistency
+    expect(response.items.length).toBeLessThanOrEqual(response.limit);
+
+    if (response.page * response.limit < response.total) {
+      expect(response.hasMore).toBe(true);
+    } else {
+      expect(response.hasMore).toBe(false);
     }
-
-    expect(['everyone', 'followers', 'private'])
-      .toContain(session.visibility)
-  })
-})
+  });
+});
 ```
 
-### 3. Business Rule Changes
-When business logic changes:
-```typescript
-describe('Updated Business Rule - Rank Changes', () => {
-  test('should notify on 3+ position improvement', () => {
-    const testCases = [
-      { previous: 10, current: 7, shouldNotify: true },  // 3 positions
-      { previous: 10, current: 8, shouldNotify: false }, // 2 positions
-      { previous: 8, current: 1, shouldNotify: true }    // 7 positions
-    ]
+### Contract for Timestamps
 
-    testCases.forEach(({ previous, current, shouldNotify }) => {
-      const improvement = previous - current
-      expect(improvement >= 3).toBe(shouldNotify)
+```typescript
+describe('Session API Contract - Date Handling', () => {
+  it('should return valid ISO 8601 timestamps', async () => {
+    const sessions = await getSessions();
+
+    sessions.forEach(session => {
+      // Validate ISO 8601 format
+      expect(session.createdAt).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/);
+
+      // Should be parseable as Date
+      const date = new Date(session.createdAt);
+      expect(date.getTime()).not.toBeNaN();
+
+      // Should be in the past (or very recent)
+      expect(new Date(session.createdAt).getTime()).toBeLessThanOrEqual(
+        Date.now()
+      );
+    });
+  });
+
+  it('should have consistent timestamp ordering', async () => {
+    const sessions = await getSessions();
+
+    for (let i = 1; i < sessions.length; i++) {
+      const prevTime = new Date(sessions[i - 1].createdAt).getTime();
+      const currTime = new Date(sessions[i].createdAt).getTime();
+
+      // Should be in descending order (newest first)
+      expect(prevTime).toBeGreaterThanOrEqual(currTime);
+    }
+  });
+});
+```
+
+## Firestore Contract Tests
+
+### Firestore Document Contract
+
+```typescript
+import { doc, getDoc } from 'firebase/firestore';
+import { db } from '@/lib/firebase';
+import { User } from '@/types/user';
+
+describe('Firestore Users Contract', () => {
+  it('should return user documents with correct structure', async () => {
+    const userId = 'test-user-id';
+    const userDoc = await getDoc(doc(db, 'users', userId));
+
+    expect(userDoc.exists()).toBe(true);
+
+    const userData = userDoc.data() as User;
+
+    // Verify required fields
+    expect(userData).toHaveProperty('id');
+    expect(userData).toHaveProperty('email');
+    expect(userData).toHaveProperty('name');
+    expect(userData).toHaveProperty('createdAt');
+    expect(userData).toHaveProperty('followers');
+    expect(userData).toHaveProperty('following');
+
+    // Verify types
+    expect(typeof userData.id).toBe('string');
+    expect(typeof userData.email).toBe('string');
+    expect(typeof userData.name).toBe('string');
+    expect(userData.createdAt instanceof Timestamp).toBe(true);
+    expect(typeof userData.followers).toBe('number');
+    expect(typeof userData.following).toBe('number');
+
+    // Verify constraints
+    expect(userData.followers).toBeGreaterThanOrEqual(0);
+    expect(userData.following).toBeGreaterThanOrEqual(0);
+  });
+});
+```
+
+### Firestore Collection Contract
+
+```typescript
+describe('Firestore Sessions Collection Contract', () => {
+  it('should return session documents with valid structure', async () => {
+    const sessionsRef = collection(db, 'sessions');
+    const sessionsSnapshot = await getDocs(query(sessionsRef, limit(10)));
+
+    expect(sessionsSnapshot.docs.length).toBeGreaterThan(0);
+
+    sessionsSnapshot.docs.forEach(doc => {
+      const session = doc.data();
+
+      // Verify required fields
+      expect(session).toHaveProperty('userId');
+      expect(session).toHaveProperty('projectId');
+      expect(session).toHaveProperty('duration');
+      expect(session).toHaveProperty('visibility');
+
+      // Verify types
+      expect(typeof session.userId).toBe('string');
+      expect(typeof session.projectId).toBe('string');
+      expect(typeof session.duration).toBe('number');
+      expect(['everyone', 'followers', 'private']).toContain(
+        session.visibility
+      );
+
+      // Verify constraints
+      expect(session.duration).toBeGreaterThan(0);
+      expect(session.duration).toBeLessThanOrEqual(86400); // 24 hours max
+    });
+  });
+});
+```
+
+## Validation Schemas
+
+### Using Zod for Contract Validation
+
+```typescript
+import { z } from 'zod';
+
+// Define the contract schema
+const ChallengeSchema = z.object({
+  id: z.string().uuid(),
+  title: z.string().min(1).max(100),
+  type: z.enum([
+    'most-activity',
+    'fastest-effort',
+    'longest-session',
+    'group-goal',
+  ]),
+  startDate: z.string().datetime(),
+  endDate: z.string().datetime(),
+  goal: z.number().positive(),
+  participants: z.array(
+    z.object({
+      id: z.string(),
+      userId: z.string(),
+      progress: z.number().min(0).max(100),
+      completed: z.boolean(),
     })
-  })
-})
+  ),
+});
+
+describe('Challenges API Contract with Zod', () => {
+  it('should validate challenge response', async () => {
+    const response = await getChallenges();
+
+    // Parse and validate
+    const parsed = z.array(ChallengeSchema).safeParse(response);
+
+    expect(parsed.success).toBe(true);
+
+    if (parsed.success) {
+      const challenges = parsed.data;
+      expect(challenges.length).toBeGreaterThan(0);
+
+      challenges.forEach(challenge => {
+        expect(challenge.title.length).toBeLessThanOrEqual(100);
+        expect(new Date(challenge.startDate)).toBeInstanceOf(Date);
+      });
+    }
+  });
+
+  it('should reject invalid challenge data', async () => {
+    const invalidChallenge = {
+      id: 'not-a-uuid',
+      title: '',
+      type: 'invalid-type',
+      startDate: 'not-a-date',
+    };
+
+    const result = ChallengeSchema.safeParse(invalidChallenge);
+
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues.length).toBeGreaterThan(0);
+    }
+  });
+});
+```
+
+## Response Status Code Contracts
+
+```typescript
+describe('API Response Status Contracts', () => {
+  it('should return 200 for successful requests', async () => {
+    const response = await fetch('/api/challenges');
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get('content-type')).toContain('application/json');
+  });
+
+  it('should return 404 for not found', async () => {
+    const response = await fetch('/api/challenges/nonexistent-id');
+
+    expect(response.status).toBe(404);
+
+    const body = await response.json();
+    expect(body).toHaveProperty('error');
+    expect(typeof body.error).toBe('string');
+  });
+
+  it('should return 400 for invalid input', async () => {
+    const response = await fetch('/api/challenges', {
+      method: 'POST',
+      body: JSON.stringify({ title: '' }), // Invalid: empty title
+    });
+
+    expect(response.status).toBe(400);
+
+    const body = await response.json();
+    expect(body).toHaveProperty('errors');
+    expect(Array.isArray(body.errors)).toBe(true);
+  });
+
+  it('should return 401 for unauthenticated requests', async () => {
+    const response = await fetch('/api/profile', {
+      headers: {
+        // No auth header
+      },
+    });
+
+    expect(response.status).toBe(401);
+  });
+
+  it('should return 500 for server errors', async () => {
+    const response = await fetch('/api/challenges/error-test');
+
+    if (response.status === 500) {
+      const body = await response.json();
+      expect(body).toHaveProperty('error');
+    }
+  });
+});
+```
+
+## Error Response Contracts
+
+```typescript
+describe('Error Response Contract', () => {
+  it('should return consistent error format', async () => {
+    const response = await fetch('/api/challenges/invalid-id');
+
+    expect(response.status).toBe(404);
+
+    const error = await response.json();
+
+    // Verify error structure
+    expect(error).toHaveProperty('error');
+    expect(error).toHaveProperty('message');
+    expect(error).toHaveProperty('timestamp');
+
+    expect(typeof error.error).toBe('string');
+    expect(typeof error.message).toBe('string');
+
+    // Should be ISO timestamp
+    expect(new Date(error.timestamp)).toBeInstanceOf(Date);
+  });
+
+  it('should return validation error format', async () => {
+    const response = await fetch('/api/challenges', {
+      method: 'POST',
+      body: JSON.stringify({}),
+    });
+
+    expect(response.status).toBe(400);
+
+    const error = await response.json();
+
+    // Verify validation error structure
+    expect(error).toHaveProperty('errors');
+    expect(Array.isArray(error.errors)).toBe(true);
+
+    error.errors.forEach(validationError => {
+      expect(validationError).toHaveProperty('field');
+      expect(validationError).toHaveProperty('message');
+    });
+  });
+});
+```
+
+## Testing Breaking Changes
+
+```typescript
+describe('Contract Regression Tests', () => {
+  it('should not remove required fields', async () => {
+    const challenge = await getChallenge('challenge-1');
+
+    // These fields must always exist
+    const requiredFields = ['id', 'title', 'type', 'startDate', 'endDate'];
+
+    requiredFields.forEach(field => {
+      expect(challenge).toHaveProperty(field);
+      expect(challenge[field]).not.toBeUndefined();
+      expect(challenge[field]).not.toBeNull();
+    });
+  });
+
+  it('should not change field types', async () => {
+    const challenge = await getChallenge('challenge-1');
+
+    // Type must stay consistent
+    expect(typeof challenge.title).toBe('string');
+    expect(typeof challenge.goal).toBe('number');
+    expect(Array.isArray(challenge.participants)).toBe(true);
+  });
+
+  it('should maintain backwards compatibility', async () => {
+    const challenge = await getChallenge('challenge-1');
+
+    // Old consumers should still work
+    expect(challenge.id).toBeDefined(); // Old code expects this
+    expect(challenge.title).toBeDefined(); // Old code expects this
+  });
+});
 ```
 
 ## Best Practices
 
-### 1. Document Expected Behavior
+### 1. Test Required vs Optional Fields
+
 ```typescript
-/**
- * Contract: Notification API
- *
- * The notification API must:
- * - Support all notification types defined in the Notification type
- * - Return notifications in descending createdAt order
- * - Include unread count with getUserNotifications
- * - Support batch operations for markAllAsRead
- */
-describe('Notification API Contract', () => {
-  // Tests here
-})
+// Good - distinguishes required from optional
+describe('User API Contract', () => {
+  it('should have all required fields', async () => {
+    const user = await getUser('user-1');
+
+    // Required
+    expect(user.id).toBeDefined();
+    expect(user.email).toBeDefined();
+
+    // Optional (may be null)
+    expect(user.bio).toBeDefined(); // exists (might be empty)
+  });
+});
 ```
 
-### 2. Version Your Contracts
-```typescript
-describe('Notification API Contract - v2', () => {
-  test('should support new mention type', () => {
-    const notification: Notification = {
-      type: 'mention', // New in v2
-      // ... other fields
-    }
+### 2. Test Constraints and Boundaries
 
-    expect(notification.type).toBe('mention')
-  })
-})
+```typescript
+// Good - tests real constraints
+describe('Session Duration Contract', () => {
+  it('should have valid duration', async () => {
+    const session = await getSession('session-1');
+
+    expect(session.duration).toBeGreaterThan(0);
+    expect(session.duration).toBeLessThanOrEqual(86400); // 24 hours max
+  });
+});
 ```
 
-### 3. Test Edge Cases
+### 3. Keep Contracts in Sync with Types
+
 ```typescript
-describe('Edge Cases - Milestone Calculation', () => {
-  test('should handle progress exceeding goal', () => {
-    const progress = 120
-    const goal = 100
+// Keep these in sync!
+interface Challenge {
+  id: string;
+  title: string;
+  type: ChallengeType;
+}
 
-    const percentage = Math.min((progress / goal) * 100, 100)
-    expect(percentage).toBe(100)
-  })
+// ✅ Test reflects interface
+describe('Challenge Contract', () => {
+  it('should match interface', async () => {
+    const challenge: Challenge = await getChallenge('id');
 
-  test('should handle zero goal', () => {
-    const progress = 50
-    const goal = 0
-
-    // Should not divide by zero
-    const percentage = goal === 0 ? 0 : (progress / goal) * 100
-    expect(percentage).toBe(0)
-  })
-})
+    expect(challenge).toHaveProperty('id');
+    expect(challenge).toHaveProperty('title');
+    expect(challenge).toHaveProperty('type');
+  });
+});
 ```
 
-### 4. Validate Required Fields
-```typescript
-describe('Required Fields Contract', () => {
-  test('should require userId in Notification', () => {
-    const createNotification = (data: Partial<Notification>) => {
-      if (!data.userId) {
-        throw new Error('userId is required')
-      }
-      return data as Notification
-    }
+### 4. Document Why Constraints Exist
 
-    expect(() => createNotification({})).toThrow('userId is required')
-    expect(() => createNotification({ userId: 'user-1' })).not.toThrow()
-  })
-})
+```typescript
+// Bad - no context
+it('should have positive duration', async () => {
+  expect(session.duration).toBeGreaterThan(0);
+});
+
+// Good - explains the constraint
+it('should have positive duration', async () => {
+  // Sessions must have at least 1 second duration
+  // 0-second sessions indicate data entry errors
+  const session = await getSession('session-1');
+  expect(session.duration).toBeGreaterThan(0);
+});
 ```
 
-## Contract Test Categories
+## Debugging Contract Tests
 
-### Type Contracts
-Validate TypeScript type definitions match runtime behavior
+### Print Response Structure
 
-### API Contracts
-Validate method signatures and return values
+```typescript
+it('should debug response', async () => {
+  const response = await getChallenges();
 
-### Data Contracts
-Validate data structures and field constraints
+  // See actual structure
+  console.log(JSON.stringify(response, null, 2));
 
-### Business Logic Contracts
-Validate business rules and calculations
+  // See first item in detail
+  console.log('First challenge:', response[0]);
+});
+```
 
-### Event Contracts
-Validate event structures and message formats
-
-## Running Contract Tests
+### Validate with Tools
 
 ```bash
-# Run all contract tests
-npm test -- contract/
+# Use jq to inspect JSON responses
+curl https://api.example.com/challenges | jq '.[0]'
 
-# Run specific contract
-npm test -- contract/api/notifications.contract.test.ts
-
-# Watch mode
-npm test -- --watch contract/
-
-# Verbose output
-npm test -- --verbose contract/
+# Pretty print with Python
+curl https://api.example.com/challenges | python -m json.tool
 ```
 
-## Migration Notes
+## Next Steps
 
-Previously, contract-style tests were named with `-manual.test.ts` suffix and located in:
-- `src/__tests__/notifications-manual.test.ts`
-- `src/__tests__/challenges-manual.test.ts`
-
-They have been renamed and relocated to:
-- `src/__tests__/contract/api/notifications.contract.test.ts`
-- `src/__tests__/contract/api/challenges.contract.test.ts`
-
-The `.contract.test.ts` naming convention makes their purpose clearer.
-
-## When NOT to Use Contract Tests
-
-Contract tests are not for:
-- Testing implementation details (use unit tests)
-- Testing user workflows (use integration tests)
-- Testing UI rendering (use unit/integration tests)
-- Performance testing (use dedicated performance tests)
-
-Use contract tests specifically for validating interfaces, types, and system boundaries.
-
-## Example: Adding a New Contract
-
-When adding a new API module:
-
-1. Create the contract test file:
-```bash
-touch src/__tests__/contract/api/groups.contract.test.ts
-```
-
-2. Write the contract:
-```typescript
-import { groupsApi } from '@/lib/firebaseApi'
-import { Group } from '@/types'
-
-describe('API Contract - Groups', () => {
-  test('should have CRUD operations', () => {
-    expect(typeof groupsApi.createGroup).toBe('function')
-    expect(typeof groupsApi.getGroup).toBe('function')
-    expect(typeof groupsApi.updateGroup).toBe('function')
-    expect(typeof groupsApi.deleteGroup).toBe('function')
-  })
-
-  test('should validate group data structure', () => {
-    const group: Group = {
-      id: 'group-1',
-      name: 'Test Group',
-      description: 'A test group',
-      privacy: 'public',
-      createdAt: new Date()
-    }
-
-    expect(['public', 'approval-required']).toContain(group.privacy)
-  })
-})
-```
-
-3. Run the tests:
-```bash
-npm test -- groups.contract.test.ts
-```
+- [Main Test Guide](../README.md) - Back to overview
+- [Integration Tests Guide](../integration/README.md) - Multi-component testing
+- [Unit Tests Guide](../unit/README.md) - Individual component testing

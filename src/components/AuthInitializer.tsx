@@ -22,6 +22,7 @@ import { useEffect, useState, useRef, useCallback, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import { firebaseAuthApi } from '@/lib/api/auth';
+import { isFirebaseInitialized } from '@/lib/firebase';
 import { AUTH_KEYS } from '@/lib/react-query/auth.queries';
 
 interface AuthInitializerProps {
@@ -40,6 +41,13 @@ export function AuthInitializer({ children }: AuthInitializerProps) {
   }, [router]);
 
   useEffect(() => {
+    if (!isFirebaseInitialized) {
+      // Firebase is disabled (missing env vars) - treat as signed out
+      queryClient.setQueryData(AUTH_KEYS.session(), null);
+      setIsInitializing(false);
+      return;
+    }
+
     let authUnsubscribe: (() => void) | null = null;
 
     const initializeAuth = async () => {

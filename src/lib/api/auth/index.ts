@@ -25,7 +25,7 @@ import {
   signInWithPopup,
   getRedirectResult,
 } from 'firebase/auth';
-import { db, auth } from '@/lib/firebase';
+import { db, auth, isFirebaseInitialized } from '@/lib/firebase';
 import { handleError, ErrorSeverity } from '@/lib/errorHandler';
 import { checkRateLimit, RateLimitError } from '@/lib/rateLimit';
 import { convertTimestamp } from '../shared/utils';
@@ -36,10 +36,27 @@ import type {
   AuthUser,
 } from '@/types';
 
+class FirebaseNotConfiguredError extends Error {
+  constructor(operation: string) {
+    super(
+      `[Firebase] Cannot ${operation} because Firebase is not configured. Missing Firebase environment variables.`
+    );
+    this.name = 'FirebaseNotConfiguredError';
+  }
+}
+
+const assertFirebaseConfigured = (operation: string): void => {
+  if (!isFirebaseInitialized) {
+    throw new FirebaseNotConfiguredError(operation);
+  }
+};
+
 /**
  * Check if a username already exists in Firestore
  */
 const checkUsernameExists = async (username: string): Promise<boolean> => {
+  assertFirebaseConfigured('check username availability');
+
   try {
     const usersRef = collection(db, 'users');
     const q = query(
@@ -67,6 +84,8 @@ const checkUsernameExists = async (username: string): Promise<boolean> => {
 const _checkEmailExistsInFirestore = async (
   email: string
 ): Promise<boolean> => {
+  assertFirebaseConfigured('check email availability');
+
   try {
     const usersRef = collection(db, 'users');
     const q = query(
@@ -152,6 +171,8 @@ export const firebaseAuthApi = {
    * Login with email and password
    */
   login: async (credentials: LoginCredentials): Promise<AuthResponse> => {
+    assertFirebaseConfigured('log in');
+
     try {
       // Rate limit login attempts by email
       checkRateLimit(credentials.email, 'AUTH_LOGIN');
@@ -221,6 +242,8 @@ export const firebaseAuthApi = {
    * Sign up a new user with email and password
    */
   signup: async (credentials: SignupCredentials): Promise<AuthResponse> => {
+    assertFirebaseConfigured('sign up');
+
     try {
       // Rate limit signup attempts by email
       checkRateLimit(credentials.email, 'AUTH_SIGNUP');
@@ -302,6 +325,8 @@ export const firebaseAuthApi = {
    * Sign in with Google OAuth
    */
   signInWithGoogle: async (): Promise<AuthResponse> => {
+    assertFirebaseConfigured('sign in with Google');
+
     try {
       const provider = new GoogleAuthProvider();
       // Add scopes for better user info
@@ -437,6 +462,8 @@ export const firebaseAuthApi = {
    * Logout current user
    */
   logout: async (): Promise<void> => {
+    assertFirebaseConfigured('log out');
+
     try {
       await signOut(auth);
     } catch (error) {
@@ -451,23 +478,26 @@ export const firebaseAuthApi = {
    * Get current authenticated user
    */
   getCurrentUser: async (_token?: string): Promise<AuthUser> => {
-    try {
-      if (!auth.currentUser) {
-        throw new Error('No authenticated user');
-      }
+    assertFirebaseConfigured('get current user');
 
-      const userDoc = await getDoc(doc(db, 'users', auth.currentUser.uid));
+    const currentUser = auth.currentUser;
+    if (!currentUser) {
+      throw new Error('No authenticated user');
+    }
+
+    try {
+      const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
       let userData = userDoc.data();
 
       // If user profile doesn't exist, create a basic one
       if (!userData) {
         const basicUserData = {
-          email: auth.currentUser.email!,
-          name: auth.currentUser.displayName || 'New User',
-          username: auth.currentUser.email!.split('@')[0],
+          email: currentUser.email!,
+          name: currentUser.displayName || 'New User',
+          username: currentUser.email!.split('@')[0],
           bio: '',
           location: '',
-          profilePicture: auth.currentUser.photoURL || null,
+          profilePicture: currentUser.photoURL || null,
           followersCount: 0,
           followingCount: 0,
           totalHours: 0,
@@ -478,13 +508,13 @@ export const firebaseAuthApi = {
           updatedAt: serverTimestamp(),
         };
 
-        await setDoc(doc(db, 'users', auth.currentUser.uid), basicUserData);
+        await setDoc(doc(db, 'users', currentUser.uid), basicUserData);
         userData = basicUserData;
       }
 
       return {
-        id: auth.currentUser.uid,
-        email: auth.currentUser.email!,
+        id: currentUser.uid,
+        email: currentUser.email!,
         name: userData.name,
         username: userData.username,
         bio: userData.bio,
@@ -505,6 +535,10 @@ export const firebaseAuthApi = {
    * Verify authentication token
    */
   verifyToken: async (): Promise<boolean> => {
+    if (!isFirebaseInitialized) {
+      return false;
+    }
+
     try {
       // Firebase handles token verification automatically
       // We just need to check if user is authenticated
@@ -518,6 +552,10 @@ export const firebaseAuthApi = {
    * Handle Google redirect result (for mobile OAuth flow)
    */
   handleGoogleRedirectResult: async (): Promise<AuthResponse | null> => {
+    if (!isFirebaseInitialized) {
+      return null;
+    }
+
     try {
       const result = await getRedirectResult(auth);
 
@@ -607,6 +645,11 @@ export const firebaseAuthApi = {
    * Listen to authentication state changes
    */
   onAuthStateChanged: (callback: (user: FirebaseUser | null) => void) => {
+    if (!isFirebaseInitialized) {
+      callback(null);
+      return () => {};
+    }
+
     return onAuthStateChanged(auth, callback);
   },
 
@@ -614,6 +657,8 @@ export const firebaseAuthApi = {
    * Check if username is available for signup
    */
   checkUsernameAvailability: async (username: string): Promise<boolean> => {
+    assertFirebaseConfigured('check username availability');
+
     const exists = await checkUsernameExists(username);
     return !exists; // Return true if available (username does not exist)
   },
