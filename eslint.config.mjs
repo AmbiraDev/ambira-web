@@ -18,6 +18,8 @@ const eslintConfig = [
       'out/**',
       'build/**',
       'next-env.d.ts',
+      'coverage/**',
+      'docs/test-coverage/**',
     ],
   },
   ...compat.extends('next/core-web-vitals', 'next/typescript', 'prettier'),
@@ -52,7 +54,11 @@ const eslintConfig = [
   },
   // Jest test configuration
   {
-    files: ['src/__tests__/**/*.{ts,tsx}', 'jest.setup.ts'],
+    files: [
+      'src/__tests__/**/*.{ts,tsx}',
+      'tests/**/*.{ts,tsx}',
+      'jest.setup.ts',
+    ],
     rules: {
       // Jest setup files legitimately use 'any' for global mocks
       '@typescript-eslint/no-explicit-any': 'off',
