@@ -30,12 +30,23 @@ export function LandingPageContent() {
               Studying shouldn't be done alone. Join your friends, share your
               progress, and achieve better results together.
             </p>
-            <Link
-              href="/auth"
-              className="inline-block px-8 py-4 bg-[#0066CC] text-white font-semibold rounded-lg hover:bg-[#0051D5] transition-colors text-lg shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none min-h-[44px]"
-            >
-              Sign Up Free
-            </Link>
+            <div className="space-y-4">
+              <Link
+                href="/auth"
+                className="inline-block px-8 py-4 bg-[#0066CC] text-white font-semibold rounded-lg hover:bg-[#0051D5] transition-colors text-lg shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none min-h-[44px]"
+              >
+                Sign Up Free
+              </Link>
+              <p className="text-base md:text-lg text-gray-600">
+                Already a Member?{' '}
+                <Link
+                  href="/auth"
+                  className="text-[#0066CC] font-semibold hover:text-[#0051D5] transition-colors"
+                >
+                  Log In
+                </Link>
+              </p>
+            </div>
           </div>
         </section>
 
