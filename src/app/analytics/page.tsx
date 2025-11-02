@@ -481,7 +481,7 @@ export default function AnalyticsPage() {
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-white">
+      <div className="min-h-screen bg-white flex flex-col">
         <div className="hidden md:block">
           <Header />
         </div>
@@ -489,7 +489,7 @@ export default function AnalyticsPage() {
           <MobileHeader title="Analytics" />
         </div>
 
-        <div className="pb-20 md:pb-8">
+        <div className="flex-1 pb-20 md:pb-8 min-h-[calc(100vh-3.5rem)]">
           <div className="max-w-5xl mx-auto px-4 md:px-6 py-4">
             {/* Header - Desktop only */}
             <div className="hidden md:block mb-4">

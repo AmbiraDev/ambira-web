@@ -8,6 +8,7 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 import Header from '@/components/HeaderComponent';
 import MobileHeader from '@/components/MobileHeader';
 import BottomNavigation from '@/components/BottomNavigation';
+import Footer from '@/components/Footer';
 import { useAuth } from '@/hooks/useAuth';
 import { Activity } from '@/types';
 
@@ -78,7 +79,7 @@ function ActivitiesContent() {
   };
 
   return (
-    <div className="min-h-screen bg-white md:bg-gray-50">
+    <div className="min-h-screen bg-white md:bg-gray-50 flex flex-col">
       {/* Desktop Header */}
       <div className="hidden md:block">
         <Header />
@@ -90,7 +91,7 @@ function ActivitiesContent() {
       </div>
 
       {/* Content */}
-      <div className="pb-32 md:pb-8">
+      <div className="flex-1 pb-32 md:pb-8 min-h-[calc(100vh-3.5rem)]">
         <div className="max-w-5xl mx-auto px-4 md:px-6 py-4">
           <ErrorBoundary
             onError={(error, errorInfo) => {
@@ -105,6 +106,9 @@ function ActivitiesContent() {
           </ErrorBoundary>
         </div>
       </div>
+
+      {/* Footer - hidden on mobile */}
+      <Footer />
 
       {/* Mobile Bottom Navigation */}
       <div className="md:hidden">

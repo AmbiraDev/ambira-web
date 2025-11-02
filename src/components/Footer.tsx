@@ -4,11 +4,11 @@ import Image from 'next/image';
 
 export default function Footer() {
   return (
-    <footer className="hidden md:block bg-white border-t border-gray-200 py-12 mt-8">
-      <div className="max-w-6xl mx-auto px-8">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          {/* Brand */}
-          <div className="md:col-span-1">
+    <footer className="hidden md:block bg-white border-t border-gray-200 mt-8">
+      <div className="max-w-6xl mx-auto px-8 py-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+          {/* Brand Section */}
+          <div>
             <div className="flex items-center space-x-2 mb-4">
               <div className="w-8 h-8 flex items-center justify-center">
                 <Image
@@ -20,7 +20,7 @@ export default function Footer() {
               </div>
               <span className="text-xl font-bold text-[#0066CC]">Ambira</span>
             </div>
-            <p className="text-sm text-gray-600 max-w-xs mb-4">
+            <p className="text-sm text-gray-600 mb-6 max-w-sm">
               Track focus sessions, hit goals, and share progress with friends.
             </p>
             {/* Discord Button */}
@@ -28,7 +28,7 @@ export default function Footer() {
               href="https://discord.gg/wFMeNmCpdQ"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-4 py-2 bg-[#5865F2] hover:bg-[#4752C4] text-white font-semibold rounded-lg transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-[#5865F2] hover:bg-[#4752C4] text-white font-semibold rounded-lg transition-colors min-h-[44px]"
             >
               <svg
                 width="24"
@@ -53,8 +53,47 @@ export default function Footer() {
             </a>
           </div>
 
-          {/* Link Columns */}
-          <div className="md:col-span-3 grid grid-cols-2 md:grid-cols-4 gap-8">
+          {/* Resources Section */}
+          <div className="flex flex-col justify-between">
+            <div>
+              <h3 className="font-semibold text-gray-900 mb-4">Resources</h3>
+              <ul className="space-y-3">
+                <li>
+                  <Link
+                    href="/landing"
+                    className="text-sm text-gray-600 hover:text-[#0066CC] transition-colors"
+                  >
+                    About
+                  </Link>
+                </li>
+                <li>
+                  <a
+                    href="mailto:hughgramelspacher@gmail.com"
+                    className="text-sm text-gray-600 hover:text-[#0066CC] transition-colors inline-flex items-center gap-2"
+                    aria-label="Contact us via email"
+                  >
+                    <svg
+                      className="w-4 h-4"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                      />
+                    </svg>
+                    Contact
+                  </a>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          {/* Commented out sections for future expansion
             <div>
               <h3 className="font-semibold text-gray-900 mb-3">Product</h3>
               <ul className="space-y-2 text-sm">
@@ -94,74 +133,6 @@ export default function Footer() {
             </div>
 
             <div>
-              <h3 className="font-semibold text-gray-900 mb-3">Resources</h3>
-              <ul className="space-y-2 text-sm">
-                <li>
-                  <Link
-                    href="/about"
-                    className="text-gray-600 hover:text-[#0066CC]"
-                  >
-                    About
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/feed"
-                    className="text-gray-600 hover:text-[#0066CC]"
-                  >
-                    Community
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/sessions"
-                    className="text-gray-600 hover:text-[#0066CC]"
-                  >
-                    Sessions
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/tasks"
-                    className="text-gray-600 hover:text-[#0066CC]"
-                  >
-                    Tasks
-                  </Link>
-                </li>
-              </ul>
-            </div>
-
-            <div>
-              <h3 className="font-semibold text-gray-900 mb-3">Support</h3>
-              <ul className="space-y-2 text-sm">
-                <li>
-                  <Link
-                    href="/help"
-                    className="text-gray-600 hover:text-[#0066CC]"
-                  >
-                    Help Center
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/contact"
-                    className="text-gray-600 hover:text-[#0066CC]"
-                  >
-                    Contact
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/status"
-                    className="text-gray-600 hover:text-[#0066CC]"
-                  >
-                    Status
-                  </Link>
-                </li>
-              </ul>
-            </div>
-
-            <div>
               <h3 className="font-semibold text-gray-900 mb-3">Legal</h3>
               <ul className="space-y-2 text-sm">
                 <li>
@@ -190,23 +161,14 @@ export default function Footer() {
                 </li>
               </ul>
             </div>
-          </div>
+            */}
         </div>
 
-        {/* Bottom row */}
-        <div className="mt-10 pt-6 border-t border-gray-200 flex flex-col md:flex-row items-center justify-between text-sm text-gray-500">
-          <span>© {new Date().getFullYear()} Ambira, Inc.</span>
-          <div className="space-x-4 mt-2 md:mt-0">
-            <Link href="/privacy" className="hover:text-[#0066CC]">
-              Privacy
-            </Link>
-            <Link href="/terms" className="hover:text-[#0066CC]">
-              Terms
-            </Link>
-            <Link href="/contact" className="hover:text-[#0066CC]">
-              Contact
-            </Link>
-          </div>
+        {/* Copyright - Centered at bottom */}
+        <div className="mt-12 pt-8 border-t border-gray-200">
+          <p className="text-center text-sm text-gray-500">
+            © {new Date().getFullYear()} Ambira
+          </p>
         </div>
       </div>
     </footer>
