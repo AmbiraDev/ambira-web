@@ -10,6 +10,7 @@ import {
 import Header from '@/components/HeaderComponent';
 import MobileHeader from '@/components/MobileHeader';
 import BottomNavigation from '@/components/BottomNavigation';
+import Footer from '@/components/Footer';
 import GroupCard from '@/components/GroupCard';
 import { GroupListItem } from '@/components/GroupListItem';
 import { Group } from '@/types';
@@ -225,13 +226,13 @@ export default function GroupsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       <div className="hidden md:block">
         <Header />
       </div>
       <MobileHeader title="Groups" />
 
-      <div className="max-w-5xl mx-auto px-4 md:px-6 py-4">
+      <div className="flex-1 max-w-5xl mx-auto px-4 md:px-6 py-4 min-h-[calc(100vh-3.5rem)]">
         {/* Page Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
@@ -562,6 +563,9 @@ export default function GroupsPage() {
           )
         ) : null}
       </div>
+
+      {/* Footer - hidden on mobile */}
+      <Footer />
 
       {/* Bottom padding for mobile navigation */}
       <div className="h-20 md:hidden" />
