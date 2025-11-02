@@ -4,6 +4,7 @@ import './globals.css';
 import { AuthInitializer } from '@/components/AuthInitializer';
 import { DataPrefetcher } from '@/components/DataPrefetcher';
 import { QueryProvider } from '@/providers/QueryProvider';
+import { ThemeColorProvider } from '@/providers/ThemeColorProvider';
 import { Toaster } from 'sonner';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import PWAInstaller from '@/components/PWAInstaller';
@@ -77,28 +78,38 @@ export default function RootLayout({
         {/* PWA Meta Tags */}
         <link rel="manifest" href="/site.webmanifest" />
         <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+        {/* Theme color: White for all pages including loading screen */}
         <meta name="theme-color" content="#ffffff" />
+
+        {/* Viewport fit for safe area insets (iPhone notch support) */}
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1, viewport-fit=cover"
+        />
       </head>
       <body
         className={`${inter.variable} antialiased`}
         suppressHydrationWarning
       >
         <ErrorBoundary>
-          <PWAInstaller />
-          <QueryProvider>
-            <AuthInitializer>
-              <DataPrefetcher />
-              {children}
-              <Toaster
-                position="bottom-right"
-                expand={false}
-                richColors
-                closeButton
-              />
-            </AuthInitializer>
-          </QueryProvider>
-          <Analytics />
-          <SpeedInsights />
+          <ThemeColorProvider>
+            <PWAInstaller />
+            <QueryProvider>
+              <AuthInitializer>
+                <DataPrefetcher />
+                {children}
+                <Toaster
+                  position="bottom-right"
+                  expand={false}
+                  richColors
+                  closeButton
+                />
+              </AuthInitializer>
+            </QueryProvider>
+            <Analytics />
+            <SpeedInsights />
+          </ThemeColorProvider>
         </ErrorBoundary>
       </body>
     </html>
