@@ -486,7 +486,7 @@ test.describe('Notifications UI', () => {
         const focused = await page.locator(':focus');
         const text = await focused.textContent().catch(() => '');
         if (
-          text.toLowerCase().includes('notification') ||
+          text?.toLowerCase().includes('notification') ||
           (await focused.getAttribute('data-testid')) === 'notification-icon'
         ) {
           break;
