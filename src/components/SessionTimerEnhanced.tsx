@@ -37,7 +37,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
     resetTimer,
   } = useTimer();
   const { user } = useAuth();
-  const { data: projects = [] } = useActivities(user?.id);
+  const { data: projects = [], isLoading: isLoadingProjects } = useActivities(user?.id);
   const [showFinishModal, setShowFinishModal] = useState(false);
   const [sessionTitle, setSessionTitle] = useState('');
   const [sessionDescription, setSessionDescription] = useState('');
@@ -46,7 +46,13 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
   >('everyone');
   const [howFelt, setHowFelt] = useState<number>(3);
   const [privateNotes, setPrivateNotes] = useState('');
-  const [selectedActivityId, setSelectedActivityId] = useState<string>('');
+  // Initialize with last activity from localStorage if available
+  const [selectedActivityId, setSelectedActivityId] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('lastSessionActivity') || '';
+    }
+    return '';
+  });
   const [displayTime, setDisplayTime] = useState(0);
   const [showActivityPicker, setShowActivityPicker] = useState(false);
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
@@ -66,13 +72,13 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
   useEffect(() => {
     const savedActivityId = localStorage.getItem('lastSessionActivity');
 
-    if (savedActivityId && projects) {
+    if (savedActivityId && projects && projects.length > 0) {
       // Validate that the saved activity still exists
       const activityExists = projects.some(p => p.id === savedActivityId);
       if (activityExists) {
         setSelectedActivityId(savedActivityId);
       } else {
-        // Clear stale activity ID from localStorage
+        // Clear stale activity ID from localStorage if user has projects but saved one doesn't exist
         localStorage.removeItem('lastSessionActivity');
       }
     }
@@ -320,8 +326,9 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
   const selectedActivity =
     allActivities.find(a => a.id === selectedActivityId) ||
     timerState.currentProject;
+  // Only show needsActivity prompt after projects have loaded (prevent flash)
   const needsActivity =
-    allActivities.length === 0 && !timerState.currentProject;
+    !isLoadingProjects && allActivities.length === 0 && !timerState.currentProject;
 
   // When completing a session, show ONLY the completion UI
   if (showFinishModal) {

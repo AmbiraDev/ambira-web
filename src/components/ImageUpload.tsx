@@ -327,12 +327,6 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
                   </div>
                 </>
               )}
-              {/* File size indicator */}
-              {images[index] && (
-                <div className="absolute bottom-1 left-1 px-2 py-0.5 bg-black/60 text-white text-xs rounded">
-                  {(images[index].size / 1024 / 1024).toFixed(1)}MB
-                </div>
-              )}
             </div>
           ))}
         </div>
