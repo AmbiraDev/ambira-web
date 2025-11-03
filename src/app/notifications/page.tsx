@@ -242,7 +242,13 @@ export default function NotificationsPage() {
   };
 
   const handleClearAll = () => {
-    clearAllNotificationsMutation.mutate();
+    if (
+      confirm(
+        'Are you sure you want to delete all notifications? This cannot be undone.'
+      )
+    ) {
+      clearAllNotificationsMutation.mutate();
+    }
   };
 
   if (!user) {
@@ -300,6 +306,8 @@ export default function NotificationsPage() {
                         disabled={markAllAsReadMutation.isPending}
                         className="px-4 py-2 text-sm font-semibold text-[#0066CC] hover:text-[#0051D5] hover:bg-blue-50 rounded-lg transition-colors disabled:opacity-50"
                         data-testid="mark-all-read-button-desktop"
+                        aria-label="Mark all notifications as read"
+                        aria-busy={markAllAsReadMutation.isPending}
                       >
                         Mark all read
                       </button>
@@ -309,6 +317,8 @@ export default function NotificationsPage() {
                       disabled={clearAllNotificationsMutation.isPending}
                       className="px-4 py-2 text-sm font-semibold text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
                       data-testid="clear-all-button-desktop"
+                      aria-label="Clear all notifications"
+                      aria-busy={clearAllNotificationsMutation.isPending}
                     >
                       Clear all
                     </button>
@@ -354,6 +364,8 @@ export default function NotificationsPage() {
                 disabled={markAllAsReadMutation.isPending}
                 className="text-[#0066CC] font-semibold text-sm hover:text-[#0051D5] transition-colors disabled:opacity-50"
                 data-testid="mark-all-read-button-mobile"
+                aria-label="Mark all notifications as read"
+                aria-busy={markAllAsReadMutation.isPending}
               >
                 Mark all read
               </button>
@@ -363,6 +375,8 @@ export default function NotificationsPage() {
               disabled={clearAllNotificationsMutation.isPending}
               className="text-red-600 font-semibold text-sm hover:text-red-700 transition-colors disabled:opacity-50"
               data-testid="clear-all-button-mobile"
+              aria-label="Clear all notifications"
+              aria-busy={clearAllNotificationsMutation.isPending}
             >
               Clear all
             </button>

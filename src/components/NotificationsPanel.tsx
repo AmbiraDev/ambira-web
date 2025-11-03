@@ -122,7 +122,13 @@ export default function NotificationsPanel({
   };
 
   const handleClearAll = async () => {
-    await clearAllNotificationsMutation.mutateAsync();
+    if (
+      confirm(
+        'Are you sure you want to delete all notifications? This cannot be undone.'
+      )
+    ) {
+      await clearAllNotificationsMutation.mutateAsync();
+    }
   };
 
   if (!isOpen) return null;
@@ -150,7 +156,10 @@ export default function NotificationsPanel({
             {unreadCount > 0 && (
               <button
                 onClick={handleMarkAllRead}
-                className="text-xs text-[#0066CC] hover:text-[#0051D5] font-medium flex items-center gap-1"
+                disabled={markAllAsReadMutation.isPending}
+                className="text-xs text-[#0066CC] hover:text-[#0051D5] font-medium flex items-center gap-1 disabled:opacity-50 transition-colors"
+                aria-label="Mark all notifications as read"
+                aria-busy={markAllAsReadMutation.isPending}
               >
                 <Check className="w-3 h-3" />
                 Mark all read
@@ -159,7 +168,10 @@ export default function NotificationsPanel({
             {notifications.length > 0 && (
               <button
                 onClick={handleClearAll}
-                className="text-xs text-gray-600 hover:text-gray-900 font-medium flex items-center gap-1"
+                disabled={clearAllNotificationsMutation.isPending}
+                className="text-xs text-gray-600 hover:text-gray-900 font-medium flex items-center gap-1 disabled:opacity-50 transition-colors"
+                aria-label="Clear all notifications"
+                aria-busy={clearAllNotificationsMutation.isPending}
               >
                 <Trash2 className="w-3 h-3" />
                 Clear all
