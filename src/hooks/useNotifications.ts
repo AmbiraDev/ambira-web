@@ -262,7 +262,7 @@ export function useDeleteNotification() {
 }
 
 /**
- * Hook to clear all notifications
+ * Hook to clear all notifications with optimistic updates
  */
 export function useClearAllNotifications() {
   const { user } = useAuth();
@@ -272,16 +272,7 @@ export function useClearAllNotifications() {
   return useMutation({
     mutationFn: async () => {
       if (!user) throw new Error('User not authenticated');
-
-      const notifications =
-        queryClient.getQueryData<Notification[]>(queryKey) || [];
-
-      // Delete all notifications in parallel
-      await Promise.all(
-        notifications.map(notification =>
-          firebaseNotificationApi.deleteNotification(notification.id)
-        )
-      );
+      return firebaseNotificationApi.clearAllNotifications(user.id);
     },
 
     // Optimistic update
