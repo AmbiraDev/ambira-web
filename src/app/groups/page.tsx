@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import {
   useUserGroups,
@@ -17,10 +17,12 @@ import { SuggestedGroupListItem } from '@/components/SuggestedGroupListItem';
 import { Users } from 'lucide-react';
 import Link from 'next/link';
 import { Group } from '@/types';
+import { GROUP_DISPLAY_CONFIG } from '@/lib/constants/groupDisplay';
 
 export default function GroupsPage() {
   const { user } = useAuth();
   const [joiningGroupId, setJoiningGroupId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   // Fetch user's groups
   const { data: userGroups = [], isLoading: isLoadingUserGroups } =
@@ -35,58 +37,75 @@ export default function GroupsPage() {
   } = useSuggestedGroups({
     userId: user?.id,
     enabled: !!user?.id,
-    limit: 5,
+    limit: GROUP_DISPLAY_CONFIG.SUGGESTED_GROUPS_LIMIT,
   });
 
-  // Convert suggested groups to Group type and limit to 5
-  const suggestedGroups: Group[] = fetchedSuggestedGroups
-    .slice(0, 5)
-    .map(g => ({
-      id: g.id,
-      name: g.name,
-      description: g.description,
-      category: (g.category as Group['category']) || 'other',
-      type: 'professional',
-      privacySetting: 'public',
-      memberCount: g.memberCount || 0,
-      adminUserIds: [],
-      memberIds: [],
-      createdByUserId: '',
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      imageUrl: g.imageUrl,
-      location: g.location,
-    }));
+  // Memoize the groups type conversion
+  const suggestedGroups = useMemo(
+    () =>
+      fetchedSuggestedGroups
+        .slice(0, GROUP_DISPLAY_CONFIG.SUGGESTED_GROUPS_LIMIT)
+        .map(g => ({
+          id: g.id,
+          name: g.name,
+          description: g.description,
+          category: (g.category as Group['category']) || 'other',
+          type: 'professional' as const,
+          privacySetting: 'public' as const,
+          memberCount: g.memberCount || 0,
+          adminUserIds: [],
+          memberIds: [],
+          createdByUserId: '',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          imageUrl: g.imageUrl,
+          location: g.location,
+        })),
+    [fetchedSuggestedGroups]
+  );
 
   // Mutations for joining/leaving groups
   const joinGroupMutation = useJoinGroup();
   const leaveGroupMutation = useLeaveGroup();
 
-  // Get set of joined group IDs for checking
-  const joinedGroupIds = new Set(userGroups.map(g => g.id));
+  // Memoize the joined group IDs set
+  const joinedGroupIds = useMemo(
+    () => new Set(userGroups.map(g => g.id)),
+    [userGroups]
+  );
 
-  const handleJoinGroup = async (groupId: string, e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
+  // Memoize the join handler
+  const handleJoinGroup = useCallback(
+    async (groupId: string, e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
 
-    if (!user) return;
+      if (!user) return;
 
-    const isJoined = joinedGroupIds.has(groupId);
+      const isJoined = joinedGroupIds.has(groupId);
+      setError(null); // Clear any previous errors
 
-    try {
-      setJoiningGroupId(groupId);
+      try {
+        setJoiningGroupId(groupId);
 
-      if (isJoined) {
-        await leaveGroupMutation.mutateAsync({ groupId, userId: user.id });
-      } else {
-        await joinGroupMutation.mutateAsync({ groupId, userId: user.id });
+        if (isJoined) {
+          await leaveGroupMutation.mutateAsync({ groupId, userId: user.id });
+        } else {
+          await joinGroupMutation.mutateAsync({ groupId, userId: user.id });
+        }
+      } catch (err) {
+        console.error('Failed to join/leave group:', err);
+        setError(
+          isJoined
+            ? 'Failed to leave group. Please try again.'
+            : 'Failed to join group. Please try again.'
+        );
+      } finally {
+        setJoiningGroupId(null);
       }
-    } catch (error) {
-      console.error('Failed to join/leave group:', error);
-    } finally {
-      setJoiningGroupId(null);
-    }
-  };
+    },
+    [user, joinedGroupIds, joinGroupMutation, leaveGroupMutation]
+  );
 
   if (!user) {
     return (
@@ -130,6 +149,49 @@ export default function GroupsPage() {
             Create a Group
           </Link>
         </div>
+
+        {/* Error Message */}
+        {error && (
+          <div
+            className="mx-6 md:mx-8 mb-6 p-4 bg-red-50 border border-red-200 rounded-lg"
+            role="alert"
+          >
+            <div className="flex items-start">
+              <svg
+                className="w-5 h-5 text-red-600 mr-3 flex-shrink-0 mt-0.5"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+                aria-hidden="true"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-red-800">{error}</p>
+              </div>
+              <button
+                onClick={() => setError(null)}
+                className="ml-3 flex-shrink-0 text-red-600 hover:text-red-800 transition-colors"
+                aria-label="Dismiss error"
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* My Groups - Vertical List */}
         {isLoadingUserGroups ? (

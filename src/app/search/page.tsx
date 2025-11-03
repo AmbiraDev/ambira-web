@@ -1,7 +1,7 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
-import { useState, Suspense, useMemo } from 'react';
+import { useState, Suspense, useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import Header from '@/components/HeaderComponent';
 import BottomNavigation from '@/components/BottomNavigation';
@@ -123,49 +123,57 @@ function SearchContent() {
       ? isLoadingSuggestedUsers
       : isLoadingSuggestedGroups;
 
-  const handleFollowChange = (userId: string, isFollowing: boolean) => {
-    // Optimistically update the following IDs set
-    queryClient.setQueryData(
-      ['following-ids', user!.id],
-      (old: Set<string> = new Set()) => {
-        const newSet = new Set(old);
-        if (isFollowing) {
-          newSet.add(userId);
-        } else {
-          newSet.delete(userId);
+  // Memoize the follow handler
+  const handleFollowChange = useCallback(
+    (userId: string, isFollowing: boolean) => {
+      // Optimistically update the following IDs set
+      queryClient.setQueryData(
+        ['following-ids', user!.id],
+        (old: Set<string> = new Set()) => {
+          const newSet = new Set(old);
+          if (isFollowing) {
+            newSet.add(userId);
+          } else {
+            newSet.delete(userId);
+          }
+          return newSet;
         }
-        return newSet;
+      );
+    },
+    [queryClient, user]
+  );
+
+  // Memoize the join group handler
+  const handleJoinGroup = useCallback(
+    async (groupId: string, e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      if (!user) return;
+
+      const isJoined = joinedGroupIds.has(groupId);
+
+      try {
+        setJoiningGroup(groupId);
+
+        if (isJoined) {
+          await firebaseApi.group.leaveGroup(groupId, user.id);
+        } else {
+          await firebaseApi.group.joinGroup(groupId, user.id);
+        }
+
+        // Invalidate user groups cache to refetch
+        queryClient.invalidateQueries({
+          queryKey: CACHE_KEYS.USER_GROUPS(user.id),
+        });
+      } catch {
+        console.error('Failed to join/leave group');
+      } finally {
+        setJoiningGroup(null);
       }
-    );
-  };
-
-  const handleJoinGroup = async (groupId: string, e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    if (!user) return;
-
-    const isJoined = joinedGroupIds.has(groupId);
-
-    try {
-      setJoiningGroup(groupId);
-
-      if (isJoined) {
-        await firebaseApi.group.leaveGroup(groupId, user.id);
-      } else {
-        await firebaseApi.group.joinGroup(groupId, user.id);
-      }
-
-      // Invalidate user groups cache to refetch
-      queryClient.invalidateQueries({
-        queryKey: CACHE_KEYS.USER_GROUPS(user.id),
-      });
-    } catch {
-      console.error('Failed to join/leave group');
-    } finally {
-      setJoiningGroup(null);
-    }
-  };
+    },
+    [user, joinedGroupIds, queryClient]
+  );
 
   const renderUserResult = (user: UserSearchResult | SuggestedUser) => {
     if ('isSelf' in user && user.isSelf) {

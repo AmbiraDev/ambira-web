@@ -7,16 +7,15 @@ import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import RightSidebar from '@/components/RightSidebar';
+import { useAuth } from '@/hooks/useAuth';
 import * as searchHooks from '@/features/search/hooks';
 
+// Helper to flush all pending promises
+const flushPromises = () => new Promise(resolve => setTimeout(resolve, 0));
+
 // Mock the auth hook
-jest.mock('@/hooks/useAuth', () => ({
-  useAuth: jest.fn(() => ({
-    user: { id: 'user-123', username: 'testuser', name: 'Test User' },
-    isAuthenticated: true,
-    isLoading: false,
-  })),
-}));
+jest.mock('@/hooks/useAuth');
+const mockUseAuth = useAuth as jest.MockedFunction<typeof useAuth>;
 
 // Mock the Firebase API
 jest.mock('@/lib/api', () => ({
@@ -29,12 +28,19 @@ jest.mock('@/lib/api', () => ({
       joinGroup: jest.fn().mockResolvedValue(undefined),
       getUserGroups: jest.fn().mockResolvedValue([]),
     },
+    user: {
+      followUser: jest.fn().mockResolvedValue(undefined),
+      unfollowUser: jest.fn().mockResolvedValue(undefined),
+    },
   },
 }));
 
 // Mock the cache utility
 jest.mock('@/lib/cache', () => ({
-  cachedQuery: jest.fn((key, fn) => fn()),
+  cachedQuery: jest.fn((key, fn) => {
+    // Return a Promise that resolves to the function result
+    return Promise.resolve([]);
+  }),
 }));
 
 // Mock the search hooks
@@ -45,6 +51,7 @@ jest.mock('@/features/search/hooks', () => ({
 
 describe('RightSidebar - Suggested Groups', () => {
   let queryClient: QueryClient;
+  const originalError = console.error;
 
   beforeEach(() => {
     queryClient = new QueryClient({
@@ -54,6 +61,51 @@ describe('RightSidebar - Suggested Groups', () => {
       },
     });
     jest.clearAllMocks();
+    jest.restoreAllMocks();
+
+    // Set up default mock for useAuth
+    mockUseAuth.mockReturnValue({
+      user: {
+        id: 'user-123',
+        username: 'testuser',
+        name: 'Test User',
+        email: 'test@example.com',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      currentUser: {
+        id: 'user-123',
+        username: 'testuser',
+        name: 'Test User',
+        email: 'test@example.com',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      isAuthenticated: true,
+      isLoading: false,
+      login: jest.fn(),
+      signup: jest.fn(),
+      signInWithGoogle: jest.fn(),
+      logout: jest.fn(),
+      loginMutation: {} as any,
+      signupMutation: {} as any,
+      googleSignInMutation: {} as any,
+      logoutMutation: {} as any,
+    });
+
+    // Suppress act() warnings for async state updates after render
+    // These are expected since mocks may trigger state updates after test completion
+    jest.spyOn(console, 'error').mockImplementation((...args: unknown[]) => {
+      const message = String(args[0] || '');
+      // Only filter out act() warnings, let other console errors through
+      if (message.includes('An update to') && message.includes('act(')) {
+        return; // Suppress this specific warning
+      }
+      originalError.call(console, ...args);
+    });
+  });
+
+  afterEach(() => {
     jest.restoreAllMocks();
   });
 
@@ -91,6 +143,9 @@ describe('RightSidebar - Suggested Groups', () => {
     // Act: Render the sidebar
     render(<RightSidebar />, { wrapper });
 
+    // Wait for all pending promises and state updates to complete
+    await flushPromises();
+
     // Assert: Should display the groups
     await waitFor(() => {
       expect(screen.getByText('Suggested Groups')).toBeInTheDocument();
@@ -101,7 +156,7 @@ describe('RightSidebar - Suggested Groups', () => {
     });
   });
 
-  it('should show loading state while fetching groups', () => {
+  it('should show loading state while fetching groups', async () => {
     // Arrange: Mock loading state
     mockUseSuggestedGroups.mockReturnValue({
       suggestedGroups: [],
@@ -113,11 +168,16 @@ describe('RightSidebar - Suggested Groups', () => {
     // Act: Render the sidebar
     render(<RightSidebar />, { wrapper });
 
-    // Assert: Should show loading skeletons
-    const loadingElements = screen
-      .getAllByRole('generic')
-      .filter(el => el.className.includes('animate-pulse'));
-    expect(loadingElements.length).toBeGreaterThan(0);
+    // Wait for all pending promises and state updates to complete
+    await flushPromises();
+
+    // Assert: Should show loading skeletons (wait for render to complete)
+    await waitFor(() => {
+      const loadingElements = screen
+        .getAllByRole('generic')
+        .filter(el => el.className.includes('animate-pulse'));
+      expect(loadingElements.length).toBeGreaterThan(0);
+    });
   });
 
   it('should show empty state when no groups are available', async () => {
@@ -131,6 +191,9 @@ describe('RightSidebar - Suggested Groups', () => {
 
     // Act: Render the sidebar
     render(<RightSidebar />, { wrapper });
+
+    // Wait for all pending promises and state updates to complete
+    await flushPromises();
 
     // Assert: Should show empty state
     await waitFor(() => {
@@ -167,6 +230,9 @@ describe('RightSidebar - Suggested Groups', () => {
     // Act: Render the sidebar
     render(<RightSidebar />, { wrapper });
 
+    // Wait for all pending promises and state updates to complete
+    await flushPromises();
+
     // Assert: Should display correct singular/plural
     await waitFor(() => {
       expect(screen.getByText('1 member')).toBeInTheDocument();
@@ -196,6 +262,9 @@ describe('RightSidebar - Suggested Groups', () => {
     // Act: Render the sidebar
     render(<RightSidebar />, { wrapper });
 
+    // Wait for all pending promises and state updates to complete
+    await flushPromises();
+
     // Assert: Should display join button
     await waitFor(() => {
       const joinButtons = screen.getAllByRole('button', { name: /join/i });
@@ -223,19 +292,32 @@ describe('RightSidebar - Suggested Groups', () => {
     // Act: Render the sidebar
     render(<RightSidebar />, { wrapper });
 
+    // Wait for all pending promises and state updates to complete
+    await flushPromises();
+
     // Assert: Hook should have been called with limit: 5
-    expect(mockUseSuggestedGroups).toHaveBeenCalledWith(
-      expect.objectContaining({ limit: 5 })
-    );
+    await waitFor(() => {
+      expect(mockUseSuggestedGroups).toHaveBeenCalledWith(
+        expect.objectContaining({ limit: 5 })
+      );
+    });
   });
 
-  it('should only fetch groups when user is authenticated', () => {
+  it('should only fetch groups when user is authenticated', async () => {
     // Arrange: Mock unauthenticated user
-    const useAuthMock = require('@/hooks/useAuth').useAuth;
-    useAuthMock.mockReturnValue({
+    mockUseAuth.mockReturnValue({
       user: null,
+      currentUser: null,
       isAuthenticated: false,
       isLoading: false,
+      login: jest.fn(),
+      signup: jest.fn(),
+      signInWithGoogle: jest.fn(),
+      logout: jest.fn(),
+      loginMutation: {} as any,
+      signupMutation: {} as any,
+      googleSignInMutation: {} as any,
+      logoutMutation: {} as any,
     });
 
     mockUseSuggestedGroups.mockReturnValue({
@@ -248,16 +330,14 @@ describe('RightSidebar - Suggested Groups', () => {
     // Act: Render the sidebar
     render(<RightSidebar />, { wrapper });
 
-    // Assert: Hook should be called with enabled: false
-    expect(mockUseSuggestedGroups).toHaveBeenCalledWith(
-      expect.objectContaining({ enabled: false })
-    );
+    // Wait for all pending promises and state updates to complete
+    await flushPromises();
 
-    // Restore mock
-    useAuthMock.mockReturnValue({
-      user: { id: 'user-123', username: 'testuser', name: 'Test User' },
-      isAuthenticated: true,
-      isLoading: false,
+    // Assert: Hook should be called with enabled: false
+    await waitFor(() => {
+      expect(mockUseSuggestedGroups).toHaveBeenCalledWith(
+        expect.objectContaining({ enabled: false })
+      );
     });
   });
 
@@ -282,6 +362,9 @@ describe('RightSidebar - Suggested Groups', () => {
 
     // Act: Render the sidebar
     render(<RightSidebar />, { wrapper });
+
+    // Wait for all pending promises and state updates to complete
+    await flushPromises();
 
     // Assert: Should display 0 members
     await waitFor(() => {

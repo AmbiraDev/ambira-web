@@ -10,6 +10,7 @@ import GroupAvatar from '@/components/GroupAvatar';
 import SuggestedPeopleModal from '@/components/SuggestedPeopleModal';
 import SuggestedGroupsModal from '@/components/SuggestedGroupsModal';
 import { useSuggestedGroups } from '@/features/search/hooks';
+import { GROUP_DISPLAY_CONFIG } from '@/lib/constants/groupDisplay';
 
 interface SuggestedUser {
   id: string;
@@ -18,14 +19,6 @@ interface SuggestedUser {
   location?: string;
   followersCount: number;
   profilePicture?: string;
-}
-
-interface SuggestedGroup {
-  id: string;
-  name: string;
-  memberCount: number;
-  description: string;
-  imageUrl?: string;
 }
 
 function RightSidebar() {
@@ -44,7 +37,7 @@ function RightSidebar() {
   } = useSuggestedGroups({
     userId: user?.id,
     enabled: !!user,
-    limit: 5,
+    limit: GROUP_DISPLAY_CONFIG.SUGGESTED_GROUPS_LIMIT,
   });
 
   const loadSuggestedContent = useCallback(async () => {
