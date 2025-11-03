@@ -13,6 +13,7 @@ import MobileHeader from '@/components/MobileHeader';
 import LeftSidebar from '@/components/LeftSidebar';
 import RightSidebar from '@/components/RightSidebar';
 import BottomNavigation from '@/components/BottomNavigation';
+import Footer from '@/components/Footer';
 import Feed from '@/components/Feed';
 import {
   FeedFilterDropdown,
@@ -49,14 +50,14 @@ export function FeedPageContent() {
   }
 
   return (
-    <div className="h-screen flex flex-col bg-gray-50 overflow-hidden">
+    <div className="min-h-screen flex flex-col bg-gray-50">
       {/* Mobile header */}
-      <MobileHeader title="Feed" showNotifications={true} />
+      <MobileHeader title="Home" showNotifications={true} />
 
       {/* Main Content Area - Scrollable */}
-      <div className="flex-1 overflow-hidden">
-        <div className="h-full max-w-[1400px] mx-auto md:px-4 md:py-6">
-          <div className="h-full flex md:gap-4 md:justify-center">
+      <div className="flex-1">
+        <div className="max-w-[1400px] mx-auto md:px-4 md:py-6">
+          <div className="flex md:gap-4 md:justify-center">
             {/* Left Sidebar - Fixed, hidden on mobile */}
             <div className="hidden md:block flex-shrink-0">
               <LeftSidebar />
@@ -66,7 +67,7 @@ export function FeedPageContent() {
             <main
               id="main-feed"
               role="main"
-              className="flex-1 min-w-0 max-w-[600px] mx-auto h-full overflow-y-auto scrollbar-hide"
+              className="flex-1 min-w-0 max-w-[600px] mx-auto"
             >
               {/* Filter Dropdown - Desktop only */}
               <div className="hidden md:block px-4 md:px-0 pt-3 pb-2 sticky top-0 z-10 bg-gray-50">
@@ -241,6 +242,9 @@ export function FeedPageContent() {
           </div>
         </div>
       </div>
+
+      {/* Footer - hidden on mobile */}
+      <Footer />
 
       {/* Bottom padding for mobile navigation */}
       <div className="h-20 md:hidden" />

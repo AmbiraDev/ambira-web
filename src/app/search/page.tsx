@@ -9,7 +9,7 @@ import GroupAvatar from '@/components/GroupAvatar';
 import { useAuth } from '@/hooks/useAuth';
 import { useDebounce } from '@/hooks/useDebounce';
 import { UserCardCompact } from '@/components/UserCard';
-import { Users } from 'lucide-react';
+import { Users, Search } from 'lucide-react';
 import { firebaseApi } from '@/lib/api';
 import { useQueryClient } from '@tanstack/react-query';
 import { CACHE_KEYS } from '@/lib/queryClient';
@@ -265,22 +265,72 @@ function SearchContent() {
       </div>
 
       {/* Mobile search header */}
-      <div className="md:hidden bg-white border-b border-gray-200 px-4 py-3 sticky top-0 z-40">
-        <div className="flex items-center space-x-3">
-          <svg
-            className="w-6 h-6 text-gray-600"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
+      <div className="md:hidden bg-white border-b border-gray-200 sticky top-0 z-40">
+        <div className="flex items-center justify-between px-4 h-14">
+          {/* Back button */}
+          <button
+            onClick={() => window.history.back()}
+            className="p-2 -ml-2 text-gray-600 hover:text-gray-900 transition-colors"
+            aria-label="Go back"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-            />
-          </svg>
-          <h1 className="text-xl font-semibold text-gray-900">Discover</h1>
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 19l-7-7 7-7"
+              />
+            </svg>
+          </button>
+
+          {/* Centered title */}
+          <h1 className="text-lg font-semibold text-gray-900 absolute left-1/2 -translate-x-1/2">
+            Discover
+          </h1>
+
+          {/* Empty spacer for symmetry */}
+          <div className="w-10" />
+        </div>
+
+        {/* Filter Tabs */}
+        <div className="flex border-b border-gray-200 bg-gray-50">
+          <button
+            type="button"
+            onClick={() =>
+              (window.location.href = `/search?q=${encodeURIComponent(initialQuery)}&type=people`)
+            }
+            className={`relative flex-1 py-4 px-4 text-base font-medium transition-colors ${
+              type === 'people'
+                ? 'text-[#0066CC]'
+                : 'text-gray-500'
+            }`}
+          >
+            People
+            {type === 'people' && (
+              <div className="absolute bottom-0 left-4 right-4 h-0.5 bg-[#0066CC]" />
+            )}
+          </button>
+          <button
+            type="button"
+            onClick={() =>
+              (window.location.href = `/search?q=${encodeURIComponent(initialQuery)}&type=groups`)
+            }
+            className={`relative flex-1 py-4 px-4 text-base font-medium transition-colors ${
+              type === 'groups'
+                ? 'text-[#0066CC]'
+                : 'text-gray-500'
+            }`}
+          >
+            Groups
+            {type === 'groups' && (
+              <div className="absolute bottom-0 left-4 right-4 h-0.5 bg-[#0066CC]" />
+            )}
+          </button>
         </div>
       </div>
 
@@ -306,65 +356,21 @@ function SearchContent() {
                 window.location.href = `/search?q=${encodeURIComponent(query.trim())}&type=${type}`;
             }}
           >
-            <div className="space-y-4">
-              {/* Filter Tabs */}
-              <div className="flex bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
-                <button
-                  type="button"
-                  onClick={() =>
-                    (window.location.href = `/search?q=${encodeURIComponent(initialQuery)}&type=people`)
-                  }
-                  className={`flex-1 py-3 px-4 text-sm font-medium transition-all border-r border-gray-200 last:border-r-0 ${
-                    type === 'people'
-                      ? 'bg-[#0066CC] text-white'
-                      : 'text-gray-700 hover:bg-gray-50'
-                  }`}
-                >
-                  People
-                </button>
-                <button
-                  type="button"
-                  onClick={() =>
-                    (window.location.href = `/search?q=${encodeURIComponent(initialQuery)}&type=groups`)
-                  }
-                  className={`flex-1 py-3 px-4 text-sm font-medium transition-all ${
-                    type === 'groups'
-                      ? 'bg-[#0066CC] text-white'
-                      : 'text-gray-700 hover:bg-gray-50'
-                  }`}
-                >
-                  Groups
-                </button>
-              </div>
-
-              {/* Search Input */}
-              <div className="relative">
-                <input
-                  type="text"
-                  value={query}
-                  onChange={e => setQuery(e.target.value)}
-                  placeholder={`Search ${type}...`}
-                  className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FC4C02] focus:border-transparent text-base"
-                />
-                <button
-                  type="submit"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-gray-400 hover:text-[#FC4C02] transition-colors"
-                >
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                    />
-                  </svg>
-                </button>
-              </div>
+            {/* Search Input */}
+            <div className="relative">
+              <input
+                type="text"
+                value={query}
+                onChange={e => setQuery(e.target.value)}
+                placeholder={`Search ${type}...`}
+                className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#FC4C02] focus:border-transparent text-base"
+              />
+              <button
+                type="submit"
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-gray-400 hover:text-[#FC4C02] transition-colors"
+              >
+                <Search className="w-5 h-5" />
+              </button>
             </div>
           </form>
         </div>
@@ -463,19 +469,7 @@ function SearchContent() {
             <>
               {type === 'people' && enhancedUsers.length === 0 && (
                 <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
-                  <svg
-                    className="w-20 h-20 mx-auto text-gray-300"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                    />
-                  </svg>
+                  <Search className="w-20 h-20 mx-auto text-gray-300" />
                   <h3 className="mt-4 text-lg font-medium text-gray-900">
                     No results found
                   </h3>
@@ -490,19 +484,7 @@ function SearchContent() {
 
               {type === 'groups' && searchGroups.length === 0 && (
                 <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
-                  <svg
-                    className="w-20 h-20 mx-auto text-gray-300"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                    />
-                  </svg>
+                  <Search className="w-20 h-20 mx-auto text-gray-300" />
                   <h3 className="mt-4 text-lg font-medium text-gray-900">
                     No results found
                   </h3>

@@ -9,6 +9,9 @@ import {
   useLeaveChallenge,
 } from '@/features/challenges/hooks';
 import Header from '@/components/HeaderComponent';
+import MobileHeader from '@/components/MobileHeader';
+import BottomNavigation from '@/components/BottomNavigation';
+import Footer from '@/components/Footer';
 import ChallengeCard from '@/components/ChallengeCard';
 import { Button } from '@/components/ui/button';
 import { Trophy, Target, Search, TrendingUp, Zap, Timer } from 'lucide-react';
@@ -105,10 +108,13 @@ export default function ChallengesPage() {
   }, [challenges, searchQuery]);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Header />
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      <div className="hidden md:block">
+        <Header />
+      </div>
+      <MobileHeader title="Challenges" />
 
-      <div className="max-w-6xl mx-auto px-4 md:px-6 lg:px-8 py-6">
+      <div className="flex-1 max-w-6xl mx-auto px-4 md:px-6 lg:px-8 py-6 min-h-[calc(100vh-3.5rem)]">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Challenges</h1>
@@ -222,6 +228,14 @@ export default function ChallengesPage() {
           </div>
         )}
       </div>
+
+      {/* Footer - hidden on mobile */}
+      <Footer />
+
+      {/* Bottom padding for mobile navigation */}
+      <div className="h-20 md:hidden" />
+
+      <BottomNavigation />
     </div>
   );
 }

@@ -255,7 +255,7 @@ export function SettingsPageContent() {
 
   return (
     <>
-      <div className="min-h-screen bg-gray-50 pb-20 md:pb-0">
+      <div className="min-h-screen bg-gray-50 pb-[6.5rem] md:pb-0">
         {/* Desktop Header */}
         <div className="hidden md:block">
           <Header />

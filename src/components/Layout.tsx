@@ -2,6 +2,7 @@
 
 import Header from './HeaderComponent';
 import BottomNavigation from './BottomNavigation';
+import Footer from './Footer';
 import { LeftSidebar, RightSidebar } from './Sidebar';
 
 interface LayoutProps {
@@ -16,7 +17,7 @@ function Layout({ children, showSidebars = true }: LayoutProps) {
       <div className="hidden md:block">
         <Header />
       </div>
-      
+
       <main className="md:pt-16">
         <div className="container mx-auto md:px-4 md:py-8">
           {showSidebars ? (
@@ -41,9 +42,12 @@ function Layout({ children, showSidebars = true }: LayoutProps) {
         </div>
       </main>
 
+      {/* Footer - hidden on mobile */}
+      <Footer />
+
       {/* Bottom padding for mobile navigation */}
       <div className="h-20 md:hidden" />
-      
+
       <BottomNavigation />
     </div>
   );

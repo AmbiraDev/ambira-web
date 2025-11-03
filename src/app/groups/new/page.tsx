@@ -166,7 +166,7 @@ export default function CreateGroupPage() {
       </div>
       <MobileHeader title="Create Group" />
 
-      <div className="max-w-3xl mx-auto px-4 md:px-6 lg:px-8 py-6">
+      <div className="w-full max-w-[1400px] mx-auto px-6 md:px-8 pt-6 pb-16 md:py-8">
         {/* Back button */}
         <Link
           href="/groups"
@@ -195,7 +195,7 @@ export default function CreateGroupPage() {
         )}
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl">
           {/* Group Picture */}
           <div>
             <label className="block text-sm font-semibold text-gray-900 mb-2">
@@ -236,9 +236,6 @@ export default function CreateGroupPage() {
               maxLength={60}
               disabled={isSubmitting}
             />
-            <p className="text-xs text-gray-500 mt-1">
-              {formData.name.length}/60 characters
-            </p>
           </div>
 
           {/* Location */}
@@ -324,13 +321,10 @@ export default function CreateGroupPage() {
               maxLength={200}
               disabled={isSubmitting}
             />
-            <p className="text-xs text-gray-500 mt-1">
-              {formData.description.length}/200 characters
-            </p>
           </div>
 
           {/* Form Actions */}
-          <div className="flex gap-3 pt-4 border-t border-gray-200">
+          <div className="flex gap-3 pt-4">
             <button
               type="button"
               onClick={() => router.back()}

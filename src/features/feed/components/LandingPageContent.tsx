@@ -8,6 +8,7 @@
 'use client';
 
 import Header from '@/components/HeaderComponent';
+import Footer from '@/components/Footer';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -166,11 +167,7 @@ export function LandingPageContent() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-gray-200 mt-20">
-        <div className="max-w-6xl mx-auto px-4 py-8 text-center text-muted-foreground">
-          <p>© 2025 Ambira. Make productivity social.</p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

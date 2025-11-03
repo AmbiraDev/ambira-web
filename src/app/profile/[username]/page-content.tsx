@@ -707,7 +707,7 @@ export default function ProfilePageContent({
   }
 
   return (
-    <div className="pb-24 md:pb-8">
+    <div className="pb-[6.5rem] md:pb-8">
       <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-6">
         <div className="max-w-4xl mx-auto">
           {/* Profile Card with This Week Stats */}
