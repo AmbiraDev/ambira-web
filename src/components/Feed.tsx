@@ -139,7 +139,8 @@ export const Feed: React.FC<FeedProps> = ({
     }
   }, [isLoadingMore, hasMore, fetchNextPage]);
 
-  // Check for new sessions only when user returns to tab (removed polling to reduce Firestore reads)
+  // Check for new sessions when user returns to tab + periodic polling at 5-minute intervals
+  // Balances cost savings with UX for users with feed open continuously
   useEffect(() => {
     if (allSessions.length === 0) return;
 
@@ -192,8 +193,20 @@ export const Feed: React.FC<FeedProps> = ({
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
+    // Check every 5 minutes when visible (balance cost vs freshness)
+    // Reduced from 2 minutes to 5 minutes to cut Firestore read costs
+    const interval = setInterval(
+      () => {
+        if (!document.hidden) {
+          checkForNewSessions();
+        }
+      },
+      5 * 60 * 1000
+    );
+
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
+      clearInterval(interval);
     };
   }, [
     allSessions,
@@ -280,10 +293,9 @@ export const Feed: React.FC<FeedProps> = ({
       .join(',');
   }, [allSessions]);
 
-  // Real-time updates for support counts (throttled to reduce reads)
+  // Real-time updates for support counts on top 3 sessions
   // Only listen to the first 3 sessions to reduce overhead (reduced from 10 for cost optimization)
-  // Note: React Query handles optimistic updates through mutations
-  // This listener is kept for reference but real-time updates happen via queryClient updates
+  // Invalidates React Query cache when sessions receive supports from other users
   useEffect(() => {
     if (allSessions.length === 0 || !top3SessionIdsString) return;
 
@@ -291,19 +303,25 @@ export const Feed: React.FC<FeedProps> = ({
     const sessionIds = top3SessionIdsString.split(',').filter(Boolean);
     if (sessionIds.length === 0) return;
 
-    // Register listener but don't update state directly
-    // React Query mutations handle support count updates via cache invalidation
+    // Register listener and invalidate cache when sessions are updated
+    // This ensures real-time support counts from other users are reflected
     const unsubscribe = firebaseApi.post.listenToSessionUpdates(
       sessionIds,
-      () => {
-        // Updates are handled by React Query's optimistic updates in supportMutation
-        // This listener can be used for real-time notifications in the future
+      updates => {
+        // Invalidate affected sessions in React Query cache
+        // updates is a Record<sessionId, { supportCount, isSupported }>
+        if (updates && Object.keys(updates).length > 0) {
+          queryClient.invalidateQueries({
+            queryKey: ['feed'],
+            refetchType: 'none', // Don't auto-refetch, just mark as stale
+          });
+        }
       }
     );
 
     return unsubscribe;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [top3SessionIdsString]); // Only re-run when top 3 IDs change, allSessions.length is checked but not needed as dependency since top3SessionIdsString already derives from allSessions
+  }, [top3SessionIdsString, queryClient]); // Only re-run when top 3 IDs change or queryClient changes
 
   // Infinite scroll using IntersectionObserver
   useEffect(() => {

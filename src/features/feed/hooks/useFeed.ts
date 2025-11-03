@@ -89,7 +89,18 @@ export function useFeedInfinite(
       return lastPage.hasMore ? lastPage.nextCursor : undefined;
     },
     initialPageParam: undefined as string | undefined,
-    staleTime: STANDARD_CACHE_TIMES.MEDIUM, // 5 minutes - increased from 1 min to reduce Firestore reads
+    // Cache Configuration:
+    // - 2 minutes balances feed freshness with Firebase read costs
+    // - Social feeds need relatively fresh data but don't require real-time updates
+    // - Shorter than general SHORT cache (1min) would cause excessive reads
+    staleTime: 2 * 60 * 1000, // 2 minutes
+    // Refetch Behavior:
+    // - On window focus: Ensures users see recent updates when returning to tab
+    // - On mount: Refreshes feed when navigating back to feed page (if stale)
+    // - On reconnect: Syncs data after network interruptions
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
+    refetchOnReconnect: true,
     enabled: !!currentUserId,
     ...options,
   });
@@ -112,7 +123,18 @@ export function useFeed(
   return useQuery<FeedResult, Error>({
     queryKey: [...FEED_KEYS.list(currentUserId, filters), limit],
     queryFn: () => feedService.getFeed(currentUserId, filters, { limit }),
-    staleTime: STANDARD_CACHE_TIMES.MEDIUM, // 5 minutes - increased from 1 min to reduce Firestore reads
+    // Cache Configuration:
+    // - 2 minutes balances feed freshness with Firebase read costs
+    // - Social feeds need relatively fresh data but don't require real-time updates
+    // - Shorter than general SHORT cache (1min) would cause excessive reads
+    staleTime: 2 * 60 * 1000, // 2 minutes
+    // Refetch Behavior:
+    // - On window focus: Ensures users see recent updates when returning to tab
+    // - On mount: Refreshes feed when navigating back to feed page (if stale)
+    // - On reconnect: Syncs data after network interruptions
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
+    refetchOnReconnect: true,
     enabled: !!currentUserId,
     ...options,
   });
