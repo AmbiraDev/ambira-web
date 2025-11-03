@@ -62,10 +62,14 @@ describe('components/NotificationsPanel', () => {
       configurable: true,
       writable: true,
     });
+    // Mock window.confirm to return true by default (user confirms)
+    global.confirm = jest.fn(() => true);
   });
 
   afterEach(() => {
     delete (document as unknown as Record<string, unknown>).elementFromPoint;
+    // Clean up window.confirm mock
+    jest.restoreAllMocks();
   });
 
   it('does not render when panel is closed', () => {
@@ -115,5 +119,28 @@ describe('components/NotificationsPanel', () => {
     expect(handleClose).toHaveBeenCalled();
     expect(pushMock).toHaveBeenCalledWith('/users/alex');
     expect(markNotificationReadMock).toHaveBeenCalledWith('notif-1');
+  });
+
+  it('does not clear all notifications when user cancels confirmation', async () => {
+    const notifications = [notificationFactory()];
+    useNotificationsMock.mockReturnValue({ data: notifications });
+    useUnreadCountMock.mockReturnValue(1);
+
+    // Mock confirm to return false (user cancels)
+    global.confirm = jest.fn(() => false);
+
+    render(<NotificationsPanel isOpen onClose={jest.fn()} />);
+
+    fireEvent.click(screen.getByText('Clear all'));
+
+    // Verify confirm was called with the right message
+    expect(global.confirm).toHaveBeenCalledWith(
+      'Are you sure you want to delete all notifications? This cannot be undone.'
+    );
+
+    // Verify the mutation was NOT called
+    await waitFor(() => {
+      expect(clearAllMock).not.toHaveBeenCalled();
+    });
   });
 });
