@@ -139,16 +139,13 @@ export const Feed: React.FC<FeedProps> = ({
     }
   }, [isLoadingMore, hasMore, fetchNextPage]);
 
-  // Check for new sessions periodically - only when page is visible
+  // Check for new sessions only when user returns to tab (removed polling to reduce Firestore reads)
   useEffect(() => {
     if (allSessions.length === 0) return;
 
-    // Track if page is currently visible
-    let isPageVisible = !document.hidden;
-
     const checkForNewSessions = async () => {
       // Skip check if page is not visible
-      if (!isPageVisible) return;
+      if (document.hidden) return;
 
       try {
         // Use queryClient to check cache first, then fetch if stale
@@ -186,22 +183,16 @@ export const Feed: React.FC<FeedProps> = ({
       }
     };
 
-    // Update visibility state when page visibility changes
+    // Check for new sessions when page becomes visible
     const handleVisibilityChange = () => {
-      isPageVisible = !document.hidden;
-      // Check immediately when page becomes visible
-      if (isPageVisible) {
+      if (!document.hidden) {
         checkForNewSessions();
       }
     };
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
-    // Check every 2 minutes when visible (reduced frequency saves resources)
-    const interval = setInterval(checkForNewSessions, 120000);
-
     return () => {
-      clearInterval(interval);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, [
@@ -278,10 +269,11 @@ export const Feed: React.FC<FeedProps> = ({
     }
   }, [deleteConfirmSession, deleteSessionMutation]);
 
-  // Memoize top 10 session IDs string to create stable dependency
-  // This prevents useEffect from re-running when sessions array changes but top 10 IDs remain same
-  const top10SessionIdsString = useMemo(() => {
-    const MAX_LISTENERS = 10;
+  // Memoize top 3 session IDs string to create stable dependency
+  // This prevents useEffect from re-running when sessions array changes but top 3 IDs remain same
+  // Reduced from 10 to 3 to minimize Firestore real-time listener costs
+  const top3SessionIdsString = useMemo(() => {
+    const MAX_LISTENERS = 3;
     return allSessions
       .slice(0, MAX_LISTENERS)
       .map(session => session.id)
@@ -289,14 +281,14 @@ export const Feed: React.FC<FeedProps> = ({
   }, [allSessions]);
 
   // Real-time updates for support counts (throttled to reduce reads)
-  // Only listen to the first 10 sessions to reduce overhead
+  // Only listen to the first 3 sessions to reduce overhead (reduced from 10 for cost optimization)
   // Note: React Query handles optimistic updates through mutations
   // This listener is kept for reference but real-time updates happen via queryClient updates
   useEffect(() => {
-    if (allSessions.length === 0 || !top10SessionIdsString) return;
+    if (allSessions.length === 0 || !top3SessionIdsString) return;
 
     // Parse session IDs from memoized string
-    const sessionIds = top10SessionIdsString.split(',').filter(Boolean);
+    const sessionIds = top3SessionIdsString.split(',').filter(Boolean);
     if (sessionIds.length === 0) return;
 
     // Register listener but don't update state directly
@@ -311,7 +303,7 @@ export const Feed: React.FC<FeedProps> = ({
 
     return unsubscribe;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [top10SessionIdsString]); // Only re-run when top 10 IDs change, allSessions.length is checked but not needed as dependency since top10SessionIdsString already derives from allSessions
+  }, [top3SessionIdsString]); // Only re-run when top 3 IDs change, allSessions.length is checked but not needed as dependency since top3SessionIdsString already derives from allSessions
 
   // Infinite scroll using IntersectionObserver
   useEffect(() => {

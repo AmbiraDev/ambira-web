@@ -89,7 +89,7 @@ export function useFeedInfinite(
       return lastPage.hasMore ? lastPage.nextCursor : undefined;
     },
     initialPageParam: undefined as string | undefined,
-    staleTime: STANDARD_CACHE_TIMES.SHORT, // 1 minute - feed data changes frequently
+    staleTime: STANDARD_CACHE_TIMES.MEDIUM, // 5 minutes - increased from 1 min to reduce Firestore reads
     enabled: !!currentUserId,
     ...options,
   });
@@ -112,7 +112,7 @@ export function useFeed(
   return useQuery<FeedResult, Error>({
     queryKey: [...FEED_KEYS.list(currentUserId, filters), limit],
     queryFn: () => feedService.getFeed(currentUserId, filters, { limit }),
-    staleTime: STANDARD_CACHE_TIMES.SHORT, // 1 minute
+    staleTime: STANDARD_CACHE_TIMES.MEDIUM, // 5 minutes - increased from 1 min to reduce Firestore reads
     enabled: !!currentUserId,
     ...options,
   });
