@@ -42,9 +42,9 @@ export default function GroupsPage() {
       </div>
       <MobileHeader title="Groups" showNotifications={true} showProfilePicture={false} />
 
-      <div className="flex-1 max-w-5xl mx-auto py-4 min-h-[calc(100vh-3.5rem)]">
+      <div className="flex-1 w-full max-w-[1400px] mx-auto pt-6 pb-4 md:py-8 min-h-[calc(100vh-3.5rem)]">
         {/* Page Header */}
-        <div className="flex items-center justify-between mb-6 px-0 md:px-6">
+        <div className="flex items-center justify-between mb-6 px-6 md:px-8">
           <div>
             <h1 className="text-xl md:text-2xl font-bold text-gray-900">
               My Groups
@@ -64,14 +64,15 @@ export default function GroupsPage() {
           <div>
             <div className="space-y-0">
               {[...Array(3)].map((_, i) => (
-                <div key={i} className="py-5 px-0 border-b border-gray-200">
-                  <div className="flex items-start gap-4">
-                    <div className="w-16 h-16 bg-gray-200 rounded-xl animate-pulse flex-shrink-0"></div>
+                <div key={i} className="py-5 px-6 md:px-8 border-b border-gray-200">
+                  <div className="flex items-start gap-4 md:gap-6">
+                    <div className="w-16 h-16 md:w-20 md:h-20 bg-gray-200 rounded-xl animate-pulse flex-shrink-0"></div>
                     <div className="flex-1 min-w-0 space-y-3">
-                      <div className="h-6 bg-gray-200 rounded w-48 animate-pulse"></div>
-                      <div className="space-y-1">
-                        <div className="h-4 bg-gray-200 rounded w-32 animate-pulse"></div>
-                        <div className="h-4 bg-gray-200 rounded w-40 animate-pulse"></div>
+                      <div className="h-6 md:h-7 bg-gray-200 rounded w-48 md:w-64 animate-pulse"></div>
+                      <div className="space-y-2">
+                        <div className="h-4 bg-gray-200 rounded w-32 md:w-96 animate-pulse"></div>
+                        <div className="h-4 bg-gray-200 rounded w-40 md:w-80 animate-pulse"></div>
+                        <div className="hidden md:block h-4 bg-gray-200 rounded w-72 animate-pulse"></div>
                       </div>
                     </div>
                   </div>
@@ -86,7 +87,7 @@ export default function GroupsPage() {
             ))}
           </div>
         ) : (
-          <div className="text-center py-12 px-4 bg-white border border-gray-200 rounded-lg mx-0 md:mx-6">
+          <div className="text-center py-12 px-4 bg-white border border-gray-200 rounded-lg mx-6 md:mx-8">
             <div className="max-w-md mx-auto">
               <Users
                 className="w-16 h-16 text-gray-300 mx-auto mb-4"
