@@ -1,13 +1,13 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import {
   useUserGroups,
-  usePublicGroups,
   useJoinGroup,
   useLeaveGroup,
 } from '@/features/groups/hooks';
+import { useSuggestedGroups } from '@/features/search/hooks';
 import Header from '@/components/HeaderComponent';
 import MobileHeader from '@/components/MobileHeader';
 import BottomNavigation from '@/components/BottomNavigation';
@@ -16,6 +16,7 @@ import { MyGroupListItem } from '@/components/MyGroupListItem';
 import { SuggestedGroupListItem } from '@/components/SuggestedGroupListItem';
 import { Users } from 'lucide-react';
 import Link from 'next/link';
+import { Group } from '@/types';
 
 export default function GroupsPage() {
   const { user } = useAuth();
@@ -27,27 +28,42 @@ export default function GroupsPage() {
       enabled: !!user?.id,
     });
 
-  // Fetch public groups for discovery
-  const { data: publicGroups = [], isLoading: isLoadingPublicGroups } =
-    usePublicGroups(20, {
-      enabled: !!user?.id,
-    });
+  // Fetch suggested groups (automatically filters out joined groups)
+  const {
+    suggestedGroups: fetchedSuggestedGroups,
+    isLoading: isLoadingSuggestedGroups,
+  } = useSuggestedGroups({
+    userId: user?.id,
+    enabled: !!user?.id,
+    limit: 5,
+  });
+
+  // Convert suggested groups to Group type and limit to 5
+  const suggestedGroups: Group[] = fetchedSuggestedGroups
+    .slice(0, 5)
+    .map(g => ({
+      id: g.id,
+      name: g.name,
+      description: g.description,
+      category: (g.category as Group['category']) || 'other',
+      type: 'professional',
+      privacySetting: 'public',
+      memberCount: g.memberCount || 0,
+      adminUserIds: [],
+      memberIds: [],
+      createdByUserId: '',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      imageUrl: g.imageUrl,
+      location: g.location,
+    }));
 
   // Mutations for joining/leaving groups
   const joinGroupMutation = useJoinGroup();
   const leaveGroupMutation = useLeaveGroup();
 
-  // Filter out groups user has already joined
-  const joinedGroupIds = useMemo(
-    () => new Set(userGroups.map(g => g.id)),
-    [userGroups]
-  );
-
-  const suggestedGroups = useMemo(
-    () =>
-      publicGroups.filter(group => !joinedGroupIds.has(group.id)).slice(0, 5),
-    [publicGroups, joinedGroupIds]
-  );
+  // Get set of joined group IDs for checking
+  const joinedGroupIds = new Set(userGroups.map(g => g.id));
 
   const handleJoinGroup = async (groupId: string, e: React.MouseEvent) => {
     e.preventDefault();
@@ -187,7 +203,7 @@ export default function GroupsPage() {
             </Link>
           </div>
 
-          {isLoadingPublicGroups ? (
+          {isLoadingSuggestedGroups ? (
             <div>
               <div className="space-y-0">
                 {[...Array(3)].map((_, i) => (
@@ -222,7 +238,7 @@ export default function GroupsPage() {
               ))}
             </div>
           ) : (
-            <div className="text-center py-12 px-4 bg-white border border-gray-200 rounded-lg mx-6 md:mx-8">
+            <div className="text-center py-12 px-6 md:px-8">
               <div className="max-w-md mx-auto">
                 <Users
                   className="w-16 h-16 text-gray-300 mx-auto mb-4"
