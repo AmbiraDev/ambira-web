@@ -23,37 +23,3 @@ export function truncateText(
   if (!text) return text;
   return text.length > maxLength ? `${text.substring(0, maxLength)}...` : text;
 }
-
-/**
- * Truncates text specifically for mobile displays (shorter length)
- *
- * @param text - The text to truncate
- * @param maxLength - Maximum length for mobile view
- * @returns Truncated text or original text
- *
- * @example
- * truncateTextMobile('Long Group Name Here', 30) // 'Long Group Name Here...'
- */
-export function truncateTextMobile(
-  text: string | undefined | null,
-  maxLength: number
-): string | undefined | null {
-  return truncateText(text, maxLength);
-}
-
-/**
- * Truncates text specifically for desktop displays (longer length)
- *
- * @param text - The text to truncate
- * @param maxLength - Maximum length for desktop view
- * @returns Truncated text or original text
- *
- * @example
- * truncateTextDesktop('Long Group Name Here', 60) // 'Long Group Name Here'
- */
-export function truncateTextDesktop(
-  text: string | undefined | null,
-  maxLength: number
-): string | undefined | null {
-  return truncateText(text, maxLength);
-}

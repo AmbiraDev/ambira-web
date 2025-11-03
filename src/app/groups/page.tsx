@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import {
   useUserGroups,
@@ -106,6 +106,18 @@ export default function GroupsPage() {
     },
     [user, joinedGroupIds, joinGroupMutation, leaveGroupMutation]
   );
+
+  // Handle Escape key to dismiss error messages
+  useEffect(() => {
+    const handleEscapeKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && error) {
+        setError(null);
+      }
+    };
+
+    document.addEventListener('keydown', handleEscapeKey);
+    return () => document.removeEventListener('keydown', handleEscapeKey);
+  }, [error]);
 
   if (!user) {
     return (
