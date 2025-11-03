@@ -352,10 +352,10 @@ function SearchContent() {
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 pt-6 pb-4 md:py-8 md:pt-24">
+      <div className="flex-1 w-full max-w-[1400px] mx-auto pt-6 pb-4 md:py-8 min-h-[calc(100vh-3.5rem)]">
         {/* Desktop Header with Tabs */}
-        <div className="hidden md:block mb-8">
-          <h1 className="text-2xl font-bold text-gray-900 mb-6">
+        <div className="hidden md:block mb-8 px-6 md:px-8">
+          <h1 className="text-xl md:text-2xl font-bold text-gray-900 mb-6">
             {initialQuery ? `Search Results for "${initialQuery}"` : 'Discover'}
           </h1>
 
@@ -397,7 +397,7 @@ function SearchContent() {
         </div>
 
         {/* Desktop Search Form */}
-        <div className="hidden md:block mb-6">
+        <div className="hidden md:block mb-6 px-6 md:px-8">
           <form
             onSubmit={e => {
               e.preventDefault();
@@ -424,7 +424,7 @@ function SearchContent() {
         </div>
 
         {/* Mobile Search Form */}
-        <div className="md:hidden mb-6">
+        <div className="md:hidden mb-6 px-4">
           <form
             onSubmit={e => {
               e.preventDefault();
