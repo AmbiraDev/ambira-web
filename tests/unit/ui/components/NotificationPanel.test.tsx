@@ -62,14 +62,10 @@ describe('components/NotificationsPanel', () => {
       configurable: true,
       writable: true,
     });
-    // Mock window.confirm to return true by default (user confirms)
-    global.confirm = jest.fn(() => true);
   });
 
   afterEach(() => {
     delete (document as unknown as Record<string, unknown>).elementFromPoint;
-    // Clean up window.confirm mock
-    jest.restoreAllMocks();
   });
 
   it('does not render when panel is closed', () => {
@@ -97,11 +93,26 @@ describe('components/NotificationsPanel', () => {
     expect(screen.getByText('Alex followed you')).toBeInTheDocument();
     expect(screen.getByText('just now')).toBeInTheDocument();
 
-    // Mark all as read & clear all
+    // Mark all as read
     fireEvent.click(screen.getByText('Mark all read'));
     await waitFor(() => expect(markAllMock).toHaveBeenCalledTimes(1));
 
+    // Clear all - opens confirmation dialog
     fireEvent.click(screen.getByText('Clear all'));
+
+    // Verify dialog appears
+    expect(screen.getByText('Clear All Notifications')).toBeInTheDocument();
+    expect(
+      screen.getByText(
+        'Are you sure you want to delete all notifications? This action cannot be undone.'
+      )
+    ).toBeInTheDocument();
+
+    // Click the confirm button in the dialog (get all buttons with "Clear All" and click the last one which is in the dialog)
+    const clearAllButtons = screen.getAllByRole('button', {
+      name: /Clear All/i,
+    });
+    fireEvent.click(clearAllButtons[clearAllButtons.length - 1]);
     await waitFor(() => expect(clearAllMock).toHaveBeenCalledTimes(1));
 
     // Hover to reveal delete, then remove the notification
@@ -126,21 +137,25 @@ describe('components/NotificationsPanel', () => {
     useNotificationsMock.mockReturnValue({ data: notifications });
     useUnreadCountMock.mockReturnValue(1);
 
-    // Mock confirm to return false (user cancels)
-    global.confirm = jest.fn(() => false);
-
     render(<NotificationsPanel isOpen onClose={jest.fn()} />);
 
+    // Click Clear all to open dialog
     fireEvent.click(screen.getByText('Clear all'));
 
-    // Verify confirm was called with the right message
-    expect(global.confirm).toHaveBeenCalledWith(
-      'Are you sure you want to delete all notifications? This cannot be undone.'
-    );
+    // Verify dialog appears
+    expect(screen.getByText('Clear All Notifications')).toBeInTheDocument();
+
+    // Click the cancel button in the dialog
+    fireEvent.click(screen.getByRole('button', { name: /Cancel/i }));
 
     // Verify the mutation was NOT called
     await waitFor(() => {
       expect(clearAllMock).not.toHaveBeenCalled();
     });
+
+    // Verify dialog is closed
+    expect(
+      screen.queryByText('Clear All Notifications')
+    ).not.toBeInTheDocument();
   });
 });

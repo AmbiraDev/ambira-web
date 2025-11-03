@@ -28,6 +28,7 @@ import Header from '@/components/HeaderComponent';
 import BottomNavigation from '@/components/BottomNavigation';
 import { Notification } from '@/types';
 import { formatDistanceToNow } from 'date-fns';
+import ConfirmDialog from '@/components/ConfirmDialog';
 
 // Swipeable notification item component
 function SwipeableNotificationItem({
@@ -220,6 +221,7 @@ export default function NotificationsPage() {
   const markAllAsReadMutation = useMarkAllNotificationsRead();
   const deleteNotificationMutation = useDeleteNotification();
   const clearAllNotificationsMutation = useClearAllNotifications();
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
 
   const handleNotificationClick = (notification: Notification) => {
     // Mark as read
@@ -241,14 +243,17 @@ export default function NotificationsPage() {
     markAllAsReadMutation.mutate();
   };
 
-  const handleClearAll = () => {
-    if (
-      confirm(
-        'Are you sure you want to delete all notifications? This cannot be undone.'
-      )
-    ) {
-      clearAllNotificationsMutation.mutate();
-    }
+  const handleClearAllClick = () => {
+    setShowClearConfirm(true);
+  };
+
+  const handleClearAllConfirm = () => {
+    clearAllNotificationsMutation.mutate();
+    setShowClearConfirm(false);
+  };
+
+  const handleClearAllCancel = () => {
+    setShowClearConfirm(false);
   };
 
   if (!user) {
@@ -313,7 +318,7 @@ export default function NotificationsPage() {
                       </button>
                     )}
                     <button
-                      onClick={handleClearAll}
+                      onClick={handleClearAllClick}
                       disabled={clearAllNotificationsMutation.isPending}
                       className="px-4 py-2 text-sm font-semibold text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
                       data-testid="clear-all-button-desktop"
@@ -371,7 +376,7 @@ export default function NotificationsPage() {
               </button>
             )}
             <button
-              onClick={handleClearAll}
+              onClick={handleClearAllClick}
               disabled={clearAllNotificationsMutation.isPending}
               className="text-red-600 font-semibold text-sm hover:text-red-700 transition-colors disabled:opacity-50"
               data-testid="clear-all-button-mobile"
@@ -416,6 +421,19 @@ export default function NotificationsPage() {
       <div className="h-20 md:hidden" />
 
       <BottomNavigation />
+
+      {/* Clear All Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={showClearConfirm}
+        onClose={handleClearAllCancel}
+        onConfirm={handleClearAllConfirm}
+        title="Clear All Notifications"
+        message="Are you sure you want to delete all notifications? This action cannot be undone."
+        confirmText="Clear All"
+        cancelText="Cancel"
+        variant="danger"
+        isLoading={clearAllNotificationsMutation.isPending}
+      />
     </div>
   );
 }
