@@ -1,267 +1,67 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { useTimer } from '@/features/timer/hooks';
 import {
   Home,
   Compass,
-  PlayCircle,
+  Play,
   Users,
-  MoreHorizontal,
-  Activity,
-  BarChart3,
-  Settings,
-  X,
+  User,
 } from 'lucide-react';
-import { useState, useEffect } from 'react';
-import Image from 'next/image';
 
 export default function BottomNavigation() {
   const pathname = usePathname();
-  const router = useRouter();
   const { user } = useAuth();
   const { timerState } = useTimer();
-  const [showMoreMenu, setShowMoreMenu] = useState(false);
 
   const isActive = (path: string) => {
     if (path === '/') return pathname === '/';
     if (path === '/search') return pathname.startsWith('/search');
-    if (path === '/activities') return pathname.startsWith('/activities');
     if (path === '/groups') return pathname.startsWith('/groups');
-    if (path === '/profile')
-      return pathname.startsWith('/profile') || pathname.startsWith('/you');
-    if (path === '/analytics') return pathname.startsWith('/analytics');
-    if (path === '/settings') return pathname.startsWith('/settings');
+    if (path === '/you') return pathname.startsWith('/you');
     return pathname === path;
   };
-
-  // Check if any "More" menu item is active
-  const isMoreActive =
-    isActive('/profile') ||
-    isActive('/analytics') ||
-    isActive('/activities') ||
-    isActive('/settings');
 
   const hasActiveSession =
     timerState.currentProject &&
     (timerState.isRunning || timerState.pausedDuration > 0);
 
-  // Close menu when pathname changes
-  useEffect(() => {
-    setShowMoreMenu(false);
-  }, [pathname]);
-
-  const handleMoreClick = () => {
-    setShowMoreMenu(!showMoreMenu);
-  };
-
-  const handleNavigate = (path: string) => {
-    setShowMoreMenu(false);
-    router.push(path);
-  };
-
   return (
     <>
-      {/* Backdrop */}
-      {showMoreMenu && (
-        <div
-          className="fixed inset-0 bg-black/20 z-40 md:hidden backdrop-blur-sm"
-          onClick={() => setShowMoreMenu(false)}
-        />
-      )}
-
-      {/* More Menu */}
-      {showMoreMenu && (
-        <div className="fixed bottom-20 left-0 right-0 z-50 md:hidden animate-slide-up">
-          <div className="mx-4 bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden">
-            {/* Header */}
-            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
-              <h3 className="font-semibold text-gray-900">Menu</h3>
-              <button
-                onClick={() => setShowMoreMenu(false)}
-                className="p-1 hover:bg-gray-100 rounded-full transition-colors"
-                aria-label="Close menu"
-              >
-                <X className="w-5 h-5 text-gray-500" aria-hidden="true" />
-              </button>
-            </div>
-
-            {/* Menu Items */}
-            <div className="py-2">
-              {/* Profile */}
-              <button
-                onClick={() => handleNavigate('/profile')}
-                className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors ${
-                  isActive('/profile') ? 'bg-blue-50' : ''
-                }`}
-                aria-label="View my profile"
-              >
-                {user?.profilePicture ? (
-                  <div className="w-10 h-10 rounded-full overflow-hidden ring-2 ring-white">
-                    <Image
-                      src={user.profilePicture}
-                      alt={user.name}
-                      width={40}
-                      height={40}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                ) : (
-                  <div className="w-10 h-10 bg-[#FC4C02] rounded-full flex items-center justify-center">
-                    <span className="text-white font-semibold text-sm">
-                      {user?.name?.charAt(0).toUpperCase()}
-                    </span>
-                  </div>
-                )}
-                <div className="flex-1 text-left">
-                  <div
-                    className={`font-medium ${isActive('/profile') ? 'text-[#0066CC]' : 'text-gray-900'}`}
-                  >
-                    My Profile
-                  </div>
-                  <div className="text-xs text-gray-500">@{user?.username}</div>
-                </div>
-              </button>
-
-              {/* Activities */}
-              <button
-                onClick={() => handleNavigate('/activities')}
-                className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors ${
-                  isActive('/activities') ? 'bg-blue-50' : ''
-                }`}
-                aria-label="View activities"
-              >
-                <div
-                  className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                    isActive('/activities') ? 'bg-blue-100' : 'bg-gray-100'
-                  }`}
-                >
-                  <Activity
-                    className={`w-5 h-5 ${isActive('/activities') ? 'text-[#0066CC]' : 'text-gray-600'}`}
-                  />
-                </div>
-                <div className="flex-1 text-left">
-                  <div
-                    className={`font-medium ${isActive('/activities') ? 'text-[#0066CC]' : 'text-gray-900'}`}
-                  >
-                    Activities
-                  </div>
-                  <div className="text-xs text-gray-500">
-                    Manage your activities
-                  </div>
-                </div>
-              </button>
-
-              {/* Analytics */}
-              <button
-                onClick={() => handleNavigate('/analytics')}
-                className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors ${
-                  isActive('/analytics') ? 'bg-blue-50' : ''
-                }`}
-                aria-label="View analytics"
-              >
-                <div
-                  className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                    isActive('/analytics') ? 'bg-blue-100' : 'bg-gray-100'
-                  }`}
-                >
-                  <BarChart3
-                    className={`w-5 h-5 ${isActive('/analytics') ? 'text-[#0066CC]' : 'text-gray-600'}`}
-                  />
-                </div>
-                <div className="flex-1 text-left">
-                  <div
-                    className={`font-medium ${isActive('/analytics') ? 'text-[#0066CC]' : 'text-gray-900'}`}
-                  >
-                    Analytics
-                  </div>
-                  <div className="text-xs text-gray-500">
-                    View detailed stats
-                  </div>
-                </div>
-              </button>
-
-              {/* Settings */}
-              <button
-                onClick={() => handleNavigate('/settings')}
-                className={`w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors ${
-                  isActive('/settings') ? 'bg-blue-50' : ''
-                }`}
-                aria-label="View settings"
-              >
-                <div
-                  className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                    isActive('/settings') ? 'bg-blue-100' : 'bg-gray-100'
-                  }`}
-                >
-                  <Settings
-                    className={`w-5 h-5 ${isActive('/settings') ? 'text-[#0066CC]' : 'text-gray-600'}`}
-                  />
-                </div>
-                <div className="flex-1 text-left">
-                  <div
-                    className={`font-medium ${isActive('/settings') ? 'text-[#0066CC]' : 'text-gray-900'}`}
-                  >
-                    Settings
-                  </div>
-                  <div className="text-xs text-gray-500">
-                    Account & preferences
-                  </div>
-                </div>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 md:hidden">
         <div
-          className="flex items-center justify-around h-20 px-2 pb-6 pt-2"
-          style={{ paddingBottom: 'max(1.5rem, env(safe-area-inset-bottom))' }}
+          className="flex items-center justify-around h-[6.5rem] px-2 pb-8 pt-1.5"
+          style={{ paddingBottom: 'max(2rem, env(safe-area-inset-bottom))' }}
         >
           {/* Feed */}
           <Link
             href="/"
-            className={`flex flex-col items-center justify-center space-y-0.5 px-3 py-1 transition-colors ${
+            className={`flex flex-col items-center justify-center space-y-1 px-4 py-1 transition-colors ${
               isActive('/') ? 'text-[#0066CC]' : 'text-gray-500'
             }`}
             aria-label="View feed"
             aria-current={isActive('/') ? 'page' : undefined}
           >
             <Home
-              className="w-6 h-6"
+              className="w-8 h-8"
               strokeWidth={isActive('/') ? 2.5 : 2}
               aria-hidden="true"
             />
-            <span className="text-[10px] font-medium">Feed</span>
-          </Link>
-
-          {/* Discovery */}
-          <Link
-            href="/search"
-            className={`flex flex-col items-center justify-center space-y-0.5 px-3 py-1 transition-colors ${
-              isActive('/search') ? 'text-[#0066CC]' : 'text-gray-500'
-            }`}
-            aria-label="Discover people, groups, and challenges"
-            aria-current={isActive('/search') ? 'page' : undefined}
-          >
-            <Compass
-              className="w-6 h-6"
-              strokeWidth={isActive('/search') ? 2.5 : 2}
-              aria-hidden="true"
-            />
-            <span className="text-[10px] font-medium">Discovery</span>
+            <span className="text-sm font-medium">Home</span>
           </Link>
 
           {/* Record Button */}
           <Link
             href="/timer"
-            className={`flex flex-col items-center justify-center space-y-0.5 px-3 py-1 transition-colors ${
-              hasActiveSession || isActive('/timer')
-                ? 'text-[#0066CC]'
-                : 'text-gray-500'
+            className={`flex flex-col items-center justify-center px-4 py-1 transition-colors ${
+              hasActiveSession
+                ? ''
+                : isActive('/timer')
+                  ? 'text-[#0066CC]'
+                  : 'text-gray-500'
             }`}
             aria-label={
               hasActiveSession ? 'View active session' : 'Start session timer'
@@ -269,10 +69,10 @@ export default function BottomNavigation() {
             aria-current={isActive('/timer') ? 'page' : undefined}
           >
             <div
-              className={`relative p-0.5 rounded-full ${hasActiveSession ? 'ring-2 ring-[#0066CC]' : ''}`}
+              className={`flex flex-col items-center justify-center space-y-1 ${hasActiveSession ? 'bg-[#0066CC] rounded-lg px-3 py-2 text-white' : ''}`}
             >
-              <PlayCircle
-                className="w-6 h-6"
+              <Play
+                className="w-8 h-8"
                 strokeWidth={hasActiveSession || isActive('/timer') ? 2.5 : 2}
                 fill={
                   hasActiveSession || isActive('/timer')
@@ -281,64 +81,47 @@ export default function BottomNavigation() {
                 }
                 aria-hidden="true"
               />
+              <span className="text-sm font-medium">
+                {hasActiveSession ? 'Active' : 'Record'}
+              </span>
             </div>
-            <span className="text-[10px] font-medium">
-              {hasActiveSession ? 'Active' : 'Record'}
-            </span>
           </Link>
 
           {/* Groups */}
           <Link
             href="/groups"
-            className={`flex flex-col items-center justify-center space-y-0.5 px-3 py-1 transition-colors ${
+            className={`flex flex-col items-center justify-center space-y-1 px-4 py-1 transition-colors ${
               isActive('/groups') ? 'text-[#0066CC]' : 'text-gray-500'
             }`}
             aria-label="View groups"
             aria-current={isActive('/groups') ? 'page' : undefined}
           >
             <Users
-              className="w-6 h-6"
+              className="w-8 h-8"
               strokeWidth={isActive('/groups') ? 2.5 : 2}
               aria-hidden="true"
             />
-            <span className="text-[10px] font-medium">Groups</span>
+            <span className="text-sm font-medium">Groups</span>
           </Link>
 
-          {/* More */}
-          <button
-            onClick={handleMoreClick}
-            className={`flex flex-col items-center justify-center space-y-0.5 px-3 py-1 transition-colors ${
-              isMoreActive || showMoreMenu ? 'text-[#0066CC]' : 'text-gray-500'
+          {/* You */}
+          <Link
+            href="/you"
+            className={`flex flex-col items-center justify-center space-y-1 px-4 py-1 transition-colors ${
+              isActive('/you') ? 'text-[#0066CC]' : 'text-gray-500'
             }`}
-            aria-label="Open more options menu"
-            aria-expanded={showMoreMenu}
-            aria-haspopup="true"
+            aria-label="View your profile and progress"
+            aria-current={isActive('/you') ? 'page' : undefined}
           >
-            <MoreHorizontal
-              className="w-6 h-6"
-              strokeWidth={isMoreActive || showMoreMenu ? 2.5 : 2}
+            <User
+              className="w-8 h-8"
+              strokeWidth={isActive('/you') ? 2.5 : 2}
               aria-hidden="true"
             />
-            <span className="text-[10px] font-medium">More</span>
-          </button>
+            <span className="text-sm font-medium">You</span>
+          </Link>
         </div>
       </nav>
-
-      <style jsx>{`
-        @keyframes slide-up {
-          from {
-            transform: translateY(100%);
-            opacity: 0;
-          }
-          to {
-            transform: translateY(0);
-            opacity: 1;
-          }
-        }
-        .animate-slide-up {
-          animation: slide-up 0.3s ease-out;
-        }
-      `}</style>
     </>
   );
 }

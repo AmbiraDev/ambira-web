@@ -52,7 +52,7 @@ export function FeedPageContent() {
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
       {/* Mobile header */}
-      <MobileHeader title="Feed" showNotifications={true} />
+      <MobileHeader title="Home" showNotifications={true} />
 
       {/* Main Content Area - Scrollable */}
       <div className="flex-1">

@@ -489,7 +489,7 @@ export default function AnalyticsPage() {
           <MobileHeader title="Analytics" />
         </div>
 
-        <div className="flex-1 pb-20 md:pb-8 min-h-[calc(100vh-3.5rem)]">
+        <div className="flex-1 pb-[6.5rem] md:pb-8 min-h-[calc(100vh-3.5rem)]">
           <div className="max-w-5xl mx-auto px-4 md:px-6 py-4">
             {/* Header - Desktop only */}
             <div className="hidden md:block mb-4">
