@@ -224,7 +224,7 @@ export default function GroupsPage() {
             ))}
           </div>
         ) : (
-          <div className="text-center py-12 px-4 bg-white border border-gray-200 rounded-lg mx-6 md:mx-8">
+          <div className="text-center py-12 px-6 md:px-8">
             <div className="max-w-md mx-auto">
               <Users
                 className="w-16 h-16 text-gray-300 mx-auto mb-4"
