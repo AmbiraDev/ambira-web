@@ -10,7 +10,6 @@
 import React, { useState, useMemo } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
-import MobileHeader from '@/components/MobileHeader';
 import BottomNavigation from '@/components/BottomNavigation';
 import Footer from '@/components/Footer';
 import Header from '@/components/HeaderComponent';
@@ -18,13 +17,7 @@ import { useUserSessions } from '@/features/sessions/hooks';
 import { useProfileStats } from '@/features/profile/hooks';
 import { useActivities } from '@/hooks/useActivitiesQuery';
 import { Feed } from '@/components/Feed';
-import {
-  Settings,
-  TrendingUp,
-  BarChart3,
-  Activity,
-  ChevronDown,
-} from 'lucide-react';
+import { Settings, BarChart3, ChevronDown } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import {
@@ -34,8 +27,6 @@ import {
   Tooltip,
   Area,
   ComposedChart,
-  BarChart,
-  Bar,
 } from 'recharts';
 
 type YouTab = 'progress' | 'sessions';

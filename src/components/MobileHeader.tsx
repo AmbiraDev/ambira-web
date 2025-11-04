@@ -14,6 +14,7 @@ interface MobileHeaderProps {
   showProfilePicture?: boolean;
   showBackButton?: boolean;
   showSettings?: boolean;
+  settingsExpanded?: boolean;
   onSettingsClick?: () => void;
 }
 
@@ -23,6 +24,7 @@ export default function MobileHeader({
   showProfilePicture = true,
   showBackButton = false,
   showSettings = false,
+  settingsExpanded = false,
   onSettingsClick,
 }: MobileHeaderProps) {
   const { user } = useAuth();
@@ -38,7 +40,16 @@ export default function MobileHeader({
           {/* Back Button */}
           {showBackButton && (
             <button
-              onClick={() => router.back()}
+              onClick={() => {
+                if (
+                  typeof window !== 'undefined' &&
+                  window.history.length > 1
+                ) {
+                  router.back();
+                } else {
+                  router.push('/');
+                }
+              }}
               className="p-1.5 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
               aria-label="Go back"
             >
@@ -101,6 +112,8 @@ export default function MobileHeader({
               onClick={onSettingsClick}
               className="p-1.5 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
               aria-label="Open settings menu"
+              aria-haspopup="true"
+              aria-expanded={settingsExpanded}
             >
               <Settings
                 className="w-6 h-6"

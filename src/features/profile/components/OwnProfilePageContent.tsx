@@ -30,7 +30,6 @@ import {
   TrendingUp,
   BarChart3,
   ChevronDown,
-  BarChart2,
   MapPin,
 } from 'lucide-react';
 import {
@@ -44,7 +43,6 @@ import {
   Bar,
 } from 'recharts';
 import { useSearchParams, useRouter } from 'next/navigation';
-import Feed from '@/components/Feed';
 import { ActivityList } from '@/components/ActivityList';
 import { Activity } from '@/types';
 import { FollowersList } from '@/features/social/components/FollowersList';
@@ -518,6 +516,7 @@ export function OwnProfilePageContent() {
             title="My Profile"
             showBackButton={true}
             showSettings={true}
+            settingsExpanded={showSettingsMenu}
             onSettingsClick={() => setShowSettingsMenu(!showSettingsMenu)}
           />
         </div>

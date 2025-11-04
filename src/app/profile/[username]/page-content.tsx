@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
-import { UserX, ChevronDown, BarChart2, MapPin } from 'lucide-react';
+import { UserX, ChevronDown, MapPin } from 'lucide-react';
 import { toast } from 'sonner';
 import Link from 'next/link';
 import {
@@ -219,23 +219,6 @@ export default function ProfilePageContent({
         s.projectId === selectedActivityId
     );
   }, [sessions, selectedActivityId]);
-
-  // Calculate weekly stats from sessions
-  const weeklyStats = useMemo(() => {
-    const now = new Date();
-    const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-    const weeklySessions = sessions.filter(
-      s => new Date(s.createdAt) >= oneWeekAgo
-    );
-    const weeklyHours = weeklySessions.reduce(
-      (sum, s) => sum + s.duration / 3600,
-      0
-    );
-    return {
-      weeklyHours,
-      sessionsThisWeek: weeklySessions.length,
-    };
-  }, [sessions]);
 
   // Update tab when URL changes
   useEffect(() => {
