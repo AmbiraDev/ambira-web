@@ -15,7 +15,6 @@ import {
   CommentWithDetails,
   CreateCommentData,
   UpdateCommentData,
-  Session,
   SessionWithDetails,
   CommentsResponse,
 } from '@/types';
@@ -114,8 +113,8 @@ export function useCreateComment(
       const currentUser = queryClient.getQueryData<{
         id: string;
         username: string;
-        displayName: string;
-        profileImageUrl?: string;
+        name: string;
+        profilePicture?: string;
       }>(['auth', 'user']);
 
       // Create optimistic comment if user is available
@@ -135,8 +134,11 @@ export function useCreateComment(
           user: {
             id: currentUser.id,
             username: currentUser.username,
-            displayName: currentUser.displayName,
-            profileImageUrl: currentUser.profileImageUrl,
+            name: currentUser.name,
+            email: '', // Not available in cache, but required by User type
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            profilePicture: currentUser.profilePicture,
           },
         };
 
@@ -200,8 +202,8 @@ export function useCreateComment(
 
       // Update comment count in session cache and feed
       const updateSessionCommentCount = (
-        session: Session | SessionWithDetails
-      ): Session | SessionWithDetails => {
+        session: SessionWithDetails
+      ): SessionWithDetails => {
         if (session?.id !== variables.sessionId) return session;
         return {
           ...session,
@@ -227,7 +229,7 @@ export function useCreateComment(
             const hasSession = old.some(s => s.id === variables.sessionId);
             if (!hasSession) return old;
 
-            return old.map(updateSessionCommentCount) as SessionWithDetails[];
+            return old.map(updateSessionCommentCount);
           }
 
           // Object format with sessions array: FeedArrayData
@@ -433,8 +435,8 @@ export function useDeleteComment(
 
       // Update comment count in session cache and feed
       const updateSessionCommentCount = (
-        session: Session | SessionWithDetails
-      ): Session | SessionWithDetails => {
+        session: SessionWithDetails
+      ): SessionWithDetails => {
         if (session?.id !== sessionId) return session;
         return {
           ...session,
@@ -458,7 +460,7 @@ export function useDeleteComment(
           if (Array.isArray(old)) {
             const hasSession = old.some(s => s.id === sessionId);
             if (!hasSession) return old;
-            return old.map(updateSessionCommentCount) as SessionWithDetails[];
+            return old.map(updateSessionCommentCount);
           }
 
           // Object format with sessions array: FeedArrayData
