@@ -3,22 +3,30 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
-import { Search } from 'lucide-react';
+import { Search, Settings, ChevronLeft } from 'lucide-react';
 import NotificationIcon from './NotificationIcon';
 
 interface MobileHeaderProps {
   title: string;
   showNotifications?: boolean;
   showProfilePicture?: boolean;
+  showBackButton?: boolean;
+  showSettings?: boolean;
+  onSettingsClick?: () => void;
 }
 
 export default function MobileHeader({
   title,
   showNotifications = false,
   showProfilePicture = true,
+  showBackButton = false,
+  showSettings = false,
+  onSettingsClick,
 }: MobileHeaderProps) {
   const { user } = useAuth();
+  const router = useRouter();
 
   if (!user) return null;
 
@@ -27,8 +35,23 @@ export default function MobileHeader({
       <div className="flex items-center justify-center h-10 relative">
         {/* Left Side Icons */}
         <div className="absolute left-0 top-1/2 -translate-y-1/2 flex items-center gap-3">
+          {/* Back Button */}
+          {showBackButton && (
+            <button
+              onClick={() => router.back()}
+              className="p-1.5 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+              aria-label="Go back"
+            >
+              <ChevronLeft
+                className="w-6 h-6"
+                strokeWidth={2}
+                aria-hidden="true"
+              />
+            </button>
+          )}
+
           {/* Profile Picture */}
-          {showProfilePicture && (
+          {showProfilePicture && !showBackButton && (
             <Link href="/you?tab=profile">
               {user.profilePicture ? (
                 <div className="w-10 h-10 rounded-full overflow-hidden flex-shrink-0 ring-2 ring-gray-300">
@@ -70,12 +93,23 @@ export default function MobileHeader({
         {/* Page Title - Centered */}
         <h1 className="text-lg font-bold text-gray-900">{title}</h1>
 
-        {/* Notification Icon - Right */}
-        {showNotifications && (
-          <div className="absolute right-0 top-1/2 -translate-y-1/2">
-            <NotificationIcon className="text-gray-700" />
-          </div>
-        )}
+        {/* Right Side Icons */}
+        <div className="absolute right-0 top-1/2 -translate-y-1/2">
+          {showNotifications && <NotificationIcon className="text-gray-700" />}
+          {showSettings && (
+            <button
+              onClick={onSettingsClick}
+              className="p-1.5 text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+              aria-label="Open settings menu"
+            >
+              <Settings
+                className="w-6 h-6"
+                strokeWidth={2}
+                aria-hidden="true"
+              />
+            </button>
+          )}
+        </div>
       </div>
     </header>
   );

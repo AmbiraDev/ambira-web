@@ -50,12 +50,7 @@ import { Activity } from '@/types';
 import { FollowersList } from '@/features/social/components/FollowersList';
 import { FollowingList } from '@/features/social/components/FollowingList';
 
-type ProfileTab =
-  | 'progress'
-  | 'sessions'
-  | 'followers'
-  | 'following'
-  | 'activities';
+type ProfileTab = 'progress' | 'followers' | 'following' | 'activities';
 type TimePeriod = '7D' | '2W' | '4W' | '3M' | '1Y';
 type ChartType = 'bar' | 'line';
 
@@ -73,15 +68,13 @@ export function OwnProfilePageContent() {
   const tabParam = searchParams?.get('tab') as ProfileTab | null;
 
   const [activeTab, setActiveTab] = useState<ProfileTab>(
-    tabParam === 'sessions'
-      ? 'sessions'
-      : tabParam === 'followers'
-        ? 'followers'
-        : tabParam === 'following'
-          ? 'following'
-          : tabParam === 'activities'
-            ? 'activities'
-            : 'progress'
+    tabParam === 'followers'
+      ? 'followers'
+      : tabParam === 'following'
+        ? 'following'
+        : tabParam === 'activities'
+          ? 'activities'
+          : 'progress'
   );
   const [timePeriod, setTimePeriod] = useState<TimePeriod>('7D');
   const [showSettingsMenu, setShowSettingsMenu] = useState(false);
@@ -121,7 +114,6 @@ export function OwnProfilePageContent() {
   // Update tab when URL changes
   useEffect(() => {
     if (
-      tabParam === 'sessions' ||
       tabParam === 'progress' ||
       tabParam === 'followers' ||
       tabParam === 'following' ||
@@ -522,17 +514,22 @@ export function OwnProfilePageContent() {
 
         {/* Mobile Header */}
         <div className="md:hidden">
-          <MobileHeader title="My Profile" />
+          <MobileHeader
+            title="My Profile"
+            showBackButton={true}
+            showSettings={true}
+            onSettingsClick={() => setShowSettingsMenu(!showSettingsMenu)}
+          />
         </div>
 
         {/* Content */}
         <div className="pb-32 md:pb-8">
           <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-6">
             <div className="max-w-4xl mx-auto">
-              {/* Profile Card with This Week Stats */}
-              <div className="bg-gray-50 md:rounded-xl md:border border-gray-200 p-3 md:p-6 mb-4 md:mb-6 relative">
-                {/* Settings Icon */}
-                <div className="absolute top-3 md:top-4 right-3 md:right-4 z-10">
+              {/* Profile Card */}
+              <div className="bg-white md:rounded-xl md:border border-gray-200 p-3 md:p-6 mb-4 md:mb-6 relative">
+                {/* Settings Icon - Desktop only */}
+                <div className="hidden md:block absolute top-3 md:top-4 right-3 md:right-4 z-10">
                   <div className="relative">
                     <button
                       onClick={() => setShowSettingsMenu(!showSettingsMenu)}
@@ -623,17 +620,8 @@ export function OwnProfilePageContent() {
                       </p>
                     )}
 
-                    {/* Edit Profile Button */}
-                    <Link
-                      href="/settings"
-                      className="inline-flex items-center gap-2 mb-3 md:mb-4 px-3 md:px-4 py-2 md:py-2.5 bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-lg transition-colors font-semibold text-xs md:text-sm"
-                    >
-                      <Edit className="w-3.5 h-3.5 md:w-4 md:h-4" />
-                      Edit Profile
-                    </Link>
-
                     {/* Follower/Following Counts */}
-                    <div className="flex gap-4 md:gap-6 mb-4 md:mb-0">
+                    <div className="flex gap-4 md:gap-6 mb-3 md:mb-4">
                       <button
                         onClick={() => {
                           setActiveTab('followers');
@@ -665,38 +653,16 @@ export function OwnProfilePageContent() {
                         </span>
                       </button>
                     </div>
-                  </div>
 
-                  {/* Right Column - This Week Stats */}
-                  <div className="md:w-64 border-t md:border-t-0 md:border-l border-gray-200 pt-4 md:pt-0 md:pl-8">
-                    <div className="flex items-center gap-2 mb-3 md:mb-4">
-                      <BarChart2
-                        className="w-4 h-4 md:w-5 md:h-5 text-[#FC4C02]"
-                        aria-hidden="true"
-                      />
-                      <h2 className="text-sm md:text-base font-bold">
-                        This week
-                      </h2>
-                    </div>
-
-                    <div className="grid grid-cols-2 md:grid-cols-1 gap-3 md:gap-4 md:space-y-0">
-                      <div>
-                        <div className="text-[10px] md:text-xs text-gray-600 uppercase tracking-wide">
-                          Time
-                        </div>
-                        <div className="text-lg md:text-2xl font-bold">
-                          {stats?.weeklyHours?.toFixed(1) || 0}h
-                        </div>
-                      </div>
-                      <div>
-                        <div className="text-[10px] md:text-xs text-gray-600 uppercase tracking-wide">
-                          Sessions
-                        </div>
-                        <div className="text-lg md:text-2xl font-bold">
-                          {stats?.sessionsThisWeek || 0}
-                        </div>
-                      </div>
-                    </div>
+                    {/* Edit Profile Button */}
+                    <Link
+                      href="/settings"
+                      className="inline-flex items-center gap-2 mb-4 md:mb-0 px-4 md:px-4 py-2.5 md:py-2.5 bg-gray-100 text-gray-700 hover:bg-gray-200 rounded-lg transition-colors font-semibold text-sm md:text-sm"
+                    >
+                      <Edit className="w-4 h-4 md:w-4 md:h-4" />
+                      <span className="md:hidden">Edit</span>
+                      <span className="hidden md:inline">Edit Profile</span>
+                    </Link>
                   </div>
                 </div>
               </div>
@@ -725,23 +691,6 @@ export function OwnProfilePageContent() {
                       id="progress-tab"
                     >
                       Progress
-                    </button>
-                    <button
-                      onClick={() => {
-                        setActiveTab('sessions');
-                        router.push('/profile?tab=sessions');
-                      }}
-                      className={`flex-1 md:flex-initial py-3 md:py-4 px-1 text-sm md:text-base font-medium border-b-2 transition-colors whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:ring-offset-2 ${
-                        activeTab === 'sessions'
-                          ? 'border-[#0066CC] text-[#0066CC]'
-                          : 'border-transparent text-gray-500 md:text-gray-600 hover:text-gray-700 md:hover:text-gray-900'
-                      }`}
-                      role="tab"
-                      aria-selected={activeTab === 'sessions'}
-                      aria-controls="sessions-panel"
-                      id="sessions-tab"
-                    >
-                      Sessions
                     </button>
                     {/* Activities tab - Desktop only */}
                     <button
@@ -1355,15 +1304,6 @@ export function OwnProfilePageContent() {
                         {renderPercentageChange(calculatedStats.streakChange)}
                       </div>
                     </div>
-                  </div>
-                )}
-
-                {activeTab === 'sessions' && (
-                  <div className="max-w-4xl mx-auto">
-                    <Feed
-                      filters={{ type: 'user', userId: user.id }}
-                      showEndMessage={true}
-                    />
                   </div>
                 )}
 

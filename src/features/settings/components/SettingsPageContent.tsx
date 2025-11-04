@@ -263,7 +263,7 @@ export function SettingsPageContent() {
 
         {/* Mobile Header */}
         <div className="md:hidden">
-          <MobileHeader title="Settings" />
+          <MobileHeader title="Settings" showBackButton={true} />
         </div>
 
         <div className="max-w-7xl mx-auto px-0 md:px-4 sm:px-6 lg:px-8 py-0 md:py-8">
