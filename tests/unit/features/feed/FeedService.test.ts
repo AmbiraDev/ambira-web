@@ -94,6 +94,78 @@ describe('FeedService', () => {
       expect(result.hasMore).toBe(false);
     });
 
+    it('should include current user in following feed (for own posts)', async () => {
+      // ARRANGE
+      const mockResult = {
+        sessions: [mockSession],
+        hasMore: false,
+      };
+
+      mockSocialGraphRepoInstance.getFollowingIds.mockResolvedValue([
+        'user-2',
+        'user-3',
+      ]);
+      mockFeedRepoInstance.getFeedForFollowing.mockResolvedValue(mockResult);
+
+      // ACT
+      await feedService.getFeed('user-1', { type: 'following' });
+
+      // ASSERT - Verify current user is included in the userIds
+      expect(mockFeedRepoInstance.getFeedForFollowing).toHaveBeenCalledWith(
+        expect.arrayContaining(['user-1', 'user-2', 'user-3']),
+        20,
+        undefined
+      );
+    });
+
+    it('should not duplicate current user if already in following list', async () => {
+      // ARRANGE
+      const mockResult = {
+        sessions: [mockSession],
+        hasMore: false,
+      };
+
+      // User somehow follows themselves
+      mockSocialGraphRepoInstance.getFollowingIds.mockResolvedValue([
+        'user-1',
+        'user-2',
+      ]);
+      mockFeedRepoInstance.getFeedForFollowing.mockResolvedValue(mockResult);
+
+      // ACT
+      await feedService.getFeed('user-1', { type: 'following' });
+
+      // ASSERT - Verify no duplicates (Set deduplication)
+      const calledWith = mockFeedRepoInstance.getFeedForFollowing.mock
+        .calls[0]?.[0] as string[];
+      const uniqueIds = new Set(calledWith);
+      expect(calledWith.length).toBe(uniqueIds.size);
+      expect(uniqueIds.has('user-1')).toBe(true);
+      expect(uniqueIds.has('user-2')).toBe(true);
+    });
+
+    it('should show own posts even if not following anyone', async () => {
+      // ARRANGE
+      const mockResult = {
+        sessions: [mockSession],
+        hasMore: false,
+      };
+
+      // Not following anyone
+      mockSocialGraphRepoInstance.getFollowingIds.mockResolvedValue([]);
+      mockFeedRepoInstance.getFeedForFollowing.mockResolvedValue(mockResult);
+
+      // ACT
+      await feedService.getFeed('user-1', { type: 'following' });
+
+      // ASSERT - Should still call feed repo with current user
+      expect(mockFeedRepoInstance.getFeedForFollowing).toHaveBeenCalledWith(
+        ['user-1'],
+        20,
+        undefined
+      );
+    });
+
     it('should return empty feed if not following anyone', async () => {
       // ARRANGE
       mockSocialGraphRepoInstance.getFollowingIds.mockResolvedValue([]);
