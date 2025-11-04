@@ -36,11 +36,14 @@ import Image from 'next/image';
 import { firebaseUserApi } from '@/lib/api';
 import { toast } from 'sonner';
 import ConfirmDialog from '@/components/ConfirmDialog';
+import { useQueryClient } from '@tanstack/react-query';
+import { AUTH_KEYS } from '@/lib/react-query/auth.queries';
 
 type SettingsSection = 'profile' | 'privacy' | null;
 
 export function SettingsPageContent() {
   const { user, logout } = useAuth();
+  const queryClient = useQueryClient();
   // Mobile: expanded section state for accordion behavior
   const [expandedSection, setExpandedSection] = useState<SettingsSection>(null);
   // Desktop: active section state for sidebar navigation
@@ -78,6 +81,18 @@ export function SettingsPageContent() {
     linkedin: user?.socialLinks?.linkedin || '',
     profileVisibility: 'everyone' as 'everyone' | 'followers' | 'private',
   });
+  const [urlError, setUrlError] = useState('');
+
+  // URL validation helper
+  const validateURL = (url: string): boolean => {
+    if (!url) return true; // Optional field
+    try {
+      new URL(url);
+      return url.startsWith('http://') || url.startsWith('https://');
+    } catch {
+      return false;
+    }
+  };
 
   // Settings menu structure for vertical layout (mobile)
   const settingsItems = [
@@ -200,13 +215,13 @@ export function SettingsPageContent() {
           Object.keys(socialLinks).length > 0 ? socialLinks : undefined,
         profileVisibility: formData.profileVisibility,
       });
+
+      // Invalidate auth cache to refresh user data
+      await queryClient.invalidateQueries({ queryKey: AUTH_KEYS.session() });
+
       toast.success('Profile updated successfully!');
       setSaved(true);
-
-      // Reload the page after a short delay to refresh the user context
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
+      setIsSaving(false);
     } catch (err: unknown) {
       const errorMessage =
         err instanceof Error ? err.message : 'Failed to update profile';
@@ -221,13 +236,13 @@ export function SettingsPageContent() {
       await firebaseUserApi.updateProfile({
         profileVisibility: formData.profileVisibility,
       });
+
+      // Invalidate auth cache to refresh user data
+      await queryClient.invalidateQueries({ queryKey: AUTH_KEYS.session() });
+
       toast.success('Privacy settings updated successfully!');
       setSaved(true);
-
-      // Reload the page after a short delay
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
+      setIsSaving(false);
     } catch (err: unknown) {
       const errorMessage =
         err instanceof Error
@@ -475,9 +490,31 @@ export function SettingsPageContent() {
             onChange={e =>
               setFormData({ ...formData, website: e.target.value })
             }
+            onBlur={e => {
+              const isValid = validateURL(e.target.value);
+              setUrlError(
+                isValid
+                  ? ''
+                  : 'Please enter a valid URL starting with http:// or https://'
+              );
+            }}
             placeholder="https://yourwebsite.com"
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none"
+            pattern="https?://.*"
+            aria-invalid={urlError ? 'true' : 'false'}
+            aria-describedby={urlError ? `website-error${idPrefix}` : undefined}
+            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none ${
+              urlError ? 'border-red-500' : 'border-gray-300'
+            }`}
           />
+          {urlError && (
+            <p
+              id={`website-error${idPrefix}`}
+              className="text-sm text-red-600 mt-1"
+              role="alert"
+            >
+              {urlError}
+            </p>
+          )}
         </div>
 
         {/* Social Links */}
@@ -676,28 +713,45 @@ export function SettingsPageContent() {
             <div className="flex gap-8">
               {/* Left Sidebar Navigation */}
               <aside className="w-60 flex-shrink-0">
-                <nav className="bg-white rounded-lg border border-gray-200 shadow-sm sticky top-20">
+                <nav
+                  className="bg-white rounded-lg border border-gray-200 shadow-sm sticky top-20"
+                  aria-label="Settings navigation"
+                >
                   <button
                     onClick={() => setActiveSection('profile')}
+                    aria-label="My Profile settings"
+                    aria-current={
+                      activeSection === 'profile' ? 'page' : undefined
+                    }
                     className={`w-full px-4 py-3 flex items-center gap-3 text-left border-b border-gray-200 transition-colors ${
                       activeSection === 'profile'
                         ? 'bg-blue-50 border-l-4 border-l-[#0066CC] text-[#0066CC]'
                         : 'hover:bg-gray-50 text-gray-700'
                     }`}
                   >
-                    <User className="w-5 h-5 flex-shrink-0" />
+                    <User
+                      className="w-5 h-5 flex-shrink-0"
+                      aria-hidden="true"
+                    />
                     <span className="text-sm font-medium">My Profile</span>
                   </button>
 
                   <button
                     onClick={() => setActiveSection('privacy')}
+                    aria-label="Privacy Controls settings"
+                    aria-current={
+                      activeSection === 'privacy' ? 'page' : undefined
+                    }
                     className={`w-full px-4 py-3 flex items-center gap-3 text-left border-b border-gray-200 transition-colors ${
                       activeSection === 'privacy'
                         ? 'bg-blue-50 border-l-4 border-l-[#0066CC] text-[#0066CC]'
                         : 'hover:bg-gray-50 text-gray-700'
                     }`}
                   >
-                    <Shield className="w-5 h-5 flex-shrink-0" />
+                    <Shield
+                      className="w-5 h-5 flex-shrink-0"
+                      aria-hidden="true"
+                    />
                     <span className="text-sm font-medium">
                       Privacy Controls
                     </span>
@@ -705,17 +759,25 @@ export function SettingsPageContent() {
 
                   <button
                     onClick={handleLogout}
+                    aria-label="Log out of your account"
                     className="w-full px-4 py-3 flex items-center gap-3 text-left border-b border-gray-200 hover:bg-gray-50 transition-colors text-gray-700"
                   >
-                    <LogOut className="w-5 h-5 flex-shrink-0" />
+                    <LogOut
+                      className="w-5 h-5 flex-shrink-0"
+                      aria-hidden="true"
+                    />
                     <span className="text-sm font-medium">Log Out</span>
                   </button>
 
                   <button
                     onClick={() => setShowDeleteConfirm(true)}
+                    aria-label="Delete your account permanently"
                     className="w-full px-4 py-3 flex items-center gap-3 text-left hover:bg-red-50 transition-colors text-red-600"
                   >
-                    <Trash2 className="w-5 h-5 flex-shrink-0" />
+                    <Trash2
+                      className="w-5 h-5 flex-shrink-0"
+                      aria-hidden="true"
+                    />
                     <span className="text-sm font-medium">Delete Account</span>
                   </button>
                 </nav>
@@ -761,6 +823,7 @@ export function SettingsPageContent() {
             {settingsItems.map(item => {
               const Icon = item.icon;
               const isExpanded = expandedSection === item.id;
+              const contentId = `${item.id}-content`;
 
               return (
                 <div key={item.id}>
@@ -768,6 +831,9 @@ export function SettingsPageContent() {
                     onClick={() =>
                       item.navigable && handleSectionClick(item.id)
                     }
+                    aria-expanded={item.navigable ? isExpanded : undefined}
+                    aria-controls={item.navigable ? contentId : undefined}
+                    aria-label={`${item.label} settings`}
                     className={`w-full px-4 py-4 flex items-center justify-between border-b border-gray-200 transition-colors ${
                       item.navigable
                         ? 'hover:bg-gray-50 active:bg-gray-100'
@@ -777,7 +843,10 @@ export function SettingsPageContent() {
                   >
                     <div className="flex items-center gap-3 flex-1 min-w-0">
                       <div className="flex-shrink-0">
-                        <Icon className="w-5 h-5 text-gray-700" />
+                        <Icon
+                          className="w-5 h-5 text-gray-700"
+                          aria-hidden="true"
+                        />
                       </div>
                       <div className="flex-1 text-left min-w-0">
                         <div className="text-sm font-semibold text-gray-900">
@@ -790,20 +859,31 @@ export function SettingsPageContent() {
                         className={`w-5 h-5 text-gray-400 flex-shrink-0 transition-transform ${
                           isExpanded ? 'rotate-90' : ''
                         }`}
+                        aria-hidden="true"
                       />
                     )}
                   </button>
 
                   {/* Expanded Profile Content */}
                   {isExpanded && item.id === 'profile' && (
-                    <div className="px-4 pt-4 pb-6 bg-gray-50 border-t border-gray-200">
+                    <div
+                      id={contentId}
+                      role="region"
+                      aria-labelledby={`${item.id}-button`}
+                      className="px-4 pt-4 pb-6 bg-gray-50 border-t border-gray-200"
+                    >
                       <ProfileForm idPrefix="-mobile" />
                     </div>
                   )}
 
                   {/* Expanded Privacy Content */}
                   {isExpanded && item.id === 'privacy' && (
-                    <div className="px-4 pt-4 pb-6 bg-gray-50 border-t border-gray-200">
+                    <div
+                      id={contentId}
+                      role="region"
+                      aria-labelledby={`${item.id}-button`}
+                      className="px-4 pt-4 pb-6 bg-gray-50 border-t border-gray-200"
+                    >
                       <PrivacyForm idPrefix="-mobile" />
                     </div>
                   )}
