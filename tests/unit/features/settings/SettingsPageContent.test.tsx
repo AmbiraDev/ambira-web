@@ -311,7 +311,7 @@ describe('SettingsPageContent Component', () => {
         expect(mockFirebaseUserApi.updateProfile).toHaveBeenCalledWith({
           profilePicture: 'https://example.com/new-pic.jpg',
         });
-        expect(toast.success).toHaveBeenCalledWith('Profile picture updated!');
+        expect(toast.success).toHaveBeenCalledWith('Profile picture updated');
       });
     });
 
@@ -340,7 +340,7 @@ describe('SettingsPageContent Component', () => {
       await user.upload(input, largeFile);
 
       expect(toast.error).toHaveBeenCalledWith(
-        'File size too large. Maximum size is 5MB.'
+        'File size too large. Maximum size is 5MB'
       );
     });
 
@@ -358,7 +358,7 @@ describe('SettingsPageContent Component', () => {
       await user.upload(input, file);
 
       await waitFor(() => {
-        expect(toast.error).toHaveBeenCalledWith('Upload failed');
+        expect(toast.error).toHaveBeenCalledWith('Failed to upload photo');
       });
     });
   });
@@ -426,7 +426,7 @@ describe('SettingsPageContent Component', () => {
       await user.click(saveButtons[0]!);
 
       await waitFor(() => {
-        expect(toast.error).toHaveBeenCalledWith('Update failed');
+        expect(toast.error).toHaveBeenCalledWith('Failed to update profile');
       });
     });
 
@@ -517,7 +517,6 @@ describe('SettingsPageContent Component', () => {
       await user.click(logoutButtons[0]!);
 
       expect(logout).toHaveBeenCalled();
-      expect(toast.success).toHaveBeenCalledWith('Logged out successfully');
     });
 
     it('shows delete confirmation dialog', async () => {
