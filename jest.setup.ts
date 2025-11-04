@@ -148,6 +148,9 @@ jest.mock('axios', () => {
   };
 });
 
+// Mock window.alert for components that use alert()
+window.alert = jest.fn();
+
 // NOTE: Firebase, API, and QueryClient mocks have been migrated to factory functions
 // in src/__tests__/fixtures/mocks.ts for better test isolation.
 //
