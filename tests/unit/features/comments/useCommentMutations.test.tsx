@@ -122,6 +122,96 @@ describe('useCommentMutations', () => {
       expect(mockCreateComment).toHaveBeenCalledWith(newCommentData);
     });
 
+    it('should rollback optimistic update on server error', async () => {
+      // ARRANGE
+      const sessionId = 'session123';
+      const newCommentData: CreateCommentData = {
+        sessionId,
+        content: 'New comment',
+      };
+
+      // Set up auth user in cache
+      queryClient.setQueryData(['auth', 'user'], mockUser);
+
+      // Set up initial comments cache
+      const initialComments: CommentsResponse = {
+        comments: [mockComment],
+        hasMore: false,
+      };
+      queryClient.setQueryData(COMMENT_KEYS.list(sessionId), initialComments);
+
+      // Mock service to fail
+      const mockCreateComment = jest
+        .fn()
+        .mockRejectedValue(new Error('Server error'));
+      (CommentService.prototype.createComment as jest.Mock) = mockCreateComment;
+
+      // ACT
+      const { result } = renderHook(() => useCreateComment(), { wrapper });
+
+      await act(async () => {
+        try {
+          await result.current.mutateAsync(newCommentData);
+        } catch {
+          // Expected to throw
+        }
+      });
+
+      // ASSERT - Should rollback to original state
+      await waitFor(() => {
+        expect(result.current.isError).toBe(true);
+      });
+
+      const finalComments = queryClient.getQueryData<CommentsResponse>(
+        COMMENT_KEYS.list(sessionId)
+      );
+
+      // Should have rolled back to original 1 comment
+      expect(finalComments?.comments).toHaveLength(1);
+      expect(finalComments?.comments[0]?.id).toBe('comment123');
+    });
+
+    it('should handle missing auth cache gracefully', async () => {
+      // ARRANGE
+      const sessionId = 'session123';
+      const newCommentData: CreateCommentData = {
+        sessionId,
+        content: 'New comment',
+      };
+
+      // No auth user in cache (user not logged in or cache cleared)
+      // queryClient.setQueryData(['auth', 'user'], mockUser); // <-- NOT SET
+
+      // Mock service
+      const mockCreateComment = jest.fn().mockResolvedValue(mockComment);
+      (CommentService.prototype.createComment as jest.Mock) = mockCreateComment;
+
+      // SPY on console.warn
+      const warnSpy = jest.spyOn(console, 'warn').mockImplementation();
+
+      // ACT
+      const { result } = renderHook(() => useCreateComment(), { wrapper });
+
+      await act(async () => {
+        result.current.mutate(newCommentData);
+      });
+
+      // ASSERT
+      await waitFor(() => {
+        expect(result.current.isSuccess).toBe(true);
+      });
+
+      // Should have logged warning
+      expect(warnSpy).toHaveBeenCalledWith(
+        expect.stringContaining('Auth user not in cache')
+      );
+
+      // Should still create comment on server
+      expect(mockCreateComment).toHaveBeenCalledWith(newCommentData);
+
+      warnSpy.mockRestore();
+    });
+
     it('should update session comment count in feed caches', async () => {
       // ARRANGE
       const sessionId = 'session123';
