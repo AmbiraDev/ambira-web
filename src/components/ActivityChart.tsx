@@ -27,7 +27,7 @@ export const ActivityChart: React.FC<ActivityChartProps> = ({
   secondaryColor = '#10b981',
   showGrid = true,
   showLabels = true,
-  valueFormatter = (v) => v.toString()
+  valueFormatter = v => v.toString(),
 }) => {
   if (data.length === 0) {
     return (
@@ -37,7 +37,9 @@ export const ActivityChart: React.FC<ActivityChartProps> = ({
     );
   }
 
-  const maxValue = Math.max(...data.map(d => Math.max(d.value, d.secondaryValue || 0)));
+  const maxValue = Math.max(
+    ...data.map(d => Math.max(d.value, d.secondaryValue || 0))
+  );
   const padding = 40;
   const chartWidth = Math.max(600, data.length * 40);
   const barWidth = Math.max(20, (chartWidth - padding * 2) / data.length - 10);
@@ -79,7 +81,8 @@ export const ActivityChart: React.FC<ActivityChartProps> = ({
         {type === 'bar' ? (
           <g>
             {data.map((point, index) => {
-              const x = padding + index * ((chartWidth - padding * 2) / data.length);
+              const x =
+                padding + index * ((chartWidth - padding * 2) / data.length);
               const barHeight = (point.value / maxValue) * height;
               const y = height + padding - barHeight;
 
@@ -96,11 +99,15 @@ export const ActivityChart: React.FC<ActivityChartProps> = ({
                   >
                     <title>{`${point.label}: ${valueFormatter(point.value)}`}</title>
                   </rect>
-                  
+
                   {point.secondaryValue !== undefined && (
                     <rect
                       x={x + barWidth + 4}
-                      y={height + padding - (point.secondaryValue / maxValue) * height}
+                      y={
+                        height +
+                        padding -
+                        (point.secondaryValue / maxValue) * height
+                      }
                       width={barWidth}
                       height={(point.secondaryValue / maxValue) * height}
                       fill={secondaryColor}
@@ -118,23 +125,30 @@ export const ActivityChart: React.FC<ActivityChartProps> = ({
           <g>
             {/* Line path */}
             <path
-              d={data.map((point, index) => {
-                const x = padding + index * ((chartWidth - padding * 2) / (data.length - 1));
-                const y = height + padding - (point.value / maxValue) * height;
-                return `${index === 0 ? 'M' : 'L'} ${x} ${y}`;
-              }).join(' ')}
+              d={data
+                .map((point, index) => {
+                  const x =
+                    padding +
+                    index * ((chartWidth - padding * 2) / (data.length - 1));
+                  const y =
+                    height + padding - (point.value / maxValue) * height;
+                  return `${index === 0 ? 'M' : 'L'} ${x} ${y}`;
+                })
+                .join(' ')}
               fill="none"
               stroke={color}
               strokeWidth="3"
               strokeLinecap="round"
               strokeLinejoin="round"
             />
-            
+
             {/* Data points */}
             {data.map((point, index) => {
-              const x = padding + index * ((chartWidth - padding * 2) / (data.length - 1));
+              const x =
+                padding +
+                index * ((chartWidth - padding * 2) / (data.length - 1));
               const y = height + padding - (point.value / maxValue) * height;
-              
+
               return (
                 <circle
                   key={index}
@@ -155,7 +169,10 @@ export const ActivityChart: React.FC<ActivityChartProps> = ({
         {showLabels && (
           <g>
             {data.map((point, index) => {
-              const x = padding + index * ((chartWidth - padding * 2) / data.length) + barWidth / 2;
+              const x =
+                padding +
+                index * ((chartWidth - padding * 2) / data.length) +
+                barWidth / 2;
               return (
                 <text
                   key={index}

@@ -19,18 +19,31 @@ export default function SimpleLayout({ children }: SimpleLayoutProps) {
               <span className="text-xl font-bold text-gray-900">Ambira</span>
             </div>
             <nav className="hidden md:flex items-center space-x-8">
-              <Link href="/" className="text-gray-700 hover:text-blue-600 transition-colors">Home</Link>
-              <Link href="/activities" className="text-gray-700 hover:text-blue-600 transition-colors">Activities</Link>
-              <Link href="/groups" className="text-gray-700 hover:text-blue-600 transition-colors">Groups</Link>
+              <Link
+                href="/"
+                className="text-gray-700 hover:text-blue-600 transition-colors"
+              >
+                Home
+              </Link>
+              <Link
+                href="/activities"
+                className="text-gray-700 hover:text-blue-600 transition-colors"
+              >
+                Activities
+              </Link>
+              <Link
+                href="/groups"
+                className="text-gray-700 hover:text-blue-600 transition-colors"
+              >
+                Groups
+              </Link>
             </nav>
           </div>
         </div>
       </header>
-      
+
       <main className="pt-16">
-        <div className="container mx-auto px-4 py-8">
-          {children}
-        </div>
+        <div className="container mx-auto px-4 py-8">{children}</div>
       </main>
     </div>
   );

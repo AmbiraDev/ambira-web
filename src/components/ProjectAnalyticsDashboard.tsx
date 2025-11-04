@@ -8,9 +8,9 @@ interface ProjectAnalyticsDashboardProps {
   projectId: string;
 }
 
-export const ProjectAnalyticsDashboard: React.FC<ProjectAnalyticsDashboardProps> = ({
-  projectId
-}) => {
+export const ProjectAnalyticsDashboard: React.FC<
+  ProjectAnalyticsDashboardProps
+> = ({ projectId }) => {
   const { user } = useAuth();
 
   if (!user) return null;

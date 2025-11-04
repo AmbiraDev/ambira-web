@@ -8,10 +8,7 @@
  */
 
 // Query hooks
-export {
-  useSessionComments,
-  COMMENT_KEYS,
-} from './useComments';
+export { useSessionComments, COMMENT_KEYS } from './useComments';
 
 // Mutation hooks
 export {

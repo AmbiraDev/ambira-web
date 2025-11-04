@@ -10,16 +10,19 @@ This document tracks the progress of migrating from mixed React Query patterns t
 ## Completed Migrations ✅
 
 ### 1. Groups Feature
+
 **Status**: ✅ COMPLETE (Reference Implementation)
 **Location**: `src/features/groups/`
 
 **Files Created**:
+
 - ✅ `hooks/useGroups.ts` - Query hooks with hierarchical cache keys
 - ✅ `hooks/useGroupMutations.ts` - Mutation hooks with optimistic updates
 - ✅ `hooks/index.ts` - Clean public API
 - ✅ Updated `useGroupDetails.ts` - Backwards-compatible wrapper
 
 **Hooks Available**:
+
 - `useGroupDetails(groupId)` - Get group by ID
 - `useUserGroups(userId)` - Get user's groups
 - `usePublicGroups()` - Get all public groups
@@ -36,15 +39,18 @@ This document tracks the progress of migrating from mixed React Query patterns t
 ---
 
 ### 2. Feed Feature
+
 **Status**: ✅ COMPLETE (New Migration)
 **Location**: `src/features/feed/`
 
 **Files Created**:
+
 - ✅ `hooks/useFeed.ts` - Query hooks with infinite scroll support
 - ✅ `hooks/useFeedMutations.ts` - Mutation hooks and cache helpers
 - ✅ `hooks/index.ts` - Clean public API
 
 **Hooks Available**:
+
 - `useFeedInfinite(userId, filters)` - Infinite scroll feed
 - `useFeed(userId, filters, limit)` - Simple feed
 - `useUserFeed(userId, targetUserId)` - User-specific feed
@@ -59,6 +65,7 @@ This document tracks the progress of migrating from mixed React Query patterns t
 **Service**: `services/FeedService.ts` (Already existed)
 
 **Components Using**:
+
 - ✅ `Feed.new.tsx` - Example migration created
 - ⏳ `Feed.tsx` - Needs to be updated
 
@@ -67,15 +74,18 @@ This document tracks the progress of migrating from mixed React Query patterns t
 ---
 
 ### 3. Profile Feature
+
 **Status**: ✅ COMPLETE (New Migration)
 **Location**: `src/features/profile/`
 
 **Files Created**:
+
 - ✅ `hooks/useProfile.ts` - Comprehensive profile query hooks
 - ✅ `hooks/useProfileMutations.ts` - Follow/unfollow mutations
 - ✅ `hooks/index.ts` - Clean public API
 
 **Hooks Available**:
+
 - `useProfileById(userId)` - Get profile by ID
 - `useProfileByUsername(username)` - Get profile by username
 - `useUserSessions(userId, limit)` - Get user's sessions
@@ -94,6 +104,7 @@ This document tracks the progress of migrating from mixed React Query patterns t
 **Components Using**: Ready for migration
 
 **Notes**:
+
 - Follow/unfollow mutations are placeholders (service methods not fully implemented yet)
 - Hook structure is ready for when service is completed
 
@@ -102,15 +113,18 @@ This document tracks the progress of migrating from mixed React Query patterns t
 ---
 
 ### 4. Timer Feature
+
 **Status**: ✅ COMPLETE (New Migration)
 **Location**: `src/features/timer/`
 
 **Files Created**:
+
 - ✅ `hooks/useTimer.ts` - Active timer query hook
 - ✅ `hooks/useTimerMutations.ts` - Timer control mutations
 - ✅ `hooks/index.ts` - Clean public API
 
 **Hooks Available**:
+
 - `useActiveTimer(userId)` - Get active timer (polls every 30s)
 - `useStartTimer()` - Start timer mutation
 - `usePauseTimer()` - Pause timer mutation
@@ -130,16 +144,19 @@ This document tracks the progress of migrating from mixed React Query patterns t
 ---
 
 ### 5. Sessions Feature
+
 **Status**: ✅ COMPLETE (New Migration)
 **Location**: `src/features/sessions/`
 
 **Files Created**:
+
 - ✅ `services/SessionService.ts` - Session business logic
 - ✅ `hooks/useSessions.ts` - Query hooks
 - ✅ `hooks/useSessionMutations.ts` - Mutation hooks with optimistic updates
 - ✅ `hooks/index.ts` - Clean public API
 
 **Hooks Available**:
+
 - `useSession(sessionId)` - Get session by ID
 - `useSessionWithDetails(sessionId)` - Get session with user and activity data
 - `useUserSessions(userId, filters)` - Get sessions for user
@@ -150,6 +167,7 @@ This document tracks the progress of migrating from mixed React Query patterns t
 - `useInvalidateAllSessions()` - Invalidate all sessions
 
 **Service Methods**:
+
 - `getSession(sessionId)` - Fetch session by ID
 - `getSessionWithDetails(sessionId)` - Fetch with populated data
 - `getUserSessions(userId, filters)` - Fetch user's sessions
@@ -162,6 +180,7 @@ This document tracks the progress of migrating from mixed React Query patterns t
 **Tests**: Need to be added
 
 **Migrated From**:
+
 - ✅ `useCache.ts`: `useSession`
 - ✅ `useMutations.ts`: `useDeleteSessionMutation`, `useSupportMutation`
 
@@ -170,16 +189,19 @@ This document tracks the progress of migrating from mixed React Query patterns t
 ---
 
 ### 6. Comments Feature
+
 **Status**: ✅ COMPLETE (New Migration)
 **Location**: `src/features/comments/`
 
 **Files Created**:
+
 - ✅ `services/CommentService.ts` - Comment business logic
 - ✅ `hooks/useComments.ts` - Query hooks
 - ✅ `hooks/useCommentMutations.ts` - Mutation hooks with optimistic updates
 - ✅ `hooks/index.ts` - Clean public API
 
 **Hooks Available**:
+
 - `useSessionComments(sessionId, limit?)` - Get comments for a session
 - `useCreateComment()` - Create comment with auto comment count update
 - `useUpdateComment()` - Update comment with optimistic updates
@@ -189,6 +211,7 @@ This document tracks the progress of migrating from mixed React Query patterns t
 - `useInvalidateAllComments()` - Invalidate all comments
 
 **Service Methods**:
+
 - `getSessionComments(sessionId, limit)` - Fetch comments for session
 - `createComment(data)` - Create new comment
 - `updateComment(commentId, data)` - Update comment content
@@ -197,6 +220,7 @@ This document tracks the progress of migrating from mixed React Query patterns t
 - `unlikeComment(commentId)` - Remove like from comment
 
 **Special Features**:
+
 - ✅ Automatic comment count updates in feed and session caches
 - ✅ Support for nested replies via `parentId`
 - ✅ Idempotent like/unlike operations
@@ -207,15 +231,18 @@ This document tracks the progress of migrating from mixed React Query patterns t
 **Tests**: Need to be added
 
 **Migrated From**:
+
 - ✅ `useMutations.ts`: `useAddCommentMutation`, `useDeleteCommentMutation`, `useCommentLikeMutation`
 
 ---
 
 ### 7. Projects Feature
+
 **Status**: ✅ COMPLETE (New Migration)
 **Location**: `src/features/projects/`
 
 **Files Created**:
+
 - ✅ `services/ProjectService.ts` - Project business logic
 - ✅ `hooks/useProjects.ts` - Query hooks
 - ✅ `hooks/useProjectMutations.ts` - Mutation hooks with optimistic updates
@@ -223,6 +250,7 @@ This document tracks the progress of migrating from mixed React Query patterns t
 - ✅ `README.md` - Comprehensive documentation
 
 **Hooks Available**:
+
 - `useProjects()` - Get all projects (15 min cache)
 - `useProject(projectId)` - Get project by ID (15 min cache)
 - `useProjectStats(projectId)` - Get project statistics (5 min cache)
@@ -235,6 +263,7 @@ This document tracks the progress of migrating from mixed React Query patterns t
 - `useInvalidateAllProjects()` - Invalidate all projects
 
 **Service Methods**:
+
 - `getProjects()` - Fetch all user projects
 - `getProject(projectId)` - Fetch project by ID
 - `getProjectStats(projectId)` - Fetch project statistics
@@ -245,6 +274,7 @@ This document tracks the progress of migrating from mixed React Query patterns t
 - `restoreProject(projectId)` - Restore project (wrapper for update)
 
 **Special Features**:
+
 - ✅ 15-minute cache for projects (don't change often)
 - ✅ 5-minute cache for stats (change more frequently)
 - ✅ Optimistic updates for both detail and list caches
@@ -256,16 +286,19 @@ This document tracks the progress of migrating from mixed React Query patterns t
 **Components Using**: Ready for migration
 
 **Migrated From**:
+
 - ✅ `useCache.ts`: `useProjects`
 - ✅ `useMutations.ts`: `useCreateActivityMutation`, `useUpdateActivityMutation`, `useDeleteActivityMutation`
 
 ---
 
 ### 8. Challenges Feature
+
 **Status**: ✅ COMPLETE (New Migration)
 **Location**: `src/features/challenges/`
 
 **Files Created**:
+
 - ✅ `services/ChallengeService.ts` - Challenge business logic
 - ✅ `hooks/useChallenges.ts` - Query hooks with varied cache times
 - ✅ `hooks/useChallengeMutations.ts` - Mutation hooks
@@ -273,6 +306,7 @@ This document tracks the progress of migrating from mixed React Query patterns t
 - ✅ `README.md` - Comprehensive documentation
 
 **Hooks Available**:
+
 - `useChallenges(filters?)` - Get challenges (5 min cache)
 - `useChallenge(id)` - Get single challenge (5 min cache)
 - `useChallengeLeaderboard(id)` - Get leaderboard (1 min cache)
@@ -285,6 +319,7 @@ This document tracks the progress of migrating from mixed React Query patterns t
 - `useLeaveChallenge()` - Leave challenge
 
 **Service Methods**:
+
 - `getChallenges(filters)` - Fetch challenges with optional filters
 - `getChallenge(id)` - Fetch challenge by ID
 - `getChallengeLeaderboard(id)` - Fetch leaderboard rankings
@@ -298,6 +333,7 @@ This document tracks the progress of migrating from mixed React Query patterns t
 - `updateProgress(challengeId, userId, progress)` - Update user progress
 
 **Special Features**:
+
 - ✅ Challenge types: most-activity, fastest-effort, longest-session, group-goal
 - ✅ 1-minute cache for leaderboards (updates frequently)
 - ✅ 1-minute cache for progress tracking
@@ -308,6 +344,7 @@ This document tracks the progress of migrating from mixed React Query patterns t
 **Components Using**: Ready for migration
 
 **Migrated From**:
+
 - ✅ `useCache.ts`: `useChallenges`, `useChallenge`, `useChallengeProgress`
 
 ---
@@ -317,6 +354,7 @@ This document tracks the progress of migrating from mixed React Query patterns t
 **No pending migrations remaining!**
 
 All 9 features have been successfully migrated to the React Query at feature boundaries architecture:
+
 - ✅ Groups
 - ✅ Feed
 - ✅ Profile
@@ -330,10 +368,12 @@ All 9 features have been successfully migrated to the React Query at feature bou
 ---
 
 ### 9. Streaks Feature
+
 **Status**: ✅ COMPLETE (Final Feature!)
 **Location**: `src/features/streaks/`
 
 **Files Created**:
+
 - ✅ `services/StreakService.ts` - Streak business logic
 - ✅ `hooks/useStreaks.ts` - Query hooks
 - ✅ `hooks/useStreakMutations.ts` - Mutation hooks
@@ -341,6 +381,7 @@ All 9 features have been successfully migrated to the React Query at feature bou
 - ✅ `README.md` - Comprehensive documentation
 
 **Hooks Available**:
+
 - `useStreakData(userId)` - Get user's streak data
 - `useStreakStats(userId)` - Get streak statistics
 - `useUpdateStreakVisibility()` - Update privacy setting
@@ -348,11 +389,13 @@ All 9 features have been successfully migrated to the React Query at feature bou
 - `useInvalidateAllStreaks()` - Invalidate all streaks
 
 **Service Methods**:
+
 - `getStreakData(userId)` - Fetch streak data
 - `getStreakStats(userId)` - Fetch streak statistics
 - `updateStreakVisibility(userId, isPublic)` - Update visibility
 
 **Special Features**:
+
 - ✅ 5-minute cache (streaks update daily)
 - ✅ Privacy controls (public/private)
 - ✅ Current and longest streak tracking
@@ -361,6 +404,7 @@ All 9 features have been successfully migrated to the React Query at feature bou
 **Components Using**: Ready for migration
 
 **Migrated From**:
+
 - ✅ `useCache.ts`: `useStreak`
 
 ---
@@ -369,28 +413,28 @@ All 9 features have been successfully migrated to the React Query at feature bou
 
 ### Priority 1 - Core Components
 
-| Component | Uses Old Hooks | Migration Status | Notes |
-|-----------|---------------|------------------|-------|
-| `Feed.tsx` | ✅ Yes | ⏳ In Progress | Example created in `Feed.new.tsx` |
-| `SessionCard.tsx` | ✅ Yes | ⏳ Pending | Uses support mutations |
-| `CommentsModal.tsx` | ✅ Yes | ⏳ Pending | Uses comment hooks |
-| `SessionTimer.tsx` | ❓ Maybe | ⏳ Pending | Check timer context usage |
+| Component           | Uses Old Hooks | Migration Status | Notes                             |
+| ------------------- | -------------- | ---------------- | --------------------------------- |
+| `Feed.tsx`          | ✅ Yes         | ⏳ In Progress   | Example created in `Feed.new.tsx` |
+| `SessionCard.tsx`   | ✅ Yes         | ⏳ Pending       | Uses support mutations            |
+| `CommentsModal.tsx` | ✅ Yes         | ⏳ Pending       | Uses comment hooks                |
+| `SessionTimer.tsx`  | ❓ Maybe       | ⏳ Pending       | Check timer context usage         |
 
 ### Priority 2 - Feature Pages
 
-| Page | Uses Old Hooks | Migration Status | Notes |
-|------|---------------|------------------|-------|
-| `app/groups/[id]/page.tsx` | ✅ Yes | ⏳ Pending | Use new `useGroupDetails` |
-| `app/groups/page.tsx` | ✅ Yes | ⏳ Pending | Use new `useGroups` |
-| `app/profile/[username]/page.tsx` | ✅ Yes | ⏳ Pending | Use new `useProfileByUsername` |
-| `app/challenges/page.tsx` | ✅ Yes | ⏳ Pending | Needs challenge hooks first |
+| Page                              | Uses Old Hooks | Migration Status | Notes                          |
+| --------------------------------- | -------------- | ---------------- | ------------------------------ |
+| `app/groups/[id]/page.tsx`        | ✅ Yes         | ⏳ Pending       | Use new `useGroupDetails`      |
+| `app/groups/page.tsx`             | ✅ Yes         | ⏳ Pending       | Use new `useGroups`            |
+| `app/profile/[username]/page.tsx` | ✅ Yes         | ⏳ Pending       | Use new `useProfileByUsername` |
+| `app/challenges/page.tsx`         | ✅ Yes         | ⏳ Pending       | Needs challenge hooks first    |
 
 ### Priority 3 - Utility Components
 
-| Component | Uses Old Hooks | Migration Status | Notes |
-|-----------|---------------|------------------|-------|
-| `RightSidebar.tsx` | ✅ Yes | ⏳ Pending | Suggested users/groups |
-| `LeftSidebar.tsx` | ❓ Maybe | ⏳ Pending | Check dependencies |
+| Component          | Uses Old Hooks | Migration Status | Notes                  |
+| ------------------ | -------------- | ---------------- | ---------------------- |
+| `RightSidebar.tsx` | ✅ Yes         | ⏳ Pending       | Suggested users/groups |
+| `LeftSidebar.tsx`  | ❓ Maybe       | ⏳ Pending       | Check dependencies     |
 
 ---
 
@@ -486,17 +530,20 @@ grep -r "from '@/hooks/useMutations'" src/app src/components
 ## Success Metrics
 
 ### Code Quality
+
 - ✅ Clear separation of concerns
 - ✅ Type safety throughout
 - ✅ Testable at each layer
 - ⏳ 80% test coverage (pending)
 
 ### Performance
+
 - ✅ Reduced Firestore reads through caching
 - ✅ Optimistic updates for instant feedback
 - ⏳ Measure actual improvement (pending)
 
 ### Developer Experience
+
 - ✅ Easier to find code (feature-based)
 - ✅ Predictable patterns
 - ✅ Tool support (scaffolder, snippets)

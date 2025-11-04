@@ -9,6 +9,7 @@ The monolithic `src/lib/firebaseApi.ts` file (7846 lines) has been refactored in
 ### ✅ Phase 1: Foundation (Complete)
 
 **Completed Modules:**
+
 1. `src/lib/api/shared/utils.ts` - Common utilities (timestamp conversion, data sanitization)
 2. `src/lib/api/auth/index.ts` - Authentication operations (login, signup, OAuth)
 3. `src/lib/api/social/helpers.ts` - Social graph management (follow/unfollow, user fetching)
@@ -16,6 +17,7 @@ The monolithic `src/lib/firebaseApi.ts` file (7846 lines) has been refactored in
 5. `src/lib/api/README.md` - Comprehensive documentation
 
 **What Works:**
+
 - All existing code continues to work unchanged
 - New auth module can be imported directly: `import { firebaseAuthApi } from '@/lib/api/auth'`
 - Old imports still work: `import { firebaseAuthApi } from '@/lib/firebaseApi'`
@@ -26,17 +28,17 @@ The monolithic `src/lib/firebaseApi.ts` file (7846 lines) has been refactored in
 
 **Modules To Extract:**
 
-| Module | Lines | Priority | Status |
-|--------|-------|----------|--------|
-| users/index.ts | 1312 | HIGH | Not Started |
-| sessions/index.ts | 917 | HIGH | Not Started |
-| projects/index.ts | 152 | MEDIUM | Not Started |
-| challenges/index.ts | 837 | MEDIUM | Not Started |
-| social/comments.ts | 1426 | MEDIUM | Not Started |
-| sessions/posts.ts | 867 | LOW | Not Started (Legacy) |
-| streaks/index.ts | 520 | LOW | Not Started |
-| achievements/index.ts | 374 | LOW | Not Started |
-| notifications/index.ts | 370 | LOW | Not Started |
+| Module                 | Lines | Priority | Status               |
+| ---------------------- | ----- | -------- | -------------------- |
+| users/index.ts         | 1312  | HIGH     | Not Started          |
+| sessions/index.ts      | 917   | HIGH     | Not Started          |
+| projects/index.ts      | 152   | MEDIUM   | Not Started          |
+| challenges/index.ts    | 837   | MEDIUM   | Not Started          |
+| social/comments.ts     | 1426  | MEDIUM   | Not Started          |
+| sessions/posts.ts      | 867   | LOW      | Not Started (Legacy) |
+| streaks/index.ts       | 520   | LOW      | Not Started          |
+| achievements/index.ts  | 374   | LOW      | Not Started          |
+| notifications/index.ts | 370   | LOW      | Not Started          |
 
 ## How to Continue the Refactoring
 
@@ -70,10 +72,7 @@ import { handleError, ErrorSeverity } from '@/lib/errorHandler';
 import { checkRateLimit } from '@/lib/rateLimit';
 
 // Import from our new shared modules
-import {
-  convertTimestamp,
-  removeUndefinedFields,
-} from '../shared/utils';
+import { convertTimestamp, removeUndefinedFields } from '../shared/utils';
 
 import {
   updateSocialGraph,
@@ -280,12 +279,14 @@ After extracting a module, verify:
 ### Issue 1: Missing Imports
 
 **Error:**
+
 ```
 Cannot find name 'convertTimestamp'
 ```
 
 **Solution:**
 Add the import from shared utils:
+
 ```typescript
 import { convertTimestamp } from '../shared/utils';
 ```
@@ -293,11 +294,13 @@ import { convertTimestamp } from '../shared/utils';
 ### Issue 2: Circular Dependencies
 
 **Error:**
+
 ```
 Module has circular dependencies
 ```
 
 **Solution:**
+
 - Move shared code to `shared/utils.ts`
 - Restructure dependencies to be hierarchical
 - Consider if module boundaries need adjustment
@@ -305,12 +308,14 @@ Module has circular dependencies
 ### Issue 3: Type Import Errors
 
 **Error:**
+
 ```
 Cannot find type 'UserProfile'
 ```
 
 **Solution:**
 Import from types file:
+
 ```typescript
 import type { UserProfile } from '@/types';
 ```
@@ -318,12 +323,14 @@ import type { UserProfile } from '@/types';
 ### Issue 4: Firebase Not Initialized
 
 **Error:**
+
 ```
 Firebase app not initialized
 ```
 
 **Solution:**
 Ensure you're importing from the correct config:
+
 ```typescript
 import { db, auth, storage } from '@/lib/firebase';
 // NOT from 'firebase/app' directly
@@ -332,28 +339,33 @@ import { db, auth, storage } from '@/lib/firebase';
 ## Best Practices
 
 ### 1. Module Size
+
 - **Ideal:** 200-400 lines
 - **Acceptable:** 400-600 lines
 - **Too Large:** >600 lines (consider splitting further)
 
 ### 2. Naming Conventions
+
 - **Modules:** `firebase[Domain]Api` (e.g., `firebaseUserApi`)
 - **Files:** `src/lib/api/[domain]/index.ts`
 - **Helper Files:** `src/lib/api/[domain]/helpers.ts` or specific names
 
 ### 3. Documentation
+
 - Add JSDoc comments for all public methods
 - Document parameters and return types
 - Include usage examples for complex operations
 - Note any breaking changes or deprecations
 
 ### 4. Error Handling
+
 - Always use `handleError()` from `@/lib/errorHandler`
 - Provide meaningful error messages
 - Set appropriate error severity
 - Use rate limiting for sensitive operations
 
 ### 5. Dependencies
+
 - Keep modules loosely coupled
 - Depend on shared utilities, not other domain modules
 - If cross-domain dependencies exist, consider refactoring
@@ -390,6 +402,7 @@ Update this checklist as modules are extracted:
 ## Questions or Help Needed?
 
 If you need assistance:
+
 1. Check this migration guide
 2. Review `src/lib/api/README.md` for module structure
 3. Look at completed modules (auth, social helpers) as examples
@@ -399,6 +412,7 @@ If you need assistance:
 ## Success Criteria
 
 The refactoring is complete when:
+
 - [ ] All modules extracted from firebaseApi.ts
 - [ ] All imports updated to use new module paths
 - [ ] Type checks pass: `npm run type-check`

@@ -55,11 +55,11 @@ export function logSentryConfigWarnings(config: SentryConfig): void {
 
   if (!config.dsn) {
     console.warn(
-      '[Sentry] DSN not configured. Error tracking is disabled. Set NEXT_PUBLIC_SENTRY_DSN in .env.local to enable Sentry.',
+      '[Sentry] DSN not configured. Error tracking is disabled. Set NEXT_PUBLIC_SENTRY_DSN in .env.local to enable Sentry.'
     );
   } else if (!validateSentryDsn(config.dsn)) {
     console.error(
-      '[Sentry] Invalid DSN format. Please check your NEXT_PUBLIC_SENTRY_DSN environment variable.',
+      '[Sentry] Invalid DSN format. Please check your NEXT_PUBLIC_SENTRY_DSN environment variable.'
     );
   } else {
     console.info('[Sentry] Error tracking enabled in development mode');

@@ -15,7 +15,10 @@ export const STREAK_KEYS = {
   stats: (userId: string) => [...STREAK_KEYS.all(), 'stats', userId] as const,
 };
 
-export function useStreakData(userId: string, options?: Partial<UseQueryOptions<StreakData | null, Error>>) {
+export function useStreakData(
+  userId: string,
+  options?: Partial<UseQueryOptions<StreakData | null, Error>>
+) {
   return useQuery<StreakData | null, Error>({
     queryKey: STREAK_KEYS.data(userId),
     queryFn: () => streakService.getStreakData(userId),
@@ -25,7 +28,10 @@ export function useStreakData(userId: string, options?: Partial<UseQueryOptions<
   });
 }
 
-export function useStreakStats(userId: string, options?: Partial<UseQueryOptions<StreakStats | null, Error>>) {
+export function useStreakStats(
+  userId: string,
+  options?: Partial<UseQueryOptions<StreakStats | null, Error>>
+) {
   return useQuery<StreakStats | null, Error>({
     queryKey: STREAK_KEYS.stats(userId),
     queryFn: () => streakService.getStreakStats(userId),

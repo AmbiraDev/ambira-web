@@ -1,6 +1,7 @@
 export const ERROR_MESSAGES = {
   // Session errors
-  SESSION_SAVE_FAILED: 'Failed to save session. Please check your connection and try again.',
+  SESSION_SAVE_FAILED:
+    'Failed to save session. Please check your connection and try again.',
   SESSION_DELETE_FAILED: 'Failed to delete session. Please try again.',
   SESSION_LOAD_FAILED: 'Failed to load sessions. Please refresh the page.',
   SESSION_UPDATE_FAILED: 'Failed to update session. Please try again.',
@@ -29,7 +30,8 @@ export const ERROR_MESSAGES = {
   // Upload errors
   IMAGE_UPLOAD_FAILED: 'Failed to upload image. Please try a smaller file.',
   FILE_TOO_LARGE: 'File is too large. Maximum size is 5MB.',
-  INVALID_FILE_TYPE: 'Invalid file type. Please upload an image (JPG, PNG, or GIF).',
+  INVALID_FILE_TYPE:
+    'Invalid file type. Please upload an image (JPG, PNG, or GIF).',
 
   // Auth errors
   LOGIN_FAILED: 'Login failed. Please check your credentials.',

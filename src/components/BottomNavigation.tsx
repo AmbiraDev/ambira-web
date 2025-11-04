@@ -4,13 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { useTimer } from '@/features/timer/hooks';
-import {
-  Home,
-  Compass,
-  Play,
-  Users,
-  User,
-} from 'lucide-react';
+import { Home, Compass, Play, Users, User } from 'lucide-react';
 
 export default function BottomNavigation() {
   const pathname = usePathname();

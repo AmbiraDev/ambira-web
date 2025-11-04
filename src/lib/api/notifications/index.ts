@@ -171,6 +171,30 @@ export const firebaseNotificationApi = {
     }
   },
 
+  // Clear all notifications for a user (batched delete)
+  clearAllNotifications: async (userId: string): Promise<void> => {
+    try {
+      const notificationsQuery = query(
+        collection(db, 'notifications'),
+        where('userId', '==', userId)
+      );
+
+      const snapshot = await getDocs(notificationsQuery);
+      const batch = writeBatch(db);
+
+      snapshot.forEach(doc => {
+        batch.delete(doc.ref);
+      });
+
+      await batch.commit();
+    } catch (_error) {
+      const apiError = handleError(_error, 'Clear all notifications', {
+        defaultMessage: 'Failed to clear all notifications',
+      });
+      throw new Error(apiError.userMessage);
+    }
+  },
+
   // Get unread notification count
   getUnreadCount: async (userId: string): Promise<number> => {
     try {

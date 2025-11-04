@@ -45,6 +45,7 @@ ErrorBoundary
 ### Architectural Impact Assessment
 
 #### High Impact (Architectural Violations)
+
 - **AuthProvider**: 199+ usages across 74 files
   - Violates clean architecture boundaries
   - Creates tight coupling across all layers
@@ -56,6 +57,7 @@ ErrorBoundary
   - Prevents proper testing isolation
 
 #### Medium Impact (Partially Migrated)
+
 - **ActivitiesContext**: Deprecated with warning, 122+ usages
   - Migration path exists (`useActivitiesQuery.ts`)
   - Still consumed by 47+ components
@@ -67,6 +69,7 @@ ErrorBoundary
   - Cleanup phase needed
 
 #### Low Impact (Simple State)
+
 - **ToastContext**: UI-only concern, 0 persistence
   - Could remain as scoped provider
   - Alternative: Use React Query mutation callbacks
@@ -79,6 +82,7 @@ ErrorBoundary
 ### 1. AuthProvider (src/contexts/AuthContext.tsx)
 
 **Responsibilities:**
+
 - Firebase Auth state listener
 - User authentication state (`user`, `isAuthenticated`, `isLoading`)
 - Auth operations: `login`, `signup`, `signInWithGoogle`, `logout`
@@ -86,29 +90,34 @@ ErrorBoundary
 - Router navigation after auth changes
 
 **Dependencies:**
+
 ```typescript
-import { useRouter } from 'next/navigation'
-import { firebaseAuthApi } from '@/lib/firebaseApi'
+import { useRouter } from 'next/navigation';
+import { firebaseAuthApi } from '@/lib/firebaseApi';
 ```
 
 **State Management:**
+
 - `user: AuthUser | null` - Current authenticated user
 - `isLoading: boolean` - Auth initialization state
 - `redirectHandledRef` - Tracks OAuth redirects
 
 **Consumed By:**
+
 - All route pages requiring authentication (23 files in src/app)
 - Most components (47 files in src/components)
 - All feature modules (4 files in src/features)
 - Other contexts (TimerContext, ActivitiesContext)
 
 **Migration Complexity:** 🔴 HIGH
+
 - Central dependency for all authenticated features
 - Manages real-time Firebase Auth listener
 - Requires careful session state management
 - Navigation coupling needs refactoring
 
 **Migration Approach:** Server-side authentication + client-side React Query
+
 ```typescript
 // PROPOSED: src/features/auth/hooks/useAuth.ts
 export function useAuth() {
@@ -138,6 +147,7 @@ export function useAuthSession() {
 ### 2. TimerProvider (src/contexts/TimerContext.tsx)
 
 **Responsibilities:**
+
 - Timer client state (isRunning, startTime, pausedDuration)
 - Timer operations: start, pause, resume, finish, reset
 - Auto-save to Firebase every 30 seconds
@@ -146,6 +156,7 @@ export function useAuthSession() {
 - Elapsed time calculations
 
 **Dependencies:**
+
 ```typescript
 import { useAuth } from './AuthContext' // ❌ Context dependency
 import { useActiveSession, useSaveActiveSession, ... } from '@/hooks/useTimerQuery' // ✅ Already using RQ
@@ -153,31 +164,35 @@ import { useActivities } from '@/hooks/useActivitiesQuery' // ✅ Already using 
 ```
 
 **State Management:**
+
 ```typescript
 timerState: {
-  isRunning: boolean
-  startTime: Date | null
-  pausedDuration: number
-  currentProject: Project | null
-  activeTimerId: string | null
-  isConnected: boolean
-  lastAutoSave: Date | null
+  isRunning: boolean;
+  startTime: Date | null;
+  pausedDuration: number;
+  currentProject: Project | null;
+  activeTimerId: string | null;
+  isConnected: boolean;
+  lastAutoSave: Date | null;
 }
 ```
 
 **Consumed By:**
+
 - Header components (timer display)
 - Timer page components
 - Feed layout (shows active timer bar)
 - 47+ component files
 
 **Migration Complexity:** 🟡 MEDIUM
+
 - **Already has React Query hooks** (`useTimerQuery.ts`)
 - Main concern: Client-side timer state (running/paused)
 - Cross-tab sync can use React Query's built-in refetch
 - Auto-save can use React Query mutations
 
 **Migration Approach:** Split into client-state hook + React Query
+
 ```typescript
 // CLIENT STATE: src/features/timer/hooks/useTimerState.ts
 export function useTimerState() {
@@ -209,24 +224,28 @@ export function useActiveTimer() {
 **Status:** ⚠️ DEPRECATED (with console warning)
 
 **Responsibilities:**
+
 - Fetch user activities/projects
 - CRUD operations: create, update, delete, archive, restore
 - Activity statistics calculation
 - Icon migration (legacy Lucide → Iconify)
 
 **Dependencies:**
+
 ```typescript
-import { useAuth } from './AuthContext' // ❌ Context dependency
-import { firebaseActivityApi } from '@/lib/firebaseApi'
+import { useAuth } from './AuthContext'; // ❌ Context dependency
+import { firebaseActivityApi } from '@/lib/firebaseApi';
 ```
 
 **Migration Status:** 🟢 95% Complete
+
 - ✅ `src/hooks/useActivitiesQuery.ts` exists with full feature parity
 - ✅ Deprecation warning in place
 - ✅ Backward compatibility aliases exported
 - ❌ Still consumed by 47+ components (need to update imports)
 
 **Migration Approach:** Import replacement campaign
+
 ```bash
 # Find and replace across codebase
 import { useActivities } from '@/contexts/ActivitiesContext'
@@ -243,17 +262,20 @@ import { useActivities } from '@/hooks/useActivitiesQuery'
 **Status:** ⚠️ DEPRECATED (with console warning)
 
 **Responsibilities:**
+
 - Fetch user notifications
 - Unread count tracking
 - Mark as read operations
 - Delete/clear operations
 
 **Dependencies:**
+
 ```typescript
-import { useAuth } from './AuthContext' // ❌ Context dependency
+import { useAuth } from './AuthContext'; // ❌ Context dependency
 ```
 
 **Migration Status:** 🟢 100% Complete
+
 - ✅ `src/hooks/useNotifications.ts` exists
 - ✅ Provider reduced to passthrough (just renders children)
 - ✅ Deprecation warnings in place
@@ -261,6 +283,7 @@ import { useAuth } from './AuthContext' // ❌ Context dependency
 - ❌ Need to update component imports
 
 **Migration Approach:** Remove provider entirely
+
 ```typescript
 // layout.tsx - REMOVE THIS:
 <NotificationsProvider>
@@ -280,6 +303,7 @@ import { useNotifications } from '@/hooks/useNotifications'
 ### 5. ToastProvider (src/contexts/ToastContext.tsx)
 
 **Responsibilities:**
+
 - UI-only toast notifications
 - No persistence or server state
 - Simple show/hide with 5s timeout
@@ -287,17 +311,20 @@ import { useNotifications } from '@/hooks/useNotifications'
 **Dependencies:** None
 
 **State Management:**
+
 ```typescript
 toasts: Toast[] = [{ id, message, type }]
 ```
 
 **Migration Complexity:** 🟢 LOW
+
 - Pure UI concern (no server state)
 - Could remain as scoped context
 - Alternative: Use shadcn/ui Sonner library
 - Or: Use React Query mutation callbacks
 
 **Recommendation:** ⚠️ **KEEP for now** but scope to app shell
+
 - Not an architectural violation
 - No server state mixing
 - Consider future migration to Sonner
@@ -308,17 +335,18 @@ toasts: Toast[] = [{ id, message, type }]
 
 ### Usage Statistics
 
-| Context | Components | App Pages | Features | Total Files |
-|---------|-----------|-----------|----------|-------------|
-| AuthContext | 47 | 23 | 4 | **74** |
-| TimerContext | 47 | - | - | **47** |
-| ActivitiesContext | 47 | - | - | **47** |
-| NotificationsContext | ~10 | ~3 | - | **~13** |
-| ToastContext | ~30 | ~10 | - | **~40** |
+| Context              | Components | App Pages | Features | Total Files |
+| -------------------- | ---------- | --------- | -------- | ----------- |
+| AuthContext          | 47         | 23        | 4        | **74**      |
+| TimerContext         | 47         | -         | -        | **47**      |
+| ActivitiesContext    | 47         | -         | -        | **47**      |
+| NotificationsContext | ~10        | ~3        | -        | **~13**     |
+| ToastContext         | ~30        | ~10       | -        | **~40**     |
 
 ### Cross-Layer Violations
 
 **Components calling useAuth (47 files):**
+
 ```
 src/components/ActivityCard.tsx
 src/components/ActivityList.tsx
@@ -332,6 +360,7 @@ src/components/SessionTimerEnhanced.tsx
 ```
 
 **App routes calling useAuth (23 files):**
+
 ```
 src/app/analytics/page.tsx
 src/app/activities/page.tsx
@@ -342,6 +371,7 @@ src/app/feed/page-content.tsx
 ```
 
 **Feature modules calling useAuth (4 files):**
+
 ```
 src/features/feed/components/FeedPageContent.tsx
 src/features/settings/components/SettingsPageContent.tsx
@@ -352,15 +382,17 @@ src/features/profile/components/OwnProfilePageContent.tsx
 ### Anti-Pattern Identification
 
 #### ❌ Violation 1: Context Nesting
+
 ```typescript
 // TimerContext depends on AuthContext
 export const TimerProvider = ({ children }) => {
   const { user } = useAuth(); // ❌ Context calling context
   // ...
-}
+};
 ```
 
 #### ❌ Violation 2: Components Bypassing Feature Boundaries
+
 ```typescript
 // src/components/SessionCard.tsx
 const { user } = useAuth(); // ❌ Should use feature hook
@@ -368,6 +400,7 @@ const { timerState } = useTimer(); // ❌ Should use feature hook
 ```
 
 #### ❌ Violation 3: Mixing Server + Client State
+
 ```typescript
 // TimerContext mixes:
 - Server state (active session in Firebase) ✅ Should be React Query
@@ -381,15 +414,18 @@ const { timerState } = useTimer(); // ❌ Should use feature hook
 ### Quick Wins (Low Effort, High Impact)
 
 #### 1. NotificationsContext Removal (1-2 hours)
+
 **Effort:** 🟢 LOW | **Impact:** 🟢 HIGH | **Risk:** 🟢 LOW
 
 **Steps:**
+
 1. ✅ Provider already a passthrough
 2. Remove `<NotificationsProvider>` from layout.tsx
 3. Find/replace imports across codebase (~13 files)
 4. Delete `src/contexts/NotificationsContext.tsx`
 
 **Benefits:**
+
 - One less provider in the tree
 - Cleaner architecture
 - Sets precedent for other migrations
@@ -397,9 +433,11 @@ const { timerState } = useTimer(); // ❌ Should use feature hook
 ---
 
 #### 2. ActivitiesContext Removal (2-4 hours)
+
 **Effort:** 🟢 LOW | **Impact:** 🟢 HIGH | **Risk:** 🟢 LOW
 
 **Steps:**
+
 1. ✅ React Query hooks exist with full parity
 2. Find/replace imports across 47 files
 3. Remove `<ActivitiesProvider>` from layout (if exists)
@@ -407,6 +445,7 @@ const { timerState } = useTimer(); // ❌ Should use feature hook
 5. Update tests
 
 **Benefits:**
+
 - Eliminates duplicate state management
 - Leverages React Query caching
 - Better performance
@@ -416,13 +455,16 @@ const { timerState } = useTimer(); // ❌ Should use feature hook
 ### Medium Effort Migrations
 
 #### 3. TimerContext → Feature Hook (4-8 hours)
+
 **Effort:** 🟡 MEDIUM | **Impact:** 🟡 HIGH | **Risk:** 🟡 MEDIUM
 
 **Current State:**
+
 - ✅ 50% already using React Query (`useTimerQuery.ts`)
 - ❌ Still has wrapper context for convenience API
 
 **Target Architecture:**
+
 ```typescript
 // src/features/timer/hooks/useTimer.ts
 export function useTimerActions() {
@@ -458,6 +500,7 @@ export function useTimerState() {
 ```
 
 **Migration Steps:**
+
 1. Create `src/features/timer/hooks/useTimerActions.ts`
 2. Create `src/features/timer/hooks/useTimerState.ts` for client state
 3. Migrate components one-by-one to new hooks
@@ -465,6 +508,7 @@ export function useTimerState() {
 5. Delete context file
 
 **Benefits:**
+
 - Clear server/client state separation
 - Better testability
 - Eliminates auto-save complexity (React Query handles it)
@@ -474,9 +518,11 @@ export function useTimerState() {
 ### High Effort Migrations
 
 #### 4. AuthContext → Feature Hook (16-24 hours)
+
 **Effort:** 🔴 HIGH | **Impact:** 🔴 CRITICAL | **Risk:** 🔴 HIGH
 
 **Challenges:**
+
 - Used in 74 files across all layers
 - Manages Firebase Auth listener lifecycle
 - Handles OAuth redirect flows
@@ -486,6 +532,7 @@ export function useTimerState() {
 **Recommended Approach:** Server Components + Client Session Hook
 
 **Phase 1: Create Auth Service Layer**
+
 ```typescript
 // src/features/auth/services/AuthService.ts
 export class AuthService {
@@ -503,6 +550,7 @@ export class AuthService {
 ```
 
 **Phase 2: Create React Query Hooks**
+
 ```typescript
 // src/features/auth/hooks/useAuth.ts
 export function useAuth() {
@@ -519,7 +567,7 @@ export function useAuthListener() {
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    const unsubscribe = firebaseAuthApi.onAuthStateChanged((user) => {
+    const unsubscribe = firebaseAuthApi.onAuthStateChanged(user => {
       queryClient.setQueryData(['auth', 'session'], user);
     });
     return unsubscribe;
@@ -528,6 +576,7 @@ export function useAuthListener() {
 ```
 
 **Phase 3: Create Root Auth Initializer**
+
 ```typescript
 // src/app/auth-initializer.tsx
 'use client';
@@ -548,6 +597,7 @@ export function AuthInitializer({ children }: { children: ReactNode }) {
 ```
 
 **Phase 4: Migrate Components (74 files)**
+
 ```typescript
 // OLD:
 const { user, isAuthenticated, isLoading } = useAuth();
@@ -558,6 +608,7 @@ const isAuthenticated = !!user;
 ```
 
 **Phase 5: Create Auth Mutations**
+
 ```typescript
 // src/features/auth/hooks/useAuthMutations.ts
 export function useLogin() {
@@ -567,7 +618,7 @@ export function useLogin() {
   return useMutation({
     mutationFn: (credentials: LoginCredentials) =>
       authService.login(credentials),
-    onSuccess: (user) => {
+    onSuccess: user => {
       queryClient.setQueryData(['auth', 'session'], user);
       router.push('/');
     },
@@ -589,6 +640,7 @@ export function useLogout() {
 ```
 
 **Benefits:**
+
 - Eliminates global singleton
 - Better separation of concerns
 - Testable authentication logic
@@ -596,6 +648,7 @@ export function useLogout() {
 - Server component compatibility
 
 **Risks:**
+
 - High touch count (74 files)
 - OAuth redirect flow complexity
 - Potential session race conditions
@@ -628,6 +681,7 @@ Phase 4: Cleanup (1 week)
 **Goal:** Remove deprecated contexts, set migration precedent
 
 #### Week 1, Day 1-2: NotificationsContext Removal
+
 - [ ] Remove `<NotificationsProvider>` from layout.tsx
 - [ ] Update imports in ~13 files
 - [ ] Delete context file
@@ -635,6 +689,7 @@ Phase 4: Cleanup (1 week)
 - [ ] Commit: "refactor: remove NotificationsContext, use React Query hooks"
 
 #### Week 1, Day 3-5: ActivitiesContext Removal
+
 - [ ] Create migration script for import updates
 - [ ] Run automated import replacement across 47 files
 - [ ] Manual verification of edge cases
@@ -644,12 +699,14 @@ Phase 4: Cleanup (1 week)
 - [ ] Commit: "refactor: remove ActivitiesContext, migrate to useActivitiesQuery"
 
 **Success Criteria:**
+
 - ✅ 2 fewer providers in layout.tsx
 - ✅ All tests passing
 - ✅ No performance regressions
 - ✅ No user-facing issues
 
 **Rollback Plan:**
+
 - Revert commits (context files still in git history)
 - Re-add providers to layout.tsx
 
@@ -660,6 +717,7 @@ Phase 4: Cleanup (1 week)
 **Goal:** Separate client state from server state, eliminate TimerProvider
 
 #### Week 2, Day 1-2: Create Feature Hooks
+
 - [ ] Create `src/features/timer/hooks/useTimerState.ts`
   - Client-only state (isRunning, elapsed time)
   - No dependencies on contexts
@@ -669,29 +727,34 @@ Phase 4: Cleanup (1 week)
 - [ ] Create comprehensive tests for new hooks
 
 #### Week 2, Day 3: Migrate Core Timer Components
+
 - [ ] `src/components/SessionTimerEnhanced.tsx`
 - [ ] `src/components/TimerDisplay.tsx`
 - [ ] `src/components/TimerControls.tsx`
 - [ ] `src/app/timer/page.tsx`
 
 #### Week 2, Day 4: Migrate Header/Navigation
+
 - [ ] `src/components/header/TimerStatus.tsx`
 - [ ] `src/components/ActiveTimerBar.tsx`
 - [ ] `src/components/BottomNavigation.tsx`
 
 #### Week 2, Day 5: Remove TimerProvider
+
 - [ ] Verify all components migrated
 - [ ] Remove from layout.tsx
 - [ ] Delete context file
 - [ ] Update documentation
 
 **Success Criteria:**
+
 - ✅ Timer functionality identical
 - ✅ Cross-tab sync working
 - ✅ Auto-save working (via React Query)
 - ✅ Performance equivalent or better
 
 **Rollback Plan:**
+
 - Revert to TimerProvider
 - Keep new hooks for future retry
 
@@ -702,6 +765,7 @@ Phase 4: Cleanup (1 week)
 **Goal:** Eliminate AuthProvider, move to React Query + Firebase listener
 
 #### Week 3: Preparation & Infrastructure
+
 - [ ] Create `src/features/auth/services/AuthService.ts`
 - [ ] Create `src/features/auth/hooks/useAuth.ts` (React Query)
 - [ ] Create `src/features/auth/hooks/useAuthListener.ts` (Firebase subscription)
@@ -711,6 +775,7 @@ Phase 4: Cleanup (1 week)
 - [ ] Create migration guide for team
 
 #### Week 4: Component Migration (74 files)
+
 - [ ] **Day 1-2**: Feature modules (4 files)
   - `src/features/feed/components/FeedPageContent.tsx`
   - `src/features/profile/components/OwnProfilePageContent.tsx`
@@ -730,6 +795,7 @@ Phase 4: Cleanup (1 week)
   - Monitor closely
 
 #### Week 5: Remaining Components & Cleanup
+
 - [ ] **Day 1-3**: Migrate remaining 37 components
   - Batch by feature area
   - Test thoroughly between batches
@@ -746,6 +812,7 @@ Phase 4: Cleanup (1 week)
   - Delete AuthContext file after stable
 
 **Success Criteria:**
+
 - ✅ All auth flows working (login, logout, OAuth)
 - ✅ Session persistence working
 - ✅ Protected routes working
@@ -753,6 +820,7 @@ Phase 4: Cleanup (1 week)
 - ✅ Performance equivalent or better
 
 **Rollback Plan:**
+
 - Keep AuthProvider in git history
 - Have one-line revert ready: `git revert <commit>`
 - Keep feature flag for gradual rollout if needed
@@ -764,18 +832,21 @@ Phase 4: Cleanup (1 week)
 **Goal:** Remove dead code, update docs, enforce patterns
 
 #### Week 6, Day 1-2: Code Cleanup
+
 - [ ] Delete all deprecated context files
 - [ ] Remove unused imports
 - [ ] Update dependency graphs
 - [ ] Clean up test mocks
 
 #### Week 6, Day 3-4: Documentation
+
 - [ ] Update `/docs/architecture/README.md`
 - [ ] Update `/docs/architecture/CACHING_STRATEGY.md`
 - [ ] Update `CLAUDE.md` with new patterns
 - [ ] Create migration retrospective doc
 
 #### Week 6, Day 5: Enforcement
+
 - [ ] Add ESLint rules to prevent context anti-patterns
 - [ ] Update code review checklist
 - [ ] Create team training materials
@@ -788,6 +859,7 @@ Phase 4: Cleanup (1 week)
 ### Pattern 1: Replace Context with React Query Hook
 
 **Before (Context):**
+
 ```typescript
 // src/contexts/FeatureContext.tsx
 export const FeatureContext = createContext<FeatureContextType | undefined>(undefined);
@@ -820,6 +892,7 @@ export const useFeature = () => {
 ```
 
 **After (React Query):**
+
 ```typescript
 // src/features/feature/services/FeatureService.ts
 export class FeatureService {
@@ -850,6 +923,7 @@ function MyComponent() {
 ```
 
 **Benefits:**
+
 - Automatic caching
 - Built-in refetch logic
 - Better TypeScript support
@@ -860,6 +934,7 @@ function MyComponent() {
 ### Pattern 2: Split Server State from Client State
 
 **Before (Mixed State):**
+
 ```typescript
 // Context managing both server data AND UI state
 export const TimerProvider = ({ children }) => {
@@ -887,6 +962,7 @@ export const TimerProvider = ({ children }) => {
 ```
 
 **After (Separated Concerns):**
+
 ```typescript
 // SERVER STATE: src/features/timer/hooks/useActiveTimer.ts
 export function useActiveTimer() {
@@ -913,15 +989,16 @@ export function useTimerState() {
   }, [isRunning]);
 
   return {
-    activeSession,  // From server
-    isRunning,      // Client state
-    elapsed,        // Derived client state
-    setIsRunning
+    activeSession, // From server
+    isRunning, // Client state
+    elapsed, // Derived client state
+    setIsRunning,
   };
 }
 ```
 
 **Benefits:**
+
 - Clear separation of concerns
 - Server state cached by React Query
 - Client state remains local to component tree
@@ -981,6 +1058,7 @@ function MyComponent() {
 ```
 
 **Benefits:**
+
 - Firebase listener runs once at root
 - All components get cached auth state
 - React Query manages cache invalidation
@@ -1064,6 +1142,7 @@ function LoginForm() {
 ```
 
 **Benefits:**
+
 - Navigation logic in mutation (not component)
 - Clear success/error handling
 - Loading states built-in
@@ -1075,20 +1154,22 @@ function LoginForm() {
 
 ### Risk Matrix
 
-| Risk | Severity | Likelihood | Mitigation |
-|------|----------|------------|------------|
-| Auth session loss | 🔴 CRITICAL | 🟡 MEDIUM | Comprehensive testing, gradual rollout |
-| Timer state corruption | 🟡 MEDIUM | 🟡 MEDIUM | Split client/server state clearly |
-| Performance regression | 🟢 LOW | 🟢 LOW | React Query more efficient than contexts |
-| Component breakage | 🟡 MEDIUM | 🔴 HIGH | Automated tests, TypeScript checks |
-| Cross-tab sync failure | 🟡 MEDIUM | 🟢 LOW | React Query refetch handles this |
+| Risk                   | Severity    | Likelihood | Mitigation                               |
+| ---------------------- | ----------- | ---------- | ---------------------------------------- |
+| Auth session loss      | 🔴 CRITICAL | 🟡 MEDIUM  | Comprehensive testing, gradual rollout   |
+| Timer state corruption | 🟡 MEDIUM   | 🟡 MEDIUM  | Split client/server state clearly        |
+| Performance regression | 🟢 LOW      | 🟢 LOW     | React Query more efficient than contexts |
+| Component breakage     | 🟡 MEDIUM   | 🔴 HIGH    | Automated tests, TypeScript checks       |
+| Cross-tab sync failure | 🟡 MEDIUM   | 🟢 LOW     | React Query refetch handles this         |
 
 ### Specific Risks & Mitigations
 
 #### Risk 1: Auth Session Loss During Migration
+
 **Scenario:** User logs in, auth context removed, session lost
 
 **Mitigation:**
+
 1. Keep AuthProvider during migration (feature flag)
 2. Migrate components one-by-one
 3. Test OAuth flows thoroughly
@@ -1096,6 +1177,7 @@ function LoginForm() {
 5. Have instant rollback plan
 
 **Testing Strategy:**
+
 ```typescript
 // Test both old and new implementations side-by-side
 describe('Auth migration', () => {
@@ -1111,9 +1193,11 @@ describe('Auth migration', () => {
 ---
 
 #### Risk 2: Timer Stops Working in Production
+
 **Scenario:** Client state/server state separation breaks timer
 
 **Mitigation:**
+
 1. Create comprehensive E2E tests for timer flows
 2. Test cross-tab scenarios
 3. Test pause/resume edge cases
@@ -1121,6 +1205,7 @@ describe('Auth migration', () => {
 5. Canary deploy to 10% of users first
 
 **Testing Strategy:**
+
 ```typescript
 // E2E test with Playwright
 test('timer should persist across page reloads', async ({ page }) => {
@@ -1137,15 +1222,18 @@ test('timer should persist across page reloads', async ({ page }) => {
 ---
 
 #### Risk 3: Performance Regression
+
 **Scenario:** React Query caching slower than contexts
 
 **Mitigation:**
+
 1. Benchmark before/after (Lighthouse, Web Vitals)
 2. Monitor real user metrics (Vercel Speed Insights)
 3. Set appropriate stale times
 4. Use React Query devtools to debug
 
 **Monitoring:**
+
 ```typescript
 // Track cache hit rates
 const { data, isStale } = useFeature();
@@ -1153,7 +1241,7 @@ const { data, isStale } = useFeature();
 useEffect(() => {
   analytics.track('cache_hit', {
     feature: 'feature-name',
-    wasStale: isStale
+    wasStale: isStale,
   });
 }, [isStale]);
 ```
@@ -1161,15 +1249,18 @@ useEffect(() => {
 ---
 
 #### Risk 4: Type Safety Loss
+
 **Scenario:** Removing contexts breaks TypeScript types
 
 **Mitigation:**
+
 1. Define types at service layer
 2. Export typed hooks
 3. Use TypeScript strict mode
 4. Run `tsc --noEmit` in CI
 
 **Type Safety Pattern:**
+
 ```typescript
 // src/features/feature/types/index.ts
 export interface Feature {
@@ -1184,7 +1275,8 @@ export interface FeatureService {
 
 // src/features/feature/hooks/useFeature.ts
 export function useFeature() {
-  return useQuery<Feature[]>({ // ← Typed return
+  return useQuery<Feature[]>({
+    // ← Typed return
     queryKey: ['feature', 'data'],
     queryFn: () => featureService.getData(),
   });
@@ -1197,14 +1289,14 @@ export function useFeature() {
 
 ### Quantitative Metrics
 
-| Metric | Current | Target | How to Measure |
-|--------|---------|--------|----------------|
-| Global providers | 5 | 1-2 | Count in layout.tsx |
-| Context dependencies | ~200 | 0 | `grep -r "useAuth\|useTimer" src/` |
-| Bundle size (main) | Baseline | -10% | `next build --profile` |
-| Time to Interactive | Baseline | -15% | Lighthouse CI |
-| Test coverage | 65% | 80% | Jest coverage report |
-| Cache hit rate | N/A | >80% | React Query devtools |
+| Metric               | Current  | Target | How to Measure                     |
+| -------------------- | -------- | ------ | ---------------------------------- |
+| Global providers     | 5        | 1-2    | Count in layout.tsx                |
+| Context dependencies | ~200     | 0      | `grep -r "useAuth\|useTimer" src/` |
+| Bundle size (main)   | Baseline | -10%   | `next build --profile`             |
+| Time to Interactive  | Baseline | -15%   | Lighthouse CI                      |
+| Test coverage        | 65%      | 80%    | Jest coverage report               |
+| Cache hit rate       | N/A      | >80%   | React Query devtools               |
 
 ### Qualitative Metrics
 
@@ -1268,9 +1360,9 @@ Use this for each component migration:
 ## Component: [ComponentName.tsx]
 
 - [ ] Identify context dependencies
-  - [ ] `useAuth`: ___
-  - [ ] `useTimer`: ___
-  - [ ] `useActivities`: ___
+  - [ ] `useAuth`: \_\_\_
+  - [ ] `useTimer`: \_\_\_
+  - [ ] `useActivities`: \_\_\_
 
 - [ ] Replace with feature hooks
   - [ ] Import from `@/features/[feature]/hooks`
@@ -1324,7 +1416,8 @@ module.exports = {
         patterns: [
           {
             group: ['**/contexts/*Context'],
-            message: 'Use feature hooks from @/features/[feature]/hooks instead',
+            message:
+              'Use feature hooks from @/features/[feature]/hooks instead',
           },
         ],
       },

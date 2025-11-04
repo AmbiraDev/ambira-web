@@ -6,7 +6,10 @@ import { Session, Project } from '@/types';
 interface PostCreationModalProps {
   session: Session;
   project: Project;
-  onSubmit: (description: string, visibility: 'everyone' | 'followers' | 'private') => Promise<void>;
+  onSubmit: (
+    description: string,
+    visibility: 'everyone' | 'followers' | 'private'
+  ) => Promise<void>;
   onSkip: () => void;
   onCancel: () => void;
   isOpen: boolean;
@@ -18,10 +21,12 @@ export const PostCreationModal: React.FC<PostCreationModalProps> = ({
   onSubmit,
   onSkip,
   onCancel,
-  isOpen
+  isOpen,
 }) => {
   const [description, setDescription] = useState('');
-  const [visibility, setVisibility] = useState<'everyone' | 'followers' | 'private'>('everyone');
+  const [visibility, setVisibility] = useState<
+    'everyone' | 'followers' | 'private'
+  >('everyone');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Handle ESC key to close modal
@@ -69,13 +74,25 @@ export const PostCreationModal: React.FC<PostCreationModalProps> = ({
         {/* Header */}
         <div className="p-6 border-b border-gray-200">
           <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold text-gray-900">Share Your Session</h2>
+            <h2 className="text-2xl font-bold text-gray-900">
+              Share Your Session
+            </h2>
             <button
               onClick={onCancel}
               className="text-gray-400 hover:text-gray-600 transition-colors"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
               </svg>
             </button>
           </div>
@@ -88,28 +105,52 @@ export const PostCreationModal: React.FC<PostCreationModalProps> = ({
           {/* Session Summary */}
           <div className="p-6 bg-gradient-to-br from-gray-50 to-gray-100">
             <div className="flex items-center gap-4">
-              <div 
+              <div
                 className="w-16 h-16 rounded-xl flex items-center justify-center text-white text-2xl font-semibold shadow-lg"
                 style={{ backgroundColor: project.color }}
               >
                 {project.icon}
               </div>
               <div className="flex-1">
-                <h3 className="font-bold text-lg text-gray-900">{session.title}</h3>
+                <h3 className="font-bold text-lg text-gray-900">
+                  {session.title}
+                </h3>
                 <p className="text-gray-600">{project.name}</p>
                 <div className="flex items-center gap-4 mt-2">
                   <div className="flex items-center gap-2">
-                    <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    <svg
+                      className="w-5 h-5 text-gray-500"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
                     </svg>
-                    <span className="font-semibold text-gray-900">{formatDuration(session.duration)}</span>
+                    <span className="font-semibold text-gray-900">
+                      {formatDuration(session.duration)}
+                    </span>
                   </div>
                   {completedTasks > 0 && (
                     <div className="flex items-center gap-2">
-                      <svg className="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      <svg
+                        className="w-5 h-5 text-green-500"
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                          clipRule="evenodd"
+                        />
                       </svg>
-                      <span className="font-semibold text-gray-900">{completedTasks} tasks</span>
+                      <span className="font-semibold text-gray-900">
+                        {completedTasks} tasks
+                      </span>
                     </div>
                   )}
                 </div>
@@ -124,7 +165,7 @@ export const PostCreationModal: React.FC<PostCreationModalProps> = ({
             </label>
             <textarea
               value={description}
-              onChange={(e) => setDescription(e.target.value)}
+              onChange={e => setDescription(e.target.value)}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent resize-none"
               rows={4}
               placeholder="Share your progress, learnings, or reflections with your followers..."
@@ -159,8 +200,18 @@ export const PostCreationModal: React.FC<PostCreationModalProps> = ({
                 }`}
               >
                 <div className="text-center">
-                  <svg className="w-6 h-6 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <svg
+                    className="w-6 h-6 mx-auto mb-1"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
                   </svg>
                   <div className="font-medium text-sm">Everyone</div>
                 </div>
@@ -176,8 +227,18 @@ export const PostCreationModal: React.FC<PostCreationModalProps> = ({
                 }`}
               >
                 <div className="text-center">
-                  <svg className="w-6 h-6 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                  <svg
+                    className="w-6 h-6 mx-auto mb-1"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+                    />
                   </svg>
                   <div className="font-medium text-sm">Followers</div>
                 </div>
@@ -193,8 +254,18 @@ export const PostCreationModal: React.FC<PostCreationModalProps> = ({
                 }`}
               >
                 <div className="text-center">
-                  <svg className="w-6 h-6 mx-auto mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  <svg
+                    className="w-6 h-6 mx-auto mb-1"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                    />
                   </svg>
                   <div className="font-medium text-sm">Only You</div>
                 </div>

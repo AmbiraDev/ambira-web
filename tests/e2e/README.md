@@ -24,6 +24,7 @@ e2e/
 **Purpose**: Fast, critical-path tests that verify core functionality works correctly.
 
 **Characteristics**:
+
 - Run on every PR and push to main
 - Test only the most critical user journeys
 - Should complete in under 5 minutes
@@ -31,6 +32,7 @@ e2e/
 - Test on both desktop and mobile viewports
 
 **Current Smoke Tests**:
+
 1. **Feed Page** (`smoke/feed.spec.ts`)
    - Page loads successfully
    - Navigation elements are visible
@@ -127,8 +129,8 @@ Runs a comprehensive accessibility scan on the current page.
 import { runAccessibilityScan } from '../utils/accessibility';
 
 const results = await runAccessibilityScan(page, {
-  exclude: ['#third-party-widget'],  // Exclude specific elements
-  disableRules: ['color-contrast']    // Disable specific rules
+  exclude: ['#third-party-widget'], // Exclude specific elements
+  disableRules: ['color-contrast'], // Disable specific rules
 });
 ```
 
@@ -137,6 +139,7 @@ Formats accessibility violations into readable error messages.
 
 **`checkBasicAccessibility(page)`**
 Performs basic accessibility checks:
+
 - Page has a title
 - Main landmark exists
 - Heading structure is present
@@ -178,6 +181,7 @@ Key configuration options:
 ### CI Configuration
 
 In CI, Playwright:
+
 - Runs only Chromium tests (for speed)
 - Produces HTML and JUnit reports
 - Captures screenshots/videos on failure
@@ -194,6 +198,7 @@ npm run test:e2e:report
 ```
 
 The report includes:
+
 - Test results and statistics
 - Screenshots and videos of failures
 - Trace viewer for debugging
@@ -244,7 +249,10 @@ test('mobile viewport', async ({ page }) => {
 
   // Verify no horizontal scroll
   const hasHorizontalScroll = await page.evaluate(() => {
-    return document.documentElement.scrollWidth > document.documentElement.clientWidth;
+    return (
+      document.documentElement.scrollWidth >
+      document.documentElement.clientWidth
+    );
   });
   expect(hasHorizontalScroll).toBe(false);
 });
@@ -262,6 +270,7 @@ test.use({ storageState: 'auth.json' });
 ### 6. Keep Smoke Tests Fast
 
 Smoke tests should:
+
 - Test only critical paths
 - Avoid unnecessary waits
 - Run in under 5 minutes total
@@ -290,6 +299,7 @@ npm run test:e2e:debug
 ### Playwright Inspector
 
 The inspector shows:
+
 - Current page state
 - Selector picker
 - Step-by-step execution
@@ -306,6 +316,7 @@ npx playwright show-trace trace.zip
 ### Screenshots and Videos
 
 Failed tests automatically capture:
+
 - Screenshots on failure
 - Videos of the entire test run (when enabled)
 
@@ -366,12 +377,14 @@ npx playwright test e2e/smoke/my-feature.spec.ts --ui
 ### GitHub Actions Workflows
 
 **Main CI Workflow** (`.github/workflows/ci.yml`)
+
 - Runs on every PR and push to main
 - Executes smoke tests in parallel with other checks
 - Builds app, starts server, runs tests
 - Uploads reports on failure
 
 **Standalone Playwright Workflow** (`.github/workflows/playwright.yml`)
+
 - Can be triggered manually
 - More detailed reporting
 - Posts results as PR comments
@@ -390,6 +403,7 @@ NEXT_PUBLIC_FIREBASE_APP_ID
 ```
 
 Optional:
+
 ```
 PLAYWRIGHT_BASE_URL  # Override base URL for tests
 ```
@@ -423,6 +437,7 @@ When adding new features:
 ## 📞 Support
 
 For questions or issues:
+
 - Check the [Playwright Documentation](https://playwright.dev/)
 - Review existing tests for examples
 - Ask in team chat or create an issue

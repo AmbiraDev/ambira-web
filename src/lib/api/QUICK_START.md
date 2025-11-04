@@ -27,13 +27,13 @@ import { firebaseAuthApi } from '@/lib/api/auth';
 // Shared utilities
 import {
   convertTimestamp,
-  removeUndefinedFields
+  removeUndefinedFields,
 } from '@/lib/api/shared/utils';
 
 // Social helpers
 import {
   updateSocialGraph,
-  fetchUserDataForSocialContext
+  fetchUserDataForSocialContext,
 } from '@/lib/api/social/helpers';
 ```
 
@@ -55,20 +55,21 @@ import {
 
 ## Module Map
 
-| Feature | Module Path | Status |
-|---------|-------------|--------|
-| Login/Signup/OAuth | `@/lib/api/auth` | ✅ Complete |
-| User Profiles | `@/lib/firebaseApi` | 🚧 In Progress |
-| Sessions | `@/lib/firebaseApi` | 🚧 In Progress |
-| Projects | `@/lib/firebaseApi` | 🚧 In Progress |
-| Comments | `@/lib/firebaseApi` | 🚧 In Progress |
-| Challenges | `@/lib/firebaseApi` | 🚧 In Progress |
-| Social (follows) | `@/lib/api/social/helpers` | ✅ Complete |
-| Utilities | `@/lib/api/shared/utils` | ✅ Complete |
+| Feature            | Module Path                | Status         |
+| ------------------ | -------------------------- | -------------- |
+| Login/Signup/OAuth | `@/lib/api/auth`           | ✅ Complete    |
+| User Profiles      | `@/lib/firebaseApi`        | 🚧 In Progress |
+| Sessions           | `@/lib/firebaseApi`        | 🚧 In Progress |
+| Projects           | `@/lib/firebaseApi`        | 🚧 In Progress |
+| Comments           | `@/lib/firebaseApi`        | 🚧 In Progress |
+| Challenges         | `@/lib/firebaseApi`        | 🚧 In Progress |
+| Social (follows)   | `@/lib/api/social/helpers` | ✅ Complete    |
+| Utilities          | `@/lib/api/shared/utils`   | ✅ Complete    |
 
 ## Example Migration
 
 ### Before
+
 ```typescript
 import { firebaseAuthApi, firebaseUserApi } from '@/lib/firebaseApi';
 
@@ -78,6 +79,7 @@ const profile = await firebaseUserApi.getUserProfile(username);
 ```
 
 ### After (Gradually)
+
 ```typescript
 // Already extracted - use new path
 import { firebaseAuthApi } from '@/lib/api/auth';
@@ -119,11 +121,14 @@ When adding new functionality:
 3. **If no:** Add to `src/lib/firebaseApi.ts` for now
 
 Example:
+
 ```typescript
 // Auth features -> add to src/lib/api/auth/index.ts
 export const firebaseAuthApi = {
   // ... existing methods
-  newAuthMethod: async () => { /* new code */ },
+  newAuthMethod: async () => {
+    /* new code */
+  },
 };
 
 // User features -> add to src/lib/firebaseApi.ts (for now)

@@ -48,7 +48,7 @@ export class GroupMapper {
       adminUserIds: Array.from(group.adminUserIds),
       createdByUserId: group.createdByUserId,
       createdAt: Timestamp.fromDate(group.createdAt),
-      memberCount: group.getMemberCount()
+      memberCount: group.getMemberCount(),
     };
 
     // Add optional fields only if defined

@@ -13,7 +13,7 @@ interface AchievementCardProps {
 export const AchievementCard: React.FC<AchievementCardProps> = ({
   achievement,
   progress,
-  onShare
+  onShare,
 }) => {
   const isUnlocked = achievement !== undefined || progress?.isUnlocked;
   const displayData = achievement || progress;
@@ -48,7 +48,9 @@ export const AchievementCard: React.FC<AchievementCardProps> = ({
         {/* Content */}
         <div className="flex-1 min-w-0">
           <h3 className="font-bold text-gray-900 mb-1">{displayData.name}</h3>
-          <p className="text-sm text-gray-600 mb-2">{displayData.description}</p>
+          <p className="text-sm text-gray-600 mb-2">
+            {displayData.description}
+          </p>
 
           {/* Progress bar for locked achievements */}
           {!isUnlocked && progress && (

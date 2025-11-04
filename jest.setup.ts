@@ -1,62 +1,66 @@
-import '@testing-library/jest-dom'
+import '@testing-library/jest-dom';
 
 // Mock global Response, Request, Headers for Firebase Auth compatibility
 if (typeof global.Response === 'undefined') {
   (global as any).Response = class Response {
-    body: any
-    init: any
+    body: any;
+    init: any;
 
     constructor(body: any, init: any) {
-      this.body = body
-      this.init = init
+      this.body = body;
+      this.init = init;
     }
 
     json(): Promise<any> {
-      return Promise.resolve(typeof this.body === 'string' ? JSON.parse(this.body) : this.body)
+      return Promise.resolve(
+        typeof this.body === 'string' ? JSON.parse(this.body) : this.body
+      );
     }
 
     text(): Promise<string> {
-      return Promise.resolve(typeof this.body === 'string' ? this.body : JSON.stringify(this.body))
+      return Promise.resolve(
+        typeof this.body === 'string' ? this.body : JSON.stringify(this.body)
+      );
     }
-  }
+  };
 }
 
 if (typeof global.Request === 'undefined') {
   (global as any).Request = class Request {
-    url: string
-    init: any
+    url: string;
+    init: any;
 
     constructor(url: string, init: any) {
-      this.url = url
-      this.init = init
+      this.url = url;
+      this.init = init;
     }
-  }
+  };
 }
 
 if (typeof global.Headers === 'undefined') {
   (global as any).Headers = class Headers {
-    headers: Map<string, string>
+    headers: Map<string, string>;
 
     constructor() {
-      this.headers = new Map()
+      this.headers = new Map();
     }
 
     append(name: string, value: string): void {
-      this.headers.set(name.toLowerCase(), value)
+      this.headers.set(name.toLowerCase(), value);
     }
 
     get(name: string): string | null {
-      return this.headers.get(name.toLowerCase()) || null
+      return this.headers.get(name.toLowerCase()) || null;
     }
 
     has(name: string): boolean {
-      return this.headers.has(name.toLowerCase())
+      return this.headers.has(name.toLowerCase());
     }
 
     set(name: string, value: string): void {
-      this.headers.set(name.toLowerCase(), value)
+      this.headers.set(name.toLowerCase(), value);
     }
-  }
+  };
 }
 
 // Mock Next.js router
@@ -71,15 +75,15 @@ jest.mock('next/navigation', () => ({
   }),
   usePathname: () => '/',
   useSearchParams: () => new URLSearchParams(),
-}))
+}));
 
 // Mock Next.js dynamic imports
 jest.mock('next/dynamic', () => () => {
-  const DynamicComponent = () => null
-  DynamicComponent.displayName = 'LoadableComponent'
-  DynamicComponent.preload = jest.fn()
-  return DynamicComponent
-})
+  const DynamicComponent = () => null;
+  DynamicComponent.displayName = 'LoadableComponent';
+  DynamicComponent.preload = jest.fn();
+  return DynamicComponent;
+});
 
 // Mock window.location - simplified
 if (typeof window !== 'undefined' && !(window as any).location) {
@@ -88,7 +92,7 @@ if (typeof window !== 'undefined' && !(window as any).location) {
     assign: jest.fn(),
     replace: jest.fn(),
     reload: jest.fn(),
-  }
+  };
 }
 
 // Mock localStorage
@@ -99,10 +103,10 @@ const localStorageMock: Storage = {
   setItem: jest.fn(),
   removeItem: jest.fn(),
   clear: jest.fn(),
-}
+};
 Object.defineProperty(window, 'localStorage', {
   value: localStorageMock,
-})
+});
 
 // Mock sessionStorage
 const sessionStorageMock: Storage = {
@@ -112,10 +116,10 @@ const sessionStorageMock: Storage = {
   setItem: jest.fn(),
   removeItem: jest.fn(),
   clear: jest.fn(),
-}
+};
 Object.defineProperty(window, 'sessionStorage', {
   value: sessionStorageMock,
-})
+});
 
 // Provide a minimal global fetch for libraries that expect it in Node test env
 if (typeof global.fetch === 'undefined') {
@@ -124,7 +128,7 @@ if (typeof global.fetch === 'undefined') {
     status: 200,
     json: async () => ({}),
     text: async () => '',
-  }))
+  }));
 }
 
 // Provide a default axios mock so tests don't need to re-declare it and to avoid TDZ issues
@@ -138,11 +142,11 @@ jest.mock('axios', () => {
     get: jest.fn(),
     put: jest.fn(),
     delete: jest.fn(),
-  }
+  };
   return {
     create: jest.fn(() => mockAxios),
-  }
-})
+  };
+});
 
 // NOTE: Firebase, API, and QueryClient mocks have been migrated to factory functions
 // in src/__tests__/fixtures/mocks.ts for better test isolation.

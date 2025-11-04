@@ -25,7 +25,7 @@ import admin from 'firebase-admin';
 import serviceAccount from '../../serviceAccountKey.json' with { type: 'json' };
 
 admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount)
+  credential: admin.credential.cert(serviceAccount),
 });
 
 const db = admin.firestore();
@@ -58,13 +58,13 @@ async function migrateProfileVisibility(dryRun = false) {
           current: {
             profileVisibility: userData.profileVisibility || 'not set',
             activityVisibility: userData.activityVisibility || 'not set',
-            projectVisibility: userData.projectVisibility || 'not set'
+            projectVisibility: userData.projectVisibility || 'not set',
           },
           proposed: {
             profileVisibility: 'everyone',
             activityVisibility: userData.activityVisibility || 'everyone',
-            projectVisibility: userData.projectVisibility || 'everyone'
-          }
+            projectVisibility: userData.projectVisibility || 'everyone',
+          },
         });
         updatedCount++;
       } else {
@@ -77,17 +77,25 @@ async function migrateProfileVisibility(dryRun = false) {
 
     if (usersToUpdate.length > 0 && usersToUpdate.length <= 10) {
       console.log('Users to be updated:');
-      usersToUpdate.forEach((user) => {
+      usersToUpdate.forEach(user => {
         console.log(`  - ${user.username} (${user.id})`);
-        console.log(`    Current: profileVisibility=${user.current.profileVisibility}, activityVisibility=${user.current.activityVisibility}, projectVisibility=${user.current.projectVisibility}`);
-        console.log(`    Proposed: profileVisibility=${user.proposed.profileVisibility}, activityVisibility=${user.proposed.activityVisibility}, projectVisibility=${user.proposed.projectVisibility}`);
+        console.log(
+          `    Current: profileVisibility=${user.current.profileVisibility}, activityVisibility=${user.current.activityVisibility}, projectVisibility=${user.current.projectVisibility}`
+        );
+        console.log(
+          `    Proposed: profileVisibility=${user.proposed.profileVisibility}, activityVisibility=${user.proposed.activityVisibility}, projectVisibility=${user.proposed.projectVisibility}`
+        );
       });
     } else if (usersToUpdate.length > 10) {
       console.log('First 10 users to be updated (showing sample):');
-      usersToUpdate.slice(0, 10).forEach((user) => {
+      usersToUpdate.slice(0, 10).forEach(user => {
         console.log(`  - ${user.username} (${user.id})`);
-        console.log(`    Current: profileVisibility=${user.current.profileVisibility}, activityVisibility=${user.current.activityVisibility}, projectVisibility=${user.current.projectVisibility}`);
-        console.log(`    Proposed: profileVisibility=${user.proposed.profileVisibility}, activityVisibility=${user.proposed.activityVisibility}, projectVisibility=${user.proposed.projectVisibility}`);
+        console.log(
+          `    Current: profileVisibility=${user.current.profileVisibility}, activityVisibility=${user.current.activityVisibility}, projectVisibility=${user.current.projectVisibility}`
+        );
+        console.log(
+          `    Proposed: profileVisibility=${user.proposed.profileVisibility}, activityVisibility=${user.proposed.activityVisibility}, projectVisibility=${user.proposed.projectVisibility}`
+        );
       });
       console.log(`  ... and ${usersToUpdate.length - 10} more`);
     }
@@ -105,7 +113,7 @@ async function migrateProfileVisibility(dryRun = false) {
           profileVisibility: user.proposed.profileVisibility,
           activityVisibility: user.proposed.activityVisibility,
           projectVisibility: user.proposed.projectVisibility,
-          updatedAt: admin.firestore.FieldValue.serverTimestamp()
+          updatedAt: admin.firestore.FieldValue.serverTimestamp(),
         });
 
         batchCount++;
@@ -131,7 +139,9 @@ async function migrateProfileVisibility(dryRun = false) {
     console.log(`Already set: ${alreadySetCount}`);
 
     if (dryRun) {
-      console.log('\nTo execute this migration, run without the --dry-run flag.\n');
+      console.log(
+        '\nTo execute this migration, run without the --dry-run flag.\n'
+      );
     }
 
     process.exit(0);

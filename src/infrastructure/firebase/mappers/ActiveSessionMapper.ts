@@ -40,7 +40,7 @@ export class ActiveSessionMapper {
       projectId: session.projectId,
       startTime: Timestamp.fromDate(session.startTime),
       status: session.status,
-      pausedDuration: session.pausedDuration
+      pausedDuration: session.pausedDuration,
     };
 
     // Add optional fields only if defined

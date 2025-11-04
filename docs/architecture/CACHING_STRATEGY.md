@@ -44,24 +44,30 @@ This document defines the standardized caching pattern for Ambira using React Qu
 ## Key Principles
 
 ### 1. Single Responsibility
+
 - **Feature Hooks**: Handle caching, loading states, error states via React Query
 - **Services**: Pure business logic, testable without React
 - **Repositories**: Data access only
 - **Components**: Presentation only
 
 ### 2. React Query Boundary
+
 React Query (useQuery, useMutation, useQueryClient) should ONLY be used in feature hooks:
+
 - ✅ `src/features/[feature]/hooks/use[Feature].ts`
 - ❌ Components
 - ❌ Services
 - ❌ Repositories
 
 ### 3. No Direct firebaseApi in Components
+
 Components should never call `firebaseApi` directly:
+
 - ❌ `import { firebaseApi } from '@/lib/firebaseApi'` in components
 - ✅ Use feature hooks that call services
 
 ### 4. Feature Organization
+
 ```
 src/features/[feature]/
 ├── domain/              # Domain entities and business rules
@@ -120,7 +126,8 @@ const GROUPS_KEYS = {
   list: (filters: string) => [...GROUPS_KEYS.lists(), { filters }] as const,
   details: () => [...GROUPS_KEYS.all(), 'detail'] as const,
   detail: (id: string) => [...GROUPS_KEYS.details(), id] as const,
-  userGroups: (userId: string) => [...GROUPS_KEYS.all(), 'user', userId] as const,
+  userGroups: (userId: string) =>
+    [...GROUPS_KEYS.all(), 'user', userId] as const,
 };
 
 // QUERIES
@@ -150,8 +157,12 @@ export function useJoinGroup() {
 
     onSuccess: (_, variables) => {
       // Invalidate relevant caches
-      queryClient.invalidateQueries({ queryKey: GROUPS_KEYS.detail(variables.groupId) });
-      queryClient.invalidateQueries({ queryKey: GROUPS_KEYS.userGroups(variables.userId) });
+      queryClient.invalidateQueries({
+        queryKey: GROUPS_KEYS.detail(variables.groupId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: GROUPS_KEYS.userGroups(variables.userId),
+      });
     },
   });
 }
@@ -194,6 +205,7 @@ export default function GroupPage({ params }: { params: { id: string } }) {
 ## Migration Strategy
 
 ### Phase 1: Feature-by-Feature Migration
+
 Migrate one feature at a time to avoid breaking changes:
 
 1. **Groups** (already has service layer)
@@ -222,13 +234,17 @@ Migrate one feature at a time to avoid breaking changes:
    - 🔄 Migrate from centralized `useCache.ts`
 
 ### Phase 2: Deprecate Central useCache.ts
+
 Once all features are migrated:
+
 1. Move remaining global hooks to appropriate features
 2. Remove `src/hooks/useCache.ts`
 3. Remove direct `firebaseApi` imports from components
 
 ### Phase 3: Enforce with Linting
+
 Add ESLint rules to prevent:
+
 - Direct `firebaseApi` imports in components
 - `useQuery`/`useMutation` usage outside of feature hooks
 
@@ -289,6 +305,7 @@ Add ESLint rules to prevent:
 ## Anti-Patterns to Avoid
 
 ### ❌ React Query in Components
+
 ```typescript
 // BAD - Don't do this
 function MyComponent() {
@@ -300,6 +317,7 @@ function MyComponent() {
 ```
 
 ### ❌ Direct firebaseApi in Components
+
 ```typescript
 // BAD - Don't do this
 function MyComponent() {
@@ -310,6 +328,7 @@ function MyComponent() {
 ```
 
 ### ❌ React Query in Services
+
 ```typescript
 // BAD - Don't do this
 class UserService {
@@ -320,6 +339,7 @@ class UserService {
 ```
 
 ### ✅ Correct Pattern
+
 ```typescript
 // GOOD - Feature hook
 export function useUser(userId: string) {
@@ -367,6 +387,7 @@ const FEATURE_KEYS = {
 ```
 
 This allows efficient invalidation:
+
 - `queryClient.invalidateQueries({ queryKey: FEATURE_KEYS.all() })` - invalidates everything
 - `queryClient.invalidateQueries({ queryKey: FEATURE_KEYS.lists() })` - invalidates all lists
 - `queryClient.invalidateQueries({ queryKey: FEATURE_KEYS.detail(id) })` - invalidates one item

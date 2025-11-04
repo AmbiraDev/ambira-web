@@ -206,7 +206,7 @@ export class Group {
       createdAt: this.createdAt.toISOString(),
       location: this.location,
       imageUrl: this.imageUrl,
-      memberCount: this.getMemberCount()
+      memberCount: this.getMemberCount(),
     };
   }
 }

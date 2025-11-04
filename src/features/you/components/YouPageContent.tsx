@@ -80,7 +80,9 @@ export function YouPageContent() {
       return sessions;
     }
     return sessions.filter(
-      s => s.activityId === selectedActivityId || s.projectId === selectedActivityId
+      s =>
+        s.activityId === selectedActivityId ||
+        s.projectId === selectedActivityId
     );
   }, [sessions, selectedActivityId]);
 
@@ -117,7 +119,9 @@ export function YouPageContent() {
 
     const currentPeriodSessions = filteredSessions.filter(s => {
       const sessionDate = new Date(s.createdAt);
-      return sessionDate >= currentRange.start && sessionDate <= currentRange.end;
+      return (
+        sessionDate >= currentRange.start && sessionDate <= currentRange.end
+      );
     });
 
     const currentHours = currentPeriodSessions.reduce(
@@ -261,9 +265,7 @@ export function YouPageContent() {
           <button
             onClick={() => setActiveTab('progress')}
             className={`relative flex-1 py-3 text-sm font-medium transition-colors ${
-              activeTab === 'progress'
-                ? 'text-[#0066CC]'
-                : 'text-gray-500'
+              activeTab === 'progress' ? 'text-[#0066CC]' : 'text-gray-500'
             }`}
           >
             Progress
@@ -274,9 +276,7 @@ export function YouPageContent() {
           <button
             onClick={() => setActiveTab('sessions')}
             className={`relative flex-1 py-3 text-sm font-medium transition-colors ${
-              activeTab === 'sessions'
-                ? 'text-[#0066CC]'
-                : 'text-gray-500'
+              activeTab === 'sessions' ? 'text-[#0066CC]' : 'text-gray-500'
             }`}
           >
             Sessions
@@ -303,8 +303,8 @@ export function YouPageContent() {
                   <span className="truncate">
                     {selectedActivityId === 'all'
                       ? 'All activities'
-                      : activities?.find(p => p.id === selectedActivityId)?.name ||
-                        'All activities'}
+                      : activities?.find(p => p.id === selectedActivityId)
+                          ?.name || 'All activities'}
                   </span>
                   <ChevronDown className="w-3.5 h-3.5 md:w-4 md:h-4 flex-shrink-0" />
                 </button>
@@ -343,19 +343,21 @@ export function YouPageContent() {
 
               {/* Time Period Buttons */}
               <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
-                {(['7D', '2W', '4W', '3M', '1Y'] as TimePeriod[]).map(period => (
-                  <button
-                    key={period}
-                    onClick={() => setTimePeriod(period)}
-                    className={`flex-shrink-0 px-4 md:px-5 py-2 text-xs md:text-sm font-semibold rounded-lg transition-colors ${
-                      timePeriod === period
-                        ? 'bg-gray-900 text-white'
-                        : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
-                    }`}
-                  >
-                    {period}
-                  </button>
-                ))}
+                {(['7D', '2W', '4W', '3M', '1Y'] as TimePeriod[]).map(
+                  period => (
+                    <button
+                      key={period}
+                      onClick={() => setTimePeriod(period)}
+                      className={`flex-shrink-0 px-4 md:px-5 py-2 text-xs md:text-sm font-semibold rounded-lg transition-colors ${
+                        timePeriod === period
+                          ? 'bg-gray-900 text-white'
+                          : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
+                      }`}
+                    >
+                      {period}
+                    </button>
+                  )
+                )}
               </div>
             </div>
 
@@ -392,9 +394,23 @@ export function YouPageContent() {
                       margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
                     >
                       <defs>
-                        <linearGradient id="colorHours" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#0066CC" stopOpacity={0.3} />
-                          <stop offset="95%" stopColor="#0066CC" stopOpacity={0} />
+                        <linearGradient
+                          id="colorHours"
+                          x1="0"
+                          y1="0"
+                          x2="0"
+                          y2="1"
+                        >
+                          <stop
+                            offset="5%"
+                            stopColor="#0066CC"
+                            stopOpacity={0.3}
+                          />
+                          <stop
+                            offset="95%"
+                            stopColor="#0066CC"
+                            stopOpacity={0}
+                          />
                         </linearGradient>
                       </defs>
                       <XAxis
@@ -439,7 +455,9 @@ export function YouPageContent() {
                 <div className="text-xs text-gray-600 mb-1 uppercase tracking-wide">
                   Sessions
                 </div>
-                <div className="text-2xl font-bold">{calculatedStats.sessions}</div>
+                <div className="text-2xl font-bold">
+                  {calculatedStats.sessions}
+                </div>
               </div>
 
               <div className="bg-white border border-gray-200 rounded-lg p-4">

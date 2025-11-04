@@ -28,8 +28,8 @@
       "    ...options,",
       "  });",
       "}",
-      ""
-    ]
+      "",
+    ],
   },
 
   "Feature Mutation Hook": {
@@ -92,8 +92,8 @@
       "    ...options,",
       "  });",
       "}",
-      ""
-    ]
+      "",
+    ],
   },
 
   "Feature Cache Keys": {
@@ -116,8 +116,8 @@
       "  detail: (id: string) => [...${2:FEATURE}_KEYS.details(), id] as const,",
       "  ${4:customKey}: (${5:param}: ${6:type}) => [...${2:FEATURE}_KEYS.all(), '${4:customKey}', ${5:param}] as const,",
       "};",
-      ""
-    ]
+      "",
+    ],
   },
 
   "Feature Service": {
@@ -159,8 +159,8 @@
       "    return this.${5:repo}.${18:repoMethod}(${14:params});",
       "  }",
       "}",
-      ""
-    ]
+      "",
+    ],
   },
 
   "Feature Hooks Index": {
@@ -189,8 +189,8 @@
       "  ${7:// Add more mutation hooks}",
       "  useInvalidate${1:Feature},",
       "} from './use${1:Feature}Mutations';",
-      ""
-    ]
+      "",
+    ],
   },
 
   "Infinite Query Hook": {
@@ -228,8 +228,8 @@
       "    ...options,",
       "  });",
       "}",
-      ""
-    ]
+      "",
+    ],
   },
 
   "Component with Feature Hooks": {
@@ -280,7 +280,7 @@
       "    </div>",
       "  );",
       "}",
-      ""
-    ]
-  }
+      "",
+    ],
+  },
 }

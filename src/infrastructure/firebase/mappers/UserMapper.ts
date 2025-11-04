@@ -43,7 +43,7 @@ export class UserMapper {
       createdAt: Timestamp.fromDate(user.createdAt),
       followerCount: user.followerCount,
       followingCount: user.followingCount,
-      profileVisibility: user.profileVisibility
+      profileVisibility: user.profileVisibility,
     };
 
     // Add optional fields only if defined

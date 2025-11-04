@@ -8,9 +8,9 @@ interface TimerDisplayProps {
   showMilliseconds?: boolean;
 }
 
-export const TimerDisplay: React.FC<TimerDisplayProps> = ({ 
-  className = '', 
-  showMilliseconds = false 
+export const TimerDisplay: React.FC<TimerDisplayProps> = ({
+  className = '',
+  showMilliseconds = false,
 }) => {
   const { timerState, getElapsedTime, getFormattedTime } = useTimer();
   const [displayTime, setDisplayTime] = useState(0);
@@ -30,7 +30,12 @@ export const TimerDisplay: React.FC<TimerDisplayProps> = ({
     setDisplayTime(getElapsedTime());
 
     return () => clearInterval(interval);
-  }, [timerState.isRunning, timerState.startTime, timerState.pausedDuration, getElapsedTime]);
+  }, [
+    timerState.isRunning,
+    timerState.startTime,
+    timerState.pausedDuration,
+    getElapsedTime,
+  ]);
 
   const formatTime = (seconds: number): string => {
     if (showMilliseconds) {
@@ -38,22 +43,24 @@ export const TimerDisplay: React.FC<TimerDisplayProps> = ({
       const minutes = Math.floor((seconds % 3600) / 60);
       const secs = Math.floor(seconds % 60);
       const ms = Math.floor((seconds % 1) * 100);
-      
+
       return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}.${ms.toString().padStart(2, '0')}`;
     }
-    
+
     return getFormattedTime(seconds);
   };
 
   return (
     <div className={`font-mono text-center ${className}`}>
-      <div className={`text-4xl font-bold ${
-        timerState.isRunning 
-          ? 'text-green-600' 
-          : timerState.pausedDuration > 0 
-            ? 'text-yellow-600' 
-            : 'text-gray-400'
-      }`}>
+      <div
+        className={`text-4xl font-bold ${
+          timerState.isRunning
+            ? 'text-green-600'
+            : timerState.pausedDuration > 0
+              ? 'text-yellow-600'
+              : 'text-gray-400'
+        }`}
+      >
         {formatTime(displayTime)}
       </div>
       {timerState.currentProject && (

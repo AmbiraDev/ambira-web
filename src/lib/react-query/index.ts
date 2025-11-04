@@ -11,4 +11,9 @@ export * from './types';
 export * from './helpers';
 
 // Re-export commonly used React Query hooks for convenience
-export { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
+export {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  useInfiniteQuery,
+} from '@tanstack/react-query';

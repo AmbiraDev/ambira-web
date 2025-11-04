@@ -65,6 +65,20 @@ export {
   resetCommentFactory,
 } from './commentFactory';
 
+// Notification factories
+export {
+  createMockNotification,
+  createMockNotificationBatch,
+  createMockUnreadNotification,
+  createMockReadNotification,
+  createMockFollowNotification,
+  createMockSupportNotification,
+  createMockCommentNotification,
+  createMockChallengeNotification,
+  createMockGroupNotification,
+  resetNotificationFactory,
+} from './notificationFactory';
+
 // Import reset functions for use in resetAllFactories
 import { resetSessionFactory } from './sessionFactory';
 import { resetUserFactory } from './userFactory';
@@ -73,6 +87,7 @@ import { resetActivityFactory } from './activityFactory';
 import { resetGroupFactory } from './groupFactory';
 import { resetChallengeFactory as resetChallenge } from './challengeFactory';
 import { resetCommentFactory as resetComment } from './commentFactory';
+import { resetNotificationFactory } from './notificationFactory';
 
 // Reset all factories
 export function resetAllFactories() {
@@ -83,4 +98,5 @@ export function resetAllFactories() {
   resetGroupFactory();
   resetChallenge();
   resetComment();
+  resetNotificationFactory();
 }
