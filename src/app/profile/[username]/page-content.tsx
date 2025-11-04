@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
-import { UserX, ChevronDown, BarChart2, MapPin } from 'lucide-react';
+import { UserX, ChevronDown, MapPin } from 'lucide-react';
 import { toast } from 'sonner';
 import Link from 'next/link';
 import {
@@ -219,23 +219,6 @@ export default function ProfilePageContent({
         s.projectId === selectedActivityId
     );
   }, [sessions, selectedActivityId]);
-
-  // Calculate weekly stats from sessions
-  const weeklyStats = useMemo(() => {
-    const now = new Date();
-    const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-    const weeklySessions = sessions.filter(
-      s => new Date(s.createdAt) >= oneWeekAgo
-    );
-    const weeklyHours = weeklySessions.reduce(
-      (sum, s) => sum + s.duration / 3600,
-      0
-    );
-    return {
-      weeklyHours,
-      sessionsThisWeek: weeklySessions.length,
-    };
-  }, [sessions]);
 
   // Update tab when URL changes
   useEffect(() => {
@@ -710,8 +693,8 @@ export default function ProfilePageContent({
     <div className="pb-[6.5rem] md:pb-8">
       <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-6">
         <div className="max-w-4xl mx-auto">
-          {/* Profile Card with This Week Stats */}
-          <div className="bg-gray-50 md:rounded-xl md:border border-gray-200 p-3 md:p-6 mb-4 md:mb-6 relative">
+          {/* Profile Card */}
+          <div className="bg-white md:rounded-xl md:border border-gray-200 p-3 md:p-6 mb-4 md:mb-6 relative">
             {/* Responsive Layout - Stacks on mobile, side-by-side on desktop */}
             <div className="flex flex-col md:flex-row md:gap-8">
               {/* Left Column - Profile Info */}
@@ -831,45 +814,6 @@ export default function ProfilePageContent({
                       Following
                     </span>
                   </button>
-                </div>
-              </div>
-
-              {/* Right Column - This Week Stats */}
-              <div className="md:w-64 border-t md:border-t-0 md:border-l border-gray-200 pt-4 md:pt-0 md:pl-8">
-                <div className="flex items-center gap-2 mb-3 md:mb-4">
-                  <BarChart2
-                    className="w-4 h-4 md:w-5 md:h-5 text-[#FC4C02]"
-                    aria-hidden="true"
-                  />
-                  <h2 className="text-sm md:text-base font-bold">This week</h2>
-                </div>
-
-                <div className="grid grid-cols-3 md:grid-cols-1 gap-3 md:gap-4 md:space-y-0">
-                  <div>
-                    <div className="text-[10px] md:text-xs text-gray-600 uppercase tracking-wide">
-                      Time
-                    </div>
-                    <div className="text-lg md:text-2xl font-bold">
-                      {weeklyStats.weeklyHours.toFixed(1)}h
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-[10px] md:text-xs text-gray-600 uppercase tracking-wide">
-                      Sessions
-                    </div>
-                    <div className="text-lg md:text-2xl font-bold">
-                      {weeklyStats.sessionsThisWeek}
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-[10px] md:text-xs text-gray-600 uppercase tracking-wide">
-                      Streak
-                    </div>
-                    <div className="text-lg md:text-2xl font-bold">
-                      {stats?.currentStreak || 0}{' '}
-                      <span className="text-sm md:text-base">days</span>
-                    </div>
-                  </div>
                 </div>
               </div>
             </div>

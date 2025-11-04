@@ -78,10 +78,6 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
     if (!file) return [];
 
     try {
-      toast.loading('Uploading profile picture...', {
-        id: 'upload-profile-pic',
-      });
-
       // Upload to Firebase Storage
       const downloadURL = await firebaseUserApi.uploadProfilePicture(file);
 
@@ -98,14 +94,12 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
       }
 
       setFormData(prev => ({ ...prev, profilePicture: downloadURL }));
-      toast.success('Profile picture uploaded successfully', {
-        id: 'upload-profile-pic',
-      });
+      toast.success('Profile picture uploaded');
 
       return [downloadURL];
     } catch (err) {
       console.error('File upload error:', err);
-      toast.error('Failed to upload image', { id: 'upload-profile-pic' });
+      toast.error('Failed to upload image');
       throw err;
     }
   };
@@ -118,8 +112,8 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
 
       const updatedProfile = await firebaseUserApi.updateProfile(formData);
       onProfileUpdate(updatedProfile);
+      toast.success('Profile updated');
       onClose();
-      toast.success('Profile updated successfully');
     } catch (error: unknown) {
       console.error('Profile update error:', error);
       toast.error('Failed to update profile');

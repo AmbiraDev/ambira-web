@@ -26,6 +26,9 @@ interface SessionTimerEnhancedProps {
 }
 
 export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
+  const [showFinishModal, setShowFinishModal] = useState(false);
+
+  // Pause polling when finish modal is shown to prevent timer updates
   const {
     timerState,
     getElapsedTime,
@@ -35,12 +38,11 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
     resumeTimer,
     finishTimer,
     resetTimer,
-  } = useTimer();
+  } = useTimer({ pausePolling: showFinishModal });
   const { user } = useAuth();
   const { data: projects = [], isLoading: isLoadingProjects } = useActivities(
     user?.id
   );
-  const [showFinishModal, setShowFinishModal] = useState(false);
   const [sessionTitle, setSessionTitle] = useState('');
   const [sessionDescription, setSessionDescription] = useState('');
   const [visibility, setVisibility] = useState<
@@ -114,7 +116,13 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
   }, [showFinishModal, getElapsedTime]);
 
   // Update display time every second when timer is running
+  // CRITICAL: Stop updates when finish modal is shown to prevent slider from changing
   useEffect(() => {
+    // Don't update timer when finish modal is open
+    if (showFinishModal) {
+      return;
+    }
+
     if (!timerState.isRunning) {
       setDisplayTime(timerState.pausedDuration);
       return;
@@ -133,6 +141,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
     timerState.startTime,
     timerState.pausedDuration,
     getElapsedTime,
+    showFinishModal,
   ]);
 
   // Auto-generate session title based on time of day

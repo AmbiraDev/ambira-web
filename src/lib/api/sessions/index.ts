@@ -162,16 +162,8 @@ export const firebaseSessionApi = {
 
       const docRef = await addDoc(collection(db, 'sessions'), sessionData);
 
-      // CRITICAL: Clear active session immediately after creating the session
-      // This ensures the timer is stopped even if the user navigates away
-      try {
-        await firebaseSessionApi.clearActiveSession();
-      } catch (_error) {
-        handleError(_error, 'clear active session', {
-          severity: ErrorSeverity.WARNING,
-        });
-        // Don't fail session creation if clearing active session fails
-      }
+      // NOTE: Active session clearing is handled by the caller (useFinishTimerMutation)
+      // This prevents race conditions and ensures proper cache invalidation timing
 
       // Update challenge progress for this session
       try {

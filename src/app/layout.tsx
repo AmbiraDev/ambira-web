@@ -102,8 +102,20 @@ export default function RootLayout({
                 <Toaster
                   position="bottom-right"
                   expand={false}
-                  richColors
                   closeButton
+                  toastOptions={{
+                    style: {
+                      background: 'white',
+                      color: '#1F2937',
+                      border: '1px solid #E5E7EB',
+                      borderRadius: '8px',
+                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                      padding: '12px 16px',
+                      fontSize: '14px',
+                    },
+                    className: 'font-sans',
+                    duration: 3000,
+                  }}
                 />
               </AuthInitializer>
             </QueryProvider>

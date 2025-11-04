@@ -72,7 +72,7 @@ export const PrivacySettings: React.FC<PrivacySettingsProps> = ({
     try {
       setIsSaving(true);
       await firebaseUserApi.updatePrivacySettings(settings);
-      toast.success('Privacy settings updated successfully');
+      toast.success('Privacy settings updated');
     } catch (_error) {
       console.error('Failed to save privacy settings');
       toast.error('Failed to save privacy settings');
@@ -90,7 +90,7 @@ export const PrivacySettings: React.FC<PrivacySettingsProps> = ({
         ...prev,
         blockedUsers: prev.blockedUsers.filter(id => id !== userId),
       }));
-      toast.success('User unblocked successfully');
+      toast.success('User unblocked');
     } catch (_error) {
       console.error('Failed to unblock user');
       toast.error('Failed to unblock user');

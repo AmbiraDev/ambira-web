@@ -331,14 +331,13 @@ export default function ManualSessionRecorder() {
         queryClient.invalidateQueries({ queryKey: ['sessions', 'feed'] });
       }
 
-      // Show success message
-      toast.success('Session created successfully!');
+      toast.success('Session created');
 
       // Redirect to home feed
       router.push('/');
     } catch (_error) {
       debug.error('ManualSessionRecorder - Failed to create manual session');
-      toast.error('Failed to create session. Please try again.');
+      toast.error('Failed to create session');
       setErrors({ submit: 'Failed to create session. Please try again.' });
     } finally {
       setIsLoading(false);

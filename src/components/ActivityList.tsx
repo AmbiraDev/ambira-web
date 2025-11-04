@@ -36,31 +36,31 @@ export const ActivityList: React.FC<ActivityListProps> = ({
   const handleDelete = async (activity: Activity) => {
     try {
       await deleteActivityMutation.mutateAsync(activity.id);
-      toast.success(`Activity "${activity.name}" deleted successfully`);
+      toast.success(`"${activity.name}" deleted`);
       setDeleteConfirm(null);
     } catch (err) {
       console.error('Failed to delete activity:', err);
-      toast.error('Failed to delete activity. Please try again.');
+      toast.error('Failed to delete activity');
     }
   };
 
   const handleArchive = async (activity: Activity) => {
     try {
       await archiveActivityMutation.mutateAsync(activity.id);
-      toast.success(`Activity "${activity.name}" archived successfully`);
+      toast.success(`"${activity.name}" archived`);
     } catch (err) {
       console.error('Failed to archive activity:', err);
-      toast.error('Failed to archive activity. Please try again.');
+      toast.error('Failed to archive activity');
     }
   };
 
   const handleRestore = async (activity: Activity) => {
     try {
       await restoreActivityMutation.mutateAsync(activity.id);
-      toast.success(`Activity "${activity.name}" restored successfully`);
+      toast.success(`"${activity.name}" restored`);
     } catch (err) {
       console.error('Failed to restore activity:', err);
-      toast.error('Failed to restore activity. Please try again.');
+      toast.error('Failed to restore activity');
     }
   };
 
