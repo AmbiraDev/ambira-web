@@ -62,8 +62,100 @@ export function useCreateComment(
   return useMutation<CommentWithDetails, Error, CreateCommentData>({
     mutationFn: data => commentService.createComment(data),
 
+    onMutate: async variables => {
+      // Cancel any outgoing refetches to avoid overwriting our optimistic update
+      await queryClient.cancelQueries({
+        queryKey: COMMENT_KEYS.session(variables.sessionId),
+      });
+
+      // Snapshot the previous value for rollback
+      const previousComments = queryClient.getQueryData(
+        COMMENT_KEYS.list(variables.sessionId)
+      );
+
+      // Get current user from auth cache
+      const currentUser = queryClient.getQueryData<{
+        id: string;
+        username: string;
+        displayName: string;
+        profileImageUrl?: string;
+      }>(['auth', 'user']);
+
+      // Create optimistic comment
+      if (currentUser) {
+        const optimisticComment: CommentWithDetails = {
+          id: `optimistic-${Date.now()}`,
+          sessionId: variables.sessionId,
+          userId: currentUser.id,
+          parentId: variables.parentId,
+          content: variables.content,
+          likeCount: 0,
+          replyCount: 0,
+          isEdited: false,
+          isLiked: false,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          user: {
+            id: currentUser.id,
+            username: currentUser.username,
+            displayName: currentUser.displayName,
+            profileImageUrl: currentUser.profileImageUrl,
+          },
+        };
+
+        // Optimistically add comment to the list
+        queryClient.setQueryData<CommentsResponse>(
+          COMMENT_KEYS.list(variables.sessionId),
+          old => {
+            if (!old) {
+              return {
+                comments: [optimisticComment],
+                hasMore: false,
+              };
+            }
+
+            return {
+              ...old,
+              comments: [optimisticComment, ...old.comments],
+            };
+          }
+        );
+      }
+
+      return { previousComments };
+    },
+
+    onError: (error, variables, context: unknown) => {
+      // Rollback on error
+      if (
+        context &&
+        typeof context === 'object' &&
+        'previousComments' in context
+      ) {
+        queryClient.setQueryData(
+          COMMENT_KEYS.list(variables.sessionId),
+          context.previousComments
+        );
+      }
+    },
+
     onSuccess: (newComment, variables) => {
-      // Invalidate comments for this session
+      // Replace optimistic comment with real one from server
+      queryClient.setQueryData<CommentsResponse>(
+        COMMENT_KEYS.list(variables.sessionId),
+        old => {
+          if (!old) return old;
+
+          return {
+            ...old,
+            comments: old.comments.map(comment =>
+              comment.id.startsWith('optimistic-') ? newComment : comment
+            ),
+          };
+        }
+      );
+
+      // Invalidate to ensure consistency (will refetch in background)
       queryClient.invalidateQueries({
         queryKey: COMMENT_KEYS.session(variables.sessionId),
       });
