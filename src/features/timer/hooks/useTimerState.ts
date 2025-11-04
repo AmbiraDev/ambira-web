@@ -8,7 +8,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Project } from '@/types';
-import { CACHE_KEYS } from '@/lib/queryClient';
 
 // Minimal interface for active session data (matches what comes from getActiveSession)
 export interface ActiveSessionData {
@@ -152,33 +151,54 @@ export function useTimerState({
 
   // Listen for cross-tab session cancellation events
   useEffect(() => {
+    /**
+     * Handles cross-tab session cancellation events
+     *
+     * When a session is finished/cancelled in another tab, this listener:
+     * 1. Stops the local timer to prevent auto-save from recreating the session
+     * 2. Invalidates the cache to refetch fresh data
+     * 3. Optimistically updates all active-session caches to null for instant UI feedback
+     */
     const handleStorageChange = (e: StorageEvent) => {
       // Only process timer-event changes
       if (e.key !== 'timer-event') return;
 
-      // CRITICAL FIX for cross-tab auto-save race condition:
-      // 1. Immediately stop local timer to cancel the auto-save interval
-      setTimerState(prev => ({
-        ...prev,
-        isRunning: false,
-        isPaused: false,
-        elapsedSeconds: 0,
-        currentProject: null,
-        activeTimerId: null,
-      }));
+      try {
+        // CRITICAL FIX for cross-tab auto-save race condition:
+        // 1. Immediately stop local timer to cancel the auto-save interval
+        setTimerState(prev => ({
+          ...prev,
+          isRunning: false,
+          isPaused: false,
+          elapsedSeconds: 0,
+          currentProject: null,
+          activeTimerId: null,
+        }));
 
-      // 2. Invalidate React Query cache to force immediate refetch
-      // This ensures activeSession becomes null BEFORE any pending auto-save fires
-      queryClient.invalidateQueries({
-        predicate: query => {
-          // Invalidate all active session queries across all users
-          // Safe because each user only has one active session
-          return query.queryKey[0] === 'active-session';
-        },
-      });
+        // 2. Invalidate React Query cache to force immediate refetch
+        // This ensures activeSession becomes null BEFORE any pending auto-save fires
+        queryClient.invalidateQueries({
+          predicate: query => {
+            // Invalidate all active session queries across all users
+            // Safe because each user only has one active session
+            return query.queryKey[0] === 'active-session';
+          },
+        });
 
-      // 3. Set cache to null immediately for instant feedback
-      queryClient.setQueryData(['active-session'], null);
+        // 3. Set ALL active-session caches to null immediately for instant feedback
+        // CRITICAL: Must use setQueriesData with predicate to match actual query keys
+        // Query keys are ['active-session', userId, user], not just ['active-session']
+        queryClient.setQueriesData(
+          { predicate: query => query.queryKey[0] === 'active-session' },
+          null
+        );
+      } catch (error) {
+        // Don't crash the app if cache operations fail
+        console.error(
+          'Failed to handle cross-tab session cancellation:',
+          error
+        );
+      }
     };
 
     window.addEventListener('storage', handleStorageChange);
