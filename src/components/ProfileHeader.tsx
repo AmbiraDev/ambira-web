@@ -14,7 +14,6 @@ import {
   Check,
   LogOut,
 } from 'lucide-react';
-import { toast } from 'sonner';
 
 interface ProfileHeaderProps {
   profile: UserProfile;
@@ -47,12 +46,10 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
         await firebaseUserApi.unfollowUser(profile.id);
         setIsFollowing(false);
         setFollowersCount(prev => Math.max(0, prev - 1));
-        toast.success(`Unfollowed ${profile.name}`);
       } else {
         await firebaseUserApi.followUser(profile.id);
         setIsFollowing(true);
         setFollowersCount(prev => prev + 1);
-        toast.success(`Following ${profile.name}`);
       }
 
       // Update profile data if callback provided
@@ -66,7 +63,6 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({
       }
     } catch (_error) {
       console.error('Follow/unfollow error');
-      toast.error('Failed to update follow status');
     } finally {
       setIsLoading(false);
     }

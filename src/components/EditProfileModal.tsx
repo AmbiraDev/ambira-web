@@ -9,7 +9,6 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectItem } from '@/components/ui/select';
 import { X, User, MapPin, FileText, Globe } from 'lucide-react';
-import { toast } from 'sonner';
 import { ImageUpload } from '@/components/ImageUpload';
 
 interface EditProfileModalProps {
@@ -94,12 +93,10 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
       }
 
       setFormData(prev => ({ ...prev, profilePicture: downloadURL }));
-      toast.success('Profile picture uploaded');
 
       return [downloadURL];
     } catch (err) {
       console.error('File upload error:', err);
-      toast.error('Failed to upload image');
       throw err;
     }
   };
@@ -112,11 +109,9 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
 
       const updatedProfile = await firebaseUserApi.updateProfile(formData);
       onProfileUpdate(updatedProfile);
-      toast.success('Profile updated');
       onClose();
     } catch (error: unknown) {
       console.error('Profile update error:', error);
-      toast.error('Failed to update profile');
     } finally {
       setIsLoading(false);
     }
