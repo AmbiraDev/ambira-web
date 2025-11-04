@@ -112,7 +112,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
     }
 
     if (!createProject) {
-      toast.error('Create project function is not available');
+      console.error('Create project function is not available');
       return;
     }
 
@@ -126,8 +126,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
         totalTarget: formData.totalTarget || undefined,
       });
 
-      // Show success message
-      toast.success(`Project "${project.name}" created!`);
+      toast.success(`Project "${project.name}" created`);
 
       // Reset form
       setFormData({
@@ -144,7 +143,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
       onClose();
     } catch (err) {
       console.error('Failed to create project:', err);
-      toast.error('Failed to create project. Please try again.');
+      toast.error('Failed to create project');
       setErrors({ name: 'Failed to create project. Please try again.' });
     } finally {
       setIsSubmitting(false);

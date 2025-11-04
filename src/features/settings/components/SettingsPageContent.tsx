@@ -123,16 +123,14 @@ export function SettingsPageContent() {
     // Validate file type
     const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
     if (!validTypes.includes(file.type)) {
-      toast.error(
-        'Invalid file type. Please upload a JPEG, PNG, GIF, or WebP image.'
-      );
+      toast.error('Please upload a JPEG, PNG, GIF, or WebP image');
       return;
     }
 
     // Validate file size (5MB max)
     const maxSize = 5 * 1024 * 1024;
     if (file.size > maxSize) {
-      toast.error('File size too large. Maximum size is 5MB.');
+      toast.error('File size too large. Maximum size is 5MB');
       return;
     }
 
@@ -148,12 +146,10 @@ export function SettingsPageContent() {
       });
 
       setProfilePictureUrl(downloadURL);
-      toast.success('Profile picture updated!');
+      toast.success('Profile picture updated');
     } catch (err: unknown) {
       console.error('Upload error:', err);
-      const errorMessage =
-        err instanceof Error ? err.message : 'Failed to upload photo';
-      toast.error(errorMessage);
+      toast.error('Failed to upload photo');
     } finally {
       setIsUploadingPhoto(false);
     }
@@ -185,7 +181,7 @@ export function SettingsPageContent() {
           Object.keys(socialLinks).length > 0 ? socialLinks : undefined,
         profileVisibility: formData.profileVisibility,
       });
-      toast.success('Profile updated successfully!');
+      toast.success('Profile updated');
       setSaved(true);
 
       // Reload the page after a short delay to refresh the user context
@@ -193,9 +189,8 @@ export function SettingsPageContent() {
         window.location.reload();
       }, 1000);
     } catch (err: unknown) {
-      const errorMessage =
-        err instanceof Error ? err.message : 'Failed to update profile';
-      toast.error(errorMessage);
+      console.error('Failed to update profile:', err);
+      toast.error('Failed to update profile');
       setIsSaving(false);
     }
   };
@@ -206,7 +201,7 @@ export function SettingsPageContent() {
       await firebaseUserApi.updateProfile({
         profileVisibility: formData.profileVisibility,
       });
-      toast.success('Privacy settings updated successfully!');
+      toast.success('Privacy settings updated');
       setSaved(true);
 
       // Reload the page after a short delay
@@ -214,11 +209,8 @@ export function SettingsPageContent() {
         window.location.reload();
       }, 1000);
     } catch (err: unknown) {
-      const errorMessage =
-        err instanceof Error
-          ? err.message
-          : 'Failed to update privacy settings';
-      toast.error(errorMessage);
+      console.error('Failed to update privacy settings:', err);
+      toast.error('Failed to update privacy settings');
       setIsSaving(false);
     }
   };
@@ -226,11 +218,10 @@ export function SettingsPageContent() {
   const handleLogout = async () => {
     try {
       await logout();
-      toast.success('Logged out successfully');
     } catch (err: unknown) {
       const errorMessage =
         err instanceof Error ? err.message : 'Failed to log out';
-      toast.error(errorMessage);
+      console.error(errorMessage);
     }
   };
 
@@ -241,13 +232,11 @@ export function SettingsPageContent() {
       setIsDeleting(true);
       // We'll implement the actual API call next
       await firebaseUserApi.deleteAccount();
-      toast.success('Account deleted successfully');
+      toast.success('Account deleted');
       // The logout will happen automatically as part of deleteAccount
     } catch (err: unknown) {
       console.error('Delete account error:', err);
-      const errorMessage =
-        err instanceof Error ? err.message : 'Failed to delete account';
-      toast.error(errorMessage);
+      toast.error('Failed to delete account');
       setIsDeleting(false);
       setShowDeleteConfirm(false);
     }
@@ -263,7 +252,7 @@ export function SettingsPageContent() {
 
         {/* Mobile Header */}
         <div className="md:hidden">
-          <MobileHeader title="Settings" />
+          <MobileHeader title="Settings" showBackButton={true} />
         </div>
 
         <div className="max-w-7xl mx-auto px-0 md:px-4 sm:px-6 lg:px-8 py-0 md:py-8">

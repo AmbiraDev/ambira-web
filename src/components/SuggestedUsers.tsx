@@ -6,7 +6,6 @@ import { firebaseUserApi } from '@/lib/api';
 import { UserCard } from './UserCard';
 import { Button } from '@/components/ui/button';
 import { RefreshCw, Users, Sparkles, TrendingUp } from 'lucide-react';
-import { toast } from 'sonner';
 
 interface SuggestedUsersProps {
   limit?: number;
@@ -37,11 +36,11 @@ const SuggestedUsers: React.FC<SuggestedUsersProps> = ({
       setSuggestions(suggestions);
     } catch (error) {
       console.error('Failed to load suggestions');
-      // Don't show error toast for empty database - just set empty array
+      // Don't show error for empty database - just set empty array
       if (error instanceof Error && error.message.includes('permissions')) {
         setSuggestions([]);
       } else {
-        toast.error('Failed to load user suggestions');
+        setSuggestions([]);
       }
     } finally {
       setIsLoading(false);
