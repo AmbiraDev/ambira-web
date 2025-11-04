@@ -54,15 +54,14 @@ export function AuthInitializer({ children }: AuthInitializerProps) {
 
     const initializeAuth = async () => {
       // Set a timeout to ensure we don't hang forever on loading screen
-      // If auth hasn't initialized after 3 seconds, continue anyway
-      // (Reduced from 5s to load pages faster when Firebase is slow)
+      // If auth hasn't initialized after 5 seconds, continue anyway
       timeoutId = setTimeout(() => {
         console.warn(
           '[AuthInitializer] ⚠️ Auth initialization timeout - continuing with unauthenticated state'
         );
         queryClient.setQueryData(AUTH_KEYS.session(), null);
         setIsInitializing(false);
-      }, 3000);
+      }, 5000);
       // STEP 1: Check for Google OAuth redirect result
       // This MUST happen before setting up the auth listener
       // getRedirectResult can only be called once per redirect
