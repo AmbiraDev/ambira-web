@@ -6,7 +6,7 @@
 
 import { renderHook, waitFor, act } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ReactNode } from 'react';
+import { ReactNode, ReactElement } from 'react';
 import {
   useCreateComment,
   useDeleteComment,
@@ -43,13 +43,16 @@ const mockFunctions = (CommentServiceModule as any).__mockFunctions;
 
 describe('useCommentMutations', () => {
   let queryClient: QueryClient;
-  let wrapper: ({ children }: { children: ReactNode }) => JSX.Element;
+  let wrapper: ({ children }: { children: ReactNode }) => ReactElement;
 
   const mockUser = {
     id: 'user123',
+    email: 'test@example.com',
+    name: 'Test User',
     username: 'testuser',
-    displayName: 'Test User',
-    profileImageUrl: 'https://example.com/avatar.jpg',
+    profilePicture: 'https://example.com/avatar.jpg',
+    createdAt: new Date('2024-01-01'),
+    updatedAt: new Date('2024-01-01'),
   };
 
   const mockComment: CommentWithDetails = {
@@ -65,9 +68,12 @@ describe('useCommentMutations', () => {
     updatedAt: new Date('2024-01-01'),
     user: {
       id: 'user123',
+      email: 'test@example.com',
+      name: 'Test User',
       username: 'testuser',
-      displayName: 'Test User',
-      profileImageUrl: 'https://example.com/avatar.jpg',
+      profilePicture: 'https://example.com/avatar.jpg',
+      createdAt: new Date('2024-01-01'),
+      updatedAt: new Date('2024-01-01'),
     },
   };
 
@@ -79,11 +85,6 @@ describe('useCommentMutations', () => {
       defaultOptions: {
         queries: { retry: false },
         mutations: { retry: false },
-      },
-      logger: {
-        log: () => {},
-        warn: () => {},
-        error: () => {},
       },
     });
 

@@ -18,6 +18,7 @@ import {
   Session,
   SessionWithDetails,
   CommentsResponse,
+  User,
 } from '@/types';
 import { SESSION_KEYS } from '@/features/sessions/hooks';
 
@@ -111,12 +112,7 @@ export function useCreateComment(
       const optimisticId = `optimistic-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
       // Get current user from auth cache
-      const currentUser = queryClient.getQueryData<{
-        id: string;
-        username: string;
-        displayName: string;
-        profileImageUrl?: string;
-      }>(['auth', 'user']);
+      const currentUser = queryClient.getQueryData<User>(['auth', 'user']);
 
       // Create optimistic comment if user is available
       if (currentUser) {
@@ -132,12 +128,7 @@ export function useCreateComment(
           isLiked: false,
           createdAt: new Date(),
           updatedAt: new Date(),
-          user: {
-            id: currentUser.id,
-            username: currentUser.username,
-            displayName: currentUser.displayName,
-            profileImageUrl: currentUser.profileImageUrl,
-          },
+          user: currentUser,
         };
 
         // Optimistically add comment to the list
@@ -199,14 +190,16 @@ export function useCreateComment(
       });
 
       // Update comment count in session cache and feed
-      const updateSessionCommentCount = (
-        session: Session | SessionWithDetails
-      ): Session | SessionWithDetails => {
+      const updateSessionCommentCount = <
+        T extends Session | SessionWithDetails,
+      >(
+        session: T
+      ): T => {
         if (session?.id !== variables.sessionId) return session;
         return {
           ...session,
           commentCount: (session.commentCount || 0) + 1,
-        };
+        } as T;
       };
 
       // Update session detail cache
@@ -432,14 +425,16 @@ export function useDeleteComment(
       });
 
       // Update comment count in session cache and feed
-      const updateSessionCommentCount = (
-        session: Session | SessionWithDetails
-      ): Session | SessionWithDetails => {
+      const updateSessionCommentCount = <
+        T extends Session | SessionWithDetails,
+      >(
+        session: T
+      ): T => {
         if (session?.id !== sessionId) return session;
         return {
           ...session,
           commentCount: Math.max(0, (session.commentCount || 0) - 1),
-        };
+        } as T;
       };
 
       // Update session detail cache
