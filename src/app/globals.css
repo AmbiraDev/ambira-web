@@ -1,11 +1,11 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 :root {
   /* Electric Blue Theme */
-  --electric-blue: #0066CC;
-  --electric-blue-dark: #0051D5;
-  --electric-blue-light: #66B3FF;
-  --success-green: #34C759;
+  --electric-blue: #0066cc;
+  --electric-blue-dark: #0051d5;
+  --electric-blue-light: #66b3ff;
+  --success-green: #34c759;
   --background: #ffffff;
   --foreground: #000000;
   --card-background: #ffffff;
@@ -26,9 +26,15 @@
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
   --font-sans: var(--font-inter);
-  --font-family-sans: var(--font-inter), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Roboto, sans-serif;
-  --font-family-serif: var(--font-inter), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Roboto, sans-serif;
-  --font-family-mono: var(--font-inter), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Roboto, sans-serif;
+  --font-family-sans:
+    var(--font-inter), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    'Helvetica Neue', Roboto, sans-serif;
+  --font-family-serif:
+    var(--font-inter), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    'Helvetica Neue', Roboto, sans-serif;
+  --font-family-mono:
+    var(--font-inter), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    'Helvetica Neue', Roboto, sans-serif;
 }
 
 body {
@@ -40,14 +46,30 @@ body {
 
 /* Force Inter on all elements */
 * {
-  font-family: var(--font-inter), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Roboto, sans-serif !important;
+  font-family:
+    var(--font-inter),
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    'Helvetica Neue',
+    Roboto,
+    sans-serif !important;
 }
 
 /* Override Tailwind font utilities */
 .font-sans,
 .font-serif,
 .font-mono {
-  font-family: var(--font-inter), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Roboto, sans-serif !important;
+  font-family:
+    var(--font-inter),
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    'Helvetica Neue',
+    Roboto,
+    sans-serif !important;
 }
 
 /* Hide scrollbar */
@@ -73,8 +95,29 @@ textarea.scrollbar-hide::-webkit-scrollbar {
 }
 
 /* Ensure all text elements use Inter */
-h1, h2, h3, h4, h5, h6, p, span, div, a, button, input, textarea, select {
-  font-family: var(--font-inter), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Roboto, sans-serif !important;
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+span,
+div,
+a,
+button,
+input,
+textarea,
+select {
+  font-family:
+    var(--font-inter),
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    'Helvetica Neue',
+    Roboto,
+    sans-serif !important;
 }
 
 /* Custom scrollbar */
@@ -103,13 +146,17 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, button, input, textarea, select {
   }
 
   /* Ensure mobile buttons and interactive elements are touch-friendly (Apple HIG: minimum 44x44pt) */
-  button, a[role="button"], [role="button"] {
+  button,
+  a[role='button'],
+  [role='button'] {
     min-height: 44px;
     min-width: 44px;
   }
 
   /* Form inputs should be at least 44px for better touch interaction */
-  input, select, textarea {
+  input,
+  select,
+  textarea {
     min-height: 44px;
   }
 
@@ -120,7 +167,12 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, button, input, textarea, select {
   }
 
   /* Improve text readability on mobile */
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     line-height: 1.3;
   }
 
@@ -146,7 +198,8 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, button, input, textarea, select {
   }
 
   /* Ensure cards and containers have proper mobile padding */
-  .card, [class*="card"] {
+  .card,
+  [class*='card'] {
     padding: 1rem;
   }
 
@@ -174,7 +227,7 @@ h1, h2, h3, h4, h5, h6, p, span, div, a, button, input, textarea, select {
 }
 
 /* Custom Range Slider Styles */
-input[type="range"] {
+input[type='range'] {
   -webkit-appearance: none;
   appearance: none;
   height: 4px;
@@ -186,7 +239,7 @@ input[type="range"] {
 }
 
 /* Webkit (Chrome, Safari, Edge) */
-input[type="range"]::-webkit-slider-thumb {
+input[type='range']::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
   width: 20px;
@@ -194,51 +247,51 @@ input[type="range"]::-webkit-slider-thumb {
   border-radius: 50%;
   background: white;
   cursor: pointer;
-  border: 3px solid #0066CC;
+  border: 3px solid #0066cc;
   box-shadow: 0 2px 8px rgba(0, 102, 204, 0.3);
   margin-top: -8px;
   transition: all 0.2s ease;
 }
 
-input[type="range"]::-webkit-slider-thumb:hover {
+input[type='range']::-webkit-slider-thumb:hover {
   box-shadow: 0 4px 12px rgba(0, 102, 204, 0.4);
   transform: scale(1.1);
 }
 
-input[type="range"]::-webkit-slider-thumb:active {
+input[type='range']::-webkit-slider-thumb:active {
   transform: scale(1.15);
   box-shadow: 0 4px 16px rgba(0, 102, 204, 0.5);
 }
 
 /* Firefox */
-input[type="range"]::-moz-range-thumb {
+input[type='range']::-moz-range-thumb {
   width: 20px;
   height: 20px;
   border-radius: 50%;
   background: white;
   cursor: pointer;
-  border: 3px solid #0066CC;
+  border: 3px solid #0066cc;
   box-shadow: 0 2px 8px rgba(0, 102, 204, 0.3);
   transition: all 0.2s ease;
 }
 
-input[type="range"]::-moz-range-thumb:hover {
+input[type='range']::-moz-range-thumb:hover {
   box-shadow: 0 4px 12px rgba(0, 102, 204, 0.4);
   transform: scale(1.1);
 }
 
-input[type="range"]::-moz-range-thumb:active {
+input[type='range']::-moz-range-thumb:active {
   transform: scale(1.15);
   box-shadow: 0 4px 16px rgba(0, 102, 204, 0.5);
 }
 
 /* Remove default track styling */
-input[type="range"]::-webkit-slider-runnable-track {
+input[type='range']::-webkit-slider-runnable-track {
   height: 4px;
   border-radius: 2px;
 }
 
-input[type="range"]::-moz-range-track {
+input[type='range']::-moz-range-track {
   height: 4px;
   border-radius: 2px;
   background: transparent;
@@ -246,30 +299,30 @@ input[type="range"]::-moz-range-track {
 
 /* Mobile-specific range slider improvements */
 @media (max-width: 768px) {
-  input[type="range"] {
+  input[type='range'] {
     height: 4px !important;
     border-radius: 2px !important;
   }
-  
-  input[type="range"]::-webkit-slider-thumb {
+
+  input[type='range']::-webkit-slider-thumb {
     width: 20px !important;
     height: 20px !important;
     margin-top: -8px !important;
     border-width: 3px !important;
   }
-  
-  input[type="range"]::-moz-range-thumb {
+
+  input[type='range']::-moz-range-thumb {
     width: 20px !important;
     height: 20px !important;
     border-width: 3px !important;
   }
-  
-  input[type="range"]::-webkit-slider-runnable-track {
+
+  input[type='range']::-webkit-slider-runnable-track {
     height: 4px !important;
     border-radius: 2px !important;
   }
-  
-  input[type="range"]::-moz-range-track {
+
+  input[type='range']::-moz-range-track {
     height: 4px !important;
     border-radius: 2px !important;
   }

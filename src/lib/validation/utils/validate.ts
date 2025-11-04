@@ -169,9 +169,9 @@ export function prepareForFirestore<T extends Record<string, unknown>>(
  * ```typescript
  * try {
  *   validateOrThrow(schema, data);
- * } catch (_error) {
+ * } catch (error) {
  *   if (error instanceof ValidationError) {
- *     toast.error(formatValidationError(error));
+ *     console.error(formatValidationError(error));
  *   }
  * }
  * ```

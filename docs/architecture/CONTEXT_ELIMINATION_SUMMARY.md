@@ -17,6 +17,7 @@ layout.tsx Provider Hierarchy:
 ```
 
 **Impact:**
+
 - 🔴 **199+ violations** of clean architecture boundaries
 - 🔴 **Mixed server/client state** in contexts
 - 🔴 **Context-on-context dependencies** (TimerContext → AuthContext)
@@ -45,6 +46,7 @@ src/features/
 ```
 
 **Benefits:**
+
 - ✅ Clear separation: server state (React Query) vs client state (local)
 - ✅ No context nesting or cross-dependencies
 - ✅ Features are independently testable
@@ -55,13 +57,13 @@ src/features/
 
 ## Migration Priority Matrix
 
-| Provider | Status | Files Affected | Effort | Risk | Priority |
-|----------|--------|----------------|--------|------|----------|
-| **NotificationsContext** | ⚠️ Deprecated | ~13 | 🟢 Low (2h) | 🟢 Low | 🔥 **Do First** |
-| **ActivitiesContext** | ⚠️ Deprecated | 47 | 🟢 Low (4h) | 🟢 Low | 🔥 **Do Second** |
-| **TimerContext** | 50% migrated | 47 | 🟡 Medium (8h) | 🟡 Medium | 🔥 **Do Third** |
-| **AuthContext** | Active | 74 | 🔴 High (24h) | 🔴 High | ⏰ **Do Last** |
-| **ToastContext** | UI-only | ~40 | 🟢 Low | 🟢 Low | ⏸️ **Optional** |
+| Provider                 | Status        | Files Affected | Effort         | Risk      | Priority         |
+| ------------------------ | ------------- | -------------- | -------------- | --------- | ---------------- |
+| **NotificationsContext** | ⚠️ Deprecated | ~13            | 🟢 Low (2h)    | 🟢 Low    | 🔥 **Do First**  |
+| **ActivitiesContext**    | ⚠️ Deprecated | 47             | 🟢 Low (4h)    | 🟢 Low    | 🔥 **Do Second** |
+| **TimerContext**         | 50% migrated  | 47             | 🟡 Medium (8h) | 🟡 Medium | 🔥 **Do Third**  |
+| **AuthContext**          | Active        | 74             | 🔴 High (24h)  | 🔴 High   | ⏰ **Do Last**   |
+| **ToastContext**         | UI-only       | ~40            | 🟢 Low         | 🟢 Low    | ⏸️ **Optional**  |
 
 ---
 
@@ -70,6 +72,7 @@ src/features/
 ### 🎯 Goal: Remove 2 deprecated contexts, prove migration pattern works
 
 #### Day 1-2: NotificationsContext ✅
+
 ```bash
 # Current:
 import { useNotifications } from '@/contexts/NotificationsContext'
@@ -79,11 +82,13 @@ import { useNotifications } from '@/hooks/useNotifications'
 ```
 
 **Why Easy:**
+
 - ✅ React Query hooks already exist
 - ✅ Provider is already a passthrough (no-op)
 - ✅ Only 13 files to update
 
 **Steps:**
+
 1. Remove `<NotificationsProvider>` from layout.tsx
 2. Find/replace imports
 3. Delete context file
@@ -92,6 +97,7 @@ import { useNotifications } from '@/hooks/useNotifications'
 ---
 
 #### Day 3-5: ActivitiesContext ✅
+
 ```bash
 # Current:
 import { useActivities } from '@/contexts/ActivitiesContext'
@@ -101,11 +107,13 @@ import { useActivities } from '@/hooks/useActivitiesQuery'
 ```
 
 **Why Easy:**
+
 - ✅ React Query hooks have full feature parity
 - ✅ Deprecation warnings already in place
 - ✅ Automated import replacement possible
 
 **Steps:**
+
 1. Run find/replace script across 47 files
 2. Remove provider from layout.tsx
 3. Delete context file
@@ -121,7 +129,9 @@ import { useActivities } from '@/hooks/useActivitiesQuery'
 ### 🎯 Goal: Eliminate TimerProvider, separate client/server state
 
 #### Challenge:
+
 TimerContext mixes concerns:
+
 - ❌ Server state (active session in Firebase) → Should be React Query
 - ❌ Client state (isRunning, elapsed time) → Should be local state
 - ❌ Auto-save logic (every 30s) → React Query mutations handle this
@@ -130,6 +140,7 @@ TimerContext mixes concerns:
 #### Solution: Split into Two Hooks
 
 **Server State:**
+
 ```typescript
 // src/features/timer/hooks/useActiveTimer.ts
 export function useActiveTimer() {
@@ -142,6 +153,7 @@ export function useActiveTimer() {
 ```
 
 **Client State:**
+
 ```typescript
 // src/features/timer/hooks/useTimerState.ts
 export function useTimerState() {
@@ -170,6 +182,7 @@ export function useTimerState() {
 ### 🎯 Goal: Eliminate AuthProvider, move to React Query + Firebase listener
 
 #### Challenge:
+
 - 🔴 **74 files** depend on AuthContext (all layers)
 - 🔴 Firebase Auth listener must stay reactive
 - 🔴 OAuth redirect flows are complex
@@ -178,6 +191,7 @@ export function useTimerState() {
 #### Solution: Root Listener + React Query
 
 **Architecture:**
+
 ```
 layout.tsx
 └─ AuthInitializer (subscribes to Firebase Auth once)
@@ -230,6 +244,7 @@ export function useLogin() {
 ```
 
 **Migration Approach:**
+
 - Week 3: Build infrastructure (services, hooks, tests)
 - Week 4: Migrate components (4 features → 23 routes → 47 components)
 - Week 5: Remove AuthProvider, monitor production
@@ -242,15 +257,16 @@ export function useLogin() {
 
 ### Critical Risks
 
-| Risk | Mitigation |
-|------|------------|
-| **Auth session loss** | • Gradual rollout<br>• Keep provider during migration<br>• Comprehensive OAuth testing<br>• Instant rollback plan |
+| Risk                    | Mitigation                                                                                                                  |
+| ----------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| **Auth session loss**   | • Gradual rollout<br>• Keep provider during migration<br>• Comprehensive OAuth testing<br>• Instant rollback plan           |
 | **Timer stops working** | • E2E tests for all timer flows<br>• Test cross-tab scenarios<br>• Canary deploy to 10% first<br>• Monitor completion rates |
-| **74 files break** | • TypeScript checks<br>• Automated tests<br>• Migrate in batches<br>• Test between batches |
+| **74 files break**      | • TypeScript checks<br>• Automated tests<br>• Migrate in batches<br>• Test between batches                                  |
 
 ### Rollback Strategy
 
 Each phase has instant rollback:
+
 ```bash
 # One-line revert if issues arise
 git revert <commit-hash>
@@ -268,13 +284,13 @@ return <AuthInitializer>{children}</AuthInitializer>
 
 ### Quantitative
 
-| Metric | Current | Target | Measurement |
-|--------|---------|--------|-------------|
-| Global providers | 5 | 1-2 | Count in layout.tsx |
-| Context violations | ~200 | 0 | `grep "useAuth\|useTimer" src/` |
-| Bundle size | Baseline | -10% | `next build --profile` |
-| Time to Interactive | Baseline | -15% | Lighthouse CI |
-| Test coverage | 65% | 80% | Jest coverage |
+| Metric              | Current  | Target | Measurement                     |
+| ------------------- | -------- | ------ | ------------------------------- |
+| Global providers    | 5        | 1-2    | Count in layout.tsx             |
+| Context violations  | ~200     | 0      | `grep "useAuth\|useTimer" src/` |
+| Bundle size         | Baseline | -10%   | `next build --profile`          |
+| Time to Interactive | Baseline | -15%   | Lighthouse CI                   |
+| Test coverage       | 65%      | 80%    | Jest coverage                   |
 
 ### Qualitative
 
@@ -373,6 +389,7 @@ After migration, enforce these rules:
 ```
 
 Add ESLint rules (Phase 4):
+
 ```javascript
 {
   "no-restricted-imports": [
@@ -392,21 +409,27 @@ Add ESLint rules (Phase 4):
 ## Frequently Asked Questions
 
 ### Q: Why not keep contexts for convenience?
+
 **A:** Contexts create tight coupling, prevent proper testing, and mix concerns. React Query provides the same convenience with better architecture.
 
 ### Q: What about component-local state?
+
 **A:** Perfectly fine! Use `useState` for UI state that doesn't need to be shared. This strategy only targets global singletons.
 
 ### Q: How do we handle real-time subscriptions (Firebase)?
+
 **A:** Use a root-level listener that updates React Query cache. See Auth migration pattern.
 
 ### Q: Can we do this incrementally?
+
 **A:** Yes! That's the whole strategy. Start with deprecated contexts (Week 1), work up to complex ones (Weeks 3-5).
 
 ### Q: What if we need to rollback?
+
 **A:** Each phase has a one-line `git revert`. Old providers stay in history. Can also use feature flags for gradual rollout.
 
 ### Q: Won't this break existing components?
+
 **A:** TypeScript catches most issues. API remains similar (same hook names). Tests verify functionality. Gradual migration minimizes risk.
 
 ---
@@ -414,30 +437,35 @@ Add ESLint rules (Phase 4):
 ## Next Actions
 
 ### Immediate (This Week)
+
 1. ✅ Review this strategy with team
 2. ✅ Get alignment on timeline and priorities
 3. ✅ Create GitHub Project for tracking
 4. ✅ Set up performance monitoring baseline
 
 ### Week 1 (Quick Wins)
+
 1. Remove NotificationsContext (Day 1-2)
 2. Remove ActivitiesContext (Day 3-5)
 3. Validate migration pattern works
 4. Celebrate first wins! 🎉
 
 ### Week 2 (Timer)
+
 1. Create timer feature hooks
 2. Migrate timer components
 3. Remove TimerProvider
 4. Monitor for issues
 
 ### Weeks 3-5 (Auth)
+
 1. Build auth infrastructure
 2. Migrate components incrementally
 3. Remove AuthProvider
 4. Monitor production closely
 
 ### Week 6 (Cleanup)
+
 1. Delete dead code
 2. Update documentation
 3. Add ESLint enforcement
@@ -448,12 +476,14 @@ Add ESLint rules (Phase 4):
 ## Resources
 
 ### Documentation
+
 - [Full Migration Strategy](/docs/architecture/CONTEXT_ELIMINATION_STRATEGY.md) - Comprehensive 200+ page guide
 - [Caching Strategy](/docs/architecture/CACHING_STRATEGY.md) - React Query patterns
 - [Examples](/docs/architecture/EXAMPLES.md) - Real implementations
 - [Migration Guide](/docs/architecture/MIGRATION_GUIDE.md) - Step-by-step instructions
 
 ### References
+
 - [TanStack Query Docs](https://tanstack.com/query/latest)
 - [Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)
 - [Effective React Query Keys](https://tkdodo.eu/blog/effective-react-query-keys)
@@ -465,6 +495,7 @@ Add ESLint rules (Phase 4):
 **This migration is achievable, low-risk with phased approach, and will significantly improve architecture quality.**
 
 **Key Insight:** 50% of the work is already done:
+
 - ✅ NotificationsContext deprecated
 - ✅ ActivitiesContext deprecated
 - ✅ TimerContext partially migrated

@@ -21,14 +21,14 @@ export const StatsCard: React.FC<StatsCardProps> = ({
   icon: Icon,
   trend,
   subtitle,
-  color = 'blue'
+  color = 'blue',
 }) => {
   const colorClasses = {
     blue: 'bg-blue-50 text-blue-600',
     green: 'bg-green-50 text-green-600',
     orange: 'bg-orange-50 text-orange-600',
     purple: 'bg-purple-50 text-purple-600',
-    gray: 'bg-gray-50 text-gray-600'
+    gray: 'bg-gray-50 text-gray-600',
   };
 
   const getTrendIcon = () => {
@@ -52,13 +52,13 @@ export const StatsCard: React.FC<StatsCardProps> = ({
         <div className="flex-1">
           <p className="text-sm font-medium text-gray-600 mb-1">{title}</p>
           <p className="text-3xl font-bold text-gray-900 mb-2">{value}</p>
-          
-          {subtitle && (
-            <p className="text-xs text-gray-500 mb-2">{subtitle}</p>
-          )}
-          
+
+          {subtitle && <p className="text-xs text-gray-500 mb-2">{subtitle}</p>}
+
           {trend && (
-            <div className={`flex items-center gap-1 text-sm font-medium ${getTrendColor()}`}>
+            <div
+              className={`flex items-center gap-1 text-sm font-medium ${getTrendColor()}`}
+            >
               {getTrendIcon()}
               <span>
                 {trend.value > 0 ? '+' : ''}
@@ -68,7 +68,7 @@ export const StatsCard: React.FC<StatsCardProps> = ({
             </div>
           )}
         </div>
-        
+
         <div className={`p-3 rounded-lg ${colorClasses[color]}`}>
           <Icon className="w-6 h-6" />
         </div>

@@ -34,12 +34,14 @@ Development scripts are safe to run and used for scaffolding and automation task
 Scaffolds a new feature with the standardized React Query pattern.
 
 **Usage:**
+
 ```bash
 npm run create-feature <feature-name>
 npm run create-feature sessions
 ```
 
 **Creates:**
+
 ```
 src/features/<feature>/
   ├── services/<Feature>Service.ts
@@ -50,6 +52,7 @@ src/features/<feature>/
 ```
 
 **Requirements:**
+
 - No special permissions needed
 - Node.js 16+ required
 
@@ -60,17 +63,20 @@ src/features/<feature>/
 Automation script to complete the projects -> activities refactor.
 
 **Usage:**
+
 ```bash
 bash scripts/dev/finish-activity-refactor.sh
 ```
 
 **What it does:**
+
 1. Updates text labels from "Project" to "Activity"
 2. Updates variable names in SessionTimerEnhanced.tsx
 3. Creates /activities route from /projects
 4. Provides next steps for manual completion
 
 **Requirements:**
+
 - Bash shell
 - sed command
 - No special permissions needed
@@ -82,15 +88,18 @@ bash scripts/dev/finish-activity-refactor.sh
 Performance profiling tool for analyzing Cumulative Layout Shift (CLS) metrics.
 
 **Usage:**
+
 ```bash
 npm run profile:cls
 ```
 
 **Output:**
+
 - Performance metrics
 - JSON report saved to `scripts/dev/cls-profile-report.json`
 
 **Requirements:**
+
 - No special permissions needed
 - Generates performance data for optimization analysis
 
@@ -109,10 +118,12 @@ All ops scripts support a `--dry-run` flag to preview changes without modifying 
 Safely deletes a user and all their associated data from Firebase.
 
 **Firebase IAM Roles Required:**
+
 - `roles/firebase.admin` (primary option)
 - OR `roles/firebasedatabase.admin` + `roles/datastore.owner`
 
 **Service Account Permissions Required:**
+
 - `firebase.auth.users.delete`
 - `datastore.databases.update`
 - `datastore.databases.get`
@@ -121,6 +132,7 @@ Safely deletes a user and all their associated data from Firebase.
 - `datastore.entities.update`
 
 **Verify Service Account Access:**
+
 ```bash
 gcloud projects get-iam-policy PROJECT_ID \
   --flatten="bindings[].members" \
@@ -129,6 +141,7 @@ gcloud projects get-iam-policy PROJECT_ID \
 ```
 
 **Usage:**
+
 ```bash
 # Preview what would be deleted (recommended first step)
 npx ts-node scripts/ops/deleteUser.ts <userId> --dry-run
@@ -138,12 +151,14 @@ npx ts-node scripts/ops/deleteUser.ts <userId>
 ```
 
 **Example:**
+
 ```bash
 npx ts-node scripts/ops/deleteUser.ts abc123xyz --dry-run
 npx ts-node scripts/ops/deleteUser.ts abc123xyz
 ```
 
 **Prerequisites:**
+
 1. Firebase Admin SDK service account key:
    - Go to [Firebase Console](https://console.firebase.google.com/)
    - Select your project
@@ -152,6 +167,7 @@ npx ts-node scripts/ops/deleteUser.ts abc123xyz
    - Save as `serviceAccountKey.json` in project root
 
 2. Install ts-node (if not already installed):
+
    ```bash
    npm install -D ts-node
    ```
@@ -159,6 +175,7 @@ npx ts-node scripts/ops/deleteUser.ts abc123xyz
 3. Add `serviceAccountKey.json` to `.gitignore` (should already be there)
 
 **What Gets Deleted:**
+
 - User profile document
 - Firebase Authentication account
 - All projects and their tasks
@@ -173,6 +190,7 @@ npx ts-node scripts/ops/deleteUser.ts abc123xyz
 - Active session data (timer persistence)
 
 **Safety Features:**
+
 - Verification: Script verifies user exists before proceeding
 - Comprehensive: Handles all related data and updates counts properly
 - Atomic Operations: Uses batched writes for consistency
@@ -180,6 +198,7 @@ npx ts-node scripts/ops/deleteUser.ts abc123xyz
 - Dry Run: Preview mode shows all changes without making them
 
 **Dry Run Output Example:**
+
 ```
 [DRY RUN] Starting deletion process for user: abc123xyz
 
@@ -212,6 +231,7 @@ To execute this deletion, run without the --dry-run flag.
 ```
 
 **Important Notes:**
+
 - This operation is irreversible! Once deleted, data cannot be recovered.
 - Follower/Following Counts: Script automatically decrements counts on related users
 - Group Counts: Script automatically decrements member counts in groups
@@ -224,16 +244,19 @@ To execute this deletion, run without the --dry-run flag.
 Updates profile visibility settings for users who don't have them set.
 
 **Firebase IAM Roles Required:**
+
 - `roles/datastore.owner` (primary option)
 - OR `roles/firebase.admin`
 
 **Service Account Permissions Required:**
+
 - `datastore.databases.update`
 - `datastore.databases.get`
 - `datastore.entities.get`
 - `datastore.entities.update`
 
 **Verify Service Account Access:**
+
 ```bash
 gcloud projects get-iam-policy PROJECT_ID \
   --flatten="bindings[].members" \
@@ -242,6 +265,7 @@ gcloud projects get-iam-policy PROJECT_ID \
 ```
 
 **Usage:**
+
 ```bash
 # Preview what would be updated (recommended first step)
 node scripts/ops/migrate-profile-visibility.js --dry-run
@@ -254,6 +278,7 @@ node scripts/ops/migrate-profile-visibility.js --help
 ```
 
 **Prerequisites:**
+
 1. Firebase Admin SDK service account key:
    - Go to [Firebase Console](https://console.firebase.google.com/)
    - Select your project
@@ -265,12 +290,14 @@ node scripts/ops/migrate-profile-visibility.js --help
 
 **What Gets Updated:**
 For each user without `profileVisibility` set:
+
 - Sets `profileVisibility: 'everyone'`
 - Sets `activityVisibility` to existing value or 'everyone'
 - Sets `projectVisibility` to existing value or 'everyone'
 - Updates `updatedAt` timestamp
 
 **Dry Run Output Example:**
+
 ```
 [DRY RUN] Starting profile visibility migration...
 
@@ -302,32 +329,39 @@ To execute this migration, run without the --dry-run flag.
 Pushes environment variables from `.env.local` to Vercel production environment.
 
 **Vercel Permissions Required:**
+
 - Vercel CLI must be authenticated: `vercel login`
 - You must be a member of the Vercel project
 - Project must be linked via `.vercel/project.json` (created with: `vercel link`)
 
 **Verify Vercel Access:**
+
 ```bash
 vercel env ls production
 ```
 
 **Usage:**
+
 ```bash
 ./scripts/ops/push-env-to-vercel.sh
 ```
 
 **Prerequisites:**
+
 1. Vercel CLI installed globally:
+
    ```bash
    npm install -g vercel
    ```
 
 2. Authenticate with Vercel:
+
    ```bash
    vercel login
    ```
 
 3. Link project to Vercel:
+
    ```bash
    vercel link
    ```
@@ -340,11 +374,13 @@ vercel env ls production
    ```
 
 **What Gets Pushed:**
+
 - All `NEXT_PUBLIC_*` variables from `.env.local`
 - Variables are pushed to production environment
 - Existing variables are overwritten
 
 **Output Example:**
+
 ```
 🚀 Pushing environment variables to Vercel...
 
@@ -383,16 +419,19 @@ For ops scripts that interact with Firebase, you need a service account key:
 ### IAM Roles Explained
 
 **roles/firebase.admin**
+
 - Full access to all Firebase services
 - Use when you need complete Firebase control
 - Recommended for development/testing environments
 
 **roles/datastore.owner**
+
 - Full access to Firestore
 - Includes read, write, and delete permissions
 - Use when you only need Firestore access
 
 **roles/firebasedatabase.admin**
+
 - Full access to Realtime Database
 - Add to your service account if using Realtime Database
 
@@ -401,6 +440,7 @@ For ops scripts that interact with Firebase, you need a service account key:
 ## Safety Guidelines for Operations Scripts
 
 1. **Always Test with --dry-run First**
+
    ```bash
    npx ts-node scripts/ops/deleteUser.ts <userId> --dry-run
    node scripts/ops/migrate-profile-visibility.js --dry-run
@@ -427,17 +467,19 @@ For ops scripts that interact with Firebase, you need a service account key:
 ## Environment Variables Reference
 
 ### Firebase Configuration
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `NEXT_PUBLIC_FIREBASE_API_KEY` | Yes | Firebase API key |
-| `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN` | Yes | Firebase auth domain |
-| `NEXT_PUBLIC_FIREBASE_PROJECT_ID` | Yes | Firebase project ID |
-| `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET` | Yes | Firebase storage bucket |
-| `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID` | Yes | Firebase messaging sender ID |
-| `NEXT_PUBLIC_FIREBASE_APP_ID` | Yes | Firebase app ID |
-| `NEXT_PUBLIC_MEASUREMENT_ID` | No | Google Analytics measurement ID |
+
+| Variable                                   | Required | Description                     |
+| ------------------------------------------ | -------- | ------------------------------- |
+| `NEXT_PUBLIC_FIREBASE_API_KEY`             | Yes      | Firebase API key                |
+| `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`         | Yes      | Firebase auth domain            |
+| `NEXT_PUBLIC_FIREBASE_PROJECT_ID`          | Yes      | Firebase project ID             |
+| `NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET`      | Yes      | Firebase storage bucket         |
+| `NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID` | Yes      | Firebase messaging sender ID    |
+| `NEXT_PUBLIC_FIREBASE_APP_ID`              | Yes      | Firebase app ID                 |
+| `NEXT_PUBLIC_MEASUREMENT_ID`               | No       | Google Analytics measurement ID |
 
 ### Service Account Setup
+
 - `serviceAccountKey.json` (file in project root, NOT in git)
 - Obtain from Firebase Console → Project Settings → Service Accounts
 - Add to `.gitignore`
@@ -447,26 +489,31 @@ For ops scripts that interact with Firebase, you need a service account key:
 ## Troubleshooting
 
 ### "serviceAccountKey.json not found"
+
 - Download from Firebase Console → Project Settings → Service Accounts
 - Save in project root directory
 - Verify file path matches script requirements
 
 ### "Insufficient permissions" Error
+
 - Check IAM roles assigned to service account
 - Run verification command to list roles
 - May need to request additional permissions from project admin
 
 ### "User with ID X does not exist"
+
 - Double-check the user ID
 - Verify you're using the correct Firebase project
 - Check Firebase Console → Authentication to find correct UID
 
 ### "Cannot connect to Vercel"
+
 - Run `vercel login` to authenticate
 - Run `vercel link` to link project
 - Check `.vercel/project.json` exists with correct project ID
 
 ### Script hangs or times out
+
 - Large migrations may take time
 - Check your internet connection
 - Ensure service account has sufficient permissions
@@ -477,6 +524,7 @@ For ops scripts that interact with Firebase, you need a service account key:
 ## Command Reference
 
 ### Development Scripts
+
 ```bash
 npm run create-feature <name>    # Scaffold new feature
 bash scripts/dev/finish-activity-refactor.sh  # Complete refactor
@@ -484,6 +532,7 @@ npm run profile:cls              # Run performance profiler
 ```
 
 ### Operations Scripts
+
 ```bash
 # User Deletion
 npx ts-node scripts/ops/deleteUser.ts <userId> --dry-run

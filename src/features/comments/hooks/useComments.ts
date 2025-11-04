@@ -19,7 +19,8 @@ export const COMMENT_KEYS = {
   lists: () => [...COMMENT_KEYS.all(), 'list'] as const,
   list: (sessionId: string, limit?: number) =>
     [...COMMENT_KEYS.lists(), sessionId, limit] as const,
-  session: (sessionId: string) => [...COMMENT_KEYS.all(), 'session', sessionId] as const,
+  session: (sessionId: string) =>
+    [...COMMENT_KEYS.all(), 'session', sessionId] as const,
 };
 
 // ==================== QUERY HOOKS ====================

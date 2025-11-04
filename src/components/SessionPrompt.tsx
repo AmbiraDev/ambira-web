@@ -39,10 +39,7 @@ export default function SessionPrompt() {
             href="/timer"
             className="flex items-center gap-3 px-6 py-4 rounded-lg hover:bg-gray-50 transition-colors flex-1 justify-center"
           >
-            <Timer
-              className="w-7 h-7 text-[#5E8B47]"
-              strokeWidth={2.5}
-            />
+            <Timer className="w-7 h-7 text-[#5E8B47]" strokeWidth={2.5} />
             <span className="font-bold text-lg text-gray-700">
               <span className="hidden lg:inline">Start Session</span>
               <span className="hidden sm:inline lg:hidden">Start</span>
@@ -54,10 +51,7 @@ export default function SessionPrompt() {
             href="/record-manual"
             className="flex items-center gap-3 px-6 py-4 rounded-lg hover:bg-gray-50 transition-colors flex-1 justify-center"
           >
-            <Edit3
-              className="w-7 h-7 text-[#C37D16]"
-              strokeWidth={2.5}
-            />
+            <Edit3 className="w-7 h-7 text-[#C37D16]" strokeWidth={2.5} />
             <span className="font-bold text-lg text-gray-700">
               <span className="hidden lg:inline">Log Manually</span>
               <span className="hidden sm:inline lg:hidden">Manual</span>

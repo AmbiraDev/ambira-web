@@ -200,25 +200,36 @@ export function useGroupLeaderboard(
 
 ```typescript
 // src/features/groups/hooks/useGroupMutations.ts
-import { useMutation, useQueryClient, UseMutationOptions } from '@tanstack/react-query';
+import {
+  useMutation,
+  useQueryClient,
+  UseMutationOptions,
+} from '@tanstack/react-query';
 import { GroupService } from '../services/GroupService';
 import { GROUPS_KEYS } from './useGroups';
 
 const groupService = new GroupService();
 
 export function useJoinGroup(
-  options?: Partial<UseMutationOptions<void, Error, { groupId: string; userId: string }>>
+  options?: Partial<
+    UseMutationOptions<void, Error, { groupId: string; userId: string }>
+  >
 ) {
   const queryClient = useQueryClient();
 
   return useMutation<void, Error, { groupId: string; userId: string }>({
-    mutationFn: ({ groupId, userId }) => groupService.joinGroup(groupId, userId),
+    mutationFn: ({ groupId, userId }) =>
+      groupService.joinGroup(groupId, userId),
 
     // Optimistic update
     onMutate: async ({ groupId, userId }) => {
-      await queryClient.cancelQueries({ queryKey: GROUPS_KEYS.detail(groupId) });
+      await queryClient.cancelQueries({
+        queryKey: GROUPS_KEYS.detail(groupId),
+      });
 
-      const previousGroup = queryClient.getQueryData(GROUPS_KEYS.detail(groupId));
+      const previousGroup = queryClient.getQueryData(
+        GROUPS_KEYS.detail(groupId)
+      );
 
       queryClient.setQueryData(GROUPS_KEYS.detail(groupId), (old: any) => {
         if (!old) return old;
@@ -234,7 +245,10 @@ export function useJoinGroup(
     // Rollback on error
     onError: (error, variables, context) => {
       if (context?.previousGroup) {
-        queryClient.setQueryData(GROUPS_KEYS.detail(variables.groupId), context.previousGroup);
+        queryClient.setQueryData(
+          GROUPS_KEYS.detail(variables.groupId),
+          context.previousGroup
+        );
       }
     },
 
@@ -325,7 +339,10 @@ export class GroupService {
     return this.leaderboardCalc.calculate(users, sessions, period);
   }
 
-  private getDateRangeForPeriod(period: TimePeriod): { start: Date; end: Date } {
+  private getDateRangeForPeriod(period: TimePeriod): {
+    start: Date;
+    end: Date;
+  } {
     const now = new Date();
     const end = now;
     let start: Date;
@@ -354,7 +371,15 @@ export class GroupService {
 
 ```typescript
 // src/infrastructure/firebase/repositories/GroupRepository.ts
-import { collection, doc, getDoc, getDocs, query, where, updateDoc } from 'firebase/firestore';
+import {
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  where,
+  updateDoc,
+} from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { Group } from '@/domain/entities/Group';
 
@@ -380,7 +405,7 @@ export class GroupRepository {
 
     const snapshot = await getDocs(q);
 
-    return snapshot.docs.map((doc) => this.mapToEntity(doc.id, doc.data()));
+    return snapshot.docs.map(doc => this.mapToEntity(doc.id, doc.data()));
   }
 
   async save(group: Group): Promise<void> {
@@ -488,7 +513,7 @@ export function useFeedSessions(userId: string, filters: FeedFilters = {}) {
         limit: 20,
         cursor: pageParam,
       }),
-    getNextPageParam: (lastPage) => {
+    getNextPageParam: lastPage => {
       return lastPage.hasMore ? lastPage.nextCursor : undefined;
     },
     initialPageParam: undefined as string | undefined,
@@ -564,15 +589,24 @@ export function useCreateComment() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ sessionId, content }: { sessionId: string; content: string }) =>
-      commentService.createComment(sessionId, content),
+    mutationFn: ({
+      sessionId,
+      content,
+    }: {
+      sessionId: string;
+      content: string;
+    }) => commentService.createComment(sessionId, content),
 
     onMutate: async ({ sessionId, content }) => {
       // Cancel queries
-      await queryClient.cancelQueries({ queryKey: COMMENTS_KEYS.list(sessionId) });
+      await queryClient.cancelQueries({
+        queryKey: COMMENTS_KEYS.list(sessionId),
+      });
 
       // Snapshot
-      const previousComments = queryClient.getQueryData(COMMENTS_KEYS.list(sessionId));
+      const previousComments = queryClient.getQueryData(
+        COMMENTS_KEYS.list(sessionId)
+      );
 
       // Optimistic update - add temporary comment
       const tempComment = {
@@ -613,16 +647,23 @@ export function useCreateComment() {
 
     onSuccess: (newComment, variables) => {
       // Replace optimistic comment with real one
-      queryClient.setQueryData(COMMENTS_KEYS.list(variables.sessionId), (old: any) => {
-        if (!Array.isArray(old)) return [newComment];
-        return old.map((comment) =>
-          comment.isOptimistic ? newComment : comment
-        );
-      });
+      queryClient.setQueryData(
+        COMMENTS_KEYS.list(variables.sessionId),
+        (old: any) => {
+          if (!Array.isArray(old)) return [newComment];
+          return old.map(comment =>
+            comment.isOptimistic ? newComment : comment
+          );
+        }
+      );
 
       // Invalidate to get fresh data
-      queryClient.invalidateQueries({ queryKey: COMMENTS_KEYS.list(variables.sessionId) });
-      queryClient.invalidateQueries({ queryKey: SESSION_KEYS.detail(variables.sessionId) });
+      queryClient.invalidateQueries({
+        queryKey: COMMENTS_KEYS.list(variables.sessionId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: SESSION_KEYS.detail(variables.sessionId),
+      });
     },
   });
 }
@@ -636,6 +677,7 @@ export function useCreateComment() {
 4. **Repositories** handle data access only
 
 This separation makes each layer:
+
 - **Easier to test** (mock at each boundary)
 - **Easier to understand** (single responsibility)
 - **Easier to maintain** (changes isolated to one layer)

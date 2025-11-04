@@ -145,6 +145,7 @@ export const GROUPS_KEYS = {
 ```
 
 **Benefits**:
+
 - Efficient invalidation (invalidate all with `GROUPS_KEYS.all()`)
 - Granular control (invalidate specific detail with `GROUPS_KEYS.detail(id)`)
 - Type-safe with TypeScript
@@ -158,14 +159,19 @@ export function useJoinGroup() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ groupId, userId }) => groupService.joinGroup(groupId, userId),
+    mutationFn: ({ groupId, userId }) =>
+      groupService.joinGroup(groupId, userId),
 
     onMutate: async ({ groupId, userId }) => {
       // 1. Cancel outgoing queries
-      await queryClient.cancelQueries({ queryKey: GROUPS_KEYS.detail(groupId) });
+      await queryClient.cancelQueries({
+        queryKey: GROUPS_KEYS.detail(groupId),
+      });
 
       // 2. Snapshot for rollback
-      const previousGroup = queryClient.getQueryData(GROUPS_KEYS.detail(groupId));
+      const previousGroup = queryClient.getQueryData(
+        GROUPS_KEYS.detail(groupId)
+      );
 
       // 3. Optimistic update
       queryClient.setQueryData(GROUPS_KEYS.detail(groupId), (old: any) => ({
@@ -179,7 +185,10 @@ export function useJoinGroup() {
     onError: (_, { groupId }, context) => {
       // 4. Rollback on error
       if (context?.previousGroup) {
-        queryClient.setQueryData(GROUPS_KEYS.detail(groupId), context.previousGroup);
+        queryClient.setQueryData(
+          GROUPS_KEYS.detail(groupId),
+          context.previousGroup
+        );
       }
     },
 
@@ -197,9 +206,9 @@ Different data types get different cache times:
 
 ```typescript
 const CACHE_TIMES = {
-  SHORT: 1 * 60 * 1000,      // 1m  - Feed, frequently changing
-  MEDIUM: 5 * 60 * 1000,     // 5m  - Sessions, comments
-  LONG: 15 * 60 * 1000,      // 15m - Groups, user profiles
+  SHORT: 1 * 60 * 1000, // 1m  - Feed, frequently changing
+  MEDIUM: 5 * 60 * 1000, // 5m  - Sessions, comments
+  LONG: 15 * 60 * 1000, // 15m - Groups, user profiles
   VERY_LONG: 60 * 60 * 1000, // 1h  - Stats, analytics
 };
 ```
@@ -216,7 +225,7 @@ export function useGroupDetails(groupId: string) {
   const { data, isLoading, error, refetch } = useGroupDetailsNew(groupId);
 
   return {
-    group: data,      // Old API
+    group: data, // Old API
     isLoading,
     error,
     refetch,
@@ -229,6 +238,7 @@ This allows gradual migration without breaking existing code.
 ## Migration Path
 
 ### Phase 1: Groups (COMPLETED ✅)
+
 - ✅ Service already exists
 - ✅ Created query hooks (`useGroups.ts`)
 - ✅ Created mutation hooks (`useGroupMutations.ts`)
@@ -236,21 +246,25 @@ This allows gradual migration without breaking existing code.
 - ⏳ Need to update components to use new hooks
 
 ### Phase 2: Feed
+
 - ✅ Service exists (`FeedService`)
 - ⏳ Create `src/features/feed/hooks/useFeed.ts`
 - ⏳ Migrate from `useCache.ts`
 
 ### Phase 3: Profile/User
+
 - ✅ Service exists (`ProfileService`)
 - ⏳ Create `src/features/profile/hooks/useProfile.ts`
 - ⏳ Migrate user queries from `useCache.ts`
 
 ### Phase 4+: Sessions, Comments, Projects, Challenges
+
 - ⏳ Create services
 - ⏳ Create hooks
 - ⏳ Migrate from `useCache.ts`
 
 ### Final Phase: Cleanup
+
 - ⏳ Remove `src/hooks/useCache.ts`
 - ⏳ Remove `src/hooks/useMutations.ts`
 - ⏳ Add ESLint rules to prevent regression
@@ -397,17 +411,20 @@ test('GroupPage displays group name', () => {
 ## Success Metrics
 
 ### Code Quality
+
 - ✅ Single responsibility per layer
 - ✅ Type safety throughout
 - ✅ Testable at each layer
 - ✅ Clear data flow
 
 ### Performance
+
 - 🎯 Reduced Firestore reads (through caching)
 - 🎯 Faster perceived performance (optimistic updates)
 - 🎯 Better UX with instant feedback
 
 ### Developer Experience
+
 - 🎯 Easier to find code (feature-based organization)
 - 🎯 Easier to test (mocking at boundaries)
 - 🎯 Easier to understand (predictable patterns)
@@ -416,12 +433,14 @@ test('GroupPage displays group name', () => {
 ## Resources
 
 ### Documentation
+
 - [Main Architecture README](./README.md)
 - [Caching Strategy](./CACHING_STRATEGY.md)
 - [Migration Guide](./MIGRATION_GUIDE.md)
 - [Examples](./EXAMPLES.md)
 
 ### External Resources
+
 - [TanStack Query Docs](https://tanstack.com/query/latest)
 - [Effective React Query Keys](https://tkdodo.eu/blog/effective-react-query-keys)
 - [Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)
@@ -429,6 +448,7 @@ test('GroupPage displays group name', () => {
 ## Questions?
 
 For questions or clarifications:
+
 1. Check the [Migration Guide FAQ](./MIGRATION_GUIDE.md#faq)
 2. Review the [Examples](./EXAMPLES.md)
 3. Look at the Groups implementation

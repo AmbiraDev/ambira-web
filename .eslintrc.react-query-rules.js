@@ -154,7 +154,8 @@ module.exports = {
               },
               {
                 group: ['@/features/**/hooks/*'],
-                message: '❌ Repositories cannot import hooks. Repositories are at the data layer.',
+                message:
+                  '❌ Repositories cannot import hooks. Repositories are at the data layer.',
               },
             ],
           },

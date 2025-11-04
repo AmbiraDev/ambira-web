@@ -85,6 +85,7 @@ export class FeedService {
 
   /**
    * Get feed from users the current user is following
+   * Note: Always includes the current user's own posts (like Instagram)
    */
   private async getFollowingFeed(
     currentUserId: string,
@@ -95,12 +96,15 @@ export class FeedService {
     const followingIds =
       await this.socialGraphRepo.getFollowingIds(currentUserId);
 
-    if (followingIds.length === 0) {
-      return { sessions: [], hasMore: false };
-    }
+    // Always include current user's own posts in their following feed
+    // This ensures newly posted sessions appear immediately (like Instagram)
+    const userIdsToInclude = [...followingIds, currentUserId];
 
-    // Fetch sessions from followed users
-    return this.feedRepo.getFeedForFollowing(followingIds, limit, cursor);
+    // Remove duplicates in case user is somehow following themselves
+    const uniqueUserIds = Array.from(new Set(userIdsToInclude));
+
+    // Fetch sessions from followed users + current user
+    return this.feedRepo.getFeedForFollowing(uniqueUserIds, limit, cursor);
   }
 
   /**

@@ -113,7 +113,7 @@ Alias for `stripUndefined` - use in schema transformations.
 ```typescript
 const FirestoreSessionSchema = v.pipe(
   CreateSessionSchema,
-  v.transform((data) => prepareForFirestore(data))
+  v.transform(data => prepareForFirestore(data))
 );
 ```
 
@@ -123,16 +123,16 @@ Reusable schema building blocks in `utils/common-schemas.ts`:
 
 ```typescript
 import {
-  UuidSchema,           // UUID validation
-  EmailSchema,          // Email validation
-  UrlSchema,            // URL validation
-  VisibilitySchema,     // 'everyone' | 'followers' | 'private'
-  UsernameSchema,       // Alphanumeric + underscore/hyphen
-  DurationSchema,       // 1 second to 24 hours
-  ShortTextSchema,      // Max 500 characters
-  LongTextSchema,       // Max 5000 characters
-  TagsSchema,           // Array of tags (max 20)
-  ImageUrlsSchema,      // Array of image URLs (max 10)
+  UuidSchema, // UUID validation
+  EmailSchema, // Email validation
+  UrlSchema, // URL validation
+  VisibilitySchema, // 'everyone' | 'followers' | 'private'
+  UsernameSchema, // Alphanumeric + underscore/hyphen
+  DurationSchema, // 1 second to 24 hours
+  ShortTextSchema, // Max 500 characters
+  LongTextSchema, // Max 5000 characters
+  TagsSchema, // Array of tags (max 20)
+  ImageUrlsSchema, // Array of image URLs (max 10)
 } from '@/lib/validation';
 ```
 
@@ -160,12 +160,14 @@ const sessionData = validateOrThrow(CreateSessionSchema, {
 ```
 
 **Required Fields:**
+
 - `activityId` - UUID of the activity
 - `title` - Session title (1-200 characters)
 - `duration` - Duration in seconds (1-86400)
 - `startTime` - Date object or timestamp
 
 **Optional Fields:**
+
 - `description` - Session description (max 5000 chars)
 - `visibility` - 'everyone' | 'followers' | 'private' (default: 'private')
 - `tags` - Array of tags (max 20)
@@ -276,8 +278,8 @@ export type MyData = v.InferOutput<typeof MySchema>;
 const TransformSchema = v.object({
   title: v.pipe(
     v.string(),
-    v.transform((str) => str.trim()),           // Trim whitespace
-    v.transform((str) => str.toLowerCase()),    // Convert to lowercase
+    v.transform(str => str.trim()), // Trim whitespace
+    v.transform(str => str.toLowerCase()), // Convert to lowercase
     v.nonEmpty('Title is required')
   ),
 });
@@ -294,7 +296,7 @@ const PasswordSchema = v.pipe(
   v.forward(
     v.partialCheck(
       [['password'], ['confirmPassword']],
-      (input) => input.password === input.confirmPassword,
+      input => input.password === input.confirmPassword,
       'Passwords must match'
     ),
     ['confirmPassword']
@@ -314,7 +316,7 @@ try {
 } catch (error) {
   if (isValidationError(error)) {
     // error.issues contains detailed validation errors
-    error.issues.forEach((issue) => {
+    error.issues.forEach(issue => {
       console.log(`${issue.path}: ${issue.message}`);
     });
   }
@@ -399,10 +401,7 @@ export async function POST(request: Request) {
   const result = validate(CreateSessionSchema, body);
 
   if (!result.success) {
-    return Response.json(
-      { errors: result.errors },
-      { status: 400 }
-    );
+    return Response.json({ errors: result.errors }, { status: 400 });
   }
 
   const session = await createSession(result.data);
@@ -474,7 +473,9 @@ type MyData = v.InferOutput<typeof MySchema>;
 
 // ❌ Bad - Duplicate definitions
 const MySchema = v.object({ name: v.string() });
-interface MyData { name: string; } // Can drift out of sync
+interface MyData {
+  name: string;
+} // Can drift out of sync
 ```
 
 ### 3. Reuse Common Schemas
@@ -505,8 +506,8 @@ Clean data before validation when needed:
 const FormSchema = v.object({
   title: v.pipe(
     v.string(),
-    v.transform((str) => str.trim()),  // Clean first
-    v.nonEmpty('Title is required')     // Then validate
+    v.transform(str => str.trim()), // Clean first
+    v.nonEmpty('Title is required') // Then validate
   ),
 });
 ```

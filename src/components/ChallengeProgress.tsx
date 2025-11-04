@@ -5,15 +5,15 @@ import Link from 'next/link';
 import { Challenge, ChallengeProgress as ChallengeProgressType } from '@/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { 
-  Trophy, 
+import {
+  Trophy,
   Target,
   TrendingUp,
   Zap,
   Timer,
   Clock,
   CheckCircle,
-  ExternalLink
+  ExternalLink,
 } from 'lucide-react';
 
 interface ChallengeProgressProps {
@@ -27,30 +27,30 @@ const challengeTypeConfig = {
   'most-activity': {
     label: 'Most Activity',
     icon: TrendingUp,
-    color: 'bg-blue-100 text-blue-800'
+    color: 'bg-blue-100 text-blue-800',
   },
   'fastest-effort': {
     label: 'Fastest Effort',
     icon: Zap,
-    color: 'bg-yellow-100 text-yellow-800'
+    color: 'bg-yellow-100 text-yellow-800',
   },
   'longest-session': {
     label: 'Longest Session',
     icon: Timer,
-    color: 'bg-purple-100 text-purple-800'
+    color: 'bg-purple-100 text-purple-800',
   },
   'group-goal': {
     label: 'Group Goal',
     icon: Target,
-    color: 'bg-green-100 text-green-800'
-  }
+    color: 'bg-green-100 text-green-800',
+  },
 };
 
 export default function ChallengeProgress({
   challenge,
   progress,
   compact = false,
-  showActions = true
+  showActions = true,
 }: ChallengeProgressProps) {
   const typeConfig = challengeTypeConfig[challenge.type];
   const TypeIcon = typeConfig.icon;
@@ -62,7 +62,11 @@ export default function ChallengeProgress({
   const isActive = timeRemaining > 0 && challenge.isActive;
 
   const formatProgress = (value: number) => {
-    if (challenge.type === 'most-activity' || challenge.type === 'group-goal' || challenge.type === 'longest-session') {
+    if (
+      challenge.type === 'most-activity' ||
+      challenge.type === 'group-goal' ||
+      challenge.type === 'longest-session'
+    ) {
       return `${value.toFixed(1)}h`;
     }
     if (challenge.type === 'fastest-effort') {
@@ -91,7 +95,7 @@ export default function ChallengeProgress({
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <TypeIcon className="w-4 h-4 text-gray-500" />
-            <Link 
+            <Link
               href={`/challenges/${challenge.id}`}
               className="font-medium text-gray-900 hover:text-blue-600 transition-colors"
             >
@@ -108,13 +112,14 @@ export default function ChallengeProgress({
             <span className="text-gray-600">Progress</span>
             <span className="font-medium">
               {formatProgress(progress.currentValue)}
-              {challenge.goalValue && ` / ${formatProgress(challenge.goalValue)}`}
+              {challenge.goalValue &&
+                ` / ${formatProgress(challenge.goalValue)}`}
             </span>
           </div>
-          
+
           {challenge.goalValue && (
             <div className="w-full bg-gray-200 rounded-full h-2">
-              <div 
+              <div
                 className={`h-2 rounded-full transition-all duration-300 ${getProgressColor()}`}
                 style={{ width: `${Math.min(progress.percentage, 100)}%` }}
               />
@@ -142,19 +147,19 @@ export default function ChallengeProgress({
       {/* Header */}
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center gap-3">
-          <div className={`p-2 rounded-lg ${typeConfig.color.replace('text-', 'bg-').replace('800', '500/10')}`}>
+          <div
+            className={`p-2 rounded-lg ${typeConfig.color.replace('text-', 'bg-').replace('800', '500/10')}`}
+          >
             <TypeIcon className="w-5 h-5 text-current" />
           </div>
           <div>
-            <Link 
+            <Link
               href={`/challenges/${challenge.id}`}
               className="text-lg font-semibold text-gray-900 hover:text-blue-600 transition-colors"
             >
               {challenge.name}
             </Link>
-            <Badge className={typeConfig.color}>
-              {typeConfig.label}
-            </Badge>
+            <Badge className={typeConfig.color}>{typeConfig.label}</Badge>
           </div>
         </div>
         {progress.isCompleted && (
@@ -173,7 +178,7 @@ export default function ChallengeProgress({
           </div>
           <div className="text-sm text-gray-500">Current Progress</div>
         </div>
-        
+
         {challenge.goalValue && (
           <div className="text-center">
             <div className="text-2xl font-bold text-gray-900">
@@ -182,14 +187,14 @@ export default function ChallengeProgress({
             <div className="text-sm text-gray-500">Target Goal</div>
           </div>
         )}
-        
+
         <div className="text-center">
           <div className={`text-2xl font-bold ${getRankColor()}`}>
             #{progress.rank}
           </div>
           <div className="text-sm text-gray-500">Your Rank</div>
         </div>
-        
+
         <div className="text-center">
           <div className="text-2xl font-bold text-gray-900">
             {progress.percentage.toFixed(1)}%
@@ -204,11 +209,12 @@ export default function ChallengeProgress({
           <div className="flex items-center justify-between text-sm mb-2">
             <span className="text-gray-600">Progress to Goal</span>
             <span className="font-medium">
-              {formatProgress(progress.currentValue)} / {formatProgress(challenge.goalValue)}
+              {formatProgress(progress.currentValue)} /{' '}
+              {formatProgress(challenge.goalValue)}
             </span>
           </div>
           <div className="w-full bg-gray-200 rounded-full h-3">
-            <div 
+            <div
               className={`h-3 rounded-full transition-all duration-500 ${getProgressColor()}`}
               style={{ width: `${Math.min(progress.percentage, 100)}%` }}
             />
@@ -224,12 +230,11 @@ export default function ChallengeProgress({
             <span className="font-medium text-blue-900">Time Remaining</span>
           </div>
           <p className="text-blue-700">
-            {daysRemaining > 1 
+            {daysRemaining > 1
               ? `${daysRemaining} days left to complete this challenge`
               : daysRemaining === 1
-              ? 'Less than 24 hours remaining!'
-              : 'Challenge ending soon!'
-            }
+                ? 'Less than 24 hours remaining!'
+                : 'Challenge ending soon!'}
           </p>
         </div>
       )}
@@ -239,7 +244,9 @@ export default function ChallengeProgress({
         <div className="bg-green-50 rounded-lg p-4 mb-4">
           <div className="flex items-center gap-2 mb-1">
             <Trophy className="w-4 h-4 text-green-600" />
-            <span className="font-medium text-green-900">Challenge Completed!</span>
+            <span className="font-medium text-green-900">
+              Challenge Completed!
+            </span>
           </div>
           <p className="text-green-700">
             Congratulations! You've successfully completed this challenge.

@@ -30,10 +30,16 @@ export const CreateSessionSchema = v.object({
     v.string('Title is required'),
     v.nonEmpty('Title cannot be empty'),
     v.maxLength(200, 'Title cannot exceed 200 characters'),
-    v.transform((str) => str.trim())
+    v.transform(str => str.trim())
   ),
   duration: DurationSchema,
-  startTime: v.union([v.date('Invalid start time'), v.pipe(v.number(), v.transform((n) => new Date(n)))]),
+  startTime: v.union([
+    v.date('Invalid start time'),
+    v.pipe(
+      v.number(),
+      v.transform(n => new Date(n))
+    ),
+  ]),
 
   // Optional fields
   description: OptionalStringSchema,
@@ -41,7 +47,14 @@ export const CreateSessionSchema = v.object({
   tags: TagsSchema,
   images: ImageUrlsSchema,
   showStartTime: v.optional(v.boolean()),
-  howFelt: v.optional(v.pipe(v.number(), v.integer(), v.minValue(1, 'Rating must be 1-5'), v.maxValue(5, 'Rating must be 1-5'))),
+  howFelt: v.optional(
+    v.pipe(
+      v.number(),
+      v.integer(),
+      v.minValue(1, 'Rating must be 1-5'),
+      v.maxValue(5, 'Rating must be 1-5')
+    )
+  ),
   privateNotes: LongTextSchema,
   allowComments: v.optional(v.boolean()),
 
@@ -60,7 +73,7 @@ export const UpdateSessionSchema = v.object({
       v.string(),
       v.nonEmpty('Title cannot be empty'),
       v.maxLength(200, 'Title cannot exceed 200 characters'),
-      v.transform((str) => str.trim())
+      v.transform(str => str.trim())
     )
   ),
   description: OptionalStringSchema,
@@ -68,7 +81,14 @@ export const UpdateSessionSchema = v.object({
   tags: TagsSchema,
   images: ImageUrlsSchema,
   showStartTime: v.optional(v.boolean()),
-  howFelt: v.optional(v.pipe(v.number(), v.integer(), v.minValue(1, 'Rating must be 1-5'), v.maxValue(5, 'Rating must be 1-5'))),
+  howFelt: v.optional(
+    v.pipe(
+      v.number(),
+      v.integer(),
+      v.minValue(1, 'Rating must be 1-5'),
+      v.maxValue(5, 'Rating must be 1-5')
+    )
+  ),
   privateNotes: LongTextSchema,
   allowComments: v.optional(v.boolean()),
   isArchived: v.optional(v.boolean()),
@@ -87,11 +107,17 @@ export const SessionFormSchema = v.object({
     DurationSchema,
     v.pipe(
       v.string(),
-      v.transform((str) => parseInt(str, 10)),
+      v.transform(str => parseInt(str, 10)),
       DurationSchema
     ),
   ]),
-  startTime: v.union([v.date(), v.pipe(v.string(), v.transform((str) => new Date(str)))]),
+  startTime: v.union([
+    v.date(),
+    v.pipe(
+      v.string(),
+      v.transform(str => new Date(str))
+    ),
+  ]),
   description: OptionalStringSchema,
   visibility: OptionalVisibilitySchema,
   tags: v.optional(
@@ -99,18 +125,26 @@ export const SessionFormSchema = v.object({
       v.array(v.string()),
       v.pipe(
         v.string(),
-        v.transform((str) => (str ? str.split(',').map((tag) => tag.trim()) : []))
+        v.transform(str => (str ? str.split(',').map(tag => tag.trim()) : []))
       ),
     ])
   ),
   images: v.optional(v.array(v.string())),
-  showStartTime: v.optional(v.union([v.boolean(), v.pipe(v.string(), v.transform((str) => str === 'true'))])),
+  showStartTime: v.optional(
+    v.union([
+      v.boolean(),
+      v.pipe(
+        v.string(),
+        v.transform(str => str === 'true')
+      ),
+    ])
+  ),
   howFelt: v.optional(
     v.union([
       v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(5)),
       v.pipe(
         v.string(),
-        v.transform((str) => parseInt(str, 10)),
+        v.transform(str => parseInt(str, 10)),
         v.integer(),
         v.minValue(1),
         v.maxValue(5)
@@ -118,7 +152,15 @@ export const SessionFormSchema = v.object({
     ])
   ),
   privateNotes: OptionalStringSchema,
-  allowComments: v.optional(v.union([v.boolean(), v.pipe(v.string(), v.transform((str) => str === 'true'))])),
+  allowComments: v.optional(
+    v.union([
+      v.boolean(),
+      v.pipe(
+        v.string(),
+        v.transform(str => str === 'true')
+      ),
+    ])
+  ),
 });
 
 /**

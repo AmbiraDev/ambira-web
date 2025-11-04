@@ -24,6 +24,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import { Notification } from '@/types';
+import ConfirmDialog from '@/components/ConfirmDialog';
 
 interface NotificationsPanelProps {
   isOpen: boolean;
@@ -69,6 +70,7 @@ export default function NotificationsPanel({
   const router = useRouter();
   const [deletingIds, setDeletingIds] = useState<Set<string>>(new Set());
   const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
 
   const handleNotificationClick = (notification: Notification) => {
     // Close panel and navigate immediately for better UX
@@ -121,8 +123,17 @@ export default function NotificationsPanel({
     await markAllAsReadMutation.mutateAsync();
   };
 
-  const handleClearAll = async () => {
+  const handleClearAllClick = () => {
+    setShowClearConfirm(true);
+  };
+
+  const handleClearAllConfirm = async () => {
     await clearAllNotificationsMutation.mutateAsync();
+    setShowClearConfirm(false);
+  };
+
+  const handleClearAllCancel = () => {
+    setShowClearConfirm(false);
   };
 
   if (!isOpen) return null;
@@ -150,7 +161,10 @@ export default function NotificationsPanel({
             {unreadCount > 0 && (
               <button
                 onClick={handleMarkAllRead}
-                className="text-xs text-[#0066CC] hover:text-[#0051D5] font-medium flex items-center gap-1"
+                disabled={markAllAsReadMutation.isPending}
+                className="text-xs text-[#0066CC] hover:text-[#0051D5] font-medium flex items-center gap-1 disabled:opacity-50 transition-colors"
+                aria-label="Mark all notifications as read"
+                aria-busy={markAllAsReadMutation.isPending}
               >
                 <Check className="w-3 h-3" />
                 Mark all read
@@ -158,8 +172,11 @@ export default function NotificationsPanel({
             )}
             {notifications.length > 0 && (
               <button
-                onClick={handleClearAll}
-                className="text-xs text-gray-600 hover:text-gray-900 font-medium flex items-center gap-1"
+                onClick={handleClearAllClick}
+                disabled={clearAllNotificationsMutation.isPending}
+                className="text-xs text-gray-600 hover:text-gray-900 font-medium flex items-center gap-1 disabled:opacity-50 transition-colors"
+                aria-label="Clear all notifications"
+                aria-busy={clearAllNotificationsMutation.isPending}
               >
                 <Trash2 className="w-3 h-3" />
                 Clear all
@@ -234,6 +251,19 @@ export default function NotificationsPanel({
           )}
         </div>
       </div>
+
+      {/* Clear All Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={showClearConfirm}
+        onClose={handleClearAllCancel}
+        onConfirm={handleClearAllConfirm}
+        title="Clear All Notifications"
+        message="Are you sure you want to delete all notifications? This action cannot be undone."
+        confirmText="Clear All"
+        cancelText="Cancel"
+        variant="danger"
+        isLoading={clearAllNotificationsMutation.isPending}
+      />
     </>
   );
 }

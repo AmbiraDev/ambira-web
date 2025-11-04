@@ -50,7 +50,9 @@ const typesDir = path.join(featureDir, 'types');
 
 // Check if feature already exists
 if (fs.existsSync(featureDir)) {
-  console.error(`❌ Error: Feature '${kebabCase}' already exists at ${featureDir}`);
+  console.error(
+    `❌ Error: Feature '${kebabCase}' already exists at ${featureDir}`
+  );
   process.exit(1);
 }
 
@@ -361,13 +363,22 @@ export interface ${PascalCase}Stats {
 // Write files
 console.log('📝 Writing files...');
 
-fs.writeFileSync(path.join(servicesDir, `${PascalCase}Service.ts`), serviceTemplate);
+fs.writeFileSync(
+  path.join(servicesDir, `${PascalCase}Service.ts`),
+  serviceTemplate
+);
 console.log(`  ✅ Created ${PascalCase}Service.ts`);
 
-fs.writeFileSync(path.join(hooksDir, `use${PascalCase}.ts`), queryHooksTemplate);
+fs.writeFileSync(
+  path.join(hooksDir, `use${PascalCase}.ts`),
+  queryHooksTemplate
+);
 console.log(`  ✅ Created use${PascalCase}.ts`);
 
-fs.writeFileSync(path.join(hooksDir, `use${PascalCase}Mutations.ts`), mutationHooksTemplate);
+fs.writeFileSync(
+  path.join(hooksDir, `use${PascalCase}Mutations.ts`),
+  mutationHooksTemplate
+);
 console.log(`  ✅ Created use${PascalCase}Mutations.ts`);
 
 fs.writeFileSync(path.join(hooksDir, 'index.ts'), indexTemplate);
@@ -422,10 +433,14 @@ console.log(`  ✅ Created README.md`);
 console.log('\n✨ Feature scaffolded successfully!\n');
 console.log('📍 Location:', featureDir);
 console.log('\n📋 Next steps:');
-console.log(`  1. Create ${PascalCase}Repository in src/infrastructure/firebase/repositories/`);
+console.log(
+  `  1. Create ${PascalCase}Repository in src/infrastructure/firebase/repositories/`
+);
 console.log(`  2. Create ${PascalCase} entity in src/domain/entities/`);
 console.log(`  3. Implement the service methods in ${PascalCase}Service.ts`);
-console.log(`  4. Customize the hooks in use${PascalCase}.ts and use${PascalCase}Mutations.ts`);
+console.log(
+  `  4. Customize the hooks in use${PascalCase}.ts and use${PascalCase}Mutations.ts`
+);
 console.log(`  5. Add tests for your service and hooks`);
 console.log(`  6. Update components to use the new hooks`);
 console.log('\n📖 See docs/architecture/EXAMPLES.md for complete examples');

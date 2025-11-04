@@ -60,7 +60,9 @@ export default function TimerStatus({ pathname }: TimerStatusProps) {
 
   // Show active session indicator
   if (hasActiveSession) {
-    const displayText = isOnTimerPage(pathname) ? 'Active' : headerTimer || 'Active';
+    const displayText = isOnTimerPage(pathname)
+      ? 'Active'
+      : headerTimer || 'Active';
 
     return (
       <Link

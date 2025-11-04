@@ -1,51 +1,55 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-<head>
+  <head>
     <title>Clear Service Worker Cache</title>
-</head>
-<body>
+  </head>
+  <body>
     <h1>Clearing Service Worker Cache...</h1>
     <div id="status">Please wait...</div>
 
     <script>
-        async function clearCache() {
-            const statusDiv = document.getElementById('status');
+      async function clearCache() {
+        const statusDiv = document.getElementById('status');
 
-            try {
-                // Unregister all service workers
-                if ('serviceWorker' in navigator) {
-                    const registrations = await navigator.serviceWorker.getRegistrations();
-                    for (let registration of registrations) {
-                        await registration.unregister();
-                        console.log('Service worker unregistered:', registration);
-                    }
-                    statusDiv.innerHTML += '<br>✓ Service workers unregistered';
-                }
-
-                // Clear all caches
-                if ('caches' in window) {
-                    const cacheNames = await caches.keys();
-                    for (let cacheName of cacheNames) {
-                        await caches.delete(cacheName);
-                        console.log('Cache deleted:', cacheName);
-                    }
-                    statusDiv.innerHTML += '<br>✓ All caches cleared';
-                }
-
-                // Clear localStorage and sessionStorage
-                localStorage.clear();
-                sessionStorage.clear();
-                statusDiv.innerHTML += '<br>✓ Local storage cleared';
-
-                statusDiv.innerHTML += '<br><br><strong style="color: green;">✓ ALL DONE! Please close this tab and hard refresh your main app (Cmd+Shift+R or Ctrl+Shift+R)</strong>';
-
-            } catch (error) {
-                statusDiv.innerHTML += '<br><strong style="color: red;">Error: ' + error.message + '</strong>';
-                console.error('Error clearing cache:', error);
+        try {
+          // Unregister all service workers
+          if ('serviceWorker' in navigator) {
+            const registrations =
+              await navigator.serviceWorker.getRegistrations();
+            for (let registration of registrations) {
+              await registration.unregister();
+              console.log('Service worker unregistered:', registration);
             }
-        }
+            statusDiv.innerHTML += '<br>✓ Service workers unregistered';
+          }
 
-        clearCache();
+          // Clear all caches
+          if ('caches' in window) {
+            const cacheNames = await caches.keys();
+            for (let cacheName of cacheNames) {
+              await caches.delete(cacheName);
+              console.log('Cache deleted:', cacheName);
+            }
+            statusDiv.innerHTML += '<br>✓ All caches cleared';
+          }
+
+          // Clear localStorage and sessionStorage
+          localStorage.clear();
+          sessionStorage.clear();
+          statusDiv.innerHTML += '<br>✓ Local storage cleared';
+
+          statusDiv.innerHTML +=
+            '<br><br><strong style="color: green;">✓ ALL DONE! Please close this tab and hard refresh your main app (Cmd+Shift+R or Ctrl+Shift+R)</strong>';
+        } catch (error) {
+          statusDiv.innerHTML +=
+            '<br><strong style="color: red;">Error: ' +
+            error.message +
+            '</strong>';
+          console.error('Error clearing cache:', error);
+        }
+      }
+
+      clearCache();
     </script>
-</body>
+  </body>
 </html>

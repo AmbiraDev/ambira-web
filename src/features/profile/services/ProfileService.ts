@@ -10,7 +10,12 @@ import { Session } from '@/domain/entities/Session';
 import { UserRepository } from '@/infrastructure/firebase/repositories/UserRepository';
 import { SessionRepository } from '@/infrastructure/firebase/repositories/SessionRepository';
 import { SocialGraphRepository } from '@/infrastructure/firebase/repositories/SocialGraphRepository';
-import { ProfileStatsCalculator, TimePeriod, ChartDataPoint, ProfileStats } from '../domain/ProfileStatsCalculator';
+import {
+  ProfileStatsCalculator,
+  TimePeriod,
+  ChartDataPoint,
+  ProfileStats,
+} from '../domain/ProfileStatsCalculator';
 
 export class ProfileService {
   private readonly userRepo: UserRepository;
@@ -42,7 +47,10 @@ export class ProfileService {
   /**
    * Get user's sessions
    */
-  async getUserSessions(userId: string, limit: number = 50): Promise<Session[]> {
+  async getUserSessions(
+    userId: string,
+    limit: number = 50
+  ): Promise<Session[]> {
     return this.sessionRepo.findByUserId(userId, limit);
   }
 
@@ -58,7 +66,10 @@ export class ProfileService {
     const sessions = await this.sessionRepo.findByUserId(userId, 1000);
 
     // Filter by activity if specified
-    const filteredSessions = this.statsCalc.filterSessionsByActivity(sessions, activityId);
+    const filteredSessions = this.statsCalc.filterSessionsByActivity(
+      sessions,
+      activityId
+    );
 
     // Calculate chart data
     return this.statsCalc.calculateChartData(filteredSessions, period);
@@ -89,7 +100,10 @@ export class ProfileService {
   /**
    * Check if current user follows target user
    */
-  async isFollowing(currentUserId: string, targetUserId: string): Promise<boolean> {
+  async isFollowing(
+    currentUserId: string,
+    targetUserId: string
+  ): Promise<boolean> {
     return this.socialGraphRepo.isFollowing(currentUserId, targetUserId);
   }
 
@@ -103,7 +117,10 @@ export class ProfileService {
     }
 
     // Check if already following
-    const isAlreadyFollowing = await this.socialGraphRepo.isFollowing(currentUserId, targetUserId);
+    const isAlreadyFollowing = await this.socialGraphRepo.isFollowing(
+      currentUserId,
+      targetUserId
+    );
     if (isAlreadyFollowing) {
       throw new Error('Already following this user');
     }
@@ -111,33 +128,46 @@ export class ProfileService {
     // Note: The actual follow operation would need a FollowRepository
     // For now, this is a placeholder showing the structure
     // In reality, you'd create a Follow entity and use a FollowRepository
-    throw new Error('Follow operation not yet implemented in clean architecture');
+    throw new Error(
+      'Follow operation not yet implemented in clean architecture'
+    );
   }
 
   /**
    * Unfollow a user
    */
-  async unfollowUser(currentUserId: string, targetUserId: string): Promise<void> {
+  async unfollowUser(
+    currentUserId: string,
+    targetUserId: string
+  ): Promise<void> {
     // Business rule: Can't unfollow yourself
     if (currentUserId === targetUserId) {
       throw new Error('Cannot unfollow yourself');
     }
 
     // Check if actually following
-    const isFollowing = await this.socialGraphRepo.isFollowing(currentUserId, targetUserId);
+    const isFollowing = await this.socialGraphRepo.isFollowing(
+      currentUserId,
+      targetUserId
+    );
     if (!isFollowing) {
       throw new Error('Not following this user');
     }
 
     // Note: The actual unfollow operation would need a FollowRepository
     // For now, this is a placeholder showing the structure
-    throw new Error('Unfollow operation not yet implemented in clean architecture');
+    throw new Error(
+      'Unfollow operation not yet implemented in clean architecture'
+    );
   }
 
   /**
    * Check if profile is visible to viewer
    */
-  async canViewProfile(profileUser: User, viewerId: string | null): Promise<boolean> {
+  async canViewProfile(
+    profileUser: User,
+    viewerId: string | null
+  ): Promise<boolean> {
     // Own profile is always visible
     if (viewerId === profileUser.id) {
       return true;
@@ -163,7 +193,10 @@ export class ProfileService {
   /**
    * Get top activities for a user
    */
-  async getTopActivities(userId: string, limit: number = 5): Promise<Array<{ id: string; hours: number; sessions: number }>> {
+  async getTopActivities(
+    userId: string,
+    limit: number = 5
+  ): Promise<Array<{ id: string; hours: number; sessions: number }>> {
     const sessions = await this.sessionRepo.findByUserId(userId, 1000);
     return this.statsCalc.getTopActivities(sessions, limit);
   }

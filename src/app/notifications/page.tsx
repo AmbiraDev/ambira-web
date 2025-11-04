@@ -22,11 +22,13 @@ import {
   useMarkNotificationRead,
   useMarkAllNotificationsRead,
   useDeleteNotification,
+  useClearAllNotifications,
 } from '@/hooks/useNotifications';
 import Header from '@/components/HeaderComponent';
 import BottomNavigation from '@/components/BottomNavigation';
 import { Notification } from '@/types';
 import { formatDistanceToNow } from 'date-fns';
+import ConfirmDialog from '@/components/ConfirmDialog';
 
 // Swipeable notification item component
 function SwipeableNotificationItem({
@@ -218,6 +220,8 @@ export default function NotificationsPage() {
   const markAsReadMutation = useMarkNotificationRead();
   const markAllAsReadMutation = useMarkAllNotificationsRead();
   const deleteNotificationMutation = useDeleteNotification();
+  const clearAllNotificationsMutation = useClearAllNotifications();
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
 
   const handleNotificationClick = (notification: Notification) => {
     // Mark as read
@@ -237,6 +241,19 @@ export default function NotificationsPage() {
 
   const handleMarkAllRead = () => {
     markAllAsReadMutation.mutate();
+  };
+
+  const handleClearAllClick = () => {
+    setShowClearConfirm(true);
+  };
+
+  const handleClearAllConfirm = () => {
+    clearAllNotificationsMutation.mutate();
+    setShowClearConfirm(false);
+  };
+
+  const handleClearAllCancel = () => {
+    setShowClearConfirm(false);
   };
 
   if (!user) {
@@ -275,14 +292,44 @@ export default function NotificationsPage() {
         <div className="w-full max-w-2xl px-4">
           <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
             <div className="p-6 border-b border-gray-200">
-              <h1 className="text-2xl font-bold text-gray-900">
-                Notifications
-              </h1>
-              <p className="text-sm text-gray-600 mt-1">
-                {unreadCount > 0
-                  ? `${unreadCount} unread notification${unreadCount !== 1 ? 's' : ''}`
-                  : 'All caught up!'}
-              </p>
+              <div className="flex items-start justify-between">
+                <div>
+                  <h1 className="text-2xl font-bold text-gray-900">
+                    Notifications
+                  </h1>
+                  <p className="text-sm text-gray-600 mt-1">
+                    {unreadCount > 0
+                      ? `${unreadCount} unread notification${unreadCount !== 1 ? 's' : ''}`
+                      : 'All caught up!'}
+                  </p>
+                </div>
+                {notifications.length > 0 && (
+                  <div className="flex items-center gap-2">
+                    {unreadCount > 0 && (
+                      <button
+                        onClick={handleMarkAllRead}
+                        disabled={markAllAsReadMutation.isPending}
+                        className="px-4 py-2 text-sm font-semibold text-[#0066CC] hover:text-[#0051D5] hover:bg-blue-50 rounded-lg transition-colors disabled:opacity-50"
+                        data-testid="mark-all-read-button-desktop"
+                        aria-label="Mark all notifications as read"
+                        aria-busy={markAllAsReadMutation.isPending}
+                      >
+                        Mark all read
+                      </button>
+                    )}
+                    <button
+                      onClick={handleClearAllClick}
+                      disabled={clearAllNotificationsMutation.isPending}
+                      className="px-4 py-2 text-sm font-semibold text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+                      data-testid="clear-all-button-desktop"
+                      aria-label="Clear all notifications"
+                      aria-busy={clearAllNotificationsMutation.isPending}
+                    >
+                      Clear all
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Desktop notifications list */}
@@ -315,14 +362,30 @@ export default function NotificationsPage() {
           <span className="text-sm text-gray-600">
             {unreadCount > 0 ? `${unreadCount} unread` : 'All caught up!'}
           </span>
-          {unreadCount > 0 && (
+          <div className="flex items-center gap-3">
+            {unreadCount > 0 && (
+              <button
+                onClick={handleMarkAllRead}
+                disabled={markAllAsReadMutation.isPending}
+                className="text-[#0066CC] font-semibold text-sm hover:text-[#0051D5] transition-colors disabled:opacity-50"
+                data-testid="mark-all-read-button-mobile"
+                aria-label="Mark all notifications as read"
+                aria-busy={markAllAsReadMutation.isPending}
+              >
+                Mark all read
+              </button>
+            )}
             <button
-              onClick={handleMarkAllRead}
-              className="text-[#0066CC] font-semibold text-sm hover:text-[#0051D5] transition-colors"
+              onClick={handleClearAllClick}
+              disabled={clearAllNotificationsMutation.isPending}
+              className="text-red-600 font-semibold text-sm hover:text-red-700 transition-colors disabled:opacity-50"
+              data-testid="clear-all-button-mobile"
+              aria-label="Clear all notifications"
+              aria-busy={clearAllNotificationsMutation.isPending}
             >
-              Mark all read
+              Clear all
             </button>
-          )}
+          </div>
         </div>
       )}
 
@@ -358,6 +421,19 @@ export default function NotificationsPage() {
       <div className="h-20 md:hidden" />
 
       <BottomNavigation />
+
+      {/* Clear All Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={showClearConfirm}
+        onClose={handleClearAllCancel}
+        onConfirm={handleClearAllConfirm}
+        title="Clear All Notifications"
+        message="Are you sure you want to delete all notifications? This action cannot be undone."
+        confirmText="Clear All"
+        cancelText="Cancel"
+        variant="danger"
+        isLoading={clearAllNotificationsMutation.isPending}
+      />
     </div>
   );
 }

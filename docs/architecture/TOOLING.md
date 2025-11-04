@@ -40,28 +40,33 @@ src/features/sessions/
 #### What Gets Generated
 
 **SessionsService.ts**:
+
 - Complete service class structure
 - CRUD operation methods
 - Type definitions for create/update operations
 - JSDoc comments
 
 **useSessions.ts**:
+
 - Cache key factory with hierarchical structure
 - Query hooks for common operations (getById, getByUser, etc.)
 - Proper TypeScript types
 - JSDoc examples
 
 **useSessionsMutations.ts**:
+
 - Create, update, delete mutation hooks
 - Optimistic update implementations
 - Proper cache invalidation
 - Invalidation helper hooks
 
 **index.ts**:
+
 - Clean public API
 - Organized exports for queries and mutations
 
 **types file**:
+
 - Placeholder for feature-specific types
 - Example interfaces
 
@@ -84,15 +89,15 @@ Pre-configured code snippets for common patterns.
 
 #### Available Snippets
 
-| Prefix | Description |
-|--------|-------------|
-| `rq-query` | Feature query hook |
-| `rq-mutation` | Feature mutation hook with optimistic updates |
-| `rq-keys` | Hierarchical cache keys |
-| `rq-service` | Feature service class |
-| `rq-hooks-index` | Hooks index file |
-| `rq-infinite` | Infinite query hook for pagination |
-| `rq-component` | Component using feature hooks |
+| Prefix           | Description                                   |
+| ---------------- | --------------------------------------------- |
+| `rq-query`       | Feature query hook                            |
+| `rq-mutation`    | Feature mutation hook with optimistic updates |
+| `rq-keys`        | Hierarchical cache keys                       |
+| `rq-service`     | Feature service class                         |
+| `rq-hooks-index` | Hooks index file                              |
+| `rq-infinite`    | Infinite query hook for pagination            |
+| `rq-component`   | Component using feature hooks                 |
 
 #### Usage Example
 
@@ -179,6 +184,7 @@ export function useGroupDetails(
 ```
 
 Available types:
+
 - `QueryOptions<TData>` - Standard query options
 - `MutationOptions<TData, TVariables>` - Standard mutation options
 - `CacheKeyFactory` - Cache key factory pattern
@@ -196,6 +202,7 @@ staleTime: STANDARD_CACHE_TIMES.LONG, // 15 minutes
 ```
 
 Available constants:
+
 - `REAL_TIME` - 30 seconds
 - `SHORT` - 1 minute
 - `MEDIUM` - 5 minutes
@@ -206,6 +213,7 @@ Available constants:
 #### Helper Functions (`helpers.ts`)
 
 **createCacheKeyFactory**:
+
 ```typescript
 import { createCacheKeyFactory } from '@/lib/react-query';
 
@@ -225,6 +233,7 @@ export const GROUPS_KEYS = createCacheKeyFactory('groups', {
 ```
 
 **createOptimisticUpdate**:
+
 ```typescript
 import { createOptimisticUpdate } from '@/lib/react-query';
 
@@ -232,7 +241,8 @@ export function useJoinGroup() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ groupId, userId }) => groupService.joinGroup(groupId, userId),
+    mutationFn: ({ groupId, userId }) =>
+      groupService.joinGroup(groupId, userId),
     ...createOptimisticUpdate(
       queryClient,
       ({ groupId }) => GROUPS_KEYS.detail(groupId),
@@ -246,6 +256,7 @@ export function useJoinGroup() {
 ```
 
 **batchInvalidate**:
+
 ```typescript
 import { batchInvalidate } from '@/lib/react-query';
 
@@ -255,10 +266,11 @@ onSuccess: (_, variables) => {
     GROUPS_KEYS.userGroups(variables.userId),
     FEED_KEYS.all(),
   ]);
-}
+};
 ```
 
 **prefetchQuery**:
+
 ```typescript
 import { prefetchQuery } from '@/lib/react-query';
 
@@ -277,6 +289,7 @@ export function usePrefetchGroup() {
 ```
 
 Other helpers:
+
 - `createInvalidator` - Create invalidation helper
 - `isCached` - Check if data is cached and fresh
 - `getCachedData` - Get cached data without triggering fetch
@@ -302,6 +315,7 @@ module.exports = {
 #### What It Enforces
 
 **1. No Direct firebaseApi in Components**:
+
 ```typescript
 // ❌ Will fail linting
 import { firebaseApi } from '@/lib/firebaseApi';
@@ -321,6 +335,7 @@ function MyComponent({ id }) {
 ```
 
 **2. No React Query in Components**:
+
 ```typescript
 // ❌ Will fail linting in components
 import { useQuery } from '@tanstack/react-query';
@@ -340,6 +355,7 @@ function MyComponent({ id }) {
 ```
 
 **3. No React in Services**:
+
 ```typescript
 // ❌ Will fail linting in services
 import { useState } from 'react';
@@ -350,6 +366,7 @@ export class GroupService {
 ```
 
 **4. Deprecation Warnings**:
+
 ```typescript
 // ⚠️ Will warn
 import { useGroup } from '@/hooks/useCache';
@@ -361,6 +378,7 @@ import { useGroup } from '@/hooks/useCache';
 #### Excluded Files
 
 The rules are smart and don't apply to:
+
 - Feature hooks (`src/features/*/hooks/**`)
 - React Query utilities (`src/lib/react-query/**`)
 - Layout files that need QueryClientProvider
@@ -370,11 +388,13 @@ The rules are smart and don't apply to:
 ### Creating a New Feature
 
 1. **Scaffold the feature**:
+
    ```bash
    npm run create-feature sessions
    ```
 
 2. **Create the repository** (data access layer):
+
    ```typescript
    // src/infrastructure/firebase/repositories/SessionRepository.ts
    export class SessionRepository {
@@ -385,14 +405,16 @@ The rules are smart and don't apply to:
    ```
 
 3. **Create the entity** (domain model):
+
    ```typescript
    // src/domain/entities/Session.ts
    export class Session {
-     constructor(public readonly id: string, /* ... */) {}
+     constructor(public readonly id: string /* ... */) {}
    }
    ```
 
 4. **Implement service methods** (business logic):
+
    ```typescript
    // src/features/sessions/services/SessionService.ts
    async getSession(id: string): Promise<Session | null> {
@@ -407,6 +429,7 @@ The rules are smart and don't apply to:
    - Implement specific optimistic updates
 
 6. **Update components**:
+
    ```typescript
    import { useSession } from '@/features/sessions/hooks';
 
@@ -423,6 +446,7 @@ The rules are smart and don't apply to:
    - Fill in placeholders
 
 2. **Export from index**:
+
    ```typescript
    // src/features/sessions/hooks/index.ts
    export { useNewHook } from './useSessions';
@@ -514,6 +538,7 @@ npm run create-feature my-new-feature
 ### 2. Use Snippets for Individual Hooks
 
 When adding to an existing feature, use the snippets:
+
 - `rq-query` for queries
 - `rq-mutation` for mutations
 
@@ -550,9 +575,9 @@ import { createOptimisticUpdate } from '@/lib/react-query';
 const optimistic = createOptimisticUpdate(/* ... */);
 
 // ❌ Bad
-onMutate: async (variables) => {
+onMutate: async variables => {
   // 30 lines of boilerplate...
-}
+};
 ```
 
 ## Troubleshooting
@@ -562,6 +587,7 @@ onMutate: async (variables) => {
 **Problem**: `npm run create-feature` doesn't work
 
 **Solution**: Ensure the script is executable:
+
 ```bash
 chmod +x scripts/create-feature.js
 ```
@@ -569,6 +595,7 @@ chmod +x scripts/create-feature.js
 **Problem**: Feature already exists error
 
 **Solution**: The feature directory already exists. Either:
+
 - Delete the existing directory
 - Use a different name
 - Manually update the existing feature
@@ -578,6 +605,7 @@ chmod +x scripts/create-feature.js
 **Problem**: Snippets don't appear
 
 **Solution**:
+
 1. Ensure VSCode is using the workspace
 2. Reload VSCode window
 3. Check `.vscode/react-query-feature.code-snippets` exists

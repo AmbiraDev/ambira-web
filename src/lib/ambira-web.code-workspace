@@ -1,9 +1,9 @@
 {
-	"folders": [
-		{
-			"name": "ambira-web",
-			"path": "../.."
-		}
-	],
-	"settings": {}
+  "folders": [
+    {
+      "name": "ambira-web",
+      "path": "../..",
+    },
+  ],
+  "settings": {},
 }
