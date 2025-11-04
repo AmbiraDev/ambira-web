@@ -21,7 +21,6 @@ import {
   Activity,
   FolderKanban,
 } from 'lucide-react';
-import { toast } from 'sonner';
 
 interface PrivacySettingsProps {
   onClose?: () => void;
@@ -55,7 +54,6 @@ export const PrivacySettings: React.FC<PrivacySettingsProps> = ({
       setSettings(settings);
     } catch (_error) {
       console.error('Failed to load privacy settings');
-      toast.error('Failed to load privacy settings');
     } finally {
       setIsLoading(false);
     }
@@ -72,10 +70,8 @@ export const PrivacySettings: React.FC<PrivacySettingsProps> = ({
     try {
       setIsSaving(true);
       await firebaseUserApi.updatePrivacySettings(settings);
-      toast.success('Privacy settings updated successfully');
     } catch (_error) {
       console.error('Failed to save privacy settings');
-      toast.error('Failed to save privacy settings');
     } finally {
       setIsSaving(false);
     }
@@ -90,10 +86,8 @@ export const PrivacySettings: React.FC<PrivacySettingsProps> = ({
         ...prev,
         blockedUsers: prev.blockedUsers.filter(id => id !== userId),
       }));
-      toast.success('User unblocked successfully');
     } catch (_error) {
       console.error('Failed to unblock user');
-      toast.error('Failed to unblock user');
     }
   };
 

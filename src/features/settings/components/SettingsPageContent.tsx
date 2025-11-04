@@ -28,7 +28,6 @@ import {
 import { useAuth } from '@/hooks/useAuth';
 import Image from 'next/image';
 import { firebaseUserApi } from '@/lib/api';
-import { toast } from 'sonner';
 import ConfirmDialog from '@/components/ConfirmDialog';
 
 type SettingsTab = 'profile' | 'privacy' | 'notifications' | 'display';
@@ -123,16 +122,12 @@ export function SettingsPageContent() {
     // Validate file type
     const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
     if (!validTypes.includes(file.type)) {
-      toast.error(
-        'Invalid file type. Please upload a JPEG, PNG, GIF, or WebP image.'
-      );
       return;
     }
 
     // Validate file size (5MB max)
     const maxSize = 5 * 1024 * 1024;
     if (file.size > maxSize) {
-      toast.error('File size too large. Maximum size is 5MB.');
       return;
     }
 
@@ -148,12 +143,11 @@ export function SettingsPageContent() {
       });
 
       setProfilePictureUrl(downloadURL);
-      toast.success('Profile picture updated!');
     } catch (err: unknown) {
       console.error('Upload error:', err);
       const errorMessage =
         err instanceof Error ? err.message : 'Failed to upload photo';
-      toast.error(errorMessage);
+      console.error(errorMessage);
     } finally {
       setIsUploadingPhoto(false);
     }
@@ -185,7 +179,6 @@ export function SettingsPageContent() {
           Object.keys(socialLinks).length > 0 ? socialLinks : undefined,
         profileVisibility: formData.profileVisibility,
       });
-      toast.success('Profile updated successfully!');
       setSaved(true);
 
       // Reload the page after a short delay to refresh the user context
@@ -195,7 +188,7 @@ export function SettingsPageContent() {
     } catch (err: unknown) {
       const errorMessage =
         err instanceof Error ? err.message : 'Failed to update profile';
-      toast.error(errorMessage);
+      console.error(errorMessage);
       setIsSaving(false);
     }
   };
@@ -206,7 +199,6 @@ export function SettingsPageContent() {
       await firebaseUserApi.updateProfile({
         profileVisibility: formData.profileVisibility,
       });
-      toast.success('Privacy settings updated successfully!');
       setSaved(true);
 
       // Reload the page after a short delay
@@ -218,7 +210,7 @@ export function SettingsPageContent() {
         err instanceof Error
           ? err.message
           : 'Failed to update privacy settings';
-      toast.error(errorMessage);
+      console.error(errorMessage);
       setIsSaving(false);
     }
   };
@@ -226,11 +218,10 @@ export function SettingsPageContent() {
   const handleLogout = async () => {
     try {
       await logout();
-      toast.success('Logged out successfully');
     } catch (err: unknown) {
       const errorMessage =
         err instanceof Error ? err.message : 'Failed to log out';
-      toast.error(errorMessage);
+      console.error(errorMessage);
     }
   };
 
@@ -241,13 +232,12 @@ export function SettingsPageContent() {
       setIsDeleting(true);
       // We'll implement the actual API call next
       await firebaseUserApi.deleteAccount();
-      toast.success('Account deleted successfully');
       // The logout will happen automatically as part of deleteAccount
     } catch (err: unknown) {
       console.error('Delete account error:', err);
       const errorMessage =
         err instanceof Error ? err.message : 'Failed to delete account';
-      toast.error(errorMessage);
+      console.error(errorMessage);
       setIsDeleting(false);
       setShowDeleteConfirm(false);
     }

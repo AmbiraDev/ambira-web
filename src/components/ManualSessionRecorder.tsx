@@ -6,7 +6,6 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Project, CreateSessionData } from '@/types';
 import { firebaseApi } from '@/lib/api';
 import { useAuth } from '@/hooks/useAuth';
-import { toast } from 'sonner';
 import { Image as ImageIcon, X } from 'lucide-react';
 import Image from 'next/image';
 import { uploadImages } from '@/lib/imageUpload';
@@ -331,14 +330,10 @@ export default function ManualSessionRecorder() {
         queryClient.invalidateQueries({ queryKey: ['sessions', 'feed'] });
       }
 
-      // Show success message
-      toast.success('Session created successfully!');
-
       // Redirect to home feed
       router.push('/');
     } catch (_error) {
       debug.error('ManualSessionRecorder - Failed to create manual session');
-      toast.error('Failed to create session. Please try again.');
       setErrors({ submit: 'Failed to create session. Please try again.' });
     } finally {
       setIsLoading(false);
