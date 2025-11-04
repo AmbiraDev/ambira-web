@@ -65,16 +65,18 @@ export interface UseTimerReturn {
  * Main timer hook that combines server state from React Query with client-side state
  * Provides a unified interface matching the old TimerContext API for easier migration
  */
-export function useTimer(): UseTimerReturn {
+export function useTimer(options?: { pausePolling?: boolean }): UseTimerReturn {
   const { user } = useAuth();
+  const pausePolling = options?.pausePolling ?? false;
 
   // Server state - React Query
+  // Disable polling when pausePolling is true (e.g., when on finish modal)
   const {
     data: activeSession,
     isLoading,
     error,
     refetch: refetchActiveSession,
-  } = useActiveTimerQuery();
+  } = useActiveTimerQuery({ enabled: !pausePolling });
 
   // Get projects to find the current project
   const { data: projects = [] } = useActivities(user?.id);

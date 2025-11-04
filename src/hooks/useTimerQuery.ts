@@ -15,9 +15,10 @@ import { CACHE_KEYS, CACHE_TIMES } from '@/lib/queryClient';
  * Hook to fetch the active session from Firebase
  * Returns the persisted active session if one exists
  */
-export function useActiveTimerQuery() {
+export function useActiveTimerQuery(options?: { enabled?: boolean }) {
   const { user, isAuthenticated } = useAuth();
   const userId = user?.id;
+  const enabled = options?.enabled ?? true;
 
   return useQuery({
     queryKey: [...CACHE_KEYS.ACTIVE_SESSION(userId || 'none'), userId, user],
@@ -40,10 +41,10 @@ export function useActiveTimerQuery() {
 
       return activeSession;
     },
-    enabled: isAuthenticated && !!user,
+    enabled: isAuthenticated && !!user && enabled,
     staleTime: CACHE_TIMES.REAL_TIME, // 30 seconds - frequently check for updates
     refetchOnWindowFocus: true, // Refetch when window regains focus
-    refetchInterval: 10000, // Check every 10 seconds if session still exists
+    refetchInterval: enabled ? 10000 : false, // Check every 10 seconds if session still exists, but stop when disabled
   });
 }
 
