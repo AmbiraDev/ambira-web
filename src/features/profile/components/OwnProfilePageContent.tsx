@@ -44,11 +44,17 @@ import {
 } from 'recharts';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { ActivityList } from '@/components/ActivityList';
+import Feed from '@/components/Feed';
 import { Activity } from '@/types';
 import { FollowersList } from '@/features/social/components/FollowersList';
 import { FollowingList } from '@/features/social/components/FollowingList';
 
-type ProfileTab = 'progress' | 'followers' | 'following' | 'activities';
+type ProfileTab =
+  | 'progress'
+  | 'sessions'
+  | 'followers'
+  | 'following'
+  | 'activities';
 type TimePeriod = '7D' | '2W' | '4W' | '3M' | '1Y';
 type ChartType = 'bar' | 'line';
 
@@ -66,13 +72,15 @@ export function OwnProfilePageContent() {
   const tabParam = searchParams?.get('tab') as ProfileTab | null;
 
   const [activeTab, setActiveTab] = useState<ProfileTab>(
-    tabParam === 'followers'
-      ? 'followers'
-      : tabParam === 'following'
-        ? 'following'
-        : tabParam === 'activities'
-          ? 'activities'
-          : 'progress'
+    tabParam === 'sessions'
+      ? 'sessions'
+      : tabParam === 'followers'
+        ? 'followers'
+        : tabParam === 'following'
+          ? 'following'
+          : tabParam === 'activities'
+            ? 'activities'
+            : 'progress'
   );
   const [timePeriod, setTimePeriod] = useState<TimePeriod>('7D');
   const [showSettingsMenu, setShowSettingsMenu] = useState(false);
@@ -113,6 +121,7 @@ export function OwnProfilePageContent() {
   useEffect(() => {
     if (
       tabParam === 'progress' ||
+      tabParam === 'sessions' ||
       tabParam === 'followers' ||
       tabParam === 'following' ||
       tabParam === 'activities'
@@ -691,6 +700,23 @@ export function OwnProfilePageContent() {
                     >
                       Progress
                     </button>
+                    <button
+                      onClick={() => {
+                        setActiveTab('sessions');
+                        router.push('/profile?tab=sessions');
+                      }}
+                      className={`flex-1 md:flex-initial py-3 md:py-4 px-1 text-sm md:text-base font-medium border-b-2 transition-colors whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:ring-offset-2 ${
+                        activeTab === 'sessions'
+                          ? 'border-[#0066CC] text-[#0066CC]'
+                          : 'border-transparent text-gray-500 md:text-gray-600 hover:text-gray-700 md:hover:text-gray-900'
+                      }`}
+                      role="tab"
+                      aria-selected={activeTab === 'sessions'}
+                      aria-controls="sessions-panel"
+                      id="sessions-tab"
+                    >
+                      Sessions
+                    </button>
                     {/* Activities tab - Desktop only */}
                     <button
                       onClick={() => {
@@ -750,7 +776,12 @@ export function OwnProfilePageContent() {
               {/* Tab Content */}
               <div className="mt-6">
                 {activeTab === 'progress' && (
-                  <div className="max-w-4xl mx-auto space-y-4 md:space-y-6">
+                  <div
+                    className="max-w-4xl mx-auto space-y-4 md:space-y-6"
+                    id="progress-panel"
+                    role="tabpanel"
+                    aria-labelledby="progress-tab"
+                  >
                     {/* Header with Time Period Selector and Chart Type */}
                     <div className="flex items-center justify-between gap-2 py-2 -mx-4 px-4 md:mx-0 md:px-0">
                       {/* Activity Filter Dropdown */}
@@ -1306,20 +1337,47 @@ export function OwnProfilePageContent() {
                   </div>
                 )}
 
+                {activeTab === 'sessions' && (
+                  <div
+                    className="max-w-4xl mx-auto"
+                    id="sessions-panel"
+                    role="tabpanel"
+                    aria-labelledby="sessions-tab"
+                  >
+                    <Feed
+                      filters={{ type: 'user', userId: user.id }}
+                      showEndMessage={true}
+                    />
+                  </div>
+                )}
+
                 {activeTab === 'followers' && (
-                  <div>
+                  <div
+                    id="followers-panel"
+                    role="tabpanel"
+                    aria-labelledby="followers-tab"
+                  >
                     <FollowersList userId={user.id} />
                   </div>
                 )}
 
                 {activeTab === 'following' && (
-                  <div>
+                  <div
+                    id="following-panel"
+                    role="tabpanel"
+                    aria-labelledby="following-tab"
+                  >
                     <FollowingList userId={user.id} />
                   </div>
                 )}
 
                 {activeTab === 'activities' && (
-                  <div className="max-w-4xl mx-auto">
+                  <div
+                    className="max-w-4xl mx-auto"
+                    id="activities-panel"
+                    role="tabpanel"
+                    aria-labelledby="activities-tab"
+                  >
                     <ActivityList onEditActivity={handleEditActivity} />
                   </div>
                 )}
