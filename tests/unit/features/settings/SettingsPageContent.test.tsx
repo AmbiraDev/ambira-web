@@ -159,7 +159,7 @@ describe('SettingsPageContent Component', () => {
 
       const privacyButton = screen.getAllByRole('button', {
         name: /Privacy Controls settings/i,
-      })[0];
+      })[0]!;
       fireEvent.click(privacyButton);
 
       await waitFor(() => {
@@ -175,7 +175,7 @@ describe('SettingsPageContent Component', () => {
       // First navigate to privacy
       const privacyButton = screen.getAllByRole('button', {
         name: /Privacy Controls settings/i,
-      })[0];
+      })[0]!;
       fireEvent.click(privacyButton);
 
       await waitFor(() => {
@@ -187,7 +187,7 @@ describe('SettingsPageContent Component', () => {
       // Then navigate back to profile
       const profileButton = screen.getAllByRole('button', {
         name: /My Profile settings/i,
-      })[0];
+      })[0]!;
       fireEvent.click(profileButton);
 
       await waitFor(() => {
@@ -217,11 +217,11 @@ describe('SettingsPageContent Component', () => {
       expect(nameInputs.length).toBeGreaterThan(0);
 
       // Verify form inputs are present and editable
-      const nameInput = nameInputs.find(
-        el => el.tagName === 'INPUT'
-      ) as HTMLInputElement;
+      const nameInput = nameInputs.find(el => el.tagName === 'INPUT') as
+        | HTMLInputElement
+        | undefined;
       expect(nameInput).toBeDefined();
-      expect(nameInput?.hasAttribute('type')).toBe(true);
+      expect(nameInput!.hasAttribute('type')).toBe(true);
     });
 
     it('detects form changes and enables save button', async () => {
@@ -387,16 +387,16 @@ describe('SettingsPageContent Component', () => {
       renderWithQueryClient(<SettingsPageContent />);
 
       const nameInputs = screen.getAllByDisplayValue('John Doe');
-      const nameInput = nameInputs.find(
-        el => el.tagName === 'INPUT'
-      ) as HTMLInputElement;
-      await user.clear(nameInput);
-      await user.type(nameInput, 'Jane Doe');
+      const nameInput = nameInputs.find(el => el.tagName === 'INPUT') as
+        | HTMLInputElement
+        | undefined;
+      await user.clear(nameInput!);
+      await user.type(nameInput!, 'Jane Doe');
 
       const saveButtons = screen.getAllByRole('button', {
         name: /Save Changes/i,
       });
-      await user.click(saveButtons[0]);
+      await user.click(saveButtons[0]!);
 
       await waitFor(() => {
         expect(toast.success).toHaveBeenCalledWith(
@@ -414,16 +414,16 @@ describe('SettingsPageContent Component', () => {
       renderWithQueryClient(<SettingsPageContent />);
 
       const nameInputs = screen.getAllByDisplayValue('John Doe');
-      const nameInput = nameInputs.find(
-        el => el.tagName === 'INPUT'
-      ) as HTMLInputElement;
-      await user.clear(nameInput);
-      await user.type(nameInput, 'Jane Doe');
+      const nameInput = nameInputs.find(el => el.tagName === 'INPUT') as
+        | HTMLInputElement
+        | undefined;
+      await user.clear(nameInput!);
+      await user.type(nameInput!, 'Jane Doe');
 
       const saveButtons = screen.getAllByRole('button', {
         name: /Save Changes/i,
       });
-      await user.click(saveButtons[0]);
+      await user.click(saveButtons[0]!);
 
       await waitFor(() => {
         expect(toast.error).toHaveBeenCalledWith('Update failed');
@@ -455,7 +455,7 @@ describe('SettingsPageContent Component', () => {
 
       const privacyButton = screen.getAllByRole('button', {
         name: /Privacy Controls settings/i,
-      })[0];
+      })[0]!;
       fireEvent.click(privacyButton);
 
       await waitFor(() => {
@@ -475,7 +475,7 @@ describe('SettingsPageContent Component', () => {
       });
       expect(privacyButtons.length).toBeGreaterThan(0);
 
-      fireEvent.click(privacyButtons[0]);
+      fireEvent.click(privacyButtons[0]!);
 
       const visibilitySelects = screen.getAllByLabelText(/Profile Visibility/i);
       expect(visibilitySelects.length).toBeGreaterThan(0);
@@ -514,7 +514,7 @@ describe('SettingsPageContent Component', () => {
       renderWithQueryClient(<SettingsPageContent />);
 
       const logoutButtons = screen.getAllByText('Log Out');
-      await user.click(logoutButtons[0]);
+      await user.click(logoutButtons[0]!);
 
       expect(logout).toHaveBeenCalled();
       expect(toast.success).toHaveBeenCalledWith('Logged out successfully');
@@ -525,7 +525,7 @@ describe('SettingsPageContent Component', () => {
       renderWithQueryClient(<SettingsPageContent />);
 
       const deleteButtons = screen.getAllByText('Delete Account');
-      await user.click(deleteButtons[0]);
+      await user.click(deleteButtons[0]!);
 
       expect(screen.getByTestId('confirm-dialog')).toBeInTheDocument();
       expect(screen.getByText(/Are you absolutely sure/i)).toBeInTheDocument();
@@ -538,7 +538,7 @@ describe('SettingsPageContent Component', () => {
       renderWithQueryClient(<SettingsPageContent />);
 
       const deleteButtons = screen.getAllByText('Delete Account');
-      await user.click(deleteButtons[0]);
+      await user.click(deleteButtons[0]!);
 
       const confirmButton = screen.getByTestId('confirm-button');
       await user.click(confirmButton);
@@ -558,7 +558,7 @@ describe('SettingsPageContent Component', () => {
       renderWithQueryClient(<SettingsPageContent />);
 
       const deleteButtons = screen.getAllByText('Delete Account');
-      await user.click(deleteButtons[0]);
+      await user.click(deleteButtons[0]!);
 
       const cancelButton = screen.getByTestId('cancel-button');
       await user.click(cancelButton);
@@ -608,8 +608,8 @@ describe('SettingsPageContent Component', () => {
         input => input.disabled && input.classList.contains('bg-gray-50')
       );
       expect(usernameInput).toBeDefined();
-      expect(usernameInput?.disabled).toBe(true);
-      expect(usernameInput).toHaveClass('bg-gray-50');
+      expect(usernameInput!.disabled).toBe(true);
+      expect(usernameInput!).toHaveClass('bg-gray-50');
     });
   });
 });

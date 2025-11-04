@@ -488,8 +488,8 @@ test.describe('Settings Page', () => {
 
   test.describe('Navigation Integration', () => {
     test('should have breadcrumbs or title', async ({ page }) => {
-      const pageTitle = page.getByText('Settings').or(page.title());
-      await expect(pageTitle.first()).toBeTruthy();
+      const pageTitle = page.getByText('Settings');
+      await expect(pageTitle.first()).toBeVisible();
     });
 
     test('should have link to profile from settings', async ({ page }) => {
