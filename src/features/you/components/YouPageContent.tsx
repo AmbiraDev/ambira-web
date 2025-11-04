@@ -10,7 +10,6 @@
 import React, { useState, useMemo } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useRouter } from 'next/navigation';
-import MobileHeader from '@/components/MobileHeader';
 import BottomNavigation from '@/components/BottomNavigation';
 import Footer from '@/components/Footer';
 import Header from '@/components/HeaderComponent';
@@ -18,13 +17,7 @@ import { useUserSessions } from '@/features/sessions/hooks';
 import { useProfileStats } from '@/features/profile/hooks';
 import { useActivities } from '@/hooks/useActivitiesQuery';
 import { Feed } from '@/components/Feed';
-import {
-  Settings,
-  TrendingUp,
-  BarChart3,
-  Activity,
-  ChevronDown,
-} from 'lucide-react';
+import { Settings, BarChart3, ChevronDown } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import {
@@ -34,8 +27,6 @@ import {
   Tooltip,
   Area,
   ComposedChart,
-  BarChart,
-  Bar,
 } from 'recharts';
 
 type YouTab = 'progress' | 'sessions';
@@ -229,18 +220,18 @@ export function YouPageContent() {
           {/* Profile Icon */}
           <Link href="/profile" className="flex items-center gap-2">
             {user.profilePicture ? (
-              <div className="w-8 h-8 rounded-full overflow-hidden ring-2 ring-white">
+              <div className="w-10 h-10 rounded-full overflow-hidden ring-2 ring-gray-300">
                 <Image
                   src={user.profilePicture}
                   alt={user.name}
-                  width={32}
-                  height={32}
+                  width={40}
+                  height={40}
                   className="w-full h-full object-cover"
                 />
               </div>
             ) : (
-              <div className="w-8 h-8 bg-[#FC4C02] rounded-full flex items-center justify-center ring-2 ring-white">
-                <span className="text-white font-semibold text-sm">
+              <div className="w-10 h-10 bg-[#FC4C02] rounded-full flex items-center justify-center ring-2 ring-gray-300">
+                <span className="text-white font-semibold text-base">
                   {user.name?.charAt(0).toUpperCase()}
                 </span>
               </div>
@@ -256,7 +247,7 @@ export function YouPageContent() {
             className="p-2 text-gray-600 hover:text-[#0066CC] transition-colors"
             aria-label="Settings"
           >
-            <Settings className="w-5 h-5" />
+            <Settings className="w-6 h-6" />
           </Link>
         </div>
 
