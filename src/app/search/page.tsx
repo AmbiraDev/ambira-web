@@ -305,9 +305,7 @@ function SearchContent() {
               (window.location.href = `/search?q=${encodeURIComponent(initialQuery)}&type=people`)
             }
             className={`relative flex-1 py-4 px-4 text-base font-medium transition-colors ${
-              type === 'people'
-                ? 'text-[#0066CC]'
-                : 'text-gray-500'
+              type === 'people' ? 'text-[#0066CC]' : 'text-gray-500'
             }`}
           >
             People
@@ -321,9 +319,7 @@ function SearchContent() {
               (window.location.href = `/search?q=${encodeURIComponent(initialQuery)}&type=groups`)
             }
             className={`relative flex-1 py-4 px-4 text-base font-medium transition-colors ${
-              type === 'groups'
-                ? 'text-[#0066CC]'
-                : 'text-gray-500'
+              type === 'groups' ? 'text-[#0066CC]' : 'text-gray-500'
             }`}
           >
             Groups

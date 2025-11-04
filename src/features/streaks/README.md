@@ -8,7 +8,7 @@ Hooks and services for managing user streak data - tracking consecutive days of 
 import {
   useStreakData,
   useStreakStats,
-  useUpdateStreakVisibility
+  useUpdateStreakVisibility,
 } from '@/features/streaks/hooks';
 
 // Get user's streak data
@@ -26,13 +26,16 @@ updateVisibility.mutate({ userId, isPublic: true });
 ## Available Hooks
 
 ### Query Hooks
+
 - `useStreakData(userId)` - Get streak data (5 min cache)
 - `useStreakStats(userId)` - Get streak statistics (5 min cache)
 
 ### Mutation Hooks
+
 - `useUpdateStreakVisibility()` - Update public/private visibility setting
 
 ### Helper Hooks
+
 - `useInvalidateStreak()` - Invalidate streak data for a user
 - `useInvalidateAllStreaks()` - Invalidate all streak data
 
@@ -41,9 +44,9 @@ updateVisibility.mutate({ userId, isPublic: true });
 ```typescript
 STREAK_KEYS = {
   all: () => ['streaks'],
-  data: (userId) => ['streaks', 'data', userId],
-  stats: (userId) => ['streaks', 'stats', userId],
-}
+  data: userId => ['streaks', 'data', userId],
+  stats: userId => ['streaks', 'stats', userId],
+};
 ```
 
 ## Features
@@ -118,6 +121,7 @@ function SessionCompleteHandler() {
 ## Migration
 
 **Before:**
+
 ```typescript
 import { useStreak } from '@/hooks/useCache';
 
@@ -125,6 +129,7 @@ const { data } = useStreak(userId);
 ```
 
 **After:**
+
 ```typescript
 import { useStreakData } from '@/features/streaks/hooks';
 
@@ -134,6 +139,7 @@ const { data } = useStreakData(userId);
 ## Service Layer
 
 The `StreakService` provides:
+
 - `getStreakData(userId)` - Fetch streak data from Firestore
 - `getStreakStats(userId)` - Fetch streak statistics
 - `updateStreakVisibility(userId, isPublic)` - Update privacy setting

@@ -53,7 +53,10 @@ export const UrlSchema = v.pipe(
 /**
  * Visibility options schema (matches Firestore values)
  */
-export const VisibilitySchema = v.picklist(['everyone', 'followers', 'private'], ERROR_MESSAGES.invalidVisibility);
+export const VisibilitySchema = v.picklist(
+  ['everyone', 'followers', 'private'],
+  ERROR_MESSAGES.invalidVisibility
+);
 
 /**
  * Optional visibility schema with default
@@ -71,13 +74,18 @@ export const TimestampSchema = v.union([v.date(), v.number()]);
 export const NonEmptyStringSchema = v.pipe(
   v.string(ERROR_MESSAGES.required),
   v.nonEmpty(ERROR_MESSAGES.required),
-  v.transform((str) => str.trim())
+  v.transform(str => str.trim())
 );
 
 /**
  * Optional trimmed string schema
  */
-export const OptionalStringSchema = v.optional(v.pipe(v.string(), v.transform((str) => str.trim())));
+export const OptionalStringSchema = v.optional(
+  v.pipe(
+    v.string(),
+    v.transform(str => str.trim())
+  )
+);
 
 /**
  * Username schema (alphanumeric, underscores, hyphens)
@@ -85,7 +93,10 @@ export const OptionalStringSchema = v.optional(v.pipe(v.string(), v.transform((s
 export const UsernameSchema = v.pipe(
   v.string(ERROR_MESSAGES.required),
   v.nonEmpty(ERROR_MESSAGES.required),
-  v.regex(/^[a-zA-Z0-9_-]+$/, 'Username can only contain letters, numbers, underscores, and hyphens'),
+  v.regex(
+    /^[a-zA-Z0-9_-]+$/,
+    'Username can only contain letters, numbers, underscores, and hyphens'
+  ),
   v.minLength(3, ERROR_MESSAGES.tooShort(3)),
   v.maxLength(30, ERROR_MESSAGES.tooLong(30))
 );
@@ -93,7 +104,11 @@ export const UsernameSchema = v.pipe(
 /**
  * Positive integer schema
  */
-export const PositiveIntegerSchema = v.pipe(v.number(), v.integer(), v.minValue(1, ERROR_MESSAGES.minValue(1)));
+export const PositiveIntegerSchema = v.pipe(
+  v.number(),
+  v.integer(),
+  v.minValue(1, ERROR_MESSAGES.minValue(1))
+);
 
 /**
  * Duration schema (in seconds, 1 second to 24 hours)
@@ -112,7 +127,7 @@ export const ShortTextSchema = v.optional(
   v.pipe(
     v.string(),
     v.maxLength(500, ERROR_MESSAGES.tooLong(500)),
-    v.transform((str) => str.trim())
+    v.transform(str => str.trim())
   )
 );
 
@@ -123,7 +138,7 @@ export const LongTextSchema = v.optional(
   v.pipe(
     v.string(),
     v.maxLength(5000, ERROR_MESSAGES.tooLong(5000)),
-    v.transform((str) => str.trim())
+    v.transform(str => str.trim())
   )
 );
 
@@ -141,5 +156,8 @@ export const TagsSchema = v.optional(
  * Image URL array schema
  */
 export const ImageUrlsSchema = v.optional(
-  v.pipe(v.array(UrlSchema), v.maxLength(10, 'Cannot upload more than 10 images'))
+  v.pipe(
+    v.array(UrlSchema),
+    v.maxLength(10, 'Cannot upload more than 10 images')
+  )
 );

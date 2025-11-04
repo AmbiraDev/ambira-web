@@ -37,7 +37,9 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
     resetTimer,
   } = useTimer();
   const { user } = useAuth();
-  const { data: projects = [], isLoading: isLoadingProjects } = useActivities(user?.id);
+  const { data: projects = [], isLoading: isLoadingProjects } = useActivities(
+    user?.id
+  );
   const [showFinishModal, setShowFinishModal] = useState(false);
   const [sessionTitle, setSessionTitle] = useState('');
   const [sessionDescription, setSessionDescription] = useState('');
@@ -328,7 +330,9 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
     timerState.currentProject;
   // Only show needsActivity prompt after projects have loaded (prevent flash)
   const needsActivity =
-    !isLoadingProjects && allActivities.length === 0 && !timerState.currentProject;
+    !isLoadingProjects &&
+    allActivities.length === 0 &&
+    !timerState.currentProject;
 
   // When completing a session, show ONLY the completion UI
   if (showFinishModal) {

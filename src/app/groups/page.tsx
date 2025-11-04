@@ -40,7 +40,11 @@ export default function GroupsPage() {
       <div className="hidden md:block">
         <Header />
       </div>
-      <MobileHeader title="Groups" showNotifications={true} showProfilePicture={false} />
+      <MobileHeader
+        title="Groups"
+        showNotifications={true}
+        showProfilePicture={false}
+      />
 
       <div className="flex-1 w-full max-w-[1400px] mx-auto pt-6 pb-4 md:py-8 min-h-[calc(100vh-3.5rem)]">
         {/* Page Header */}
@@ -64,7 +68,10 @@ export default function GroupsPage() {
           <div>
             <div className="space-y-0">
               {[...Array(3)].map((_, i) => (
-                <div key={i} className="py-5 px-6 md:px-8 border-b border-gray-200">
+                <div
+                  key={i}
+                  className="py-5 px-6 md:px-8 border-b border-gray-200"
+                >
                   <div className="flex items-start gap-4 md:gap-6">
                     <div className="w-16 h-16 md:w-20 md:h-20 bg-gray-200 rounded-xl animate-pulse flex-shrink-0"></div>
                     <div className="flex-1 min-w-0 space-y-3">
@@ -97,8 +104,8 @@ export default function GroupsPage() {
                 You haven't joined any groups yet
               </h3>
               <p className="text-gray-600 mb-6">
-                Search for groups to connect with like-minded people, participate
-                in challenges, and stay motivated!
+                Search for groups to connect with like-minded people,
+                participate in challenges, and stay motivated!
               </p>
               <Link
                 href="/search"

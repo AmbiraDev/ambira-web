@@ -15,9 +15,11 @@ This directory contains architecture documentation for the Ambira codebase, with
 ### Core Architecture
 
 #### [CACHING_STRATEGY.md](./CACHING_STRATEGY.md)
+
 **The definitive guide to our caching architecture.**
 
 Covers:
+
 - Architecture layers and responsibilities
 - Where React Query should (and shouldn't) be used
 - Key principles and design patterns
@@ -27,9 +29,11 @@ Covers:
 **Read this first** to understand the "why" behind the pattern.
 
 #### [EXAMPLES.md](./EXAMPLES.md)
+
 **Real-world, complete implementations.**
 
 Shows:
+
 - Full stack example (Component → Hook → Service → Repository)
 - Infinite scroll with React Query
 - Optimistic updates for mutations
@@ -41,9 +45,11 @@ Shows:
 ### Context Elimination Strategy (NEW)
 
 #### [CONTEXT_ELIMINATION_SUMMARY.md](./CONTEXT_ELIMINATION_SUMMARY.md) ⭐
+
 **Executive summary for eliminating global Context providers.**
 
 Quick overview:
+
 - Current state analysis (5 global providers)
 - Target architecture (React Query at feature boundaries)
 - Migration priority matrix
@@ -53,9 +59,11 @@ Quick overview:
 **Start here** for a high-level understanding of the context migration strategy.
 
 #### [CONTEXT_ELIMINATION_STRATEGY.md](./CONTEXT_ELIMINATION_STRATEGY.md)
+
 **Comprehensive 200+ page strategy document.**
 
 Deep dive into:
+
 - Provider inventory and dependencies (AuthContext, TimerContext, etc.)
 - Consumption pattern analysis (199+ files affected)
 - Phased migration approach (6 weeks, 44 hours)
@@ -66,9 +74,11 @@ Deep dive into:
 **Use this** for detailed implementation guidance during the migration.
 
 #### [CONTEXT_ELIMINATION_DIAGRAMS.md](./CONTEXT_ELIMINATION_DIAGRAMS.md)
+
 **Visual diagrams and flowcharts.**
 
 Visualizations:
+
 - Before/after architecture diagrams
 - Data flow transformations
 - Phase-by-phase migration visualizations
@@ -80,9 +90,11 @@ Visualizations:
 ### Migration & Implementation
 
 #### [MIGRATION_GUIDE.md](./MIGRATION_GUIDE.md)
+
 **Step-by-step migration instructions.**
 
 Includes:
+
 - Before/after code examples
 - Feature-by-feature migration plan
 - Testing strategies
@@ -92,9 +104,11 @@ Includes:
 **Follow this guide** when refactoring existing code.
 
 #### [MIGRATION_STATUS.md](./MIGRATION_STATUS.md)
+
 **Current migration progress tracking.**
 
 Tracks:
+
 - Completed migrations
 - In-progress work
 - Planned migrations
@@ -105,9 +119,11 @@ Tracks:
 ### Tools & Utilities
 
 #### [TOOLING.md](./TOOLING.md)
+
 **Development tools and utilities.**
 
 Includes:
+
 - CLI feature scaffolder (`npm run create-feature`)
 - VSCode snippets for common patterns
 - TypeScript utilities and helpers
@@ -118,9 +134,11 @@ Includes:
 **Use these tools** to speed up development and ensure consistency.
 
 #### [SUMMARY.md](./SUMMARY.md)
+
 **Implementation summary and status.**
 
 Provides:
+
 - Overview of what was delivered
 - Current implementation status
 - Migration path
@@ -142,13 +160,13 @@ Provides:
 
 ### Context Migration Priority
 
-| Priority | Provider | Effort | Risk | Start Here |
-|----------|----------|--------|------|------------|
-| 🔥 **1** | NotificationsContext | 2h | Low | [Quick Wins](./CONTEXT_ELIMINATION_STRATEGY.md#phase-1-quick-wins-1-week-low-risk) |
-| 🔥 **2** | ActivitiesContext | 4h | Low | [Quick Wins](./CONTEXT_ELIMINATION_STRATEGY.md#phase-1-quick-wins-1-week-low-risk) |
-| 🔥 **3** | TimerContext | 8h | Medium | [Timer Migration](./CONTEXT_ELIMINATION_STRATEGY.md#phase-2-timer-migration-1-week-medium-risk) |
-| ⏰ **4** | AuthContext | 24h | High | [Auth Migration](./CONTEXT_ELIMINATION_STRATEGY.md#phase-3-auth-migration-2-3-weeks-high-risk) |
-| ⏸️ **5** | ToastContext | N/A | N/A | Optional (UI-only) |
+| Priority | Provider             | Effort | Risk   | Start Here                                                                                      |
+| -------- | -------------------- | ------ | ------ | ----------------------------------------------------------------------------------------------- |
+| 🔥 **1** | NotificationsContext | 2h     | Low    | [Quick Wins](./CONTEXT_ELIMINATION_STRATEGY.md#phase-1-quick-wins-1-week-low-risk)              |
+| 🔥 **2** | ActivitiesContext    | 4h     | Low    | [Quick Wins](./CONTEXT_ELIMINATION_STRATEGY.md#phase-1-quick-wins-1-week-low-risk)              |
+| 🔥 **3** | TimerContext         | 8h     | Medium | [Timer Migration](./CONTEXT_ELIMINATION_STRATEGY.md#phase-2-timer-migration-1-week-medium-risk) |
+| ⏰ **4** | AuthContext          | 24h    | High   | [Auth Migration](./CONTEXT_ELIMINATION_STRATEGY.md#phase-3-auth-migration-2-3-weeks-high-risk)  |
+| ⏸️ **5** | ToastContext         | N/A    | N/A    | Optional (UI-only)                                                                              |
 
 ---
 
@@ -193,6 +211,7 @@ src/
 ### Do's and Don'ts
 
 ✅ **DO:**
+
 - Use feature hooks in components
 - Keep services pure (no React dependencies)
 - Use hierarchical cache keys
@@ -200,6 +219,7 @@ src/
 - Test each layer independently
 
 ❌ **DON'T:**
+
 - Use `useQuery`/`useMutation` in components
 - Call `firebaseApi` directly from components
 - Mix business logic in hooks
@@ -234,7 +254,9 @@ export function useJoinGroup() {
 
     onMutate: async ({ groupId }) => {
       // Optimistic update
-      await queryClient.cancelQueries({ queryKey: GROUPS_KEYS.detail(groupId) });
+      await queryClient.cancelQueries({
+        queryKey: GROUPS_KEYS.detail(groupId),
+      });
       const previous = queryClient.getQueryData(GROUPS_KEYS.detail(groupId));
       queryClient.setQueryData(GROUPS_KEYS.detail(groupId), (old: any) => ({
         ...old,
@@ -313,14 +335,17 @@ When implementing a new feature:
 ## Migration Status
 
 ### ✅ Completed
+
 - **Groups**: Full implementation with service, hooks, and examples
 
 ### 🔄 In Progress
+
 - **Feed**: Service exists, needs hooks migration
 - **Profile**: Service exists, needs hooks migration
 - **Timer**: Service exists, needs hooks migration
 
 ### ⏳ Planned
+
 - Sessions
 - Comments
 - Projects
@@ -330,19 +355,21 @@ When implementing a new feature:
 ## Testing Strategy
 
 ### Unit Tests (Services)
+
 ```typescript
 // No React dependencies - easy to test
 describe('GroupService', () => {
   it('should throw error when joining a group you already belong to', async () => {
     const service = new GroupService();
-    await expect(
-      service.joinGroup('group-123', 'user-456')
-    ).rejects.toThrow('Already a member');
+    await expect(service.joinGroup('group-123', 'user-456')).rejects.toThrow(
+      'Already a member'
+    );
   });
 });
 ```
 
 ### Hook Tests
+
 ```typescript
 import { renderHook, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -363,6 +390,7 @@ test('useGroupDetails fetches and caches group data', async () => {
 ```
 
 ### Integration Tests (Components)
+
 ```typescript
 import { render, screen, fireEvent } from '@testing-library/react';
 import GroupPage from '@/app/groups/[id]/page';
@@ -387,17 +415,18 @@ Different data types need different cache times:
 
 ```typescript
 const CACHE_TIMES = {
-  REAL_TIME: 30 * 1000,       // 30s - Real-time data
-  SHORT: 1 * 60 * 1000,       // 1m  - Feed, search results
-  MEDIUM: 5 * 60 * 1000,      // 5m  - Session details, comments
-  LONG: 15 * 60 * 1000,       // 15m - User profiles, groups
-  VERY_LONG: 60 * 60 * 1000,  // 1h  - Stats, analytics
+  REAL_TIME: 30 * 1000, // 30s - Real-time data
+  SHORT: 1 * 60 * 1000, // 1m  - Feed, search results
+  MEDIUM: 5 * 60 * 1000, // 5m  - Session details, comments
+  LONG: 15 * 60 * 1000, // 15m - User profiles, groups
+  VERY_LONG: 60 * 60 * 1000, // 1h  - Stats, analytics
 };
 ```
 
 ### Optimistic Updates
 
 Use optimistic updates for instant feedback:
+
 - ✅ Likes/supports (can be rolled back)
 - ✅ Follows (can be rolled back)
 - ✅ Join/leave groups (can be rolled back)
@@ -438,7 +467,7 @@ onSuccess: (_, { groupId }) => {
 
   // Invalidate all groups lists
   queryClient.invalidateQueries({ queryKey: GROUPS_KEYS.lists() });
-}
+};
 ```
 
 ### Stale data shown
@@ -460,27 +489,30 @@ return useQuery({
 **Problem**: Excessive API calls to Firebase.
 
 **Solution**:
+
 1. Increase `staleTime` for less frequently changing data
 2. Use `enabled` option to prevent unnecessary queries
 3. Check if you're creating new query keys on each render
 
 ```typescript
 // ❌ BAD - Creates new object on each render
-queryKey: ['groups', { filter: 'active' }]
+queryKey: ['groups', { filter: 'active' }];
 
 // ✅ GOOD - Stable reference
-queryKey: GROUPS_KEYS.list('active')
+queryKey: GROUPS_KEYS.list('active');
 ```
 
 ## Resources
 
 ### External Documentation
+
 - [TanStack Query Docs](https://tanstack.com/query/latest/docs/framework/react/overview)
 - [Effective React Query Keys](https://tkdodo.eu/blog/effective-react-query-keys)
 - [React Query Best Practices](https://tkdodo.eu/blog/practical-react-query)
 - [Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)
 
 ### Internal Documentation
+
 - [Project README](../../README.md)
 - [CLAUDE.md](../../CLAUDE.md)
 

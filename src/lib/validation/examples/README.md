@@ -17,6 +17,7 @@ The Ambira validation system uses [Valibot](https://valibot.dev/) for type-safe 
 ### 1. SessionFormExample.tsx - Complete Form Validation
 
 Full-featured session creation form with:
+
 - Controlled form inputs with useState
 - Real-time validation error clearing
 - Field-level and form-level error display
@@ -42,6 +43,7 @@ const validatedData = result.data;
 ```
 
 **Use this pattern when:**
+
 - Building complex forms with multiple fields
 - Need field-specific error display
 - Want real-time validation clearing
@@ -49,6 +51,7 @@ const validatedData = result.data;
 ### 2. CommentFormExample.tsx - Inline Validation
 
 Lightweight comment form with:
+
 - Inline validation on blur
 - Real-time character counter
 - Quick submit with keyboard shortcuts
@@ -69,6 +72,7 @@ const handleBlur = () => {
 ```
 
 **Use this pattern when:**
+
 - Building simple, single-field forms
 - Need inline validation feedback
 - Want keyboard shortcuts (Cmd/Ctrl+Enter)
@@ -76,6 +80,7 @@ const handleBlur = () => {
 ### 3. ProfileUpdateExample.tsx - Optional Fields & Nested Objects
 
 Profile update form demonstrating:
+
 - Multi-field form with optional values
 - Nested object validation (social links)
 - URL validation
@@ -102,6 +107,7 @@ const result = validate(UpdateProfileSchema, dataToValidate);
 ```
 
 **Use this pattern when:**
+
 - Updating existing data (partial updates)
 - Dealing with optional fields
 - Validating nested objects (like social links)
@@ -110,6 +116,7 @@ const result = validate(UpdateProfileSchema, dataToValidate);
 ### 4. ApiRouteExample.ts - API Route Validation
 
 Next.js App Router API examples with:
+
 - Request body validation
 - Query parameter validation
 - Error response formatting
@@ -151,7 +158,11 @@ export async function POST(request: NextRequest) {
 #### Pattern B: Using `validateOrThrow()` with try-catch
 
 ```typescript
-import { validateOrThrow, isValidationError, formatValidationError } from '@/lib/validation';
+import {
+  validateOrThrow,
+  isValidationError,
+  formatValidationError,
+} from '@/lib/validation';
 
 export async function POST(request: NextRequest) {
   try {
@@ -211,6 +222,7 @@ export async function POST(request: NextRequest) {
 ```
 
 **Use these patterns when:**
+
 - Building API routes
 - Validating request bodies or query params
 - Need consistent error responses
@@ -258,9 +270,11 @@ Show remaining characters and warn at threshold:
 const MAX_LENGTH = 2000;
 const remainingChars = MAX_LENGTH - content.length;
 
-<p className={remainingChars < 100 ? 'text-orange-500' : 'text-muted-foreground'}>
+<p
+  className={remainingChars < 100 ? 'text-orange-500' : 'text-muted-foreground'}
+>
   {remainingChars} characters remaining
-</p>
+</p>;
 ```
 
 ### Pattern 4: Optional Fields in Forms
@@ -282,7 +296,9 @@ Validate nested structures like social links:
 ```tsx
 if (formData.socialLinks.twitter || formData.socialLinks.github) {
   dataToValidate.socialLinks = {
-    ...(formData.socialLinks.twitter && { twitter: formData.socialLinks.twitter }),
+    ...(formData.socialLinks.twitter && {
+      twitter: formData.socialLinks.twitter,
+    }),
     ...(formData.socialLinks.github && { github: formData.socialLinks.github }),
   };
 }
@@ -301,7 +317,9 @@ useEffect(() => {
 }, [formData, initialData]);
 
 // Disable submit if no changes
-<button type="submit" disabled={!hasChanges}>Save</button>
+<button type="submit" disabled={!hasChanges}>
+  Save
+</button>;
 ```
 
 ### Pattern 7: Success/Error State Management
@@ -332,6 +350,7 @@ const handleSubmit = async () => {
 ## Available Schemas
 
 ### Session Schemas
+
 - `CreateSessionSchema` - Creating new sessions
 - `UpdateSessionSchema` - Updating existing sessions
 - `SessionFormSchema` - UI forms with flexible input types
@@ -339,6 +358,7 @@ const handleSubmit = async () => {
 - `SessionSortSchema` - Sort options
 
 ### Comment Schemas
+
 - `CreateCommentSchema` - Creating comments
 - `UpdateCommentSchema` - Updating comments
 - `CommentLikeSchema` - Like/unlike operations
@@ -346,6 +366,7 @@ const handleSubmit = async () => {
 - `CommentSortSchema` - Sort options
 
 ### User Schemas
+
 - `SignupSchema` - User registration
 - `LoginSchema` - User login
 - `UpdateProfileSchema` - Profile updates
@@ -357,11 +378,13 @@ const handleSubmit = async () => {
 - `UsernameCheckSchema` - Username availability
 
 ### Project Schemas
+
 - `CreateProjectSchema` - Creating projects
 - `UpdateProjectSchema` - Updating projects
 - `ProjectFiltersSchema` - Query filters
 
 ### Group Schemas
+
 - `CreateGroupSchema` - Creating groups
 - `UpdateGroupSchema` - Updating groups
 - `GroupMemberSchema` - Member operations
@@ -391,11 +414,13 @@ if (!result.success) {
 Show generic errors at the form level:
 
 ```tsx
-{submitError && (
-  <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded-md">
-    {submitError}
-  </div>
-)}
+{
+  submitError && (
+    <div className="bg-destructive/10 border border-destructive/20 text-destructive px-4 py-3 rounded-md">
+      {submitError}
+    </div>
+  );
+}
 ```
 
 ### 3. API Error Responses
@@ -500,8 +525,11 @@ if (value) dataToValidate.field = value;
 // The schema handles this automatically:
 startTime: v.union([
   v.date(),
-  v.pipe(v.string(), v.transform(str => new Date(str)))
-])
+  v.pipe(
+    v.string(),
+    v.transform(str => new Date(str))
+  ),
+]);
 ```
 
 ### Issue: Form resets too early
@@ -537,14 +565,14 @@ export function MyForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
 
-  const handleChange = (e) => {
+  const handleChange = e => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
     if (errors[name]) setErrors(prev => ({ ...prev, [name]: undefined }));
     if (submitError) setSubmitError('');
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async e => {
     e.preventDefault();
     setErrors({});
     setSubmitError('');
@@ -578,7 +606,11 @@ export function MyForm() {
 
 ```typescript
 import { NextRequest, NextResponse } from 'next/server';
-import { validateOrThrow, isValidationError, formatValidationError } from '@/lib/validation';
+import {
+  validateOrThrow,
+  isValidationError,
+  formatValidationError,
+} from '@/lib/validation';
 
 export async function POST(request: NextRequest) {
   try {

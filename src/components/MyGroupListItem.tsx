@@ -12,27 +12,27 @@ interface MyGroupListItemProps {
 
 export const MyGroupListItem: React.FC<MyGroupListItemProps> = ({ group }) => {
   // Mobile: Truncate group name if longer than 30 characters
-  const displayNameMobile = group.name.length > 30
-    ? group.name.substring(0, 30) + '...'
-    : group.name;
+  const displayNameMobile =
+    group.name.length > 30 ? group.name.substring(0, 30) + '...' : group.name;
 
   // Desktop: Truncate group name if longer than 60 characters
-  const displayNameDesktop = group.name.length > 60
-    ? group.name.substring(0, 60) + '...'
-    : group.name;
+  const displayNameDesktop =
+    group.name.length > 60 ? group.name.substring(0, 60) + '...' : group.name;
 
   // Mobile: Truncate location if longer than 20 characters
-  const displayLocationMobile = group.location && group.location.length > 20
-    ? group.location.substring(0, 20) + '...'
-    : group.location;
+  const displayLocationMobile =
+    group.location && group.location.length > 20
+      ? group.location.substring(0, 20) + '...'
+      : group.location;
 
   // Desktop: Don't truncate location
   const displayLocationDesktop = group.location;
 
   // Desktop: Truncate description if longer than 150 characters
-  const displayDescription = group.description && group.description.length > 150
-    ? group.description.substring(0, 150) + '...'
-    : group.description;
+  const displayDescription =
+    group.description && group.description.length > 150
+      ? group.description.substring(0, 150) + '...'
+      : group.description;
 
   return (
     <Link
@@ -71,7 +71,10 @@ export const MyGroupListItem: React.FC<MyGroupListItemProps> = ({ group }) => {
           <div className="space-y-1">
             <div className="flex items-center gap-1.5 text-sm text-gray-600">
               <Users className="w-4 h-4" aria-hidden="true" />
-              <span>{group.memberCount || 0} {group.memberCount === 1 ? 'Member' : 'Members'}</span>
+              <span>
+                {group.memberCount || 0}{' '}
+                {group.memberCount === 1 ? 'Member' : 'Members'}
+              </span>
             </div>
 
             {/* Mobile: Show truncated location */}

@@ -6,22 +6,36 @@
  */
 
 import * as v from 'valibot';
-import { UuidSchema, NonEmptyStringSchema, OptionalStringSchema, UrlSchema } from '../utils/common-schemas';
+import {
+  UuidSchema,
+  NonEmptyStringSchema,
+  OptionalStringSchema,
+  UrlSchema,
+} from '../utils/common-schemas';
 
 /**
  * Group category options
  */
-export const GroupCategorySchema = v.picklist(['work', 'study', 'side-project', 'learning', 'other'], 'Invalid group category');
+export const GroupCategorySchema = v.picklist(
+  ['work', 'study', 'side-project', 'learning', 'other'],
+  'Invalid group category'
+);
 
 /**
  * Group type options
  */
-export const GroupTypeSchema = v.picklist(['just-for-fun', 'professional', 'competitive', 'other'], 'Invalid group type');
+export const GroupTypeSchema = v.picklist(
+  ['just-for-fun', 'professional', 'competitive', 'other'],
+  'Invalid group type'
+);
 
 /**
  * Privacy setting options
  */
-export const GroupPrivacySchema = v.picklist(['public', 'approval-required'], 'Invalid privacy setting');
+export const GroupPrivacySchema = v.picklist(
+  ['public', 'approval-required'],
+  'Invalid privacy setting'
+);
 
 /**
  * Schema for creating a new group
@@ -33,14 +47,14 @@ export const CreateGroupSchema = v.object({
     v.nonEmpty('Group name cannot be empty'),
     v.minLength(3, 'Group name must be at least 3 characters'),
     v.maxLength(100, 'Group name cannot exceed 100 characters'),
-    v.transform((str) => str.trim())
+    v.transform(str => str.trim())
   ),
   description: v.pipe(
     v.string('Description is required'),
     v.nonEmpty('Description cannot be empty'),
     v.minLength(10, 'Description must be at least 10 characters'),
     v.maxLength(1000, 'Description cannot exceed 1000 characters'),
-    v.transform((str) => str.trim())
+    v.transform(str => str.trim())
   ),
   category: GroupCategorySchema,
   type: GroupTypeSchema,
@@ -48,7 +62,12 @@ export const CreateGroupSchema = v.object({
 
   // Optional fields
   icon: v.optional(NonEmptyStringSchema),
-  color: v.optional(v.pipe(v.string(), v.regex(/^#[0-9A-F]{6}$/i, 'Color must be a valid hex code'))),
+  color: v.optional(
+    v.pipe(
+      v.string(),
+      v.regex(/^#[0-9A-F]{6}$/i, 'Color must be a valid hex code')
+    )
+  ),
   location: OptionalStringSchema,
   imageUrl: v.optional(UrlSchema),
   bannerUrl: v.optional(UrlSchema),
@@ -64,7 +83,7 @@ export const UpdateGroupSchema = v.object({
       v.nonEmpty('Group name cannot be empty'),
       v.minLength(3, 'Group name must be at least 3 characters'),
       v.maxLength(100, 'Group name cannot exceed 100 characters'),
-      v.transform((str) => str.trim())
+      v.transform(str => str.trim())
     )
   ),
   description: v.optional(
@@ -73,7 +92,7 @@ export const UpdateGroupSchema = v.object({
       v.nonEmpty('Description cannot be empty'),
       v.minLength(10, 'Description must be at least 10 characters'),
       v.maxLength(1000, 'Description cannot exceed 1000 characters'),
-      v.transform((str) => str.trim())
+      v.transform(str => str.trim())
     )
   ),
   category: v.optional(GroupCategorySchema),
@@ -128,12 +147,16 @@ export const GroupSortSchema = v.object({
  */
 export const GroupInviteSchema = v.object({
   groupId: UuidSchema,
-  userIds: v.pipe(v.array(UuidSchema), v.minLength(1, 'Must invite at least one user'), v.maxLength(50, 'Cannot invite more than 50 users at once')),
+  userIds: v.pipe(
+    v.array(UuidSchema),
+    v.minLength(1, 'Must invite at least one user'),
+    v.maxLength(50, 'Cannot invite more than 50 users at once')
+  ),
   message: v.optional(
     v.pipe(
       v.string(),
       v.maxLength(500, 'Invitation message cannot exceed 500 characters'),
-      v.transform((str) => str.trim())
+      v.transform(str => str.trim())
     )
   ),
 });

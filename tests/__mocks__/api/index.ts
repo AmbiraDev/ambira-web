@@ -31,49 +31,47 @@ function createResponseKey(method: HttpMethod, url: string): string {
 
 // Mock API client
 export const mockApiClient = {
-  get: jest
-    .fn()
-    .mockImplementation(
-      async <T = unknown>(
-        url: string,
-        config?: {
-          params?: Record<string, string>;
-          headers?: Record<string, string>;
-        }
-      ): Promise<MockResponse<T>> => {
-        requestHistory.push({
-          method: 'GET',
-          url,
-          params: config?.params,
-          headers: config?.headers,
-        });
-
-        const key = createResponseKey('GET', url);
-        const response = mockResponses.get(key);
-
-        if (response) {
-          if (response.status >= 400) {
-            throw {
-              response: {
-                status: response.status,
-                data: response.data,
-                statusText: response.statusText,
-              },
-              message: `Request failed with status code ${response.status}`,
-            };
-          }
-          return response as MockResponse<T>;
-        }
-
-        // Default successful response
-        return {
-          data: {} as T,
-          status: 200,
-          statusText: 'OK',
-          headers: { 'content-type': 'application/json' },
-        };
+  get: jest.fn().mockImplementation(
+    async <T = unknown>(
+      url: string,
+      config?: {
+        params?: Record<string, string>;
+        headers?: Record<string, string>;
       }
-    ),
+    ): Promise<MockResponse<T>> => {
+      requestHistory.push({
+        method: 'GET',
+        url,
+        params: config?.params,
+        headers: config?.headers,
+      });
+
+      const key = createResponseKey('GET', url);
+      const response = mockResponses.get(key);
+
+      if (response) {
+        if (response.status >= 400) {
+          throw {
+            response: {
+              status: response.status,
+              data: response.data,
+              statusText: response.statusText,
+            },
+            message: `Request failed with status code ${response.status}`,
+          };
+        }
+        return response as MockResponse<T>;
+      }
+
+      // Default successful response
+      return {
+        data: {} as T,
+        status: 200,
+        statusText: 'OK',
+        headers: { 'content-type': 'application/json' },
+      };
+    }
+  ),
 
   post: jest
     .fn()

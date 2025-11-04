@@ -47,12 +47,14 @@ import {
   useClearAllNotifications,
 } from '@/hooks/useNotifications';
 import { firebaseNotificationApi } from '@/lib/api';
-import { useAuth, mockAuthUser } from '@/hooks/useAuth';
 import {
   createMockNotificationBatch,
   createMockUnreadNotification,
   resetNotificationFactory,
 } from '../../__mocks__/factories';
+
+// Get the mocked module to access mockAuthUser
+const { mockAuthUser } = jest.requireMock('@/hooks/useAuth');
 
 const mockFirebaseApi = firebaseNotificationApi as jest.Mocked<
   typeof firebaseNotificationApi
@@ -313,7 +315,7 @@ describe('hooks/useNotifications', () => {
       });
 
       // Cache should be rolled back to original state
-      const cachedData = getCachedNotifications();
+      const cachedData = getCachedNotifications() as any[];
       expect(cachedData?.[0].isRead).toBe(false);
     });
   });
@@ -387,7 +389,7 @@ describe('hooks/useNotifications', () => {
       });
 
       // Cache should be rolled back
-      const cachedData = getCachedNotifications();
+      const cachedData = getCachedNotifications() as any[];
       expect(cachedData?.[0].isRead).toBe(false);
     });
 

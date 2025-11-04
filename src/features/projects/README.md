@@ -104,26 +104,32 @@ PROJECT_KEYS = {
   lists: () => ['projects', 'list'],
   list: () => ['projects', 'list'],
   details: () => ['projects', 'detail'],
-  detail: (id) => ['projects', 'detail', id],
-  stats: (id) => ['projects', 'detail', id, 'stats'],
-}
+  detail: id => ['projects', 'detail', id],
+  stats: id => ['projects', 'detail', id, 'stats'],
+};
 ```
 
 ## Migration from Old Hooks
 
 **Before:**
+
 ```typescript
 import { useProjects } from '@/hooks/useCache';
-import { useCreateActivityMutation, useUpdateActivityMutation, useDeleteActivityMutation } from '@/hooks/useMutations';
+import {
+  useCreateActivityMutation,
+  useUpdateActivityMutation,
+  useDeleteActivityMutation,
+} from '@/hooks/useMutations';
 ```
 
 **After:**
+
 ```typescript
 import {
   useProjects,
   useCreateProject,
   useUpdateProject,
-  useDeleteProject
+  useDeleteProject,
 } from '@/features/projects/hooks';
 ```
 

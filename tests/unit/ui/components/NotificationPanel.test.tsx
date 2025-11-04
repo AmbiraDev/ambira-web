@@ -112,7 +112,10 @@ describe('components/NotificationsPanel', () => {
     const clearAllButtons = screen.getAllByRole('button', {
       name: /Clear All/i,
     });
-    fireEvent.click(clearAllButtons[clearAllButtons.length - 1]);
+    const confirmButton = clearAllButtons[clearAllButtons.length - 1];
+    if (confirmButton) {
+      fireEvent.click(confirmButton);
+    }
     await waitFor(() => expect(clearAllMock).toHaveBeenCalledTimes(1));
 
     // Hover to reveal delete, then remove the notification

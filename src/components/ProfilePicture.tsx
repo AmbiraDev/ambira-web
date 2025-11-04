@@ -41,7 +41,9 @@ export const ProfilePicture: React.FC<ProfilePictureProps> = ({
 
   if (user.profilePicture && !imageError) {
     return (
-      <div className={`${sizeClass} relative ${borderClass} ${className} rounded-full overflow-hidden bg-white border border-gray-200`}>
+      <div
+        className={`${sizeClass} relative ${borderClass} ${className} rounded-full overflow-hidden bg-white border border-gray-200`}
+      >
         <Image
           src={user.profilePicture}
           alt={`${user.name}'s profile picture`}
@@ -57,7 +59,7 @@ export const ProfilePicture: React.FC<ProfilePictureProps> = ({
   // Fallback to initials
   const initials = user.name
     .split(' ')
-    .map((n) => n.charAt(0))
+    .map(n => n.charAt(0))
     .join('')
     .toUpperCase()
     .slice(0, 2);

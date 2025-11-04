@@ -47,7 +47,11 @@ export default function NotificationIcon({
       <button
         onClick={handleClick}
         className={`relative flex items-center gap-2 ${className}`}
-        aria-label={unreadCount > 0 ? `Notifications (${unreadCount} unread)` : 'Notifications'}
+        aria-label={
+          unreadCount > 0
+            ? `Notifications (${unreadCount} unread)`
+            : 'Notifications'
+        }
       >
         <div className="relative">
           <Bell className="w-6 h-6" aria-hidden="true" />
@@ -61,7 +65,12 @@ export default function NotificationIcon({
       </button>
 
       {/* Desktop dropdown panel */}
-      {!isMobile && <NotificationsPanel isOpen={isPanelOpen} onClose={() => setIsPanelOpen(false)} />}
+      {!isMobile && (
+        <NotificationsPanel
+          isOpen={isPanelOpen}
+          onClose={() => setIsPanelOpen(false)}
+        />
+      )}
     </div>
   );
 }

@@ -88,26 +88,31 @@ function SupportButton({ sessionId, currentUserId }: Props) {
 ```typescript
 SESSION_KEYS = {
   all: () => ['sessions'],
-  detail: (id) => ['sessions', 'detail', id],
-  detailWithData: (id) => ['sessions', 'detail', id, 'with-details'],
+  detail: id => ['sessions', 'detail', id],
+  detailWithData: id => ['sessions', 'detail', id, 'with-details'],
   userSessions: (userId, filters) => ['sessions', 'user', userId, filters],
-}
+};
 ```
 
 ## Migration from Old Hooks
 
 **Before:**
+
 ```typescript
 import { useSession } from '@/hooks/useCache';
-import { useDeleteSessionMutation, useSupportMutation } from '@/hooks/useMutations';
+import {
+  useDeleteSessionMutation,
+  useSupportMutation,
+} from '@/hooks/useMutations';
 ```
 
 **After:**
+
 ```typescript
 import {
   useSession,
   useDeleteSession,
-  useSupportSession
+  useSupportSession,
 } from '@/features/sessions/hooks';
 ```
 

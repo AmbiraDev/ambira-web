@@ -34,7 +34,7 @@ export class LeaderboardCalculator {
         user,
         totalHours,
         sessionCount,
-        rank: 0 // Will be assigned after sorting
+        rank: 0, // Will be assigned after sorting
       };
     });
 
@@ -119,21 +119,30 @@ export class LeaderboardCalculator {
    * Calculate total hours from sessions
    */
   private calculateTotalHours(sessions: Session[]): number {
-    const totalSeconds = sessions.reduce((sum, session) => sum + session.duration, 0);
+    const totalSeconds = sessions.reduce(
+      (sum, session) => sum + session.duration,
+      0
+    );
     return Math.round((totalSeconds / 3600) * 10) / 10; // Round to 1 decimal
   }
 
   /**
    * Get top N entries from leaderboard
    */
-  getTopEntries(entries: LeaderboardEntry[], limit: number): LeaderboardEntry[] {
+  getTopEntries(
+    entries: LeaderboardEntry[],
+    limit: number
+  ): LeaderboardEntry[] {
     return entries.slice(0, limit);
   }
 
   /**
    * Find user's position in leaderboard
    */
-  findUserPosition(entries: LeaderboardEntry[], userId: string): LeaderboardEntry | null {
+  findUserPosition(
+    entries: LeaderboardEntry[],
+    userId: string
+  ): LeaderboardEntry | null {
     return entries.find(entry => entry.user.id === userId) || null;
   }
 
