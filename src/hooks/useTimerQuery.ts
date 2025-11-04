@@ -44,7 +44,8 @@ export function useActiveTimerQuery(options?: { enabled?: boolean }) {
     enabled: isAuthenticated && !!user && enabled,
     staleTime: CACHE_TIMES.REAL_TIME, // 30 seconds - frequently check for updates
     refetchOnWindowFocus: true, // Refetch when window regains focus
-    refetchInterval: enabled ? 10000 : false, // Check every 10 seconds if session still exists, but stop when disabled
+    refetchInterval: enabled ? 30000 : false, // Check every 30 seconds (reduced from 10s for cost optimization)
+    refetchIntervalInBackground: false, // Don't poll when tab is not active (major cost savings)
   });
 }
 
