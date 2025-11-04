@@ -1,7 +1,7 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
-import { useState, Suspense, useMemo } from 'react';
+import { useState, Suspense, useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import Header from '@/components/HeaderComponent';
 import BottomNavigation from '@/components/BottomNavigation';
@@ -123,49 +123,57 @@ function SearchContent() {
       ? isLoadingSuggestedUsers
       : isLoadingSuggestedGroups;
 
-  const handleFollowChange = (userId: string, isFollowing: boolean) => {
-    // Optimistically update the following IDs set
-    queryClient.setQueryData(
-      ['following-ids', user!.id],
-      (old: Set<string> = new Set()) => {
-        const newSet = new Set(old);
-        if (isFollowing) {
-          newSet.add(userId);
-        } else {
-          newSet.delete(userId);
+  // Memoize the follow handler
+  const handleFollowChange = useCallback(
+    (userId: string, isFollowing: boolean) => {
+      // Optimistically update the following IDs set
+      queryClient.setQueryData(
+        ['following-ids', user!.id],
+        (old: Set<string> = new Set()) => {
+          const newSet = new Set(old);
+          if (isFollowing) {
+            newSet.add(userId);
+          } else {
+            newSet.delete(userId);
+          }
+          return newSet;
         }
-        return newSet;
+      );
+    },
+    [queryClient, user]
+  );
+
+  // Memoize the join group handler
+  const handleJoinGroup = useCallback(
+    async (groupId: string, e: React.MouseEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      if (!user) return;
+
+      const isJoined = joinedGroupIds.has(groupId);
+
+      try {
+        setJoiningGroup(groupId);
+
+        if (isJoined) {
+          await firebaseApi.group.leaveGroup(groupId, user.id);
+        } else {
+          await firebaseApi.group.joinGroup(groupId, user.id);
+        }
+
+        // Invalidate user groups cache to refetch
+        queryClient.invalidateQueries({
+          queryKey: CACHE_KEYS.USER_GROUPS(user.id),
+        });
+      } catch {
+        console.error('Failed to join/leave group');
+      } finally {
+        setJoiningGroup(null);
       }
-    );
-  };
-
-  const handleJoinGroup = async (groupId: string, e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-
-    if (!user) return;
-
-    const isJoined = joinedGroupIds.has(groupId);
-
-    try {
-      setJoiningGroup(groupId);
-
-      if (isJoined) {
-        await firebaseApi.group.leaveGroup(groupId, user.id);
-      } else {
-        await firebaseApi.group.joinGroup(groupId, user.id);
-      }
-
-      // Invalidate user groups cache to refetch
-      queryClient.invalidateQueries({
-        queryKey: CACHE_KEYS.USER_GROUPS(user.id),
-      });
-    } catch {
-      console.error('Failed to join/leave group');
-    } finally {
-      setJoiningGroup(null);
-    }
-  };
+    },
+    [user, joinedGroupIds, queryClient]
+  );
 
   const renderUserResult = (user: UserSearchResult | SuggestedUser) => {
     if ('isSelf' in user && user.isSelf) {
@@ -214,25 +222,39 @@ function SearchContent() {
     const isLoading = joiningGroup === group.id;
 
     return (
-      <div className="p-3 transition-colors">
-        <div className="flex items-center gap-3">
+      <div className="p-3 md:p-4 transition-colors">
+        <div className="flex items-start md:items-center gap-3 md:gap-4">
           {/* Group Icon */}
-          <Link href={`/groups/${group.id}`}>
-            <GroupAvatar
-              imageUrl={group.imageUrl}
-              name={group.name}
-              size="md"
-            />
+          <Link href={`/groups/${group.id}`} className="flex-shrink-0">
+            <div className="md:hidden">
+              <GroupAvatar
+                imageUrl={group.imageUrl}
+                name={group.name}
+                size="md"
+              />
+            </div>
+            <div className="hidden md:block">
+              <GroupAvatar
+                imageUrl={group.imageUrl}
+                name={group.name}
+                size="lg"
+              />
+            </div>
           </Link>
 
           {/* Group Info */}
           <div className="flex-1 min-w-0">
             <Link href={`/groups/${group.id}`}>
-              <p className="font-semibold text-sm text-gray-900 hover:text-[#0066CC] truncate mb-0.5 transition-colors">
+              <p className="font-semibold text-sm md:text-base text-gray-900 hover:text-[#0066CC] truncate mb-0.5 md:mb-1 transition-colors">
                 {group.name}
               </p>
             </Link>
-            <div className="text-xs text-gray-500">
+            {'description' in group && group.description && (
+              <p className="hidden md:block text-sm text-gray-600 mb-2 line-clamp-2">
+                {group.description}
+              </p>
+            )}
+            <div className="text-xs md:text-sm text-gray-500">
               {group.memberCount || group.members || 0}{' '}
               {(group.memberCount || group.members) === 1
                 ? 'member'
@@ -244,10 +266,10 @@ function SearchContent() {
           <button
             onClick={e => handleJoinGroup(group.id, e)}
             disabled={isLoading}
-            className={`text-sm font-semibold transition-colors whitespace-nowrap flex-shrink-0 ${
+            className={`text-sm font-semibold transition-colors whitespace-nowrap flex-shrink-0 min-h-[36px] md:min-h-[40px] px-4 md:px-6 py-2 rounded-lg ${
               isJoined
-                ? 'text-gray-600 hover:text-gray-900'
-                : 'text-[#0066CC] hover:text-[#0051D5]'
+                ? 'text-gray-600 hover:text-gray-900 border border-gray-300'
+                : 'text-white bg-[#0066CC] hover:bg-[#0051D5]'
             } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
             {isLoading ? 'Joining...' : isJoined ? 'Joined' : 'Join'}
@@ -297,7 +319,7 @@ function SearchContent() {
           <div className="w-10" />
         </div>
 
-        {/* Filter Tabs */}
+        {/* Mobile Filter Tabs */}
         <div className="flex border-b border-gray-200 bg-gray-50">
           <button
             type="button"
@@ -305,9 +327,7 @@ function SearchContent() {
               (window.location.href = `/search?q=${encodeURIComponent(initialQuery)}&type=people`)
             }
             className={`relative flex-1 py-4 px-4 text-base font-medium transition-colors ${
-              type === 'people'
-                ? 'text-[#0066CC]'
-                : 'text-gray-500'
+              type === 'people' ? 'text-[#0066CC]' : 'text-gray-500'
             }`}
           >
             People
@@ -321,9 +341,7 @@ function SearchContent() {
               (window.location.href = `/search?q=${encodeURIComponent(initialQuery)}&type=groups`)
             }
             className={`relative flex-1 py-4 px-4 text-base font-medium transition-colors ${
-              type === 'groups'
-                ? 'text-[#0066CC]'
-                : 'text-gray-500'
+              type === 'groups' ? 'text-[#0066CC]' : 'text-gray-500'
             }`}
           >
             Groups
@@ -334,21 +352,79 @@ function SearchContent() {
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-4 pt-6 pb-4 md:py-8 md:pt-24">
-        {/* Search Info - only show if there's a query */}
-        {initialQuery && (
-          <div className="mb-6 hidden md:block">
-            <h1 className="text-2xl font-bold text-gray-900">
-              Search Results for "{initialQuery}"
-            </h1>
-            <p className="text-gray-600 mt-1">
-              Searching in {type.charAt(0).toUpperCase() + type.slice(1)}
-            </p>
+      <div className="flex-1 w-full max-w-[1400px] mx-auto pt-6 pb-4 md:py-8 min-h-[calc(100vh-3.5rem)]">
+        {/* Desktop Header with Tabs */}
+        <div className="hidden md:block mb-8 px-6 md:px-8">
+          <h1 className="text-xl md:text-2xl font-bold text-gray-900 mb-6">
+            {initialQuery ? `Search Results for "${initialQuery}"` : 'Discover'}
+          </h1>
+
+          {/* Desktop Filter Tabs */}
+          <div className="flex border-b border-gray-200">
+            <button
+              type="button"
+              onClick={() =>
+                (window.location.href = `/search?q=${encodeURIComponent(initialQuery)}&type=people`)
+              }
+              className={`relative py-3 px-6 text-base font-medium transition-colors ${
+                type === 'people'
+                  ? 'text-[#0066CC]'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              People
+              {type === 'people' && (
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#0066CC]" />
+              )}
+            </button>
+            <button
+              type="button"
+              onClick={() =>
+                (window.location.href = `/search?q=${encodeURIComponent(initialQuery)}&type=groups`)
+              }
+              className={`relative py-3 px-6 text-base font-medium transition-colors ${
+                type === 'groups'
+                  ? 'text-[#0066CC]'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              Groups
+              {type === 'groups' && (
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#0066CC]" />
+              )}
+            </button>
           </div>
-        )}
+        </div>
+
+        {/* Desktop Search Form */}
+        <div className="hidden md:block mb-6 px-6 md:px-8">
+          <form
+            onSubmit={e => {
+              e.preventDefault();
+              if (query.trim())
+                window.location.href = `/search?q=${encodeURIComponent(query.trim())}&type=${type}`;
+            }}
+          >
+            <div className="relative">
+              <input
+                type="text"
+                value={query}
+                onChange={e => setQuery(e.target.value)}
+                placeholder={`Search ${type}...`}
+                className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:border-transparent text-base"
+              />
+              <button
+                type="submit"
+                className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 text-gray-400 hover:text-[#0066CC] transition-colors"
+              >
+                <Search className="w-5 h-5" />
+              </button>
+            </div>
+          </form>
+        </div>
 
         {/* Mobile Search Form */}
-        <div className="md:hidden mb-6">
+        <div className="md:hidden mb-6 px-4">
           <form
             onSubmit={e => {
               e.preventDefault();
