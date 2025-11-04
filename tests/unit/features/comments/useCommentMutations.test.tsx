@@ -47,12 +47,9 @@ describe('useCommentMutations', () => {
 
   const mockUser = {
     id: 'user123',
-    email: 'test@example.com',
-    name: 'Test User',
     username: 'testuser',
+    name: 'Test User',
     profilePicture: 'https://example.com/avatar.jpg',
-    createdAt: new Date('2024-01-01'),
-    updatedAt: new Date('2024-01-01'),
   };
 
   const mockComment: CommentWithDetails = {

@@ -15,10 +15,8 @@ import {
   CommentWithDetails,
   CreateCommentData,
   UpdateCommentData,
-  Session,
   SessionWithDetails,
   CommentsResponse,
-  User,
 } from '@/types';
 import { SESSION_KEYS } from '@/features/sessions/hooks';
 
@@ -112,7 +110,12 @@ export function useCreateComment(
       const optimisticId = `optimistic-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
       // Get current user from auth cache
-      const currentUser = queryClient.getQueryData<User>(['auth', 'user']);
+      const currentUser = queryClient.getQueryData<{
+        id: string;
+        username: string;
+        name: string;
+        profilePicture?: string;
+      }>(['auth', 'user']);
 
       // Create optimistic comment if user is available
       if (currentUser) {
@@ -128,7 +131,15 @@ export function useCreateComment(
           isLiked: false,
           createdAt: new Date(),
           updatedAt: new Date(),
-          user: currentUser,
+          user: {
+            id: currentUser.id,
+            username: currentUser.username,
+            name: currentUser.name,
+            email: '', // Not available in cache, but required by User type
+            createdAt: new Date(),
+            updatedAt: new Date(),
+            profilePicture: currentUser.profilePicture,
+          },
         };
 
         // Optimistically add comment to the list
@@ -190,16 +201,14 @@ export function useCreateComment(
       });
 
       // Update comment count in session cache and feed
-      const updateSessionCommentCount = <
-        T extends Session | SessionWithDetails,
-      >(
-        session: T
-      ): T => {
+      const updateSessionCommentCount = (
+        session: SessionWithDetails
+      ): SessionWithDetails => {
         if (session?.id !== variables.sessionId) return session;
         return {
           ...session,
           commentCount: (session.commentCount || 0) + 1,
-        } as T;
+        };
       };
 
       // Update session detail cache
@@ -220,7 +229,7 @@ export function useCreateComment(
             const hasSession = old.some(s => s.id === variables.sessionId);
             if (!hasSession) return old;
 
-            return old.map(updateSessionCommentCount) as SessionWithDetails[];
+            return old.map(updateSessionCommentCount);
           }
 
           // Object format with sessions array: FeedArrayData
@@ -425,16 +434,14 @@ export function useDeleteComment(
       });
 
       // Update comment count in session cache and feed
-      const updateSessionCommentCount = <
-        T extends Session | SessionWithDetails,
-      >(
-        session: T
-      ): T => {
+      const updateSessionCommentCount = (
+        session: SessionWithDetails
+      ): SessionWithDetails => {
         if (session?.id !== sessionId) return session;
         return {
           ...session,
           commentCount: Math.max(0, (session.commentCount || 0) - 1),
-        } as T;
+        };
       };
 
       // Update session detail cache
@@ -453,7 +460,7 @@ export function useDeleteComment(
           if (Array.isArray(old)) {
             const hasSession = old.some(s => s.id === sessionId);
             if (!hasSession) return old;
-            return old.map(updateSessionCommentCount) as SessionWithDetails[];
+            return old.map(updateSessionCommentCount);
           }
 
           // Object format with sessions array: FeedArrayData
