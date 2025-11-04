@@ -3,6 +3,12 @@
  *
  * This component handles all settings presentation logic.
  * Extracted from the route file for better separation of concerns.
+ *
+ * Redesigned with modern two-column desktop layout:
+ * - Mobile: Vertical expandable list (unchanged)
+ * - Desktop: Left sidebar navigation + right content area
+ * - Electric Blue primary color (#0066CC) for active states
+ * - Smooth section transitions
  */
 
 'use client';
@@ -12,30 +18,37 @@ import Header from '@/components/HeaderComponent';
 import MobileHeader from '@/components/MobileHeader';
 import BottomNavigation from '@/components/BottomNavigation';
 import Footer from '@/components/Footer';
-import NotificationSettings from '@/components/NotificationSettings';
 import {
   User,
   Shield,
-  Bell,
-  Globe,
-  Mail,
   Upload,
   Link as LinkIcon,
   Twitter,
   Github,
   Linkedin,
+  ChevronRight,
+  LogOut,
+  Trash2,
+  Globe,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import Image from 'next/image';
 import { firebaseUserApi } from '@/lib/api';
 import { toast } from 'sonner';
 import ConfirmDialog from '@/components/ConfirmDialog';
+import { useQueryClient } from '@tanstack/react-query';
+import { AUTH_KEYS } from '@/lib/react-query/auth.queries';
 
-type SettingsTab = 'profile' | 'privacy' | 'notifications' | 'display';
+type SettingsSection = 'profile' | 'privacy' | null;
 
 export function SettingsPageContent() {
   const { user, logout } = useAuth();
-  const [activeTab, setActiveTab] = useState<SettingsTab>('profile');
+  const queryClient = useQueryClient();
+  // Mobile: expanded section state for accordion behavior
+  const [expandedSection, setExpandedSection] = useState<SettingsSection>(null);
+  // Desktop: active section state for sidebar navigation
+  const [activeSection, setActiveSection] =
+    useState<SettingsSection>('profile');
   const [formData, setFormData] = useState({
     name: user?.name || '',
     tagline: user?.tagline || '',
@@ -68,16 +81,33 @@ export function SettingsPageContent() {
     linkedin: user?.socialLinks?.linkedin || '',
     profileVisibility: 'everyone' as 'everyone' | 'followers' | 'private',
   });
+  const [urlError, setUrlError] = useState('');
 
-  const tabs = [
-    { id: 'profile' as SettingsTab, label: 'My Profile', icon: User },
-    { id: 'privacy' as SettingsTab, label: 'Privacy Controls', icon: Shield },
+  // URL validation helper
+  const validateURL = (url: string): boolean => {
+    if (!url) return true; // Optional field
+    try {
+      new URL(url);
+      return url.startsWith('http://') || url.startsWith('https://');
+    } catch {
+      return false;
+    }
+  };
+
+  // Settings menu structure for vertical layout (mobile)
+  const settingsItems = [
     {
-      id: 'notifications' as SettingsTab,
-      label: 'Email Notifications',
-      icon: Bell,
+      id: 'profile',
+      label: 'My Profile',
+      icon: User,
+      navigable: true,
     },
-    { id: 'display' as SettingsTab, label: 'Display Preferences', icon: Globe },
+    {
+      id: 'privacy',
+      label: 'Privacy Controls',
+      icon: Shield,
+      navigable: true,
+    },
   ];
 
   // Check if form has been modified
@@ -181,13 +211,13 @@ export function SettingsPageContent() {
           Object.keys(socialLinks).length > 0 ? socialLinks : undefined,
         profileVisibility: formData.profileVisibility,
       });
-      toast.success('Profile updated');
-      setSaved(true);
 
-      // Reload the page after a short delay to refresh the user context
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
+      // Invalidate auth cache to refresh user data
+      await queryClient.invalidateQueries({ queryKey: AUTH_KEYS.session() });
+
+      toast.success('Profile updated successfully!');
+      setSaved(true);
+      setIsSaving(false);
     } catch (err: unknown) {
       console.error('Failed to update profile:', err);
       toast.error('Failed to update profile');
@@ -201,13 +231,13 @@ export function SettingsPageContent() {
       await firebaseUserApi.updateProfile({
         profileVisibility: formData.profileVisibility,
       });
-      toast.success('Privacy settings updated');
-      setSaved(true);
 
-      // Reload the page after a short delay
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
+      // Invalidate auth cache to refresh user data
+      await queryClient.invalidateQueries({ queryKey: AUTH_KEYS.session() });
+
+      toast.success('Privacy settings updated successfully!');
+      setSaved(true);
+      setIsSaving(false);
     } catch (err: unknown) {
       console.error('Failed to update privacy settings:', err);
       toast.error('Failed to update privacy settings');
@@ -230,9 +260,8 @@ export function SettingsPageContent() {
 
     try {
       setIsDeleting(true);
-      // We'll implement the actual API call next
       await firebaseUserApi.deleteAccount();
-      toast.success('Account deleted');
+      toast.success('Account deleted successfully');
       // The logout will happen automatically as part of deleteAccount
     } catch (err: unknown) {
       console.error('Delete account error:', err);
@@ -241,6 +270,413 @@ export function SettingsPageContent() {
       setShowDeleteConfirm(false);
     }
   };
+
+  const handleSectionClick = (sectionId: string) => {
+    if (sectionId === 'profile' || sectionId === 'privacy') {
+      setExpandedSection(
+        expandedSection === sectionId ? null : (sectionId as SettingsSection)
+      );
+    }
+  };
+
+  // Profile Form Component (reusable for both desktop and mobile)
+  const ProfileForm = ({ idPrefix = '' }: { idPrefix?: string }) => (
+    <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Profile Picture */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-3">
+          Profile Picture
+        </label>
+        <div className="flex items-center gap-6">
+          {profilePictureUrl || user?.profilePicture ? (
+            <div className="w-24 h-24 rounded-full overflow-hidden ring-4 ring-white flex-shrink-0">
+              <Image
+                src={profilePictureUrl || user?.profilePicture || ''}
+                alt="Profile"
+                width={96}
+                height={96}
+                quality={95}
+                priority
+                className="w-full h-full object-cover"
+              />
+            </div>
+          ) : (
+            <div className="w-24 h-24 bg-gradient-to-br from-[#FC4C02] to-[#FF8800] rounded-full flex items-center justify-center text-white text-4xl font-bold flex-shrink-0">
+              {user?.name.charAt(0).toUpperCase() || 'N'}
+            </div>
+          )}
+          <div className="flex-1">
+            <input
+              type="file"
+              id={`profile-photo-upload${idPrefix}`}
+              accept="image/jpeg,image/png,image/gif,image/webp"
+              onChange={handlePhotoUpload}
+              className="hidden"
+            />
+            <label
+              htmlFor={`profile-photo-upload${idPrefix}`}
+              className={`inline-flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer ${isUploadingPhoto ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              {isUploadingPhoto ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-gray-300 border-t-[#0066CC] rounded-full animate-spin"></div>
+                  Uploading...
+                </>
+              ) : (
+                <>
+                  <Upload className="w-4 h-4" />
+                  Upload Photo
+                </>
+              )}
+            </label>
+            <p className="text-sm text-gray-500 mt-2">
+              JPG, PNG, GIF or WebP. Max 5MB.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Name */}
+      <div>
+        <label
+          htmlFor={`name${idPrefix}`}
+          className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2"
+        >
+          <User className="w-4 h-4" />
+          Name
+        </label>
+        <input
+          type="text"
+          id={`name${idPrefix}`}
+          value={formData.name}
+          onChange={e => setFormData({ ...formData, name: e.target.value })}
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none"
+        />
+      </div>
+
+      {/* Username */}
+      <div>
+        <label
+          htmlFor={`username${idPrefix}`}
+          className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2"
+        >
+          <User className="w-4 h-4" />
+          Username
+        </label>
+        <div className="relative">
+          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">
+            @
+          </span>
+          <input
+            type="text"
+            id={`username${idPrefix}`}
+            value={user?.username || ''}
+            disabled
+            className="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
+          />
+        </div>
+        <p className="text-xs text-gray-500 mt-1">
+          Username cannot be changed - it&apos;s your unique identifier
+        </p>
+      </div>
+
+      {/* Tagline */}
+      <div>
+        <label
+          htmlFor={`tagline${idPrefix}`}
+          className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2"
+        >
+          Tagline
+        </label>
+        <input
+          type="text"
+          id={`tagline${idPrefix}`}
+          value={formData.tagline}
+          onChange={e => setFormData({ ...formData, tagline: e.target.value })}
+          maxLength={60}
+          placeholder="Your headline or current status..."
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none"
+        />
+        <p className="text-sm text-gray-500 mt-1">
+          {formData.tagline.length}/60 • Appears below your name on your profile
+        </p>
+      </div>
+
+      {/* Pronouns */}
+      <div>
+        <label
+          htmlFor={`pronouns${idPrefix}`}
+          className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2"
+        >
+          Pronouns
+        </label>
+        <input
+          type="text"
+          id={`pronouns${idPrefix}`}
+          value={formData.pronouns}
+          onChange={e => setFormData({ ...formData, pronouns: e.target.value })}
+          maxLength={20}
+          placeholder="e.g., she/her, he/him, they/them"
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none"
+        />
+      </div>
+
+      {/* Bio */}
+      <div>
+        <label
+          htmlFor={`bio${idPrefix}`}
+          className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2"
+        >
+          Bio
+        </label>
+        <textarea
+          id={`bio${idPrefix}`}
+          value={formData.bio}
+          onChange={e => setFormData({ ...formData, bio: e.target.value })}
+          rows={4}
+          maxLength={160}
+          placeholder="Tell us about yourself..."
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none resize-none"
+        />
+        <p className="text-sm text-gray-500 mt-1">{formData.bio.length}/160</p>
+      </div>
+
+      {/* Location */}
+      <div>
+        <label
+          htmlFor={`location${idPrefix}`}
+          className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2"
+        >
+          <Globe className="w-4 h-4" />
+          Location
+        </label>
+        <input
+          type="text"
+          id={`location${idPrefix}`}
+          value={formData.location}
+          onChange={e => setFormData({ ...formData, location: e.target.value })}
+          placeholder="City, Country"
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none"
+        />
+      </div>
+
+      {/* Links Section */}
+      <div className="pt-4 border-t border-gray-200">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Links</h3>
+
+        {/* Website */}
+        <div className="mb-4">
+          <label
+            htmlFor={`website${idPrefix}`}
+            className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2"
+          >
+            <LinkIcon className="w-4 h-4" />
+            Website
+          </label>
+          <input
+            type="url"
+            id={`website${idPrefix}`}
+            value={formData.website}
+            onChange={e =>
+              setFormData({ ...formData, website: e.target.value })
+            }
+            onBlur={e => {
+              const isValid = validateURL(e.target.value);
+              setUrlError(
+                isValid
+                  ? ''
+                  : 'Please enter a valid URL starting with http:// or https://'
+              );
+            }}
+            placeholder="https://yourwebsite.com"
+            pattern="https?://.*"
+            aria-invalid={urlError ? 'true' : 'false'}
+            aria-describedby={urlError ? `website-error${idPrefix}` : undefined}
+            className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none ${
+              urlError ? 'border-red-500' : 'border-gray-300'
+            }`}
+          />
+          {urlError && (
+            <p
+              id={`website-error${idPrefix}`}
+              className="text-sm text-red-600 mt-1"
+              role="alert"
+            >
+              {urlError}
+            </p>
+          )}
+        </div>
+
+        {/* Social Links */}
+        <div className="space-y-4">
+          <div>
+            <label
+              htmlFor={`twitter${idPrefix}`}
+              className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2"
+            >
+              <Twitter className="w-4 h-4" />
+              Twitter/X
+            </label>
+            <div className="relative">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">
+                @
+              </span>
+              <input
+                type="text"
+                id={`twitter${idPrefix}`}
+                value={formData.twitter}
+                onChange={e =>
+                  setFormData({ ...formData, twitter: e.target.value })
+                }
+                placeholder="username"
+                className="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label
+              htmlFor={`github${idPrefix}`}
+              className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2"
+            >
+              <Github className="w-4 h-4" />
+              GitHub
+            </label>
+            <input
+              type="text"
+              id={`github${idPrefix}`}
+              value={formData.github}
+              onChange={e =>
+                setFormData({ ...formData, github: e.target.value })
+              }
+              placeholder="username"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none"
+            />
+          </div>
+
+          <div>
+            <label
+              htmlFor={`linkedin${idPrefix}`}
+              className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2"
+            >
+              <Linkedin className="w-4 h-4" />
+              LinkedIn
+            </label>
+            <input
+              type="text"
+              id={`linkedin${idPrefix}`}
+              value={formData.linkedin}
+              onChange={e =>
+                setFormData({ ...formData, linkedin: e.target.value })
+              }
+              placeholder="username"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Submit Buttons */}
+      <div className="flex gap-3 pt-4">
+        <a
+          href={user ? `/profile/${user.username}` : '/'}
+          className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors text-center"
+        >
+          Cancel
+        </a>
+        <button
+          type="submit"
+          disabled={isSaving || !hasChanges}
+          className={`px-6 py-2 rounded-lg transition-colors text-white ${
+            isSaving || !hasChanges
+              ? 'bg-gray-400 cursor-not-allowed'
+              : saved
+                ? 'bg-[#34C759] hover:bg-[#34C759]'
+                : 'bg-[#0066CC] hover:bg-[#0051D5]'
+          }`}
+        >
+          {isSaving ? 'Saving…' : saved ? '✓ Saved' : 'Save Changes'}
+        </button>
+      </div>
+    </form>
+  );
+
+  // Privacy Form Component (reusable for both desktop and mobile)
+  const PrivacyForm = ({ idPrefix = '' }: { idPrefix?: string }) => (
+    <div className="space-y-6">
+      <div>
+        <label
+          htmlFor={`profileVisibility${idPrefix}`}
+          className="text-sm font-medium text-gray-700 mb-2 block"
+        >
+          Profile Visibility
+        </label>
+        <select
+          id={`profileVisibility${idPrefix}`}
+          value={formData.profileVisibility}
+          onChange={e =>
+            setFormData({
+              ...formData,
+              profileVisibility: e.target.value as
+                | 'everyone'
+                | 'followers'
+                | 'private',
+            })
+          }
+          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none"
+        >
+          <option value="everyone">
+            Everyone - Your profile and sessions are visible to all users
+          </option>
+          <option value="followers">
+            Followers Only - Only your followers can see your profile and
+            sessions
+          </option>
+          <option value="private">
+            Only You - Your profile and sessions are completely private
+          </option>
+        </select>
+        <p className="text-sm text-gray-500 mt-2">
+          {formData.profileVisibility === 'everyone' &&
+            'Your profile, sessions, and stats are visible to everyone.'}
+          {formData.profileVisibility === 'followers' &&
+            "Only your followers can see your profile and sessions. You won't appear in suggestions."}
+          {formData.profileVisibility === 'private' &&
+            'Your profile is completely private. Only you can see your sessions and stats.'}
+        </p>
+      </div>
+
+      {/* Submit Buttons */}
+      <div className="flex gap-3 pt-4">
+        <button
+          type="button"
+          onClick={() =>
+            setFormData({
+              ...formData,
+              profileVisibility: originalFormData.profileVisibility,
+            })
+          }
+          className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          onClick={handlePrivacySubmit}
+          disabled={isSaving || !hasChanges}
+          className={`px-6 py-2 rounded-lg transition-colors text-white ${
+            isSaving || !hasChanges
+              ? 'bg-gray-400 cursor-not-allowed'
+              : saved
+                ? 'bg-[#34C759] hover:bg-[#34C759]'
+                : 'bg-[#0066CC] hover:bg-[#0051D5]'
+          }`}
+        >
+          {isSaving ? 'Saving…' : saved ? '✓ Saved' : 'Save Changes'}
+        </button>
+      </div>
+    </div>
+  );
 
   return (
     <>
@@ -255,598 +691,222 @@ export function SettingsPageContent() {
           <MobileHeader title="Settings" showBackButton={true} />
         </div>
 
-        <div className="max-w-7xl mx-auto px-0 md:px-4 sm:px-6 lg:px-8 py-0 md:py-8">
-          <div className="flex flex-col md:flex-row gap-0 md:gap-8">
-            {/* Sidebar - Desktop Only */}
-            <div className="hidden md:block w-64 flex-shrink-0">
-              <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-                {tabs.map(tab => {
-                  const Icon = tab.icon;
-                  return (
-                    <button
-                      key={tab.id}
-                      onClick={() => setActiveTab(tab.id)}
-                      className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors ${
-                        activeTab === tab.id
-                          ? 'bg-[#0066CC] text-white'
-                          : 'text-gray-700 hover:bg-gray-50'
-                      }`}
-                    >
-                      <Icon className="w-5 h-5" />
-                      <span className="font-medium">{tab.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
+        {/* Desktop Two-Column Layout */}
+        <div className="hidden md:block">
+          <div className="max-w-5xl mx-auto py-8 px-6">
+            {/* Page Header */}
+            <div className="mb-8">
+              <h1 className="text-3xl font-bold text-gray-900">Settings</h1>
             </div>
 
-            {/* Mobile Tabs */}
-            <div className="md:hidden bg-white border-b border-gray-200">
-              <div className="overflow-x-auto scrollbar-hide">
-                <div className="flex">
-                  {tabs.map(tab => {
-                    const Icon = tab.icon;
-                    return (
-                      <button
-                        key={tab.id}
-                        onClick={() => setActiveTab(tab.id)}
-                        className={`flex-shrink-0 flex items-center gap-2 px-4 py-3 text-sm font-medium border-b-2 transition-colors ${
-                          activeTab === tab.id
-                            ? 'border-[#0066CC] text-[#0066CC]'
-                            : 'border-transparent text-gray-600'
-                        }`}
-                      >
-                        <Icon className="w-4 h-4" />
-                        <span className="whitespace-nowrap">{tab.label}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
+            {/* Two-Column Layout */}
+            <div className="flex gap-8">
+              {/* Left Sidebar Navigation */}
+              <aside className="w-60 flex-shrink-0">
+                <nav
+                  className="bg-white rounded-lg border border-gray-200 shadow-sm sticky top-20"
+                  aria-label="Settings navigation"
+                >
+                  <button
+                    onClick={() => setActiveSection('profile')}
+                    aria-label="My Profile settings"
+                    aria-current={
+                      activeSection === 'profile' ? 'page' : undefined
+                    }
+                    className={`w-full px-4 py-3 flex items-center gap-3 text-left border-b border-gray-200 transition-colors ${
+                      activeSection === 'profile'
+                        ? 'bg-blue-50 border-l-4 border-l-[#0066CC] text-[#0066CC]'
+                        : 'hover:bg-gray-50 text-gray-700'
+                    }`}
+                  >
+                    <User
+                      className="w-5 h-5 flex-shrink-0"
+                      aria-hidden="true"
+                    />
+                    <span className="text-sm font-medium">My Profile</span>
+                  </button>
 
-            {/* Main Content */}
-            <div className="flex-1">
-              <div className="p-4 md:p-0">
-                {activeTab === 'profile' && (
-                  <form onSubmit={handleSubmit}>
-                    <div className="bg-gray-50 rounded-xl border border-gray-200 p-4 md:p-6 space-y-6">
-                      <div>
-                        <h2 className="text-2xl font-bold text-gray-900 mb-2 flex items-center gap-2">
-                          <User className="w-6 h-6 text-[#0066CC]" />
-                          My Profile
-                        </h2>
-                        <p className="text-gray-600 text-sm">
-                          Update your personal information and profile settings
-                        </p>
-                      </div>
+                  <button
+                    onClick={() => setActiveSection('privacy')}
+                    aria-label="Privacy Controls settings"
+                    aria-current={
+                      activeSection === 'privacy' ? 'page' : undefined
+                    }
+                    className={`w-full px-4 py-3 flex items-center gap-3 text-left border-b border-gray-200 transition-colors ${
+                      activeSection === 'privacy'
+                        ? 'bg-blue-50 border-l-4 border-l-[#0066CC] text-[#0066CC]'
+                        : 'hover:bg-gray-50 text-gray-700'
+                    }`}
+                  >
+                    <Shield
+                      className="w-5 h-5 flex-shrink-0"
+                      aria-hidden="true"
+                    />
+                    <span className="text-sm font-medium">
+                      Privacy Controls
+                    </span>
+                  </button>
 
-                      {/* Profile Picture */}
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Profile Picture
-                        </label>
-                        <div className="flex flex-col md:flex-row md:items-center gap-4">
-                          {profilePictureUrl || user?.profilePicture ? (
-                            <div className="w-24 h-24 rounded-full overflow-hidden ring-4 ring-white flex-shrink-0">
-                              <Image
-                                src={
-                                  profilePictureUrl ||
-                                  user?.profilePicture ||
-                                  ''
-                                }
-                                alt="Profile"
-                                width={96}
-                                height={96}
-                                quality={95}
-                                priority
-                                className="w-full h-full object-cover"
-                              />
-                            </div>
-                          ) : (
-                            <div className="w-24 h-24 bg-gradient-to-br from-[#FC4C02] to-[#FF8800] rounded-full flex items-center justify-center text-white text-4xl font-bold flex-shrink-0">
-                              {user?.name.charAt(0).toUpperCase() || 'N'}
-                            </div>
-                          )}
-                          <div className="flex-1">
-                            <input
-                              type="file"
-                              id="profile-photo-upload"
-                              accept="image/jpeg,image/png,image/gif,image/webp"
-                              onChange={handlePhotoUpload}
-                              className="hidden"
-                            />
-                            <label
-                              htmlFor="profile-photo-upload"
-                              className={`flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors w-full md:w-auto justify-center md:justify-start cursor-pointer ${isUploadingPhoto ? 'opacity-50 cursor-not-allowed' : ''}`}
-                            >
-                              {isUploadingPhoto ? (
-                                <>
-                                  <div className="w-4 h-4 border-2 border-gray-300 border-t-[#0066CC] rounded-full animate-spin"></div>
-                                  Uploading...
-                                </>
-                              ) : (
-                                <>
-                                  <Upload className="w-4 h-4" />
-                                  Upload Photo
-                                </>
-                              )}
-                            </label>
-                            <p className="text-sm text-gray-500 mt-2">
-                              JPG, PNG, GIF or WebP. Max 5MB.
-                            </p>
-                          </div>
-                        </div>
-                      </div>
+                  <button
+                    onClick={handleLogout}
+                    aria-label="Log out of your account"
+                    className="w-full px-4 py-3 flex items-center gap-3 text-left border-b border-gray-200 hover:bg-gray-50 transition-colors text-gray-700"
+                  >
+                    <LogOut
+                      className="w-5 h-5 flex-shrink-0"
+                      aria-hidden="true"
+                    />
+                    <span className="text-sm font-medium">Log Out</span>
+                  </button>
 
-                      {/* Name */}
-                      <div>
-                        <label
-                          htmlFor="name"
-                          className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2"
-                        >
-                          <User className="w-4 h-4" />
-                          Name
-                        </label>
-                        <input
-                          type="text"
-                          id="name"
-                          value={formData.name}
-                          onChange={e =>
-                            setFormData({ ...formData, name: e.target.value })
-                          }
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none"
-                        />
-                      </div>
+                  <button
+                    onClick={() => setShowDeleteConfirm(true)}
+                    aria-label="Delete your account permanently"
+                    className="w-full px-4 py-3 flex items-center gap-3 text-left hover:bg-red-50 transition-colors text-red-600"
+                  >
+                    <Trash2
+                      className="w-5 h-5 flex-shrink-0"
+                      aria-hidden="true"
+                    />
+                    <span className="text-sm font-medium">Delete Account</span>
+                  </button>
+                </nav>
+              </aside>
 
-                      {/* Username */}
-                      <div>
-                        <label
-                          htmlFor="username"
-                          className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2"
-                        >
-                          <User className="w-4 h-4" />
-                          Username
-                        </label>
-                        <div className="relative">
-                          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">
-                            @
-                          </span>
-                          <input
-                            type="text"
-                            id="username"
-                            value={user?.username || ''}
-                            disabled
-                            className="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
-                          />
-                        </div>
-                        <p className="text-xs text-gray-500 mt-1">
-                          Username cannot be changed - it&apos;s your unique
-                          identifier
-                        </p>
-                      </div>
-
-                      {/* Tagline */}
-                      <div>
-                        <label
-                          htmlFor="tagline"
-                          className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2"
-                        >
-                          Tagline
-                        </label>
-                        <input
-                          type="text"
-                          id="tagline"
-                          value={formData.tagline}
-                          onChange={e =>
-                            setFormData({
-                              ...formData,
-                              tagline: e.target.value,
-                            })
-                          }
-                          maxLength={60}
-                          placeholder="Your headline or current status..."
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none"
-                        />
-                        <p className="text-sm text-gray-500 mt-1">
-                          {formData.tagline.length}/60 • Appears below your name
-                          on your profile
-                        </p>
-                      </div>
-
-                      {/* Pronouns */}
-                      <div>
-                        <label
-                          htmlFor="pronouns"
-                          className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2"
-                        >
-                          Pronouns
-                        </label>
-                        <input
-                          type="text"
-                          id="pronouns"
-                          value={formData.pronouns}
-                          onChange={e =>
-                            setFormData({
-                              ...formData,
-                              pronouns: e.target.value,
-                            })
-                          }
-                          maxLength={20}
-                          placeholder="e.g., she/her, he/him, they/them"
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none"
-                        />
-                      </div>
-
-                      {/* Bio */}
-                      <div>
-                        <label
-                          htmlFor="bio"
-                          className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2"
-                        >
-                          Bio
-                        </label>
-                        <textarea
-                          id="bio"
-                          value={formData.bio}
-                          onChange={e =>
-                            setFormData({ ...formData, bio: e.target.value })
-                          }
-                          rows={4}
-                          maxLength={160}
-                          placeholder="Tell us about yourself..."
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none resize-none"
-                        />
-                        <p className="text-sm text-gray-500 mt-1">
-                          {formData.bio.length}/160
-                        </p>
-                      </div>
-
-                      {/* Location */}
-                      <div>
-                        <label
-                          htmlFor="location"
-                          className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2"
-                        >
-                          <Globe className="w-4 h-4" />
-                          Location
-                        </label>
-                        <input
-                          type="text"
-                          id="location"
-                          value={formData.location}
-                          onChange={e =>
-                            setFormData({
-                              ...formData,
-                              location: e.target.value,
-                            })
-                          }
-                          placeholder="City, Country"
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none"
-                        />
-                      </div>
-
-                      {/* Links Section */}
-                      <div className="pt-4 border-t border-gray-200">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                          Links
-                        </h3>
-
-                        {/* Website */}
-                        <div className="mb-4">
-                          <label
-                            htmlFor="website"
-                            className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2"
-                          >
-                            <LinkIcon className="w-4 h-4" />
-                            Website
-                          </label>
-                          <input
-                            type="url"
-                            id="website"
-                            value={formData.website}
-                            onChange={e =>
-                              setFormData({
-                                ...formData,
-                                website: e.target.value,
-                              })
-                            }
-                            placeholder="https://yourwebsite.com"
-                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none"
-                          />
-                        </div>
-
-                        {/* Social Links */}
-                        <div className="space-y-4">
-                          <div>
-                            <label
-                              htmlFor="twitter"
-                              className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2"
-                            >
-                              <Twitter className="w-4 h-4" />
-                              Twitter/X
-                            </label>
-                            <div className="relative">
-                              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">
-                                @
-                              </span>
-                              <input
-                                type="text"
-                                id="twitter"
-                                value={formData.twitter}
-                                onChange={e =>
-                                  setFormData({
-                                    ...formData,
-                                    twitter: e.target.value,
-                                  })
-                                }
-                                placeholder="username"
-                                className="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none"
-                              />
-                            </div>
-                          </div>
-
-                          <div>
-                            <label
-                              htmlFor="github"
-                              className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2"
-                            >
-                              <Github className="w-4 h-4" />
-                              GitHub
-                            </label>
-                            <input
-                              type="text"
-                              id="github"
-                              value={formData.github}
-                              onChange={e =>
-                                setFormData({
-                                  ...formData,
-                                  github: e.target.value,
-                                })
-                              }
-                              placeholder="username"
-                              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none"
-                            />
-                          </div>
-
-                          <div>
-                            <label
-                              htmlFor="linkedin"
-                              className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2"
-                            >
-                              <Linkedin className="w-4 h-4" />
-                              LinkedIn
-                            </label>
-                            <input
-                              type="text"
-                              id="linkedin"
-                              value={formData.linkedin}
-                              onChange={e =>
-                                setFormData({
-                                  ...formData,
-                                  linkedin: e.target.value,
-                                })
-                              }
-                              placeholder="username"
-                              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none"
-                            />
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Account Information */}
-                      <div className="pt-4 border-t border-gray-200">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                          Account Information
-                        </h3>
-
-                        {/* Email */}
-                        <div className="mb-4">
-                          <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
-                            <Mail className="w-4 h-4" />
-                            Email
-                          </label>
-                          <p className="text-gray-900 px-4 py-2 bg-gray-50 rounded-lg border border-gray-200">
-                            {user?.email || 'No email set'}
-                          </p>
-                        </div>
-
-                        {/* Membership Status */}
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">
-                            Membership Status
-                          </label>
-                          <p className="text-gray-900 px-4 py-2 bg-gray-50 rounded-lg border border-gray-200">
-                            Free Account
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Submit Buttons */}
-                      <div className="flex flex-col md:flex-row gap-3 pt-4">
-                        <a
-                          href={user ? `/profile/${user.username}` : '/'}
-                          className="px-6 py-3 md:py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors text-center"
-                        >
-                          Cancel
-                        </a>
-                        <button
-                          type="submit"
-                          disabled={isSaving || !hasChanges}
-                          className={`px-6 py-3 md:py-2 rounded-lg transition-colors text-white ${
-                            isSaving || !hasChanges
-                              ? 'bg-gray-400 cursor-not-allowed'
-                              : saved
-                                ? 'bg-green-600 hover:bg-green-600'
-                                : 'bg-[#0066CC] hover:bg-[#0051D5]'
-                          }`}
-                        >
-                          {isSaving
-                            ? 'Saving…'
-                            : saved
-                              ? '✓ Saved'
-                              : 'Save Changes'}
-                        </button>
-                      </div>
-                    </div>
-                  </form>
-                )}
-
-                {activeTab === 'privacy' && (
-                  <div className="bg-gray-50 rounded-xl border border-gray-200 p-4 md:p-6 space-y-6">
+              {/* Right Content Area */}
+              <main className="flex-1 min-w-0">
+                <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-8">
+                  {/* Profile Section */}
+                  {activeSection === 'profile' && (
                     <div>
-                      <h2 className="text-2xl font-bold text-gray-900 mb-2 flex items-center gap-2">
-                        <Shield className="w-6 h-6 text-[#0066CC]" />
+                      <h2 className="text-2xl font-bold text-gray-900 mb-6">
+                        My Profile
+                      </h2>
+                      <ProfileForm idPrefix="-desktop" />
+                    </div>
+                  )}
+
+                  {/* Privacy Section */}
+                  {activeSection === 'privacy' && (
+                    <div>
+                      <h2 className="text-2xl font-bold text-gray-900 mb-6">
                         Privacy Controls
                       </h2>
-                      <p className="text-gray-600 text-sm">
-                        Control who can see your profile and content
-                      </p>
+                      <PrivacyForm idPrefix="-desktop" />
                     </div>
-
-                    <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-                      <div className="px-6 py-4 border-b border-gray-200">
-                        <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
-                          <Globe className="w-5 h-5 text-[#0066CC]" />
-                          Profile Visibility
-                        </h3>
-                        <p className="text-sm text-gray-600 mt-1">
-                          Control who can view your profile and sessions
-                        </p>
-                      </div>
-                      <div className="px-6 py-4">
-                        <label
-                          htmlFor="profileVisibility"
-                          className="text-sm font-medium text-gray-700 mb-2 block"
-                        >
-                          Profile Access
-                        </label>
-                        <select
-                          id="profileVisibility"
-                          value={formData.profileVisibility}
-                          onChange={e =>
-                            setFormData({
-                              ...formData,
-                              profileVisibility: e.target.value as
-                                | 'everyone'
-                                | 'followers'
-                                | 'private',
-                            })
-                          }
-                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none"
-                        >
-                          <option value="everyone">
-                            🌐 Everyone - Your profile and sessions are visible
-                            to all users
-                          </option>
-                          <option value="followers">
-                            👥 Followers Only - Only your followers can see your
-                            profile and sessions
-                          </option>
-                          <option value="private">
-                            🔒 Only You - Your profile and sessions are
-                            completely private
-                          </option>
-                        </select>
-                        <p className="text-xs text-gray-500 mt-2">
-                          {formData.profileVisibility === 'everyone' &&
-                            'Your profile, sessions, and stats are visible to everyone.'}
-                          {formData.profileVisibility === 'followers' &&
-                            "Only your followers can see your profile and sessions. You won't appear in suggestions."}
-                          {formData.profileVisibility === 'private' &&
-                            'Your profile is completely private. Only you can see your sessions and stats.'}
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Submit Buttons */}
-                    <div className="flex flex-col md:flex-row gap-3 pt-2">
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setFormData({
-                            ...formData,
-                            profileVisibility:
-                              originalFormData.profileVisibility,
-                          })
-                        }
-                        className="px-6 py-3 md:py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors text-center"
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        type="button"
-                        onClick={handlePrivacySubmit}
-                        disabled={isSaving || !hasChanges}
-                        className={`px-6 py-3 md:py-2 rounded-lg transition-colors text-white ${
-                          isSaving || !hasChanges
-                            ? 'bg-gray-400 cursor-not-allowed'
-                            : saved
-                              ? 'bg-[#34C759] hover:bg-[#34C759]'
-                              : 'bg-[#0066CC] hover:bg-[#0051D5]'
-                        }`}
-                      >
-                        {isSaving
-                          ? 'Saving…'
-                          : saved
-                            ? '✓ Saved'
-                            : 'Save Changes'}
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                {activeTab === 'notifications' && <NotificationSettings />}
-
-                {activeTab === 'display' && (
-                  <div className="bg-gray-50 rounded-xl border border-gray-200 p-4 md:p-6 space-y-6">
-                    <div>
-                      <h2 className="text-2xl font-bold text-gray-900 mb-2 flex items-center gap-2">
-                        <Globe className="w-6 h-6 text-[#0066CC]" />
-                        Display Preferences
-                      </h2>
-                      <p className="text-gray-600 text-sm">
-                        Customize how the app looks and feels.
-                      </p>
-                    </div>
-
-                    <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-                      <div className="px-6 py-8 text-center">
-                        <Globe className="w-12 h-12 text-gray-400 mx-auto mb-3" />
-                        <h3 className="font-medium text-gray-900 mb-1">
-                          Coming Soon
-                        </h3>
-                        <p className="text-sm text-gray-600">
-                          Display preferences will be available in a future
-                          update
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Danger Zone - Only show on My Profile tab */}
-              {activeTab === 'profile' && (
-                <div className="mt-4 p-4 md:pl-6">
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={handleLogout}
-                      className="text-lg font-bold text-gray-700 hover:text-gray-900 transition-colors"
-                    >
-                      Log Out
-                    </button>
-                    <span className="text-gray-300 text-lg">|</span>
-                    <button
-                      onClick={() => setShowDeleteConfirm(true)}
-                      className="text-lg font-bold text-red-600 hover:text-red-700 transition-colors"
-                    >
-                      Delete Account
-                    </button>
-                  </div>
+                  )}
                 </div>
-              )}
+              </main>
             </div>
+          </div>
+        </div>
+
+        {/* Mobile Vertical List Layout */}
+        <div className="md:hidden max-w-2xl mx-auto py-6">
+          {/* Page Header */}
+          <div className="mb-6 px-4">
+            <h1 className="text-2xl font-bold text-gray-900">Settings</h1>
+          </div>
+
+          {/* Vertical Settings List */}
+          <div className="bg-white">
+            {settingsItems.map(item => {
+              const Icon = item.icon;
+              const isExpanded = expandedSection === item.id;
+              const contentId = `${item.id}-content`;
+
+              return (
+                <div key={item.id}>
+                  <button
+                    onClick={() =>
+                      item.navigable && handleSectionClick(item.id)
+                    }
+                    aria-expanded={item.navigable ? isExpanded : undefined}
+                    aria-controls={item.navigable ? contentId : undefined}
+                    aria-label={`${item.label} settings`}
+                    className={`w-full px-4 py-4 flex items-center justify-between border-b border-gray-200 transition-colors ${
+                      item.navigable
+                        ? 'hover:bg-gray-50 active:bg-gray-100'
+                        : 'cursor-default'
+                    }`}
+                    disabled={!item.navigable}
+                  >
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <div className="flex-shrink-0">
+                        <Icon
+                          className="w-5 h-5 text-gray-700"
+                          aria-hidden="true"
+                        />
+                      </div>
+                      <div className="flex-1 text-left min-w-0">
+                        <div className="text-sm font-semibold text-gray-900">
+                          {item.label}
+                        </div>
+                      </div>
+                    </div>
+                    {item.navigable && (
+                      <ChevronRight
+                        className={`w-5 h-5 text-gray-400 flex-shrink-0 transition-transform ${
+                          isExpanded ? 'rotate-90' : ''
+                        }`}
+                        aria-hidden="true"
+                      />
+                    )}
+                  </button>
+
+                  {/* Expanded Profile Content */}
+                  {isExpanded && item.id === 'profile' && (
+                    <div
+                      id={contentId}
+                      role="region"
+                      aria-labelledby={`${item.id}-button`}
+                      className="px-4 pt-4 pb-6 bg-gray-50 border-t border-gray-200"
+                    >
+                      <ProfileForm idPrefix="-mobile" />
+                    </div>
+                  )}
+
+                  {/* Expanded Privacy Content */}
+                  {isExpanded && item.id === 'privacy' && (
+                    <div
+                      id={contentId}
+                      role="region"
+                      aria-labelledby={`${item.id}-button`}
+                      className="px-4 pt-4 pb-6 bg-gray-50 border-t border-gray-200"
+                    >
+                      <PrivacyForm idPrefix="-mobile" />
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+
+            {/* Account Actions */}
+            <button
+              onClick={handleLogout}
+              className="w-full px-4 py-4 flex items-center gap-3 text-left border-b border-gray-200 hover:bg-gray-50 active:bg-gray-100 transition-colors"
+            >
+              <LogOut className="w-5 h-5 text-gray-700" />
+              <div className="flex-1">
+                <div className="text-sm font-semibold text-gray-900">
+                  Log Out
+                </div>
+              </div>
+              <ChevronRight className="w-5 h-5 text-gray-400 flex-shrink-0" />
+            </button>
+
+            <button
+              onClick={() => setShowDeleteConfirm(true)}
+              className="w-full px-4 py-4 flex items-center gap-3 text-left border-b border-gray-200 hover:bg-red-50 active:bg-red-100 transition-colors"
+            >
+              <Trash2 className="w-5 h-5 text-red-600" />
+              <div className="flex-1">
+                <div className="text-sm font-semibold text-red-600">
+                  Delete Account
+                </div>
+              </div>
+              <ChevronRight className="w-5 h-5 text-red-400 flex-shrink-0" />
+            </button>
           </div>
         </div>
 
