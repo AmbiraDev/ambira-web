@@ -7,7 +7,6 @@ import { UserCard, UserCardCompact } from './UserCard';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Search, Users, X, Loader2 } from 'lucide-react';
-import { toast } from 'sonner';
 
 interface SearchUsersProps {
   onUserSelect?: (user: UserSearchResult) => void;
@@ -59,7 +58,6 @@ export const SearchUsers: React.FC<SearchUsersProps> = ({
         setHasSearched(true);
       } catch {
         console.error('Search error');
-        toast.error('Failed to search users');
         setResults([]);
         setHasSearched(true);
       } finally {
