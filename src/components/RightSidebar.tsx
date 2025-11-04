@@ -9,6 +9,8 @@ import { cachedQuery } from '@/lib/cache';
 import GroupAvatar from '@/components/GroupAvatar';
 import SuggestedPeopleModal from '@/components/SuggestedPeopleModal';
 import SuggestedGroupsModal from '@/components/SuggestedGroupsModal';
+import { useSuggestedGroups } from '@/features/search/hooks';
+import { GROUP_DISPLAY_CONFIG } from '@/lib/constants/groupDisplay';
 
 interface SuggestedUser {
   id: string;
@@ -19,27 +21,28 @@ interface SuggestedUser {
   profilePicture?: string;
 }
 
-interface SuggestedGroup {
-  id: string;
-  name: string;
-  memberCount: number;
-  description: string;
-  imageUrl?: string;
-}
-
 function RightSidebar() {
   const { user } = useAuth();
   const [suggestedUsers, setSuggestedUsers] = useState<SuggestedUser[]>([]);
-  const [suggestedGroups, setSuggestedGroups] = useState<SuggestedGroup[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingUsers, setIsLoadingUsers] = useState(true);
   const [followingUsers, setFollowingUsers] = useState<Set<string>>(new Set());
   const [joiningGroups, setJoiningGroups] = useState<Set<string>>(new Set());
   const [showPeopleModal, setShowPeopleModal] = useState(false);
   const [showGroupsModal, setShowGroupsModal] = useState(false);
 
+  // Use the proper hook for suggested groups
+  const {
+    suggestedGroups: fetchedSuggestedGroups,
+    isLoading: isLoadingGroups,
+  } = useSuggestedGroups({
+    userId: user?.id,
+    enabled: !!user,
+    limit: GROUP_DISPLAY_CONFIG.SUGGESTED_GROUPS_LIMIT,
+  });
+
   const loadSuggestedContent = useCallback(async () => {
     try {
-      setIsLoading(true);
+      setIsLoadingUsers(true);
 
       if (!user) return;
 
@@ -69,35 +72,10 @@ function RightSidebar() {
       } catch {
         console.error('Failed to load suggested users');
       }
-
-      // Load suggested groups (top 5) with 1 hour cache
-      try {
-        // Get user's current groups to exclude them from suggestions
-        const userGroups = await firebaseApi.group.getUserGroups(user.id);
-        const userGroupIds = new Set(userGroups.map(g => g.id));
-
-        // Get all groups with caching
-        const allGroups = await cachedQuery(
-          `suggested_groups_all`,
-          () => firebaseApi.group.searchGroups(''),
-          {
-            memoryTtl: 60 * 60 * 1000, // 1 hour in memory
-            localTtl: 60 * 60 * 1000, // 1 hour in localStorage
-            sessionCache: true,
-            dedupe: true,
-          }
-        );
-        const filteredGroups = allGroups.filter(
-          group => !userGroupIds.has(group.id)
-        );
-        setSuggestedGroups(filteredGroups.slice(0, 5));
-      } catch {
-        console.error('Failed to load suggested groups');
-      }
     } catch {
       console.error('Failed to load suggested content');
     } finally {
-      setIsLoading(false);
+      setIsLoadingUsers(false);
     }
   }, [user]);
 
@@ -160,7 +138,7 @@ function RightSidebar() {
             </h3>
           </div>
 
-          {isLoading ? (
+          {isLoadingUsers ? (
             <div className="space-y-2">
               {[1, 2, 3, 4, 5].map(i => (
                 <div
@@ -255,7 +233,7 @@ function RightSidebar() {
             </h3>
           </div>
 
-          {isLoading ? (
+          {isLoadingGroups ? (
             <div className="space-y-2">
               {[1, 2, 3, 4, 5].map(i => (
                 <div
@@ -270,13 +248,13 @@ function RightSidebar() {
                 </div>
               ))}
             </div>
-          ) : suggestedGroups.length === 0 ? (
+          ) : fetchedSuggestedGroups.length === 0 ? (
             <div className="p-6 text-center bg-white rounded-lg">
               <p className="text-sm text-gray-500">No groups available</p>
             </div>
           ) : (
             <div className="space-y-1">
-              {suggestedGroups.map(group => (
+              {fetchedSuggestedGroups.map(group => (
                 <Link
                   key={group.id}
                   href={`/groups/${group.id}`}
@@ -306,10 +284,7 @@ function RightSidebar() {
                         setJoiningGroups(prev => new Set(prev).add(group.id));
                         try {
                           await firebaseApi.group.joinGroup(group.id, user.id);
-                          // Remove from suggestions after joining
-                          setSuggestedGroups(prev =>
-                            prev.filter(g => g.id !== group.id)
-                          );
+                          // Hook will automatically refetch and filter out the joined group
                         } catch {
                           // Error joining group - silently fail for suggestions
                         } finally {

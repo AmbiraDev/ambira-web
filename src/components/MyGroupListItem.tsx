@@ -5,34 +5,40 @@ import Link from 'next/link';
 import { Group } from '@/types';
 import GroupAvatar from './GroupAvatar';
 import { Users, MapPin } from 'lucide-react';
+import { truncateText } from '@/lib/utils/text';
+import { GROUP_DISPLAY_CONFIG } from '@/lib/constants/groupDisplay';
 
 interface MyGroupListItemProps {
   group: Group;
 }
 
 export const MyGroupListItem: React.FC<MyGroupListItemProps> = ({ group }) => {
-  // Mobile: Truncate group name if longer than 30 characters
-  const displayNameMobile =
-    group.name.length > 30 ? group.name.substring(0, 30) + '...' : group.name;
+  // Mobile: Truncate group name if longer than configured length
+  const displayNameMobile = truncateText(
+    group.name,
+    GROUP_DISPLAY_CONFIG.TRUNCATE_LENGTHS.NAME_MOBILE
+  );
 
-  // Desktop: Truncate group name if longer than 60 characters
-  const displayNameDesktop =
-    group.name.length > 60 ? group.name.substring(0, 60) + '...' : group.name;
+  // Desktop: Truncate group name if longer than configured length
+  const displayNameDesktop = truncateText(
+    group.name,
+    GROUP_DISPLAY_CONFIG.TRUNCATE_LENGTHS.NAME_DESKTOP
+  );
 
-  // Mobile: Truncate location if longer than 20 characters
-  const displayLocationMobile =
-    group.location && group.location.length > 20
-      ? group.location.substring(0, 20) + '...'
-      : group.location;
+  // Mobile: Truncate location if longer than configured length
+  const displayLocationMobile = truncateText(
+    group.location,
+    GROUP_DISPLAY_CONFIG.TRUNCATE_LENGTHS.LOCATION_MOBILE
+  );
 
   // Desktop: Don't truncate location
   const displayLocationDesktop = group.location;
 
-  // Desktop: Truncate description if longer than 150 characters
-  const displayDescription =
-    group.description && group.description.length > 150
-      ? group.description.substring(0, 150) + '...'
-      : group.description;
+  // Desktop: Truncate description if longer than configured length
+  const displayDescription = truncateText(
+    group.description,
+    GROUP_DISPLAY_CONFIG.TRUNCATE_LENGTHS.DESCRIPTION_DESKTOP
+  );
 
   return (
     <Link
