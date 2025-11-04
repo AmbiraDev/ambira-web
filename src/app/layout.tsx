@@ -5,7 +5,6 @@ import { AuthInitializer } from '@/components/AuthInitializer';
 import { DataPrefetcher } from '@/components/DataPrefetcher';
 import { QueryProvider } from '@/providers/QueryProvider';
 import { ThemeColorProvider } from '@/providers/ThemeColorProvider';
-import { Toaster } from 'sonner';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import PWAInstaller from '@/components/PWAInstaller';
 import { Analytics } from '@vercel/analytics/react';
@@ -99,24 +98,6 @@ export default function RootLayout({
               <AuthInitializer>
                 <DataPrefetcher />
                 {children}
-                <Toaster
-                  position="bottom-right"
-                  expand={false}
-                  closeButton
-                  toastOptions={{
-                    style: {
-                      background: 'white',
-                      color: '#1F2937',
-                      border: '1px solid #E5E7EB',
-                      borderRadius: '8px',
-                      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
-                      padding: '12px 16px',
-                      fontSize: '14px',
-                    },
-                    className: 'font-sans',
-                    duration: 3000,
-                  }}
-                />
               </AuthInitializer>
             </QueryProvider>
             <Analytics />

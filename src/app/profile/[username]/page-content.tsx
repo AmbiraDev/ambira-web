@@ -6,7 +6,6 @@ import Image from 'next/image';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { UserX, ChevronDown, MapPin } from 'lucide-react';
-import { toast } from 'sonner';
 import Link from 'next/link';
 import {
   XAxis,
@@ -235,7 +234,7 @@ export default function ProfilePageContent({
   // Show error toast when profile fails to load
   useEffect(() => {
     if (error && profileError) {
-      toast.error(error);
+      console.error(error);
     }
   }, [error, profileError]);
 

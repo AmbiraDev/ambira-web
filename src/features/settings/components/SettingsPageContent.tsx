@@ -34,7 +34,6 @@ import {
 import { useAuth } from '@/hooks/useAuth';
 import Image from 'next/image';
 import { firebaseUserApi } from '@/lib/api';
-import { toast } from 'sonner';
 import ConfirmDialog from '@/components/ConfirmDialog';
 import { useQueryClient } from '@tanstack/react-query';
 import { AUTH_KEYS } from '@/lib/react-query/auth.queries';
@@ -153,14 +152,12 @@ export function SettingsPageContent() {
     // Validate file type
     const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
     if (!validTypes.includes(file.type)) {
-      toast.error('Please upload a JPEG, PNG, GIF, or WebP image');
       return;
     }
 
     // Validate file size (5MB max)
     const maxSize = 5 * 1024 * 1024;
     if (file.size > maxSize) {
-      toast.error('File size too large. Maximum size is 5MB');
       return;
     }
 
@@ -176,10 +173,8 @@ export function SettingsPageContent() {
       });
 
       setProfilePictureUrl(downloadURL);
-      toast.success('Profile picture updated');
     } catch (err: unknown) {
       console.error('Upload error:', err);
-      toast.error('Failed to upload photo');
     } finally {
       setIsUploadingPhoto(false);
     }
@@ -215,12 +210,10 @@ export function SettingsPageContent() {
       // Invalidate auth cache to refresh user data
       await queryClient.invalidateQueries({ queryKey: AUTH_KEYS.session() });
 
-      toast.success('Profile updated successfully!');
       setSaved(true);
       setIsSaving(false);
     } catch (err: unknown) {
       console.error('Failed to update profile:', err);
-      toast.error('Failed to update profile');
       setIsSaving(false);
     }
   };
@@ -235,12 +228,10 @@ export function SettingsPageContent() {
       // Invalidate auth cache to refresh user data
       await queryClient.invalidateQueries({ queryKey: AUTH_KEYS.session() });
 
-      toast.success('Privacy settings updated successfully!');
       setSaved(true);
       setIsSaving(false);
     } catch (err: unknown) {
       console.error('Failed to update privacy settings:', err);
-      toast.error('Failed to update privacy settings');
       setIsSaving(false);
     }
   };
@@ -261,11 +252,9 @@ export function SettingsPageContent() {
     try {
       setIsDeleting(true);
       await firebaseUserApi.deleteAccount();
-      toast.success('Account deleted successfully');
       // The logout will happen automatically as part of deleteAccount
     } catch (err: unknown) {
       console.error('Delete account error:', err);
-      toast.error('Failed to delete account');
       setIsDeleting(false);
       setShowDeleteConfirm(false);
     }
