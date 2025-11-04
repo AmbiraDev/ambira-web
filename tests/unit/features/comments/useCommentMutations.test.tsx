@@ -14,14 +14,32 @@ import {
   useCommentLike,
 } from '@/features/comments/hooks/useCommentMutations';
 import { COMMENT_KEYS } from '@/features/comments/hooks/useComments';
-import { CommentService } from '@/features/comments/services/CommentService';
 import {
   CommentWithDetails,
   CommentsResponse,
   CreateCommentData,
 } from '@/types';
 
-jest.mock('@/features/comments/services/CommentService');
+// Mock the entire CommentService module
+// Create mock functions directly in the factory to avoid hoisting issues
+jest.mock('@/features/comments/services/CommentService', () => {
+  const mockFunctions = {
+    createComment: jest.fn(),
+    updateComment: jest.fn(),
+    deleteComment: jest.fn(),
+    likeComment: jest.fn(),
+    unlikeComment: jest.fn(),
+  };
+
+  return {
+    CommentService: jest.fn().mockImplementation(() => mockFunctions),
+    __mockFunctions: mockFunctions, // Export for test access
+  };
+});
+
+// Import the mocked module to access __mockFunctions
+import * as CommentServiceModule from '@/features/comments/services/CommentService';
+const mockFunctions = (CommentServiceModule as any).__mockFunctions;
 
 describe('useCommentMutations', () => {
   let queryClient: QueryClient;
@@ -95,12 +113,11 @@ describe('useCommentMutations', () => {
       queryClient.setQueryData(COMMENT_KEYS.list(sessionId), initialComments);
 
       // Mock service
-      const mockCreateComment = jest.fn().mockResolvedValue({
+      mockFunctions.createComment.mockResolvedValue({
         ...mockComment,
         id: 'comment456',
         content: newCommentData.content,
       });
-      (CommentService.prototype.createComment as jest.Mock) = mockCreateComment;
 
       // ACT
       const { result } = renderHook(() => useCreateComment(), { wrapper });
@@ -119,7 +136,7 @@ describe('useCommentMutations', () => {
         COMMENT_KEYS.list(sessionId)
       );
       expect(finalComments?.comments.length).toBeGreaterThan(1);
-      expect(mockCreateComment).toHaveBeenCalledWith(newCommentData);
+      expect(mockFunctions.createComment).toHaveBeenCalledWith(newCommentData);
     });
 
     it('should rollback optimistic update on server error', async () => {
@@ -141,10 +158,7 @@ describe('useCommentMutations', () => {
       queryClient.setQueryData(COMMENT_KEYS.list(sessionId), initialComments);
 
       // Mock service to fail
-      const mockCreateComment = jest
-        .fn()
-        .mockRejectedValue(new Error('Server error'));
-      (CommentService.prototype.createComment as jest.Mock) = mockCreateComment;
+      mockFunctions.createComment.mockRejectedValue(new Error('Server error'));
 
       // ACT
       const { result } = renderHook(() => useCreateComment(), { wrapper });
@@ -183,8 +197,7 @@ describe('useCommentMutations', () => {
       // queryClient.setQueryData(['auth', 'user'], mockUser); // <-- NOT SET
 
       // Mock service
-      const mockCreateComment = jest.fn().mockResolvedValue(mockComment);
-      (CommentService.prototype.createComment as jest.Mock) = mockCreateComment;
+      mockFunctions.createComment.mockResolvedValue(mockComment);
 
       // SPY on console.warn
       const warnSpy = jest.spyOn(console, 'warn').mockImplementation();
@@ -207,7 +220,7 @@ describe('useCommentMutations', () => {
       );
 
       // Should still create comment on server
-      expect(mockCreateComment).toHaveBeenCalledWith(newCommentData);
+      expect(mockFunctions.createComment).toHaveBeenCalledWith(newCommentData);
 
       warnSpy.mockRestore();
     });
@@ -242,8 +255,7 @@ describe('useCommentMutations', () => {
       });
 
       // Mock service
-      const mockCreateComment = jest.fn().mockResolvedValue(mockComment);
-      (CommentService.prototype.createComment as jest.Mock) = mockCreateComment;
+      mockFunctions.createComment.mockResolvedValue(mockComment);
 
       // ACT
       const { result } = renderHook(() => useCreateComment(), { wrapper });
@@ -279,8 +291,7 @@ describe('useCommentMutations', () => {
       queryClient.setQueryData(COMMENT_KEYS.list(sessionId), initialComments);
 
       // Mock service
-      const mockDeleteComment = jest.fn().mockResolvedValue(undefined);
-      (CommentService.prototype.deleteComment as jest.Mock) = mockDeleteComment;
+      mockFunctions.deleteComment.mockResolvedValue(undefined);
 
       // ACT
       const { result } = renderHook(() => useDeleteComment(), { wrapper });
@@ -294,7 +305,9 @@ describe('useCommentMutations', () => {
         expect(result.current.isSuccess).toBe(true);
       });
 
-      expect(mockDeleteComment).toHaveBeenCalledWith(commentIdToDelete);
+      expect(mockFunctions.deleteComment).toHaveBeenCalledWith(
+        commentIdToDelete
+      );
     });
   });
 
@@ -312,8 +325,7 @@ describe('useCommentMutations', () => {
       queryClient.setQueryData(COMMENT_KEYS.list(sessionId), initialComments);
 
       // Mock service
-      const mockUpdateComment = jest.fn().mockResolvedValue(undefined);
-      (CommentService.prototype.updateComment as jest.Mock) = mockUpdateComment;
+      mockFunctions.updateComment.mockResolvedValue(undefined);
 
       // ACT
       const { result } = renderHook(() => useUpdateComment(), { wrapper });
@@ -331,7 +343,7 @@ describe('useCommentMutations', () => {
         expect(result.current.isSuccess).toBe(true);
       });
 
-      expect(mockUpdateComment).toHaveBeenCalledWith(commentId, {
+      expect(mockFunctions.updateComment).toHaveBeenCalledWith(commentId, {
         content: updatedContent,
       });
     });
@@ -350,8 +362,7 @@ describe('useCommentMutations', () => {
       queryClient.setQueryData(COMMENT_KEYS.list(sessionId), initialComments);
 
       // Mock service
-      const mockLikeComment = jest.fn().mockResolvedValue(undefined);
-      (CommentService.prototype.likeComment as jest.Mock) = mockLikeComment;
+      mockFunctions.likeComment.mockResolvedValue(undefined);
 
       // ACT
       const { result } = renderHook(() => useCommentLike(sessionId), {
@@ -367,7 +378,7 @@ describe('useCommentMutations', () => {
         expect(result.current.isSuccess).toBe(true);
       });
 
-      expect(mockLikeComment).toHaveBeenCalledWith(commentId);
+      expect(mockFunctions.likeComment).toHaveBeenCalledWith(commentId);
     });
 
     it('should optimistically update unlike', async () => {
@@ -382,8 +393,7 @@ describe('useCommentMutations', () => {
       queryClient.setQueryData(COMMENT_KEYS.list(sessionId), initialComments);
 
       // Mock service
-      const mockUnlikeComment = jest.fn().mockResolvedValue(undefined);
-      (CommentService.prototype.unlikeComment as jest.Mock) = mockUnlikeComment;
+      mockFunctions.unlikeComment.mockResolvedValue(undefined);
 
       // ACT
       const { result } = renderHook(() => useCommentLike(sessionId), {
@@ -399,7 +409,7 @@ describe('useCommentMutations', () => {
         expect(result.current.isSuccess).toBe(true);
       });
 
-      expect(mockUnlikeComment).toHaveBeenCalledWith(commentId);
+      expect(mockFunctions.unlikeComment).toHaveBeenCalledWith(commentId);
     });
 
     it('should handle "already liked" errors gracefully', async () => {
@@ -414,10 +424,7 @@ describe('useCommentMutations', () => {
       queryClient.setQueryData(COMMENT_KEYS.list(sessionId), initialComments);
 
       // Mock service to throw "already liked"
-      const mockLikeComment = jest
-        .fn()
-        .mockRejectedValue(new Error('Already liked'));
-      (CommentService.prototype.likeComment as jest.Mock) = mockLikeComment;
+      mockFunctions.likeComment.mockRejectedValue(new Error('Already liked'));
 
       // ACT
       const { result } = renderHook(() => useCommentLike(sessionId), {

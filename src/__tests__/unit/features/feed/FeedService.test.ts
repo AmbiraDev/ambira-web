@@ -92,14 +92,28 @@ describe('FeedService', () => {
       expect(result.hasMore).toBe(false);
     });
 
-    it('should return empty feed if not following anyone', async () => {
+    it('should include current user in feed even when not following anyone', async () => {
       // ARRANGE
+      // User doesn't follow anyone
       mockSocialGraphRepo.getFollowingIds.mockResolvedValue([]);
+
+      // Mock feed repository to return empty sessions (user has no posts)
+      mockFeedRepo.getFeedForFollowing.mockResolvedValue({
+        sessions: [],
+        hasMore: false,
+      });
 
       // ACT
       const result = await feedService.getFeed('user-1', { type: 'following' });
 
       // ASSERT
+      // Should still call feed repo with current user included
+      expect(mockFeedRepo.getFeedForFollowing).toHaveBeenCalledWith(
+        ['user-1'],
+        20,
+        undefined
+      );
+      // Result depends on what feed repository returns (in this case, empty)
       expect(result.sessions).toHaveLength(0);
       expect(result.hasMore).toBe(false);
     });

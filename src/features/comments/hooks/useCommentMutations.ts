@@ -448,27 +448,42 @@ export function useDeleteComment(
         updateSessionCommentCount
       );
 
-      // Update feed caches
+      // Update feed caches with proper type guards
       queryClient.setQueriesData<FeedData>(
         { queryKey: ['feed'] },
         (old: FeedData | undefined): FeedData | undefined => {
           if (!old) return old;
 
+          // Array format: SessionWithDetails[]
           if (Array.isArray(old)) {
+            const hasSession = old.some(s => s.id === sessionId);
+            if (!hasSession) return old;
             return old.map(updateSessionCommentCount) as SessionWithDetails[];
-          } else if ('sessions' in old && old.sessions) {
+          }
+
+          // Object format with sessions array: FeedArrayData
+          if (isFeedArrayData(old)) {
+            const hasSession = old.sessions?.some(s => s.id === sessionId);
+            if (!hasSession) return old;
             return {
               ...old,
-              sessions: old.sessions.map(updateSessionCommentCount),
-            } as FeedArrayData;
-          } else if ('pages' in old && old.pages) {
+              sessions: old.sessions!.map(updateSessionCommentCount),
+            };
+          }
+
+          // Infinite query format: FeedInfiniteData
+          if (isFeedInfiniteData(old)) {
+            const hasSession = old.pages.some(page =>
+              page.sessions.some(s => s.id === sessionId)
+            );
+            if (!hasSession) return old;
             return {
               ...old,
               pages: old.pages.map(page => ({
                 ...page,
                 sessions: page.sessions.map(updateSessionCommentCount),
               })),
-            } as FeedInfiniteData;
+            };
           }
 
           return old;
