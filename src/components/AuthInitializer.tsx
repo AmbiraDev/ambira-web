@@ -53,8 +53,11 @@ export function AuthInitializer({ children }: AuthInitializerProps) {
     let timeoutId: NodeJS.Timeout | null = null;
 
     const initializeAuth = async () => {
-      // Set a timeout to ensure we don't hang forever on loading screen
-      // If auth hasn't initialized after 5 seconds, continue anyway
+      // STEP 1: Check for Google OAuth redirect result
+      // This MUST happen before setting up the auth listener
+      // getRedirectResult can only be called once per redirect
+
+      // Set timeout FIRST to ensure we don't hang if redirect check hangs
       timeoutId = setTimeout(() => {
         console.warn(
           '[AuthInitializer] ⚠️ Auth initialization timeout - continuing with unauthenticated state'
@@ -62,9 +65,7 @@ export function AuthInitializer({ children }: AuthInitializerProps) {
         queryClient.setQueryData(AUTH_KEYS.session(), null);
         setIsInitializing(false);
       }, 5000);
-      // STEP 1: Check for Google OAuth redirect result
-      // This MUST happen before setting up the auth listener
-      // getRedirectResult can only be called once per redirect
+
       try {
         const redirectResult =
           await firebaseAuthApi.handleGoogleRedirectResult();
