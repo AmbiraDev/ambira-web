@@ -6,7 +6,9 @@
  */
 
 import { useState, useEffect, useCallback } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { Project } from '@/types';
+import { CACHE_KEYS } from '@/lib/queryClient';
 
 // Minimal interface for active session data (matches what comes from getActiveSession)
 export interface ActiveSessionData {
@@ -43,6 +45,8 @@ export function useTimerState({
   currentProject,
   onAutoSave,
 }: UseTimerStateOptions) {
+  const queryClient = useQueryClient();
+
   const [timerState, setTimerState] = useState<TimerState>({
     isRunning: false,
     isPaused: false,
@@ -152,23 +156,34 @@ export function useTimerState({
       // Only process timer-event changes
       if (e.key !== 'timer-event') return;
 
-      // Check if we have an active timer that needs to be cancelled
-      if (timerState.activeTimerId) {
-        // Reset local timer state immediately
-        setTimerState(prev => ({
-          ...prev,
-          isRunning: false,
-          isPaused: false,
-          elapsedSeconds: 0,
-          currentProject: null,
-          activeTimerId: null,
-        }));
-      }
+      // CRITICAL FIX for cross-tab auto-save race condition:
+      // 1. Immediately stop local timer to cancel the auto-save interval
+      setTimerState(prev => ({
+        ...prev,
+        isRunning: false,
+        isPaused: false,
+        elapsedSeconds: 0,
+        currentProject: null,
+        activeTimerId: null,
+      }));
+
+      // 2. Invalidate React Query cache to force immediate refetch
+      // This ensures activeSession becomes null BEFORE any pending auto-save fires
+      queryClient.invalidateQueries({
+        predicate: query => {
+          // Invalidate all active session queries across all users
+          // Safe because each user only has one active session
+          return query.queryKey[0] === 'active-session';
+        },
+      });
+
+      // 3. Set cache to null immediately for instant feedback
+      queryClient.setQueryData(['active-session'], null);
     };
 
     window.addEventListener('storage', handleStorageChange);
     return () => window.removeEventListener('storage', handleStorageChange);
-  }, [timerState.activeTimerId]);
+  }, [queryClient]); // Include queryClient in dependencies
 
   // Format time as HH:MM:SS
   const getFormattedTime = useCallback(
