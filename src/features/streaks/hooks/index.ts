@@ -19,11 +19,7 @@
  */
 
 // Query hooks
-export {
-  useStreakData,
-  useStreakStats,
-  STREAK_KEYS,
-} from './useStreaks';
+export { useStreakData, useStreakStats, STREAK_KEYS } from './useStreaks';
 
 // Mutation hooks
 export {

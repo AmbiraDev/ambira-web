@@ -5,7 +5,6 @@
  * Tests business rules and error handling
  */
 
- 
 // Note: 'any' types used for test mocks; unused imports kept for future test coverage
 
 import {

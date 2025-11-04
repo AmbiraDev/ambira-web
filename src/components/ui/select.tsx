@@ -45,7 +45,10 @@ const SelectContent = React.forwardRef<
 >(({ className, children, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn('relative z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md', className)}
+    className={cn(
+      'relative z-50 min-w-[8rem] overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-md',
+      className
+    )}
     {...props}
   >
     {children}
@@ -59,7 +62,10 @@ const SelectItem = React.forwardRef<
 >(({ className, children, ...props }, ref) => (
   <option
     ref={ref}
-    className={cn('relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50', className)}
+    className={cn(
+      'relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
+      className
+    )}
     {...props}
   >
     {children}
@@ -71,18 +77,8 @@ const SelectValue = React.forwardRef<
   HTMLSpanElement,
   React.HTMLAttributes<HTMLSpanElement>
 >(({ className, ...props }, ref) => (
-  <span
-    ref={ref}
-    className={cn('block truncate', className)}
-    {...props}
-  />
+  <span ref={ref} className={cn('block truncate', className)} {...props} />
 ));
 SelectValue.displayName = 'SelectValue';
 
-export {
-  Select,
-  SelectTrigger,
-  SelectContent,
-  SelectItem,
-  SelectValue,
-};
+export { Select, SelectTrigger, SelectContent, SelectItem, SelectValue };

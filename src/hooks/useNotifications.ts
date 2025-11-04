@@ -111,10 +111,15 @@ export function useNotifications(options?: {
  * Hook to get unread notification count
  * Derived from notifications query for efficiency
  */
-export function useUnreadCount() {
+export function useUnreadCount(limit: number = 50) {
   const { user } = useAuth();
-  const queryKey = CACHE_KEYS.NOTIFICATIONS(user?.id || 'none');
   const queryClient = useQueryClient();
+
+  // Use the same query key structure as useNotifications
+  const queryKey = useMemo(
+    () => [...CACHE_KEYS.NOTIFICATIONS(user?.id || 'none'), limit, user],
+    [user, limit]
+  );
 
   // Get cached notifications data
   const notifications = queryClient.getQueryData<Notification[]>(queryKey);
@@ -128,10 +133,15 @@ export function useUnreadCount() {
 /**
  * Hook to mark a notification as read with optimistic updates
  */
-export function useMarkNotificationRead() {
+export function useMarkNotificationRead(limit: number = 50) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const queryKey = CACHE_KEYS.NOTIFICATIONS(user?.id || 'none');
+
+  // Use the same query key structure as useNotifications
+  const queryKey = useMemo(
+    () => [...CACHE_KEYS.NOTIFICATIONS(user?.id || 'none'), limit, user],
+    [user, limit]
+  );
 
   return useMutation({
     mutationFn: (notificationId: string) =>
@@ -178,10 +188,15 @@ export function useMarkNotificationRead() {
 /**
  * Hook to mark all notifications as read
  */
-export function useMarkAllNotificationsRead() {
+export function useMarkAllNotificationsRead(limit: number = 50) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const queryKey = CACHE_KEYS.NOTIFICATIONS(user?.id || 'none');
+
+  // Use the same query key structure as useNotifications
+  const queryKey = useMemo(
+    () => [...CACHE_KEYS.NOTIFICATIONS(user?.id || 'none'), limit, user],
+    [user, limit]
+  );
 
   return useMutation({
     mutationFn: async () => {
@@ -222,10 +237,15 @@ export function useMarkAllNotificationsRead() {
 /**
  * Hook to delete a notification with optimistic updates
  */
-export function useDeleteNotification() {
+export function useDeleteNotification(limit: number = 50) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const queryKey = CACHE_KEYS.NOTIFICATIONS(user?.id || 'none');
+
+  // Use the same query key structure as useNotifications
+  const queryKey = useMemo(
+    () => [...CACHE_KEYS.NOTIFICATIONS(user?.id || 'none'), limit, user],
+    [user, limit]
+  );
 
   return useMutation({
     mutationFn: (notificationId: string) =>
@@ -262,26 +282,22 @@ export function useDeleteNotification() {
 }
 
 /**
- * Hook to clear all notifications
+ * Hook to clear all notifications with optimistic updates
  */
-export function useClearAllNotifications() {
+export function useClearAllNotifications(limit: number = 50) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const queryKey = CACHE_KEYS.NOTIFICATIONS(user?.id || 'none');
+
+  // Use the same query key structure as useNotifications
+  const queryKey = useMemo(
+    () => [...CACHE_KEYS.NOTIFICATIONS(user?.id || 'none'), limit, user],
+    [user, limit]
+  );
 
   return useMutation({
     mutationFn: async () => {
       if (!user) throw new Error('User not authenticated');
-
-      const notifications =
-        queryClient.getQueryData<Notification[]>(queryKey) || [];
-
-      // Delete all notifications in parallel
-      await Promise.all(
-        notifications.map(notification =>
-          firebaseNotificationApi.deleteNotification(notification.id)
-        )
-      );
+      return firebaseNotificationApi.clearAllNotifications(user.id);
     },
 
     // Optimistic update

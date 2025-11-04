@@ -156,7 +156,7 @@ export class User {
       profilePicture: this.profilePicture,
       followerCount: this.followerCount,
       followingCount: this.followingCount,
-      profileVisibility: this.profileVisibility
+      profileVisibility: this.profileVisibility,
     };
   }
 }

@@ -33,7 +33,9 @@ export default function Navigation({ pathname }: NavigationProps) {
             href={href}
             className={cn(
               'text-base font-[450] transition-colors h-full relative flex items-center',
-              isActive ? CLASS_NAMES.NAV_LINK_ACTIVE : CLASS_NAMES.NAV_LINK_INACTIVE
+              isActive
+                ? CLASS_NAMES.NAV_LINK_ACTIVE
+                : CLASS_NAMES.NAV_LINK_INACTIVE
             )}
             aria-current={isActive ? 'page' : undefined}
           >

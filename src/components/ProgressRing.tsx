@@ -19,7 +19,7 @@ export const ProgressRing: React.FC<ProgressRingProps> = ({
   color = '#3b82f6',
   backgroundColor = '#e5e7eb',
   showPercentage = true,
-  label
+  label,
 }) => {
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
@@ -51,7 +51,7 @@ export const ProgressRing: React.FC<ProgressRingProps> = ({
           className="transition-all duration-500 ease-out"
         />
       </svg>
-      
+
       {/* Center content */}
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         {showPercentage && (
@@ -59,9 +59,7 @@ export const ProgressRing: React.FC<ProgressRingProps> = ({
             {Math.round(progress)}%
           </span>
         )}
-        {label && (
-          <span className="text-xs text-gray-600 mt-1">{label}</span>
-        )}
+        {label && <span className="text-xs text-gray-600 mt-1">{label}</span>}
       </div>
     </div>
   );

@@ -17,9 +17,7 @@ export default function SignupPage() {
                 className="w-16 h-16"
               />
             </div>
-            <h2 className="text-3xl font-bold text-gray-900">
-              Join Ambira
-            </h2>
+            <h2 className="text-3xl font-bold text-gray-900">Join Ambira</h2>
             <p className="mt-2 text-sm text-gray-600">
               Start your productivity journey with friends
             </p>

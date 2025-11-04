@@ -2,17 +2,23 @@
  * Challenge Mutation Hooks - React Query Boundary
  */
 
-import { useMutation, useQueryClient, UseMutationOptions } from '@tanstack/react-query';
+import {
+  useMutation,
+  useQueryClient,
+  UseMutationOptions,
+} from '@tanstack/react-query';
 import { ChallengeService } from '../services/ChallengeService';
 import { CHALLENGE_KEYS } from './useChallenges';
 import { Challenge, CreateChallengeData, UpdateChallengeData } from '@/types';
 
 const challengeService = new ChallengeService();
 
-export function useCreateChallenge(options?: Partial<UseMutationOptions<Challenge, Error, CreateChallengeData>>) {
+export function useCreateChallenge(
+  options?: Partial<UseMutationOptions<Challenge, Error, CreateChallengeData>>
+) {
   const queryClient = useQueryClient();
   return useMutation<Challenge, Error, CreateChallengeData>({
-    mutationFn: (data) => challengeService.createChallenge(data),
+    mutationFn: data => challengeService.createChallenge(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: CHALLENGE_KEYS.lists() });
     },
@@ -20,51 +26,86 @@ export function useCreateChallenge(options?: Partial<UseMutationOptions<Challeng
   });
 }
 
-export function useUpdateChallenge(options?: Partial<UseMutationOptions<Challenge, Error, { challengeId: string; data: UpdateChallengeData }>>) {
+export function useUpdateChallenge(
+  options?: Partial<
+    UseMutationOptions<
+      Challenge,
+      Error,
+      { challengeId: string; data: UpdateChallengeData }
+    >
+  >
+) {
   const queryClient = useQueryClient();
-  return useMutation<Challenge, Error, { challengeId: string; data: UpdateChallengeData }>({
-    mutationFn: ({ challengeId, data }) => challengeService.updateChallenge(challengeId, data),
+  return useMutation<
+    Challenge,
+    Error,
+    { challengeId: string; data: UpdateChallengeData }
+  >({
+    mutationFn: ({ challengeId, data }) =>
+      challengeService.updateChallenge(challengeId, data),
     onSuccess: (_, { challengeId }) => {
-      queryClient.invalidateQueries({ queryKey: CHALLENGE_KEYS.detail(challengeId) });
+      queryClient.invalidateQueries({
+        queryKey: CHALLENGE_KEYS.detail(challengeId),
+      });
       queryClient.invalidateQueries({ queryKey: CHALLENGE_KEYS.lists() });
     },
     ...options,
   });
 }
 
-export function useDeleteChallenge(options?: Partial<UseMutationOptions<void, Error, string>>) {
+export function useDeleteChallenge(
+  options?: Partial<UseMutationOptions<void, Error, string>>
+) {
   const queryClient = useQueryClient();
   return useMutation<void, Error, string>({
-    mutationFn: (challengeId) => challengeService.deleteChallenge(challengeId),
+    mutationFn: challengeId => challengeService.deleteChallenge(challengeId),
     onSuccess: (_, challengeId) => {
       queryClient.invalidateQueries({ queryKey: CHALLENGE_KEYS.lists() });
-      queryClient.removeQueries({ queryKey: CHALLENGE_KEYS.detail(challengeId) });
+      queryClient.removeQueries({
+        queryKey: CHALLENGE_KEYS.detail(challengeId),
+      });
     },
     ...options,
   });
 }
 
-export function useJoinChallenge(options?: Partial<UseMutationOptions<void, Error, string>>) {
+export function useJoinChallenge(
+  options?: Partial<UseMutationOptions<void, Error, string>>
+) {
   const queryClient = useQueryClient();
   return useMutation<void, Error, string>({
-    mutationFn: (challengeId) => challengeService.joinChallenge(challengeId),
+    mutationFn: challengeId => challengeService.joinChallenge(challengeId),
     onSuccess: (_, challengeId) => {
-      queryClient.invalidateQueries({ queryKey: CHALLENGE_KEYS.detail(challengeId) });
-      queryClient.invalidateQueries({ queryKey: CHALLENGE_KEYS.leaderboard(challengeId) });
-      queryClient.invalidateQueries({ queryKey: CHALLENGE_KEYS.stats(challengeId) });
+      queryClient.invalidateQueries({
+        queryKey: CHALLENGE_KEYS.detail(challengeId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: CHALLENGE_KEYS.leaderboard(challengeId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: CHALLENGE_KEYS.stats(challengeId),
+      });
     },
     ...options,
   });
 }
 
-export function useLeaveChallenge(options?: Partial<UseMutationOptions<void, Error, string>>) {
+export function useLeaveChallenge(
+  options?: Partial<UseMutationOptions<void, Error, string>>
+) {
   const queryClient = useQueryClient();
   return useMutation<void, Error, string>({
-    mutationFn: (challengeId) => challengeService.leaveChallenge(challengeId),
+    mutationFn: challengeId => challengeService.leaveChallenge(challengeId),
     onSuccess: (_, challengeId) => {
-      queryClient.invalidateQueries({ queryKey: CHALLENGE_KEYS.detail(challengeId) });
-      queryClient.invalidateQueries({ queryKey: CHALLENGE_KEYS.leaderboard(challengeId) });
-      queryClient.invalidateQueries({ queryKey: CHALLENGE_KEYS.stats(challengeId) });
+      queryClient.invalidateQueries({
+        queryKey: CHALLENGE_KEYS.detail(challengeId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: CHALLENGE_KEYS.leaderboard(challengeId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: CHALLENGE_KEYS.stats(challengeId),
+      });
     },
     ...options,
   });
@@ -73,7 +114,9 @@ export function useLeaveChallenge(options?: Partial<UseMutationOptions<void, Err
 export function useInvalidateChallenge() {
   const queryClient = useQueryClient();
   return (challengeId: string) => {
-    queryClient.invalidateQueries({ queryKey: CHALLENGE_KEYS.detail(challengeId) });
+    queryClient.invalidateQueries({
+      queryKey: CHALLENGE_KEYS.detail(challengeId),
+    });
   };
 }
 

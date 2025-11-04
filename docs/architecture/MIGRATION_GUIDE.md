@@ -140,7 +140,7 @@ export function useFeedSessions(
         limit: 20,
         cursor: pageParam,
       }),
-    getNextPageParam: (lastPage) =>
+    getNextPageParam: lastPage =>
       lastPage.hasMore ? lastPage.nextCursor : undefined,
     staleTime: 1 * 60 * 1000, // 1 minute
     ...options,
@@ -181,7 +181,8 @@ export const PROFILE_KEYS = {
   details: () => [...PROFILE_KEYS.all(), 'detail'] as const,
   detail: (userId: string) => [...PROFILE_KEYS.details(), userId] as const,
   stats: (userId: string) => [...PROFILE_KEYS.detail(userId), 'stats'] as const,
-  sessions: (userId: string) => [...PROFILE_KEYS.detail(userId), 'sessions'] as const,
+  sessions: (userId: string) =>
+    [...PROFILE_KEYS.detail(userId), 'sessions'] as const,
 };
 
 export function useUserProfile(userId: string) {
@@ -206,6 +207,7 @@ export function useUserStats(userId: string) {
 #### Step 3: Migrate User Queries from useCache.ts
 
 Find and replace:
+
 - `useUserProfile` → `import { useUserProfile } from '@/features/profile/hooks'`
 - `useUserStats` → `import { useUserStats } from '@/features/profile/hooks'`
 - `useUserSessions` → `import { useUserSessions } from '@/features/profile/hooks'`
@@ -474,7 +476,7 @@ import { GROUPS_KEYS } from '@/features/groups/hooks';
 
 onSuccess: () => {
   queryClient.invalidateQueries({ queryKey: GROUPS_KEYS.all() });
-}
+};
 ```
 
 ### Q: Should I create a hook for every service method?
@@ -490,13 +492,10 @@ export function useGroupLiveUpdates(groupId: string) {
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    const unsubscribe = onSnapshot(
-      doc(db, 'groups', groupId),
-      (snapshot) => {
-        const group = snapshot.data();
-        queryClient.setQueryData(GROUPS_KEYS.detail(groupId), group);
-      }
-    );
+    const unsubscribe = onSnapshot(doc(db, 'groups', groupId), snapshot => {
+      const group = snapshot.data();
+      queryClient.setQueryData(GROUPS_KEYS.detail(groupId), group);
+    });
 
     return unsubscribe;
   }, [groupId, queryClient]);

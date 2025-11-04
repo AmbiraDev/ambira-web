@@ -110,23 +110,29 @@ COMMENT_KEYS = {
   all: () => ['comments'],
   lists: () => ['comments', 'list'],
   list: (sessionId, limit) => ['comments', 'list', sessionId, limit],
-  session: (sessionId) => ['comments', 'session', sessionId],
-}
+  session: sessionId => ['comments', 'session', sessionId],
+};
 ```
 
 ## Migration from Old Hooks
 
 **Before:**
+
 ```typescript
-import { useAddCommentMutation, useDeleteCommentMutation, useCommentLikeMutation } from '@/hooks/useMutations';
+import {
+  useAddCommentMutation,
+  useDeleteCommentMutation,
+  useCommentLikeMutation,
+} from '@/hooks/useMutations';
 ```
 
 **After:**
+
 ```typescript
 import {
   useCreateComment,
   useDeleteComment,
-  useCommentLike
+  useCommentLike,
 } from '@/features/comments/hooks';
 ```
 

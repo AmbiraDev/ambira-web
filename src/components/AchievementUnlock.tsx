@@ -13,7 +13,7 @@ interface AchievementUnlockProps {
 export const AchievementUnlock: React.FC<AchievementUnlockProps> = ({
   achievement,
   onClose,
-  onShare
+  onShare,
 }) => {
   const [isVisible, setIsVisible] = useState(false);
 
