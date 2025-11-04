@@ -9,6 +9,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { UserPlus, Check, Users, MapPin } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface UserCardProps {
   user: UserSearchResult | SuggestedUser;
@@ -46,14 +47,17 @@ export const UserCard: React.FC<UserCardProps> = ({
 
       if (isFollowing) {
         await firebaseUserApi.unfollowUser(user.id);
+        toast.success(`Unfollowed ${user.name}`);
       } else {
         await firebaseUserApi.followUser(user.id);
+        toast.success(`Following ${user.name}`);
       }
     } catch {
       console.error('Follow/unfollow error');
       // Revert on error
       setIsFollowing(!newFollowingState);
       onFollowChange?.(user.id, !newFollowingState);
+      toast.error('Failed to update follow status');
     } finally {
       setIsLoading(false);
     }
@@ -266,14 +270,17 @@ export const UserCardCompact: React.FC<UserCardProps> = ({
 
       if (isFollowing) {
         await firebaseUserApi.unfollowUser(user.id);
+        toast.success(`Unfollowed ${user.name}`);
       } else {
         await firebaseUserApi.followUser(user.id);
+        toast.success(`Following ${user.name}`);
       }
     } catch {
       console.error('Follow/unfollow error');
       // Revert on error
       setIsFollowing(!newFollowingState);
       onFollowChange?.(user.id, !newFollowingState);
+      toast.error('Failed to update follow status');
     } finally {
       setIsLoading(false);
     }

@@ -28,6 +28,7 @@ import {
 import { useAuth } from '@/hooks/useAuth';
 import Image from 'next/image';
 import { firebaseUserApi } from '@/lib/api';
+import { toast } from 'sonner';
 import ConfirmDialog from '@/components/ConfirmDialog';
 
 type SettingsTab = 'profile' | 'privacy' | 'notifications' | 'display';
@@ -122,12 +123,14 @@ export function SettingsPageContent() {
     // Validate file type
     const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
     if (!validTypes.includes(file.type)) {
+      toast.error('Please upload a JPEG, PNG, GIF, or WebP image');
       return;
     }
 
     // Validate file size (5MB max)
     const maxSize = 5 * 1024 * 1024;
     if (file.size > maxSize) {
+      toast.error('File size too large. Maximum size is 5MB');
       return;
     }
 
@@ -143,11 +146,10 @@ export function SettingsPageContent() {
       });
 
       setProfilePictureUrl(downloadURL);
+      toast.success('Profile picture updated');
     } catch (err: unknown) {
       console.error('Upload error:', err);
-      const errorMessage =
-        err instanceof Error ? err.message : 'Failed to upload photo';
-      console.error(errorMessage);
+      toast.error('Failed to upload photo');
     } finally {
       setIsUploadingPhoto(false);
     }
@@ -179,6 +181,7 @@ export function SettingsPageContent() {
           Object.keys(socialLinks).length > 0 ? socialLinks : undefined,
         profileVisibility: formData.profileVisibility,
       });
+      toast.success('Profile updated');
       setSaved(true);
 
       // Reload the page after a short delay to refresh the user context
@@ -186,9 +189,8 @@ export function SettingsPageContent() {
         window.location.reload();
       }, 1000);
     } catch (err: unknown) {
-      const errorMessage =
-        err instanceof Error ? err.message : 'Failed to update profile';
-      console.error(errorMessage);
+      console.error('Failed to update profile:', err);
+      toast.error('Failed to update profile');
       setIsSaving(false);
     }
   };
@@ -199,6 +201,7 @@ export function SettingsPageContent() {
       await firebaseUserApi.updateProfile({
         profileVisibility: formData.profileVisibility,
       });
+      toast.success('Privacy settings updated');
       setSaved(true);
 
       // Reload the page after a short delay
@@ -206,11 +209,8 @@ export function SettingsPageContent() {
         window.location.reload();
       }, 1000);
     } catch (err: unknown) {
-      const errorMessage =
-        err instanceof Error
-          ? err.message
-          : 'Failed to update privacy settings';
-      console.error(errorMessage);
+      console.error('Failed to update privacy settings:', err);
+      toast.error('Failed to update privacy settings');
       setIsSaving(false);
     }
   };
@@ -232,12 +232,11 @@ export function SettingsPageContent() {
       setIsDeleting(true);
       // We'll implement the actual API call next
       await firebaseUserApi.deleteAccount();
+      toast.success('Account deleted');
       // The logout will happen automatically as part of deleteAccount
     } catch (err: unknown) {
       console.error('Delete account error:', err);
-      const errorMessage =
-        err instanceof Error ? err.message : 'Failed to delete account';
-      console.error(errorMessage);
+      toast.error('Failed to delete account');
       setIsDeleting(false);
       setShowDeleteConfirm(false);
     }

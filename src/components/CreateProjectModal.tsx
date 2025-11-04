@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { CreateProjectData } from '@/types';
 import { useCreateActivity } from '@/hooks/useActivitiesQuery';
+import { toast } from 'sonner';
 
 interface CreateProjectModalProps {
   isOpen: boolean;
@@ -125,6 +126,8 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
         totalTarget: formData.totalTarget || undefined,
       });
 
+      toast.success(`Project "${project.name}" created`);
+
       // Reset form
       setFormData({
         name: '',
@@ -140,6 +143,7 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
       onClose();
     } catch (err) {
       console.error('Failed to create project:', err);
+      toast.error('Failed to create project');
       setErrors({ name: 'Failed to create project. Please try again.' });
     } finally {
       setIsSubmitting(false);
