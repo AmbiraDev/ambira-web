@@ -17,6 +17,7 @@ import { Plus, Edit2, Trash2, Clock } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserCustomActivityTypes } from '@/hooks/useActivityTypes';
 import { getAllActivitiesWithUsage } from '@/lib/api/userActivityPreferences';
+import { IconRenderer } from '@/components/IconRenderer';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -238,10 +239,14 @@ export function ActivitiesSettingsPageContent() {
                   <div className="flex items-start gap-4">
                     {/* Icon */}
                     <div
-                      className="h-12 w-12 rounded-lg flex items-center justify-center text-2xl flex-shrink-0"
+                      className="h-12 w-12 rounded-lg flex items-center justify-center flex-shrink-0"
                       style={{ backgroundColor: activity.defaultColor }}
                     >
-                      {activity.icon}
+                      <IconRenderer
+                        iconName={activity.icon}
+                        className="w-6 h-6"
+                        style={{ color: '#FFFFFF' }}
+                      />
                     </div>
 
                     {/* Details */}

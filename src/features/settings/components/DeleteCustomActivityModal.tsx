@@ -13,6 +13,7 @@
 import React, { useState, useEffect } from 'react';
 import { AlertTriangle, X } from 'lucide-react';
 import { useDeleteCustomActivity } from '@/hooks/useActivityTypes';
+import { IconRenderer } from '@/components/IconRenderer';
 import { Button } from '@/components/ui/button';
 import { ActivityType } from '@/types';
 
@@ -122,10 +123,14 @@ export const DeleteCustomActivityModal: React.FC<
           {/* Activity Display */}
           <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
             <div
-              className="h-10 w-10 rounded-lg flex items-center justify-center text-xl"
+              className="h-10 w-10 rounded-lg flex items-center justify-center"
               style={{ backgroundColor: activity.defaultColor }}
             >
-              {activity.icon}
+              <IconRenderer
+                iconName={activity.icon}
+                className="w-5 h-5"
+                style={{ color: '#FFFFFF' }}
+              />
             </div>
             <div className="flex-1 min-w-0">
               <p className="font-medium text-gray-900 truncate">

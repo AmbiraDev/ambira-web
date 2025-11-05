@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useTimer } from '@/features/timer/hooks';
 import { useAuth } from '@/hooks/useAuth';
-import { useActivities } from '@/hooks/useActivitiesQuery';
+import { useAllActivityTypes } from '@/hooks/useActivityTypes';
 import {
   Play,
   Pause,
@@ -40,9 +40,10 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
     resetTimer,
   } = useTimer({ pausePolling: showFinishModal });
   const { user } = useAuth();
-  const { data: projects = [], isLoading: isLoadingProjects } = useActivities(
-    user?.id
-  );
+  const { data: activityTypes = [], isLoading: isLoadingProjects } =
+    useAllActivityTypes(user?.id || '', {
+      enabled: !!user?.id,
+    });
   const [sessionTitle, setSessionTitle] = useState('');
   const [sessionDescription, setSessionDescription] = useState('');
   const [visibility, setVisibility] = useState<
@@ -70,8 +71,20 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
   const [showTimePickerModal, setShowTimePickerModal] = useState(false);
   const [frozenElapsedTime, setFrozenElapsedTime] = useState(0);
 
-  // Only show user's custom activities
-  const allActivities: Activity[] = projects || [];
+  // Convert ActivityType[] to Activity[] for compatibility
+  const allActivities: Activity[] = useMemo(() => {
+    return activityTypes.map(type => ({
+      id: type.id,
+      name: type.name,
+      description: type.description || '',
+      icon: type.icon,
+      color: type.defaultColor,
+      userId: type.userId || '',
+      status: 'active' as const,
+      createdAt: type.createdAt,
+      updatedAt: type.updatedAt,
+    }));
+  }, [activityTypes]);
 
   // Load last used activity from local storage on mount
   useEffect(() => {
