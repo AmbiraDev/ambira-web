@@ -26,6 +26,8 @@ import {
   updateCustomActivityType,
   deleteCustomActivityType,
   type ActivityType as ApiActivityType,
+  type CreateCustomActivityTypeData,
+  type UpdateCustomActivityTypeData,
 } from '@/lib/api/activityTypes';
 import { useAuth } from './useAuth';
 
@@ -171,12 +173,7 @@ export function useCreateCustomActivity(
     UseMutationOptions<
       ActivityType,
       Error,
-      {
-        name: string;
-        icon: string;
-        color: string;
-        description?: string;
-      },
+      CreateCustomActivityTypeData,
       CreateCustomActivityContext
     >
   >
@@ -187,12 +184,7 @@ export function useCreateCustomActivity(
   return useMutation<
     ActivityType,
     Error,
-    {
-      name: string;
-      icon: string;
-      color: string;
-      description?: string;
-    },
+    CreateCustomActivityTypeData,
     CreateCustomActivityContext
   >({
     mutationFn: async data => {
@@ -328,12 +320,7 @@ export function useUpdateCustomActivity(
       Error,
       {
         typeId: string;
-        data: {
-          name?: string;
-          icon?: string;
-          color?: string;
-          description?: string;
-        };
+        data: UpdateCustomActivityTypeData;
       },
       UpdateCustomActivityContext
     >
@@ -347,12 +334,7 @@ export function useUpdateCustomActivity(
     Error,
     {
       typeId: string;
-      data: {
-        name?: string;
-        icon?: string;
-        color?: string;
-        description?: string;
-      };
+      data: UpdateCustomActivityTypeData;
     },
     UpdateCustomActivityContext
   >({
