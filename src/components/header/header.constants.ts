@@ -20,7 +20,7 @@ export const TIMING = {
  */
 export const DIMENSIONS = {
   /** Logo width and height */
-  LOGO_SIZE: 48,
+  LOGO_SIZE: 40,
   /** Profile picture size */
   PROFILE_PICTURE_SIZE: 36,
   /** Maximum container width */
