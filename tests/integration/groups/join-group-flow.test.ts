@@ -42,18 +42,30 @@ describe('Group Join/Leave Flow Integration', () => {
     memberIds: string[] = [],
     adminUserIds: string[] = []
   ): Group => {
-    return new Group({
+    const creatorId = 'admin';
+    const finalAdminUserIds =
+      adminUserIds.length > 0 ? adminUserIds : [creatorId];
+
+    // Ensure creator is always in memberIds (required by Group invariants)
+    const finalMemberIds =
+      memberIds.length > 0
+        ? [...new Set([...memberIds, creatorId])] // Add creator if not already present
+        : [creatorId];
+
+    return new Group(
       id,
-      name: 'Test Group',
-      description: 'Test Description',
-      category: 'learning',
-      privacy: 'public',
-      adminUserIds: new Set(adminUserIds.length > 0 ? adminUserIds : ['admin']),
-      memberIds: new Set(memberIds),
-      createdByUserId: 'admin',
-      createdAt: new Date(),
-      location: 'Seattle, WA',
-    });
+      'Test Group',
+      'Test Description',
+      'learning',
+      'public',
+      finalMemberIds,
+      finalAdminUserIds,
+      creatorId,
+      new Date(),
+      'Seattle, WA',
+      undefined, // imageUrl
+      undefined // memberCount
+    );
   };
 
   beforeEach(() => {
@@ -84,8 +96,9 @@ describe('Group Join/Leave Flow Integration', () => {
 
       // Verify the saved group has the new member
       const savedGroup = mockRepository.save.mock.calls[0][0] as Group;
-      expect(savedGroup.memberIds.has(userId)).toBe(true);
-      expect(savedGroup.getMemberCount()).toBe(existingMembers.length + 1);
+      expect(savedGroup.isMember(userId)).toBe(true);
+      // +2 because we add userId AND creator is always included
+      expect(savedGroup.getMemberCount()).toBe(existingMembers.length + 2);
     });
 
     it('should throw error when user is already a member', async () => {
@@ -99,7 +112,7 @@ describe('Group Join/Leave Flow Integration', () => {
 
       // Act & Assert
       await expect(groupService.joinGroup({ groupId }, userId)).rejects.toThrow(
-        'User is already a member of this group'
+        'Already a member of this group'
       );
 
       expect(mockRepository.save).not.toHaveBeenCalled();
@@ -155,8 +168,9 @@ describe('Group Join/Leave Flow Integration', () => {
 
       // Verify the saved group no longer has the user
       const savedGroup = mockRepository.save.mock.calls[0][0] as Group;
-      expect(savedGroup.memberIds.has(userId)).toBe(false);
-      expect(savedGroup.getMemberCount()).toBe(existingMembers.length - 1);
+      expect(savedGroup.isMember(userId)).toBe(false);
+      // Creator is always included, so memberCount = existingMembers.length (no change)
+      expect(savedGroup.getMemberCount()).toBe(existingMembers.length);
     });
 
     it('should throw error when user is not a member', async () => {
@@ -171,29 +185,24 @@ describe('Group Join/Leave Flow Integration', () => {
       // Act & Assert
       await expect(
         groupService.leaveGroup({ groupId }, userId)
-      ).rejects.toThrow('User is not a member of this group');
+      ).rejects.toThrow('Not a member of this group');
 
       expect(mockRepository.save).not.toHaveBeenCalled();
     });
 
     it('should prevent group owner from leaving', async () => {
       // Arrange
-      const ownerId = 'owner-123';
+      const ownerId = 'admin'; // Use 'admin' as owner (matches createMockGroup)
       const groupId = 'group-456';
-      const existingMembers = [ownerId, 'user-1'];
+      const existingMembers = ['user-1', 'user-2'];
       const group = createMockGroup(groupId, existingMembers, [ownerId]);
-      // Set the owner as createdByUserId
-      Object.defineProperty(group, 'createdByUserId', {
-        value: ownerId,
-        writable: true,
-      });
 
       mockRepository.findById.mockResolvedValue(group);
 
       // Act & Assert
       await expect(
         groupService.leaveGroup({ groupId }, ownerId)
-      ).rejects.toThrow('Group owner cannot leave the group');
+      ).rejects.toThrow('Group owner cannot leave');
 
       expect(mockRepository.save).not.toHaveBeenCalled();
     });
@@ -280,20 +289,29 @@ describe('Group Join/Leave Flow Integration', () => {
       // Act: Join
       await groupService.joinGroup({ groupId }, userId);
 
+      // Get the saved group from the mock call
+      const groupAfterJoin = mockRepository.save.mock.calls[0][0] as Group;
+
       // Assert: User is now a member
-      expect(group.memberIds.has(userId)).toBe(true);
-      const memberCountAfterJoin = group.getMemberCount();
-      expect(memberCountAfterJoin).toBe(existingMembers.length + 1);
+      expect(groupAfterJoin.isMember(userId)).toBe(true);
+      const memberCountAfterJoin = groupAfterJoin.getMemberCount();
+      // +2 because userId added AND creator always included
+      expect(memberCountAfterJoin).toBe(existingMembers.length + 2);
 
       // Reset mocks and update findById to return updated group
-      mockRepository.findById.mockResolvedValue(group);
+      mockRepository.findById.mockResolvedValue(groupAfterJoin);
+      mockRepository.save.mockClear();
 
       // Act: Leave
       await groupService.leaveGroup({ groupId }, userId);
 
+      // Get the saved group after leaving
+      const groupAfterLeave = mockRepository.save.mock.calls[0][0] as Group;
+
       // Assert: User is no longer a member
-      expect(group.memberIds.has(userId)).toBe(false);
-      expect(group.getMemberCount()).toBe(existingMembers.length);
+      expect(groupAfterLeave.isMember(userId)).toBe(false);
+      // Back to just existingMembers + creator
+      expect(groupAfterLeave.getMemberCount()).toBe(existingMembers.length + 1);
     });
 
     it('should prevent double-joining', async () => {
@@ -316,11 +334,11 @@ describe('Group Join/Leave Flow Integration', () => {
       await groupService.joinGroup({ groupId }, userId);
 
       // Assert: First join succeeds
-      expect(group.memberIds.has(userId)).toBe(true);
+      expect(group.isMember(userId)).toBe(true);
 
       // Act & Assert: Second join should fail
       await expect(groupService.joinGroup({ groupId }, userId)).rejects.toThrow(
-        'User is already a member of this group'
+        'Already a member of this group'
       );
     });
 
@@ -343,12 +361,12 @@ describe('Group Join/Leave Flow Integration', () => {
       await groupService.leaveGroup({ groupId }, userId);
 
       // Assert: First leave succeeds
-      expect(group.memberIds.has(userId)).toBe(false);
+      expect(group.isMember(userId)).toBe(false);
 
       // Act & Assert: Second leave should fail
       await expect(
         groupService.leaveGroup({ groupId }, userId)
-      ).rejects.toThrow('User is not a member of this group');
+      ).rejects.toThrow('Not a member of this group');
     });
   });
 
@@ -368,7 +386,8 @@ describe('Group Join/Leave Flow Integration', () => {
 
       // Assert
       const savedGroup = mockRepository.save.mock.calls[0][0] as Group;
-      expect(savedGroup.getMemberCount()).toBe(3);
+      // existingMembers (2) + userId (1) + creator 'admin' (1) = 4
+      expect(savedGroup.getMemberCount()).toBe(4);
     });
 
     it('should correctly decrement member count when leaving', async () => {
@@ -386,7 +405,8 @@ describe('Group Join/Leave Flow Integration', () => {
 
       // Assert
       const savedGroup = mockRepository.save.mock.calls[0][0] as Group;
-      expect(savedGroup.getMemberCount()).toBe(2);
+      // existingMembers (3) + creator 'admin' (1) - userId (1) = 3
+      expect(savedGroup.getMemberCount()).toBe(3);
     });
   });
 });
