@@ -362,6 +362,70 @@ export function useRestoreActivity() {
 }
 
 /**
+ * Hook to get activities with their session counts
+ * Only returns activities that have at least 1 session
+ * Sorted by session count (most sessions first)
+ *
+ * @param userId - User ID to fetch activities for
+ * @param options - Additional React Query options
+ */
+export function useActivitiesWithSessions(
+  userId?: string,
+  options?: Partial<
+    UseQueryOptions<
+      Array<Activity & { sessionCount: number; isCustom: boolean }>
+    >
+  >
+) {
+  const { user } = useAuth();
+  const effectiveUserId = userId || user?.id;
+
+  return useQuery({
+    queryKey: ['activities-with-sessions', effectiveUserId],
+    queryFn: async () => {
+      if (!effectiveUserId) return [];
+
+      // Get all activities
+      const activities = await firebaseActivityApi.getProjects();
+
+      // Get session counts for each activity
+      const activitiesWithCounts = await Promise.all(
+        activities.map(async activity => {
+          // Query for both activityId and projectId (backwards compatibility)
+          const q = query(
+            collection(db, 'sessions'),
+            and(
+              where('userId', '==', effectiveUserId),
+              or(
+                where('activityId', '==', activity.id),
+                where('projectId', '==', activity.id)
+              )
+            )
+          );
+          const snapshot = await getDocs(q);
+          const sessionCount = snapshot.size;
+
+          return {
+            ...activity,
+            sessionCount,
+            isCustom: !activity.isDefault,
+          };
+        })
+      );
+
+      // Filter to only activities with sessions and sort by session count
+      return activitiesWithCounts
+        .filter(a => a.sessionCount > 0)
+        .sort((a, b) => b.sessionCount - a.sessionCount);
+    },
+    enabled: !!effectiveUserId,
+    staleTime: CACHE_TIMES.MEDIUM, // 5 minutes cache
+    gcTime: CACHE_TIMES.MEDIUM,
+    ...options,
+  });
+}
+
+/**
  * Backward compatibility: Alias activities as projects
  */
 export const useProjects = useActivities;

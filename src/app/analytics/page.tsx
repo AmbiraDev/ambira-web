@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { useActivities } from '@/hooks/useActivitiesQuery';
+import { useActivitiesWithSessions } from '@/hooks/useActivitiesQuery';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import MobileHeader from '@/components/MobileHeader';
 import BottomNavigation from '@/components/BottomNavigation';
@@ -22,7 +22,7 @@ import {
 } from 'recharts';
 import { ChevronDown, BarChart3, TrendingUp, Activity } from 'lucide-react';
 import { IconRenderer } from '@/components/IconRenderer';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { safeNumber } from '@/lib/utils';
 
 type TimePeriod = '7D' | '2W' | '4W' | '3M' | '1Y';
@@ -37,8 +37,13 @@ interface ChartDataPoint {
 export default function AnalyticsPage() {
   const { user } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Initialize selected activity from URL query param
   const [timePeriod, setTimePeriod] = useState<TimePeriod>('7D');
-  const [selectedProjectId, setSelectedProjectId] = useState<string>('all');
+  const [selectedProjectId, setSelectedProjectId] = useState<string>(
+    () => searchParams.get('activity') || 'all'
+  );
   const [showProjectDropdown, setShowProjectDropdown] = useState(false);
   const [chartType, setChartType] = useState<'bar' | 'line'>(() => {
     // Load chart type from localStorage
@@ -113,11 +118,23 @@ export default function AnalyticsPage() {
       enabled: !!user?.id,
     }
   );
-  const { data: activities = [] } = useActivities(user?.id);
+  // Use new hook that only returns activities with sessions
+  const { data: activitiesWithSessions = [] } = useActivitiesWithSessions(
+    user?.id
+  );
 
   const isLoading = sessionsLoading || statsLoading;
 
-  // Debug logging for activities
+  // Update URL when activity selection changes
+  useEffect(() => {
+    if (selectedProjectId === 'all') {
+      router.replace('/analytics', { scroll: false });
+    } else {
+      router.replace(`/analytics?activity=${selectedProjectId}`, {
+        scroll: false,
+      });
+    }
+  }, [selectedProjectId, router]);
 
   const filteredSessions = useMemo(() => {
     if (selectedProjectId === 'all') {
@@ -248,7 +265,7 @@ export default function AnalyticsPage() {
       currentStreak: stats?.currentStreak ?? 0,
       longestStreak: stats?.longestStreak ?? 0,
       activeDays: currentActiveDays,
-      activities: (activities && activities.length) || 0,
+      activities: activitiesWithSessions.length,
 
       // Percentage changes
       hoursChange,
@@ -258,7 +275,7 @@ export default function AnalyticsPage() {
       activitiesChange: null, // Activities count doesn't have time-based comparison
       streakChange: null, // Streaks don't have meaningful percentage changes
     };
-  }, [filteredSessions, stats, activities, timePeriod]);
+  }, [filteredSessions, stats, activitiesWithSessions.length, timePeriod]);
 
   const chartData = useMemo(() => {
     if (!filteredSessions) return [];
@@ -455,11 +472,14 @@ export default function AnalyticsPage() {
           aria-label="Start tracking your first session"
         >
           <Activity className="w-4 h-4 md:w-5 md:h-5" aria-hidden="true" />
-          Start Your First Session
+          Start Timer
         </button>
       </div>
     </div>
   );
+
+  // Check if user has no sessions at all for full-page empty state
+  const hasNoSessions = sessions.length === 0;
 
   // Helper to render percentage change
   const renderPercentageChange = (change: number | null) => {
@@ -514,9 +534,10 @@ export default function AnalyticsPage() {
                   >
                     <span className="truncate">
                       {selectedProjectId === 'all'
-                        ? 'All activities'
-                        : activities?.find(p => p.id === selectedProjectId)
-                            ?.name || 'All activities'}
+                        ? 'All Activities'
+                        : activitiesWithSessions?.find(
+                            p => p.id === selectedProjectId
+                          )?.name || 'All Activities'}
                     </span>
                     <ChevronDown className="w-3.5 h-3.5 md:w-4 md:h-4 flex-shrink-0" />
                   </button>
@@ -539,14 +560,14 @@ export default function AnalyticsPage() {
                           role="option"
                           aria-selected={selectedProjectId === 'all'}
                         >
-                          All
+                          All Activities
                         </button>
-                        {(!activities || activities.length === 0) && (
+                        {activitiesWithSessions.length === 0 && (
                           <div className="px-4 py-2 text-xs text-gray-400">
-                            No activities yet
+                            No activities with sessions yet
                           </div>
                         )}
-                        {activities?.map(activity => (
+                        {activitiesWithSessions.map(activity => (
                           <button
                             key={activity.id}
                             onClick={() => {
@@ -556,7 +577,7 @@ export default function AnalyticsPage() {
                             className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:ring-inset focus:bg-blue-50 flex items-center gap-3 ${selectedProjectId === activity.id ? 'bg-blue-50 text-blue-600' : ''}`}
                             role="option"
                             aria-selected={selectedProjectId === activity.id}
-                            aria-label={`Filter by ${activity.name}`}
+                            aria-label={`Filter by ${activity.name} (${activity.sessionCount} sessions)`}
                           >
                             <div
                               className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
@@ -567,7 +588,22 @@ export default function AnalyticsPage() {
                                 size={18}
                               />
                             </div>
-                            <span className="truncate">{activity.name}</span>
+                            <div className="flex-1 min-w-0 flex items-center justify-between gap-2">
+                              <span className="truncate">{activity.name}</span>
+                              <div className="flex items-center gap-1.5 flex-shrink-0">
+                                {activity.isCustom && (
+                                  <span
+                                    className="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 font-medium"
+                                    title="Custom activity"
+                                  >
+                                    Custom
+                                  </span>
+                                )}
+                                <span className="text-xs text-gray-500 font-medium">
+                                  {activity.sessionCount}
+                                </span>
+                              </div>
+                            </div>
                           </button>
                         ))}
                       </div>
@@ -715,369 +751,430 @@ export default function AnalyticsPage() {
               </div>
             </div>
 
-            <div className="space-y-4">
-              {/* Main Chart */}
-              <div className="bg-white border border-gray-200 rounded-lg p-6">
-                <div className="mb-4">
-                  <h3 className="font-semibold text-gray-900">
-                    Hours completed
-                  </h3>
-                </div>
-                <div className="h-72">
-                  {isLoading ? (
-                    <div className="h-full bg-gray-50 rounded animate-pulse" />
-                  ) : chartData.length === 0 ||
-                    chartData.every(d => d.hours === 0) ? (
-                    <ChartEmptyState
-                      icon={BarChart3}
-                      title="No session data yet"
-                      description="Start tracking your productive sessions to see your hours visualized over time. Your progress will appear here!"
+            {/* Full page empty state if no sessions at all */}
+            {hasNoSessions ? (
+              <div className="flex items-center justify-center min-h-[60vh]">
+                <div className="text-center max-w-md px-4">
+                  <Activity
+                    className="w-20 h-20 md:w-24 md:h-24 text-gray-300 mx-auto mb-6"
+                    aria-hidden="true"
+                  />
+                  <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mb-3">
+                    Start tracking time to see your analytics
+                  </h2>
+                  <p className="text-base md:text-lg text-gray-600 mb-6">
+                    Your productivity insights will appear here once you
+                    complete your first session. Track your work, build streaks,
+                    and visualize your progress over time.
+                  </p>
+                  <button
+                    onClick={() => router.push('/timer')}
+                    className="inline-flex items-center justify-center gap-2 px-6 md:px-8 py-3 md:py-4 bg-[#0066CC] text-white rounded-lg hover:bg-[#0051D5] transition-colors duration-200 font-semibold text-base md:text-lg shadow-lg hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2"
+                    aria-label="Start your first timer session"
+                  >
+                    <Activity
+                      className="w-5 h-5 md:w-6 md:h-6"
+                      aria-hidden="true"
                     />
-                  ) : (
-                    <ResponsiveContainer width="100%" height="100%">
-                      {chartType === 'bar' ? (
-                        <BarChart
-                          data={chartData}
-                          margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
-                        >
-                          <XAxis
-                            dataKey="name"
-                            tick={{ fontSize: 12, fill: '#666' }}
-                            axisLine={false}
-                            tickLine={false}
-                          />
-                          <YAxis
-                            tick={{ fontSize: 12, fill: '#666' }}
-                            axisLine={false}
-                            tickLine={false}
-                            width={40}
-                          />
-                          <Tooltip content={<CustomTooltip />} />
-                          <Bar
-                            dataKey="hours"
-                            fill="#0066CC"
-                            radius={[4, 4, 0, 0]}
-                            name="Hours"
-                          />
-                        </BarChart>
+                    Start Your First Timer
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {/* Main Chart */}
+                <div className="bg-white border border-gray-200 rounded-lg p-6">
+                  <div className="mb-4">
+                    <h3 className="font-semibold text-gray-900">
+                      Hours completed
+                    </h3>
+                  </div>
+                  <div className="h-72">
+                    {isLoading ? (
+                      <div className="h-full bg-gray-50 rounded animate-pulse" />
+                    ) : chartData.length === 0 ||
+                      chartData.every(d => d.hours === 0) ? (
+                      <ChartEmptyState
+                        icon={BarChart3}
+                        title="No session data yet"
+                        description="Start tracking your productive sessions to see your hours visualized over time. Your progress will appear here!"
+                      />
+                    ) : (
+                      <ResponsiveContainer width="100%" height="100%">
+                        {chartType === 'bar' ? (
+                          <BarChart
+                            data={chartData}
+                            margin={{
+                              top: 10,
+                              right: 10,
+                              left: -20,
+                              bottom: 0,
+                            }}
+                          >
+                            <XAxis
+                              dataKey="name"
+                              tick={{ fontSize: 12, fill: '#666' }}
+                              axisLine={false}
+                              tickLine={false}
+                            />
+                            <YAxis
+                              tick={{ fontSize: 12, fill: '#666' }}
+                              axisLine={false}
+                              tickLine={false}
+                              width={40}
+                            />
+                            <Tooltip content={<CustomTooltip />} />
+                            <Bar
+                              dataKey="hours"
+                              fill="#0066CC"
+                              radius={[4, 4, 0, 0]}
+                              name="Hours"
+                            />
+                          </BarChart>
+                        ) : (
+                          <ComposedChart
+                            data={chartData}
+                            margin={{
+                              top: 10,
+                              right: 10,
+                              left: -20,
+                              bottom: 0,
+                            }}
+                          >
+                            <defs>
+                              <linearGradient
+                                id="colorHours"
+                                x1="0"
+                                y1="0"
+                                x2="0"
+                                y2="1"
+                              >
+                                <stop
+                                  offset="5%"
+                                  stopColor="#0066CC"
+                                  stopOpacity={0.3}
+                                />
+                                <stop
+                                  offset="95%"
+                                  stopColor="#0066CC"
+                                  stopOpacity={0}
+                                />
+                              </linearGradient>
+                            </defs>
+                            <XAxis
+                              dataKey="name"
+                              tick={{ fontSize: 12, fill: '#666' }}
+                              axisLine={false}
+                              tickLine={false}
+                            />
+                            <YAxis
+                              tick={{ fontSize: 12, fill: '#666' }}
+                              axisLine={false}
+                              tickLine={false}
+                              width={40}
+                            />
+                            <Tooltip content={<CustomTooltip />} />
+                            <Area
+                              type="monotone"
+                              dataKey="hours"
+                              stroke="#0066CC"
+                              strokeWidth={2}
+                              fill="url(#colorHours)"
+                              name="Hours"
+                            />
+                          </ComposedChart>
+                        )}
+                      </ResponsiveContainer>
+                    )}
+                  </div>
+                </div>
+
+                {/* Second Row - Two Charts */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  {/* Average Session Duration */}
+                  <div className="bg-white border border-gray-200 rounded-lg p-6">
+                    <div className="mb-4">
+                      <h3 className="font-semibold text-gray-900">
+                        Average session duration
+                      </h3>
+                    </div>
+                    <div className="h-48">
+                      {avgDurationData.length === 0 ||
+                      avgDurationData.every(d => d.value === 0) ? (
+                        <ChartEmptyState
+                          icon={TrendingUp}
+                          title="No duration data"
+                          description="Track sessions to see your average session duration trends and improve your productivity!"
+                        />
                       ) : (
-                        <ComposedChart
-                          data={chartData}
-                          margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
-                        >
-                          <defs>
-                            <linearGradient
-                              id="colorHours"
-                              x1="0"
-                              y1="0"
-                              x2="0"
-                              y2="1"
+                        <ResponsiveContainer width="100%" height="100%">
+                          {chartType === 'bar' ? (
+                            <BarChart
+                              data={avgDurationData}
+                              margin={{
+                                top: 5,
+                                right: 5,
+                                left: -30,
+                                bottom: 0,
+                              }}
                             >
-                              <stop
-                                offset="5%"
-                                stopColor="#0066CC"
-                                stopOpacity={0.3}
+                              <XAxis
+                                dataKey="name"
+                                tick={{ fontSize: 11, fill: '#666' }}
+                                axisLine={false}
+                                tickLine={false}
                               />
-                              <stop
-                                offset="95%"
-                                stopColor="#0066CC"
-                                stopOpacity={0}
+                              <YAxis
+                                tick={{ fontSize: 11, fill: '#666' }}
+                                axisLine={false}
+                                tickLine={false}
                               />
-                            </linearGradient>
-                          </defs>
-                          <XAxis
-                            dataKey="name"
-                            tick={{ fontSize: 12, fill: '#666' }}
-                            axisLine={false}
-                            tickLine={false}
-                          />
-                          <YAxis
-                            tick={{ fontSize: 12, fill: '#666' }}
-                            axisLine={false}
-                            tickLine={false}
-                            width={40}
-                          />
-                          <Tooltip content={<CustomTooltip />} />
-                          <Area
-                            type="monotone"
-                            dataKey="hours"
-                            stroke="#0066CC"
-                            strokeWidth={2}
-                            fill="url(#colorHours)"
-                            name="Hours"
-                          />
-                        </ComposedChart>
+                              <Tooltip content={<CustomTooltip />} />
+                              <Bar
+                                dataKey="value"
+                                fill="#34C759"
+                                radius={[4, 4, 0, 0]}
+                                name="Minutes"
+                              />
+                            </BarChart>
+                          ) : (
+                            <ComposedChart
+                              data={avgDurationData}
+                              margin={{
+                                top: 5,
+                                right: 5,
+                                left: -30,
+                                bottom: 0,
+                              }}
+                            >
+                              <defs>
+                                <linearGradient
+                                  id="colorAvgDuration"
+                                  x1="0"
+                                  y1="0"
+                                  x2="0"
+                                  y2="1"
+                                >
+                                  <stop
+                                    offset="5%"
+                                    stopColor="#34C759"
+                                    stopOpacity={0.3}
+                                  />
+                                  <stop
+                                    offset="95%"
+                                    stopColor="#34C759"
+                                    stopOpacity={0}
+                                  />
+                                </linearGradient>
+                              </defs>
+                              <XAxis
+                                dataKey="name"
+                                tick={{ fontSize: 11, fill: '#666' }}
+                                axisLine={false}
+                                tickLine={false}
+                              />
+                              <YAxis
+                                tick={{ fontSize: 11, fill: '#666' }}
+                                axisLine={false}
+                                tickLine={false}
+                              />
+                              <Tooltip content={<CustomTooltip />} />
+                              <Area
+                                type="monotone"
+                                dataKey="value"
+                                stroke="#34C759"
+                                strokeWidth={2}
+                                fill="url(#colorAvgDuration)"
+                                name="Minutes"
+                              />
+                            </ComposedChart>
+                          )}
+                        </ResponsiveContainer>
                       )}
-                    </ResponsiveContainer>
-                  )}
-                </div>
-              </div>
+                    </div>
+                  </div>
 
-              {/* Second Row - Two Charts */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                {/* Average Session Duration */}
-                <div className="bg-white border border-gray-200 rounded-lg p-6">
-                  <div className="mb-4">
-                    <h3 className="font-semibold text-gray-900">
-                      Average session duration
-                    </h3>
-                  </div>
-                  <div className="h-48">
-                    {avgDurationData.length === 0 ||
-                    avgDurationData.every(d => d.value === 0) ? (
-                      <ChartEmptyState
-                        icon={TrendingUp}
-                        title="No duration data"
-                        description="Track sessions to see your average session duration trends and improve your productivity!"
-                      />
-                    ) : (
-                      <ResponsiveContainer width="100%" height="100%">
-                        {chartType === 'bar' ? (
-                          <BarChart
-                            data={avgDurationData}
-                            margin={{ top: 5, right: 5, left: -30, bottom: 0 }}
-                          >
-                            <XAxis
-                              dataKey="name"
-                              tick={{ fontSize: 11, fill: '#666' }}
-                              axisLine={false}
-                              tickLine={false}
-                            />
-                            <YAxis
-                              tick={{ fontSize: 11, fill: '#666' }}
-                              axisLine={false}
-                              tickLine={false}
-                            />
-                            <Tooltip content={<CustomTooltip />} />
-                            <Bar
-                              dataKey="value"
-                              fill="#34C759"
-                              radius={[4, 4, 0, 0]}
-                              name="Minutes"
-                            />
-                          </BarChart>
-                        ) : (
-                          <ComposedChart
-                            data={avgDurationData}
-                            margin={{ top: 5, right: 5, left: -30, bottom: 0 }}
-                          >
-                            <defs>
-                              <linearGradient
-                                id="colorAvgDuration"
-                                x1="0"
-                                y1="0"
-                                x2="0"
-                                y2="1"
-                              >
-                                <stop
-                                  offset="5%"
-                                  stopColor="#34C759"
-                                  stopOpacity={0.3}
-                                />
-                                <stop
-                                  offset="95%"
-                                  stopColor="#34C759"
-                                  stopOpacity={0}
-                                />
-                              </linearGradient>
-                            </defs>
-                            <XAxis
-                              dataKey="name"
-                              tick={{ fontSize: 11, fill: '#666' }}
-                              axisLine={false}
-                              tickLine={false}
-                            />
-                            <YAxis
-                              tick={{ fontSize: 11, fill: '#666' }}
-                              axisLine={false}
-                              tickLine={false}
-                            />
-                            <Tooltip content={<CustomTooltip />} />
-                            <Area
-                              type="monotone"
-                              dataKey="value"
-                              stroke="#34C759"
-                              strokeWidth={2}
-                              fill="url(#colorAvgDuration)"
-                              name="Minutes"
-                            />
-                          </ComposedChart>
-                        )}
-                      </ResponsiveContainer>
-                    )}
+                  {/* Sessions */}
+                  <div className="bg-white border border-gray-200 rounded-lg p-6">
+                    <div className="mb-4">
+                      <h3 className="font-semibold text-gray-900">
+                        Sessions completed
+                      </h3>
+                    </div>
+                    <div className="h-48">
+                      {chartData.length === 0 ||
+                      chartData.every(d => d.sessions === 0) ? (
+                        <ChartEmptyState
+                          icon={Activity}
+                          title="No sessions tracked"
+                          description="Complete your first session to start building your productivity streak and track your progress!"
+                        />
+                      ) : (
+                        <ResponsiveContainer width="100%" height="100%">
+                          {chartType === 'bar' ? (
+                            <BarChart
+                              data={chartData}
+                              margin={{
+                                top: 5,
+                                right: 5,
+                                left: -30,
+                                bottom: 0,
+                              }}
+                            >
+                              <XAxis
+                                dataKey="name"
+                                tick={{ fontSize: 11, fill: '#666' }}
+                                axisLine={false}
+                                tickLine={false}
+                              />
+                              <YAxis
+                                tick={{ fontSize: 11, fill: '#666' }}
+                                axisLine={false}
+                                tickLine={false}
+                              />
+                              <Tooltip content={<CustomTooltip />} />
+                              <Bar
+                                dataKey="sessions"
+                                fill="#34C759"
+                                radius={[4, 4, 0, 0]}
+                                name="Sessions"
+                              />
+                            </BarChart>
+                          ) : (
+                            <ComposedChart
+                              data={chartData}
+                              margin={{
+                                top: 5,
+                                right: 5,
+                                left: -30,
+                                bottom: 0,
+                              }}
+                            >
+                              <defs>
+                                <linearGradient
+                                  id="colorSessionsSmall"
+                                  x1="0"
+                                  y1="0"
+                                  x2="0"
+                                  y2="1"
+                                >
+                                  <stop
+                                    offset="5%"
+                                    stopColor="#34C759"
+                                    stopOpacity={0.3}
+                                  />
+                                  <stop
+                                    offset="95%"
+                                    stopColor="#34C759"
+                                    stopOpacity={0}
+                                  />
+                                </linearGradient>
+                              </defs>
+                              <XAxis
+                                dataKey="name"
+                                tick={{ fontSize: 11, fill: '#666' }}
+                                axisLine={false}
+                                tickLine={false}
+                              />
+                              <YAxis
+                                tick={{ fontSize: 11, fill: '#666' }}
+                                axisLine={false}
+                                tickLine={false}
+                              />
+                              <Tooltip content={<CustomTooltip />} />
+                              <Area
+                                type="monotone"
+                                dataKey="sessions"
+                                stroke="#34C759"
+                                strokeWidth={2}
+                                fill="url(#colorSessionsSmall)"
+                                name="Sessions"
+                              />
+                            </ComposedChart>
+                          )}
+                        </ResponsiveContainer>
+                      )}
+                    </div>
                   </div>
                 </div>
 
-                {/* Sessions */}
-                <div className="bg-white border border-gray-200 rounded-lg p-6">
-                  <div className="mb-4">
-                    <h3 className="font-semibold text-gray-900">
-                      Sessions completed
-                    </h3>
+                {/* Stats Grid - 5 columns */}
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                  <div className="bg-white border border-gray-200 rounded-lg p-4">
+                    <div className="text-sm text-gray-600 mb-2 uppercase tracking-wide">
+                      Total Hours
+                    </div>
+                    <div className="text-2xl font-bold mb-1">
+                      {calculatedStats.totalHours.toFixed(1)}
+                    </div>
+                    {renderPercentageChange(calculatedStats.hoursChange)}
                   </div>
-                  <div className="h-48">
-                    {chartData.length === 0 ||
-                    chartData.every(d => d.sessions === 0) ? (
-                      <ChartEmptyState
-                        icon={Activity}
-                        title="No sessions tracked"
-                        description="Complete your first session to start building your productivity streak and track your progress!"
-                      />
-                    ) : (
-                      <ResponsiveContainer width="100%" height="100%">
-                        {chartType === 'bar' ? (
-                          <BarChart
-                            data={chartData}
-                            margin={{ top: 5, right: 5, left: -30, bottom: 0 }}
-                          >
-                            <XAxis
-                              dataKey="name"
-                              tick={{ fontSize: 11, fill: '#666' }}
-                              axisLine={false}
-                              tickLine={false}
-                            />
-                            <YAxis
-                              tick={{ fontSize: 11, fill: '#666' }}
-                              axisLine={false}
-                              tickLine={false}
-                            />
-                            <Tooltip content={<CustomTooltip />} />
-                            <Bar
-                              dataKey="sessions"
-                              fill="#34C759"
-                              radius={[4, 4, 0, 0]}
-                              name="Sessions"
-                            />
-                          </BarChart>
-                        ) : (
-                          <ComposedChart
-                            data={chartData}
-                            margin={{ top: 5, right: 5, left: -30, bottom: 0 }}
-                          >
-                            <defs>
-                              <linearGradient
-                                id="colorSessionsSmall"
-                                x1="0"
-                                y1="0"
-                                x2="0"
-                                y2="1"
-                              >
-                                <stop
-                                  offset="5%"
-                                  stopColor="#34C759"
-                                  stopOpacity={0.3}
-                                />
-                                <stop
-                                  offset="95%"
-                                  stopColor="#34C759"
-                                  stopOpacity={0}
-                                />
-                              </linearGradient>
-                            </defs>
-                            <XAxis
-                              dataKey="name"
-                              tick={{ fontSize: 11, fill: '#666' }}
-                              axisLine={false}
-                              tickLine={false}
-                            />
-                            <YAxis
-                              tick={{ fontSize: 11, fill: '#666' }}
-                              axisLine={false}
-                              tickLine={false}
-                            />
-                            <Tooltip content={<CustomTooltip />} />
-                            <Area
-                              type="monotone"
-                              dataKey="sessions"
-                              stroke="#34C759"
-                              strokeWidth={2}
-                              fill="url(#colorSessionsSmall)"
-                              name="Sessions"
-                            />
-                          </ComposedChart>
-                        )}
-                      </ResponsiveContainer>
-                    )}
+
+                  <div className="bg-white border border-gray-200 rounded-lg p-4">
+                    <div className="text-sm text-gray-600 mb-2 uppercase tracking-wide">
+                      Avg Duration
+                    </div>
+                    <div className="text-2xl font-bold mb-1">
+                      {calculatedStats.avgDuration}m
+                    </div>
+                    {renderPercentageChange(calculatedStats.avgDurationChange)}
+                  </div>
+
+                  <div className="bg-white border border-gray-200 rounded-lg p-4">
+                    <div className="text-sm text-gray-600 mb-2 uppercase tracking-wide">
+                      Sessions
+                    </div>
+                    <div className="text-2xl font-bold mb-1">
+                      {calculatedStats.sessions}
+                    </div>
+                    {renderPercentageChange(calculatedStats.sessionsChange)}
+                  </div>
+
+                  <div className="bg-white border border-gray-200 rounded-lg p-4">
+                    <div className="text-sm text-gray-600 mb-2 uppercase tracking-wide">
+                      Active Days
+                    </div>
+                    <div className="text-2xl font-bold mb-1">
+                      {calculatedStats.activeDays}
+                    </div>
+                    {renderPercentageChange(calculatedStats.activeDaysChange)}
+                  </div>
+
+                  <div className="bg-white border border-gray-200 rounded-lg p-4">
+                    <div className="text-sm text-gray-600 mb-2 uppercase tracking-wide">
+                      Activities
+                    </div>
+                    <div className="text-2xl font-bold mb-1">
+                      {calculatedStats.activities}
+                    </div>
+                    {renderPercentageChange(calculatedStats.activitiesChange)}
+                  </div>
+                </div>
+
+                {/* Secondary Stats Grid - Streaks */}
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                  <div className="bg-white border border-gray-200 rounded-lg p-4">
+                    <div className="text-sm text-gray-600 mb-2 uppercase tracking-wide">
+                      Current Streak
+                    </div>
+                    <div className="text-2xl font-bold mb-1">
+                      {calculatedStats.currentStreak}
+                    </div>
+                    {renderPercentageChange(calculatedStats.streakChange)}
+                  </div>
+
+                  <div className="bg-white border border-gray-200 rounded-lg p-4">
+                    <div className="text-sm text-gray-600 mb-2 uppercase tracking-wide">
+                      Longest Streak
+                    </div>
+                    <div className="text-2xl font-bold mb-1">
+                      {calculatedStats.longestStreak}
+                    </div>
+                    {renderPercentageChange(calculatedStats.streakChange)}
                   </div>
                 </div>
               </div>
-
-              {/* Stats Grid - 5 columns */}
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                <div className="bg-white border border-gray-200 rounded-lg p-4">
-                  <div className="text-sm text-gray-600 mb-2 uppercase tracking-wide">
-                    Total Hours
-                  </div>
-                  <div className="text-2xl font-bold mb-1">
-                    {calculatedStats.totalHours.toFixed(1)}
-                  </div>
-                  {renderPercentageChange(calculatedStats.hoursChange)}
-                </div>
-
-                <div className="bg-white border border-gray-200 rounded-lg p-4">
-                  <div className="text-sm text-gray-600 mb-2 uppercase tracking-wide">
-                    Avg Duration
-                  </div>
-                  <div className="text-2xl font-bold mb-1">
-                    {calculatedStats.avgDuration}m
-                  </div>
-                  {renderPercentageChange(calculatedStats.avgDurationChange)}
-                </div>
-
-                <div className="bg-white border border-gray-200 rounded-lg p-4">
-                  <div className="text-sm text-gray-600 mb-2 uppercase tracking-wide">
-                    Sessions
-                  </div>
-                  <div className="text-2xl font-bold mb-1">
-                    {calculatedStats.sessions}
-                  </div>
-                  {renderPercentageChange(calculatedStats.sessionsChange)}
-                </div>
-
-                <div className="bg-white border border-gray-200 rounded-lg p-4">
-                  <div className="text-sm text-gray-600 mb-2 uppercase tracking-wide">
-                    Active Days
-                  </div>
-                  <div className="text-2xl font-bold mb-1">
-                    {calculatedStats.activeDays}
-                  </div>
-                  {renderPercentageChange(calculatedStats.activeDaysChange)}
-                </div>
-
-                <div className="bg-white border border-gray-200 rounded-lg p-4">
-                  <div className="text-sm text-gray-600 mb-2 uppercase tracking-wide">
-                    Activities
-                  </div>
-                  <div className="text-2xl font-bold mb-1">
-                    {calculatedStats.activities}
-                  </div>
-                  {renderPercentageChange(calculatedStats.activitiesChange)}
-                </div>
-              </div>
-
-              {/* Secondary Stats Grid - Streaks */}
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                <div className="bg-white border border-gray-200 rounded-lg p-4">
-                  <div className="text-sm text-gray-600 mb-2 uppercase tracking-wide">
-                    Current Streak
-                  </div>
-                  <div className="text-2xl font-bold mb-1">
-                    {calculatedStats.currentStreak}
-                  </div>
-                  {renderPercentageChange(calculatedStats.streakChange)}
-                </div>
-
-                <div className="bg-white border border-gray-200 rounded-lg p-4">
-                  <div className="text-sm text-gray-600 mb-2 uppercase tracking-wide">
-                    Longest Streak
-                  </div>
-                  <div className="text-2xl font-bold mb-1">
-                    {calculatedStats.longestStreak}
-                  </div>
-                  {renderPercentageChange(calculatedStats.streakChange)}
-                </div>
-              </div>
-            </div>
+            )}
           </div>
         </div>
 
