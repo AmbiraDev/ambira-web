@@ -30,6 +30,7 @@ import {
   LogOut,
   Trash2,
   Globe,
+  Activity,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import Image from 'next/image';
@@ -106,6 +107,14 @@ export function SettingsPageContent() {
       label: 'Privacy Controls',
       icon: Shield,
       navigable: true,
+    },
+    {
+      id: 'activities',
+      label: 'Activities',
+      icon: Activity,
+      navigable: true,
+      isLink: true,
+      href: '/settings/activities',
     },
   ];
 
@@ -736,6 +745,18 @@ export function SettingsPageContent() {
                     </span>
                   </button>
 
+                  <a
+                    href="/settings/activities"
+                    aria-label="Activities settings"
+                    className="w-full px-4 py-3 flex items-center gap-3 text-left border-b border-gray-200 transition-colors hover:bg-gray-50 text-gray-700"
+                  >
+                    <Activity
+                      className="w-5 h-5 flex-shrink-0"
+                      aria-hidden="true"
+                    />
+                    <span className="text-sm font-medium">Activities</span>
+                  </a>
+
                   <button
                     onClick={handleLogout}
                     aria-label="Log out of your account"
@@ -806,42 +827,68 @@ export function SettingsPageContent() {
 
               return (
                 <div key={item.id}>
-                  <button
-                    onClick={() =>
-                      item.navigable && handleSectionClick(item.id)
-                    }
-                    aria-expanded={item.navigable ? isExpanded : undefined}
-                    aria-controls={item.navigable ? contentId : undefined}
-                    aria-label={`${item.label} settings`}
-                    className={`w-full px-4 py-4 flex items-center justify-between border-b border-gray-200 transition-colors ${
-                      item.navigable
-                        ? 'hover:bg-gray-50 active:bg-gray-100'
-                        : 'cursor-default'
-                    }`}
-                    disabled={!item.navigable}
-                  >
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <div className="flex-shrink-0">
-                        <Icon
-                          className="w-5 h-5 text-gray-700"
-                          aria-hidden="true"
-                        />
-                      </div>
-                      <div className="flex-1 text-left min-w-0">
-                        <div className="text-sm font-semibold text-gray-900">
-                          {item.label}
+                  {item.isLink ? (
+                    <a
+                      href={item.href}
+                      aria-label={`${item.label} settings`}
+                      className="w-full px-4 py-4 flex items-center justify-between border-b border-gray-200 transition-colors hover:bg-gray-50 active:bg-gray-100"
+                    >
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <div className="flex-shrink-0">
+                          <Icon
+                            className="w-5 h-5 text-gray-700"
+                            aria-hidden="true"
+                          />
+                        </div>
+                        <div className="flex-1 text-left min-w-0">
+                          <div className="text-sm font-semibold text-gray-900">
+                            {item.label}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                    {item.navigable && (
                       <ChevronRight
-                        className={`w-5 h-5 text-gray-400 flex-shrink-0 transition-transform ${
-                          isExpanded ? 'rotate-90' : ''
-                        }`}
+                        className="w-5 h-5 text-gray-400 flex-shrink-0"
                         aria-hidden="true"
                       />
-                    )}
-                  </button>
+                    </a>
+                  ) : (
+                    <button
+                      onClick={() =>
+                        item.navigable && handleSectionClick(item.id)
+                      }
+                      aria-expanded={item.navigable ? isExpanded : undefined}
+                      aria-controls={item.navigable ? contentId : undefined}
+                      aria-label={`${item.label} settings`}
+                      className={`w-full px-4 py-4 flex items-center justify-between border-b border-gray-200 transition-colors ${
+                        item.navigable
+                          ? 'hover:bg-gray-50 active:bg-gray-100'
+                          : 'cursor-default'
+                      }`}
+                      disabled={!item.navigable}
+                    >
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <div className="flex-shrink-0">
+                          <Icon
+                            className="w-5 h-5 text-gray-700"
+                            aria-hidden="true"
+                          />
+                        </div>
+                        <div className="flex-1 text-left min-w-0">
+                          <div className="text-sm font-semibold text-gray-900">
+                            {item.label}
+                          </div>
+                        </div>
+                      </div>
+                      {item.navigable && (
+                        <ChevronRight
+                          className={`w-5 h-5 text-gray-400 flex-shrink-0 transition-transform ${
+                            isExpanded ? 'rotate-90' : ''
+                          }`}
+                          aria-hidden="true"
+                        />
+                      )}
+                    </button>
+                  )}
 
                   {/* Expanded Profile Content */}
                   {isExpanded && item.id === 'profile' && (
