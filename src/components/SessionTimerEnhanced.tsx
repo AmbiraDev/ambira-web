@@ -68,6 +68,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
   const [showActivityError, setShowActivityError] = useState(false);
   const [customStartTime, setCustomStartTime] = useState<Date | null>(null);
   const [showTimePickerModal, setShowTimePickerModal] = useState(false);
+  const [frozenElapsedTime, setFrozenElapsedTime] = useState(0);
 
   // Only show user's custom activities
   const allActivities: Activity[] = projects || [];
@@ -103,9 +104,12 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
   }, [selectedActivityId]);
 
   // Initialize adjusted duration when finish modal opens
+  // CRITICAL: Freeze the elapsed time snapshot when modal opens
+  // This prevents the timer from continuing to tick while the user is filling out the form
   useEffect(() => {
     if (showFinishModal) {
       const elapsed = getElapsedTime();
+      setFrozenElapsedTime(elapsed);
       setAdjustedDuration(elapsed);
 
       // Calculate start time based on elapsed duration (now - duration)
@@ -230,7 +234,9 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
   const handleDurationSliderChange = (value: number | number[]) => {
     // Extract numeric value from slider (handle both single value and array)
     const val = typeof value === 'number' ? value : (value[0] ?? 0);
-    const max = getElapsedTime();
+    // CRITICAL: Use the frozen elapsed time, not the live value
+    // This prevents the slider max from changing while the user is adjusting it
+    const max = frozenElapsedTime;
 
     // Validate we have valid numeric values
     if (isNaN(val) || isNaN(max)) return;
@@ -546,7 +552,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                     <div className="py-2 px-1">
                       <Slider
                         min={0}
-                        max={getElapsedTime()}
+                        max={frozenElapsedTime}
                         step={900}
                         value={adjustedDuration}
                         onChange={handleDurationSliderChange}
@@ -568,7 +574,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                       <span className="font-semibold text-base text-gray-900">
                         {getFormattedTime(adjustedDuration)}
                       </span>
-                      <span>{getFormattedTime(getElapsedTime())}</span>
+                      <span>{getFormattedTime(frozenElapsedTime)}</span>
                     </div>
                   </div>
                 </div>
