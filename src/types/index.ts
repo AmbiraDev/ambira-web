@@ -18,14 +18,15 @@ import { Timestamp } from 'firebase/firestore';
 export interface ActivityType {
   id: string; // e.g., 'work', 'coding', 'side-project'
   name: string; // Display name
+  category: 'productivity' | 'learning' | 'creative'; // Category grouping
   icon: string; // Emoji or iconify icon
-  color: string; // Hex color
+  defaultColor: string; // Hex color (named defaultColor to match API)
   isSystem: boolean; // true for 10 defaults, false for custom
   userId?: string; // Only set for custom activities
-  order?: number; // Display order (1-10 for system defaults)
+  order: number; // Display order (1-10 for system defaults, 100+ for customs)
   description?: string; // Brief description
-  createdAt: Timestamp;
-  updatedAt: Timestamp;
+  createdAt: Date; // Date object, not Timestamp
+  updatedAt: Date; // Date object, not Timestamp
 }
 
 /**

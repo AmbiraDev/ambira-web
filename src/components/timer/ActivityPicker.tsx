@@ -52,14 +52,8 @@ export function ActivityPicker({
         color: type.defaultColor, // Use defaultColor from ActivityType
         userId: type.userId || '',
         status: 'active',
-        createdAt:
-          type.createdAt instanceof Date
-            ? type.createdAt
-            : type.createdAt.toDate(),
-        updatedAt:
-          type.updatedAt instanceof Date
-            ? type.updatedAt
-            : type.updatedAt.toDate(),
+        createdAt: type.createdAt, // Already a Date object
+        updatedAt: type.updatedAt, // Already a Date object
       })
     );
   }, [legacyActivities, allActivitiesFromHook]);
