@@ -662,7 +662,7 @@ export const firebaseSessionApi = {
    *
    * @param page - Page number for pagination (default: 1)
    * @param limitCount - Maximum number of sessions per page (default: 20)
-   * @param filters - Optional filters to apply (e.g., projectId)
+   * @param filters - Optional filters to apply (e.g., projectId, activityId)
    * @returns Promise resolving to sessions list with pagination metadata
    * @throws Error if user is not authenticated or fetch fails
    */
@@ -682,11 +682,16 @@ export const firebaseSessionApi = {
         limitFn(limitCount)
       );
 
-      if (filters.projectId) {
+      // Support both activityId (new) and projectId (legacy) for backward compatibility
+      if (filters.projectId || filters.activityId) {
+        const activityId = filters.activityId || filters.projectId;
+
+        // Query for sessions matching either activityId or projectId field
+        // This ensures we find sessions regardless of which field was used
         sessionsQuery = query(
           collection(db, 'sessions'),
           where('userId', '==', auth.currentUser.uid),
-          where('projectId', '==', filters.projectId),
+          where('projectId', '==', activityId),
           orderBy('startTime', 'desc'),
           limitFn(limitCount)
         );

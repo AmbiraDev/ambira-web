@@ -18,8 +18,21 @@ import {
   ErrorSeverity,
 } from '@/lib/errorHandler';
 import { convertTimestamp } from '../shared/utils';
-import type { SessionWithDetails, Activity } from '@/types';
+import type { SessionWithDetails, Activity, Session } from '@/types';
 import { DEFAULT_ACTIVITIES } from '@/types';
+
+/**
+ * Get the activity ID from a session, checking both new and legacy fields
+ * Ensures backward compatibility with sessions created before the activityId migration
+ *
+ * @param session - Session object (can be partial with just activityId/projectId)
+ * @returns The activity ID or 'unassigned' if neither field exists
+ */
+export function getSessionActivityId(
+  session: Pick<Session, 'activityId' | 'projectId'>
+): string {
+  return session.activityId || session.projectId || 'unassigned';
+}
 
 export const populateSessionsWithDetails = async (
   sessionDocs: DocumentSnapshot[]

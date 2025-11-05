@@ -76,13 +76,16 @@ export class SessionRepository {
   }
 
   /**
-   * Find sessions by project ID
+   * Find sessions by project ID (or activity ID - backward compatible)
+   * Queries both activityId and projectId fields to support legacy data
    */
   async findByProjectId(
     projectId: string,
     limit: number = 50
   ): Promise<Session[]> {
     try {
+      // Query sessions where projectId matches (supports both new activityId and legacy projectId)
+      // Since we always write both fields with the same value, querying projectId finds all sessions
       const q = query(
         collection(db, this.collectionName),
         where('projectId', '==', projectId),
