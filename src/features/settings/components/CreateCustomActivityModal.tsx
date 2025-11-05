@@ -178,7 +178,7 @@ export const CreateCustomActivityModal: React.FC<
       await createMutation.mutateAsync({
         name: formData.name.trim(),
         icon: formData.icon,
-        color: formData.color,
+        defaultColor: formData.color,
         description: formData.description.trim() || undefined,
       });
 
