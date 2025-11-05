@@ -57,7 +57,6 @@ export const firebaseGroupApi = {
         updatedAt: convertTimestamp(data.updatedAt),
       } as Group;
     } catch (_error) {
-      console.error('Error getting group:', _error);
       throw new Error(
         typeof _error === 'string' ? _error : 'Failed to get group'
       );
@@ -101,7 +100,6 @@ export const firebaseGroupApi = {
         updatedAt: new Date(),
       } as Group;
     } catch (_error) {
-      console.error('Error creating group:', _error);
       throw new Error('Failed to create group');
     }
   },
@@ -124,7 +122,6 @@ export const firebaseGroupApi = {
 
       await updateDoc(docRef, updatePayload);
     } catch (_error) {
-      console.error('Error updating group:', _error);
       throw new Error('Failed to update group');
     }
   },
@@ -137,7 +134,6 @@ export const firebaseGroupApi = {
       const docRef = doc(db, 'groups', groupId);
       await deleteDoc(docRef);
     } catch (_error) {
-      console.error('Error deleting group:', _error);
       throw new Error('Failed to delete group');
     }
   },
@@ -166,7 +162,6 @@ export const firebaseGroupApi = {
         updatedAt: serverTimestamp(),
       });
     } catch (_error) {
-      console.error('Error adding member to group:', _error);
       throw new Error('Failed to add member');
     }
   },
@@ -195,7 +190,6 @@ export const firebaseGroupApi = {
         updatedAt: serverTimestamp(),
       });
     } catch (_error) {
-      console.error('Error removing member from group:', _error);
       throw new Error('Failed to remove member');
     }
   },
@@ -212,7 +206,6 @@ export const firebaseGroupApi = {
       const groupService = new GroupService();
       await groupService.joinGroup(groupId, userId);
     } catch (_error) {
-      console.error('Error joining group:', _error);
       throw new Error(
         typeof _error === 'string'
           ? _error
@@ -235,7 +228,6 @@ export const firebaseGroupApi = {
       const groupService = new GroupService();
       await groupService.leaveGroup(groupId, userId);
     } catch (_error) {
-      console.error('Error leaving group:', _error);
       throw new Error(
         typeof _error === 'string'
           ? _error
@@ -277,7 +269,6 @@ export const firebaseGroupApi = {
         updatedAt: g.createdAt, // Use createdAt as fallback
       }));
     } catch (_error) {
-      console.error('Error getting user groups:', _error);
       throw new Error('Failed to get user groups');
     }
   },
@@ -291,7 +282,6 @@ export const firebaseGroupApi = {
       // This is a placeholder implementation
       return [];
     } catch (_error) {
-      console.error('Error searching groups:', _error);
       throw new Error('Failed to search groups');
     }
   },
@@ -314,7 +304,6 @@ export const firebaseGroupApi = {
         membershipGrowth: [],
       };
     } catch (_error) {
-      console.error('Error getting group analytics:', _error);
       throw new Error('Failed to get group analytics');
     }
   },

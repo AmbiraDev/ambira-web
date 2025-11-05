@@ -24,7 +24,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { firebaseAuthApi } from '@/lib/api/auth';
 import { isFirebaseInitialized } from '@/lib/firebase';
 import { AUTH_KEYS } from '@/lib/react-query/auth.queries';
-import { MobileLoadingScreen } from '@/components/MobileLoadingScreen';
+import { LoadingScreen } from '@/components/LoadingScreen';
 
 interface AuthInitializerProps {
   children: ReactNode;
@@ -59,9 +59,6 @@ export function AuthInitializer({ children }: AuthInitializerProps) {
 
       // Set timeout FIRST to ensure we don't hang if redirect check hangs
       timeoutId = setTimeout(() => {
-        console.warn(
-          '[AuthInitializer] ⚠️ Auth initialization timeout - continuing with unauthenticated state'
-        );
         queryClient.setQueryData(AUTH_KEYS.session(), null);
         setIsInitializing(false);
       }, 5000);
@@ -87,7 +84,6 @@ export function AuthInitializer({ children }: AuthInitializerProps) {
           return; // Exit early - redirect handled
         }
       } catch (err) {
-        console.error('[AuthInitializer] ❌ Google redirect error:', err);
         // Clear timeout since we're done initializing
         if (timeoutId) clearTimeout(timeoutId);
         // Continue with normal auth flow even if redirect check fails
@@ -117,11 +113,6 @@ export function AuthInitializer({ children }: AuthInitializerProps) {
                 queryClient.setQueryData(AUTH_KEYS.session(), null);
               }
             } catch (err) {
-              console.error(
-                '[AuthInitializer] ❌ Auth state change error:',
-                err
-              );
-
               // On error, assume user is not authenticated
               queryClient.setQueryData(AUTH_KEYS.session(), null);
             } finally {
@@ -132,11 +123,6 @@ export function AuthInitializer({ children }: AuthInitializerProps) {
           }
         );
       } catch (err) {
-        console.error(
-          '[AuthInitializer] ❌ Firebase initialization error:',
-          err
-        );
-
         // Clear timeout since we're done initializing
         if (timeoutId) clearTimeout(timeoutId);
 
@@ -163,19 +149,7 @@ export function AuthInitializer({ children }: AuthInitializerProps) {
   // Show loading state during initial auth check
   // This prevents flash of unauthenticated content
   if (isInitializing) {
-    return (
-      <>
-        {/* Mobile: Full-screen white background with blue logo */}
-        <div className="md:hidden">
-          <MobileLoadingScreen />
-        </div>
-
-        {/* Desktop: Traditional spinner */}
-        <div className="hidden md:flex items-center justify-center min-h-screen">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-        </div>
-      </>
-    );
+    return <LoadingScreen />;
   }
 
   // Auth initialized - render app

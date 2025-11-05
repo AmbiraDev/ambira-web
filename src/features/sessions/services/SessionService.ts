@@ -17,7 +17,6 @@ export class SessionService {
     try {
       return await firebaseApi.session.getSession(sessionId);
     } catch (_err) {
-      console.error('Error getting session:', _err);
       return null;
     }
   }
@@ -31,7 +30,6 @@ export class SessionService {
     try {
       return await firebaseApi.session.getSessionWithDetails(sessionId);
     } catch (_err) {
-      console.error('Error getting session with details:', _err);
       return null;
     }
   }
@@ -50,7 +48,6 @@ export class SessionService {
       });
       return result.sessions;
     } catch (err) {
-      console.error('Error getting user sessions:', err);
       return [];
     }
   }

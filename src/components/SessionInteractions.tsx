@@ -56,7 +56,6 @@ export const SessionInteractions: React.FC<SessionInteractionsProps> = ({
         await onSupport(sessionId);
       }
     } catch {
-      console.error('Failed to update support');
     } finally {
       setIsSupporting(false);
     }
@@ -69,7 +68,6 @@ export const SessionInteractions: React.FC<SessionInteractionsProps> = ({
     try {
       await onShare(sessionId);
     } catch {
-      console.error('Failed to share session');
     } finally {
       setIsSharing(false);
       setShowShareMenu(false);
@@ -89,9 +87,7 @@ export const SessionInteractions: React.FC<SessionInteractionsProps> = ({
       await navigator.clipboard.writeText(sessionUrl);
       setShowShareMenu(false);
       // Optional: Show a toast notification here
-    } catch {
-      console.error('Failed to copy link');
-    }
+    } catch {}
   };
 
   // Close share menu when clicking outside

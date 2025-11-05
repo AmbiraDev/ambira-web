@@ -43,7 +43,6 @@ export class SocialGraphRepository {
 
       return followingIds;
     } catch (error) {
-      console.error(`Error getting following IDs for user ${userId}:`, error);
       throw new Error(
         `Failed to get following IDs: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
@@ -84,7 +83,6 @@ export class SocialGraphRepository {
 
       return followerIds;
     } catch (error) {
-      console.error(`Error getting follower IDs for user ${userId}:`, error);
       throw new Error(
         `Failed to get follower IDs: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
@@ -134,10 +132,6 @@ export class SocialGraphRepository {
 
       return Array.from(allMemberIds);
     } catch (error) {
-      console.error(
-        `Error getting group member IDs for user ${userId}:`,
-        error
-      );
       throw new Error(
         `Failed to get group member IDs: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
@@ -152,10 +146,6 @@ export class SocialGraphRepository {
       const followingIds = await this.getFollowingIds(followerId);
       return followingIds.includes(followingId);
     } catch (error) {
-      console.error(
-        `Error checking if ${followerId} follows ${followingId}:`,
-        error
-      );
       return false;
     }
   }

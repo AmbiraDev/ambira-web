@@ -111,7 +111,6 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
     }
 
     if (!createProject) {
-      console.error('Create project function is not available');
       return;
     }
 
@@ -139,7 +138,6 @@ export const CreateProjectModal: React.FC<CreateProjectModalProps> = ({
       onSuccess?.(project.id);
       onClose();
     } catch (err) {
-      console.error('Failed to create project:', err);
       setErrors({ name: 'Failed to create project. Please try again.' });
     } finally {
       setIsSubmitting(false);

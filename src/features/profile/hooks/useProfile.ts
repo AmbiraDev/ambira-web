@@ -217,7 +217,6 @@ export function useFollowers(
         return await profileService.getFollowers(userId);
       } catch (_err) {
         // Return empty array on permission errors
-        console.error('Error fetching followers:', _err);
         return [];
       }
     },
@@ -245,7 +244,6 @@ export function useFollowing(
         return await profileService.getFollowing(userId);
       } catch (_err) {
         // Return empty array on permission errors
-        console.error('Error fetching following:', _err);
         return [];
       }
     },

@@ -44,7 +44,6 @@ export class UserRepository {
 
       return this.mapper.toDomain(docSnap);
     } catch (error) {
-      console.error(`Error finding user ${userId}:`, error);
       throw new Error(
         `Failed to find user: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
@@ -74,7 +73,6 @@ export class UserRepository {
       }
       return this.mapper.toDomain(doc);
     } catch (error) {
-      console.error(`Error finding user by username ${username}:`, error);
       throw new Error(
         `Failed to find user: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
@@ -104,7 +102,6 @@ export class UserRepository {
       const results = await Promise.all(batches);
       return results.flat();
     } catch (error) {
-      console.error('Error finding users by IDs:', error);
       throw new Error(
         `Failed to find users: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
@@ -142,10 +139,6 @@ export class UserRepository {
       const snapshot = await getDocs(q);
       return this.mapper.toDomainList(snapshot.docs);
     } catch (error) {
-      console.error(
-        `Error searching users by username prefix ${prefix}:`,
-        error
-      );
       throw new Error(
         `Failed to search users: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
@@ -162,7 +155,6 @@ export class UserRepository {
 
       await setDoc(docRef, data, { merge: true });
     } catch (error) {
-      console.error(`Error saving user ${user.id}:`, error);
       throw new Error(
         `Failed to save user: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
@@ -179,7 +171,6 @@ export class UserRepository {
         followerCount: increment(delta),
       });
     } catch (error) {
-      console.error(`Error updating follower count for user ${userId}:`, error);
       throw new Error(
         `Failed to update follower count: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
@@ -196,10 +187,6 @@ export class UserRepository {
         followingCount: increment(delta),
       });
     } catch (error) {
-      console.error(
-        `Error updating following count for user ${userId}:`,
-        error
-      );
       throw new Error(
         `Failed to update following count: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
@@ -215,7 +202,6 @@ export class UserRepository {
       const docSnap = await getDoc(docRef);
       return docSnap.exists();
     } catch (error) {
-      console.error(`Error checking if user ${userId} exists:`, error);
       return false;
     }
   }
@@ -228,10 +214,6 @@ export class UserRepository {
       const user = await this.findByUsername(username);
       return user === null;
     } catch (error) {
-      console.error(
-        `Error checking username availability for ${username}:`,
-        error
-      );
       return false;
     }
   }

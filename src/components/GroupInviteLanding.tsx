@@ -32,7 +32,6 @@ export default function GroupInviteLanding({
       }
       setGroup(groupData);
     } catch (_error) {
-      console.error('Error loading group:', _error);
       setError('Failed to load group information');
     } finally {
       setIsLoading(false);
@@ -48,7 +47,6 @@ export default function GroupInviteLanding({
       // Redirect to group page
       router.push(`/groups/${groupId}`);
     } catch (err: unknown) {
-      console.error('Error joining group:', err);
       const errorMessage =
         err && typeof err === 'object' && 'message' in err
           ? String(err.message)

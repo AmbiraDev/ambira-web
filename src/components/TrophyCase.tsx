@@ -30,7 +30,6 @@ export const TrophyCase: React.FC<TrophyCaseProps> = ({
         setAchievements(achievementsData);
         setProgress(progressData);
       } catch {
-        console.error('Failed to load achievements');
       } finally {
         setIsLoading(false);
       }

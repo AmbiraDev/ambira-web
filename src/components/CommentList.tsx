@@ -67,7 +67,6 @@ export const CommentList: React.FC<CommentListProps> = ({
         content,
       });
     } catch (err: unknown) {
-      console.error('Failed to create comment:', err);
       throw err;
     }
   };
@@ -76,7 +75,6 @@ export const CommentList: React.FC<CommentListProps> = ({
     try {
       await deleteCommentMutation.mutateAsync({ commentId, sessionId });
     } catch (err: unknown) {
-      console.error('Failed to delete comment:', err);
       throw err;
     }
   };

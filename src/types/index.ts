@@ -1,5 +1,71 @@
 // Core data types for Ambira
 
+import { Timestamp } from 'firebase/firestore';
+
+/**
+ * ActivityType - Global activity type definition
+ *
+ * Represents both system-wide default activities and user-created custom activities.
+ * System activities (isSystem: true) are shared across all users and maintained by admins.
+ * Custom activities (isSystem: false) are user-specific and have a userId field.
+ *
+ * Collection: /activityTypes/{typeId}
+ *
+ * Examples:
+ * - System activity: { id: 'work', name: 'Work', isSystem: true, userId: undefined }
+ * - Custom activity: { id: 'guitar', name: 'Guitar Practice', isSystem: false, userId: 'user123' }
+ */
+export interface ActivityType {
+  id: string; // e.g., 'work', 'coding', 'side-project'
+  name: string; // Display name
+  category: 'productivity' | 'learning' | 'creative'; // Category grouping
+  icon: string; // Emoji or iconify icon
+  defaultColor: string; // Hex color (named defaultColor to match API)
+  isSystem: boolean; // true for 10 defaults, false for custom
+  userId?: string; // Only set for custom activities
+  order: number; // Display order (1-10 for system defaults, 100+ for customs)
+  description?: string; // Brief description
+  createdAt: Date; // Date object, not Timestamp
+  updatedAt: Date; // Date object, not Timestamp
+}
+
+/**
+ * UserActivityPreference - User's activity usage tracking and preferences
+ *
+ * Tracks user interaction with activities to enable smart features:
+ * - Recent activity sorting (lastUsed)
+ * - Usage frequency tracking (useCount)
+ * - Quick access to frequently used activities
+ *
+ * Collection: /users/{userId}/activityPreferences/{typeId}
+ *
+ * Updated automatically when user creates sessions with an activity.
+ * Used to populate the "Recent" section in activity pickers.
+ */
+export interface UserActivityPreference {
+  typeId: string; // References ActivityType.id
+  userId: string; // Owner
+  lastUsed: Timestamp; // Updated on every session creation
+  useCount: number; // Incremented on each session
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+}
+
+/**
+ * UnassignedActivity - Special fallback for sessions with deleted activities
+ *
+ * When a custom activity is deleted, associated sessions reference this
+ * placeholder to maintain data integrity and prevent broken references.
+ *
+ * This is a static type (not stored in Firestore), used only in UI display logic.
+ */
+export interface UnassignedActivity {
+  id: 'unassigned';
+  name: 'Unassigned';
+  icon: '❓';
+  color: '#999999';
+}
+
 export interface User {
   id: string;
   email: string;

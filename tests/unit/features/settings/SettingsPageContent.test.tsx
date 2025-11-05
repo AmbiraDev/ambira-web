@@ -372,7 +372,7 @@ describe('SettingsPageContent Component', () => {
       expect(saveButtons[0]).toBeDisabled();
     });
 
-    // TODO: Fix this test - button click not triggering form submission
+    // TODO: Fix this test - form submission not triggering API call
     it.skip('successfully updates profile', async () => {
       mockFirebaseUserApi.updateProfile.mockResolvedValue(undefined);
 
@@ -386,26 +386,38 @@ describe('SettingsPageContent Component', () => {
       await user.clear(nameInput!);
       await user.type(nameInput!, 'Jane Doe');
 
-      // Wait for a save button to be enabled and click it
-      const saveButtons = screen.getAllByRole('button', {
-        name: /Save Changes/i,
-      });
-
-      let enabledButton: HTMLElement | undefined;
+      // Wait for a save button to be enabled
       await waitFor(() => {
-        enabledButton = saveButtons.find(btn => !btn.hasAttribute('disabled'));
+        const saveButtons = screen.getAllByRole('button', {
+          name: /Save Changes/i,
+        });
+        const enabledButton = saveButtons.find(
+          btn => !btn.hasAttribute('disabled')
+        );
         expect(enabledButton).toBeDefined();
       });
 
+      // Get the enabled button and click it
+      const saveButtons = screen.getAllByRole('button', {
+        name: /Save Changes/i,
+      });
+      const enabledButton = saveButtons.find(
+        btn => !btn.hasAttribute('disabled')
+      );
+
       await user.click(enabledButton!);
 
-      await waitFor(() => {
-        expect(mockFirebaseUserApi.updateProfile).toHaveBeenCalledWith(
-          expect.objectContaining({
-            name: 'Jane Doe',
-          })
-        );
-      });
+      // Wait for the API call
+      await waitFor(
+        () => {
+          expect(mockFirebaseUserApi.updateProfile).toHaveBeenCalledWith(
+            expect.objectContaining({
+              name: 'Jane Doe',
+            })
+          );
+        },
+        { timeout: 3000 }
+      );
     });
 
     it('handles profile update errors', async () => {

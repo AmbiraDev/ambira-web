@@ -33,7 +33,6 @@ export default function DiscoverPeoplePage() {
 
         setSuggestedUsers(suggestions);
       } catch (error: unknown) {
-        console.error('Error loading users:', error);
         setSuggestedUsers([]);
       } finally {
         setIsLoading(false);

@@ -51,9 +51,7 @@ function RightSidebar() {
         const following = await firebaseUserApi.getFollowing(user.id);
         const followingIds = new Set(following.map(u => u.id));
         setFollowingUsers(followingIds);
-      } catch {
-        console.error('Failed to load following list');
-      }
+      } catch {}
 
       // Load suggested users (top 5) with 1 hour cache
       try {
@@ -69,11 +67,8 @@ function RightSidebar() {
           }
         );
         setSuggestedUsers(suggestions);
-      } catch {
-        console.error('Failed to load suggested users');
-      }
+      } catch {}
     } catch {
-      console.error('Failed to load suggested content');
     } finally {
       setIsLoadingUsers(false);
     }
@@ -110,7 +105,6 @@ function RightSidebar() {
         setSuggestedUsers(prev => prev.filter(u => u.id !== userId));
       }
     } catch {
-      console.error('Failed to toggle follow');
       // Revert on error
       setFollowingUsers(prev => {
         const next = new Set(prev);

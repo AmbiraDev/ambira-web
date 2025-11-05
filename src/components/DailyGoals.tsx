@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { useActivities } from '@/hooks/useActivitiesQuery';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { IconRenderer } from './IconRenderer';
 import { Activity } from '@/types';
 
@@ -20,6 +20,17 @@ function DailyGoals() {
   const [goals, setGoals] = useState<DailyGoalProgress[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Create a stable key for activities to prevent infinite loops
+  // Only trigger re-fetch when activity IDs change, not the array reference
+  const activitiesKey = useMemo(
+    () =>
+      activities
+        .map(a => a.id)
+        .sort()
+        .join(','),
+    [activities]
+  );
+
   useEffect(() => {
     const loadDailyGoals = async () => {
       if (!user) {
@@ -27,19 +38,19 @@ function DailyGoals() {
         return;
       }
 
+      // Filter activities with weekly targets
+      const activitiesWithGoals = activities.filter(
+        activity => activity.weeklyTarget && activity.weeklyTarget > 0
+      );
+
+      if (activitiesWithGoals.length === 0) {
+        setGoals([]);
+        setIsLoading(false);
+        return;
+      }
+
       try {
         setIsLoading(true);
-
-        // Filter activities with weekly targets
-        const activitiesWithGoals = activities.filter(
-          activity => activity.weeklyTarget && activity.weeklyTarget > 0
-        );
-
-        if (activitiesWithGoals.length === 0) {
-          setGoals([]);
-          setIsLoading(false);
-          return;
-        }
 
         // Get today's start time (midnight)
         const todayStart = new Date();
@@ -97,7 +108,6 @@ function DailyGoals() {
 
         setGoals(dailyGoals);
       } catch (err) {
-        console.error('Failed to load daily goals:', err);
         setGoals([]);
       } finally {
         setIsLoading(false);
@@ -105,7 +115,7 @@ function DailyGoals() {
     };
 
     loadDailyGoals();
-  }, [user, activities]);
+  }, [user?.id, activitiesKey, activities]);
 
   // Format time display
   const formatProgress = (current: number, goal: number) => {

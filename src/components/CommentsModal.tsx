@@ -25,7 +25,7 @@ interface CommentsModalProps {
   onCommentCountChange?: (count: number) => void;
 }
 
-const COMMENTS_PER_PAGE = 10;
+const COMMENTS_PER_PAGE = 5;
 
 export const CommentsModal: React.FC<CommentsModalProps> = ({
   isOpen,
@@ -238,7 +238,7 @@ export const CommentsModal: React.FC<CommentsModalProps> = ({
                 No comments yet. Be the first to comment!
               </div>
             ) : (
-              <div className="space-y-5">
+              <div className="space-y-2 sm:space-y-4">
                 {comments.map(comment => (
                   <CommentItem
                     key={comment.id}

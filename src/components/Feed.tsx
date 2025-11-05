@@ -91,7 +91,10 @@ export const Feed: React.FC<FeedProps> = ({
     hasNextPage,
     isFetchingNextPage,
     refetch,
-  } = useFeedInfinite(user?.id || '', filters);
+  } = useFeedInfinite(user?.id || '', filters, { limit: _initialLimit });
+
+  // Ref to track last logged session IDs to prevent duplicate logs
+  const lastLoggedSessionIds = React.useRef<string>('');
 
   // Flatten pages into allSessions
   // Note: Casting to SessionWithDetails[] for compatibility during architecture migration
@@ -100,9 +103,11 @@ export const Feed: React.FC<FeedProps> = ({
   const allSessions = useMemo(() => {
     if (!data?.pages) return [];
     // TypeScript can't infer the page type from useInfiniteQuery, so we cast
-    return (data.pages as FeedResult[]).flatMap(page => {
+    const sessions = (data.pages as FeedResult[]).flatMap(page => {
       return page.sessions || [];
     }) as unknown as SessionWithDetails[];
+
+    return sessions;
   }, [data]);
 
   const hasMore = hasNextPage || false;
@@ -139,8 +144,8 @@ export const Feed: React.FC<FeedProps> = ({
     }
   }, [isLoadingMore, hasMore, fetchNextPage]);
 
-  // Check for new sessions when user returns to tab + periodic polling at 5-minute intervals
-  // Balances cost savings with UX for users with feed open continuously
+  // Check for new sessions when user returns to tab
+  // Only checks when page becomes visible to minimize Firestore reads
   useEffect(() => {
     if (allSessions.length === 0) return;
 
@@ -193,20 +198,8 @@ export const Feed: React.FC<FeedProps> = ({
 
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
-    // Check every 5 minutes when visible (balance cost vs freshness)
-    // Reduced from 2 minutes to 5 minutes to cut Firestore read costs
-    const interval = setInterval(
-      () => {
-        if (!document.hidden) {
-          checkForNewSessions();
-        }
-      },
-      5 * 60 * 1000
-    );
-
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
-      clearInterval(interval);
     };
   }, [
     allSessions,
@@ -495,6 +488,7 @@ export const Feed: React.FC<FeedProps> = ({
           const isOwnSession = user && session.userId === user.id;
           // First 2 sessions are above the fold on most screens
           const isAboveFold = index < 2;
+
           return (
             <SessionCard
               key={session.id}

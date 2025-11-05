@@ -109,7 +109,6 @@ export default function CreateGroupPage() {
             imageUrl = result.url;
           }
         } catch (uploadError) {
-          console.error('Error uploading group image:', uploadError);
           setError(
             uploadError instanceof Error
               ? uploadError.message
@@ -134,7 +133,6 @@ export default function CreateGroupPage() {
       // Navigate to the new group page
       router.push(`/groups/${newGroup.id}`);
     } catch (_error) {
-      console.error('Error creating group:', _error);
       setError(
         _error instanceof Error
           ? _error.message

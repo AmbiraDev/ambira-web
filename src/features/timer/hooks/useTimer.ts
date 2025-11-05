@@ -6,6 +6,7 @@
  */
 
 import { useCallback } from 'react';
+import * as React from 'react';
 import {
   useActiveTimerQuery,
   useStartTimerMutation,
@@ -17,7 +18,7 @@ import {
 } from '@/hooks/useTimerQuery';
 import { useAdjustStartTime } from './useTimerMutations';
 import { useTimerState, ActiveSessionData } from './useTimerState';
-import { useActivities } from '@/hooks/useActivitiesQuery';
+import { useAllActivityTypes } from '@/hooks/useActivityTypes';
 import { useAuth } from '@/hooks/useAuth';
 import { Session, TimerState as TimerStateType } from '@/types';
 import { auth } from '@/lib/firebase';
@@ -51,6 +52,7 @@ export interface UseTimerReturn {
       publishToFeeds?: boolean;
       customDuration?: number;
       images?: string[];
+      activityId?: string;
     }
   ) => Promise<Session>;
   resetTimer: () => Promise<void>;
@@ -78,14 +80,40 @@ export function useTimer(options?: { pausePolling?: boolean }): UseTimerReturn {
     refetch: refetchActiveSession,
   } = useActiveTimerQuery({ enabled: !pausePolling });
 
-  // Get projects to find the current project
-  const { data: projects = [] } = useActivities(user?.id);
+  // Get all activity types (includes both defaults and custom activities)
+  const { data: activityTypes = [] } = useAllActivityTypes(user?.id || '', {
+    enabled: !!user?.id,
+  });
 
+  // Convert ActivityType to Activity for compatibility with timer state
   // Find current project from active session
-  const currentProject =
-    activeSession && projects.length > 0
-      ? projects.find(p => p.id === activeSession.projectId) || null
-      : null;
+  const currentProject = React.useMemo(() => {
+    if (!activeSession || !activityTypes.length) {
+      return null;
+    }
+
+    const activityType = activityTypes.find(
+      at =>
+        at.id === activeSession.projectId || at.id === activeSession.activityId
+    );
+
+    if (!activityType) {
+      return null;
+    }
+
+    // Convert ActivityType to Activity shape
+    return {
+      id: activityType.id,
+      name: activityType.name,
+      description: activityType.description || '',
+      icon: activityType.icon,
+      color: activityType.defaultColor,
+      userId: activityType.userId || '',
+      status: 'active' as const,
+      createdAt: activityType.createdAt,
+      updatedAt: activityType.updatedAt,
+    };
+  }, [activeSession, activityTypes]);
 
   // Mutations
   const startMutation = useStartTimerMutation();
@@ -112,7 +140,7 @@ export function useTimer(options?: { pausePolling?: boolean }): UseTimerReturn {
             isPaused: false,
           });
         } catch (_err) {
-          console.error('Auto-save failed:', _err);
+          // Auto-save failed silently
         }
       }
     },
@@ -193,10 +221,18 @@ export function useTimer(options?: { pausePolling?: boolean }): UseTimerReturn {
         publishToFeeds?: boolean;
         customDuration?: number;
         images?: string[];
+        activityId?: string; // Allow overriding the activity
       }
     ): Promise<Session> => {
-      if (!activeSession || !currentProject) {
+      if (!activeSession) {
         throw new Error('No active timer to finish');
+      }
+
+      // Use the activity from options if provided, otherwise fall back to currentProject
+      const activityId = options?.activityId || currentProject?.id;
+
+      if (!activityId) {
+        throw new Error('No activity selected for this session');
       }
 
       const finalDuration =
@@ -211,8 +247,8 @@ export function useTimer(options?: { pausePolling?: boolean }): UseTimerReturn {
         options: {
           ...options,
           customDuration: finalDuration,
-          activityId: currentProject.id,
-          projectId: currentProject.id,
+          activityId: activityId,
+          projectId: activityId,
           startTime: activeSession.startTime,
         },
       });

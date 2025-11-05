@@ -25,7 +25,6 @@ export const StreakDisplay: React.FC<StreakDisplayProps> = ({
         const stats = await firebaseApi.streak.getStreakStats(userId);
         setStreakStats(stats);
       } catch {
-        console.error('Failed to load streak');
       } finally {
         setIsLoading(false);
       }

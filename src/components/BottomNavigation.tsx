@@ -5,17 +5,59 @@ import { usePathname } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { useTimer } from '@/features/timer/hooks';
 import { Home, Compass, Play, Users, User } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 export default function BottomNavigation() {
   const pathname = usePathname();
   const { user } = useAuth();
   const { timerState } = useTimer();
+  const [isKeyboardOpen, setIsKeyboardOpen] = useState(false);
+
+  // Detect keyboard open/close on mobile by monitoring viewport height changes
+  useEffect(() => {
+    // Only run on mobile devices
+    if (typeof window === 'undefined' || window.innerWidth > 768) {
+      return;
+    }
+
+    const initialHeight = window.visualViewport?.height || window.innerHeight;
+
+    const handleResize = () => {
+      const currentHeight = window.visualViewport?.height || window.innerHeight;
+
+      // If viewport height decreased by more than 150px, keyboard is likely open
+      // This threshold helps avoid false positives from browser chrome changes
+      setIsKeyboardOpen(initialHeight - currentHeight > 150);
+    };
+
+    // Use visualViewport if available (better for keyboard detection)
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', handleResize);
+    } else {
+      window.addEventListener('resize', handleResize);
+    }
+
+    return () => {
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener('resize', handleResize);
+      } else {
+        window.removeEventListener('resize', handleResize);
+      }
+    };
+  }, []);
 
   const isActive = (path: string) => {
     if (path === '/') return pathname === '/';
     if (path === '/search') return pathname.startsWith('/search');
     if (path === '/groups') return pathname.startsWith('/groups');
-    if (path === '/you') return pathname.startsWith('/you');
+    if (path === '/you') {
+      // Highlight "You" tab when on /you or on the user's own profile
+      return (
+        pathname.startsWith('/you') ||
+        pathname === '/profile' ||
+        (user?.username && pathname === `/profile/${user.username}`)
+      );
+    }
     return pathname === path;
   };
 
@@ -25,7 +67,9 @@ export default function BottomNavigation() {
 
   return (
     <>
-      <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 md:hidden">
+      <nav
+        className={`fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 md:hidden transition-transform duration-200 ${isKeyboardOpen ? 'translate-y-full' : 'translate-y-0'}`}
+      >
         <div
           className="flex items-center justify-around h-[6.5rem] px-2 pb-8 pt-1.5"
           style={{ paddingBottom: 'max(2rem, env(safe-area-inset-bottom))' }}

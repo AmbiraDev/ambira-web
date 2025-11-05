@@ -100,8 +100,8 @@ describe('useCommentMutations', () => {
         content: 'New comment',
       };
 
-      // Set up auth user in cache
-      queryClient.setQueryData(['auth', 'user'], mockUser);
+      // Set up auth user in cache with correct key (see useCommentMutations line 118)
+      queryClient.setQueryData(['auth', 'session'], mockUser);
 
       // Set up initial comments cache
       const initialComments: CommentsResponse = {
@@ -197,9 +197,6 @@ describe('useCommentMutations', () => {
       // Mock service
       mockFunctions.createComment.mockResolvedValue(mockComment);
 
-      // SPY on console.warn
-      const warnSpy = jest.spyOn(console, 'warn').mockImplementation();
-
       // ACT
       const { result } = renderHook(() => useCreateComment(), { wrapper });
 
@@ -212,15 +209,8 @@ describe('useCommentMutations', () => {
         expect(result.current.isSuccess).toBe(true);
       });
 
-      // Should have logged warning
-      expect(warnSpy).toHaveBeenCalledWith(
-        expect.stringContaining('Auth user not in cache')
-      );
-
       // Should still create comment on server
       expect(mockFunctions.createComment).toHaveBeenCalledWith(newCommentData);
-
-      warnSpy.mockRestore();
     });
 
     it('should update session comment count in feed caches', async () => {

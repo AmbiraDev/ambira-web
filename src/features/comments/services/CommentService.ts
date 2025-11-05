@@ -29,7 +29,6 @@ export class CommentService {
     try {
       return await firebaseApi.comment.getSessionComments(sessionId, limit);
     } catch (_err) {
-      console.error('Error getting session comments:', _err);
       return {
         comments: [],
         hasMore: false,

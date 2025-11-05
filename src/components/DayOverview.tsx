@@ -55,7 +55,6 @@ export default function DayOverview() {
         currentStreak: stats?.currentStreak || 0,
       });
     } catch (err) {
-      console.error('Failed to load today stats:', err);
     } finally {
       setIsLoading(false);
     }

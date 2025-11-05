@@ -43,7 +43,6 @@ export default function SuggestedGroupsModal({
       );
       setAllSuggestedGroups(filteredGroups);
     } catch {
-      console.error('Error loading groups');
       setAllSuggestedGroups([]);
     } finally {
       setIsLoading(false);
@@ -103,7 +102,6 @@ export default function SuggestedGroupsModal({
       // Remove from suggestions after joining
       setAllSuggestedGroups(prev => prev.filter(g => g.id !== groupId));
     } catch {
-      console.error('Failed to join group');
     } finally {
       setJoiningGroups(prev => {
         const next = new Set(prev);

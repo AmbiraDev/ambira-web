@@ -46,7 +46,6 @@ function SessionEditContent({ sessionId }: { sessionId: string }) {
 
       setSession(sessionData);
     } catch (err: unknown) {
-      console.error('Error loading session:', err);
       setError(err instanceof Error ? err.message : 'Failed to load session');
     } finally {
       setIsLoading(false);
@@ -71,7 +70,6 @@ function SessionEditContent({ sessionId }: { sessionId: string }) {
       // Navigate back to the session detail page
       router.push(`/sessions/${sessionId}`);
     } catch (err: unknown) {
-      console.error('Failed to update session:', err);
       throw err; // Let the modal handle the error
     }
   };

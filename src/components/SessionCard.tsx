@@ -55,6 +55,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({
   );
   const [showLikesModal, setShowLikesModal] = useState(false);
   const [showCommentsModal, setShowCommentsModal] = useState(false);
+  const [expandComments, setExpandComments] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const commentSectionRef = useRef<HTMLDivElement>(null);
 
@@ -124,10 +125,50 @@ export const SessionCard: React.FC<SessionCardProps> = ({
     };
   }, [showMenu]);
 
+  // Handle comment icon click - different behavior for mobile vs desktop
+  const handleCommentClick = () => {
+    // Check if mobile (window width < 768px which is md breakpoint)
+    const isMobile = window.innerWidth < 768;
+
+    if (isMobile) {
+      // Mobile: Open modal
+      setShowCommentsModal(true);
+    } else {
+      // Desktop: Expand inline and scroll to comment section
+      setExpandComments(true);
+      // Scroll to comment section after a short delay to allow expansion
+      setTimeout(() => {
+        commentSectionRef.current?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'nearest',
+        });
+      }, 100);
+    }
+  };
+
   // Guard: Return null if user data is missing (during architecture migration)
   if (!session.user) {
     return null;
   }
+
+  // Get activity display name with fallback
+  // If activity/project objects exist, use their names
+  // Otherwise, if activityId/projectId exists, format it nicely (e.g., "coding" -> "Coding")
+  const getActivityDisplayName = () => {
+    if (session.activity?.name) return session.activity.name;
+    if (session.project?.name) return session.project.name;
+
+    // Fallback: format the activityId or projectId
+    const id = session.activityId || session.projectId;
+    if (id) {
+      // Convert kebab-case to Title Case (e.g., "side-project" -> "Side Project")
+      return id.charAt(0).toUpperCase() + id.slice(1).replace(/-/g, ' ');
+    }
+
+    return 'N/A';
+  };
+
+  const activityDisplayName = getActivityDisplayName();
 
   return (
     <article
@@ -308,9 +349,9 @@ export const SessionCard: React.FC<SessionCardProps> = ({
             <div className="text-xs text-gray-500 mb-1">Activity</div>
             <div
               className="text-base font-semibold text-gray-900 truncate"
-              title={session.activity?.name || session.project?.name || 'N/A'}
+              title={activityDisplayName}
             >
-              {session.activity?.name || session.project?.name || 'N/A'}
+              {activityDisplayName}
             </div>
           </div>
         </div>
@@ -328,7 +369,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({
         onShare={onShare}
         onShareImage={() => router.push(`/sessions/${session.id}/share`)}
         isOwnPost={session.userId === user?.id}
-        onCommentClick={() => setShowCommentsModal(true)}
+        onCommentClick={handleCommentClick}
         onLikesClick={() => setShowLikesModal(true)}
       />
 
@@ -338,6 +379,7 @@ export const SessionCard: React.FC<SessionCardProps> = ({
           sessionId={session.id}
           totalCommentCount={localCommentCount}
           onCommentCountChange={setLocalCommentCount}
+          initialExpanded={expandComments}
         />
       </div>
 

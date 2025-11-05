@@ -96,9 +96,7 @@ export function useNotifications(options?: {
         // Update React Query cache with real-time data
         queryClient.setQueryData(queryKey, notifications);
       },
-      error => {
-        console.error('Error in notifications real-time listener:', error);
-      }
+      error => {}
     );
 
     return () => unsubscribe();
@@ -175,7 +173,6 @@ export function useMarkNotificationRead(limit: number = 50) {
       if (context?.previousNotifications) {
         queryClient.setQueryData(queryKey, context.previousNotifications);
       }
-      console.error('Error marking notification as read:', err);
     },
 
     // Always refetch after error or success
@@ -225,7 +222,6 @@ export function useMarkAllNotificationsRead(limit: number = 50) {
       if (context?.previousNotifications) {
         queryClient.setQueryData(queryKey, context.previousNotifications);
       }
-      console.error('Error marking all notifications as read:', err);
     },
 
     onSettled: () => {
@@ -272,7 +268,6 @@ export function useDeleteNotification(limit: number = 50) {
       if (context?.previousNotifications) {
         queryClient.setQueryData(queryKey, context.previousNotifications);
       }
-      console.error('Error deleting notification:', err);
     },
 
     onSettled: () => {
@@ -317,7 +312,6 @@ export function useClearAllNotifications(limit: number = 50) {
       if (context?.previousNotifications) {
         queryClient.setQueryData(queryKey, context.previousNotifications);
       }
-      console.error('Error clearing all notifications:', err);
     },
 
     onSettled: () => {

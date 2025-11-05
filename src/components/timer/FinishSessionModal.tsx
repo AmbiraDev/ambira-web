@@ -118,8 +118,7 @@ export function FinishSessionModal({
                     <>
                       <IconRenderer
                         iconName={selectedActivity.icon}
-                        className="w-5 h-5 flex-shrink-0"
-                        style={{ color: selectedActivity.color }}
+                        className="w-6 h-6 text-gray-700 flex-shrink-0"
                       />
                       <span className="flex-1 text-left">
                         {selectedActivity.name}
@@ -184,18 +183,10 @@ export function FinishSessionModal({
                                   : ''
                               }`}
                             >
-                              <div
-                                className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-                                style={{
-                                  backgroundColor: `${activity.color}20`,
-                                }}
-                              >
-                                <IconRenderer
-                                  iconName={activity.icon}
-                                  className="w-4 h-4"
-                                  style={{ color: activity.color }}
-                                />
-                              </div>
+                              <IconRenderer
+                                iconName={activity.icon}
+                                className="w-5 h-5 text-gray-700 flex-shrink-0"
+                              />
                               <div className="flex-1 text-left min-w-0">
                                 <div className="text-sm font-medium text-gray-900">
                                   {activity.name}
@@ -207,25 +198,23 @@ export function FinishSessionModal({
                             </button>
                           ))}
                           <Link
-                            href="/activities/new"
-                            className="w-full flex items-center gap-3 p-3 border-t border-gray-200 hover:bg-gray-50 transition-colors text-gray-900 font-medium"
+                            href="/settings/activities"
+                            className="w-full flex items-center gap-3 p-3 border-t border-gray-200 hover:bg-gray-50 transition-colors text-gray-700"
                           >
-                            <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 bg-blue-100">
-                              <svg
-                                className="w-4 h-4 text-[#0066CC]"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                                />
-                              </svg>
-                            </div>
-                            <span className="text-sm">Create New Activity</span>
+                            <svg
+                              className="w-5 h-5 text-gray-600 flex-shrink-0"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                              />
+                            </svg>
+                            <span className="text-sm">Add custom activity</span>
                           </Link>
                         </>
                       )}

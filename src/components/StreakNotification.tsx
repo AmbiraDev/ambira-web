@@ -28,9 +28,7 @@ export const StreakNotification: React.FC<StreakNotificationProps> = ({
         if (stats.streakAtRisk && stats.currentStreak > 0) {
           setIsVisible(true);
         }
-      } catch {
-        console.error('Failed to load streak');
-      }
+      } catch {}
     };
 
     loadStreak();

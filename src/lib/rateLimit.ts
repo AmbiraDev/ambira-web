@@ -181,6 +181,11 @@ export const RATE_LIMITS = {
     windowMs: 60 * 1000, // 1 minute
     message: 'Too many project creations. Please slow down.',
   },
+  CUSTOM_ACTIVITY_CREATE: {
+    maxRequests: 10,
+    windowMs: 60 * 1000, // 1 minute
+    message: 'Too many custom activity creations. Please slow down.',
+  },
   TASK_CREATE: {
     maxRequests: 50,
     windowMs: 60 * 1000, // 1 minute

@@ -45,7 +45,6 @@ export const useSessionCompletion = () => {
 
       return { session, achievements };
     } catch (_err) {
-      console.error('Failed to complete session:', _err);
       throw _err;
     } finally {
       setIsProcessing(false);
