@@ -109,16 +109,16 @@ export const UpdateGroupSchema = v.object({
  * Schema for group membership operations
  */
 export const GroupMembershipSchema = v.object({
-  groupId: UuidSchema,
-  userId: v.optional(UuidSchema), // Optional if operating on current user
+  groupId: NonEmptyStringSchema,
+  userId: v.optional(NonEmptyStringSchema), // Optional if operating on current user
 });
 
 /**
  * Schema for group role assignment
  */
 export const GroupRoleSchema = v.object({
-  groupId: UuidSchema,
-  userId: UuidSchema,
+  groupId: NonEmptyStringSchema,
+  userId: NonEmptyStringSchema,
   role: v.picklist(['admin', 'member'], 'Invalid role'),
 });
 
@@ -131,7 +131,7 @@ export const GroupFiltersSchema = v.object({
   privacySetting: v.optional(GroupPrivacySchema),
   location: v.optional(v.string()),
   search: v.optional(v.string()),
-  userId: v.optional(UuidSchema), // Filter groups by member
+  userId: v.optional(NonEmptyStringSchema), // Filter groups by member
 });
 
 /**
@@ -146,9 +146,9 @@ export const GroupSortSchema = v.object({
  * Schema for group invitation
  */
 export const GroupInviteSchema = v.object({
-  groupId: UuidSchema,
+  groupId: NonEmptyStringSchema,
   userIds: v.pipe(
-    v.array(UuidSchema),
+    v.array(NonEmptyStringSchema),
     v.minLength(1, 'Must invite at least one user'),
     v.maxLength(50, 'Cannot invite more than 50 users at once')
   ),

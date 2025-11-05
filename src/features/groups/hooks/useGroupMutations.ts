@@ -99,6 +99,10 @@ export function useJoinGroup(
         queryKey: GROUPS_KEYS.userGroups(userId),
       });
       queryClient.invalidateQueries({ queryKey: GROUPS_KEYS.stats(groupId) });
+      // Invalidate suggested groups so the joined group is removed from suggestions
+      queryClient.invalidateQueries({
+        queryKey: ['suggested', 'groups'],
+      });
     },
 
     ...options,

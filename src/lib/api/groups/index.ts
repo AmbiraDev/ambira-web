@@ -204,7 +204,7 @@ export const firebaseGroupApi = {
         '@/features/groups/services/GroupService'
       );
       const groupService = new GroupService();
-      await groupService.joinGroup(groupId, userId);
+      await groupService.joinGroup({ groupId }, userId);
     } catch (_error) {
       throw new Error(
         typeof _error === 'string'
@@ -226,7 +226,7 @@ export const firebaseGroupApi = {
         '@/features/groups/services/GroupService'
       );
       const groupService = new GroupService();
-      await groupService.leaveGroup(groupId, userId);
+      await groupService.leaveGroup({ groupId }, userId);
     } catch (_error) {
       throw new Error(
         typeof _error === 'string'

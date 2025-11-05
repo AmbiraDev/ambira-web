@@ -4,12 +4,13 @@ import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useAuth } from '@/hooks/useAuth';
-import { firebaseUserApi, firebaseApi } from '@/lib/api';
+import { firebaseUserApi } from '@/lib/api';
 import { cachedQuery } from '@/lib/cache';
 import GroupAvatar from '@/components/GroupAvatar';
 import SuggestedPeopleModal from '@/components/SuggestedPeopleModal';
 import SuggestedGroupsModal from '@/components/SuggestedGroupsModal';
 import { useSuggestedGroups } from '@/features/search/hooks';
+import { useJoinGroup } from '@/features/groups/hooks/useGroupMutations';
 import { GROUP_DISPLAY_CONFIG } from '@/lib/constants/groupDisplay';
 
 interface SuggestedUser {
@@ -26,9 +27,9 @@ function RightSidebar() {
   const [suggestedUsers, setSuggestedUsers] = useState<SuggestedUser[]>([]);
   const [isLoadingUsers, setIsLoadingUsers] = useState(true);
   const [followingUsers, setFollowingUsers] = useState<Set<string>>(new Set());
-  const [joiningGroups, setJoiningGroups] = useState<Set<string>>(new Set());
   const [showPeopleModal, setShowPeopleModal] = useState(false);
   const [showGroupsModal, setShowGroupsModal] = useState(false);
+  const [joinedGroupIds, setJoinedGroupIds] = useState<Set<string>>(new Set());
 
   // Use the proper hook for suggested groups
   const {
@@ -39,6 +40,9 @@ function RightSidebar() {
     enabled: !!user,
     limit: GROUP_DISPLAY_CONFIG.SUGGESTED_GROUPS_LIMIT,
   });
+
+  // Use the join group mutation hook
+  const joinGroupMutation = useJoinGroup();
 
   const loadSuggestedContent = useCallback(async () => {
     try {
@@ -273,26 +277,36 @@ function RightSidebar() {
                       onClick={async e => {
                         e.preventDefault();
                         e.stopPropagation();
-                        if (!user || joiningGroups.has(group.id)) return;
+                        if (!user || joinedGroupIds.has(group.id)) return;
 
-                        setJoiningGroups(prev => new Set(prev).add(group.id));
+                        // Immediately mark as joined for instant UI feedback
+                        setJoinedGroupIds(prev => new Set(prev).add(group.id));
+
                         try {
-                          await firebaseApi.group.joinGroup(group.id, user.id);
-                          // Hook will automatically refetch and filter out the joined group
+                          // Fire-and-forget: don't wait for the mutation to complete
+                          joinGroupMutation.mutate({
+                            groupId: group.id,
+                            userId: user.id,
+                          });
+                          // The mutation will automatically invalidate the cache
+                          // and the suggested groups hook will refetch and filter out this group
                         } catch {
-                          // Error joining group - silently fail for suggestions
-                        } finally {
-                          setJoiningGroups(prev => {
+                          // On error, remove from joined set
+                          setJoinedGroupIds(prev => {
                             const next = new Set(prev);
                             next.delete(group.id);
                             return next;
                           });
                         }
                       }}
-                      className="text-sm font-semibold text-[#0066CC] hover:text-[#0051D5] transition-colors duration-200 whitespace-nowrap flex-shrink-0"
-                      disabled={joiningGroups.has(group.id)}
+                      className={`text-sm font-semibold transition-colors duration-200 whitespace-nowrap flex-shrink-0 cursor-pointer ${
+                        joinedGroupIds.has(group.id)
+                          ? 'text-gray-600'
+                          : 'text-[#0066CC] hover:text-[#0051D5]'
+                      }`}
+                      disabled={joinedGroupIds.has(group.id)}
                     >
-                      {joiningGroups.has(group.id) ? 'Joining...' : 'Join'}
+                      {joinedGroupIds.has(group.id) ? 'Joined' : 'Join'}
                     </button>
                   </div>
                 </Link>

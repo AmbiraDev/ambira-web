@@ -205,7 +205,7 @@ export default function SuggestedGroupsModal({
                         className={`text-sm font-semibold transition-colors flex-shrink-0 ${
                           isJoining
                             ? 'text-gray-400 cursor-not-allowed'
-                            : 'text-[#0066CC] hover:text-[#0051D5]'
+                            : 'text-[#0066CC] hover:text-[#0051D5] cursor-pointer'
                         }`}
                       >
                         {isJoining ? 'Joining...' : 'Join'}

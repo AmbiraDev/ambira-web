@@ -33,16 +33,15 @@ export function useGroupLeaderboard(
   return useQuery({
     queryKey: ['group-leaderboard', groupId, timeframe],
     queryFn: async () => {
-      // Fetch group memberships
-      const membershipsRef = collection(db, 'groupMemberships');
-      const membershipsQuery = query(
-        membershipsRef,
-        where('groupId', '==', groupId),
-        where('status', '==', 'active')
-      );
+      // Fetch group document to get member IDs
+      const groupDoc = await getDoc(doc(db, 'groups', groupId));
 
-      const membershipsSnapshot = await getDocs(membershipsQuery);
-      const memberIds = membershipsSnapshot.docs.map(doc => doc.data().userId);
+      if (!groupDoc.exists()) {
+        return [];
+      }
+
+      const groupData = groupDoc.data();
+      const memberIds = groupData.memberIds || [];
 
       if (memberIds.length === 0) {
         return [];
