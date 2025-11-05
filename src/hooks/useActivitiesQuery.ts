@@ -12,6 +12,7 @@ import {
   UpdateActivityData,
 } from '@/types';
 import { firebaseActivityApi } from '@/lib/api';
+import { getAllActivityTypes } from '@/lib/api/activityTypes';
 import { CACHE_KEYS, CACHE_TIMES } from '@/lib/queryClient';
 import { db } from '@/lib/firebase';
 import { collection, getDocs, query, where, or, and } from 'firebase/firestore';
@@ -385,8 +386,22 @@ export function useActivitiesWithSessions(
     queryFn: async () => {
       if (!effectiveUserId) return [];
 
-      // Get all activities
-      const activities = await firebaseActivityApi.getProjects();
+      // Get all activities (new system: defaults + user customs)
+      const activityTypes = await getAllActivityTypes(effectiveUserId);
+
+      // Convert ActivityType[] to Activity[] for compatibility
+      const activities: Activity[] = activityTypes.map(at => ({
+        id: at.id,
+        userId: at.userId || effectiveUserId,
+        name: at.name,
+        description: at.description || '',
+        icon: at.icon,
+        color: at.color,
+        isDefault: at.isSystem,
+        status: 'active' as const,
+        createdAt: at.createdAt,
+        updatedAt: at.updatedAt,
+      }));
 
       // Get session counts for each activity
       const activitiesWithCounts = await Promise.all(
