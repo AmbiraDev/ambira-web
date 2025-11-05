@@ -52,6 +52,8 @@ export const CommentsModal: React.FC<CommentsModalProps> = ({
       if (onCommentCountChange) {
         onCommentCountChange(totalCommentCount + 1);
       }
+      // Refetch comments to show the new comment immediately
+      refetch();
     },
   });
 
@@ -60,6 +62,8 @@ export const CommentsModal: React.FC<CommentsModalProps> = ({
       if (onCommentCountChange) {
         onCommentCountChange(Math.max(0, totalCommentCount - 1));
       }
+      // Refetch comments to update the list immediately
+      refetch();
     },
   });
 
