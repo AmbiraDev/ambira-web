@@ -47,6 +47,7 @@ import { fetchUserDataForSocialContext } from '../social/helpers';
 // Import other API modules
 import { firebasePostApi } from './posts';
 import { firebaseChallengeApi } from '../challenges';
+import { updateActivityPreference } from '../userActivityPreferences';
 
 // Config
 import { TIMEOUTS } from '@/config/constants';
@@ -200,6 +201,22 @@ export const firebaseSessionApi = {
           severity: ErrorSeverity.WARNING,
         });
         // Don't fail session creation if challenge update fails
+      }
+
+      // Update activity preference (track usage)
+      try {
+        if (activityId) {
+          await updateActivityPreference(
+            auth.currentUser.uid,
+            activityId,
+            data.startTime
+          );
+        }
+      } catch (_error) {
+        handleError(_error, 'update activity preference', {
+          severity: ErrorSeverity.WARNING,
+        });
+        // Don't fail session creation if preference update fails
       }
 
       // Return session with proper structure
