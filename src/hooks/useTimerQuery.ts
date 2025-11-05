@@ -374,6 +374,10 @@ export function useFinishTimerMutation() {
         session = await firebaseSessionApi.createSession(sessionData);
       }
 
+      // Clear active session BEFORE returning to prevent race conditions
+      // This ensures the active timer is cleared atomically with session creation
+      await firebaseSessionApi.clearActiveSession();
+
       return session;
     },
     onMutate: async () => {
@@ -394,10 +398,8 @@ export function useFinishTimerMutation() {
       return { previousActiveSession };
     },
     onSuccess: async session => {
-      // Clear active session from Firebase
-      await firebaseSessionApi.clearActiveSession();
-
-      // Ensure cache is cleared
+      // Active session is already cleared in mutationFn (atomically with session creation)
+      // Just ensure cache reflects this
       queryClient.setQueryData(
         CACHE_KEYS.ACTIVE_SESSION(user?.id || 'none'),
         null
