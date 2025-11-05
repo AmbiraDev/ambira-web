@@ -90,17 +90,17 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
   useEffect(() => {
     const savedActivityId = localStorage.getItem('lastSessionActivity');
 
-    if (savedActivityId && projects && projects.length > 0) {
+    if (savedActivityId && allActivities && allActivities.length > 0) {
       // Validate that the saved activity still exists
-      const activityExists = projects.some(p => p.id === savedActivityId);
+      const activityExists = allActivities.some(a => a.id === savedActivityId);
       if (activityExists) {
         setSelectedActivityId(savedActivityId);
       } else {
-        // Clear stale activity ID from localStorage if user has projects but saved one doesn't exist
+        // Clear stale activity ID from localStorage if user has activities but saved one doesn't exist
         localStorage.removeItem('lastSessionActivity');
       }
     }
-  }, [projects]);
+  }, [allActivities]);
 
   // Initialize selectedActivityId from timerState if there's an active session
   useEffect(() => {

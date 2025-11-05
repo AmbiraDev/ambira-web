@@ -13,7 +13,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Plus, Edit2, Trash2, Clock } from 'lucide-react';
+import { Plus, Pencil } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserCustomActivityTypes } from '@/hooks/useActivityTypes';
 import { getAllActivitiesWithUsage } from '@/lib/api/userActivityPreferences';
@@ -32,9 +32,7 @@ import BottomNavigation from '@/components/BottomNavigation';
 import Footer from '@/components/Footer';
 import { CreateCustomActivityModal } from './CreateCustomActivityModal';
 import { EditCustomActivityModal } from './EditCustomActivityModal';
-import { DeleteCustomActivityModal } from './DeleteCustomActivityModal';
 import { ActivityType } from '@/types';
-import { formatDistanceToNow } from 'date-fns';
 
 const MAX_CUSTOM_ACTIVITIES = 10;
 
@@ -53,7 +51,6 @@ export function ActivitiesSettingsPageContent() {
   // Modal states
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState<ActivityType | null>(
     null
   );
@@ -120,12 +117,6 @@ export function ActivitiesSettingsPageContent() {
   const handleEditClick = (activity: ActivityType) => {
     setSelectedActivity(activity);
     setShowEditModal(true);
-  };
-
-  // Handler for opening delete modal
-  const handleDeleteClick = (activity: ActivityWithStats) => {
-    setSelectedActivity(activity);
-    setShowDeleteModal(true);
   };
 
   // Handler for modal success (refresh data)
@@ -252,49 +243,9 @@ export function ActivitiesSettingsPageContent() {
                     {/* Details */}
                     <div className="flex-1 min-w-0">
                       {/* Name */}
-                      <h3 className="text-lg font-semibold text-gray-900 mb-1">
+                      <h3 className="text-lg font-semibold text-gray-900">
                         {activity.name}
                       </h3>
-
-                      {/* Description */}
-                      {activity.description && (
-                        <p className="text-sm text-gray-600 mb-2 line-clamp-2">
-                          {activity.description}
-                        </p>
-                      )}
-
-                      {/* Stats Row */}
-                      <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500">
-                        {/* Last Used */}
-                        <div className="flex items-center gap-1">
-                          <Clock className="h-4 w-4" />
-                          {activity.lastUsed ? (
-                            <span>
-                              {formatDistanceToNow(activity.lastUsed, {
-                                addSuffix: true,
-                              })}
-                            </span>
-                          ) : (
-                            <span>Never used</span>
-                          )}
-                        </div>
-
-                        {/* Session Count */}
-                        {activity.sessionCount > 0 && (
-                          <div>
-                            {activity.sessionCount} session
-                            {activity.sessionCount === 1 ? '' : 's'}
-                          </div>
-                        )}
-
-                        {/* Total Hours (if available) */}
-                        {activity.totalHours > 0 && (
-                          <div>
-                            {activity.totalHours.toFixed(1)} hour
-                            {activity.totalHours === 1 ? '' : 's'} total
-                          </div>
-                        )}
-                      </div>
                     </div>
 
                     {/* Actions */}
@@ -305,15 +256,7 @@ export function ActivitiesSettingsPageContent() {
                         onClick={() => handleEditClick(activity)}
                         aria-label="Edit activity"
                       >
-                        <Edit2 className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleDeleteClick(activity)}
-                        aria-label="Delete activity"
-                      >
-                        <Trash2 className="h-4 w-4 text-red-600" />
+                        <Pencil className="h-4 w-4" />
                       </Button>
                     </div>
                   </div>
@@ -348,25 +291,6 @@ export function ActivitiesSettingsPageContent() {
         onSuccess={handleModalSuccess}
         activity={selectedActivity}
         existingNames={existingNames}
-      />
-
-      <DeleteCustomActivityModal
-        isOpen={showDeleteModal}
-        onClose={() => setShowDeleteModal(false)}
-        onSuccess={handleModalSuccess}
-        activity={selectedActivity}
-        sessionCount={
-          selectedActivity
-            ? activitiesWithStats.find(a => a.id === selectedActivity.id)
-                ?.sessionCount || 0
-            : 0
-        }
-        totalHours={
-          selectedActivity
-            ? activitiesWithStats.find(a => a.id === selectedActivity.id)
-                ?.totalHours || 0
-            : 0
-        }
       />
     </div>
   );
