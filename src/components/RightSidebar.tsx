@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useAuth } from '@/hooks/useAuth';
-import { firebaseUserApi } from '@/lib/api';
+import { firebaseUserApi, firebaseApi } from '@/lib/api';
 import { cachedQuery } from '@/lib/cache';
 import GroupAvatar from '@/components/GroupAvatar';
 import SuggestedPeopleModal from '@/components/SuggestedPeopleModal';
@@ -44,6 +44,11 @@ function RightSidebar() {
   // Use the join group mutation hook
   const joinGroupMutation = useJoinGroup();
 
+  // Reset joined state when suggested groups change to prevent stale UI
+  useEffect(() => {
+    setJoinedGroupIds(new Set());
+  }, [fetchedSuggestedGroups]);
+
   const loadSuggestedContent = useCallback(async () => {
     try {
       setIsLoadingUsers(true);
@@ -55,7 +60,9 @@ function RightSidebar() {
         const following = await firebaseUserApi.getFollowing(user.id);
         const followingIds = new Set(following.map(u => u.id));
         setFollowingUsers(followingIds);
-      } catch {}
+      } catch (error) {
+        console.error('Failed to load following users:', error);
+      }
 
       // Load suggested users (top 5) with 1 hour cache
       try {
@@ -71,7 +78,9 @@ function RightSidebar() {
           }
         );
         setSuggestedUsers(suggestions);
-      } catch {}
+      } catch (error) {
+        console.error('Failed to load suggested users:', error);
+      }
     } catch {
     } finally {
       setIsLoadingUsers(false);
@@ -274,7 +283,7 @@ function RightSidebar() {
                       </div>
                     </div>
                     <button
-                      onClick={async e => {
+                      onClick={e => {
                         e.preventDefault();
                         e.stopPropagation();
                         if (!user || joinedGroupIds.has(group.id)) return;
@@ -282,22 +291,26 @@ function RightSidebar() {
                         // Immediately mark as joined for instant UI feedback
                         setJoinedGroupIds(prev => new Set(prev).add(group.id));
 
-                        try {
-                          // Fire-and-forget: don't wait for the mutation to complete
-                          joinGroupMutation.mutate({
+                        // Fire-and-forget with proper error handling
+                        joinGroupMutation.mutate(
+                          {
                             groupId: group.id,
                             userId: user.id,
-                          });
-                          // The mutation will automatically invalidate the cache
-                          // and the suggested groups hook will refetch and filter out this group
-                        } catch {
-                          // On error, remove from joined set
-                          setJoinedGroupIds(prev => {
-                            const next = new Set(prev);
-                            next.delete(group.id);
-                            return next;
-                          });
-                        }
+                          },
+                          {
+                            onError: error => {
+                              console.error('Failed to join group:', error);
+                              // Rollback optimistic update on error
+                              setJoinedGroupIds(prev => {
+                                const next = new Set(prev);
+                                next.delete(group.id);
+                                return next;
+                              });
+                            },
+                          }
+                        );
+                        // The mutation will automatically invalidate the cache
+                        // and the suggested groups hook will refetch and filter out this group
                       }}
                       className={`text-sm font-semibold transition-colors duration-200 whitespace-nowrap flex-shrink-0 cursor-pointer ${
                         joinedGroupIds.has(group.id)
