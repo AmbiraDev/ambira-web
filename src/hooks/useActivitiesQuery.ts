@@ -396,7 +396,7 @@ export function useActivitiesWithSessions(
         name: at.name,
         description: at.description || '',
         icon: at.icon,
-        color: at.color,
+        color: at.defaultColor,
         isDefault: at.isSystem,
         status: 'active' as const,
         createdAt: at.createdAt,

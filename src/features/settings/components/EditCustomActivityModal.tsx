@@ -49,7 +49,7 @@ export const EditCustomActivityModal: React.FC<
       setFormData({
         name: activity.name,
         icon: activity.icon,
-        color: activity.color,
+        color: activity.defaultColor,
         description: activity.description || '',
       });
       setErrors({});

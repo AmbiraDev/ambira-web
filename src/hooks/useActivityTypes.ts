@@ -16,7 +16,6 @@ import {
   UseQueryOptions,
   UseMutationOptions,
 } from '@tanstack/react-query';
-import { Timestamp } from 'firebase/firestore';
 import { ActivityType } from '@/types';
 import { CACHE_TIMES } from '@/lib/queryClient';
 import {
@@ -34,20 +33,21 @@ import { useAuth } from './useAuth';
 
 /**
  * Convert API ActivityType to shared ActivityType
- * The API uses defaultColor and Date, while the shared type uses color and Timestamp
+ * Both now use the same structure (defaultColor and Date)
  */
 function convertApiActivityType(apiType: ApiActivityType): ActivityType {
   return {
     id: apiType.id,
     name: apiType.name,
+    category: apiType.category,
     icon: apiType.icon,
-    color: apiType.defaultColor,
+    defaultColor: apiType.defaultColor,
     isSystem: apiType.isSystem,
     userId: apiType.userId,
     order: apiType.order,
     description: apiType.description,
-    createdAt: Timestamp.fromDate(apiType.createdAt),
-    updatedAt: Timestamp.fromDate(apiType.updatedAt),
+    createdAt: apiType.createdAt, // Already a Date
+    updatedAt: apiType.updatedAt, // Already a Date
   };
 }
 
@@ -235,13 +235,15 @@ export function useCreateCustomActivity(
           const optimisticActivity: ActivityType = {
             id: `temp-${Date.now()}`,
             name: newActivity.name,
+            category: newActivity.category || 'productivity',
             icon: newActivity.icon,
-            color: newActivity.color,
+            defaultColor: newActivity.defaultColor,
             description: newActivity.description,
             isSystem: false,
             userId: user.id,
-            createdAt: Timestamp.fromDate(new Date()),
-            updatedAt: Timestamp.fromDate(new Date()),
+            order: 100, // Custom activities start at 100
+            createdAt: new Date(),
+            updatedAt: new Date(),
           };
 
           return [...old, optimisticActivity];
@@ -257,13 +259,15 @@ export function useCreateCustomActivity(
           const optimisticActivity: ActivityType = {
             id: `temp-${Date.now()}`,
             name: newActivity.name,
+            category: newActivity.category || 'productivity',
             icon: newActivity.icon,
-            color: newActivity.color,
+            defaultColor: newActivity.defaultColor,
             description: newActivity.description,
             isSystem: false,
             userId: user.id,
-            createdAt: Timestamp.fromDate(new Date()),
-            updatedAt: Timestamp.fromDate(new Date()),
+            order: 100, // Custom activities start at 100
+            createdAt: new Date(),
+            updatedAt: new Date(),
           };
 
           return [...old, optimisticActivity];
@@ -393,7 +397,7 @@ export function useUpdateCustomActivity(
               ? {
                   ...activity,
                   ...data,
-                  updatedAt: Timestamp.fromDate(new Date()),
+                  updatedAt: new Date(),
                 }
               : activity
           );
@@ -410,7 +414,7 @@ export function useUpdateCustomActivity(
               ? {
                   ...activity,
                   ...data,
-                  updatedAt: Timestamp.fromDate(new Date()),
+                  updatedAt: new Date(),
                 }
               : activity
           );

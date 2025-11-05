@@ -89,7 +89,12 @@ export function ActivityPicker({
             <IconRenderer
               iconName={selectedActivity.icon}
               className="w-6 h-6 flex-shrink-0"
-              style={{ color: selectedActivity.color }}
+              style={{
+                color:
+                  'defaultColor' in selectedActivity
+                    ? selectedActivity.defaultColor
+                    : selectedActivity.color,
+              }}
             />
             <span className="flex-1 text-left font-medium">
               {selectedActivity.name}

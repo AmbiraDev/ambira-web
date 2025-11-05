@@ -123,7 +123,7 @@ export const DeleteCustomActivityModal: React.FC<
           <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
             <div
               className="h-10 w-10 rounded-lg flex items-center justify-center text-xl"
-              style={{ backgroundColor: activity.color }}
+              style={{ backgroundColor: activity.defaultColor }}
             >
               {activity.icon}
             </div>

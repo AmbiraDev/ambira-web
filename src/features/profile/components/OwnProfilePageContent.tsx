@@ -72,9 +72,7 @@ export function OwnProfilePageContent() {
         ? 'followers'
         : tabParam === 'following'
           ? 'following'
-          : tabParam === 'activities'
-            ? 'activities'
-            : 'progress'
+          : 'progress'
   );
   const [timePeriod, setTimePeriod] = useState<TimePeriod>('7D');
   const [showSettingsMenu, setShowSettingsMenu] = useState(false);

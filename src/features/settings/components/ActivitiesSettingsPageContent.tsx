@@ -239,7 +239,7 @@ export function ActivitiesSettingsPageContent() {
                     {/* Icon */}
                     <div
                       className="h-12 w-12 rounded-lg flex items-center justify-center text-2xl flex-shrink-0"
-                      style={{ backgroundColor: activity.color }}
+                      style={{ backgroundColor: activity.defaultColor }}
                     >
                       {activity.icon}
                     </div>
