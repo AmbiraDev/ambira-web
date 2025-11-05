@@ -65,7 +65,6 @@ export const SEARCH_FILTERS: ReadonlyArray<{
 export const NAV_LINKS: ReadonlyArray<NavLink> = [
   { href: '/feed', label: 'Dashboard' },
   { href: '/groups', label: 'Groups' },
-  { href: '/activities', label: 'Activities' },
   { href: '/analytics', label: 'Analytics' },
 ] as const;
 

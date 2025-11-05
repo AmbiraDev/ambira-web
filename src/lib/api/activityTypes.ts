@@ -263,31 +263,25 @@ export async function getUserCustomActivityTypes(
       throw new Error('User ID is required');
     }
 
-    // Query custom activity types for this user
-    // Collection: /activityTypes
-    // Filter: isSystem == false && userId == userId
-    const customTypesQuery = query(
-      collection(db, 'activityTypes'),
-      where('isSystem', '==', false),
-      where('userId', '==', userId),
-      orderBy('order', 'asc')
-    );
-
-    const querySnapshot = await getDocs(customTypesQuery);
+    // BACKWARD COMPATIBILITY: Read from old /projects/{userId}/userProjects collection
+    // This treats existing user activities as "custom activities" in the new system
+    const userProjectsRef = collection(db, `projects/${userId}/userProjects`);
+    const querySnapshot = await getDocs(userProjectsRef);
     const customTypes: ActivityType[] = [];
 
     querySnapshot.forEach(doc => {
       const data = doc.data();
+      // Convert old Activity/Project to new ActivityType format
       customTypes.push({
         id: doc.id,
         name: data.name,
         category: data.category || 'productivity',
-        icon: data.icon,
-        defaultColor: data.defaultColor,
-        isSystem: false,
-        userId: data.userId,
-        order: data.order,
-        description: data.description,
+        icon: data.icon || '📋',
+        defaultColor: data.color || '#0066CC',
+        isSystem: false, // All old activities are treated as custom
+        userId: userId,
+        order: customTypes.length + 100, // Order after system defaults
+        description: data.description || '',
         createdAt: convertTimestamp(data.createdAt),
         updatedAt: convertTimestamp(data.updatedAt),
       });
@@ -386,27 +380,26 @@ export async function createCustomActivityType(
     // Calculate order (system defaults are 1-10, customs start at 11)
     const order = 10 + existingCustoms.length + 1;
 
-    // Prepare activity type data
-    const activityTypeData = removeUndefinedFields({
+    // Prepare activity data for old collection format
+    const activityData = removeUndefinedFields({
       name: data.name,
       icon: data.icon,
-      defaultColor: data.defaultColor,
+      color: data.defaultColor, // Map to 'color' field in old schema
       category: data.category || 'productivity',
       description: data.description,
-      isSystem: false,
-      userId: userId,
-      order: order,
+      isDefault: false, // Old field equivalent to !isSystem
+      status: 'active',
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     });
 
-    // Create in Firestore
+    // BACKWARD COMPATIBILITY: Write to old /projects/{userId}/userProjects collection
     const docRef = await addDoc(
-      collection(db, 'activityTypes'),
-      activityTypeData
+      collection(db, `projects/${userId}/userProjects`),
+      activityData
     );
 
-    // Return created activity type
+    // Return in new ActivityType format
     return {
       id: docRef.id,
       name: data.name,
@@ -458,8 +451,13 @@ export async function updateCustomActivityType(
       throw new Error('Activity ID is required');
     }
 
-    // Verify activity exists and is owned by user
-    const activityDoc = await getDoc(doc(db, 'activityTypes', activityId));
+    // BACKWARD COMPATIBILITY: Use old collection path
+    const activityDocRef = doc(
+      db,
+      `projects/${userId}/userProjects`,
+      activityId
+    );
+    const activityDoc = await getDoc(activityDocRef);
 
     if (!activityDoc.exists()) {
       throw new Error('Activity type not found');
@@ -467,32 +465,33 @@ export async function updateCustomActivityType(
 
     const activityData = activityDoc.data();
 
-    if (activityData.isSystem) {
-      throw new Error('Cannot update system activity types');
+    // In old system, isDefault=true means it's a system activity (can't edit)
+    if (activityData.isDefault === true) {
+      throw new Error('Cannot update default activity types');
     }
 
-    if (activityData.userId !== userId) {
-      throw new Error('Unauthorized: You can only update your own activities');
-    }
-
-    // Prepare update data
+    // Prepare update data - map new field names to old schema
     const updateData = removeUndefinedFields({
-      ...data,
+      name: data.name,
+      icon: data.icon,
+      color: data.defaultColor, // Map to old 'color' field
+      category: data.category,
+      description: data.description,
       updatedAt: serverTimestamp(),
     });
 
     // Update in Firestore
-    await updateDoc(doc(db, 'activityTypes', activityId), updateData);
+    await updateDoc(activityDocRef, updateData);
 
     // Get updated document
-    const updatedDoc = await getDoc(doc(db, 'activityTypes', activityId));
+    const updatedDoc = await getDoc(activityDocRef);
     const updatedData = updatedDoc.data()!;
 
     return {
       id: activityId,
       name: updatedData.name,
       icon: updatedData.icon,
-      defaultColor: updatedData.defaultColor,
+      defaultColor: updatedData.color || updatedData.defaultColor,
       category: updatedData.category,
       description: updatedData.description,
       isSystem: false,
@@ -536,8 +535,13 @@ export async function deleteCustomActivityType(
       throw new Error('Activity ID is required');
     }
 
-    // Verify activity exists and is owned by user
-    const activityDoc = await getDoc(doc(db, 'activityTypes', activityId));
+    // BACKWARD COMPATIBILITY: Use old collection path
+    const activityDocRef = doc(
+      db,
+      `projects/${userId}/userProjects`,
+      activityId
+    );
+    const activityDoc = await getDoc(activityDocRef);
 
     if (!activityDoc.exists()) {
       throw new Error('Activity type not found');
@@ -545,16 +549,13 @@ export async function deleteCustomActivityType(
 
     const activityData = activityDoc.data();
 
-    if (activityData.isSystem) {
-      throw new Error('Cannot delete system activity types');
-    }
-
-    if (activityData.userId !== userId) {
-      throw new Error('Unauthorized: You can only delete your own activities');
+    // In old system, isDefault=true means it's a system activity (can't delete)
+    if (activityData.isDefault === true) {
+      throw new Error('Cannot delete default activity types');
     }
 
     // Hard delete from Firestore
-    await deleteDoc(doc(db, 'activityTypes', activityId));
+    await deleteDoc(activityDocRef);
 
     // Note: Sessions using this activity will need to be handled by
     // application logic (mark as "Unassigned" or migrate to default)
@@ -599,7 +600,13 @@ export async function getActivityTypeById(
       return null; // Can't fetch custom without userId
     }
 
-    const activityDoc = await getDoc(doc(db, 'activityTypes', activityId));
+    // BACKWARD COMPATIBILITY: Use old collection path
+    const activityDocRef = doc(
+      db,
+      `projects/${userId}/userProjects`,
+      activityId
+    );
+    const activityDoc = await getDoc(activityDocRef);
 
     if (!activityDoc.exists()) {
       return null;
@@ -607,21 +614,17 @@ export async function getActivityTypeById(
 
     const data = activityDoc.data();
 
-    // Verify ownership for custom activities
-    if (!data.isSystem && data.userId !== userId) {
-      return null;
-    }
-
+    // Convert from old schema to new ActivityType format
     return {
       id: activityDoc.id,
       name: data.name,
-      category: data.category,
-      icon: data.icon,
-      defaultColor: data.defaultColor,
-      isSystem: data.isSystem,
-      userId: data.userId,
-      order: data.order,
-      description: data.description,
+      category: data.category || 'productivity',
+      icon: data.icon || '📋',
+      defaultColor: data.color || data.defaultColor || '#0066CC',
+      isSystem: false, // All old activities are custom
+      userId: userId,
+      order: data.order || 100,
+      description: data.description || '',
       createdAt: convertTimestamp(data.createdAt),
       updatedAt: convertTimestamp(data.updatedAt),
     };
