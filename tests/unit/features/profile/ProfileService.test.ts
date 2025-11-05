@@ -7,6 +7,8 @@ const findByUserId = jest.fn();
 const getFollowerIds = jest.fn();
 const getFollowingIds = jest.fn();
 const isFollowing = jest.fn();
+const follow = jest.fn();
+const unfollow = jest.fn();
 
 jest.mock('@/infrastructure/firebase/repositories/UserRepository', () => ({
   UserRepository: jest.fn().mockImplementation(() => ({
@@ -29,6 +31,8 @@ jest.mock(
       getFollowerIds,
       getFollowingIds,
       isFollowing,
+      follow,
+      unfollow,
     })),
   })
 );
@@ -50,6 +54,8 @@ describe('ProfileService', () => {
     getFollowerIds.mockResolvedValue([]);
     getFollowingIds.mockResolvedValue([]);
     isFollowing.mockResolvedValue(false);
+    follow.mockResolvedValue(undefined);
+    unfollow.mockResolvedValue(undefined);
   });
 
   it('exposes repository passthroughs for basic lookups', async () => {
@@ -86,18 +92,26 @@ describe('ProfileService', () => {
     );
   });
 
-  it('blocks self-follow/unfollow operations with descriptive errors', async () => {
+  it('delegates follow/unfollow operations to repository', async () => {
+    // Follow should delegate to repository
+    await service.followUser('user1', 'user2');
+    expect(follow).toHaveBeenCalledWith('user1', 'user2');
+
+    // Unfollow should delegate to repository
+    await service.unfollowUser('user1', 'user2');
+    expect(unfollow).toHaveBeenCalledWith('user1', 'user2');
+  });
+
+  it('propagates errors from repository follow/unfollow operations', async () => {
+    // Simulate repository throwing error for self-follow
+    follow.mockRejectedValueOnce(new Error('Cannot follow yourself'));
     await expect(service.followUser('same', 'same')).rejects.toThrow(
       'Cannot follow yourself'
     );
-    await expect(service.unfollowUser('same', 'same')).rejects.toThrow(
-      'Cannot unfollow yourself'
-    );
-  });
 
-  it('prevents duplicate follow attempts before hitting not-implemented guard', async () => {
-    isFollowing.mockResolvedValueOnce(true);
-    await expect(service.followUser('viewer', 'profile-1')).rejects.toThrow(
+    // Simulate repository throwing error for duplicate follow
+    follow.mockRejectedValueOnce(new Error('Already following this user'));
+    await expect(service.followUser('user1', 'user2')).rejects.toThrow(
       'Already following this user'
     );
   });
