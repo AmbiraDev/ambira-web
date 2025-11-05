@@ -19,7 +19,7 @@ import {
 } from '@/lib/errorHandler';
 import { convertTimestamp } from '../shared/utils';
 import type { SessionWithDetails, Activity, Session } from '@/types';
-import { DEFAULT_ACTIVITIES } from '@/types';
+import { getAllActivityTypes } from '../activityTypes';
 
 /**
  * Get the activity ID from a session, checking both new and legacy fields
@@ -39,6 +39,37 @@ export const populateSessionsWithDetails = async (
 ): Promise<SessionWithDetails[]> => {
   const sessions: SessionWithDetails[] = [];
   const batchSize = 10;
+
+  // Cache activity types to avoid fetching multiple times
+  // Key: userId, Value: Map of activityId to activity data
+  const activityCache = new Map<string, Map<string, DocumentData>>();
+
+  // Helper to get or fetch activities for a user
+  const getActivitiesForUser = async (
+    userId: string
+  ): Promise<Map<string, DocumentData>> => {
+    if (!activityCache.has(userId)) {
+      const allActivityTypes = await getAllActivityTypes(userId);
+
+      const activityMap = new Map<string, DocumentData>();
+
+      allActivityTypes.forEach(at => {
+        activityMap.set(at.id, {
+          id: at.id,
+          name: at.name,
+          icon: at.icon,
+          color: at.defaultColor,
+          description: at.description || '',
+          status: 'active',
+          isDefault: at.isSystem,
+        });
+      });
+
+      activityCache.set(userId, activityMap);
+    }
+
+    return activityCache.get(userId)!;
+  };
 
   for (let i = 0; i < sessionDocs.length; i += batchSize) {
     const batch = sessionDocs.slice(i, i + batchSize);
@@ -77,47 +108,61 @@ export const populateSessionsWithDetails = async (
       const activityId = sessionData.activityId || sessionData.projectId;
 
       if (activityId) {
-        // First, check if it's a default activity
-        const defaultActivity = DEFAULT_ACTIVITIES.find(
-          a => a.id === activityId
-        );
-
-        if (defaultActivity) {
-          activityData = {
-            id: defaultActivity.id,
-            name: defaultActivity.name,
-            icon: defaultActivity.icon,
-            color: defaultActivity.color,
-            description: '',
-            status: 'active',
-            isDefault: true,
-          };
-        } else {
-          // If not a default activity, try to fetch from custom activities collection
-          try {
-            const activityDoc = await getDoc(
-              doc(
-                db,
-                'projects',
-                sessionData.userId,
-                'userProjects',
-                activityId
-              )
-            );
-            if (activityDoc.exists()) {
-              activityData = activityDoc.data();
-            }
-          } catch (_error) {
-            handleError(_error, `Fetch activity ${activityId}`, {
+        try {
+          // Fetch all activities for this user (cached)
+          const userActivities = await getActivitiesForUser(sessionData.userId);
+          activityData = userActivities.get(activityId) || null;
+        } catch (_error) {
+          handleError(
+            _error,
+            `Fetch activities for user ${sessionData.userId}`,
+            {
               severity: ErrorSeverity.WARNING,
-            });
-          }
+            }
+          );
         }
       }
 
       // Check if current user has supported this session
       const supportedBy = sessionData.supportedBy || [];
       const isSupported = supportedBy.includes(auth.currentUser!.uid);
+
+      // Build activity object
+      // If activityData exists, use it. Otherwise, provide a friendly fallback based on the activityId
+      const finalActivity: Activity = activityData
+        ? {
+            id: activityData.id || activityId || '',
+            userId: sessionData.userId,
+            name: activityData.name || 'Unknown Activity',
+            description: activityData.description || '',
+            icon: activityData.icon || 'flat-color-icons:briefcase',
+            color: activityData.color || '#0066CC',
+            status: activityData.status || 'active',
+            isDefault: activityData.isDefault || false,
+            createdAt: activityData.createdAt
+              ? convertTimestamp(activityData.createdAt)
+              : new Date(),
+            updatedAt: activityData.updatedAt
+              ? convertTimestamp(activityData.updatedAt)
+              : new Date(),
+          }
+        : ({
+            id: activityId || '',
+            userId: sessionData.userId,
+            // If activityId matches a known system default name, display it capitalized
+            // Otherwise show "Unknown Activity"
+            name: activityId
+              ? activityId.charAt(0).toUpperCase() +
+                activityId.slice(1).replace(/-/g, ' ')
+              : 'Unknown Activity',
+            description: '',
+            icon: 'flat-color-icons:briefcase',
+            color: '#0066CC',
+            status: 'active',
+            isDefault: false,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          } as Activity);
 
       // Build the session with full details
       const session: SessionWithDetails = {
@@ -154,64 +199,8 @@ export const populateSessionsWithDetails = async (
           createdAt: convertTimestamp(userData?.createdAt) || new Date(),
           updatedAt: convertTimestamp(userData?.updatedAt) || new Date(),
         },
-        activity: activityData
-          ? {
-              id: activityData.id || activityId || '',
-              userId: sessionData.userId,
-              name: activityData.name || 'Unknown Activity',
-              description: activityData.description || '',
-              icon: activityData.icon || 'flat-color-icons:briefcase',
-              color: activityData.color || '#0066CC',
-              status: activityData.status || 'active',
-              isDefault: activityData.isDefault || false,
-              createdAt: activityData.createdAt
-                ? convertTimestamp(activityData.createdAt)
-                : new Date(),
-              updatedAt: activityData.updatedAt
-                ? convertTimestamp(activityData.updatedAt)
-                : new Date(),
-            }
-          : ({
-              id: activityId || '',
-              userId: sessionData.userId,
-              name: 'Unknown Activity',
-              description: '',
-              icon: 'flat-color-icons:briefcase',
-              color: '#0066CC',
-              status: 'active',
-              isDefault: false,
-              createdAt: new Date(),
-              updatedAt: new Date(),
-            } as Activity),
-        project: activityData
-          ? {
-              id: activityData.id || activityId || '',
-              userId: sessionData.userId,
-              name: activityData.name || 'Unknown Activity',
-              description: activityData.description || '',
-              icon: activityData.icon || 'flat-color-icons:briefcase',
-              color: activityData.color || '#0066CC',
-              status: activityData.status || 'active',
-              isDefault: activityData.isDefault || false,
-              createdAt: activityData.createdAt
-                ? convertTimestamp(activityData.createdAt)
-                : new Date(),
-              updatedAt: activityData.updatedAt
-                ? convertTimestamp(activityData.updatedAt)
-                : new Date(),
-            }
-          : ({
-              id: activityId || '',
-              userId: sessionData.userId,
-              name: 'Unknown Activity',
-              description: '',
-              icon: 'flat-color-icons:briefcase',
-              color: '#0066CC',
-              status: 'active',
-              isDefault: false,
-              createdAt: new Date(),
-              updatedAt: new Date(),
-            } as Activity),
+        activity: finalActivity,
+        project: finalActivity,
       };
 
       return session;

@@ -72,8 +72,8 @@ export function GroupMembersList({ groupId }: GroupMembersListProps) {
                 className="w-12 h-12 rounded-full object-cover flex-shrink-0"
               />
             ) : (
-              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center flex-shrink-0">
-                <span className="text-white font-semibold text-lg">
+              <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+                <span className="text-gray-600 font-semibold text-lg">
                   {member.name.charAt(0).toUpperCase()}
                 </span>
               </div>

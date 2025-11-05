@@ -68,7 +68,7 @@ export const FEED_KEYS = {
  *   fetchNextPage,
  *   hasNextPage,
  *   isFetchingNextPage
- * } = useFeedInfinite(userId, { type: 'following' });
+ * } = useFeedInfinite(userId, { type: 'following' }, { limit: 10 });
  *
  * // Access all pages:
  * const allSessions = data?.pages.flatMap(page => page.sessions) || [];
@@ -76,13 +76,15 @@ export const FEED_KEYS = {
 export function useFeedInfinite(
   currentUserId: string,
   filters: FeedFilters = {},
-  options?: InfiniteQueryOptions<FeedResult, Error>
+  options?: InfiniteQueryOptions<FeedResult, Error> & { limit?: number }
 ) {
+  const limit = options?.limit || 10;
+
   return useInfiniteQuery<FeedResult, Error>({
-    queryKey: FEED_KEYS.list(currentUserId, filters),
+    queryKey: [...FEED_KEYS.list(currentUserId, filters), limit],
     queryFn: ({ pageParam }) =>
       feedService.getFeed(currentUserId, filters, {
-        limit: 20,
+        limit,
         cursor: pageParam as string | undefined,
       }),
     getNextPageParam: lastPage => {

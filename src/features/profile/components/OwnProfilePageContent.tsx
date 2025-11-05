@@ -20,7 +20,7 @@ import {
   useFollowing,
 } from '@/features/profile/hooks';
 import { useUserSessions } from '@/features/sessions/hooks';
-import { useProjects } from '@/features/projects/hooks';
+import { useActivitiesWithSessions } from '@/hooks/useActivitiesQuery';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
@@ -31,6 +31,7 @@ import {
   BarChart3,
   ChevronDown,
   MapPin,
+  Check,
 } from 'lucide-react';
 import {
   XAxis,
@@ -47,6 +48,7 @@ import Feed from '@/components/Feed';
 import { Activity } from '@/types';
 import { FollowersList } from '@/features/social/components/FollowersList';
 import { FollowingList } from '@/features/social/components/FollowingList';
+import { IconRenderer } from '@/components/IconRenderer';
 
 type ProfileTab = 'progress' | 'sessions' | 'followers' | 'following';
 type TimePeriod = '7D' | '2W' | '4W' | '3M' | '1Y';
@@ -103,7 +105,7 @@ export function OwnProfilePageContent() {
   const { data: following = [] } = useFollowing(user?.id || '', {
     enabled: !!user?.id,
   });
-  const { data: activities = [] } = useProjects({
+  const { data: activities = [] } = useActivitiesWithSessions(user?.id, {
     enabled: !!user?.id,
   });
 
@@ -760,18 +762,30 @@ export function OwnProfilePageContent() {
                           onClick={() =>
                             setShowActivityDropdown(!showActivityDropdown)
                           }
-                          className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-700 bg-white border border-gray-300 rounded-full hover:bg-gray-50 transition-colors whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:ring-offset-2 min-h-[44px]"
+                          className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 bg-white border border-gray-300 rounded-full hover:bg-gray-50 transition-colors whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:ring-offset-2 min-h-[44px] min-w-[120px]"
                           aria-label="Filter by activity"
                           aria-expanded={showActivityDropdown}
                           aria-haspopup="listbox"
                         >
-                          <span className="font-medium">
-                            {selectedActivityId === 'all'
-                              ? 'All'
-                              : activities.find(
+                          {selectedActivityId === 'all' ? (
+                            <span className="font-medium">All Activities</span>
+                          ) : (
+                            <>
+                              <IconRenderer
+                                iconName={
+                                  activities.find(
+                                    a => a.id === selectedActivityId
+                                  )?.icon || ''
+                                }
+                                className="w-4 h-4 flex-shrink-0"
+                              />
+                              <span className="font-medium">
+                                {activities.find(
                                   a => a.id === selectedActivityId
                                 )?.name || 'All'}
-                          </span>
+                              </span>
+                            </>
+                          )}
                           <ChevronDown className="w-3.5 h-3.5" />
                         </button>
 
@@ -783,22 +797,24 @@ export function OwnProfilePageContent() {
                               className="fixed inset-0 z-40"
                               onClick={() => setShowActivityDropdown(false)}
                             />
-                            <div className="absolute left-0 top-full mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50 max-h-64 overflow-y-auto">
+                            <div className="absolute left-0 top-full mt-2 w-56 md:w-64 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50 max-h-64 overflow-y-auto">
                               <button
                                 onClick={() => {
                                   setSelectedActivityId('all');
                                   setShowActivityDropdown(false);
                                 }}
-                                className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors flex items-center gap-2 ${
+                                className={`w-full text-left px-3 py-2.5 text-sm hover:bg-gray-50 transition-colors flex items-center gap-3 ${
                                   selectedActivityId === 'all'
-                                    ? 'text-[#0066CC] font-medium bg-blue-50'
-                                    : 'text-gray-700'
+                                    ? 'bg-blue-50'
+                                    : ''
                                 }`}
                               >
+                                <span className="flex-1 font-medium text-gray-900">
+                                  All Activities
+                                </span>
                                 {selectedActivityId === 'all' && (
-                                  <span className="text-[#0066CC]">✓</span>
+                                  <Check className="w-4 h-4 text-blue-500" />
                                 )}
-                                <span>All Activities</span>
                               </button>
                               {activities.map(activity => (
                                 <button
@@ -807,21 +823,22 @@ export function OwnProfilePageContent() {
                                     setSelectedActivityId(activity.id);
                                     setShowActivityDropdown(false);
                                   }}
-                                  className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors flex items-center gap-2 ${
+                                  className={`w-full text-left px-3 py-2.5 text-sm hover:bg-gray-50 transition-colors flex items-center gap-3 ${
                                     selectedActivityId === activity.id
-                                      ? 'text-[#0066CC] font-medium bg-blue-50'
-                                      : 'text-gray-700'
+                                      ? 'bg-blue-50'
+                                      : ''
                                   }`}
                                 >
-                                  {selectedActivityId === activity.id && (
-                                    <span className="text-[#0066CC]">✓</span>
-                                  )}
-                                  <span className="flex items-center gap-2">
-                                    <span style={{ color: activity.color }}>
-                                      ●
-                                    </span>
+                                  <IconRenderer
+                                    iconName={activity.icon}
+                                    className="w-5 h-5 text-gray-700 flex-shrink-0"
+                                  />
+                                  <span className="flex-1 font-medium text-gray-900">
                                     {activity.name}
                                   </span>
+                                  {selectedActivityId === activity.id && (
+                                    <Check className="w-4 h-4 text-blue-500" />
+                                  )}
                                 </button>
                               ))}
                             </div>

@@ -59,7 +59,6 @@ export function useFollowing(userId: string) {
                 } as FollowingUser;
               } catch (_err) {
                 // Failed to fetch following user
-                console.error('Failed to fetch following user:', _err);
                 return null;
               }
             }
@@ -72,10 +71,6 @@ export function useFollowing(userId: string) {
         }
       } catch (_err) {
         // If social_graph doesn't exist, fall through to old follows collection
-        console.debug(
-          'Social graph not found, falling back to follows collection:',
-          _err
-        );
       }
 
       // Fallback to old follows collection
@@ -105,10 +100,6 @@ export function useFollowing(userId: string) {
           } as FollowingUser;
         } catch (_err) {
           // Failed to fetch following user
-          console.error(
-            'Failed to fetch following user from follows collection:',
-            _err
-          );
           return null;
         }
       });

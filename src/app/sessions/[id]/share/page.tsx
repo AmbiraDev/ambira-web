@@ -43,7 +43,6 @@ function SessionShareContent({ sessionId }: { sessionId: string }) {
         await firebaseApi.session.getSessionWithDetails(sessionId);
       setSession(sessionData as unknown as SessionWithDetails);
     } catch (err: unknown) {
-      console.error('Error loading session:', err);
       const errorMessage =
         err instanceof Error ? err.message : 'Failed to load session';
       setError(errorMessage);
@@ -93,6 +92,21 @@ function SessionShareContent({ sessionId }: { sessionId: string }) {
     return `${dateStr} at ${timeStr}`;
   };
 
+  // Get activity display name with fallback
+  const getActivityDisplayName = (session: SessionWithDetails): string => {
+    if (session.activity?.name) return session.activity.name;
+    if (session.project?.name) return session.project.name;
+
+    // Fallback: format the activityId or projectId
+    const id = session.activityId || session.projectId;
+    if (id) {
+      // Convert kebab-case to Title Case (e.g., "side-project" -> "Side Project")
+      return id.charAt(0).toUpperCase() + id.slice(1).replace(/-/g, ' ');
+    }
+
+    return 'N/A';
+  };
+
   const getCurrentRef = () => {
     if (selectedLayout === 'square') return squareRef;
     if (selectedLayout === 'minimal') return minimalRef;
@@ -136,7 +150,6 @@ function SessionShareContent({ sessionId }: { sessionId: string }) {
       link.href = dataUrl;
       link.click();
     } catch {
-      console.error('Failed to export image');
       setExportError('Failed to export image. Please try again.');
     } finally {
       setIsExporting(false);
@@ -191,7 +204,6 @@ function SessionShareContent({ sessionId }: { sessionId: string }) {
         await handleExport();
       }
     } catch (_error) {
-      console.error('Failed to share image:', _error);
       if (!(_error instanceof Error && _error.name === 'AbortError')) {
         setExportError('Failed to share. Downloading instead...');
         await handleExport();
@@ -623,7 +635,7 @@ function SessionShareContent({ sessionId }: { sessionId: string }) {
                   whiteSpace: 'nowrap',
                 }}
               >
-                {session.activity?.name || session.project?.name || 'N/A'}
+                {getActivityDisplayName(session)}
               </div>
             </div>
           </div>

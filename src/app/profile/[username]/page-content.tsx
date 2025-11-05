@@ -234,7 +234,6 @@ export default function ProfilePageContent({
   // Show error toast when profile fails to load
   useEffect(() => {
     if (error && profileError) {
-      console.error(error);
     }
   }, [error, profileError]);
 
@@ -760,9 +759,7 @@ export default function ProfilePageContent({
                           });
                         }
                         // Automatic cache invalidation handled by mutations
-                      } catch {
-                        console.error('Follow error');
-                      }
+                      } catch {}
                     }}
                     disabled={
                       followUserMutation.isPending ||

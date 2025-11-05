@@ -83,9 +83,7 @@ export const LoginForm: React.FC = () => {
             router.push(`/invite/group/${inviteContext.groupId}`);
             return;
           }
-        } catch (error) {
-          console.error('Error parsing invite context:', error);
-        }
+        } catch (error) {}
       }
 
       // Get redirect URL from query params

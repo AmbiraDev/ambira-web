@@ -77,9 +77,7 @@ export const ManualEntry: React.FC<ManualEntryProps> = ({
         // TODO: Load projects from Firebase
         const projectList: Project[] = []; // await mockProjectApiLocal.getProjects(token);
         setProjects(projectList);
-      } catch (error) {
-        console.error('Failed to load projects:', error);
-      }
+      } catch (error) {}
     };
 
     loadProjects();
@@ -174,7 +172,6 @@ export const ManualEntry: React.FC<ManualEntryProps> = ({
     try {
       await onSave(formData);
     } catch (error) {
-      console.error('Failed to save session:', error);
       setErrors({ submit: ERROR_MESSAGES.SESSION_SAVE_FAILED });
     }
   };

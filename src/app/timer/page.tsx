@@ -5,13 +5,17 @@
  * All timer logic is delegated to SessionTimerEnhanced component.
  */
 
-'use client';
-
+import { Metadata } from 'next';
 import React from 'react';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import Header from '@/components/HeaderComponent';
 import BottomNavigation from '@/components/BottomNavigation';
 import TimerPageContent from './page-content';
+
+export const metadata: Metadata = {
+  title: 'Timer - Ambira',
+  description: 'Track your productivity sessions with the Ambira timer',
+};
 
 export default function TimerPage() {
   return (

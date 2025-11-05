@@ -75,7 +75,6 @@ export function useLogin() {
     },
     onError: error => {
       // Error is already formatted by firebaseAuthApi
-      console.error('[useLogin] Login failed:', error);
     },
   });
 }
@@ -99,9 +98,7 @@ export function useSignup() {
       // Navigate to home
       router.push('/');
     },
-    onError: error => {
-      console.error('[useSignup] Signup failed:', error);
-    },
+    onError: error => {},
   });
 }
 
@@ -131,7 +128,6 @@ export function useGoogleSignIn() {
         // Don't show error - page will redirect
         return;
       }
-      console.error('[useGoogleSignIn] Google sign-in failed:', error);
     },
   });
 }
@@ -163,8 +159,6 @@ export function useLogout() {
       router.push('/');
     },
     onError: error => {
-      console.error('[useLogout] Logout failed:', error);
-
       // Still navigate and clear cache even on error
       queryClient.clear();
       queryClient.setQueryData(AUTH_KEYS.session(), null);

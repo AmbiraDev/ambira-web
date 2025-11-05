@@ -36,7 +36,6 @@ export const ProfileStats: React.FC<ProfileStatsProps> = ({ userId }) => {
       const data = await firebaseUserApi.getUserDailyActivity(userId, year);
       setActivityData(data);
     } catch (_error) {
-      console.error('Failed to load activity data');
       setActivityData([]);
     } finally {
       setIsLoading(false);
@@ -49,7 +48,6 @@ export const ProfileStats: React.FC<ProfileStatsProps> = ({ userId }) => {
       const data = await firebaseUserApi.getUserWeeklyActivity(userId, 12);
       setWeeklyData(data);
     } catch (_error) {
-      console.error('Failed to load weekly data');
       setWeeklyData([]);
     } finally {
       setIsLoading(false);
@@ -63,7 +61,6 @@ export const ProfileStats: React.FC<ProfileStatsProps> = ({ userId }) => {
       const data = await firebaseUserApi.getUserProjectBreakdown(userId, year);
       setProjectData(data);
     } catch (_error) {
-      console.error('Failed to load project data');
       setProjectData([]);
     } finally {
       setIsLoading(false);

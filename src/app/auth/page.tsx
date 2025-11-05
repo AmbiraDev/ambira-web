@@ -2,20 +2,14 @@
 
 import { useAuth } from '@/hooks/useAuth';
 import { LandingPage } from '@/components/LandingPage';
+import { LoadingScreen } from '@/components/LoadingScreen';
 
 export default function AuthPage() {
   const { isAuthenticated, isLoading } = useAuth();
 
-  // Show loading spinner while checking authentication
+  // Show loading screen while checking authentication
   if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="flex flex-col items-center space-y-4">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0066CC]"></div>
-          <p className="text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
+    return <LoadingScreen />;
   }
 
   // Redirect authenticated users to feed

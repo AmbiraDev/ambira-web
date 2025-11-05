@@ -38,7 +38,6 @@ export default function SuggestedPeopleModal({
         await firebaseUserApi.getSuggestedUsers(TOTAL_USERS_TO_FETCH);
       setAllSuggestedUsers(suggestions);
     } catch {
-      console.error('Error loading users');
       setAllSuggestedUsers([]);
     } finally {
       setIsLoading(false);

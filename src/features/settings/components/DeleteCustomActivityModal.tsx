@@ -93,7 +93,12 @@ export const DeleteCustomActivityModal: React.FC<
   const hasUsage = sessionCount > 0;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="delete-activity-title"
+    >
       <div
         className="bg-white rounded-lg shadow-xl max-w-md w-full"
         onClick={e => e.stopPropagation()}
@@ -101,10 +106,16 @@ export const DeleteCustomActivityModal: React.FC<
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-lg bg-red-100 flex items-center justify-center">
+            <div
+              className="h-10 w-10 rounded-lg bg-red-100 flex items-center justify-center"
+              aria-hidden="true"
+            >
               <AlertTriangle className="h-5 w-5 text-red-600" />
             </div>
-            <h2 className="text-xl font-semibold text-gray-900">
+            <h2
+              id="delete-activity-title"
+              className="text-xl font-semibold text-gray-900"
+            >
               Delete Activity?
             </h2>
           </div>
@@ -114,7 +125,7 @@ export const DeleteCustomActivityModal: React.FC<
             className="text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-50"
             aria-label="Close modal"
           >
-            <X className="h-5 w-5" />
+            <X className="h-5 w-5" aria-hidden="true" />
           </button>
         </div>
 
@@ -122,14 +133,10 @@ export const DeleteCustomActivityModal: React.FC<
         <div className="p-6 space-y-4">
           {/* Activity Display */}
           <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
-            <div
-              className="h-10 w-10 rounded-lg flex items-center justify-center"
-              style={{ backgroundColor: activity.defaultColor }}
-            >
+            <div className="h-10 w-10 rounded-lg flex items-center justify-center bg-white border border-gray-200">
               <IconRenderer
                 iconName={activity.icon}
-                className="w-5 h-5"
-                style={{ color: '#FFFFFF' }}
+                className="w-5 h-5 text-gray-700"
               />
             </div>
             <div className="flex-1 min-w-0">
@@ -185,7 +192,10 @@ export const DeleteCustomActivityModal: React.FC<
 
           {/* Error Message */}
           {error && (
-            <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
+            <div
+              className="p-3 bg-red-50 border border-red-200 rounded-lg"
+              role="alert"
+            >
               <p className="text-sm text-red-600">{error}</p>
             </div>
           )}

@@ -183,7 +183,6 @@ export function SettingsPageContent() {
 
       setProfilePictureUrl(downloadURL);
     } catch (err: unknown) {
-      console.error('Upload error:', err);
     } finally {
       setIsUploadingPhoto(false);
     }
@@ -222,7 +221,6 @@ export function SettingsPageContent() {
       setSaved(true);
       setIsSaving(false);
     } catch (err: unknown) {
-      console.error('Failed to update profile:', err);
       setIsSaving(false);
     }
   };
@@ -240,7 +238,6 @@ export function SettingsPageContent() {
       setSaved(true);
       setIsSaving(false);
     } catch (err: unknown) {
-      console.error('Failed to update privacy settings:', err);
       setIsSaving(false);
     }
   };
@@ -251,7 +248,6 @@ export function SettingsPageContent() {
     } catch (err: unknown) {
       const errorMessage =
         err instanceof Error ? err.message : 'Failed to log out';
-      console.error(errorMessage);
     }
   };
 
@@ -263,7 +259,6 @@ export function SettingsPageContent() {
       await firebaseUserApi.deleteAccount();
       // The logout will happen automatically as part of deleteAccount
     } catch (err: unknown) {
-      console.error('Delete account error:', err);
       setIsDeleting(false);
       setShowDeleteConfirm(false);
     }

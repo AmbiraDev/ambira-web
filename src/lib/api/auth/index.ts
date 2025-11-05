@@ -344,10 +344,7 @@ export const firebaseAuthApi = {
         // Use popup for better UX and to avoid cross-origin issues
         userCredential = await signInWithPopup(auth, provider);
       } catch (popupError: unknown) {
-        console.error('[signInWithGoogle] Popup error:', popupError);
         const authError = popupError as { code?: string; message?: string };
-        console.error('[signInWithGoogle] Error code:', authError.code);
-        console.error('[signInWithGoogle] Error message:', authError.message);
 
         // Handle specific error codes
         if (authError.code === 'auth/popup-blocked') {
@@ -426,8 +423,6 @@ export const firebaseAuthApi = {
 
       return { user, token };
     } catch (error: unknown) {
-      console.error('Google sign-in error:', error);
-
       // Special case: if redirect is in progress, pass through without modification
       if (error instanceof Error && error.message === 'REDIRECT_IN_PROGRESS') {
         throw error;
@@ -618,20 +613,9 @@ export const firebaseAuthApi = {
 
       return { user, token };
     } catch (error: unknown) {
-      console.error('[handleGoogleRedirectResult] ERROR:', error);
-
       // Type-safe error property access
       if (error && typeof error === 'object') {
-        const errorObj = error as {
-          message?: string;
-          code?: string;
-          stack?: string;
-        };
-        console.error('[handleGoogleRedirectResult] Error details:', {
-          message: errorObj.message,
-          code: errorObj.code,
-          stack: errorObj.stack,
-        });
+        // Error details available for debugging if needed
       }
 
       const apiError = handleError(error, 'Google sign-in redirect', {

@@ -46,7 +46,6 @@ export class SessionRepository {
 
       return this.mapper.toDomain(docSnap);
     } catch (error) {
-      console.error(`Error finding session ${sessionId}:`, error);
       throw new Error(
         `Failed to find session: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
@@ -68,7 +67,6 @@ export class SessionRepository {
       const snapshot = await getDocs(q);
       return this.mapper.toDomainListEnriched(snapshot.docs);
     } catch (error) {
-      console.error(`Error finding sessions for user ${userId}:`, error);
       throw new Error(
         `Failed to find sessions: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
@@ -96,7 +94,6 @@ export class SessionRepository {
       const snapshot = await getDocs(q);
       return this.mapper.toDomainList(snapshot.docs);
     } catch (error) {
-      console.error(`Error finding sessions for project ${projectId}:`, error);
       throw new Error(
         `Failed to find sessions: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
@@ -118,7 +115,6 @@ export class SessionRepository {
       const snapshot = await getDocs(q);
       return this.mapper.toDomainListEnriched(snapshot.docs);
     } catch (error) {
-      console.error(`Error finding sessions for group ${groupId}:`, error);
       throw new Error(
         `Failed to find sessions: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
@@ -156,7 +152,6 @@ export class SessionRepository {
       const results = await Promise.all(batches);
       return results.flat();
     } catch (error) {
-      console.error('Error finding sessions by user IDs:', error);
       throw new Error(
         `Failed to find sessions: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
@@ -225,7 +220,6 @@ export class SessionRepository {
       const snapshot = await getDocs(q);
       return this.mapper.toDomainList(snapshot.docs);
     } catch (error) {
-      console.error('Error finding public sessions:', error);
       throw new Error(
         `Failed to find public sessions: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
@@ -242,7 +236,6 @@ export class SessionRepository {
 
       await setDoc(docRef, data, { merge: true });
     } catch (error) {
-      console.error(`Error saving session ${session.id}:`, error);
       throw new Error(
         `Failed to save session: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
@@ -259,10 +252,6 @@ export class SessionRepository {
         supportCount: increment(delta),
       });
     } catch (error) {
-      console.error(
-        `Error updating support count for session ${sessionId}:`,
-        error
-      );
       throw new Error(
         `Failed to update support count: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
@@ -279,10 +268,6 @@ export class SessionRepository {
         commentCount: increment(delta),
       });
     } catch (error) {
-      console.error(
-        `Error updating comment count for session ${sessionId}:`,
-        error
-      );
       throw new Error(
         `Failed to update comment count: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
@@ -297,7 +282,6 @@ export class SessionRepository {
       const docRef = doc(db, this.collectionName, sessionId);
       await deleteDoc(docRef);
     } catch (error) {
-      console.error(`Error deleting session ${sessionId}:`, error);
       throw new Error(
         `Failed to delete session: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
@@ -313,7 +297,6 @@ export class SessionRepository {
       const docSnap = await getDoc(docRef);
       return docSnap.exists();
     } catch (error) {
-      console.error(`Error checking if session ${sessionId} exists:`, error);
       return false;
     }
   }
@@ -326,7 +309,6 @@ export class SessionRepository {
       const sessions = await this.findByUserId(userId, 1000); // Max limit
       return sessions.length;
     } catch (error) {
-      console.error(`Error getting session count for user ${userId}:`, error);
       return 0;
     }
   }
@@ -343,7 +325,6 @@ export class SessionRepository {
       );
       return totalSeconds / 3600; // Convert to hours
     } catch (error) {
-      console.error(`Error getting total hours for user ${userId}:`, error);
       return 0;
     }
   }

@@ -72,7 +72,6 @@ export default function GroupSettingsPage() {
         setGroupImagePreviews([groupData.imageUrl]);
       }
     } catch {
-      console.error('Error loading group');
       setError('Failed to load group');
     } finally {
       setIsLoading(false);
@@ -104,7 +103,6 @@ export default function GroupSettingsPage() {
             imageUrl = result.url;
           }
         } catch (uploadError) {
-          console.error('Error uploading group image:', uploadError);
           setError(
             uploadError instanceof Error
               ? uploadError.message
@@ -128,7 +126,6 @@ export default function GroupSettingsPage() {
       await firebaseApi.group.updateGroup(groupId, updateData);
       router.push(`/groups/${groupId}`);
     } catch (_error) {
-      console.error('Error updating group:', error);
       setError('Failed to update group. Please try again.');
       setIsSaving(false);
     }

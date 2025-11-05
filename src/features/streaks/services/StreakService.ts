@@ -10,7 +10,6 @@ export class StreakService {
     try {
       return await firebaseApi.streak.getStreakData(userId);
     } catch (_err) {
-      console.error('Error getting streak data:', _err);
       return null;
     }
   }
@@ -19,7 +18,6 @@ export class StreakService {
     try {
       return await firebaseApi.streak.getStreakStats(userId);
     } catch (_err) {
-      console.error('Error getting streak stats:', _err);
       return null;
     }
   }

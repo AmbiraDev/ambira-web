@@ -99,7 +99,7 @@ const SYSTEM_ACTIVITY_TYPES: ActivityType[] = [
     id: 'work',
     name: 'Work',
     category: 'productivity',
-    icon: '📊',
+    icon: 'flat-color-icons:briefcase',
     defaultColor: '#0066CC',
     isSystem: true,
     order: 1,
@@ -111,7 +111,7 @@ const SYSTEM_ACTIVITY_TYPES: ActivityType[] = [
     id: 'coding',
     name: 'Coding',
     category: 'productivity',
-    icon: '💻',
+    icon: 'flat-color-icons:electronics',
     defaultColor: '#5856D6',
     isSystem: true,
     order: 2,
@@ -123,7 +123,7 @@ const SYSTEM_ACTIVITY_TYPES: ActivityType[] = [
     id: 'side-project',
     name: 'Side Project',
     category: 'productivity',
-    icon: '🚀',
+    icon: 'flat-color-icons:template',
     defaultColor: '#FF9500',
     isSystem: true,
     order: 3,
@@ -135,7 +135,7 @@ const SYSTEM_ACTIVITY_TYPES: ActivityType[] = [
     id: 'planning',
     name: 'Planning',
     category: 'productivity',
-    icon: '🎯',
+    icon: 'flat-color-icons:todo-list',
     defaultColor: '#32ADE6',
     isSystem: true,
     order: 4,
@@ -147,7 +147,7 @@ const SYSTEM_ACTIVITY_TYPES: ActivityType[] = [
     id: 'study',
     name: 'Study',
     category: 'learning',
-    icon: '📚',
+    icon: 'flat-color-icons:diploma-1',
     defaultColor: '#34C759',
     isSystem: true,
     order: 5,
@@ -159,7 +159,7 @@ const SYSTEM_ACTIVITY_TYPES: ActivityType[] = [
     id: 'learning',
     name: 'Learning',
     category: 'learning',
-    icon: '🧠',
+    icon: 'flat-color-icons:graduation-cap',
     defaultColor: '#FFD60A',
     isSystem: true,
     order: 6,
@@ -171,7 +171,7 @@ const SYSTEM_ACTIVITY_TYPES: ActivityType[] = [
     id: 'reading',
     name: 'Reading',
     category: 'learning',
-    icon: '📖',
+    icon: 'flat-color-icons:reading',
     defaultColor: '#FF2D55',
     isSystem: true,
     order: 7,
@@ -183,7 +183,7 @@ const SYSTEM_ACTIVITY_TYPES: ActivityType[] = [
     id: 'research',
     name: 'Research',
     category: 'learning',
-    icon: '🔬',
+    icon: 'flat-color-icons:search',
     defaultColor: '#AF52DE',
     isSystem: true,
     order: 8,
@@ -195,7 +195,7 @@ const SYSTEM_ACTIVITY_TYPES: ActivityType[] = [
     id: 'creative',
     name: 'Creative',
     category: 'creative',
-    icon: '🎨',
+    icon: 'flat-color-icons:gallery',
     defaultColor: '#FF6482',
     isSystem: true,
     order: 9,
@@ -207,7 +207,7 @@ const SYSTEM_ACTIVITY_TYPES: ActivityType[] = [
     id: 'writing',
     name: 'Writing',
     category: 'creative',
-    icon: '✍️',
+    icon: 'flat-color-icons:document',
     defaultColor: '#AC8E68',
     isSystem: true,
     order: 10,
@@ -229,7 +229,6 @@ const SYSTEM_ACTIVITY_TYPES: ActivityType[] = [
  *
  * @example
  * const defaults = await getSystemActivityTypes();
- * console.log(defaults.length); // 10
  */
 export async function getSystemActivityTypes(): Promise<ActivityType[]> {
   try {
@@ -253,7 +252,6 @@ export async function getSystemActivityTypes(): Promise<ActivityType[]> {
  *
  * @example
  * const customs = await getUserCustomActivityTypes('user123');
- * console.log(customs); // [{ id: 'guitar', name: 'Guitar Practice', ... }]
  */
 export async function getUserCustomActivityTypes(
   userId: string
@@ -646,7 +644,6 @@ export async function getActivityTypeById(
  *
  * @example
  * const activities = await getActivityTypesByIds(['work', 'coding', 'guitar'], 'user123');
- * console.log(activities.get('work')?.name); // 'Work'
  */
 export async function getActivityTypesByIds(
   activityIds: string[],

@@ -147,7 +147,6 @@ export async function updateActivityPreference(
  *
  * @example
  * const recentIds = await getRecentActivities('user123', 5);
- * console.log(recentIds); // ['work', 'coding', 'study', 'reading', 'writing']
  */
 export async function getRecentActivities(
   userId: string,
@@ -199,7 +198,6 @@ export async function getRecentActivities(
  *
  * @example
  * const prefs = await getUserActivityPreferences('user123');
- * console.log(prefs.length); // Number of activities user has used
  */
 export async function getUserActivityPreferences(
   userId: string
@@ -248,7 +246,6 @@ export async function getUserActivityPreferences(
  *
  * @example
  * const pref = await getActivityPreference('user123', 'work');
- * console.log(pref?.useCount); // Number of times user has used 'work'
  */
 export async function getActivityPreference(
   userId: string,
@@ -298,7 +295,6 @@ export async function getActivityPreference(
  *
  * @example
  * const recentActivities = await getRecentActivitiesWithDetails('user123', 5);
- * console.log(recentActivities[0].name); // 'Work'
  */
 export async function getRecentActivitiesWithDetails(
   userId: string,
@@ -339,7 +335,6 @@ export async function getRecentActivitiesWithDetails(
  * @example
  * const activitiesWithUsage = await getAllActivitiesWithUsage('user123');
  * activitiesWithUsage.forEach(a => {
- *   console.log(`${a.name}: ${a.useCount} uses`);
  * });
  */
 export async function getAllActivitiesWithUsage(
@@ -395,7 +390,6 @@ export async function getAllActivitiesWithUsage(
  *
  * @example
  * const popular = await getMostUsedActivities('user123', 5);
- * console.log(popular[0].name); // Most used activity
  */
 export async function getMostUsedActivities(
   userId: string,
@@ -494,8 +488,6 @@ export async function getActivitiesWithSessions(
  *
  * @example
  * const stats = await getActivityUsageStats('user123');
- * console.log(`Total activities: ${stats.totalActivities}`);
- * console.log(`Activities used: ${stats.activitiesUsed}`);
  */
 export async function getActivityUsageStats(userId: string): Promise<{
   totalActivities: number; // Total activities available (system + custom)

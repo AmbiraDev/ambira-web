@@ -72,13 +72,14 @@ export default function SearchBar({ isOpen, onToggle }: SearchBarProps) {
     setIsFilterDropdownOpen(false);
   };
 
-  // Collapsed state - just show search icon button
+  // Collapsed state - just show search icon button that navigates to search page
   if (!isOpen) {
     return (
       <button
-        onClick={onToggle}
+        onClick={() => router.push('/search')}
         className="p-2 text-gray-600 hover:text-[#0066CC] transition-colors"
-        aria-label="Open search"
+        style={{ cursor: 'pointer' }}
+        aria-label="Go to search"
       >
         <Search className="w-5 h-5" />
       </button>

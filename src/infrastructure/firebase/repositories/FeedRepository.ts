@@ -93,7 +93,6 @@ export class FeedRepository {
 
       return { sessions, hasMore, nextCursor };
     } catch (error) {
-      console.error('Error getting feed for following:', error);
       throw new Error(
         `Failed to get following feed: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
@@ -133,7 +132,6 @@ export class FeedRepository {
 
       return { sessions, hasMore, nextCursor };
     } catch (error) {
-      console.error('Error getting public feed:', error);
       throw new Error(
         `Failed to get public feed: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
@@ -203,7 +201,6 @@ export class FeedRepository {
 
       return { sessions, hasMore, nextCursor };
     } catch (error) {
-      console.error('Error getting feed for group members unfollowed:', error);
       throw new Error(
         `Failed to get group members feed: ${error instanceof Error ? error.message : 'Unknown error'}`
       );

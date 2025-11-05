@@ -58,7 +58,6 @@ export const CommentInput: React.FC<CommentInputProps> = ({
           const results = await firebaseUserApi.searchUsers(mentionQuery, 5);
           setMentionSuggestions(results.users);
         } catch (err) {
-          console.error('Failed to search users:', err);
           setMentionSuggestions([]);
         }
       } else {
@@ -163,7 +162,7 @@ export const CommentInput: React.FC<CommentInputProps> = ({
       setShowMentions(false);
       setMentionQuery('');
     } catch (err) {
-      console.error('Failed to submit comment:', err);
+      // Silent failure
     } finally {
       setIsSubmitting(false);
     }
@@ -171,7 +170,7 @@ export const CommentInput: React.FC<CommentInputProps> = ({
 
   return (
     <div className="relative">
-      <div className="flex items-center gap-3 border-t border-gray-200 pt-2">
+      <div className="flex items-center gap-3">
         <textarea
           ref={textareaRef}
           value={content}

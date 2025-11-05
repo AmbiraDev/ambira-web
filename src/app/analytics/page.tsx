@@ -20,7 +20,13 @@ import {
   ComposedChart,
   Area,
 } from 'recharts';
-import { ChevronDown, BarChart3, TrendingUp, Activity } from 'lucide-react';
+import {
+  ChevronDown,
+  BarChart3,
+  TrendingUp,
+  Activity,
+  Check,
+} from 'lucide-react';
 import { IconRenderer } from '@/components/IconRenderer';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { safeNumber } from '@/lib/utils';
@@ -532,13 +538,30 @@ export default function AnalyticsPage() {
                     aria-expanded={showProjectDropdown}
                     aria-haspopup="listbox"
                   >
-                    <span className="truncate">
-                      {selectedProjectId === 'all'
-                        ? 'All Activities'
-                        : activitiesWithSessions?.find(
+                    {selectedProjectId === 'all' ? (
+                      <span className="truncate">All Activities</span>
+                    ) : (
+                      <>
+                        {(() => {
+                          const selectedActivity = activitiesWithSessions?.find(
                             p => p.id === selectedProjectId
-                          )?.name || 'All Activities'}
-                    </span>
+                          );
+                          return selectedActivity ? (
+                            <>
+                              <IconRenderer
+                                iconName={selectedActivity.icon}
+                                className="w-4 h-4 flex-shrink-0"
+                              />
+                              <span className="truncate">
+                                {selectedActivity.name}
+                              </span>
+                            </>
+                          ) : (
+                            <span className="truncate">All Activities</span>
+                          );
+                        })()}
+                      </>
+                    )}
                     <ChevronDown className="w-3.5 h-3.5 md:w-4 md:h-4 flex-shrink-0" />
                   </button>
                   {showProjectDropdown && (
@@ -548,7 +571,7 @@ export default function AnalyticsPage() {
                         onClick={() => setShowProjectDropdown(false)}
                       />
                       <div
-                        className="absolute left-0 top-full mt-2 w-full max-w-xs bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50 max-h-64 overflow-y-auto"
+                        className="absolute left-0 top-full mt-2 w-full min-w-[280px] max-w-sm bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50 max-h-64 overflow-y-auto"
                         role="listbox"
                       >
                         <button
@@ -556,11 +579,11 @@ export default function AnalyticsPage() {
                             setSelectedProjectId('all');
                             setShowProjectDropdown(false);
                           }}
-                          className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:ring-inset focus:bg-blue-50 ${selectedProjectId === 'all' ? 'bg-blue-50 text-blue-600' : ''}`}
+                          className={`w-full text-left px-3 py-2.5 text-sm font-medium text-gray-900 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:ring-inset focus:bg-blue-50 flex items-center gap-2 ${selectedProjectId === 'all' ? 'bg-blue-50' : ''}`}
                           role="option"
                           aria-selected={selectedProjectId === 'all'}
                         >
-                          All Activities
+                          <span className="truncate">All Activities</span>
                         </button>
                         {activitiesWithSessions.length === 0 && (
                           <div className="px-4 py-2 text-xs text-gray-400">
@@ -574,36 +597,16 @@ export default function AnalyticsPage() {
                               setSelectedProjectId(activity.id);
                               setShowProjectDropdown(false);
                             }}
-                            className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:ring-inset focus:bg-blue-50 flex items-center gap-3 ${selectedProjectId === activity.id ? 'bg-blue-50 text-blue-600' : ''}`}
+                            className={`w-full text-left px-3 py-2.5 text-sm font-medium text-gray-900 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:ring-inset focus:bg-blue-50 flex items-center gap-2 ${selectedProjectId === activity.id ? 'bg-blue-50' : ''}`}
                             role="option"
                             aria-selected={selectedProjectId === activity.id}
-                            aria-label={`Filter by ${activity.name} (${activity.sessionCount} sessions)`}
+                            aria-label={`Filter by ${activity.name}`}
                           >
-                            <div
-                              className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
-                              style={{ backgroundColor: activity.color + '20' }}
-                            >
-                              <IconRenderer
-                                iconName={activity.icon}
-                                size={18}
-                              />
-                            </div>
-                            <div className="flex-1 min-w-0 flex items-center justify-between gap-2">
-                              <span className="truncate">{activity.name}</span>
-                              <div className="flex items-center gap-1.5 flex-shrink-0">
-                                {activity.isCustom && (
-                                  <span
-                                    className="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 font-medium"
-                                    title="Custom activity"
-                                  >
-                                    Custom
-                                  </span>
-                                )}
-                                <span className="text-xs text-gray-500 font-medium">
-                                  {activity.sessionCount}
-                                </span>
-                              </div>
-                            </div>
+                            <IconRenderer
+                              iconName={activity.icon}
+                              className="w-4 h-4 flex-shrink-0"
+                            />
+                            <span className="truncate">{activity.name}</span>
                           </button>
                         ))}
                       </div>

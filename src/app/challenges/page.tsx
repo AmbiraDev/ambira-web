@@ -82,7 +82,6 @@ export default function ChallengesPage() {
     try {
       await joinChallengeMutation.mutateAsync(challengeId);
     } catch {
-      console.error('Failed to join challenge');
       alert('Failed to join challenge. Please try again.');
     }
   };
@@ -91,7 +90,6 @@ export default function ChallengesPage() {
     try {
       await leaveChallengeMutation.mutateAsync(challengeId);
     } catch {
-      console.error('Failed to leave challenge');
       alert('Failed to leave challenge. Please try again.');
     }
   };

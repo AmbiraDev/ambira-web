@@ -31,7 +31,6 @@ export const FeedLayout: React.FC<FeedLayoutProps> = ({ className = '' }) => {
 
         setUserStats(stats);
       } catch (err) {
-        console.error('Failed to load feed data:', err);
       } finally {
         setIsLoadingStats(false);
       }

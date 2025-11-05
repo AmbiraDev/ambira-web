@@ -24,7 +24,6 @@ export class ChallengeService {
     try {
       return await firebaseApi.challenge.getChallenges(filters);
     } catch (_err) {
-      console.error('Error getting challenges:', _err);
       return [];
     }
   }
@@ -36,7 +35,6 @@ export class ChallengeService {
     try {
       return await firebaseApi.challenge.getChallenge(challengeId);
     } catch (_err) {
-      console.error('Error getting challenge:', _err);
       return null;
     }
   }
@@ -50,7 +48,6 @@ export class ChallengeService {
     try {
       return await firebaseApi.challenge.getChallengeLeaderboard(challengeId);
     } catch (_err) {
-      console.error('Error getting challenge leaderboard:', _err);
       return null;
     }
   }
@@ -68,7 +65,6 @@ export class ChallengeService {
         userId
       );
     } catch (_err) {
-      console.error('Error getting challenge progress:', _err);
       return null;
     }
   }
@@ -80,7 +76,6 @@ export class ChallengeService {
     try {
       return await firebaseApi.challenge.getChallengeStats(challengeId);
     } catch (_err) {
-      console.error('Error getting challenge stats:', _err);
       return null;
     }
   }

@@ -185,8 +185,10 @@ export default function ChallengeLeaderboard({
                     className="rounded-full object-cover"
                   />
                 ) : (
-                  <div className="w-full h-full bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-lg">
-                    {entry.user.name.charAt(0).toUpperCase()}
+                  <div className="w-full h-full bg-gray-100 rounded-full flex items-center justify-center">
+                    <span className="text-gray-600 font-bold text-lg">
+                      {entry.user.name.charAt(0).toUpperCase()}
+                    </span>
                   </div>
                 )}
                 {/* Rank Icon Overlay */}
@@ -289,8 +291,10 @@ export default function ChallengeLeaderboard({
                               className="rounded-full object-cover"
                             />
                           ) : (
-                            <div className="w-full h-full bg-gradient-to-br from-blue-400 to-purple-500 rounded-full flex items-center justify-center text-white font-bold text-xs">
-                              {entry.user.name.charAt(0).toUpperCase()}
+                            <div className="w-full h-full bg-gray-100 rounded-full flex items-center justify-center">
+                              <span className="text-gray-600 font-bold text-xs">
+                                {entry.user.name.charAt(0).toUpperCase()}
+                              </span>
                             </div>
                           )}
                         </div>

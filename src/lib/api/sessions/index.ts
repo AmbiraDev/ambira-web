@@ -47,7 +47,8 @@ import { fetchUserDataForSocialContext } from '../social/helpers';
 // Import other API modules
 import { firebasePostApi } from './posts';
 import { firebaseChallengeApi } from '../challenges';
-import { updateActivityPreference } from '../userActivityPreferences';
+import { updateActivityPreference } from '../activityPreferences';
+import { getAllActivityTypes } from '../activityTypes';
 
 // Config
 import { TIMEOUTS } from '@/config/constants';
@@ -99,6 +100,47 @@ function createTimeout(ms: number, errorMessage: string): Promise<never> {
 }
 
 /**
+ * Fetch activity data by ID from the activityTypes collection
+ * Supports both default system activities and custom user activities
+ *
+ * @param activityId - The ID of the activity to fetch
+ * @param userId - The user ID (for fetching custom activities)
+ * @returns Activity object or null if not found
+ */
+async function fetchActivityData(
+  activityId: string,
+  userId: string
+): Promise<Activity | null> {
+  try {
+    // Get all activity types for the user (includes defaults + custom)
+    const activityTypes = await getAllActivityTypes(userId);
+    const activityType = activityTypes.find(at => at.id === activityId);
+
+    if (!activityType) {
+      return null;
+    }
+
+    // Convert ActivityType to Activity
+    return {
+      id: activityType.id,
+      userId: activityType.userId || userId,
+      name: activityType.name,
+      description: activityType.description || '',
+      icon: activityType.icon,
+      color: activityType.defaultColor,
+      status: 'active' as const,
+      createdAt: activityType.createdAt,
+      updatedAt: activityType.updatedAt,
+    };
+  } catch (error) {
+    handleError(error, `Fetch activity ${activityId}`, {
+      severity: ErrorSeverity.WARNING,
+    });
+    return null;
+  }
+}
+
+/**
  * Wrap a Firebase query with timeout protection
  * Races the query against a timeout to prevent hanging requests
  *
@@ -133,6 +175,7 @@ export const firebaseSessionApi = {
 
       // Prepare session data for Firestore
       const activityId = data.activityId || data.projectId || ''; // Support both for backwards compatibility
+
       const sessionData: Record<string, unknown> = {
         userId: auth.currentUser.uid,
         activityId: activityId, // New field
@@ -206,11 +249,7 @@ export const firebaseSessionApi = {
       // Update activity preference (track usage)
       try {
         if (activityId) {
-          await updateActivityPreference(
-            auth.currentUser.uid,
-            activityId,
-            data.startTime
-          );
+          await updateActivityPreference(activityId, auth.currentUser.uid);
         }
       } catch (_error) {
         handleError(_error, 'update activity preference', {
@@ -315,6 +354,7 @@ export const firebaseSessionApi = {
   saveActiveSession: async (timerData: {
     startTime: Date;
     projectId: string;
+    activityId?: string;
     selectedTaskIds: string[];
     pausedDuration?: number;
     isPaused?: boolean;
@@ -348,6 +388,7 @@ export const firebaseSessionApi = {
       await setDoc(activeSessionRef, {
         startTime: Timestamp.fromDate(timerData.startTime),
         projectId: timerData.projectId,
+        activityId: timerData.activityId || timerData.projectId, // Store activityId for proper activity lookup
         selectedTaskIds: timerData.selectedTaskIds,
         pausedDuration: timerData.pausedDuration || 0,
         isPaused: !!timerData.isPaused,
@@ -368,6 +409,7 @@ export const firebaseSessionApi = {
   getActiveSession: async (): Promise<{
     startTime: Date;
     projectId: string;
+    activityId?: string;
     selectedTaskIds: string[];
     pausedDuration: number;
     isPaused: boolean;
@@ -406,6 +448,7 @@ export const firebaseSessionApi = {
       return {
         startTime: data.startTime.toDate(),
         projectId: data.projectId,
+        activityId: data.activityId,
         selectedTaskIds: data.selectedTaskIds || [],
         pausedDuration: data.pausedDuration || 0,
         isPaused: !!data.isPaused,
@@ -531,49 +574,27 @@ export const firebaseSessionApi = {
       for (const sessionDoc of querySnapshot.docs) {
         const sessionData = sessionDoc.data();
 
-        // Get project data
-        let projectData = null;
-        const projectId = sessionData.projectId;
-        if (projectId) {
-          try {
-            const projectDoc = await getDoc(
-              doc(db, 'projects', userId, 'userProjects', projectId)
-            );
-            if (projectDoc.exists()) {
-              projectData = projectDoc.data();
-            }
-          } catch (_error) {
-            handleError(_error, `Fetch project ${projectId}`, {
-              severity: ErrorSeverity.WARNING,
-            });
-          }
+        // Get activity data from activityTypes (supports defaults + custom)
+        const activityId = sessionData.activityId || sessionData.projectId;
+        let activity: Activity | null = null;
+        if (activityId) {
+          activity = await fetchActivityData(activityId, userId);
         }
 
-        const project: Project = projectData
-          ? {
-              id: projectId,
-              userId: userId,
-              name: projectData.name || 'Unknown Project',
-              description: projectData.description || '',
-              icon: projectData.icon || '📁',
-              color: projectData.color || '#64748B',
-              weeklyTarget: projectData.weeklyTarget,
-              totalTarget: projectData.totalTarget,
-              status: normalizeStatus(projectData.status),
-              createdAt: convertTimestamp(projectData.createdAt) || new Date(),
-              updatedAt: convertTimestamp(projectData.updatedAt) || new Date(),
-            }
-          : {
-              id: projectId || 'unknown',
-              userId: userId,
-              name: 'Unknown Project',
-              description: '',
-              icon: '📁',
-              color: '#64748B',
-              status: 'active',
-              createdAt: new Date(),
-              updatedAt: new Date(),
-            };
+        // Create default activity object if not found
+        const defaultActivity: Activity = {
+          id: activityId || 'unknown',
+          userId: userId,
+          name: 'Unknown Activity',
+          description: '',
+          icon: 'flat-color-icons:folder',
+          color: '#64748B',
+          status: 'active',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+
+        const finalActivity = activity || defaultActivity;
 
         sessions.push({
           id: sessionDoc.id,
@@ -597,8 +618,8 @@ export const firebaseSessionApi = {
           createdAt: convertTimestamp(sessionData.createdAt) || new Date(),
           updatedAt: convertTimestamp(sessionData.updatedAt) || new Date(),
           user,
-          project,
-          activity: project,
+          project: finalActivity,
+          activity: finalActivity,
         });
       }
 
@@ -918,46 +939,25 @@ export const firebaseSessionApi = {
       // Get user data
       const userData = await fetchUserDataForSocialContext(data.userId);
 
-      // Get project data
+      // Get activity data from activityTypes (supports defaults + custom)
+      const activityId = data.activityId || data.projectId;
       let activity: Activity | null = null;
-      if (data.projectId || data.activityId) {
-        const activityId = data.activityId || data.projectId;
-        const activityRef = doc(
-          db,
-          'projects',
-          data.userId,
-          'userProjects',
-          activityId
-        );
-        const activityDoc = await getDoc(activityRef);
-        if (activityDoc.exists()) {
-          const activityData = activityDoc.data();
-          activity = {
-            id: activityDoc.id,
-            userId: data.userId,
-            name: activityData.name,
-            description: activityData.description || '',
-            color: activityData.color || '#0066CC',
-            icon: activityData.icon || 'FolderIcon',
-            status: normalizeStatus(activityData.status),
-            createdAt: convertTimestamp(activityData.createdAt),
-            updatedAt: convertTimestamp(activityData.updatedAt),
-          };
-        }
+      if (activityId) {
+        activity = await fetchActivityData(activityId, data.userId);
       }
 
       // Check if current user has supported this session
       const supportedBy = data.supportedBy || [];
       const isSupported = supportedBy.includes(auth.currentUser.uid);
 
-      // Create default activity object
+      // Create default activity object if not found
       const defaultActivity: Activity = {
-        id: '',
+        id: activityId || '',
         userId: data.userId,
-        name: 'No Activity',
+        name: 'Unknown Activity',
         description: '',
         color: '#0066CC',
-        icon: 'FolderIcon',
+        icon: 'flat-color-icons:folder',
         status: 'active' as const,
         createdAt: new Date(),
         updatedAt: new Date(),

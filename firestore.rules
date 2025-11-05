@@ -30,6 +30,11 @@ service cloud.firestore {
       match /activeSession/{docId} {
         allow read, write: if request.auth != null && request.auth.uid == userId;
       }
+
+      // Activity preferences subcollection - user can read/write their own activity preferences
+      match /activityPreferences/{typeId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
     }
     
     // User activities

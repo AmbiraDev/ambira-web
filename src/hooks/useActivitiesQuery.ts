@@ -221,7 +221,6 @@ export function useCreateActivity() {
       if (context?.previousActivities) {
         queryClient.setQueryData(queryKey, context.previousActivities);
       }
-      console.error('Error creating activity:', err);
     },
 
     // Always refetch after error or success
@@ -278,7 +277,6 @@ export function useUpdateActivity() {
       if (context?.previousActivities) {
         queryClient.setQueryData(queryKey, context.previousActivities);
       }
-      console.error('Error updating activity:', err);
     },
 
     onSettled: () => {
@@ -321,7 +319,6 @@ export function useDeleteActivity() {
       if (context?.previousActivities) {
         queryClient.setQueryData(queryKey, context.previousActivities);
       }
-      console.error('Error deleting activity:', err);
     },
 
     onSettled: () => {
@@ -374,7 +371,13 @@ export function useActivitiesWithSessions(
   userId?: string,
   options?: Partial<
     UseQueryOptions<
-      Array<Activity & { sessionCount: number; isCustom: boolean }>
+      Array<
+        Activity & {
+          sessionCount: number;
+          isCustom: boolean;
+          totalHours: number;
+        }
+      >
     >
   >
 ) {
@@ -403,8 +406,8 @@ export function useActivitiesWithSessions(
         updatedAt: at.updatedAt,
       }));
 
-      // Get session counts for each activity
-      const activitiesWithCounts = await Promise.all(
+      // Get session counts and total hours for each activity
+      const activitiesWithStats = await Promise.all(
         activities.map(async activity => {
           // Query for both activityId and projectId (backwards compatibility)
           const q = query(
@@ -420,18 +423,27 @@ export function useActivitiesWithSessions(
           const snapshot = await getDocs(q);
           const sessionCount = snapshot.size;
 
+          // Calculate total hours from session durations
+          let totalHours = 0;
+          snapshot.forEach(doc => {
+            const data = doc.data();
+            // duration is stored in seconds
+            totalHours += (data.duration || 0) / 3600;
+          });
+
           return {
             ...activity,
             sessionCount,
+            totalHours,
             isCustom: !activity.isDefault,
           };
         })
       );
 
-      // Filter to only activities with sessions and sort by session count
-      return activitiesWithCounts
-        .filter(a => a.sessionCount > 0)
-        .sort((a, b) => b.sessionCount - a.sessionCount);
+      // Only include activities that have sessions (sessionCount > 0)
+      return activitiesWithStats
+        .filter(activity => activity.sessionCount > 0)
+        .sort((a, b) => b.totalHours - a.totalHours);
     },
     enabled: !!effectiveUserId,
     staleTime: CACHE_TIMES.MEDIUM, // 5 minutes cache

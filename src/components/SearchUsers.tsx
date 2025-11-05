@@ -57,7 +57,6 @@ export const SearchUsers: React.FC<SearchUsersProps> = ({
         setHasMore(response.hasMore);
         setHasSearched(true);
       } catch {
-        console.error('Search error');
         setResults([]);
         setHasSearched(true);
       } finally {

@@ -37,11 +37,8 @@ export const PostStats: React.FC<PostStatsProps> = ({
       {/* Session Title with Project Badge */}
       <div className="px-4 py-3 bg-white border-b border-gray-200">
         <div className="flex items-center gap-3">
-          <div
-            className="w-10 h-10 rounded-lg flex items-center justify-center text-white text-lg font-semibold shadow-sm flex-shrink-0"
-            style={{ backgroundColor: project.color }}
-          >
-            {project.icon}
+          <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-white border border-gray-200 shadow-sm flex-shrink-0">
+            <span className="text-lg text-gray-700">{project.icon}</span>
           </div>
           <div className="flex-1 min-w-0">
             <h3 className="font-bold text-gray-900 text-base leading-tight truncate">

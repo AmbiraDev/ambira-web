@@ -36,9 +36,7 @@ export const SessionTimer: React.FC<SessionTimerProps> = ({
         if (timerState.currentProject) {
           setSelectedProjectId(timerState.currentProject.id);
         }
-      } catch {
-        console.error('Failed to load projects');
-      }
+      } catch {}
     };
 
     if (user) {
@@ -53,7 +51,6 @@ export const SessionTimer: React.FC<SessionTimerProps> = ({
       setIsLoading(true);
       await startTimer(selectedProjectId);
     } catch {
-      console.error('Failed to start timer');
     } finally {
       setIsLoading(false);
     }
@@ -181,7 +178,6 @@ export const SessionTimer: React.FC<SessionTimerProps> = ({
               setShowFinishModal(false);
               // Timer will be finished by the context
             } catch (error) {
-              console.error('Failed to save session');
               throw error;
             }
           }}
@@ -225,7 +221,6 @@ const CustomTimerControls: React.FC<CustomTimerControlsProps> = ({
       setIsLoading(true);
       await onStart();
     } catch {
-      console.error('Failed to start timer');
     } finally {
       setIsLoading(false);
     }
@@ -236,7 +231,6 @@ const CustomTimerControls: React.FC<CustomTimerControlsProps> = ({
       setIsLoading(true);
       await pauseTimer();
     } catch {
-      console.error('Failed to pause timer');
     } finally {
       setIsLoading(false);
     }
@@ -247,7 +241,6 @@ const CustomTimerControls: React.FC<CustomTimerControlsProps> = ({
       setIsLoading(true);
       await resumeTimer();
     } catch {
-      console.error('Failed to resume timer');
     } finally {
       setIsLoading(false);
     }
@@ -263,7 +256,6 @@ const CustomTimerControls: React.FC<CustomTimerControlsProps> = ({
         setIsLoading(true);
         await resetTimer();
       } catch {
-        console.error('Failed to reset timer');
       } finally {
         setIsLoading(false);
       }

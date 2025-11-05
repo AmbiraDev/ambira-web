@@ -57,7 +57,6 @@ function ActivityDetailContent({ activityId }: { activityId: string }) {
       if (isPermissionError || isNotFound) {
         setSession(null);
       } else {
-        console.error('[Activity Detail] Unexpected error:', error);
         setSession(null);
       }
     } finally {
@@ -76,7 +75,6 @@ function ActivityDetailContent({ activityId }: { activityId: string }) {
         errorMessage.includes('permission') ||
         errorMessage.includes('Permission');
       if (!isPermissionError) {
-        console.error('Error loading comments:', error);
       }
     }
   };
@@ -93,7 +91,6 @@ function ActivityDetailContent({ activityId }: { activityId: string }) {
       }
       await loadSessionData();
     } catch {
-      console.error('Error toggling support');
     } finally {
       setIsSupporting(false);
     }
@@ -112,7 +109,6 @@ function ActivityDetailContent({ activityId }: { activityId: string }) {
       await loadComments();
       await loadSessionData();
     } catch {
-      console.error('Error posting comment');
     } finally {
       setIsPostingComment(false);
     }

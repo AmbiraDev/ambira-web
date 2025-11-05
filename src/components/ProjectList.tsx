@@ -50,9 +50,7 @@ export const ProjectList: React.FC<ProjectListProps> = ({ onEditProject }) => {
     try {
       await deleteProjectMutation.mutateAsync(project.id);
       setDeleteConfirm(null);
-    } catch {
-      console.error('Failed to delete project');
-    }
+    } catch {}
   };
 
   const handleArchive = async (project: Project) => {
@@ -62,17 +60,13 @@ export const ProjectList: React.FC<ProjectListProps> = ({ onEditProject }) => {
       } else {
         await archiveProjectMutation.mutateAsync(project.id);
       }
-    } catch {
-      console.error('Failed to archive/restore project');
-    }
+    } catch {}
   };
 
   const handleRestore = async (project: Project) => {
     try {
       await restoreProjectMutation.mutateAsync(project.id);
-    } catch {
-      console.error('Failed to restore project');
-    }
+    } catch {}
   };
 
   if (isLoading) {

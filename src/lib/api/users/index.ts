@@ -894,7 +894,6 @@ export const firebaseUserApi = {
       if (isPermissionError(_error)) {
         return [];
       }
-      console.error('[getFollowers] Error:', _error);
       const apiError = handleError(_error, 'Fetch followers', {
         defaultMessage: ERROR_MESSAGES.PROFILE_LOAD_FAILED,
       });
@@ -973,7 +972,6 @@ export const firebaseUserApi = {
       if (isPermissionError(_error)) {
         return [];
       }
-      console.error('[getFollowing] Error:', _error);
       const apiError = handleError(_error, 'Fetch following', {
         defaultMessage: ERROR_MESSAGES.PROFILE_LOAD_FAILED,
       });
@@ -1056,63 +1054,53 @@ export const firebaseUserApi = {
       // Convert search term to lowercase for case-insensitive search
       const termLower = term.toLowerCase();
 
-      // 1) Search by username prefix (case-insensitive)
-      const usernameQ = query(
-        collection(db, 'users'),
-        orderBy('usernameLower'),
-        where('usernameLower', '>=', termLower),
-        where('usernameLower', '<=', termLower + '\uf8ff'),
-        limitFn(limitCount)
-      );
-
-      // 2) Search by name prefix (case-insensitive)
-      const nameQ = query(
-        collection(db, 'users'),
-        orderBy('nameLower'),
-        where('nameLower', '>=', termLower),
-        where('nameLower', '<=', termLower + '\uf8ff'),
-        limitFn(limitCount)
-      );
-
-      const [usernameSnap, nameSnap] = await Promise.all([
-        getDocs(usernameQ),
-        getDocs(nameQ),
-      ]);
+      // Get all users and filter client-side for guaranteed results
+      // This ensures search works even if lowercase fields are missing or indexes aren't deployed
+      const usersQuery = query(collection(db, 'users'), limitFn(1000)); // Increased limit for better results
+      const querySnapshot = await getDocs(usersQuery);
 
       // Merge and de-duplicate results, prefer username matches first
       const byId: Record<string, UserSearchResult> = {};
-      const pushDoc = (docSnap: QueryDocumentSnapshot<DocumentData>) => {
+      querySnapshot.forEach(docSnap => {
         const userData = docSnap.data();
-        byId[docSnap.id] = {
-          id: docSnap.id,
-          username: userData.username,
-          name: userData.name,
-          bio: userData.bio,
-          profilePicture: userData.profilePicture,
-          followersCount:
-            userData.inboundFriendshipCount || userData.followersCount || 0,
-          isFollowing: false,
-        } as UserSearchResult;
-      };
+        const username = (userData.username || '').toLowerCase();
+        const name = (userData.name || '').toLowerCase();
 
-      usernameSnap.forEach(pushDoc);
-      nameSnap.forEach(d => {
-        if (!byId[d.id]) pushDoc(d);
+        // Only include users whose username or name contains the search term
+        if (username.includes(termLower) || name.includes(termLower)) {
+          byId[docSnap.id] = {
+            id: docSnap.id,
+            username: userData.username,
+            name: userData.name,
+            bio: userData.bio,
+            profilePicture: userData.profilePicture,
+            followersCount:
+              userData.inboundFriendshipCount || userData.followersCount || 0,
+            isFollowing: false,
+          } as UserSearchResult;
+        }
       });
 
       // Convert to array and apply a basic relevance sort: exact prefix on username > name > others
       let users = Object.values(byId)
         .sort((a, b) => {
-          const t = term.toLowerCase();
+          const t = termLower;
           const aUser = a.username?.toLowerCase() || '';
           const bUser = b.username?.toLowerCase() || '';
           const aName = a.name?.toLowerCase() || '';
           const bName = b.name?.toLowerCase() || '';
 
+          // Prioritize exact prefix matches, then contains matches
           const aScore =
-            (aUser.startsWith(t) ? 2 : 0) + (aName.startsWith(t) ? 1 : 0);
+            (aUser.startsWith(t) ? 4 : 0) +
+            (aName.startsWith(t) ? 2 : 0) +
+            (aUser.includes(t) ? 1 : 0) +
+            (aName.includes(t) ? 0.5 : 0);
           const bScore =
-            (bUser.startsWith(t) ? 2 : 0) + (bName.startsWith(t) ? 1 : 0);
+            (bUser.startsWith(t) ? 4 : 0) +
+            (bName.startsWith(t) ? 2 : 0) +
+            (bUser.includes(t) ? 1 : 0) +
+            (bName.includes(t) ? 0.5 : 0);
           return bScore - aScore;
         })
         .slice(0, limitCount);
@@ -1385,7 +1373,6 @@ export const firebaseUserApi = {
           }
         } catch (_error) {
           failed++;
-          console.error(`Failed to migrate user ${userDoc.id}:`, _error);
         }
       }
 

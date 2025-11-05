@@ -45,7 +45,6 @@ export const SessionHistory: React.FC = () => {
         setTotalCount(sessionsResp.totalCount);
         setHasMore(sessionsResp.hasMore);
       } catch {
-        console.error('Failed to load session history');
       } finally {
         setIsLoading(false);
       }
@@ -68,7 +67,6 @@ export const SessionHistory: React.FC = () => {
         setTotalCount(sessionsResp.totalCount);
         setHasMore(sessionsResp.hasMore);
       } catch {
-        console.error('Failed to load sessions');
       } finally {
         setIsLoading(false);
       }
@@ -112,7 +110,6 @@ export const SessionHistory: React.FC = () => {
       setHasMore(sessionsResp.hasMore);
       setDeleteConfirmSession(null);
     } catch {
-      console.error('Failed to delete session');
     } finally {
       setIsDeleting(false);
     }

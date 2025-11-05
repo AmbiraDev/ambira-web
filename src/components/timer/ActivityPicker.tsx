@@ -68,6 +68,33 @@ export function ActivityPicker({
       .filter((a): a is Activity => a !== undefined);
   }, [recentActivitiesPrefs, allActivities]);
 
+  // Sort all activities to show recent ones first
+  const sortedAllActivities = React.useMemo(() => {
+    if (!recentActivitiesPrefs || !allActivities.length) return allActivities;
+
+    const recentIds = new Set(recentActivitiesPrefs.map(pref => pref.typeId));
+    const recentMap = new Map(
+      recentActivitiesPrefs.map((pref, index) => [pref.typeId, index])
+    );
+
+    return [...allActivities].sort((a, b) => {
+      const aIsRecent = recentIds.has(a.id);
+      const bIsRecent = recentIds.has(b.id);
+
+      // Both recent - sort by recency order
+      if (aIsRecent && bIsRecent) {
+        return (recentMap.get(a.id) ?? 0) - (recentMap.get(b.id) ?? 0);
+      }
+
+      // One recent, one not - recent comes first
+      if (aIsRecent) return -1;
+      if (bIsRecent) return 1;
+
+      // Neither recent - maintain original order
+      return 0;
+    });
+  }, [recentActivitiesPrefs, allActivities]);
+
   const handleActivitySelect = (activityId: string) => {
     setSelectedActivityId(activityId);
     setShowDropdown(false);
@@ -78,6 +105,13 @@ export function ActivityPicker({
     <div className="relative w-full">
       <button
         onClick={() => setShowDropdown(!showDropdown)}
+        aria-label={
+          selectedActivity
+            ? `Selected activity: ${selectedActivity.name}. Click to change activity.`
+            : 'Select an activity'
+        }
+        aria-haspopup="listbox"
+        aria-expanded={showDropdown}
         className={`w-full px-4 py-3 border rounded-lg focus:ring-2 bg-white cursor-pointer text-base flex items-center gap-3 transition-colors ${
           showError
             ? 'border-red-500 ring-2 ring-red-200 focus:ring-red-500 focus:border-red-500'
@@ -88,13 +122,8 @@ export function ActivityPicker({
           <>
             <IconRenderer
               iconName={selectedActivity.icon}
-              className="w-6 h-6 flex-shrink-0"
-              style={{
-                color:
-                  'defaultColor' in selectedActivity
-                    ? selectedActivity.defaultColor
-                    : selectedActivity.color,
-              }}
+              className="w-6 h-6 text-gray-700 flex-shrink-0"
+              aria-hidden="true"
             />
             <span className="flex-1 text-left font-medium">
               {selectedActivity.name}
@@ -105,7 +134,10 @@ export function ActivityPicker({
             Select an activity
           </span>
         )}
-        <ChevronDown className="w-5 h-5 text-gray-400 flex-shrink-0" />
+        <ChevronDown
+          className="w-5 h-5 text-gray-400 flex-shrink-0"
+          aria-hidden="true"
+        />
       </button>
 
       {/* Dropdown Menu */}
@@ -115,10 +147,15 @@ export function ActivityPicker({
           <div
             className="fixed inset-0 z-10"
             onClick={() => setShowDropdown(false)}
+            aria-hidden="true"
           />
 
           {/* Dropdown content */}
-          <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-20 max-h-96 overflow-y-auto">
+          <div
+            role="listbox"
+            aria-label="Select an activity"
+            className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-20 max-h-96 overflow-y-auto"
+          >
             {allActivities.length === 0 ? (
               <div className="p-4 text-center">
                 <p className="text-sm text-gray-600 mb-3">No activities yet</p>
@@ -142,24 +179,21 @@ export function ActivityPicker({
                       {recentActivities.map(activity => (
                         <button
                           key={activity.id}
+                          role="option"
+                          aria-selected={selectedActivityId === activity.id}
                           onClick={() => handleActivitySelect(activity.id)}
                           className={`flex flex-col items-center gap-1.5 flex-shrink-0 p-2 rounded-lg transition-all hover:bg-gray-50 ${
                             selectedActivityId === activity.id
                               ? 'bg-blue-50 ring-2 ring-blue-200'
                               : ''
                           }`}
-                          title={activity.name}
+                          aria-label={`${activity.name} activity`}
                         >
-                          <div
-                            className="w-12 h-12 rounded-full flex items-center justify-center flex-shrink-0 shadow-sm"
-                            style={{ backgroundColor: `${activity.color}20` }}
-                          >
-                            <IconRenderer
-                              iconName={activity.icon}
-                              className="w-6 h-6"
-                              style={{ color: activity.color }}
-                            />
-                          </div>
+                          <IconRenderer
+                            iconName={activity.icon}
+                            className="w-6 h-6 text-gray-700"
+                            aria-hidden="true"
+                          />
                           <span className="text-xs font-medium text-gray-700 max-w-[60px] truncate">
                             {activity.name}
                           </span>
@@ -174,7 +208,7 @@ export function ActivityPicker({
                   <p className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase tracking-wide">
                     All Activities
                   </p>
-                  {allActivities.map(activity => {
+                  {sortedAllActivities.map(activity => {
                     const isCustom =
                       allActivitiesFromHook?.find(t => t.id === activity.id)
                         ?.isSystem === false;
@@ -182,21 +216,19 @@ export function ActivityPicker({
                     return (
                       <button
                         key={activity.id}
+                        role="option"
+                        aria-selected={selectedActivityId === activity.id}
                         onClick={() => handleActivitySelect(activity.id)}
                         className={`w-full flex items-center gap-3 px-3 py-2.5 hover:bg-gray-50 transition-colors ${
                           selectedActivityId === activity.id ? 'bg-blue-50' : ''
                         }`}
+                        aria-label={`${activity.name} activity${isCustom ? ' (custom)' : ''}`}
                       >
-                        <div
-                          className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-                          style={{ backgroundColor: `${activity.color}20` }}
-                        >
-                          <IconRenderer
-                            iconName={activity.icon}
-                            className="w-4 h-4"
-                            style={{ color: activity.color }}
-                          />
-                        </div>
+                        <IconRenderer
+                          iconName={activity.icon}
+                          className="w-5 h-5 text-gray-700 flex-shrink-0"
+                          aria-hidden="true"
+                        />
                         <div className="flex-1 text-left min-w-0 flex items-center gap-2">
                           <span className="text-sm font-medium text-gray-900">
                             {activity.name}
@@ -208,24 +240,27 @@ export function ActivityPicker({
                           )}
                         </div>
                         {selectedActivityId === activity.id && (
-                          <Check className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                          <Check
+                            className="w-4 h-4 text-blue-500 flex-shrink-0"
+                            aria-hidden="true"
+                          />
                         )}
                       </button>
                     );
                   })}
                 </div>
 
-                {/* Create Custom Activity Button */}
+                {/* Add Custom Activity Button */}
                 <Link
                   href="/settings/activities"
-                  className="w-full flex items-center gap-3 px-3 py-3 border-t border-gray-200 hover:bg-gray-50 transition-colors text-gray-900 font-medium"
+                  className="w-full flex items-center gap-3 px-3 py-3 border-t border-gray-200 hover:bg-gray-50 transition-colors text-gray-700"
+                  aria-label="Add custom activity"
                 >
-                  <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 bg-blue-100">
-                    <Plus className="w-4 h-4 text-[#0066CC]" />
-                  </div>
-                  <span className="text-sm font-medium">
-                    Create Custom Activity
-                  </span>
+                  <Plus
+                    className="w-5 h-5 text-gray-600 flex-shrink-0"
+                    aria-hidden="true"
+                  />
+                  <span className="text-sm">Add custom activity</span>
                 </Link>
               </>
             )}

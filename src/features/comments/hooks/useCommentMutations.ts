@@ -101,7 +101,7 @@ export function useCreateComment(
         queryKey: COMMENT_KEYS.session(variables.sessionId),
       });
 
-      // Snapshot the previous value for rollback
+      // Snapshot the previous value for rollback (store all matching caches)
       const previousComments = queryClient.getQueryData<CommentsResponse>(
         COMMENT_KEYS.list(variables.sessionId)
       );
@@ -109,13 +109,13 @@ export function useCreateComment(
       // Generate unique optimistic ID
       const optimisticId = `optimistic-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 
-      // Get current user from auth cache
+      // Get current user from auth cache (using correct auth key structure)
       const currentUser = queryClient.getQueryData<{
         id: string;
         username: string;
         name: string;
         profilePicture?: string;
-      }>(['auth', 'user']);
+      }>(['auth', 'session']);
 
       // Create optimistic comment if user is available
       if (currentUser) {
@@ -142,9 +142,18 @@ export function useCreateComment(
           },
         };
 
-        // Optimistically add comment to the list
-        queryClient.setQueryData<CommentsResponse>(
-          COMMENT_KEYS.list(variables.sessionId),
+        // Optimistically add comment to ALL matching comment list caches
+        // This ensures the update appears in both the modal (limit: 100) and regular list (limit: 20)
+        queryClient.setQueriesData<CommentsResponse>(
+          {
+            queryKey: COMMENT_KEYS.lists(),
+            predicate: query => {
+              const key = query.queryKey as readonly unknown[];
+              // Check if this is a comment list query for the same sessionId
+              // Format: ['comments', 'list', sessionId, limit]
+              return key.length >= 3 && key[2] === variables.sessionId;
+            },
+          },
           old => {
             if (!old) {
               return {
@@ -159,30 +168,38 @@ export function useCreateComment(
             };
           }
         );
-      } else {
-        // Log warning if auth cache is missing (helps debugging)
-        console.warn(
-          '[useCreateComment] Auth user not in cache - optimistic update skipped. Comment will appear after server response.'
-        );
       }
 
       return { previousComments, optimisticId };
     },
 
     onError: (error, variables, context) => {
-      // Rollback on error
+      // Rollback on error for all matching caches
       if (context?.previousComments) {
-        queryClient.setQueryData(
-          COMMENT_KEYS.list(variables.sessionId),
-          context.previousComments
+        queryClient.setQueriesData<CommentsResponse>(
+          {
+            queryKey: COMMENT_KEYS.lists(),
+            predicate: query => {
+              const key = query.queryKey as readonly unknown[];
+              return key.length >= 3 && key[2] === variables.sessionId;
+            },
+          },
+          () => context.previousComments
         );
       }
     },
 
     onSuccess: (newComment, variables, context) => {
       // Replace only the specific optimistic comment with real one from server
-      queryClient.setQueryData<CommentsResponse>(
-        COMMENT_KEYS.list(variables.sessionId),
+      // Update ALL matching comment list caches
+      queryClient.setQueriesData<CommentsResponse>(
+        {
+          queryKey: COMMENT_KEYS.lists(),
+          predicate: query => {
+            const key = query.queryKey as readonly unknown[];
+            return key.length >= 3 && key[2] === variables.sessionId;
+          },
+        },
         old => {
           if (!old) return old;
 
@@ -318,9 +335,15 @@ export function useUpdateComment(
         COMMENT_KEYS.session(sessionId)
       );
 
-      // Optimistically update
-      queryClient.setQueryData<CommentsResponse>(
-        COMMENT_KEYS.list(sessionId),
+      // Optimistically update ALL matching comment list caches
+      queryClient.setQueriesData<CommentsResponse>(
+        {
+          queryKey: COMMENT_KEYS.lists(),
+          predicate: query => {
+            const key = query.queryKey as readonly unknown[];
+            return key.length >= 3 && key[2] === sessionId;
+          },
+        },
         old => {
           if (!old?.comments) return old;
 
@@ -340,9 +363,15 @@ export function useUpdateComment(
 
     onError: (error, { sessionId }, context) => {
       if (context?.previousComments) {
-        queryClient.setQueryData(
-          COMMENT_KEYS.session(sessionId),
-          context.previousComments
+        queryClient.setQueriesData<CommentsResponse>(
+          {
+            queryKey: COMMENT_KEYS.lists(),
+            predicate: query => {
+              const key = query.queryKey as readonly unknown[];
+              return key.length >= 3 && key[2] === sessionId;
+            },
+          },
+          () => context.previousComments
         );
       }
     },
@@ -402,9 +431,15 @@ export function useDeleteComment(
         COMMENT_KEYS.session(sessionId)
       );
 
-      // Optimistically remove from comments list
-      queryClient.setQueryData<CommentsResponse>(
-        COMMENT_KEYS.list(sessionId),
+      // Optimistically remove from ALL matching comment list caches
+      queryClient.setQueriesData<CommentsResponse>(
+        {
+          queryKey: COMMENT_KEYS.lists(),
+          predicate: query => {
+            const key = query.queryKey as readonly unknown[];
+            return key.length >= 3 && key[2] === sessionId;
+          },
+        },
         old => {
           if (!old?.comments) return old;
 
@@ -420,9 +455,15 @@ export function useDeleteComment(
 
     onError: (error, { sessionId }, context) => {
       if (context?.previousComments) {
-        queryClient.setQueryData(
-          COMMENT_KEYS.session(sessionId),
-          context.previousComments
+        queryClient.setQueriesData<CommentsResponse>(
+          {
+            queryKey: COMMENT_KEYS.lists(),
+            predicate: query => {
+              const key = query.queryKey as readonly unknown[];
+              return key.length >= 3 && key[2] === sessionId;
+            },
+          },
+          () => context.previousComments
         );
       }
     },
@@ -551,9 +592,15 @@ export function useCommentLike(
 
       const increment = action === 'like' ? 1 : -1;
 
-      // Optimistically update comments
-      queryClient.setQueryData<CommentsResponse>(
-        COMMENT_KEYS.list(sessionId),
+      // Optimistically update ALL matching comment list caches
+      queryClient.setQueriesData<CommentsResponse>(
+        {
+          queryKey: COMMENT_KEYS.lists(),
+          predicate: query => {
+            const key = query.queryKey as readonly unknown[];
+            return key.length >= 3 && key[2] === sessionId;
+          },
+        },
         old => {
           if (!old?.comments) return old;
 
@@ -580,9 +627,15 @@ export function useCommentLike(
 
     onError: (error, variables, context) => {
       if (context?.previousComments) {
-        queryClient.setQueryData(
-          COMMENT_KEYS.session(sessionId),
-          context.previousComments
+        queryClient.setQueriesData<CommentsResponse>(
+          {
+            queryKey: COMMENT_KEYS.lists(),
+            predicate: query => {
+              const key = query.queryKey as readonly unknown[];
+              return key.length >= 3 && key[2] === sessionId;
+            },
+          },
+          () => context.previousComments
         );
       }
     },
