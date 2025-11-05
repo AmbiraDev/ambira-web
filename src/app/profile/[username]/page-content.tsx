@@ -819,7 +819,7 @@ export default function ProfilePageContent({
           </div>
 
           {/* Tabs */}
-          <div className="sticky top-12 md:top-14 bg-white md:bg-gray-50 z-30 -mx-4 md:mx-0">
+          <div className="bg-white md:bg-gray-50 -mx-4 md:mx-0">
             <div className="bg-white md:bg-gray-50 border-b border-gray-200">
               <div className="flex md:gap-8 px-4 md:px-0 overflow-x-auto scrollbar-hide">
                 <button
