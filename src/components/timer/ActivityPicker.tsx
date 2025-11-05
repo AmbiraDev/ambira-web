@@ -47,9 +47,11 @@ export function ActivityPicker({
       (type): Activity => ({
         id: type.id,
         name: type.name,
+        description: type.description || '',
         icon: type.icon,
         color: type.color,
         userId: type.userId || '',
+        status: 'active',
         createdAt: type.createdAt.toDate(),
         updatedAt: type.updatedAt.toDate(),
       })
