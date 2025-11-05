@@ -6,6 +6,7 @@
 
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { updateSocialGraph } from '@/lib/api/social/helpers';
 
 export class SocialGraphRepository {
   /**
@@ -157,5 +158,19 @@ export class SocialGraphRepository {
       );
       return false;
     }
+  }
+
+  /**
+   * Follow a user - creates follow relationship and updates counts
+   */
+  async follow(currentUserId: string, targetUserId: string): Promise<void> {
+    await updateSocialGraph(currentUserId, targetUserId, 'follow');
+  }
+
+  /**
+   * Unfollow a user - removes follow relationship and updates counts
+   */
+  async unfollow(currentUserId: string, targetUserId: string): Promise<void> {
+    await updateSocialGraph(currentUserId, targetUserId, 'unfollow');
   }
 }

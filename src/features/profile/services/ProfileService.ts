@@ -111,26 +111,8 @@ export class ProfileService {
    * Follow a user
    */
   async followUser(currentUserId: string, targetUserId: string): Promise<void> {
-    // Business rule: Can't follow yourself
-    if (currentUserId === targetUserId) {
-      throw new Error('Cannot follow yourself');
-    }
-
-    // Check if already following
-    const isAlreadyFollowing = await this.socialGraphRepo.isFollowing(
-      currentUserId,
-      targetUserId
-    );
-    if (isAlreadyFollowing) {
-      throw new Error('Already following this user');
-    }
-
-    // Note: The actual follow operation would need a FollowRepository
-    // For now, this is a placeholder showing the structure
-    // In reality, you'd create a Follow entity and use a FollowRepository
-    throw new Error(
-      'Follow operation not yet implemented in clean architecture'
-    );
+    // Delegate to social graph repository (it handles validation and state checks)
+    await this.socialGraphRepo.follow(currentUserId, targetUserId);
   }
 
   /**
@@ -140,25 +122,8 @@ export class ProfileService {
     currentUserId: string,
     targetUserId: string
   ): Promise<void> {
-    // Business rule: Can't unfollow yourself
-    if (currentUserId === targetUserId) {
-      throw new Error('Cannot unfollow yourself');
-    }
-
-    // Check if actually following
-    const isFollowing = await this.socialGraphRepo.isFollowing(
-      currentUserId,
-      targetUserId
-    );
-    if (!isFollowing) {
-      throw new Error('Not following this user');
-    }
-
-    // Note: The actual unfollow operation would need a FollowRepository
-    // For now, this is a placeholder showing the structure
-    throw new Error(
-      'Unfollow operation not yet implemented in clean architecture'
-    );
+    // Delegate to social graph repository (it handles validation and state checks)
+    await this.socialGraphRepo.unfollow(currentUserId, targetUserId);
   }
 
   /**
