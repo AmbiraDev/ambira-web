@@ -189,12 +189,7 @@ export function useCreateCustomActivity(
   >({
     mutationFn: async data => {
       if (!user) throw new Error('User not authenticated');
-      const apiType = await createCustomActivityType(user.id, {
-        name: data.name,
-        icon: data.icon,
-        defaultColor: data.color,
-        description: data.description,
-      });
+      const apiType = await createCustomActivityType(user.id, data);
       return convertApiActivityType(apiType);
     },
 
@@ -340,12 +335,7 @@ export function useUpdateCustomActivity(
   >({
     mutationFn: async ({ typeId, data }) => {
       if (!user) throw new Error('User not authenticated');
-      const apiType = await updateCustomActivityType(typeId, user.id, {
-        name: data.name,
-        icon: data.icon,
-        defaultColor: data.color,
-        description: data.description,
-      });
+      const apiType = await updateCustomActivityType(typeId, user.id, data);
       return convertApiActivityType(apiType);
     },
 
