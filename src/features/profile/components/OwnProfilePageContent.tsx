@@ -43,18 +43,12 @@ import {
   Bar,
 } from 'recharts';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { ActivityList } from '@/components/ActivityList';
 import Feed from '@/components/Feed';
 import { Activity } from '@/types';
 import { FollowersList } from '@/features/social/components/FollowersList';
 import { FollowingList } from '@/features/social/components/FollowingList';
 
-type ProfileTab =
-  | 'progress'
-  | 'sessions'
-  | 'followers'
-  | 'following'
-  | 'activities';
+type ProfileTab = 'progress' | 'sessions' | 'followers' | 'following';
 type TimePeriod = '7D' | '2W' | '4W' | '3M' | '1Y';
 type ChartType = 'bar' | 'line';
 
@@ -505,10 +499,6 @@ export function OwnProfilePageContent() {
     return null;
   };
 
-  const handleEditActivity = (activity: Activity) => {
-    router.push(`/activities/${activity.id}/edit`);
-  };
-
   if (!user) return null;
 
   return (
@@ -716,24 +706,6 @@ export function OwnProfilePageContent() {
                       id="sessions-tab"
                     >
                       Sessions
-                    </button>
-                    {/* Activities tab - Desktop only */}
-                    <button
-                      onClick={() => {
-                        setActiveTab('activities');
-                        router.push('/profile?tab=activities');
-                      }}
-                      className={`hidden md:flex flex-1 md:flex-initial py-3 md:py-4 px-1 text-sm md:text-base font-medium border-b-2 transition-colors whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:ring-offset-2 ${
-                        activeTab === 'activities'
-                          ? 'border-[#0066CC] text-[#0066CC]'
-                          : 'border-transparent text-gray-500 md:text-gray-600 hover:text-gray-700 md:hover:text-gray-900'
-                      }`}
-                      role="tab"
-                      aria-selected={activeTab === 'activities'}
-                      aria-controls="activities-panel"
-                      id="activities-tab"
-                    >
-                      Activities
                     </button>
                     <button
                       onClick={() => {
@@ -1368,17 +1340,6 @@ export function OwnProfilePageContent() {
                     aria-labelledby="following-tab"
                   >
                     <FollowingList userId={user.id} />
-                  </div>
-                )}
-
-                {activeTab === 'activities' && (
-                  <div
-                    className="max-w-4xl mx-auto"
-                    id="activities-panel"
-                    role="tabpanel"
-                    aria-labelledby="activities-tab"
-                  >
-                    <ActivityList onEditActivity={handleEditActivity} />
                   </div>
                 )}
               </div>

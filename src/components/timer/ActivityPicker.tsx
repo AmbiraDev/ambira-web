@@ -49,11 +49,17 @@ export function ActivityPicker({
         name: type.name,
         description: type.description || '',
         icon: type.icon,
-        color: type.color,
+        color: type.defaultColor, // Use defaultColor from ActivityType
         userId: type.userId || '',
         status: 'active',
-        createdAt: type.createdAt.toDate(),
-        updatedAt: type.updatedAt.toDate(),
+        createdAt:
+          type.createdAt instanceof Date
+            ? type.createdAt
+            : type.createdAt.toDate(),
+        updatedAt:
+          type.updatedAt instanceof Date
+            ? type.updatedAt
+            : type.updatedAt.toDate(),
       })
     );
   }, [legacyActivities, allActivitiesFromHook]);
@@ -118,7 +124,7 @@ export function ActivityPicker({
               <div className="p-4 text-center">
                 <p className="text-sm text-gray-600 mb-3">No activities yet</p>
                 <Link
-                  href="/activities/new"
+                  href="/settings/activities"
                   className="inline-flex items-center gap-2 px-4 py-2 bg-[#0066CC] text-white rounded-lg hover:bg-[#0051D5] transition-colors text-sm font-medium"
                 >
                   <Plus className="w-4 h-4" />
@@ -212,7 +218,7 @@ export function ActivityPicker({
 
                 {/* Create Custom Activity Button */}
                 <Link
-                  href="/activities/new"
+                  href="/settings/activities"
                   className="w-full flex items-center gap-3 px-3 py-3 border-t border-gray-200 hover:bg-gray-50 transition-colors text-gray-900 font-medium"
                 >
                   <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 bg-blue-100">
