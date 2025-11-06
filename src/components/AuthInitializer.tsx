@@ -19,12 +19,12 @@
 'use client';
 
 import { useEffect, useState, useRef, useCallback, ReactNode } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import { firebaseAuthApi } from '@/lib/api/auth';
 import { isFirebaseInitialized } from '@/lib/firebase';
 import { AUTH_KEYS } from '@/lib/react-query/auth.queries';
-import { MobileLoadingScreen } from '@/components/MobileLoadingScreen';
+import { LoadingScreen } from '@/components/LoadingScreen';
 
 interface AuthInitializerProps {
   children: ReactNode;
@@ -33,8 +33,16 @@ interface AuthInitializerProps {
 export function AuthInitializer({ children }: AuthInitializerProps) {
   const queryClient = useQueryClient();
   const router = useRouter();
-  const [isInitializing, setIsInitializing] = useState(true);
+  const pathname = usePathname();
   const redirectHandledRef = useRef(false);
+
+  // Check if this is a public page
+  // pathname is available both on server and client in Next.js App Router
+  const isPublicPage =
+    pathname === '/login' || pathname === '/signup' || pathname === '/auth';
+
+  // For public pages, skip the loading state entirely
+  const [isInitializing, setIsInitializing] = useState(() => !isPublicPage);
 
   // Memoize navigation to avoid re-renders
   const navigateToHome = useCallback(() => {
@@ -42,6 +50,29 @@ export function AuthInitializer({ children }: AuthInitializerProps) {
   }, [router]);
 
   useEffect(() => {
+    // Public pages should render immediately without waiting for auth
+    if (isPublicPage) {
+      // Ensure we're not initializing
+      setIsInitializing(false);
+
+      // Still set up auth listener in background, but don't block rendering
+      if (isFirebaseInitialized) {
+        firebaseAuthApi.onAuthStateChanged(async firebaseUser => {
+          try {
+            if (firebaseUser) {
+              const userData = await firebaseAuthApi.getCurrentUser();
+              queryClient.setQueryData(AUTH_KEYS.session(), userData);
+            } else {
+              queryClient.setQueryData(AUTH_KEYS.session(), null);
+            }
+          } catch (_err) {
+            queryClient.setQueryData(AUTH_KEYS.session(), null);
+          }
+        });
+      }
+      return;
+    }
+
     if (!isFirebaseInitialized) {
       // Firebase is disabled (missing env vars) - treat as signed out
       queryClient.setQueryData(AUTH_KEYS.session(), null);
@@ -59,9 +90,6 @@ export function AuthInitializer({ children }: AuthInitializerProps) {
 
       // Set timeout FIRST to ensure we don't hang if redirect check hangs
       timeoutId = setTimeout(() => {
-        console.warn(
-          '[AuthInitializer] ⚠️ Auth initialization timeout - continuing with unauthenticated state'
-        );
         queryClient.setQueryData(AUTH_KEYS.session(), null);
         setIsInitializing(false);
       }, 5000);
@@ -87,7 +115,6 @@ export function AuthInitializer({ children }: AuthInitializerProps) {
           return; // Exit early - redirect handled
         }
       } catch (err) {
-        console.error('[AuthInitializer] ❌ Google redirect error:', err);
         // Clear timeout since we're done initializing
         if (timeoutId) clearTimeout(timeoutId);
         // Continue with normal auth flow even if redirect check fails
@@ -117,11 +144,6 @@ export function AuthInitializer({ children }: AuthInitializerProps) {
                 queryClient.setQueryData(AUTH_KEYS.session(), null);
               }
             } catch (err) {
-              console.error(
-                '[AuthInitializer] ❌ Auth state change error:',
-                err
-              );
-
               // On error, assume user is not authenticated
               queryClient.setQueryData(AUTH_KEYS.session(), null);
             } finally {
@@ -132,11 +154,6 @@ export function AuthInitializer({ children }: AuthInitializerProps) {
           }
         );
       } catch (err) {
-        console.error(
-          '[AuthInitializer] ❌ Firebase initialization error:',
-          err
-        );
-
         // Clear timeout since we're done initializing
         if (timeoutId) clearTimeout(timeoutId);
 
@@ -158,24 +175,18 @@ export function AuthInitializer({ children }: AuthInitializerProps) {
         authUnsubscribe();
       }
     };
-  }, [queryClient, navigateToHome]);
+  }, [queryClient, navigateToHome, pathname]);
 
-  // Show loading state during initial auth check
+  // Public pages should render immediately without loading screen
+  // This prevents test timeouts and provides better UX
+  if (isPublicPage) {
+    return <>{children}</>;
+  }
+
+  // Show loading state during initial auth check for protected pages
   // This prevents flash of unauthenticated content
   if (isInitializing) {
-    return (
-      <>
-        {/* Mobile: Full-screen white background with blue logo */}
-        <div className="md:hidden">
-          <MobileLoadingScreen />
-        </div>
-
-        {/* Desktop: Traditional spinner */}
-        <div className="hidden md:flex items-center justify-center min-h-screen">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-        </div>
-      </>
-    );
+    return <LoadingScreen />;
   }
 
   // Auth initialized - render app

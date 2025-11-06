@@ -6,6 +6,7 @@
 
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
+import { updateSocialGraph } from '@/lib/api/social/helpers';
 
 export class SocialGraphRepository {
   /**
@@ -42,7 +43,6 @@ export class SocialGraphRepository {
 
       return followingIds;
     } catch (error) {
-      console.error(`Error getting following IDs for user ${userId}:`, error);
       throw new Error(
         `Failed to get following IDs: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
@@ -83,7 +83,6 @@ export class SocialGraphRepository {
 
       return followerIds;
     } catch (error) {
-      console.error(`Error getting follower IDs for user ${userId}:`, error);
       throw new Error(
         `Failed to get follower IDs: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
@@ -133,10 +132,6 @@ export class SocialGraphRepository {
 
       return Array.from(allMemberIds);
     } catch (error) {
-      console.error(
-        `Error getting group member IDs for user ${userId}:`,
-        error
-      );
       throw new Error(
         `Failed to get group member IDs: ${error instanceof Error ? error.message : 'Unknown error'}`
       );
@@ -151,11 +146,21 @@ export class SocialGraphRepository {
       const followingIds = await this.getFollowingIds(followerId);
       return followingIds.includes(followingId);
     } catch (error) {
-      console.error(
-        `Error checking if ${followerId} follows ${followingId}:`,
-        error
-      );
       return false;
     }
+  }
+
+  /**
+   * Follow a user - creates follow relationship and updates counts
+   */
+  async follow(currentUserId: string, targetUserId: string): Promise<void> {
+    await updateSocialGraph(currentUserId, targetUserId, 'follow');
+  }
+
+  /**
+   * Unfollow a user - removes follow relationship and updates counts
+   */
+  async unfollow(currentUserId: string, targetUserId: string): Promise<void> {
+    await updateSocialGraph(currentUserId, targetUserId, 'unfollow');
   }
 }

@@ -33,6 +33,13 @@ export const TopComments: React.FC<TopCommentsProps> = ({
   const [isExpanded, setIsExpanded] = useState(initialExpanded);
   const [currentPage, setCurrentPage] = useState(1);
 
+  // Sync with external expansion state
+  useEffect(() => {
+    if (initialExpanded && !isExpanded) {
+      setIsExpanded(true);
+    }
+  }, [initialExpanded, isExpanded]);
+
   // Fetch comments - use limit of 2 for top comments, or 100 when expanded
   const limit = isExpanded ? 100 : 2;
   const {
@@ -84,7 +91,6 @@ export const TopComments: React.FC<TopCommentsProps> = ({
         content,
       });
     } catch (err: unknown) {
-      console.error('Failed to create comment:', err);
       throw err;
     }
   };
@@ -96,7 +102,6 @@ export const TopComments: React.FC<TopCommentsProps> = ({
         sessionId,
       });
     } catch (err: unknown) {
-      console.error('Failed to delete comment:', err);
       throw err;
     }
   };
@@ -121,7 +126,12 @@ export const TopComments: React.FC<TopCommentsProps> = ({
     );
   }
 
-  if (comments.length === 0 && totalCommentCount === 0 && !autoFocus) {
+  if (
+    comments.length === 0 &&
+    totalCommentCount === 0 &&
+    !autoFocus &&
+    !isExpanded
+  ) {
     return null;
   }
 
@@ -129,7 +139,7 @@ export const TopComments: React.FC<TopCommentsProps> = ({
     <div
       className={
         isExpanded || (comments.length > 0 && !isExpanded)
-          ? 'hidden md:block md:border-t md:border-gray-100'
+          ? `hidden md:block ${comments.length > 0 || !isExpanded ? 'md:border-t md:border-gray-100' : ''}`
           : ''
       }
     >
@@ -180,7 +190,7 @@ export const TopComments: React.FC<TopCommentsProps> = ({
         {/* Comment Input - Only show when expanded or autoFocus */}
         {(isExpanded || autoFocus) && (
           <div
-            className={`${isExpanded ? 'pt-2 border-t border-gray-100' : ''}`}
+            className={`${isExpanded && comments.length > 0 ? 'pt-3 border-t border-gray-100' : 'pt-2'}`}
           >
             <CommentInput
               sessionId={sessionId}

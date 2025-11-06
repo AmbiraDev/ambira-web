@@ -31,7 +31,6 @@ export class ProjectService {
     try {
       return await firebaseApi.project.getProjects();
     } catch (_err) {
-      console.error('Error getting projects:', _err);
       return [];
     }
   }
@@ -43,7 +42,6 @@ export class ProjectService {
     try {
       return await firebaseApi.project.getProjectById(projectId);
     } catch (_err) {
-      console.error('Error getting project:', _err);
       return null;
     }
   }
@@ -55,7 +53,6 @@ export class ProjectService {
     try {
       return await firebaseApi.project.getProjectStats(projectId);
     } catch (_err) {
-      console.error('Error getting project stats:', _err);
       return null;
     }
   }

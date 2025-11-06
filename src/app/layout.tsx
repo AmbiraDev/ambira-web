@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { Inter } from 'next/font/google';
+import { DM_Sans } from 'next/font/google';
 import './globals.css';
 import { AuthInitializer } from '@/components/AuthInitializer';
 import { DataPrefetcher } from '@/components/DataPrefetcher';
@@ -10,8 +10,8 @@ import PWAInstaller from '@/components/PWAInstaller';
 import { Analytics } from '@vercel/analytics/react';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 
-const inter = Inter({
-  variable: '--font-inter',
+const dmSans = DM_Sans({
+  variable: '--font-dm-sans',
   subsets: ['latin'],
   weight: ['100', '200', '300', '400', '500', '600', '700', '800', '900'],
   style: ['normal', 'italic'],
@@ -88,7 +88,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${inter.variable} antialiased`}
+        className={`${dmSans.variable} antialiased`}
         suppressHydrationWarning
       >
         <ErrorBoundary>

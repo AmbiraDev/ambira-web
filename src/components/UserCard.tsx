@@ -50,7 +50,6 @@ export const UserCard: React.FC<UserCardProps> = ({
         await firebaseUserApi.followUser(user.id);
       }
     } catch {
-      console.error('Follow/unfollow error');
       // Revert on error
       setIsFollowing(!newFollowingState);
       onFollowChange?.(user.id, !newFollowingState);
@@ -270,7 +269,6 @@ export const UserCardCompact: React.FC<UserCardProps> = ({
         await firebaseUserApi.followUser(user.id);
       }
     } catch {
-      console.error('Follow/unfollow error');
       // Revert on error
       setIsFollowing(!newFollowingState);
       onFollowChange?.(user.id, !newFollowingState);

@@ -8,6 +8,12 @@ Welcome to the Ambira documentation hub. This guide will help you navigate all p
 - **Development guidelines?** See [CLAUDE.md](../CLAUDE.md)
 - **Setting up your environment?** Check [Testing Quickstart](./testing/QUICKSTART.md)
 
+## Documentation Status
+
+- **[Documentation Status Report](./DOCUMENTATION_STATUS.md)** - Executive summary for stakeholders (maturity 7/10)
+- **[Documentation Gap Analysis](./DOCUMENTATION_GAP_ANALYSIS.md)** - Comprehensive review of missing and outdated documentation (100+ pages)
+- **[Documentation Gaps Summary](./DOCUMENTATION_GAPS_SUMMARY.md)** - Quick reference for critical gaps and action plan
+
 ## Core Documentation
 
 ### Architecture

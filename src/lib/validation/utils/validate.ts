@@ -65,9 +65,7 @@ export function validateOrThrow<
  * ```typescript
  * const result = validate(CreateSessionSchema, userInput);
  * if (result.success) {
- *   console.log(result.data);
  * } else {
- *   console.log(result.errors);
  * }
  * ```
  */
@@ -171,7 +169,6 @@ export function prepareForFirestore<T extends Record<string, unknown>>(
  *   validateOrThrow(schema, data);
  * } catch (error) {
  *   if (error instanceof ValidationError) {
- *     console.error(formatValidationError(error));
  *   }
  * }
  * ```

@@ -42,7 +42,6 @@ function SidebarActivityGraph() {
       const response = await firebaseSessionApi.getSessions(500, {});
       setSessions(response.sessions);
     } catch {
-      console.error('Failed to load sessions');
       setSessions([]);
     } finally {
       setIsLoading(false);

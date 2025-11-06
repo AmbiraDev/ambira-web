@@ -41,7 +41,6 @@ export const ProjectProgressView: React.FC<ProjectProgressViewProps> = ({
       });
       setSessions(response.sessions);
     } catch {
-      console.error('Failed to load sessions');
       setSessions([]);
     } finally {
       setIsLoading(false);

@@ -39,20 +39,6 @@ export const AuthDebugger: React.FC = () => {
       platform: navigator.platform,
       errors: [],
     });
-
-    // Listen for auth errors
-    const originalConsoleError = console.error;
-    console.error = (...args) => {
-      setDebugInfo(prev => ({
-        ...prev,
-        errors: [...prev.errors, args.join(' ')],
-      }));
-      originalConsoleError(...args);
-    };
-
-    return () => {
-      console.error = originalConsoleError;
-    };
   }, []);
 
   const copyToClipboard = () => {

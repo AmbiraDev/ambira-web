@@ -22,7 +22,6 @@ export const StreakCalendar: React.FC<StreakCalendarProps> = ({
         const data = await firebaseApi.streak.getStreakData(userId);
         setStreakData(data);
       } catch {
-        console.error('Failed to load streak data');
       } finally {
         setIsLoading(false);
       }

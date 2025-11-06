@@ -43,7 +43,6 @@ export default function SuggestedGroupsModal({
       );
       setAllSuggestedGroups(filteredGroups);
     } catch {
-      console.error('Error loading groups');
       setAllSuggestedGroups([]);
     } finally {
       setIsLoading(false);
@@ -103,7 +102,6 @@ export default function SuggestedGroupsModal({
       // Remove from suggestions after joining
       setAllSuggestedGroups(prev => prev.filter(g => g.id !== groupId));
     } catch {
-      console.error('Failed to join group');
     } finally {
       setJoiningGroups(prev => {
         const next = new Set(prev);
@@ -207,7 +205,7 @@ export default function SuggestedGroupsModal({
                         className={`text-sm font-semibold transition-colors flex-shrink-0 ${
                           isJoining
                             ? 'text-gray-400 cursor-not-allowed'
-                            : 'text-[#0066CC] hover:text-[#0051D5]'
+                            : 'text-[#0066CC] hover:text-[#0051D5] cursor-pointer'
                         }`}
                       >
                         {isJoining ? 'Joining...' : 'Join'}

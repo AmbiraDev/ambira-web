@@ -53,7 +53,6 @@ export const PrivacySettings: React.FC<PrivacySettingsProps> = ({
       const settings = await firebaseUserApi.getPrivacySettings();
       setSettings(settings);
     } catch (_error) {
-      console.error('Failed to load privacy settings');
     } finally {
       setIsLoading(false);
     }
@@ -71,7 +70,6 @@ export const PrivacySettings: React.FC<PrivacySettingsProps> = ({
       setIsSaving(true);
       await firebaseUserApi.updatePrivacySettings(settings);
     } catch (_error) {
-      console.error('Failed to save privacy settings');
     } finally {
       setIsSaving(false);
     }
@@ -86,9 +84,7 @@ export const PrivacySettings: React.FC<PrivacySettingsProps> = ({
         ...prev,
         blockedUsers: prev.blockedUsers.filter(id => id !== userId),
       }));
-    } catch (_error) {
-      console.error('Failed to unblock user');
-    }
+    } catch (_error) {}
   };
 
   if (isLoading) {

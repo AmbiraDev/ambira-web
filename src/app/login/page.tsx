@@ -1,9 +1,15 @@
-'use client';
-
+import { Metadata } from 'next';
 import { LoginForm } from '@/components/LoginForm';
 import { Suspense } from 'react';
 import Image from 'next/image';
 import PWAInstallPrompt from '@/components/PWAInstallPrompt';
+import { LoadingScreen } from '@/components/LoadingScreen';
+
+export const metadata: Metadata = {
+  title: 'Sign In - Ambira',
+  description:
+    'Sign in to Ambira to track your productivity and stay motivated with friends',
+};
 
 function LoginContent() {
   return (
@@ -48,13 +54,7 @@ function LoginContent() {
 export default function LoginPage() {
   return (
     <>
-      <Suspense
-        fallback={
-          <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-          </div>
-        }
-      >
+      <Suspense fallback={<LoadingScreen />}>
         <LoginContent />
       </Suspense>
       {/* PWA Install Prompt - Always show on mobile login page */}

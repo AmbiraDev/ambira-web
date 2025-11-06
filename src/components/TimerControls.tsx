@@ -24,7 +24,6 @@ export const TimerControls: React.FC<TimerControlsProps> = ({
         setIsLoading(true);
         await startTimer(timerState.currentProject.id);
       } catch {
-        console.error('Failed to start timer');
       } finally {
         setIsLoading(false);
       }
@@ -36,7 +35,6 @@ export const TimerControls: React.FC<TimerControlsProps> = ({
       setIsLoading(true);
       await pauseTimer();
     } catch {
-      console.error('Failed to pause timer');
     } finally {
       setIsLoading(false);
     }
@@ -47,7 +45,6 @@ export const TimerControls: React.FC<TimerControlsProps> = ({
       setIsLoading(true);
       await resumeTimer();
     } catch {
-      console.error('Failed to resume timer');
     } finally {
       setIsLoading(false);
     }
@@ -63,7 +60,6 @@ export const TimerControls: React.FC<TimerControlsProps> = ({
         setIsLoading(true);
         await resetTimer();
       } catch {
-        console.error('Failed to reset timer');
       } finally {
         setIsLoading(false);
       }

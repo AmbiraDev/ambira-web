@@ -35,7 +35,6 @@ const SuggestedUsers: React.FC<SuggestedUsersProps> = ({
       const suggestions = await firebaseUserApi.getSuggestedUsers(limit);
       setSuggestions(suggestions);
     } catch (error) {
-      console.error('Failed to load suggestions');
       // Don't show error for empty database - just set empty array
       if (error instanceof Error && error.message.includes('permissions')) {
         setSuggestions([]);
@@ -208,8 +207,10 @@ const SuggestedUsers: React.FC<SuggestedUsersProps> = ({
                       className="w-10 h-10 rounded-full object-cover border border-border"
                     />
                   ) : (
-                    <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-semibold">
-                      {user.name.charAt(0).toUpperCase()}
+                    <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center">
+                      <span className="text-gray-600 text-sm font-semibold">
+                        {user.name.charAt(0).toUpperCase()}
+                      </span>
                     </div>
                   )}
 

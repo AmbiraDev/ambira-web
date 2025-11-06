@@ -96,7 +96,6 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
 
       return [downloadURL];
     } catch (err) {
-      console.error('File upload error:', err);
       throw err;
     }
   };
@@ -111,7 +110,6 @@ export const EditProfileModal: React.FC<EditProfileModalProps> = ({
       onProfileUpdate(updatedProfile);
       onClose();
     } catch (error: unknown) {
-      console.error('Profile update error:', error);
     } finally {
       setIsLoading(false);
     }

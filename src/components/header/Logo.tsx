@@ -26,7 +26,7 @@ export default function Logo({ className }: LogoProps) {
         alt="Ambira"
         width={DIMENSIONS.LOGO_SIZE}
         height={DIMENSIONS.LOGO_SIZE}
-        className="w-12 h-12"
+        className="w-10 h-10"
         priority
       />
     </Link>

@@ -63,7 +63,6 @@ export const PersonalAnalyticsDashboard: React.FC<
 
       setSessions(filteredSessions);
     } catch (_error) {
-      console.error('Failed to load sessions');
     } finally {
       setIsLoading(false);
     }

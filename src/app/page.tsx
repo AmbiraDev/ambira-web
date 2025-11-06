@@ -11,6 +11,7 @@ import { useAuth } from '@/hooks/useAuth';
 import Header from '@/components/HeaderComponent';
 import { FeedPageContent } from '@/features/feed/components/FeedPageContent';
 import { LandingPageContent } from '@/features/feed/components/LandingPageContent';
+import { LoadingScreen } from '@/components/LoadingScreen';
 
 export default function Home() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -25,18 +26,8 @@ export default function Home() {
         Skip to main content
       </a>
 
-      {/* Show loading spinner while checking authentication */}
-      {isLoading && (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50">
-          <div
-            id="main-content"
-            className="flex flex-col items-center space-y-4"
-          >
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#0066CC]"></div>
-            <p className="text-muted-foreground">Loading...</p>
-          </div>
-        </div>
-      )}
+      {/* Show loading screen while checking authentication */}
+      {isLoading && <LoadingScreen />}
 
       {/* Show feed for authenticated users */}
       {!isLoading && isAuthenticated && (

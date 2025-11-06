@@ -20,7 +20,7 @@ import {
   useFollowing,
 } from '@/features/profile/hooks';
 import { useUserSessions } from '@/features/sessions/hooks';
-import { useProjects } from '@/features/projects/hooks';
+import { useActivitiesWithSessions } from '@/hooks/useActivitiesQuery';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
@@ -31,6 +31,7 @@ import {
   BarChart3,
   ChevronDown,
   MapPin,
+  Check,
 } from 'lucide-react';
 import {
   XAxis,
@@ -43,12 +44,13 @@ import {
   Bar,
 } from 'recharts';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { ActivityList } from '@/components/ActivityList';
+import Feed from '@/components/Feed';
 import { Activity } from '@/types';
 import { FollowersList } from '@/features/social/components/FollowersList';
 import { FollowingList } from '@/features/social/components/FollowingList';
+import { IconRenderer } from '@/components/IconRenderer';
 
-type ProfileTab = 'progress' | 'followers' | 'following' | 'activities';
+type ProfileTab = 'progress' | 'sessions' | 'followers' | 'following';
 type TimePeriod = '7D' | '2W' | '4W' | '3M' | '1Y';
 type ChartType = 'bar' | 'line';
 
@@ -66,12 +68,12 @@ export function OwnProfilePageContent() {
   const tabParam = searchParams?.get('tab') as ProfileTab | null;
 
   const [activeTab, setActiveTab] = useState<ProfileTab>(
-    tabParam === 'followers'
-      ? 'followers'
-      : tabParam === 'following'
-        ? 'following'
-        : tabParam === 'activities'
-          ? 'activities'
+    tabParam === 'sessions'
+      ? 'sessions'
+      : tabParam === 'followers'
+        ? 'followers'
+        : tabParam === 'following'
+          ? 'following'
           : 'progress'
   );
   const [timePeriod, setTimePeriod] = useState<TimePeriod>('7D');
@@ -103,7 +105,7 @@ export function OwnProfilePageContent() {
   const { data: following = [] } = useFollowing(user?.id || '', {
     enabled: !!user?.id,
   });
-  const { data: activities = [] } = useProjects({
+  const { data: activities = [] } = useActivitiesWithSessions(user?.id, {
     enabled: !!user?.id,
   });
 
@@ -113,6 +115,7 @@ export function OwnProfilePageContent() {
   useEffect(() => {
     if (
       tabParam === 'progress' ||
+      tabParam === 'sessions' ||
       tabParam === 'followers' ||
       tabParam === 'following' ||
       tabParam === 'activities'
@@ -496,10 +499,6 @@ export function OwnProfilePageContent() {
     return null;
   };
 
-  const handleEditActivity = (activity: Activity) => {
-    router.push(`/activities/${activity.id}/edit`);
-  };
-
   if (!user) return null;
 
   return (
@@ -667,7 +666,7 @@ export function OwnProfilePageContent() {
               </div>
 
               {/* Tabs */}
-              <div className="sticky top-12 md:top-14 bg-white md:bg-gray-50 z-30 -mx-4 md:mx-0">
+              <div className="bg-white md:bg-gray-50 -mx-4 md:mx-0">
                 <div className="bg-white md:bg-gray-50 border-b border-gray-200">
                   <div
                     className="flex md:gap-8 px-4 md:px-0 overflow-x-auto scrollbar-hide"
@@ -691,23 +690,22 @@ export function OwnProfilePageContent() {
                     >
                       Progress
                     </button>
-                    {/* Activities tab - Desktop only */}
                     <button
                       onClick={() => {
-                        setActiveTab('activities');
-                        router.push('/profile?tab=activities');
+                        setActiveTab('sessions');
+                        router.push('/profile?tab=sessions');
                       }}
-                      className={`hidden md:flex flex-1 md:flex-initial py-3 md:py-4 px-1 text-sm md:text-base font-medium border-b-2 transition-colors whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:ring-offset-2 ${
-                        activeTab === 'activities'
+                      className={`flex-1 md:flex-initial py-3 md:py-4 px-1 text-sm md:text-base font-medium border-b-2 transition-colors whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:ring-offset-2 ${
+                        activeTab === 'sessions'
                           ? 'border-[#0066CC] text-[#0066CC]'
                           : 'border-transparent text-gray-500 md:text-gray-600 hover:text-gray-700 md:hover:text-gray-900'
                       }`}
                       role="tab"
-                      aria-selected={activeTab === 'activities'}
-                      aria-controls="activities-panel"
-                      id="activities-tab"
+                      aria-selected={activeTab === 'sessions'}
+                      aria-controls="sessions-panel"
+                      id="sessions-tab"
                     >
-                      Activities
+                      Sessions
                     </button>
                     <button
                       onClick={() => {
@@ -750,7 +748,12 @@ export function OwnProfilePageContent() {
               {/* Tab Content */}
               <div className="mt-6">
                 {activeTab === 'progress' && (
-                  <div className="max-w-4xl mx-auto space-y-4 md:space-y-6">
+                  <div
+                    className="max-w-4xl mx-auto space-y-4 md:space-y-6"
+                    id="progress-panel"
+                    role="tabpanel"
+                    aria-labelledby="progress-tab"
+                  >
                     {/* Header with Time Period Selector and Chart Type */}
                     <div className="flex items-center justify-between gap-2 py-2 -mx-4 px-4 md:mx-0 md:px-0">
                       {/* Activity Filter Dropdown */}
@@ -759,18 +762,30 @@ export function OwnProfilePageContent() {
                           onClick={() =>
                             setShowActivityDropdown(!showActivityDropdown)
                           }
-                          className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-gray-700 bg-white border border-gray-300 rounded-full hover:bg-gray-50 transition-colors whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:ring-offset-2 min-h-[44px]"
+                          className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 bg-white border border-gray-300 rounded-full hover:bg-gray-50 transition-colors whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-[#0066CC] focus:ring-offset-2 min-h-[44px] min-w-[120px]"
                           aria-label="Filter by activity"
                           aria-expanded={showActivityDropdown}
                           aria-haspopup="listbox"
                         >
-                          <span className="font-medium">
-                            {selectedActivityId === 'all'
-                              ? 'All'
-                              : activities.find(
+                          {selectedActivityId === 'all' ? (
+                            <span className="font-medium">All Activities</span>
+                          ) : (
+                            <>
+                              <IconRenderer
+                                iconName={
+                                  activities.find(
+                                    a => a.id === selectedActivityId
+                                  )?.icon || ''
+                                }
+                                className="w-4 h-4 flex-shrink-0"
+                              />
+                              <span className="font-medium">
+                                {activities.find(
                                   a => a.id === selectedActivityId
                                 )?.name || 'All'}
-                          </span>
+                              </span>
+                            </>
+                          )}
                           <ChevronDown className="w-3.5 h-3.5" />
                         </button>
 
@@ -782,22 +797,24 @@ export function OwnProfilePageContent() {
                               className="fixed inset-0 z-40"
                               onClick={() => setShowActivityDropdown(false)}
                             />
-                            <div className="absolute left-0 top-full mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50 max-h-64 overflow-y-auto">
+                            <div className="absolute left-0 top-full mt-2 w-56 md:w-64 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50 max-h-64 overflow-y-auto">
                               <button
                                 onClick={() => {
                                   setSelectedActivityId('all');
                                   setShowActivityDropdown(false);
                                 }}
-                                className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors flex items-center gap-2 ${
+                                className={`w-full text-left px-3 py-2.5 text-sm hover:bg-gray-50 transition-colors flex items-center gap-3 ${
                                   selectedActivityId === 'all'
-                                    ? 'text-[#0066CC] font-medium bg-blue-50'
-                                    : 'text-gray-700'
+                                    ? 'bg-blue-50'
+                                    : ''
                                 }`}
                               >
+                                <span className="flex-1 font-medium text-gray-900">
+                                  All Activities
+                                </span>
                                 {selectedActivityId === 'all' && (
-                                  <span className="text-[#0066CC]">✓</span>
+                                  <Check className="w-4 h-4 text-blue-500" />
                                 )}
-                                <span>All Activities</span>
                               </button>
                               {activities.map(activity => (
                                 <button
@@ -806,21 +823,22 @@ export function OwnProfilePageContent() {
                                     setSelectedActivityId(activity.id);
                                     setShowActivityDropdown(false);
                                   }}
-                                  className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors flex items-center gap-2 ${
+                                  className={`w-full text-left px-3 py-2.5 text-sm hover:bg-gray-50 transition-colors flex items-center gap-3 ${
                                     selectedActivityId === activity.id
-                                      ? 'text-[#0066CC] font-medium bg-blue-50'
-                                      : 'text-gray-700'
+                                      ? 'bg-blue-50'
+                                      : ''
                                   }`}
                                 >
-                                  {selectedActivityId === activity.id && (
-                                    <span className="text-[#0066CC]">✓</span>
-                                  )}
-                                  <span className="flex items-center gap-2">
-                                    <span style={{ color: activity.color }}>
-                                      ●
-                                    </span>
+                                  <IconRenderer
+                                    iconName={activity.icon}
+                                    className="w-5 h-5 text-gray-700 flex-shrink-0"
+                                  />
+                                  <span className="flex-1 font-medium text-gray-900">
                                     {activity.name}
                                   </span>
+                                  {selectedActivityId === activity.id && (
+                                    <Check className="w-4 h-4 text-blue-500" />
+                                  )}
                                 </button>
                               ))}
                             </div>
@@ -1306,21 +1324,37 @@ export function OwnProfilePageContent() {
                   </div>
                 )}
 
+                {activeTab === 'sessions' && (
+                  <div
+                    className="max-w-4xl mx-auto"
+                    id="sessions-panel"
+                    role="tabpanel"
+                    aria-labelledby="sessions-tab"
+                  >
+                    <Feed
+                      filters={{ type: 'user', userId: user.id }}
+                      showEndMessage={true}
+                    />
+                  </div>
+                )}
+
                 {activeTab === 'followers' && (
-                  <div>
+                  <div
+                    id="followers-panel"
+                    role="tabpanel"
+                    aria-labelledby="followers-tab"
+                  >
                     <FollowersList userId={user.id} />
                   </div>
                 )}
 
                 {activeTab === 'following' && (
-                  <div>
+                  <div
+                    id="following-panel"
+                    role="tabpanel"
+                    aria-labelledby="following-tab"
+                  >
                     <FollowingList userId={user.id} />
-                  </div>
-                )}
-
-                {activeTab === 'activities' && (
-                  <div className="max-w-4xl mx-auto">
-                    <ActivityList onEditActivity={handleEditActivity} />
                   </div>
                 )}
               </div>

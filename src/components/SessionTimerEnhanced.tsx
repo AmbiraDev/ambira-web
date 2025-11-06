@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useTimer } from '@/features/timer/hooks';
 import { useAuth } from '@/hooks/useAuth';
-import { useActivities } from '@/hooks/useActivitiesQuery';
+import { useAllActivityTypes } from '@/hooks/useActivityTypes';
 import {
   Play,
   Pause,
@@ -40,9 +40,10 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
     resetTimer,
   } = useTimer({ pausePolling: showFinishModal });
   const { user } = useAuth();
-  const { data: projects = [], isLoading: isLoadingProjects } = useActivities(
-    user?.id
-  );
+  const { data: activityTypes = [], isLoading: isLoadingProjects } =
+    useAllActivityTypes(user?.id || '', {
+      enabled: !!user?.id,
+    });
   const [sessionTitle, setSessionTitle] = useState('');
   const [sessionDescription, setSessionDescription] = useState('');
   const [visibility, setVisibility] = useState<
@@ -68,25 +69,45 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
   const [showActivityError, setShowActivityError] = useState(false);
   const [customStartTime, setCustomStartTime] = useState<Date | null>(null);
   const [showTimePickerModal, setShowTimePickerModal] = useState(false);
+  const [frozenElapsedTime, setFrozenElapsedTime] = useState(0);
 
-  // Only show user's custom activities
-  const allActivities: Activity[] = projects || [];
+  // Convert ActivityType[] to Activity[] for compatibility
+  const allActivities: Activity[] = useMemo(() => {
+    return activityTypes.map(type => ({
+      id: type.id,
+      name: type.name,
+      description: type.description || '',
+      icon: type.icon,
+      color: type.defaultColor,
+      userId: type.userId || '',
+      status: 'active' as const,
+      createdAt: type.createdAt,
+      updatedAt: type.updatedAt,
+    }));
+  }, [activityTypes]);
 
   // Load last used activity from local storage on mount
   useEffect(() => {
+    // Only run once when activities are first loaded
+    if (allActivities.length === 0) return;
+
     const savedActivityId = localStorage.getItem('lastSessionActivity');
 
-    if (savedActivityId && projects && projects.length > 0) {
+    // Don't update if already set
+    if (selectedActivityId) return;
+
+    if (savedActivityId) {
       // Validate that the saved activity still exists
-      const activityExists = projects.some(p => p.id === savedActivityId);
+      const activityExists = allActivities.some(a => a.id === savedActivityId);
       if (activityExists) {
         setSelectedActivityId(savedActivityId);
       } else {
-        // Clear stale activity ID from localStorage if user has projects but saved one doesn't exist
+        // Clear stale activity ID from localStorage if user has activities but saved one doesn't exist
         localStorage.removeItem('lastSessionActivity');
       }
     }
-  }, [projects]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allActivities.length]); // Only depend on length, not the full array
 
   // Initialize selectedActivityId from timerState if there's an active session
   useEffect(() => {
@@ -103,9 +124,12 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
   }, [selectedActivityId]);
 
   // Initialize adjusted duration when finish modal opens
+  // CRITICAL: Freeze the elapsed time snapshot when modal opens
+  // This prevents the timer from continuing to tick while the user is filling out the form
   useEffect(() => {
     if (showFinishModal) {
       const elapsed = getElapsedTime();
+      setFrozenElapsedTime(elapsed);
       setAdjustedDuration(elapsed);
 
       // Calculate start time based on elapsed duration (now - duration)
@@ -156,10 +180,10 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
 
   const handleStartTimer = async () => {
     // Validate activity is selected and exists
-    if (
-      !selectedActivityId ||
-      !allActivities.find(a => a.id === selectedActivityId)
-    ) {
+    const selectedActivity = allActivities.find(
+      a => a.id === selectedActivityId
+    );
+    if (!selectedActivityId || !selectedActivity) {
       // Show error state and open activity picker
       setShowActivityError(true);
       setShowActivityPicker(true);
@@ -173,8 +197,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
       // Reset custom start time after starting
       setCustomStartTime(null);
       setShowTimePickerModal(false);
-    } catch {
-      console.error('Failed to start timer');
+    } catch (error) {
       alert('Failed to start timer. Please try again.');
     }
   };
@@ -183,7 +206,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
     try {
       await pauseTimer();
     } catch {
-      console.error('Failed to pause timer');
+      // Silent failure
     }
   };
 
@@ -191,7 +214,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
     try {
       await resumeTimer();
     } catch {
-      console.error('Failed to resume timer');
+      // Silent failure
     }
   };
 
@@ -230,7 +253,9 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
   const handleDurationSliderChange = (value: number | number[]) => {
     // Extract numeric value from slider (handle both single value and array)
     const val = typeof value === 'number' ? value : (value[0] ?? 0);
-    const max = getElapsedTime();
+    // CRITICAL: Use the frozen elapsed time, not the live value
+    // This prevents the slider max from changing while the user is adjusting it
+    const max = frozenElapsedTime;
 
     // Validate we have valid numeric values
     if (isNaN(val) || isNaN(max)) return;
@@ -249,8 +274,12 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
         return;
       }
 
+      // Use the currently selected activity from UI, NOT from timerState
+      const activityToSave =
+        selectedActivityId || timerState.currentProject?.id;
+
       // Validate activity selection
-      if (!selectedActivityId && !timerState.currentProject) {
+      if (!activityToSave) {
         alert('Please select an activity before saving');
         setShowActivityPicker(true);
         return;
@@ -264,7 +293,6 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
           const uploadResults = await uploadImages(selectedImages);
           imageUrls = uploadResults.map(result => result.url);
         } catch {
-          console.error('Failed to upload images');
           alert(
             'Failed to upload images. Session will be saved without images.'
           );
@@ -273,7 +301,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
         }
       }
 
-      // Finish the timer and create session
+      // Finish the timer and create session with the SELECTED activity
       await finishTimer(
         sessionTitle,
         sessionDescription,
@@ -286,6 +314,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
           publishToFeeds: true,
           customDuration: adjustedDuration,
           images: imageUrls,
+          activityId: activityToSave, // Force use of selected activity
         }
       );
 
@@ -304,7 +333,6 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
       // Navigate to home feed with refresh parameter to trigger immediate refresh
       window.location.href = '/?refresh=true';
     } catch (_error) {
-      console.error('Failed to finish timer');
       const errorMessage =
         _error instanceof Error
           ? _error.message
@@ -328,7 +356,6 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
       // Route to feed page
       window.location.href = '/';
     } catch {
-      console.error('Failed to cancel timer');
       alert('Failed to cancel session. Please try again.');
     }
   };
@@ -393,8 +420,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                       <>
                         <IconRenderer
                           iconName={selectedActivity.icon}
-                          className="w-5 h-5 flex-shrink-0"
-                          style={{ color: selectedActivity.color }}
+                          className="w-6 h-6 text-gray-700 flex-shrink-0"
                         />
                         <span className="flex-1 text-left">
                           {selectedActivity.name}
@@ -459,18 +485,10 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                                     : ''
                                 }`}
                               >
-                                <div
-                                  className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-                                  style={{
-                                    backgroundColor: `${activity.color}20`,
-                                  }}
-                                >
-                                  <IconRenderer
-                                    iconName={activity.icon}
-                                    className="w-4 h-4"
-                                    style={{ color: activity.color }}
-                                  />
-                                </div>
+                                <IconRenderer
+                                  iconName={activity.icon}
+                                  className="w-5 h-5 text-gray-700 flex-shrink-0"
+                                />
                                 <div className="flex-1 text-left min-w-0">
                                   <div className="text-sm font-medium text-gray-900">
                                     {activity.name}
@@ -482,26 +500,24 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                               </button>
                             ))}
                             <Link
-                              href="/activities/new"
-                              className="w-full flex items-center gap-3 p-3 border-t border-gray-200 hover:bg-gray-50 transition-colors text-gray-900 font-medium"
+                              href="/settings/activities"
+                              className="w-full flex items-center gap-3 p-3 border-t border-gray-200 hover:bg-gray-50 transition-colors text-gray-700"
                             >
-                              <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 bg-blue-100">
-                                <svg
-                                  className="w-4 h-4 text-[#0066CC]"
-                                  fill="none"
-                                  stroke="currentColor"
-                                  viewBox="0 0 24 24"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                                  />
-                                </svg>
-                              </div>
+                              <svg
+                                className="w-5 h-5 text-gray-600 flex-shrink-0"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                                />
+                              </svg>
                               <span className="text-sm">
-                                Create New Activity
+                                Add custom activity
                               </span>
                             </Link>
                           </>
@@ -546,7 +562,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                     <div className="py-2 px-1">
                       <Slider
                         min={0}
-                        max={getElapsedTime()}
+                        max={frozenElapsedTime}
                         step={900}
                         value={adjustedDuration}
                         onChange={handleDurationSliderChange}
@@ -568,7 +584,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                       <span className="font-semibold text-base text-gray-900">
                         {getFormattedTime(adjustedDuration)}
                       </span>
-                      <span>{getFormattedTime(getElapsedTime())}</span>
+                      <span>{getFormattedTime(frozenElapsedTime)}</span>
                     </div>
                   </div>
                 </div>
@@ -795,8 +811,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
               <>
                 <IconRenderer
                   iconName={selectedActivity.icon}
-                  className="w-6 h-6 flex-shrink-0"
-                  style={{ color: selectedActivity.color }}
+                  className="w-6 h-6 text-gray-700 flex-shrink-0"
                 />
                 <span className="flex-1 text-left font-medium">
                   {selectedActivity.name}
@@ -860,16 +875,10 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                           selectedActivityId === activity.id ? 'bg-blue-50' : ''
                         }`}
                       >
-                        <div
-                          className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0"
-                          style={{ backgroundColor: `${activity.color}20` }}
-                        >
-                          <IconRenderer
-                            iconName={activity.icon}
-                            className="w-4 h-4"
-                            style={{ color: activity.color }}
-                          />
-                        </div>
+                        <IconRenderer
+                          iconName={activity.icon}
+                          className="w-5 h-5 text-gray-700 flex-shrink-0"
+                        />
                         <div className="flex-1 text-left min-w-0">
                           <div className="text-sm font-medium text-gray-900">
                             {activity.name}
@@ -881,25 +890,23 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
                       </button>
                     ))}
                     <Link
-                      href="/activities/new"
-                      className="w-full flex items-center gap-3 p-3 border-t border-gray-200 hover:bg-gray-50 transition-colors text-gray-900 font-medium"
+                      href="/settings/activities"
+                      className="w-full flex items-center gap-3 p-3 border-t border-gray-200 hover:bg-gray-50 transition-colors text-gray-700"
                     >
-                      <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 bg-blue-100">
-                        <svg
-                          className="w-4 h-4 text-[#0066CC]"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                          />
-                        </svg>
-                      </div>
-                      <span className="text-sm">Create New Activity</span>
+                      <svg
+                        className="w-5 h-5 text-gray-600 flex-shrink-0"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M12 6v6m0 0v6m0-6h6m-6 0H6"
+                        />
+                      </svg>
+                      <span className="text-sm">Add custom activity</span>
                     </Link>
                   </>
                 )}

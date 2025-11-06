@@ -13,8 +13,10 @@
 
 # testing
 /coverage
-docs/test-coverage/
-docs/playwright-artifacts/
+/docs/test-coverage/
+/docs/playwright-artifacts/
+/playwright-report/
+/test-results/
 
 # next.js
 /.next/
@@ -52,9 +54,6 @@ next-env.d.ts
 # Firebase Service Account Key
 serviceAccountKey.json
 
-# Playwright
-playwright-report/
-test-results/
 
 # Backup files
 *.backup

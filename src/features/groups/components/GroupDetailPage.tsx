@@ -5,115 +5,109 @@
  * This component ONLY handles presentation - no business logic.
  */
 
-'use client';
+'use client'
 
-import React, { useState } from 'react';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/hooks/useAuth';
-import { useGroupDetails } from '../hooks/useGroupDetails';
-import { GroupLeaderboard } from './GroupLeaderboard';
-import { GroupMembersList } from './GroupMembersList';
-import { Users, Settings, ArrowLeft } from 'lucide-react';
+import React, { useState } from 'react'
+import Image from 'next/image'
+import { useRouter } from 'next/navigation'
+import { useAuth } from '@/hooks/useAuth'
+import { debug } from '@/lib/debug'
+import { useGroupDetails } from '../hooks/useGroupDetails'
+import { useJoinGroup, useLeaveGroup } from '../hooks/useGroupMutations'
+import { GroupLeaderboard } from './GroupLeaderboard'
+import { GroupMembersList } from './GroupMembersList'
+import { Users, Settings, ArrowLeft, Check } from 'lucide-react'
 
 interface GroupDetailPageProps {
-  groupId: string;
+  groupId: string
 }
 
 export function GroupDetailPage({ groupId }: GroupDetailPageProps) {
-  const router = useRouter();
-  const { user } = useAuth();
-  const { group, isLoading, error } = useGroupDetails(groupId);
+  const router = useRouter()
+  const { user } = useAuth()
+  const { group, isLoading, error } = useGroupDetails(groupId)
+  const joinGroupMutation = useJoinGroup()
+  const leaveGroupMutation = useLeaveGroup()
+  const [isProcessing, setIsProcessing] = useState(false)
 
-  const [activeTab, setActiveTab] = useState<'leaderboard' | 'members'>(
-    'leaderboard'
-  );
+  const [activeTab, setActiveTab] = useState<'leaderboard' | 'members'>('leaderboard')
 
   // Dynamic metadata using useEffect for client component
   React.useEffect(() => {
     if (group) {
-      document.title = `${group.name} - Ambira`;
+      document.title = `${group.name} - Ambira`
 
-      const description =
-        group.description || `Join ${group.name} group and connect with others`;
+      const description = group.description || `Join ${group.name} group and connect with others`
 
-      let metaDescription = document.querySelector('meta[name="description"]');
+      let metaDescription = document.querySelector('meta[name="description"]')
       if (!metaDescription) {
-        metaDescription = document.createElement('meta');
-        metaDescription.setAttribute('name', 'description');
-        document.head.appendChild(metaDescription);
+        metaDescription = document.createElement('meta')
+        metaDescription.setAttribute('name', 'description')
+        document.head.appendChild(metaDescription)
       }
-      metaDescription.setAttribute('content', description);
+      metaDescription.setAttribute('content', description)
 
       // Open Graph tags
-      let ogTitle = document.querySelector('meta[property="og:title"]');
+      let ogTitle = document.querySelector('meta[property="og:title"]')
       if (!ogTitle) {
-        ogTitle = document.createElement('meta');
-        ogTitle.setAttribute('property', 'og:title');
-        document.head.appendChild(ogTitle);
+        ogTitle = document.createElement('meta')
+        ogTitle.setAttribute('property', 'og:title')
+        document.head.appendChild(ogTitle)
       }
-      ogTitle.setAttribute('content', group.name);
+      ogTitle.setAttribute('content', group.name)
 
-      let ogDescription = document.querySelector(
-        'meta[property="og:description"]'
-      );
+      let ogDescription = document.querySelector('meta[property="og:description"]')
       if (!ogDescription) {
-        ogDescription = document.createElement('meta');
-        ogDescription.setAttribute('property', 'og:description');
-        document.head.appendChild(ogDescription);
+        ogDescription = document.createElement('meta')
+        ogDescription.setAttribute('property', 'og:description')
+        document.head.appendChild(ogDescription)
       }
-      ogDescription.setAttribute('content', description);
+      ogDescription.setAttribute('content', description)
 
-      let ogType = document.querySelector('meta[property="og:type"]');
+      let ogType = document.querySelector('meta[property="og:type"]')
       if (!ogType) {
-        ogType = document.createElement('meta');
-        ogType.setAttribute('property', 'og:type');
-        document.head.appendChild(ogType);
+        ogType = document.createElement('meta')
+        ogType.setAttribute('property', 'og:type')
+        document.head.appendChild(ogType)
       }
-      ogType.setAttribute('content', 'website');
+      ogType.setAttribute('content', 'website')
 
       // Twitter card tags
-      let twitterCard = document.querySelector('meta[name="twitter:card"]');
+      let twitterCard = document.querySelector('meta[name="twitter:card"]')
       if (!twitterCard) {
-        twitterCard = document.createElement('meta');
-        twitterCard.setAttribute('name', 'twitter:card');
-        document.head.appendChild(twitterCard);
+        twitterCard = document.createElement('meta')
+        twitterCard.setAttribute('name', 'twitter:card')
+        document.head.appendChild(twitterCard)
       }
-      twitterCard.setAttribute('content', 'summary');
+      twitterCard.setAttribute('content', 'summary')
 
-      let twitterTitle = document.querySelector('meta[name="twitter:title"]');
+      let twitterTitle = document.querySelector('meta[name="twitter:title"]')
       if (!twitterTitle) {
-        twitterTitle = document.createElement('meta');
-        twitterTitle.setAttribute('name', 'twitter:title');
-        document.head.appendChild(twitterTitle);
+        twitterTitle = document.createElement('meta')
+        twitterTitle.setAttribute('name', 'twitter:title')
+        document.head.appendChild(twitterTitle)
       }
-      twitterTitle.setAttribute('content', `${group.name} - Ambira`);
+      twitterTitle.setAttribute('content', `${group.name} - Ambira`)
 
-      let twitterDescription = document.querySelector(
-        'meta[name="twitter:description"]'
-      );
+      let twitterDescription = document.querySelector('meta[name="twitter:description"]')
       if (!twitterDescription) {
-        twitterDescription = document.createElement('meta');
-        twitterDescription.setAttribute('name', 'twitter:description');
-        document.head.appendChild(twitterDescription);
+        twitterDescription = document.createElement('meta')
+        twitterDescription.setAttribute('name', 'twitter:description')
+        document.head.appendChild(twitterDescription)
       }
-      twitterDescription.setAttribute('content', description);
+      twitterDescription.setAttribute('content', description)
     }
-  }, [group]);
+  }, [group])
 
   if (!user) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">
-            Please log in to view groups
-          </h1>
-          <p className="text-gray-600">
-            You need to be logged in to view group details.
-          </p>
+          <h1 className="text-2xl font-bold text-gray-900 mb-4">Please log in to view groups</h1>
+          <p className="text-gray-600">You need to be logged in to view group details.</p>
         </div>
       </div>
-    );
+    )
   }
 
   if (isLoading) {
@@ -127,7 +121,7 @@ export function GroupDetailPage({ groupId }: GroupDetailPageProps) {
           </div>
         </div>
       </div>
-    );
+    )
   }
 
   if (error || !group) {
@@ -150,26 +144,59 @@ export function GroupDetailPage({ groupId }: GroupDetailPageProps) {
           </div>
         </div>
       </div>
-    );
+    )
   }
 
-  const isAdmin = group.adminUserIds.includes(user.id);
+  const isAdmin = group.adminUserIds.includes(user.id)
+  const isMember = group.memberIds.includes(user.id)
+
+  const handleJoinLeave = async () => {
+    if (!user || isProcessing) return
+
+    // Only show processing state for leaving (not joining)
+    const shouldShowProcessing = isMember
+
+    if (shouldShowProcessing) {
+      setIsProcessing(true)
+    }
+
+    try {
+      if (isMember) {
+        await leaveGroupMutation.mutateAsync({
+          groupId: group.id,
+          userId: user.id,
+        })
+      } else {
+        // Join without showing processing state - optimistic update will handle it
+        await joinGroupMutation.mutateAsync({
+          groupId: group.id,
+          userId: user.id,
+        })
+      }
+    } catch (error) {
+      debug.error('Failed to join/leave group:', error)
+    } finally {
+      if (shouldShowProcessing) {
+        setIsProcessing(false)
+      }
+    }
+  }
 
   // Get category icon
   const getCategoryIcon = () => {
     switch (group.category) {
       case 'work':
-        return '💼';
+        return '💼'
       case 'study':
-        return '📚';
+        return '📚'
       case 'side-project':
-        return '💻';
+        return '💻'
       case 'learning':
-        return '🎓';
+        return '🎓'
       default:
-        return '📌';
+        return '📌'
     }
-  };
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
@@ -207,29 +234,51 @@ export function GroupDetailPage({ groupId }: GroupDetailPageProps) {
 
               <div className="flex-1 min-w-0 w-full">
                 {/* Group Name and Action Buttons */}
-                <div className="flex items-center gap-2 sm:gap-3 mb-2 flex-wrap">
-                  <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
-                    {group.name}
-                  </h1>
-                  {isAdmin && (
-                    <button
-                      onClick={() =>
-                        router.push(`/groups/${group.id}/settings`)
-                      }
-                      className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                      aria-label="Edit group"
-                    >
-                      <Settings className="w-5 h-5 text-gray-600" />
-                    </button>
-                  )}
+                <div className="flex items-start justify-between gap-2 sm:gap-3 mb-2">
+                  <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">{group.name}</h1>
+                    {isAdmin && (
+                      <button
+                        onClick={() => router.push(`/groups/${group.id}/settings`)}
+                        className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                        aria-label="Edit group"
+                      >
+                        <Settings className="w-5 h-5 text-gray-600" />
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Join/Joined Button */}
+                  <button
+                    onClick={handleJoinLeave}
+                    disabled={isProcessing}
+                    className={`min-h-[44px] px-6 py-2.5 text-sm font-semibold rounded-lg transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2 flex items-center gap-2 whitespace-nowrap cursor-pointer ${
+                      isMember
+                        ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        : 'bg-[#0066CC] text-white hover:bg-[#0051D5]'
+                    } ${isProcessing ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    aria-label={isMember ? `Leave ${group.name}` : `Join ${group.name}`}
+                  >
+                    {isProcessing && isMember ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                        Leaving...
+                      </>
+                    ) : isMember ? (
+                      <>
+                        <Check className="w-4 h-4" />
+                        Joined
+                      </>
+                    ) : (
+                      'Join'
+                    )}
+                  </button>
                 </div>
 
                 {/* Category and Location */}
                 <div className="flex flex-wrap items-center gap-3 sm:gap-4 mb-3">
                   <div className="flex items-center gap-2">
-                    <span className="text-xl sm:text-2xl">
-                      {getCategoryIcon()}
-                    </span>
+                    <span className="text-xl sm:text-2xl">{getCategoryIcon()}</span>
                     <span className="text-xs sm:text-sm text-gray-600 capitalize">
                       {group.category.replace('-', ' ')}
                     </span>
@@ -238,9 +287,7 @@ export function GroupDetailPage({ groupId }: GroupDetailPageProps) {
                   {group.location && (
                     <div className="flex items-center gap-2">
                       <span className="text-base sm:text-lg">📍</span>
-                      <span className="text-xs sm:text-sm text-gray-600">
-                        {group.location}
-                      </span>
+                      <span className="text-xs sm:text-sm text-gray-600">{group.location}</span>
                     </div>
                   )}
                 </div>
@@ -255,9 +302,7 @@ export function GroupDetailPage({ groupId }: GroupDetailPageProps) {
                 {/* Member Count */}
                 <div className="text-sm text-gray-600">
                   {group.memberCount || group.memberIds.length} member
-                  {(group.memberCount || group.memberIds.length) !== 1
-                    ? 's'
-                    : ''}
+                  {(group.memberCount || group.memberIds.length) !== 1 ? 's' : ''}
                 </div>
               </div>
             </div>
@@ -296,18 +341,14 @@ export function GroupDetailPage({ groupId }: GroupDetailPageProps) {
           <div>
             {activeTab === 'leaderboard' && (
               <div>
-                <h2 className="text-xl font-bold text-gray-900 mb-4">
-                  Group Leaderboard
-                </h2>
+                <h2 className="text-xl font-bold text-gray-900 mb-4">Group Leaderboard</h2>
                 <GroupLeaderboard groupId={groupId} />
               </div>
             )}
 
             {activeTab === 'members' && (
               <div>
-                <h2 className="text-xl font-bold text-gray-900 mb-4">
-                  Members
-                </h2>
+                <h2 className="text-xl font-bold text-gray-900 mb-4">Members</h2>
                 <GroupMembersList groupId={groupId} />
               </div>
             )}
@@ -315,5 +356,5 @@ export function GroupDetailPage({ groupId }: GroupDetailPageProps) {
         </div>
       </div>
     </div>
-  );
+  )
 }

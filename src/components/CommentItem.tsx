@@ -86,7 +86,6 @@ export const CommentItem: React.FC<CommentItemProps> = ({
       try {
         await onDelete(comment.id);
       } catch (err) {
-        console.error('Failed to delete comment:', err);
         setIsDeleting(false);
       }
     }
@@ -115,7 +114,7 @@ export const CommentItem: React.FC<CommentItemProps> = ({
 
   if (isDeleting) {
     return (
-      <div className="flex gap-2 opacity-50">
+      <div className="flex gap-3 opacity-50">
         <div className="w-10 h-10 rounded-full bg-gray-200 animate-pulse" />
         <div className="flex-1">
           <div className="h-4 bg-gray-200 rounded w-1/3 mb-1 animate-pulse" />
@@ -128,18 +127,23 @@ export const CommentItem: React.FC<CommentItemProps> = ({
   return (
     <div className="flex gap-3">
       {/* User Avatar */}
-      <Link href={`/profile/${comment.user.username}`} className="shrink-0">
+      <Link
+        href={`/profile/${comment.user.username}`}
+        className="shrink-0 mt-1.5 sm:mt-2"
+      >
         {comment.user.profilePicture ? (
-          <Image
-            src={comment.user.profilePicture}
-            alt={comment.user.name}
-            width={40}
-            height={40}
-            className="w-10 h-10 rounded-full object-cover"
-          />
+          <div className="w-10 h-10 relative rounded-full overflow-hidden border border-gray-200">
+            <Image
+              src={comment.user.profilePicture}
+              alt={comment.user.name}
+              fill
+              className="object-cover"
+              sizes="40px"
+            />
+          </div>
         ) : (
-          <div className="w-10 h-10 bg-gradient-to-br from-orange-400 to-orange-600 rounded-full flex items-center justify-center">
-            <span className="text-sm font-semibold text-white">
+          <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center border border-gray-200">
+            <span className="text-sm font-semibold text-gray-600">
               {getUserInitials(comment.user.name)}
             </span>
           </div>
@@ -148,16 +152,22 @@ export const CommentItem: React.FC<CommentItemProps> = ({
 
       {/* Comment Content */}
       <div className="flex-1 min-w-0">
-        <div className="flex items-baseline justify-between gap-2">
-          <div className="flex items-baseline gap-2 min-w-0">
-            <Link href={`/profile/${comment.user.username}`}>
-              <span className="text-sm font-semibold text-gray-900 hover:text-[#0066CC] transition-colors">
-                {comment.user.name}
+        <div className="flex items-start justify-between gap-2">
+          <div className="flex flex-col min-w-0">
+            <div className="flex items-baseline gap-2">
+              <Link href={`/profile/${comment.user.username}`}>
+                <span className="text-sm font-semibold text-gray-900 hover:text-[#0066CC] transition-colors">
+                  {comment.user.name}
+                </span>
+              </Link>
+              <span className="text-xs text-gray-500 flex-shrink-0">
+                {formatTimeAgo(comment.createdAt)}
               </span>
-            </Link>
-            <span className="text-xs text-gray-500 flex-shrink-0">
-              {formatTimeAgo(comment.createdAt)}
-            </span>
+            </div>
+            {/* Comment Text */}
+            <p className="text-sm text-gray-900 whitespace-pre-wrap break-words mt-0.5">
+              {renderContent(comment.content)}
+            </p>
           </div>
 
           {/* More Menu */}
@@ -191,17 +201,12 @@ export const CommentItem: React.FC<CommentItemProps> = ({
           )}
         </div>
 
-        {/* Comment Text */}
-        <p className="text-[15px] text-gray-900 whitespace-pre-wrap break-words mt-0.5">
-          {renderContent(comment.content)}
-        </p>
-
         {/* Like Button */}
         {currentUserId && (
-          <div className="flex items-center gap-2 mt-1">
+          <div className="flex items-center gap-2 -mt-1 sm:mt-1.5">
             <button
               onClick={handleLike}
-              className={`flex items-center gap-1 transition-colors ${
+              className={`flex items-center gap-1.5 text-xs font-medium transition-colors ${
                 optimisticLiked
                   ? 'text-red-600 hover:text-red-700'
                   : 'text-gray-500 hover:text-red-600'
@@ -214,11 +219,11 @@ export const CommentItem: React.FC<CommentItemProps> = ({
               }
             >
               <Heart
-                className={`w-4 h-4 ${optimisticLiked ? 'fill-current' : ''}`}
+                className={`w-3.5 h-3.5 ${optimisticLiked ? 'fill-current' : ''}`}
                 aria-hidden="true"
               />
               {optimisticLikeCount > 0 && (
-                <span className="text-xs font-medium">
+                <span>
                   {optimisticLikeCount > 1
                     ? `${optimisticLikeCount} like${optimisticLikeCount > 1 ? 's' : ''}`
                     : '1 like'}

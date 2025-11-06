@@ -94,7 +94,6 @@ export default function GroupsPage() {
           await joinGroupMutation.mutateAsync({ groupId, userId: user.id });
         }
       } catch (err) {
-        console.error('Failed to join/leave group:', err);
         setError(
           isJoined
             ? 'Failed to leave group. Please try again.'

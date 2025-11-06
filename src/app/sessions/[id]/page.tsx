@@ -41,7 +41,6 @@ function SessionDetailContent({ sessionId }: { sessionId: string }) {
         await firebaseApi.session.getSessionWithDetails(sessionId);
       setSession(sessionData as unknown as SessionWithDetails);
     } catch (err: unknown) {
-      console.error('Error loading session:', err);
       setError(err instanceof Error ? err.message : 'Failed to load session');
     } finally {
       setIsLoading(false);
@@ -65,9 +64,7 @@ function SessionDetailContent({ sessionId }: { sessionId: string }) {
             }
           : null
       );
-    } catch (err: unknown) {
-      console.error('Failed to support session:', err);
-    }
+    } catch (err: unknown) {}
   };
 
   const handleRemoveSupport = async (sessionId: string) => {
@@ -87,9 +84,7 @@ function SessionDetailContent({ sessionId }: { sessionId: string }) {
             }
           : null
       );
-    } catch (err: unknown) {
-      console.error('Failed to remove support:', err);
-    }
+    } catch (err: unknown) {}
   };
 
   const handleShare = async (sessionId: string) => {
@@ -110,7 +105,6 @@ function SessionDetailContent({ sessionId }: { sessionId: string }) {
       if (err instanceof Error && err.name === 'AbortError') {
         return;
       }
-      console.error('Failed to share session:', err);
     }
   };
 
@@ -123,7 +117,6 @@ function SessionDetailContent({ sessionId }: { sessionId: string }) {
       await firebaseApi.session.deleteSession(sessionId);
       router.push('/');
     } catch (err: unknown) {
-      console.error('Failed to delete session:', err);
       alert('Failed to delete session. Please try again.');
     }
   };

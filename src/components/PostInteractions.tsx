@@ -39,7 +39,6 @@ export const PostInteractions: React.FC<PostInteractionsProps> = ({
         await onSupport(postId);
       }
     } catch (_error) {
-      console.error('Failed to update support');
     } finally {
       setIsSupporting(false);
     }
@@ -52,7 +51,6 @@ export const PostInteractions: React.FC<PostInteractionsProps> = ({
     try {
       await onShare(postId);
     } catch (_error) {
-      console.error('Failed to share post');
     } finally {
       setIsSharing(false);
     }

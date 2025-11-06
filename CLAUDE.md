@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Ambira is a social productivity tracking application inspired by Strava - a "Strava for Productivity". Users track work sessions on projects, build streaks, follow friends, join groups, and compete in challenges. Built with Next.js 15, TypeScript, Tailwind CSS, and Firebase.
+Ambira is a social productivity tracking application inspired by Strava - a "Strava for Productivity". Users track work sessions on activities, build streaks, follow friends, join groups, and compete in challenges. Built with Next.js 15, TypeScript, Tailwind CSS, and Firebase.
 
 ## Package Manager
 
@@ -74,9 +74,10 @@ Key architectural patterns:
 - Sessions function as posts directly (like Strava's activities)
 - The feed displays sessions with `visibility: 'everyone' | 'followers' | 'private'`
 - Each session includes: `supportCount`, `commentCount`, `isSupported`
-- `getFeedSessions()` fetches from `sessions` collection and populates with user/project data
+- `getFeedSessions()` fetches from `sessions` collection and populates with user/activity data
 - Comments reference `sessionId` not `postId`
 - All components use `SessionWithDetails` instead of `PostWithDetails`
+- Sessions use `activityId` as the primary field, with `projectId` maintained for backward compatibility
 
 ### Firebase Collections Structure
 
@@ -85,16 +86,33 @@ Key architectural patterns:
 - User profiles with follower/following counts
 - Privacy settings: `profileVisibility`, `activityVisibility`, `projectVisibility`
 - Has `activeSession` subcollection for timer persistence
+- Has `activityPreferences` subcollection for activity usage tracking
 
-**Projects**: `/projects/{userId}/userProjects/{projectId}`
+**Activity Types**: `/activityTypes/{typeId}` (NOTE: System defaults are hardcoded in code, not stored in Firestore)
 
-- Organized as subcollection under user
+- 10 system-wide default activities: Work, Coding, Side Project, Planning, Study, Learning, Reading, Research, Creative, Writing
+- User custom activities (max 10 per user) with `isSystem: false` and `userId` field
+- Fields: `id`, `name`, `category`, `icon`, `defaultColor`, `isSystem`, `order`, `description`
+
+**User Activity Preferences**: `/users/{userId}/activityPreferences/{typeId}`
+
+- Lightweight tracking of activity usage per user
+- Fields: `typeId`, `lastUsed`, `useCount` (for recent activity sorting)
+- Auto-created/updated when user logs sessions
+- Max 20 total preferences (10 defaults + 10 custom)
+
+**Projects (Legacy)**: `/projects/{userId}/userProjects/{projectId}`
+
+- Legacy collection maintained for backward compatibility
+- New sessions use activities instead
 
 **Sessions**: `/sessions/{sessionId}`
 
 - Sessions are the main content/feed items
 - Include social engagement fields
 - Used for feed, profiles, and analytics
+- Primary field: `activityId` (references `/activityTypes/{typeId}`)
+- Legacy field: `projectId` (for backward compatibility)
 
 **Follows**: `/follows/{followId}`
 
@@ -122,12 +140,20 @@ Key architectural patterns:
 **React Context Providers** (in `/src/contexts/`):
 
 - `AuthContext`: User authentication state, login/signup/logout
-- `ProjectsContext`: Project CRUD operations
+- `ProjectsContext`: Project CRUD operations (legacy, being phased out)
 - `TimerContext`: Active timer state and persistence
 
 All contexts wrap the app in `/src/app/layout.tsx`
 
 ### Key Design Patterns
+
+**Activity System**:
+
+- **System Defaults**: 10 hardcoded activities (Work, Coding, Side Project, Planning, Study, Learning, Reading, Research, Creative, Writing)
+- **Custom Activities**: Users can create up to 10 custom activities via Settings or activity picker
+- **Recent Activities**: Tracked via `UserActivityPreference` with `lastUsed` and `useCount` fields
+- **Activity Picker**: Horizontal bar shows 5 recent activities, vertical list shows all activities
+- **Smart Sorting**: Recent activities appear first based on usage, falling back to popular defaults for new users
 
 **Firestore Data Integrity**:
 
@@ -148,10 +174,11 @@ All contexts wrap the app in `/src/app/layout.tsx`
   - `/` - Home/Feed
   - `/timer` - Active session timer
   - `/profile/[username]` - User profiles
-  - `/projects` and `/projects/[id]` - Project management
+  - `/activities/[id]` - Activity stats and session history
   - `/groups` and `/groups/[id]` - Groups
   - `/challenges` and `/challenges/[id]` - Challenges
   - `/settings/*` - User settings
+  - `/settings/activities` - Custom activity management
 
 ### Firestore Security Rules
 
@@ -279,7 +306,12 @@ Create these composite indexes in Firebase Console:
    - Collection: `sessions`
    - Fields: `visibility` (Ascending), `createdAt` (Descending)
 
-Indexes auto-suggest on first feed load.
+3. **Sessions - User Activity with Date Filter (for Group Leaderboards)**
+   - Collection: `sessions`
+   - Fields: `userId` (Ascending), `createdAt` (Ascending)
+   - Note: Required when filtering leaderboard by timeframe (week/month)
+
+Indexes auto-suggest on first query attempt. If you see a Firestore index error in console, click the provided link to auto-create the index.
 
 ### Path Aliases
 
@@ -335,7 +367,7 @@ We cover every production-critical feature to ensure new releases don't break es
 - Session logging and timer
 - Feed interactions (filters, support, comments)
 - Social graph (follow/unfollow, suggestions)
-- Projects/activities management
+- Activities management (custom activities, activity picker)
 - Groups functionality
 - Challenges system
 - Analytics dashboards
@@ -430,7 +462,7 @@ npm run test:e2e:report # View last test report
 
 **What to test**:
 
-- Complete user journeys (signup → create project → log session)
+- Complete user journeys (signup → select activity → log session)
 - UI interactions (clicks, forms, navigation)
 - Accessibility (WCAG 2.0/2.1 Level AA compliance)
 - Responsive design (mobile, tablet, desktop)
@@ -567,7 +599,7 @@ Run tests before every commit. All tests must pass before pushing.
 Check `specs/todo.md` for detailed implementation status. Key completed features:
 
 - ✅ Authentication (Firebase Auth)
-- ✅ Projects and Tasks
+- ✅ Activity System with 10 defaults and custom activities
 - ✅ Session Timer with persistence
 - ✅ Social Feed with sessions
 - ✅ Following system

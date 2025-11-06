@@ -66,7 +66,6 @@ export function useGroupMembers(groupId: string) {
             } as GroupMember;
           } catch (_err) {
             // Failed to fetch user
-            console.error('Failed to fetch user:', _err);
             return null;
           }
         }

@@ -47,7 +47,6 @@ export const LandingPage: React.FC = () => {
       // No need to manually navigate here - AuthContext will update isAuthenticated
       // and the page component will automatically show the authenticated view
     } catch (err: unknown) {
-      console.error('Google sign-in error:', err);
       // Don't show error or clear loading if redirect is in progress
       // (user is being redirected to Google)
       const errorMessage =
@@ -116,8 +115,6 @@ export const LandingPage: React.FC = () => {
       // No need to manually navigate here - AuthContext will update isAuthenticated
       // and the page component will automatically show the authenticated view
     } catch (err: unknown) {
-      console.error('Login error:', err);
-
       // Handle specific Firebase errors with user-friendly messages
       const errorMessage =
         err && typeof err === 'object' && 'message' in err
@@ -268,8 +265,6 @@ export const LandingPage: React.FC = () => {
       // No need to manually navigate here - AuthContext will update isAuthenticated
       // and the page component will automatically show the authenticated view
     } catch (err: unknown) {
-      console.error('Signup error:', err);
-
       // Handle specific Firebase errors with user-friendly messages
       const errorMessage =
         err && typeof err === 'object' && 'message' in err

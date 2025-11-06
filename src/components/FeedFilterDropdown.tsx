@@ -57,7 +57,6 @@ export const FeedFilterDropdown: React.FC<FeedFilterDropdownProps> = ({
         const userGroups = await firebaseApi.group.getUserGroups(user.id);
         setGroups(userGroups);
       } catch (err) {
-        console.error('Failed to fetch groups:', err);
       } finally {
         setIsLoadingGroups(false);
       }

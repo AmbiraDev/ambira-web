@@ -72,7 +72,6 @@ export const ShareSessionImage: React.FC<ShareSessionImageProps> = ({
       link.href = dataUrl;
       link.click();
     } catch {
-      console.error('Failed to export image');
       setExportError('Failed to export image. Please try again.');
     } finally {
       setIsExporting(false);
@@ -112,7 +111,6 @@ export const ShareSessionImage: React.FC<ShareSessionImageProps> = ({
         await handleExport();
       }
     } catch {
-      console.error('Failed to share image');
       setExportError('Failed to share image. Downloading instead...');
       await handleExport();
     } finally {

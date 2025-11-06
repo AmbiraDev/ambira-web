@@ -78,6 +78,7 @@ export function useStartTimerMutation() {
       await firebaseSessionApi.saveActiveSession({
         startTime,
         projectId: projectId,
+        activityId: projectId, // Pass activityId for proper activity lookup
         selectedTaskIds: [],
         pausedDuration: 0,
         isPaused: false,
@@ -90,6 +91,7 @@ export function useStartTimerMutation() {
       queryClient.setQueryData(CACHE_KEYS.ACTIVE_SESSION(user?.id || 'none'), {
         startTime: data.startTime,
         projectId: data.projectId,
+        activityId: data.projectId, // Include activityId in cache
         selectedTaskIds: [],
         pausedDuration: 0,
         isPaused: false,
@@ -124,6 +126,7 @@ export function usePauseTimerMutation() {
       await firebaseSessionApi.saveActiveSession({
         startTime,
         projectId,
+        activityId: projectId, // Pass activityId
         selectedTaskIds: [],
         pausedDuration: elapsedSeconds,
         isPaused: true,
@@ -136,6 +139,7 @@ export function usePauseTimerMutation() {
       queryClient.setQueryData(CACHE_KEYS.ACTIVE_SESSION(user?.id || 'none'), {
         startTime: data.startTime,
         projectId: data.projectId,
+        activityId: data.projectId, // Include activityId in cache
         selectedTaskIds: [],
         pausedDuration: data.elapsedSeconds,
         isPaused: true,
@@ -172,6 +176,7 @@ export function useResumeTimerMutation() {
       await firebaseSessionApi.saveActiveSession({
         startTime: adjustedStartTime,
         projectId,
+        activityId: projectId, // Pass activityId
         selectedTaskIds: [],
         pausedDuration: 0,
         isPaused: false,
@@ -184,6 +189,7 @@ export function useResumeTimerMutation() {
       queryClient.setQueryData(CACHE_KEYS.ACTIVE_SESSION(user?.id || 'none'), {
         startTime: data.adjustedStartTime,
         projectId: data.projectId,
+        activityId: data.projectId, // Include activityId in cache
         selectedTaskIds: [],
         pausedDuration: 0,
         isPaused: false,
@@ -374,6 +380,10 @@ export function useFinishTimerMutation() {
         session = await firebaseSessionApi.createSession(sessionData);
       }
 
+      // Clear active session BEFORE returning to prevent race conditions
+      // This ensures the active timer is cleared atomically with session creation
+      await firebaseSessionApi.clearActiveSession();
+
       return session;
     },
     onMutate: async () => {
@@ -394,10 +404,8 @@ export function useFinishTimerMutation() {
       return { previousActiveSession };
     },
     onSuccess: async session => {
-      // Clear active session from Firebase
-      await firebaseSessionApi.clearActiveSession();
-
-      // Ensure cache is cleared
+      // Active session is already cleared in mutationFn (atomically with session creation)
+      // Just ensure cache reflects this
       queryClient.setQueryData(
         CACHE_KEYS.ACTIVE_SESSION(user?.id || 'none'),
         null

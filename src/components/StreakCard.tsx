@@ -85,7 +85,6 @@ export const StreakCard: React.FC<StreakCardProps> = ({
 
         setStreakStats(stats);
       } catch {
-        console.error('Failed to load streak');
       } finally {
         setIsLoading(false);
       }

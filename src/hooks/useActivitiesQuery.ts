@@ -12,6 +12,7 @@ import {
   UpdateActivityData,
 } from '@/types';
 import { firebaseActivityApi } from '@/lib/api';
+import { getAllActivityTypes } from '@/lib/api/activityTypes';
 import { CACHE_KEYS, CACHE_TIMES } from '@/lib/queryClient';
 import { db } from '@/lib/firebase';
 import { collection, getDocs, query, where, or, and } from 'firebase/firestore';
@@ -220,7 +221,6 @@ export function useCreateActivity() {
       if (context?.previousActivities) {
         queryClient.setQueryData(queryKey, context.previousActivities);
       }
-      console.error('Error creating activity:', err);
     },
 
     // Always refetch after error or success
@@ -277,7 +277,6 @@ export function useUpdateActivity() {
       if (context?.previousActivities) {
         queryClient.setQueryData(queryKey, context.previousActivities);
       }
-      console.error('Error updating activity:', err);
     },
 
     onSettled: () => {
@@ -320,7 +319,6 @@ export function useDeleteActivity() {
       if (context?.previousActivities) {
         queryClient.setQueryData(queryKey, context.previousActivities);
       }
-      console.error('Error deleting activity:', err);
     },
 
     onSettled: () => {
@@ -358,6 +356,99 @@ export function useRestoreActivity() {
         id: activityId,
         data: { status: 'active' },
       }),
+  });
+}
+
+/**
+ * Hook to get activities with their session counts
+ * Only returns activities that have at least 1 session
+ * Sorted by session count (most sessions first)
+ *
+ * @param userId - User ID to fetch activities for
+ * @param options - Additional React Query options
+ */
+export function useActivitiesWithSessions(
+  userId?: string,
+  options?: Partial<
+    UseQueryOptions<
+      Array<
+        Activity & {
+          sessionCount: number;
+          isCustom: boolean;
+          totalHours: number;
+        }
+      >
+    >
+  >
+) {
+  const { user } = useAuth();
+  const effectiveUserId = userId || user?.id;
+
+  return useQuery({
+    queryKey: ['activities-with-sessions', effectiveUserId],
+    queryFn: async () => {
+      if (!effectiveUserId) return [];
+
+      // Get all activities (new system: defaults + user customs)
+      const activityTypes = await getAllActivityTypes(effectiveUserId);
+
+      // Convert ActivityType[] to Activity[] for compatibility
+      const activities: Activity[] = activityTypes.map(at => ({
+        id: at.id,
+        userId: at.userId || effectiveUserId,
+        name: at.name,
+        description: at.description || '',
+        icon: at.icon,
+        color: at.defaultColor,
+        isDefault: at.isSystem,
+        status: 'active' as const,
+        createdAt: at.createdAt,
+        updatedAt: at.updatedAt,
+      }));
+
+      // Get session counts and total hours for each activity
+      const activitiesWithStats = await Promise.all(
+        activities.map(async activity => {
+          // Query for both activityId and projectId (backwards compatibility)
+          const q = query(
+            collection(db, 'sessions'),
+            and(
+              where('userId', '==', effectiveUserId),
+              or(
+                where('activityId', '==', activity.id),
+                where('projectId', '==', activity.id)
+              )
+            )
+          );
+          const snapshot = await getDocs(q);
+          const sessionCount = snapshot.size;
+
+          // Calculate total hours from session durations
+          let totalHours = 0;
+          snapshot.forEach(doc => {
+            const data = doc.data();
+            // duration is stored in seconds
+            totalHours += (data.duration || 0) / 3600;
+          });
+
+          return {
+            ...activity,
+            sessionCount,
+            totalHours,
+            isCustom: !activity.isDefault,
+          };
+        })
+      );
+
+      // Only include activities that have sessions (sessionCount > 0)
+      return activitiesWithStats
+        .filter(activity => activity.sessionCount > 0)
+        .sort((a, b) => b.totalHours - a.totalHours);
+    },
+    enabled: !!effectiveUserId,
+    staleTime: CACHE_TIMES.MEDIUM, // 5 minutes cache
+    gcTime: CACHE_TIMES.MEDIUM,
+    ...options,
   });
 }
 

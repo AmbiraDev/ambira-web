@@ -50,7 +50,6 @@ export const SignupForm: React.FC = () => {
           await firebaseAuthApi.checkUsernameAvailability(username);
         setUsernameAvailable(isAvailable);
       } catch {
-        console.error('Error checking username');
         setUsernameAvailable(null);
       } finally {
         setIsCheckingUsername(false);
@@ -163,16 +162,12 @@ export const SignupForm: React.FC = () => {
             router.push(`/invite/group/${inviteContext.groupId}`);
             return;
           }
-        } catch {
-          console.error('Error parsing invite context');
-        }
+        } catch {}
       }
 
       // Default redirect to home
       router.push('/');
     } catch (error: unknown) {
-      console.error('Signup error:', error);
-
       // Handle specific Firebase errors with user-friendly messages
       const errorMessage =
         error instanceof Error ? error.message : String(error);

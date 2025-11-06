@@ -287,7 +287,6 @@ export class TimerService {
         session.id
       );
     } catch (_err) {
-      console.error('Error auto-completing stale session:', _err);
       // Don't throw - this is a background cleanup operation
     }
   }

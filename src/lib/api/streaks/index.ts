@@ -241,7 +241,6 @@ export const firebaseStreakApi = {
 
       return result;
     } catch (error: unknown) {
-      console.error('=== FIREBASE API: Error in getStreakStats ===', error);
       const apiError = handleError(error, 'Get streak stats', {
         defaultMessage: 'Failed to get streak stats',
       });

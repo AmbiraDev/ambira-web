@@ -13,10 +13,10 @@ import { Project } from '@/types';
 export interface ActiveSessionData {
   startTime: Date;
   projectId: string;
+  activityId?: string;
   selectedTaskIds: string[];
   pausedDuration: number;
   isPaused: boolean;
-  activityId?: string;
 }
 
 export interface TimerState {
@@ -194,10 +194,7 @@ export function useTimerState({
         );
       } catch (error) {
         // Don't crash the app if cache operations fail
-        console.error(
-          'Failed to handle cross-tab session cancellation:',
-          error
-        );
+        // Silently ignore cache operation failures
       }
     };
 

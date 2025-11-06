@@ -66,7 +66,7 @@ export const ProfilePicture: React.FC<ProfilePictureProps> = ({
 
   return (
     <div
-      className={`${sizeClass} bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold border border-gray-200 ${borderClass} ${className}`}
+      className={`${sizeClass} bg-gray-100 rounded-full flex items-center justify-center text-gray-600 font-bold border border-gray-200 ${borderClass} ${className}`}
     >
       {initials}
     </div>

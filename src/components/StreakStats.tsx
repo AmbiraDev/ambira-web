@@ -19,7 +19,6 @@ export const StreakStats: React.FC<StreakStatsProps> = ({ userId }) => {
         const stats = await firebaseApi.streak.getStreakStats(userId);
         setStreakStats(stats);
       } catch {
-        console.error('Failed to load streak stats');
       } finally {
         setIsLoading(false);
       }

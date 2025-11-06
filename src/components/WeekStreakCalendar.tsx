@@ -57,7 +57,6 @@ export const WeekStreakCalendar: React.FC<WeekStreakCalendarProps> = ({
 
         setActiveDates(dateSet);
       } catch {
-        console.error('❌ Failed to load sessions for week');
       } finally {
         setIsLoading(false);
       }
