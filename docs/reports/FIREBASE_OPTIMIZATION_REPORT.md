@@ -59,16 +59,14 @@ for (const followerId of followerIds) {
 ```typescript
 // BEFORE (N+1)
 for (const followerId of followerIds) {
-  const userDoc = await getDoc(doc(db, 'users', followerId));
+  const userDoc = await getDoc(doc(db, 'users', followerId))
 }
 
 // AFTER (Batch Loading)
-const followerDocs = await Promise.all(
-  followerIds.map(id => getDoc(doc(db, 'users', id)))
-);
+const followerDocs = await Promise.all(followerIds.map((id) => getDoc(doc(db, 'users', id))))
 const followers = followerDocs
-  .filter(doc => doc.exists())
-  .map(doc => ({ id: doc.id, ...doc.data() }));
+  .filter((doc) => doc.exists())
+  .map((doc) => ({ id: doc.id, ...doc.data() }))
 ```
 
 **Estimated Savings**: **95% reduction in read operations** for follower/following lists
@@ -107,18 +105,16 @@ for (let i = 0; i < postDocs.length; i += batchSize) {
 
 ```typescript
 // Deduplicate queries
-const userIds = new Set(postDocs.map(d => d.data().userId));
-const sessionIds = new Set(postDocs.map(d => d.data().sessionId));
+const userIds = new Set(postDocs.map((d) => d.data().userId))
+const sessionIds = new Set(postDocs.map((d) => d.data().sessionId))
 
-const userDocs = await Promise.all(
-  Array.from(userIds).map(id => getDoc(doc(db, 'users', id)))
-);
-const userMap = Object.fromEntries(userDocs.map(d => [d.id, d.data()]));
+const userDocs = await Promise.all(Array.from(userIds).map((id) => getDoc(doc(db, 'users', id))))
+const userMap = Object.fromEntries(userDocs.map((d) => [d.id, d.data()]))
 
 // Then reuse userMap in loops
-postDocs.forEach(post => {
-  const userData = userMap[post.data().userId];
-});
+postDocs.forEach((post) => {
+  const userData = userMap[post.data().userId]
+})
 ```
 
 **Estimated Savings**: **75-80% reduction** in feed loading reads (40 → 8 reads per 20 items)
@@ -133,20 +129,18 @@ postDocs.forEach(post => {
 
 ```typescript
 const shouldRecalculate =
-  isOwnProfile ||
-  userData.followersCount === undefined ||
-  userData.followingCount === undefined;
+  isOwnProfile || userData.followersCount === undefined || userData.followingCount === undefined
 
 if (shouldRecalculate) {
   // Count followers (people who follow this user) using social_graph
-  const inboundRef = collection(db, `social_graph/${userDoc.id}/inbound`);
-  const inboundSnapshot = await getDocs(inboundRef); // 🔴 Full scan of followers
-  followersCount = inboundSnapshot.size;
+  const inboundRef = collection(db, `social_graph/${userDoc.id}/inbound`)
+  const inboundSnapshot = await getDocs(inboundRef) // 🔴 Full scan of followers
+  followersCount = inboundSnapshot.size
 
   // Count following (people this user follows) using social_graph
-  const outboundRef = collection(db, `social_graph/${userDoc.id}/outbound`);
-  const outboundSnapshot = await getDocs(outboundRef); // 🔴 Full scan of following
-  followingCount = outboundSnapshot.size;
+  const outboundRef = collection(db, `social_graph/${userDoc.id}/outbound`)
+  const outboundSnapshot = await getDocs(outboundRef) // 🔴 Full scan of following
+  followingCount = outboundSnapshot.size
 }
 ```
 
@@ -195,18 +189,18 @@ if (shouldRecalculate) {
 
 ```typescript
 // Get all users and filter client-side for guaranteed results
-const usersQuery = query(collection(db, 'users'), limitFn(1000)); // 🔴 Fetches 1000 docs
-const querySnapshot = await getDocs(usersQuery);
+const usersQuery = query(collection(db, 'users'), limitFn(1000)) // 🔴 Fetches 1000 docs
+const querySnapshot = await getDocs(usersQuery)
 
 // Client-side filtering
-querySnapshot.forEach(docSnap => {
-  const username = (userData.username || '').toLowerCase();
-  const name = (userData.name || '').toLowerCase();
+querySnapshot.forEach((docSnap) => {
+  const username = (userData.username || '').toLowerCase()
+  const name = (userData.name || '').toLowerCase()
 
   if (username.includes(termLower) || name.includes(termLower)) {
     // Add to results
   }
-});
+})
 ```
 
 **Impact**:
@@ -229,7 +223,7 @@ const usersQuery = query(
   where('usernameLower', '>=', termLower),
   where('usernameLower', '<', termLower + '\uf8ff'),
   limitFn(20) // Only fetch what we need
-);
+)
 
 // Option 3: Firestore fulltext search extension (Firebase Labs)
 ```
@@ -251,13 +245,13 @@ sessionsQuery = query(
   where('visibility', 'in', ['everyone', 'followers']),
   orderBy('createdAt', 'desc'),
   limitFn(limitCount * 3) // 🔴 Fetch 60 items to get 20
-);
+)
 
-const querySnapshot = await getDocs(sessionsQuery);
+const querySnapshot = await getDocs(sessionsQuery)
 // Filter to only sessions from followed users
 const filteredDocs = querySnapshot.docs
-  .filter(doc => followingIds.includes(doc.data().userId)) // 🔴 Client-side filter
-  .slice(0, limitCount + 1);
+  .filter((doc) => followingIds.includes(doc.data().userId)) // 🔴 Client-side filter
+  .slice(0, limitCount + 1)
 ```
 
 **Impact**:
@@ -313,14 +307,14 @@ for (const userId of followingIds) {
 // Lines 1109-1121
 if (auth.currentUser) {
   const followingChecks = await Promise.all(
-    users.map(async user => {
-      if (user.id === auth.currentUser!.uid) return user;
+    users.map(async (user) => {
+      if (user.id === auth.currentUser!.uid) return user
       const socialGraphDoc = await getDoc(
         doc(db, `social_graph/${auth.currentUser!.uid}/outbound`, user.id)
-      ); // 🔴 One read per search result
-      return { ...user, isFollowing: socialGraphDoc.exists() };
+      ) // 🔴 One read per search result
+      return { ...user, isFollowing: socialGraphDoc.exists() }
     })
-  );
+  )
 }
 ```
 
@@ -353,7 +347,7 @@ transaction.set(currentUserSocialGraphRef, {
   type: 'outbound',
   user: targetUserData, // 🔴 Redundant denormalization
   createdAt: now,
-});
+})
 ```
 
 **Impact**:
@@ -384,9 +378,9 @@ const membershipsQuery = query(
   collection(db, 'groupMemberships'),
   where('groupId', '==', groupId),
   where('status', '==', 'active')
-);
-const membershipsSnapshot = await getDocs(membershipsQuery); // Read 1
-const memberIds = membershipsSnapshot.docs.map(doc => doc.data().userId);
+)
+const membershipsSnapshot = await getDocs(membershipsQuery) // Read 1
+const memberIds = membershipsSnapshot.docs.map((doc) => doc.data().userId)
 
 // Then fetch all sessions and filter
 sessionsQuery = query(
@@ -394,11 +388,11 @@ sessionsQuery = query(
   where('visibility', 'in', ['everyone', 'followers']),
   orderBy('createdAt', 'desc'),
   limitFn(limitCount * 3) // 🔴 Fetch 60 to get 20
-);
-const querySnapshot = await getDocs(sessionsQuery); // Read 2-60+
+)
+const querySnapshot = await getDocs(sessionsQuery) // Read 2-60+
 const filteredDocs = querySnapshot.docs
-  .filter(doc => memberIds.includes(doc.data().userId)) // 🔴 Client-side filter
-  .slice(0, limitCount + 1);
+  .filter((doc) => memberIds.includes(doc.data().userId)) // 🔴 Client-side filter
+  .slice(0, limitCount + 1)
 ```
 
 **Impact**:
@@ -421,7 +415,7 @@ await Promise.all([
     userId,
     createdAt: serverTimestamp(),
   }),
-]);
+])
 ```
 
 **Estimated Savings**: **70-80% reduction** in group feed reads
@@ -488,7 +482,7 @@ npx firebase-tools deploy --only firestore:indexes
 
 ```typescript
 // Only write notifications if user enabled them
-const targetUser = await transaction.get(targetUserRef);
+const targetUser = await transaction.get(targetUserRef)
 if (targetUser.data().notificationSettings?.followNotifications !== false) {
   // Create notification
 }
@@ -541,7 +535,7 @@ supportedBy: [userId]
 **Problem**: Fetching all user fields when only need 3-4:
 
 ```typescript
-const usersQuery = query(collection(db, 'users'), limitFn(1000));
+const usersQuery = query(collection(db, 'users'), limitFn(1000))
 // Fetches: email, name, username, bio, profilePicture, location,
 //          website, followersCount, followingCount, totalHours, etc.
 // Only uses: username, name, bio, profilePicture, followersCount
@@ -569,7 +563,7 @@ const usersQuery = query(collection(db, 'users'), limitFn(1000));
 
 ```typescript
 // No limit - could return thousands of documents
-const snapshot = await getDocs(collection(db, 'follows'));
+const snapshot = await getDocs(collection(db, 'follows'))
 ```
 
 **Impact**:
@@ -581,7 +575,7 @@ const snapshot = await getDocs(collection(db, 'follows'));
 **Solution**: Always specify limits:
 
 ```typescript
-const snapshot = await getDocs(query(collection(db, 'follows'), limit(100)));
+const snapshot = await getDocs(query(collection(db, 'follows'), limit(100)))
 ```
 
 ---
@@ -594,8 +588,8 @@ const snapshot = await getDocs(query(collection(db, 'follows'), limit(100)));
 
 ```typescript
 // Getting user doc to populate profile
-const userDoc = await withTimeout(getDoc(doc(db, 'users', userId)));
-const userData = userDoc.data();
+const userDoc = await withTimeout(getDoc(doc(db, 'users', userId)))
+const userData = userDoc.data()
 ```
 
 **Impact**:
@@ -617,11 +611,11 @@ const userData = userDoc.data();
 
 ```typescript
 // Use batch writes for multiple operations
-const batch = writeBatch(db);
-batch.set(doc1, data1);
-batch.update(doc2, data2);
-batch.delete(doc3);
-await batch.commit(); // One atomic operation
+const batch = writeBatch(db)
+batch.set(doc1, data1)
+batch.update(doc2, data2)
+batch.delete(doc3)
+await batch.commit() // One atomic operation
 ```
 
 ---
@@ -633,7 +627,7 @@ await batch.commit(); // One atomic operation
 **Problem**: Using `limitFn(limitCount * 3)` to account for filtering
 
 ```typescript
-limitFn(limitCount * 3); // Fetch 60 to return 20
+limitFn(limitCount * 3) // Fetch 60 to return 20
 ```
 
 **Impact**:
@@ -662,9 +656,9 @@ limitFn(limitCount * 3); // Fetch 60 to return 20
 **Solution**:
 
 ```typescript
-const queryClient = useQueryClient();
-await followUser(userId);
-queryClient.invalidateQueries({ queryKey: USERS_KEYS.all() });
+const queryClient = useQueryClient()
+await followUser(userId)
+queryClient.invalidateQueries({ queryKey: USERS_KEYS.all() })
 ```
 
 ---

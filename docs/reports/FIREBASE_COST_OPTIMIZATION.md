@@ -25,7 +25,7 @@ With only ~10 users, the Firebase bill was unexpectedly high. Analysis revealed 
 **Before**:
 
 ```typescript
-const interval = setInterval(checkForNewSessions, 120000); // Every 2 minutes
+const interval = setInterval(checkForNewSessions, 120000) // Every 2 minutes
 ```
 
 **After**:
@@ -34,11 +34,11 @@ const interval = setInterval(checkForNewSessions, 120000); // Every 2 minutes
 const interval = setInterval(
   () => {
     if (!document.hidden) {
-      checkForNewSessions();
+      checkForNewSessions()
     }
   },
   5 * 60 * 1000
-); // Every 5 minutes when tab is visible
+) // Every 5 minutes when tab is visible
 ```
 
 **Details**:
@@ -59,13 +59,13 @@ const interval = setInterval(
 **Before**:
 
 ```typescript
-const MAX_LISTENERS = 10;
+const MAX_LISTENERS = 10
 ```
 
 **After**:
 
 ```typescript
-const MAX_LISTENERS = 3; // Reduced from 10 for cost optimization
+const MAX_LISTENERS = 3 // Reduced from 10 for cost optimization
 ```
 
 **Details**:
@@ -423,7 +423,7 @@ staleTime: STANDARD_CACHE_TIMES.SHORT, // Back to 1 minute
 
 ```typescript
 // In src/components/Feed.tsx
-const MAX_LISTENERS = 5; // Increase from 3 to 5
+const MAX_LISTENERS = 5 // Increase from 3 to 5
 ```
 
 **If users miss new sessions** (5 min polling too long):
@@ -433,11 +433,11 @@ const MAX_LISTENERS = 5; // Increase from 3 to 5
 const interval = setInterval(
   () => {
     if (!document.hidden) {
-      checkForNewSessions();
+      checkForNewSessions()
     }
   },
   3 * 60 * 1000
-); // 3 minutes instead of 5
+) // 3 minutes instead of 5
 ```
 
 ---

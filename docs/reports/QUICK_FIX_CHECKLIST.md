@@ -273,9 +273,9 @@ npm run build && npm run deploy
 
 ## Sign-Off
 
-- [ ] Database Optimization Expert: ******\_\_\_****** Date: \_\_\_
-- [ ] Team Lead: ******\_\_\_****** Date: \_\_\_
-- [ ] Product Manager: ******\_\_\_****** Date: \_\_\_
+- [ ] Database Optimization Expert: **\*\***\_\_\_**\*\*** Date: \_\_\_
+- [ ] Team Lead: **\*\***\_\_\_**\*\*** Date: \_\_\_
+- [ ] Product Manager: **\*\***\_\_\_**\*\*** Date: \_\_\_
 
 ---
 

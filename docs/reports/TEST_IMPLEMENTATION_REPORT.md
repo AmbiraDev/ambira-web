@@ -155,15 +155,15 @@ All tests follow the Arrange-Act-Assert pattern:
 describe('Feature', () => {
   it('should do X when Y', () => {
     // Arrange: Setup
-    const mockData = createMockSession();
+    const mockData = createMockSession()
 
     // Act: Execute
-    const result = await service.method(mockData);
+    const result = await service.method(mockData)
 
     // Assert: Verify
-    expect(result).toEqual(expectedValue);
-  });
-});
+    expect(result).toEqual(expectedValue)
+  })
+})
 ```
 
 ### Mock Strategy
@@ -372,13 +372,10 @@ import {
   createMockUser,
   createMockUserWithFollowers,
   createMockPrivateUser,
-} from '@/__mocks__/factories';
+} from '@/__mocks__/factories'
 
 // Session Factory
-import {
-  createMockSession,
-  createMockSessionBatch,
-} from '@/__mocks__/factories';
+import { createMockSession, createMockSessionBatch } from '@/__mocks__/factories'
 
 // Active Session Factory
 import {
@@ -386,32 +383,32 @@ import {
   createMockRunningSession,
   createMockPausedSession,
   createMockOldSession,
-} from '@/__mocks__/factories';
+} from '@/__mocks__/factories'
 ```
 
 ### Test Pattern Example
 
 ```typescript
 describe('ServiceName', () => {
-  let service: ServiceName;
+  let service: ServiceName
 
   beforeEach(() => {
-    jest.clearAllMocks();
-    service = new ServiceName();
-  });
+    jest.clearAllMocks()
+    service = new ServiceName()
+  })
 
   describe('methodName', () => {
     it('should do X when Y', async () => {
       // Arrange
-      const mockData = createMockSession();
-      jest.spyOn(mockRepo, 'method').mockResolvedValue(mockData);
+      const mockData = createMockSession()
+      jest.spyOn(mockRepo, 'method').mockResolvedValue(mockData)
 
       // Act
-      const result = await service.method(mockData);
+      const result = await service.method(mockData)
 
       // Assert
-      expect(result).toEqual(expectedValue);
-    });
-  });
-});
+      expect(result).toEqual(expectedValue)
+    })
+  })
+})
 ```

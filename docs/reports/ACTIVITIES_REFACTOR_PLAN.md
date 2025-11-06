@@ -65,14 +65,14 @@ Users interact with activities only when:
 
 ```typescript
 interface ActivityType {
-  id: string; // e.g., 'work', 'study', 'exercise'
-  name: string; // Display name
-  category: string; // 'productivity' | 'learning' | 'health' | 'creative'
-  icon: string; // Iconify icon name
-  defaultColor: string; // Hex color
-  isSystem: boolean; // true for defaults, false for custom
-  order: number; // Display order
-  description?: string; // Brief description
+  id: string // e.g., 'work', 'study', 'exercise'
+  name: string // Display name
+  category: string // 'productivity' | 'learning' | 'health' | 'creative'
+  icon: string // Iconify icon name
+  defaultColor: string // Hex color
+  isSystem: boolean // true for defaults, false for custom
+  order: number // Display order
+  description?: string // Brief description
 }
 ```
 
@@ -97,12 +97,12 @@ interface ActivityType {
 
 ```typescript
 interface UserActivityPreference {
-  typeId: string; // References /activityTypes/{id}
-  isHidden: boolean; // Hide from picker (default: false)
-  customColor?: string; // Override default color
-  weeklyTarget?: number; // Personal goal in hours
-  lastUsed?: Timestamp; // For smart sorting
-  isPinned?: boolean; // Pin to top of picker
+  typeId: string // References /activityTypes/{id}
+  isHidden: boolean // Hide from picker (default: false)
+  customColor?: string // Override default color
+  weeklyTarget?: number // Personal goal in hours
+  lastUsed?: Timestamp // For smart sorting
+  isPinned?: boolean // Pin to top of picker
 }
 ```
 
@@ -380,8 +380,8 @@ This is the ONLY place (besides dropdown) to create/edit/delete custom activitie
 ```typescript
 // Sessions already support both fields
 interface Session {
-  activityId?: string; // New field (preferred)
-  projectId?: string; // Legacy field
+  activityId?: string // New field (preferred)
+  projectId?: string // Legacy field
   // ... other fields
 }
 ```
@@ -396,7 +396,7 @@ const sessions = await getDocs(
     where('userId', '==', userId),
     where('activityId', 'in', activityIds) // Primary
   )
-);
+)
 
 // Fallback for legacy data
 if (sessions.empty) {
@@ -406,7 +406,7 @@ if (sessions.empty) {
       where('userId', '==', userId),
       where('projectId', 'in', activityIds) // Fallback
     )
-  );
+  )
 }
 ```
 
@@ -463,14 +463,12 @@ For power users with many custom activities:
 
 ```typescript
 // Add search to ActivityPicker
-const [searchTerm, setSearchTerm] = useState('');
+const [searchTerm, setSearchTerm] = useState('')
 
 const filteredActivities = useMemo(() => {
-  if (!searchTerm) return activities;
-  return activities.filter(a =>
-    a.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-}, [activities, searchTerm]);
+  if (!searchTerm) return activities
+  return activities.filter((a) => a.name.toLowerCase().includes(searchTerm.toLowerCase()))
+}, [activities, searchTerm])
 ```
 
 ---
@@ -701,12 +699,12 @@ const filteredActivities = useMemo(() => {
 
 ```typescript
 interface UserActivityPreference {
-  typeId: string; // References /activityTypes/{id}
-  userId: string; // Owner
-  lastUsed: Timestamp; // Updated on every session creation
-  useCount: number; // Incremented on each session
-  createdAt: Timestamp;
-  updatedAt: Timestamp;
+  typeId: string // References /activityTypes/{id}
+  userId: string // Owner
+  lastUsed: Timestamp // Updated on every session creation
+  useCount: number // Incremented on each session
+  createdAt: Timestamp
+  updatedAt: Timestamp
 }
 ```
 
@@ -715,10 +713,10 @@ interface UserActivityPreference {
 ```typescript
 // When user creates a session
 async function onSessionCreate(sessionData) {
-  const { activityId, userId } = sessionData;
+  const { activityId, userId } = sessionData
 
   // Update or create activity preference
-  const prefRef = doc(db, `users/${userId}/activityPreferences/${activityId}`);
+  const prefRef = doc(db, `users/${userId}/activityPreferences/${activityId}`)
   await setDoc(
     prefRef,
     {
@@ -729,7 +727,7 @@ async function onSessionCreate(sessionData) {
       updatedAt: serverTimestamp(),
     },
     { merge: true }
-  );
+  )
 }
 ```
 
@@ -741,22 +739,20 @@ async function getRecentActivities(userId: string, limit: number = 5) {
     collection(db, `users/${userId}/activityPreferences`),
     orderBy('lastUsed', 'desc'),
     limit(limit)
-  );
+  )
 
-  const snapshot = await getDocs(prefsQuery);
-  const recentIds = snapshot.docs.map(doc => doc.data().typeId);
+  const snapshot = await getDocs(prefsQuery)
+  const recentIds = snapshot.docs.map((doc) => doc.data().typeId)
 
   // If user has < 5 recent, fill with popular defaults
   if (recentIds.length < limit) {
-    const popularDefaults = ['work', 'study', 'coding', 'reading', 'writing'];
-    const fillCount = limit - recentIds.length;
-    const fillIds = popularDefaults
-      .filter(id => !recentIds.includes(id))
-      .slice(0, fillCount);
-    recentIds.push(...fillIds);
+    const popularDefaults = ['work', 'study', 'coding', 'reading', 'writing']
+    const fillCount = limit - recentIds.length
+    const fillIds = popularDefaults.filter((id) => !recentIds.includes(id)).slice(0, fillCount)
+    recentIds.push(...fillIds)
   }
 
-  return recentIds;
+  return recentIds
 }
 ```
 

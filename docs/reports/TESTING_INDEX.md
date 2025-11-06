@@ -247,18 +247,18 @@ See: [Unit Tests Guide - Testing User Interactions](./src/__tests__/unit/README.
 ### Unit Test - Hook
 
 ```typescript
-import { renderHook, act } from '@testing-library/react';
-import { useCounter } from '@/hooks/useCounter';
+import { renderHook, act } from '@testing-library/react'
+import { useCounter } from '@/hooks/useCounter'
 
 it('should increment', () => {
-  const { result } = renderHook(() => useCounter());
+  const { result } = renderHook(() => useCounter())
 
   act(() => {
-    result.current.increment();
-  });
+    result.current.increment()
+  })
 
-  expect(result.current.count).toBe(1);
-});
+  expect(result.current.count).toBe(1)
+})
 ```
 
 See: [Unit Tests Guide - Testing Hooks](./src/__tests__/unit/README.md#testing-hooks)
@@ -296,16 +296,16 @@ See: [Integration Tests Guide](./src/__tests__/integration/README.md)
 ### Firebase Mock
 
 ```typescript
-import { firebaseMock } from '@/__tests__/__mocks__/firebaseMock';
+import { firebaseMock } from '@/__tests__/__mocks__/firebaseMock'
 
-jest.mock('firebase/firestore');
+jest.mock('firebase/firestore')
 
 it('should save to Firestore', async () => {
-  firebaseMock.db.collection('items').add.mockResolvedValue({ id: 'new-id' });
+  firebaseMock.db.collection('items').add.mockResolvedValue({ id: 'new-id' })
 
   // Test code
-  expect(firebaseMock.db.collection).toHaveBeenCalledWith('items');
-});
+  expect(firebaseMock.db.collection).toHaveBeenCalledWith('items')
+})
 ```
 
 See: [Mocks Guide - Firebase Mocks](./src/__tests__/__mocks__/README.md#firebase-mocks)
@@ -313,19 +313,19 @@ See: [Mocks Guide - Firebase Mocks](./src/__tests__/__mocks__/README.md#firebase
 ### Service Mock
 
 ```typescript
-import * as userService from '@/services/userService';
+import * as userService from '@/services/userService'
 
-jest.mock('@/services/userService');
+jest.mock('@/services/userService')
 
 it('should fetch user', async () => {
-  (userService.getUser as jest.Mock).mockResolvedValue({
+  ;(userService.getUser as jest.Mock).mockResolvedValue({
     id: '1',
     name: 'John',
-  });
+  })
 
   // Test code
-  expect(userService.getUser).toHaveBeenCalledWith('1');
-});
+  expect(userService.getUser).toHaveBeenCalledWith('1')
+})
 ```
 
 See: [Unit Tests Guide - Testing with Mocks](./src/__tests__/unit/README.md#testing-with-mocks)
@@ -351,15 +351,15 @@ See: [Mocks Guide - Test Data Factories](./src/__tests__/__mocks__/README.md#tes
 ```typescript
 describe('API Contract', () => {
   it('should return data with required fields', async () => {
-    const response = await getChallenges();
+    const response = await getChallenges()
 
-    response.forEach(item => {
-      expect(item).toHaveProperty('id');
-      expect(item).toHaveProperty('title');
-      expect(typeof item.id).toBe('string');
-    });
-  });
-});
+    response.forEach((item) => {
+      expect(item).toHaveProperty('id')
+      expect(item).toHaveProperty('title')
+      expect(typeof item.id).toBe('string')
+    })
+  })
+})
 ```
 
 See: [Contract Tests Guide - API Contract Tests](./src/__tests__/contract/README.md#api-contract-tests)
@@ -375,11 +375,11 @@ See: [Contract Tests Guide - API Contract Tests](./src/__tests__/contract/README
 ```typescript
 // Good - waits for specific condition
 await waitFor(() => {
-  expect(screen.getByText('Done')).toBeInTheDocument();
-});
+  expect(screen.getByText('Done')).toBeInTheDocument()
+})
 
 // Bad - arbitrary wait
-await new Promise(resolve => setTimeout(resolve, 1000));
+await new Promise((resolve) => setTimeout(resolve, 1000))
 ```
 
 See: [Testing Handbook - Troubleshooting](./docs/testing/TESTING_HANDBOOK.md#troubleshooting)
@@ -469,16 +469,16 @@ src/__tests__/
 
 ```typescript
 // Print the DOM
-screen.debug();
+screen.debug()
 
 // Print specific element
-screen.debug(screen.getByRole('button'));
+screen.debug(screen.getByRole('button'))
 
 // Check if element exists
-console.log(screen.queryByText('Text'));
+console.log(screen.queryByText('Text'))
 
 // Log mock calls
-console.log(myMock.mock.calls);
+console.log(myMock.mock.calls)
 ```
 
 ### When Stuck

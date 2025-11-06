@@ -22,13 +22,13 @@ This guide provides step-by-step instructions for implementing the critical opti
 ```typescript
 // BEFORE: Sequential getDoc calls in a loop
 for (const followerId of followerIds) {
-  const userDoc = await getDoc(doc(db, 'users', followerId)); // 🔴 1 read per follower
+  const userDoc = await getDoc(doc(db, 'users', followerId)) // 🔴 1 read per follower
   if (userDoc.exists()) {
     followers.push({
       id: userDoc.id,
       username: userData.username,
       // ... other fields
-    });
+    })
   }
 }
 // For 20 followers: 20 sequential read operations + 1 initial query = 21 total
@@ -214,10 +214,10 @@ getFollowing: async (userId: string): Promise<User[]> => {
 
 ```typescript
 // Test with large follower list
-import { firebaseUserApi } from '@/lib/api/users';
+import { firebaseUserApi } from '@/lib/api/users'
 
-const followers = await firebaseUserApi.getFollowers('user123');
-console.log('Fetched', followers.length, 'followers');
+const followers = await firebaseUserApi.getFollowers('user123')
+console.log('Fetched', followers.length, 'followers')
 // Should complete much faster than before
 ```
 
@@ -249,76 +249,66 @@ const batchPromises = batch.map(async postDoc => {
  * Process feed post documents into PostWithDetails with deduplication
  * Loads user, session, and support data efficiently with batching
  */
-const _processPosts = async (
-  postDocs: DocumentSnapshot[]
-): Promise<PostWithDetails[]> => {
+const _processPosts = async (postDocs: DocumentSnapshot[]): Promise<PostWithDetails[]> => {
   // 🟢 PHASE 1: Deduplicate IDs
-  const userIds = new Set<string>();
-  const sessionIds = new Set<string>();
-  const postIds = new Set<string>();
+  const userIds = new Set<string>()
+  const sessionIds = new Set<string>()
+  const postIds = new Set<string>()
 
-  postDocs.forEach(postDoc => {
-    const postData = postDoc.data();
-    if (postData?.userId) userIds.add(postData.userId);
-    if (postData?.sessionId) sessionIds.add(postData.sessionId);
-    postIds.add(postDoc.id);
-  });
+  postDocs.forEach((postDoc) => {
+    const postData = postDoc.data()
+    if (postData?.userId) userIds.add(postData.userId)
+    if (postData?.sessionId) sessionIds.add(postData.sessionId)
+    postIds.add(postDoc.id)
+  })
 
   // 🟢 PHASE 2: Batch load all documents in parallel
   const [userDocs, sessionDocs, supportDocs] = await Promise.all([
     // Load all users in one batch
-    Promise.all(
-      Array.from(userIds).map(userId => getDoc(doc(db, 'users', userId)))
-    ),
+    Promise.all(Array.from(userIds).map((userId) => getDoc(doc(db, 'users', userId)))),
     // Load all sessions in one batch
-    Promise.all(
-      Array.from(sessionIds).map(sessionId =>
-        getDoc(doc(db, 'sessions', sessionId))
-      )
-    ),
+    Promise.all(Array.from(sessionIds).map((sessionId) => getDoc(doc(db, 'sessions', sessionId)))),
     // Load all support records in one batch (only if authenticated)
     auth.currentUser
       ? Promise.all(
-          Array.from(postIds).map(postId =>
-            getDoc(
-              doc(db, 'postSupports', `${auth.currentUser!.uid}_${postId}`)
-            )
+          Array.from(postIds).map((postId) =>
+            getDoc(doc(db, 'postSupports', `${auth.currentUser!.uid}_${postId}`))
           )
         )
       : Promise.resolve([]),
-  ]);
+  ])
 
   // 🟢 PHASE 3: Build lookup maps
-  const userMap = new Map<string, DocumentData>();
-  const sessionMap = new Map<string, DocumentData>();
-  const supportMap = new Map<string, boolean>();
+  const userMap = new Map<string, DocumentData>()
+  const sessionMap = new Map<string, DocumentData>()
+  const supportMap = new Map<string, boolean>()
 
-  userDocs.forEach(doc => {
-    if (doc.exists()) userMap.set(doc.id, doc.data());
-  });
+  userDocs.forEach((doc) => {
+    if (doc.exists()) userMap.set(doc.id, doc.data())
+  })
 
-  sessionDocs.forEach(doc => {
-    if (doc.exists()) sessionMap.set(doc.id, doc.data());
-  });
+  sessionDocs.forEach((doc) => {
+    if (doc.exists()) sessionMap.set(doc.id, doc.data())
+  })
 
-  supportDocs.forEach(doc => {
+  supportDocs.forEach((doc) => {
     if (doc.exists()) {
-      const data = doc.data();
-      const postId = data.postId;
-      supportMap.set(postId, true);
+      const data = doc.data()
+      const postId = data.postId
+      supportMap.set(postId, true)
     }
-  });
+  })
 
   // 🟢 PHASE 4: Build results without additional reads
-  const posts: PostWithDetails[] = [];
+  const posts: PostWithDetails[] = []
 
   for (const postDoc of postDocs) {
-    const postData = postDoc.data();
-    if (!postData) continue;
+    const postData = postDoc.data()
+    if (!postData) continue
 
-    const userData = userMap.get(postData.userId as string) || {};
-    const sessionData = sessionMap.get(postData.sessionId as string);
-    const isSupported = supportMap.get(postDoc.id) || false;
+    const userData = userMap.get(postData.userId as string) || {}
+    const sessionData = sessionMap.get(postData.sessionId as string)
+    const isSupported = supportMap.get(postDoc.id) || false
 
     const post: PostWithDetails = {
       id: postDoc.id,
@@ -328,9 +318,7 @@ const _processPosts = async (
       supportCount: (postData.supportCount as number) || 0,
       commentCount: (postData.commentCount as number) || 0,
       isSupported,
-      visibility:
-        (postData.visibility as 'everyone' | 'followers' | 'private') ||
-        'everyone',
+      visibility: (postData.visibility as 'everyone' | 'followers' | 'private') || 'everyone',
       createdAt: convertTimestamp(postData.createdAt),
       updatedAt: convertTimestamp(postData.updatedAt),
       user: {
@@ -349,23 +337,16 @@ const _processPosts = async (
             id: postData.sessionId as string,
             userId: postData.userId as string,
             activityId:
-              (sessionData.activityId as string) ||
-              (sessionData.projectId as string) ||
-              '',
+              (sessionData.activityId as string) || (sessionData.projectId as string) || '',
             projectId:
-              (sessionData.projectId as string) ||
-              (sessionData.activityId as string) ||
-              '',
+              (sessionData.projectId as string) || (sessionData.activityId as string) || '',
             title: (sessionData.title as string) || 'Untitled Session',
             description: (sessionData.description as string) || '',
             duration: (sessionData.duration as number) || 0,
             startTime: convertTimestamp(sessionData.startTime) || new Date(),
             tags: (sessionData.tags as string[]) || [],
             visibility:
-              (sessionData.visibility as
-                | 'everyone'
-                | 'followers'
-                | 'private') || 'everyone',
+              (sessionData.visibility as 'everyone' | 'followers' | 'private') || 'everyone',
             showStartTime: sessionData.showStartTime as boolean | undefined,
             howFelt: sessionData.howFelt as number | undefined,
             privateNotes: sessionData.privateNotes as string | undefined,
@@ -392,13 +373,13 @@ const _processPosts = async (
             createdAt: new Date(),
             updatedAt: new Date(),
           } as Session),
-    };
+    }
 
-    posts.push(post);
+    posts.push(post)
   }
 
-  return posts;
-};
+  return posts
+}
 ```
 
 ### Expected Impact
@@ -411,10 +392,10 @@ const _processPosts = async (
 
 ```typescript
 // Verify feed loading is faster and uses fewer reads
-import { firebasePostApi } from '@/lib/api/sessions/posts';
+import { firebasePostApi } from '@/lib/api/sessions/posts'
 
-const feedResponse = await firebasePostApi.getFeedSessions(20);
-console.log('Loaded', feedResponse.sessions.length, 'posts efficiently');
+const feedResponse = await firebasePostApi.getFeedSessions(20)
+console.log('Loaded', feedResponse.sessions.length, 'posts efficiently')
 ```
 
 ---
@@ -426,14 +407,12 @@ console.log('Loaded', feedResponse.sessions.length, 'posts efficiently');
 ```typescript
 // BEFORE: Every profile view recalculates counts
 const shouldRecalculate =
-  isOwnProfile ||
-  userData.followersCount === undefined ||
-  userData.followingCount === undefined;
+  isOwnProfile || userData.followersCount === undefined || userData.followingCount === undefined
 
 if (shouldRecalculate) {
   // Scans entire inbound/outbound collections
-  const inboundSnapshot = await getDocs(inboundRef); // 🔴 500+ reads for large users
-  followersCount = inboundSnapshot.size;
+  const inboundSnapshot = await getDocs(inboundRef) // 🔴 500+ reads for large users
+  followersCount = inboundSnapshot.size
 }
 ```
 
@@ -547,14 +526,14 @@ getUserProfile: async (username: string): Promise<UserProfile> => {
 async function recalculateCountsInBackground(userId: string): Promise<void> {
   try {
     // Count followers
-    const inboundRef = collection(db, `social_graph/${userId}/inbound`);
-    const inboundSnapshot = await getDocs(inboundRef);
-    const followersCount = inboundSnapshot.size;
+    const inboundRef = collection(db, `social_graph/${userId}/inbound`)
+    const inboundSnapshot = await getDocs(inboundRef)
+    const followersCount = inboundSnapshot.size
 
     // Count following
-    const outboundRef = collection(db, `social_graph/${userId}/outbound`);
-    const outboundSnapshot = await getDocs(outboundRef);
-    const followingCount = outboundSnapshot.size;
+    const outboundRef = collection(db, `social_graph/${userId}/outbound`)
+    const outboundSnapshot = await getDocs(outboundRef)
+    const followingCount = outboundSnapshot.size
 
     // Update document with fresh counts
     await updateDoc(doc(db, 'users', userId), {
@@ -562,10 +541,10 @@ async function recalculateCountsInBackground(userId: string): Promise<void> {
       followingCount,
       countCachedAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
-    });
+    })
   } catch (error) {
     // Silently fail - this is just a background maintenance task
-    console.debug('Count recalc failed:', error);
+    console.debug('Count recalc failed:', error)
   }
 }
 ```
@@ -580,8 +559,8 @@ async function recalculateCountsInBackground(userId: string): Promise<void> {
 
 ```typescript
 // Test profile loads without expensive count scans
-const profile = await firebaseUserApi.getUserProfile('john');
-console.log('Profile loaded quickly with counts:', profile.followersCount);
+const profile = await firebaseUserApi.getUserProfile('john')
+console.log('Profile loaded quickly with counts:', profile.followersCount)
 // Should complete in <100ms even with 500+ followers
 ```
 
@@ -593,15 +572,15 @@ console.log('Profile loaded quickly with counts:', profile.followersCount);
 
 ```typescript
 // BEFORE: Loads all 1000 users to search
-const usersQuery = query(collection(db, 'users'), limitFn(1000));
-const querySnapshot = await getDocs(usersQuery);
+const usersQuery = query(collection(db, 'users'), limitFn(1000))
+const querySnapshot = await getDocs(usersQuery)
 
 // Filter client-side
-querySnapshot.forEach(docSnap => {
+querySnapshot.forEach((docSnap) => {
   if (username.includes(searchTerm) || name.includes(searchTerm)) {
     // Add to results
   }
-});
+})
 ```
 
 ### Solution: Limit Initial Query & Use Efficient Filtering
@@ -725,8 +704,8 @@ searchUsers: async (
 
 ```typescript
 // Test search with small limit
-const results = await firebaseUserApi.searchUsers('john', 20);
-console.log('Search returned', results.users.length, 'results');
+const results = await firebaseUserApi.searchUsers('john', 20)
+console.log('Search returned', results.users.length, 'results')
 // Should never read more than 100 docs
 ```
 
@@ -841,56 +820,56 @@ npx firebase-tools firestore:indexes --json
 **File**: `tests/integration/firebase-optimization.test.ts`
 
 ```typescript
-import { firebaseUserApi } from '@/lib/api/users';
-import { firebasePostApi } from '@/lib/api/sessions/posts';
-import { db } from '@/lib/firebase';
-import { doc, getDoc } from 'firebase/firestore';
+import { firebaseUserApi } from '@/lib/api/users'
+import { firebasePostApi } from '@/lib/api/sessions/posts'
+import { db } from '@/lib/firebase'
+import { doc, getDoc } from 'firebase/firestore'
 
 describe('Firebase Optimization Tests', () => {
   // Track reads
-  let readCount = 0;
+  let readCount = 0
 
   beforeEach(() => {
-    readCount = 0;
+    readCount = 0
     // Instrument Firestore to count reads
-    jest.spyOn(db, 'getDoc').mockImplementation(docRef => {
-      readCount++;
-      return getDoc(docRef);
-    });
-  });
+    jest.spyOn(db, 'getDoc').mockImplementation((docRef) => {
+      readCount++
+      return getDoc(docRef)
+    })
+  })
 
   test('getFollowers should batch load users', async () => {
-    const followers = await firebaseUserApi.getFollowers('user123');
+    const followers = await firebaseUserApi.getFollowers('user123')
 
     // Should be ~2-3 reads (1 query + 1 batch), not 1 + N
-    expect(readCount).toBeLessThan(followers.length * 0.5);
-    expect(followers.length).toBeGreaterThan(0);
-  });
+    expect(readCount).toBeLessThan(followers.length * 0.5)
+    expect(followers.length).toBeGreaterThan(0)
+  })
 
   test('getFeedSessions should deduplicate user loads', async () => {
-    const feed = await firebasePostApi.getFeedSessions(20);
+    const feed = await firebasePostApi.getFeedSessions(20)
 
     // Should be ~20-25 reads, not 80+
-    expect(readCount).toBeLessThan(30);
-    expect(feed.sessions.length).toBeGreaterThan(0);
-  });
+    expect(readCount).toBeLessThan(30)
+    expect(feed.sessions.length).toBeGreaterThan(0)
+  })
 
   test('getUserProfile should not recalculate counts', async () => {
-    const profile = await firebaseUserApi.getUserProfile('john');
+    const profile = await firebaseUserApi.getUserProfile('john')
 
     // Should be 1 read (user doc), not 3+ (user + 2 collection scans)
-    expect(readCount).toBeLessThan(3);
-    expect(profile.followersCount).toBeGreaterThanOrEqual(0);
-  });
+    expect(readCount).toBeLessThan(3)
+    expect(profile.followersCount).toBeGreaterThanOrEqual(0)
+  })
 
   test('searchUsers should limit initial query', async () => {
-    const results = await firebaseUserApi.searchUsers('john');
+    const results = await firebaseUserApi.searchUsers('john')
 
     // Should never load 1000 users
-    expect(readCount).toBeLessThan(150); // 100 limit + some overhead
-    expect(results.users.length).toBeLessThanOrEqual(20);
-  });
-});
+    expect(readCount).toBeLessThan(150) // 100 limit + some overhead
+    expect(results.users.length).toBeLessThanOrEqual(20)
+  })
+})
 ```
 
 ### Run Tests
@@ -915,7 +894,7 @@ console.metrics({
   'firestore.reads.followers': readCount,
   'firestore.reads.feed': readCount,
   'firestore.reads.search': readCount,
-});
+})
 ```
 
 ### Before/After Comparison
@@ -1000,7 +979,7 @@ Navigate to: **Cloud Firestore → Insights**
 ```typescript
 // Log optimization metrics
 if (readCount > expectedReads * 1.5) {
-  console.warn(`Unexpected read count: ${readCount} vs ${expectedReads}`);
+  console.warn(`Unexpected read count: ${readCount} vs ${expectedReads}`)
   // Send alert to monitoring service
 }
 ```

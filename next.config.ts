@@ -1,5 +1,5 @@
-import { withSentryConfig } from '@sentry/nextjs';
-import type { NextConfig } from 'next';
+import { withSentryConfig } from '@sentry/nextjs'
+import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
   async redirects() {
@@ -9,12 +9,12 @@ const nextConfig: NextConfig = {
         destination: '/',
         permanent: true,
       },
-    ];
+    ]
   },
   eslint: {
-    // Disable ESLint during builds
-    // Linting still runs via `npm run lint`
-    ignoreDuringBuilds: true,
+    // Enable ESLint during builds to catch issues before deployment
+    // Linting also runs via `npm run lint`
+    ignoreDuringBuilds: false,
   },
   typescript: {
     // Type checking is now enabled for production builds
@@ -41,7 +41,7 @@ const nextConfig: NextConfig = {
     minimumCacheTTL: 60,
     qualities: [75, 90, 95, 100],
   },
-};
+}
 
 export default withSentryConfig(nextConfig, {
   // For all available options, see:
@@ -74,4 +74,4 @@ export default withSentryConfig(nextConfig, {
   // https://docs.sentry.io/product/crons/
   // https://vercel.com/docs/cron-jobs
   automaticVercelMonitors: true,
-});
+})
