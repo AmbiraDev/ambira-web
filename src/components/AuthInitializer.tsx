@@ -19,7 +19,7 @@
 'use client';
 
 import { useEffect, useState, useRef, useCallback, ReactNode } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
 import { firebaseAuthApi } from '@/lib/api/auth';
 import { isFirebaseInitialized } from '@/lib/firebase';
@@ -33,8 +33,16 @@ interface AuthInitializerProps {
 export function AuthInitializer({ children }: AuthInitializerProps) {
   const queryClient = useQueryClient();
   const router = useRouter();
-  const [isInitializing, setIsInitializing] = useState(true);
+  const pathname = usePathname();
   const redirectHandledRef = useRef(false);
+
+  // Check if this is a public page
+  // pathname is available both on server and client in Next.js App Router
+  const isPublicPage =
+    pathname === '/login' || pathname === '/signup' || pathname === '/auth';
+
+  // For public pages, skip the loading state entirely
+  const [isInitializing, setIsInitializing] = useState(() => !isPublicPage);
 
   // Memoize navigation to avoid re-renders
   const navigateToHome = useCallback(() => {
@@ -42,6 +50,29 @@ export function AuthInitializer({ children }: AuthInitializerProps) {
   }, [router]);
 
   useEffect(() => {
+    // Public pages should render immediately without waiting for auth
+    if (isPublicPage) {
+      // Ensure we're not initializing
+      setIsInitializing(false);
+
+      // Still set up auth listener in background, but don't block rendering
+      if (isFirebaseInitialized) {
+        firebaseAuthApi.onAuthStateChanged(async firebaseUser => {
+          try {
+            if (firebaseUser) {
+              const userData = await firebaseAuthApi.getCurrentUser();
+              queryClient.setQueryData(AUTH_KEYS.session(), userData);
+            } else {
+              queryClient.setQueryData(AUTH_KEYS.session(), null);
+            }
+          } catch (_err) {
+            queryClient.setQueryData(AUTH_KEYS.session(), null);
+          }
+        });
+      }
+      return;
+    }
+
     if (!isFirebaseInitialized) {
       // Firebase is disabled (missing env vars) - treat as signed out
       queryClient.setQueryData(AUTH_KEYS.session(), null);
@@ -144,9 +175,15 @@ export function AuthInitializer({ children }: AuthInitializerProps) {
         authUnsubscribe();
       }
     };
-  }, [queryClient, navigateToHome]);
+  }, [queryClient, navigateToHome, pathname]);
 
-  // Show loading state during initial auth check
+  // Public pages should render immediately without loading screen
+  // This prevents test timeouts and provides better UX
+  if (isPublicPage) {
+    return <>{children}</>;
+  }
+
+  // Show loading state during initial auth check for protected pages
   // This prevents flash of unauthenticated content
   if (isInitializing) {
     return <LoadingScreen />;

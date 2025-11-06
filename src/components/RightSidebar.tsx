@@ -10,6 +10,7 @@ import GroupAvatar from '@/components/GroupAvatar';
 import SuggestedPeopleModal from '@/components/SuggestedPeopleModal';
 import SuggestedGroupsModal from '@/components/SuggestedGroupsModal';
 import { useSuggestedGroups } from '@/features/search/hooks';
+import { useJoinGroup } from '@/features/groups/hooks/useGroupMutations';
 import { GROUP_DISPLAY_CONFIG } from '@/lib/constants/groupDisplay';
 
 interface SuggestedUser {
@@ -26,9 +27,9 @@ function RightSidebar() {
   const [suggestedUsers, setSuggestedUsers] = useState<SuggestedUser[]>([]);
   const [isLoadingUsers, setIsLoadingUsers] = useState(true);
   const [followingUsers, setFollowingUsers] = useState<Set<string>>(new Set());
-  const [joiningGroups, setJoiningGroups] = useState<Set<string>>(new Set());
   const [showPeopleModal, setShowPeopleModal] = useState(false);
   const [showGroupsModal, setShowGroupsModal] = useState(false);
+  const [joinedGroupIds, setJoinedGroupIds] = useState<Set<string>>(new Set());
 
   // Use the proper hook for suggested groups
   const {
@@ -39,6 +40,9 @@ function RightSidebar() {
     enabled: !!user,
     limit: GROUP_DISPLAY_CONFIG.SUGGESTED_GROUPS_LIMIT,
   });
+
+  // Use the join group mutation hook
+  const joinGroupMutation = useJoinGroup();
 
   const loadSuggestedContent = useCallback(async () => {
     try {
@@ -51,7 +55,9 @@ function RightSidebar() {
         const following = await firebaseUserApi.getFollowing(user.id);
         const followingIds = new Set(following.map(u => u.id));
         setFollowingUsers(followingIds);
-      } catch {}
+      } catch (error) {
+        console.error('Failed to load following users:', error);
+      }
 
       // Load suggested users (top 5) with 1 hour cache
       try {
@@ -67,7 +73,9 @@ function RightSidebar() {
           }
         );
         setSuggestedUsers(suggestions);
-      } catch {}
+      } catch (error) {
+        console.error('Failed to load suggested users:', error);
+      }
     } catch {
     } finally {
       setIsLoadingUsers(false);
@@ -270,29 +278,43 @@ function RightSidebar() {
                       </div>
                     </div>
                     <button
-                      onClick={async e => {
+                      onClick={e => {
                         e.preventDefault();
                         e.stopPropagation();
-                        if (!user || joiningGroups.has(group.id)) return;
+                        if (!user || joinedGroupIds.has(group.id)) return;
 
-                        setJoiningGroups(prev => new Set(prev).add(group.id));
-                        try {
-                          await firebaseApi.group.joinGroup(group.id, user.id);
-                          // Hook will automatically refetch and filter out the joined group
-                        } catch {
-                          // Error joining group - silently fail for suggestions
-                        } finally {
-                          setJoiningGroups(prev => {
-                            const next = new Set(prev);
-                            next.delete(group.id);
-                            return next;
-                          });
-                        }
+                        // Immediately mark as joined for instant UI feedback
+                        setJoinedGroupIds(prev => new Set(prev).add(group.id));
+
+                        // Fire mutation with proper error handling
+                        joinGroupMutation.mutate(
+                          {
+                            groupId: group.id,
+                            userId: user.id,
+                          },
+                          {
+                            onError: error => {
+                              console.error('Failed to join group:', error);
+                              // Rollback optimistic update on error
+                              setJoinedGroupIds(prev => {
+                                const next = new Set(prev);
+                                next.delete(group.id);
+                                return next;
+                              });
+                            },
+                            // The mutation will automatically invalidate the cache
+                            // and the suggested groups hook will refetch and filter out this group
+                          }
+                        );
                       }}
-                      className="text-sm font-semibold text-[#0066CC] hover:text-[#0051D5] transition-colors duration-200 whitespace-nowrap flex-shrink-0"
-                      disabled={joiningGroups.has(group.id)}
+                      className={`text-sm font-semibold transition-colors duration-200 whitespace-nowrap flex-shrink-0 ${
+                        joinedGroupIds.has(group.id)
+                          ? 'text-gray-600 cursor-not-allowed'
+                          : 'text-[#0066CC] hover:text-[#0051D5] cursor-pointer'
+                      }`}
+                      disabled={joinedGroupIds.has(group.id)}
                     >
-                      {joiningGroups.has(group.id) ? 'Joining...' : 'Join'}
+                      {joinedGroupIds.has(group.id) ? 'Joined' : 'Join'}
                     </button>
                   </div>
                 </Link>

@@ -12,9 +12,10 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { useGroupDetails } from '../hooks/useGroupDetails';
+import { useJoinGroup, useLeaveGroup } from '../hooks/useGroupMutations';
 import { GroupLeaderboard } from './GroupLeaderboard';
 import { GroupMembersList } from './GroupMembersList';
-import { Users, Settings, ArrowLeft } from 'lucide-react';
+import { Users, Settings, ArrowLeft, Check } from 'lucide-react';
 
 interface GroupDetailPageProps {
   groupId: string;
@@ -24,6 +25,9 @@ export function GroupDetailPage({ groupId }: GroupDetailPageProps) {
   const router = useRouter();
   const { user } = useAuth();
   const { group, isLoading, error } = useGroupDetails(groupId);
+  const joinGroupMutation = useJoinGroup();
+  const leaveGroupMutation = useLeaveGroup();
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const [activeTab, setActiveTab] = useState<'leaderboard' | 'members'>(
     'leaderboard'
@@ -154,6 +158,39 @@ export function GroupDetailPage({ groupId }: GroupDetailPageProps) {
   }
 
   const isAdmin = group.adminUserIds.includes(user.id);
+  const isMember = group.memberIds.includes(user.id);
+
+  const handleJoinLeave = async () => {
+    if (!user || isProcessing) return;
+
+    // Only show processing state for leaving (not joining)
+    const shouldShowProcessing = isMember;
+
+    if (shouldShowProcessing) {
+      setIsProcessing(true);
+    }
+
+    try {
+      if (isMember) {
+        await leaveGroupMutation.mutateAsync({
+          groupId: group.id,
+          userId: user.id,
+        });
+      } else {
+        // Join without showing processing state - optimistic update will handle it
+        await joinGroupMutation.mutateAsync({
+          groupId: group.id,
+          userId: user.id,
+        });
+      }
+    } catch (error) {
+      console.error('Failed to join/leave group:', error);
+    } finally {
+      if (shouldShowProcessing) {
+        setIsProcessing(false);
+      }
+    }
+  };
 
   // Get category icon
   const getCategoryIcon = () => {
@@ -207,21 +244,51 @@ export function GroupDetailPage({ groupId }: GroupDetailPageProps) {
 
               <div className="flex-1 min-w-0 w-full">
                 {/* Group Name and Action Buttons */}
-                <div className="flex items-center gap-2 sm:gap-3 mb-2 flex-wrap">
-                  <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
-                    {group.name}
-                  </h1>
-                  {isAdmin && (
-                    <button
-                      onClick={() =>
-                        router.push(`/groups/${group.id}/settings`)
-                      }
-                      className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                      aria-label="Edit group"
-                    >
-                      <Settings className="w-5 h-5 text-gray-600" />
-                    </button>
-                  )}
+                <div className="flex items-start justify-between gap-2 sm:gap-3 mb-2">
+                  <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
+                      {group.name}
+                    </h1>
+                    {isAdmin && (
+                      <button
+                        onClick={() =>
+                          router.push(`/groups/${group.id}/settings`)
+                        }
+                        className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                        aria-label="Edit group"
+                      >
+                        <Settings className="w-5 h-5 text-gray-600" />
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Join/Joined Button */}
+                  <button
+                    onClick={handleJoinLeave}
+                    disabled={isProcessing}
+                    className={`min-h-[44px] px-6 py-2.5 text-sm font-semibold rounded-lg transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2 flex items-center gap-2 whitespace-nowrap cursor-pointer ${
+                      isMember
+                        ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        : 'bg-[#0066CC] text-white hover:bg-[#0051D5]'
+                    } ${isProcessing ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    aria-label={
+                      isMember ? `Leave ${group.name}` : `Join ${group.name}`
+                    }
+                  >
+                    {isProcessing && isMember ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                        Leaving...
+                      </>
+                    ) : isMember ? (
+                      <>
+                        <Check className="w-4 h-4" />
+                        Joined
+                      </>
+                    ) : (
+                      'Join'
+                    )}
+                  </button>
                 </div>
 
                 {/* Category and Location */}

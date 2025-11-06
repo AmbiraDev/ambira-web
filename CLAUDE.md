@@ -306,7 +306,12 @@ Create these composite indexes in Firebase Console:
    - Collection: `sessions`
    - Fields: `visibility` (Ascending), `createdAt` (Descending)
 
-Indexes auto-suggest on first feed load.
+3. **Sessions - User Activity with Date Filter (for Group Leaderboards)**
+   - Collection: `sessions`
+   - Fields: `userId` (Ascending), `createdAt` (Ascending)
+   - Note: Required when filtering leaderboard by timeframe (week/month)
+
+Indexes auto-suggest on first query attempt. If you see a Firestore index error in console, click the provided link to auto-create the index.
 
 ### Path Aliases
 
