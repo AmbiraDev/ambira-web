@@ -30,19 +30,24 @@ jest.mock('@/infrastructure/firebase/repositories/SessionRepository', () => ({
 
 describe('Group Join/Leave Flow Integration', () => {
   let groupService: GroupService;
-  let mockRepository: {
+  let mockGroupRepository: {
     findById: jest.Mock;
     save: jest.Mock;
     getUserGroups: jest.Mock;
     getPublicGroups: jest.Mock;
   };
 
+  // Test constants
+  const MOCK_CREATOR_ID = 'admin';
+  const MOCK_USER_ID = 'user1';
+  const MOCK_GROUP_ID = 'group1';
+
   const createMockGroup = (
     id: string,
     memberIds: string[] = [],
     adminUserIds: string[] = []
   ): Group => {
-    const creatorId = 'admin';
+    const creatorId = MOCK_CREATOR_ID;
     const finalAdminUserIds =
       adminUserIds.length > 0 ? adminUserIds : [creatorId];
 
@@ -71,9 +76,12 @@ describe('Group Join/Leave Flow Integration', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     groupService = new GroupService();
-    // Access the private groupRepo property using type assertion
-    mockRepository = (groupService as { groupRepo: typeof mockRepository })
-      .groupRepo;
+    // Get the mocked GroupRepository constructor and retrieve the mock instance
+    const {
+      GroupRepository,
+    } = require('@/infrastructure/firebase/repositories/GroupRepository');
+    // The mock is stored in the mock constructor's last call result
+    mockGroupRepository = (GroupRepository as jest.Mock).mock.results[0]?.value;
   });
 
   describe('Join Group Flow', () => {
@@ -82,20 +90,22 @@ describe('Group Join/Leave Flow Integration', () => {
       const userId = 'user-123';
       const groupId = 'group-456';
       const existingMembers = ['user-1', 'user-2'];
-      const group = createMockGroup(groupId, existingMembers, ['admin']);
+      const group = createMockGroup(groupId, existingMembers, [
+        MOCK_CREATOR_ID,
+      ]);
 
-      mockRepository.findById.mockResolvedValue(group);
-      mockRepository.save.mockResolvedValue(undefined);
+      mockGroupRepository.findById.mockResolvedValue(group);
+      mockGroupRepository.save.mockResolvedValue(undefined);
 
       // Act
       await groupService.joinGroup({ groupId }, userId);
 
       // Assert
-      expect(mockRepository.findById).toHaveBeenCalledWith(groupId);
-      expect(mockRepository.save).toHaveBeenCalledTimes(1);
+      expect(mockGroupRepository.findById).toHaveBeenCalledWith(groupId);
+      expect(mockGroupRepository.save).toHaveBeenCalledTimes(1);
 
       // Verify the saved group has the new member
-      const savedGroup = mockRepository.save.mock.calls[0][0] as Group;
+      const savedGroup = mockGroupRepository.save.mock.calls[0][0] as Group;
       expect(savedGroup.isMember(userId)).toBe(true);
       // +2 because we add userId AND creator is always included
       expect(savedGroup.getMemberCount()).toBe(existingMembers.length + 2);
@@ -106,16 +116,18 @@ describe('Group Join/Leave Flow Integration', () => {
       const userId = 'user-123';
       const groupId = 'group-456';
       const existingMembers = ['user-1', userId]; // User already a member
-      const group = createMockGroup(groupId, existingMembers, ['admin']);
+      const group = createMockGroup(groupId, existingMembers, [
+        MOCK_CREATOR_ID,
+      ]);
 
-      mockRepository.findById.mockResolvedValue(group);
+      mockGroupRepository.findById.mockResolvedValue(group);
 
       // Act & Assert
       await expect(groupService.joinGroup({ groupId }, userId)).rejects.toThrow(
         'Already a member of this group'
       );
 
-      expect(mockRepository.save).not.toHaveBeenCalled();
+      expect(mockGroupRepository.save).not.toHaveBeenCalled();
     });
 
     it('should throw error when group does not exist', async () => {
@@ -123,14 +135,14 @@ describe('Group Join/Leave Flow Integration', () => {
       const userId = 'user-123';
       const groupId = 'non-existent-group';
 
-      mockRepository.findById.mockResolvedValue(null);
+      mockGroupRepository.findById.mockResolvedValue(null);
 
       // Act & Assert
       await expect(groupService.joinGroup({ groupId }, userId)).rejects.toThrow(
         'Group not found'
       );
 
-      expect(mockRepository.save).not.toHaveBeenCalled();
+      expect(mockGroupRepository.save).not.toHaveBeenCalled();
     });
 
     it('should validate input parameters', async () => {
@@ -143,8 +155,8 @@ describe('Group Join/Leave Flow Integration', () => {
         groupService.joinGroup({ groupId: invalidGroupId }, userId)
       ).rejects.toThrow();
 
-      expect(mockRepository.findById).not.toHaveBeenCalled();
-      expect(mockRepository.save).not.toHaveBeenCalled();
+      expect(mockGroupRepository.findById).not.toHaveBeenCalled();
+      expect(mockGroupRepository.save).not.toHaveBeenCalled();
     });
   });
 
@@ -154,20 +166,22 @@ describe('Group Join/Leave Flow Integration', () => {
       const userId = 'user-123';
       const groupId = 'group-456';
       const existingMembers = ['user-1', userId, 'user-2'];
-      const group = createMockGroup(groupId, existingMembers, ['admin']);
+      const group = createMockGroup(groupId, existingMembers, [
+        MOCK_CREATOR_ID,
+      ]);
 
-      mockRepository.findById.mockResolvedValue(group);
-      mockRepository.save.mockResolvedValue(undefined);
+      mockGroupRepository.findById.mockResolvedValue(group);
+      mockGroupRepository.save.mockResolvedValue(undefined);
 
       // Act
       await groupService.leaveGroup({ groupId }, userId);
 
       // Assert
-      expect(mockRepository.findById).toHaveBeenCalledWith(groupId);
-      expect(mockRepository.save).toHaveBeenCalledTimes(1);
+      expect(mockGroupRepository.findById).toHaveBeenCalledWith(groupId);
+      expect(mockGroupRepository.save).toHaveBeenCalledTimes(1);
 
       // Verify the saved group no longer has the user
-      const savedGroup = mockRepository.save.mock.calls[0][0] as Group;
+      const savedGroup = mockGroupRepository.save.mock.calls[0][0] as Group;
       expect(savedGroup.isMember(userId)).toBe(false);
       // Creator is always included, so memberCount = existingMembers.length (no change)
       expect(savedGroup.getMemberCount()).toBe(existingMembers.length);
@@ -178,33 +192,35 @@ describe('Group Join/Leave Flow Integration', () => {
       const userId = 'user-123';
       const groupId = 'group-456';
       const existingMembers = ['user-1', 'user-2']; // User not a member
-      const group = createMockGroup(groupId, existingMembers, ['admin']);
+      const group = createMockGroup(groupId, existingMembers, [
+        MOCK_CREATOR_ID,
+      ]);
 
-      mockRepository.findById.mockResolvedValue(group);
+      mockGroupRepository.findById.mockResolvedValue(group);
 
       // Act & Assert
       await expect(
         groupService.leaveGroup({ groupId }, userId)
       ).rejects.toThrow('Not a member of this group');
 
-      expect(mockRepository.save).not.toHaveBeenCalled();
+      expect(mockGroupRepository.save).not.toHaveBeenCalled();
     });
 
     it('should prevent group owner from leaving', async () => {
       // Arrange
-      const ownerId = 'admin'; // Use 'admin' as owner (matches createMockGroup)
+      const ownerId = MOCK_CREATOR_ID; // Use creator as owner (matches createMockGroup)
       const groupId = 'group-456';
       const existingMembers = ['user-1', 'user-2'];
       const group = createMockGroup(groupId, existingMembers, [ownerId]);
 
-      mockRepository.findById.mockResolvedValue(group);
+      mockGroupRepository.findById.mockResolvedValue(group);
 
       // Act & Assert
       await expect(
         groupService.leaveGroup({ groupId }, ownerId)
       ).rejects.toThrow('Group owner cannot leave');
 
-      expect(mockRepository.save).not.toHaveBeenCalled();
+      expect(mockGroupRepository.save).not.toHaveBeenCalled();
     });
 
     it('should throw error when group does not exist', async () => {
@@ -212,14 +228,14 @@ describe('Group Join/Leave Flow Integration', () => {
       const userId = 'user-123';
       const groupId = 'non-existent-group';
 
-      mockRepository.findById.mockResolvedValue(null);
+      mockGroupRepository.findById.mockResolvedValue(null);
 
       // Act & Assert
       await expect(
         groupService.leaveGroup({ groupId }, userId)
       ).rejects.toThrow('Group not found');
 
-      expect(mockRepository.save).not.toHaveBeenCalled();
+      expect(mockGroupRepository.save).not.toHaveBeenCalled();
     });
   });
 
@@ -229,9 +245,11 @@ describe('Group Join/Leave Flow Integration', () => {
       const userId = 'user-123';
       const groupId = 'group-456';
       const existingMembers = ['user-1', 'user-2'];
-      const group = createMockGroup(groupId, existingMembers, ['admin']);
+      const group = createMockGroup(groupId, existingMembers, [
+        MOCK_CREATOR_ID,
+      ]);
 
-      mockRepository.findById.mockResolvedValue(group);
+      mockGroupRepository.findById.mockResolvedValue(group);
 
       // Act
       const canJoin = await groupService.canUserJoin(groupId, userId);
@@ -245,9 +263,11 @@ describe('Group Join/Leave Flow Integration', () => {
       const userId = 'user-123';
       const groupId = 'group-456';
       const existingMembers = ['user-1', userId];
-      const group = createMockGroup(groupId, existingMembers, ['admin']);
+      const group = createMockGroup(groupId, existingMembers, [
+        MOCK_CREATOR_ID,
+      ]);
 
-      mockRepository.findById.mockResolvedValue(group);
+      mockGroupRepository.findById.mockResolvedValue(group);
 
       // Act
       const canJoin = await groupService.canUserJoin(groupId, userId);
@@ -261,7 +281,7 @@ describe('Group Join/Leave Flow Integration', () => {
       const userId = 'user-123';
       const groupId = 'non-existent-group';
 
-      mockRepository.findById.mockResolvedValue(null);
+      mockGroupRepository.findById.mockResolvedValue(null);
 
       // Act
       const canJoin = await groupService.canUserJoin(groupId, userId);
@@ -280,8 +300,8 @@ describe('Group Join/Leave Flow Integration', () => {
       let group = createMockGroup(groupId, existingMembers, ['admin']);
 
       // Setup mocks for join
-      mockRepository.findById.mockResolvedValue(group);
-      mockRepository.save.mockImplementation((savedGroup: Group) => {
+      mockGroupRepository.findById.mockResolvedValue(group);
+      mockGroupRepository.save.mockImplementation((savedGroup: Group) => {
         group = savedGroup;
         return Promise.resolve();
       });
@@ -290,7 +310,7 @@ describe('Group Join/Leave Flow Integration', () => {
       await groupService.joinGroup({ groupId }, userId);
 
       // Get the saved group from the mock call
-      const groupAfterJoin = mockRepository.save.mock.calls[0][0] as Group;
+      const groupAfterJoin = mockGroupRepository.save.mock.calls[0][0] as Group;
 
       // Assert: User is now a member
       expect(groupAfterJoin.isMember(userId)).toBe(true);
@@ -299,14 +319,15 @@ describe('Group Join/Leave Flow Integration', () => {
       expect(memberCountAfterJoin).toBe(existingMembers.length + 2);
 
       // Reset mocks and update findById to return updated group
-      mockRepository.findById.mockResolvedValue(groupAfterJoin);
-      mockRepository.save.mockClear();
+      mockGroupRepository.findById.mockResolvedValue(groupAfterJoin);
+      mockGroupRepository.save.mockClear();
 
       // Act: Leave
       await groupService.leaveGroup({ groupId }, userId);
 
       // Get the saved group after leaving
-      const groupAfterLeave = mockRepository.save.mock.calls[0][0] as Group;
+      const groupAfterLeave = mockGroupRepository.save.mock
+        .calls[0][0] as Group;
 
       // Assert: User is no longer a member
       expect(groupAfterLeave.isMember(userId)).toBe(false);
@@ -321,11 +342,11 @@ describe('Group Join/Leave Flow Integration', () => {
       const existingMembers = ['user-1', 'user-2'];
       let group = createMockGroup(groupId, existingMembers, ['admin']);
 
-      mockRepository.findById.mockImplementation(() => {
+      mockGroupRepository.findById.mockImplementation(() => {
         // Always return current state
         return Promise.resolve(group);
       });
-      mockRepository.save.mockImplementation((savedGroup: Group) => {
+      mockGroupRepository.save.mockImplementation((savedGroup: Group) => {
         group = savedGroup;
         return Promise.resolve();
       });
@@ -349,10 +370,10 @@ describe('Group Join/Leave Flow Integration', () => {
       const existingMembers = ['user-1', userId];
       let group = createMockGroup(groupId, existingMembers, ['admin']);
 
-      mockRepository.findById.mockImplementation(() => {
+      mockGroupRepository.findById.mockImplementation(() => {
         return Promise.resolve(group);
       });
-      mockRepository.save.mockImplementation((savedGroup: Group) => {
+      mockGroupRepository.save.mockImplementation((savedGroup: Group) => {
         group = savedGroup;
         return Promise.resolve();
       });
@@ -376,17 +397,19 @@ describe('Group Join/Leave Flow Integration', () => {
       const userId = 'user-123';
       const groupId = 'group-456';
       const existingMembers = ['user-1', 'user-2'];
-      const group = createMockGroup(groupId, existingMembers, ['admin']);
+      const group = createMockGroup(groupId, existingMembers, [
+        MOCK_CREATOR_ID,
+      ]);
 
-      mockRepository.findById.mockResolvedValue(group);
-      mockRepository.save.mockResolvedValue(undefined);
+      mockGroupRepository.findById.mockResolvedValue(group);
+      mockGroupRepository.save.mockResolvedValue(undefined);
 
       // Act
       await groupService.joinGroup({ groupId }, userId);
 
       // Assert
-      const savedGroup = mockRepository.save.mock.calls[0][0] as Group;
-      // existingMembers (2) + userId (1) + creator 'admin' (1) = 4
+      const savedGroup = mockGroupRepository.save.mock.calls[0][0] as Group;
+      // existingMembers (2) + userId (1) + creator (1) = 4
       expect(savedGroup.getMemberCount()).toBe(4);
     });
 
@@ -395,17 +418,19 @@ describe('Group Join/Leave Flow Integration', () => {
       const userId = 'user-123';
       const groupId = 'group-456';
       const existingMembers = ['user-1', userId, 'user-2'];
-      const group = createMockGroup(groupId, existingMembers, ['admin']);
+      const group = createMockGroup(groupId, existingMembers, [
+        MOCK_CREATOR_ID,
+      ]);
 
-      mockRepository.findById.mockResolvedValue(group);
-      mockRepository.save.mockResolvedValue(undefined);
+      mockGroupRepository.findById.mockResolvedValue(group);
+      mockGroupRepository.save.mockResolvedValue(undefined);
 
       // Act
       await groupService.leaveGroup({ groupId }, userId);
 
       // Assert
-      const savedGroup = mockRepository.save.mock.calls[0][0] as Group;
-      // existingMembers (3) + creator 'admin' (1) - userId (1) = 3
+      const savedGroup = mockGroupRepository.save.mock.calls[0][0] as Group;
+      // existingMembers (3) + creator (1) - userId (1) = 3
       expect(savedGroup.getMemberCount()).toBe(3);
     });
   });

@@ -44,11 +44,6 @@ function RightSidebar() {
   // Use the join group mutation hook
   const joinGroupMutation = useJoinGroup();
 
-  // Reset joined state when suggested groups change to prevent stale UI
-  useEffect(() => {
-    setJoinedGroupIds(new Set());
-  }, [fetchedSuggestedGroups]);
-
   const loadSuggestedContent = useCallback(async () => {
     try {
       setIsLoadingUsers(true);
@@ -291,7 +286,7 @@ function RightSidebar() {
                         // Immediately mark as joined for instant UI feedback
                         setJoinedGroupIds(prev => new Set(prev).add(group.id));
 
-                        // Fire-and-forget with proper error handling
+                        // Fire mutation with proper error handling
                         joinGroupMutation.mutate(
                           {
                             groupId: group.id,
@@ -307,15 +302,15 @@ function RightSidebar() {
                                 return next;
                               });
                             },
+                            // The mutation will automatically invalidate the cache
+                            // and the suggested groups hook will refetch and filter out this group
                           }
                         );
-                        // The mutation will automatically invalidate the cache
-                        // and the suggested groups hook will refetch and filter out this group
                       }}
-                      className={`text-sm font-semibold transition-colors duration-200 whitespace-nowrap flex-shrink-0 cursor-pointer ${
+                      className={`text-sm font-semibold transition-colors duration-200 whitespace-nowrap flex-shrink-0 ${
                         joinedGroupIds.has(group.id)
-                          ? 'text-gray-600'
-                          : 'text-[#0066CC] hover:text-[#0051D5]'
+                          ? 'text-gray-600 cursor-not-allowed'
+                          : 'text-[#0066CC] hover:text-[#0051D5] cursor-pointer'
                       }`}
                       disabled={joinedGroupIds.has(group.id)}
                     >

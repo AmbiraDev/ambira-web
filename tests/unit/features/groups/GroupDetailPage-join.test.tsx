@@ -6,6 +6,7 @@
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import type { UseMutationResult } from '@tanstack/react-query';
 import { GroupDetailPage } from '@/features/groups/components/GroupDetailPage';
 import { useAuth } from '@/hooks/useAuth';
 import { useGroupDetails } from '@/features/groups/hooks/useGroupDetails';
@@ -13,6 +14,12 @@ import {
   useJoinGroup,
   useLeaveGroup,
 } from '@/features/groups/hooks/useGroupMutations';
+import type {
+  AuthUser,
+  AuthResponse,
+  LoginCredentials,
+  SignupCredentials,
+} from '@/types';
 import { Group } from '@/types';
 
 // Mock dependencies
@@ -51,8 +58,9 @@ describe('GroupDetailPage - Join/Leave Functionality', () => {
     id: 'user-123',
     email: 'test@example.com',
     username: 'testuser',
-    displayName: 'Test User',
+    name: 'Test User',
     createdAt: new Date(),
+    updatedAt: new Date(),
   };
 
   const mockGroup: Group = {
@@ -93,25 +101,120 @@ describe('GroupDetailPage - Join/Leave Functionality', () => {
 
     mockUseAuth.mockReturnValue({
       user: mockUser,
+      currentUser: mockUser,
+      isAuthenticated: true,
       isLoading: false,
-      error: null,
+      login: jest.fn(),
+      signup: jest.fn(),
+      signInWithGoogle: jest.fn(),
+      logout: jest.fn(),
+      loginMutation: {
+        mutate: jest.fn(),
+        mutateAsync: jest.fn(),
+        isPending: false,
+        isError: false,
+        isSuccess: false,
+        isIdle: true,
+        data: undefined,
+        error: null,
+        status: 'idle' as const,
+        failureCount: 0,
+        failureReason: null,
+        reset: jest.fn(),
+        variables: undefined,
+        context: undefined,
+      } as unknown as UseMutationResult<AuthResponse, Error, LoginCredentials>,
+      signupMutation: {
+        mutate: jest.fn(),
+        mutateAsync: jest.fn(),
+        isPending: false,
+        isError: false,
+        isSuccess: false,
+        isIdle: true,
+        data: undefined,
+        error: null,
+        status: 'idle' as const,
+        failureCount: 0,
+        failureReason: null,
+        reset: jest.fn(),
+        variables: undefined,
+        context: undefined,
+      } as unknown as UseMutationResult<AuthResponse, Error, SignupCredentials>,
+      googleSignInMutation: {
+        mutate: jest.fn(),
+        mutateAsync: jest.fn(),
+        isPending: false,
+        isError: false,
+        isSuccess: false,
+        isIdle: true,
+        data: undefined,
+        error: null,
+        status: 'idle' as const,
+        failureCount: 0,
+        failureReason: null,
+        reset: jest.fn(),
+        variables: undefined,
+        context: undefined,
+      } as unknown as UseMutationResult<AuthResponse, Error, void>,
+      logoutMutation: {
+        mutate: jest.fn(),
+        mutateAsync: jest.fn(),
+        isPending: false,
+        isError: false,
+        isSuccess: false,
+        isIdle: true,
+        data: undefined,
+        error: null,
+        status: 'idle' as const,
+        failureCount: 0,
+        failureReason: null,
+        reset: jest.fn(),
+        variables: undefined,
+        context: undefined,
+      } as unknown as UseMutationResult<void, Error, void>,
     } as ReturnType<typeof useAuth>);
 
     mockUseJoinGroup.mockReturnValue({
       mutateAsync: mockJoinMutate,
+      mutate: jest.fn(),
       isPending: false,
       isError: false,
       isSuccess: false,
+      isIdle: true,
+      data: undefined,
       error: null,
-    } as ReturnType<typeof useJoinGroup>);
+      status: 'idle' as const,
+      failureCount: 0,
+      failureReason: null,
+      reset: jest.fn(),
+      variables: undefined,
+      context: undefined,
+    } as unknown as UseMutationResult<
+      void,
+      Error,
+      { groupId: string; userId: string }
+    >);
 
     mockUseLeaveGroup.mockReturnValue({
       mutateAsync: mockLeaveMutate,
+      mutate: jest.fn(),
       isPending: false,
       isError: false,
       isSuccess: false,
+      isIdle: true,
+      data: undefined,
       error: null,
-    } as ReturnType<typeof useLeaveGroup>);
+      status: 'idle' as const,
+      failureCount: 0,
+      failureReason: null,
+      reset: jest.fn(),
+      variables: undefined,
+      context: undefined,
+    } as unknown as UseMutationResult<
+      void,
+      Error,
+      { groupId: string; userId: string }
+    >);
   });
 
   describe('Join Button Display', () => {
@@ -479,8 +582,85 @@ describe('GroupDetailPage - Join/Leave Functionality', () => {
     it('should not render join button when user is not logged in', () => {
       mockUseAuth.mockReturnValue({
         user: null,
+        currentUser: null,
+        isAuthenticated: false,
         isLoading: false,
-        error: null,
+        login: jest.fn(),
+        signup: jest.fn(),
+        signInWithGoogle: jest.fn(),
+        logout: jest.fn(),
+        loginMutation: {
+          mutate: jest.fn(),
+          mutateAsync: jest.fn(),
+          isPending: false,
+          isError: false,
+          isSuccess: false,
+          isIdle: true,
+          data: undefined,
+          error: null,
+          status: 'idle' as const,
+          failureCount: 0,
+          failureReason: null,
+          reset: jest.fn(),
+          variables: undefined,
+          context: undefined,
+        } as unknown as UseMutationResult<
+          AuthResponse,
+          Error,
+          LoginCredentials
+        >,
+        signupMutation: {
+          mutate: jest.fn(),
+          mutateAsync: jest.fn(),
+          isPending: false,
+          isError: false,
+          isSuccess: false,
+          isIdle: true,
+          data: undefined,
+          error: null,
+          status: 'idle' as const,
+          failureCount: 0,
+          failureReason: null,
+          reset: jest.fn(),
+          variables: undefined,
+          context: undefined,
+        } as unknown as UseMutationResult<
+          AuthResponse,
+          Error,
+          SignupCredentials
+        >,
+        googleSignInMutation: {
+          mutate: jest.fn(),
+          mutateAsync: jest.fn(),
+          isPending: false,
+          isError: false,
+          isSuccess: false,
+          isIdle: true,
+          data: undefined,
+          error: null,
+          status: 'idle' as const,
+          failureCount: 0,
+          failureReason: null,
+          reset: jest.fn(),
+          variables: undefined,
+          context: undefined,
+        } as unknown as UseMutationResult<AuthResponse, Error, void>,
+        logoutMutation: {
+          mutate: jest.fn(),
+          mutateAsync: jest.fn(),
+          isPending: false,
+          isError: false,
+          isSuccess: false,
+          isIdle: true,
+          data: undefined,
+          error: null,
+          status: 'idle' as const,
+          failureCount: 0,
+          failureReason: null,
+          reset: jest.fn(),
+          variables: undefined,
+          context: undefined,
+        } as unknown as UseMutationResult<void, Error, void>,
       } as ReturnType<typeof useAuth>);
 
       mockUseGroupDetails.mockReturnValue({
