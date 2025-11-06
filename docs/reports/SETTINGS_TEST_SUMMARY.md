@@ -328,24 +328,24 @@ jest.mock('@/lib/api', () => ({
     uploadProfilePicture: jest.fn(),
     getPrivacySettings: jest.fn(),
   },
-}));
+}))
 ```
 
 ### 2. User Event Simulation
 
 ```typescript
-const user = userEvent.setup();
-await user.type(nameInput, 'New Name');
-await user.selectOption(visibilitySelect, 'private');
-await user.click(saveButton);
+const user = userEvent.setup()
+await user.type(nameInput, 'New Name')
+await user.selectOption(visibilitySelect, 'private')
+await user.click(saveButton)
 ```
 
 ### 3. Async Assertions
 
 ```typescript
 await waitFor(() => {
-  expect(toast.success).toHaveBeenCalledWith('Profile updated!');
-});
+  expect(toast.success).toHaveBeenCalledWith('Profile updated!')
+})
 ```
 
 ### 4. Component Mocking
@@ -361,10 +361,10 @@ jest.mock('@/components/HeaderComponent', () => {
 ### 5. Accessibility Testing
 
 ```typescript
-const input = page.getByLabel(/Name/i);
-await page.keyboard.press('Tab');
-const isFocused = await input.evaluate(el => document.activeElement === el);
-expect(isFocused).toBe(true);
+const input = page.getByLabel(/Name/i)
+await page.keyboard.press('Tab')
+const isFocused = await input.evaluate((el) => document.activeElement === el)
+expect(isFocused).toBe(true)
 ```
 
 ## Coverage Goals & Status

@@ -1,62 +1,61 @@
-'use client';
+'use client'
 
-import React, { useState, useEffect, useCallback } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { useAuth } from '@/hooks/useAuth';
-import { firebaseUserApi, firebaseApi } from '@/lib/api';
-import { cachedQuery } from '@/lib/cache';
-import GroupAvatar from '@/components/GroupAvatar';
-import SuggestedPeopleModal from '@/components/SuggestedPeopleModal';
-import SuggestedGroupsModal from '@/components/SuggestedGroupsModal';
-import { useSuggestedGroups } from '@/features/search/hooks';
-import { useJoinGroup } from '@/features/groups/hooks/useGroupMutations';
-import { GROUP_DISPLAY_CONFIG } from '@/lib/constants/groupDisplay';
+import React, { useState, useEffect, useCallback } from 'react'
+import Link from 'next/link'
+import Image from 'next/image'
+import { useAuth } from '@/hooks/useAuth'
+import { firebaseUserApi, firebaseApi } from '@/lib/api'
+import { cachedQuery } from '@/lib/cache'
+import { debug } from '@/lib/debug'
+import GroupAvatar from '@/components/GroupAvatar'
+import SuggestedPeopleModal from '@/components/SuggestedPeopleModal'
+import SuggestedGroupsModal from '@/components/SuggestedGroupsModal'
+import { useSuggestedGroups } from '@/features/search/hooks'
+import { useJoinGroup } from '@/features/groups/hooks/useGroupMutations'
+import { GROUP_DISPLAY_CONFIG } from '@/lib/constants/groupDisplay'
 
 interface SuggestedUser {
-  id: string;
-  name: string;
-  username: string;
-  location?: string;
-  followersCount: number;
-  profilePicture?: string;
+  id: string
+  name: string
+  username: string
+  location?: string
+  followersCount: number
+  profilePicture?: string
 }
 
 function RightSidebar() {
-  const { user } = useAuth();
-  const [suggestedUsers, setSuggestedUsers] = useState<SuggestedUser[]>([]);
-  const [isLoadingUsers, setIsLoadingUsers] = useState(true);
-  const [followingUsers, setFollowingUsers] = useState<Set<string>>(new Set());
-  const [showPeopleModal, setShowPeopleModal] = useState(false);
-  const [showGroupsModal, setShowGroupsModal] = useState(false);
-  const [joinedGroupIds, setJoinedGroupIds] = useState<Set<string>>(new Set());
+  const { user } = useAuth()
+  const [suggestedUsers, setSuggestedUsers] = useState<SuggestedUser[]>([])
+  const [isLoadingUsers, setIsLoadingUsers] = useState(true)
+  const [followingUsers, setFollowingUsers] = useState<Set<string>>(new Set())
+  const [showPeopleModal, setShowPeopleModal] = useState(false)
+  const [showGroupsModal, setShowGroupsModal] = useState(false)
+  const [joinedGroupIds, setJoinedGroupIds] = useState<Set<string>>(new Set())
 
   // Use the proper hook for suggested groups
-  const {
-    suggestedGroups: fetchedSuggestedGroups,
-    isLoading: isLoadingGroups,
-  } = useSuggestedGroups({
-    userId: user?.id,
-    enabled: !!user,
-    limit: GROUP_DISPLAY_CONFIG.SUGGESTED_GROUPS_LIMIT,
-  });
+  const { suggestedGroups: fetchedSuggestedGroups, isLoading: isLoadingGroups } =
+    useSuggestedGroups({
+      userId: user?.id,
+      enabled: !!user,
+      limit: GROUP_DISPLAY_CONFIG.SUGGESTED_GROUPS_LIMIT,
+    })
 
   // Use the join group mutation hook
-  const joinGroupMutation = useJoinGroup();
+  const joinGroupMutation = useJoinGroup()
 
   const loadSuggestedContent = useCallback(async () => {
     try {
-      setIsLoadingUsers(true);
+      setIsLoadingUsers(true)
 
-      if (!user) return;
+      if (!user) return
 
       // Load the list of users we're already following
       try {
-        const following = await firebaseUserApi.getFollowing(user.id);
-        const followingIds = new Set(following.map(u => u.id));
-        setFollowingUsers(followingIds);
+        const following = await firebaseUserApi.getFollowing(user.id)
+        const followingIds = new Set(following.map((u) => u.id))
+        setFollowingUsers(followingIds)
       } catch (error) {
-        console.error('Failed to load following users:', error);
+        debug.error('Failed to load following users:', error)
       }
 
       // Load suggested users (top 5) with 1 hour cache
@@ -71,60 +70,60 @@ function RightSidebar() {
             sessionCache: true,
             dedupe: true,
           }
-        );
-        setSuggestedUsers(suggestions);
+        )
+        setSuggestedUsers(suggestions)
       } catch (error) {
-        console.error('Failed to load suggested users:', error);
+        debug.error('Failed to load suggested users:', error)
       }
     } catch {
     } finally {
-      setIsLoadingUsers(false);
+      setIsLoadingUsers(false)
     }
-  }, [user]);
+  }, [user])
 
   useEffect(() => {
     if (user) {
-      loadSuggestedContent();
+      loadSuggestedContent()
     }
-  }, [user, loadSuggestedContent]);
+  }, [user, loadSuggestedContent])
 
   const handleFollowToggle = async (userId: string) => {
-    if (!user) return;
+    if (!user) return
 
-    const isFollowing = followingUsers.has(userId);
+    const isFollowing = followingUsers.has(userId)
 
     // Optimistic update
-    setFollowingUsers(prev => {
-      const next = new Set(prev);
+    setFollowingUsers((prev) => {
+      const next = new Set(prev)
       if (isFollowing) {
-        next.delete(userId);
+        next.delete(userId)
       } else {
-        next.add(userId);
+        next.add(userId)
       }
-      return next;
-    });
+      return next
+    })
 
     try {
       if (isFollowing) {
-        await firebaseApi.user.unfollowUser(userId);
+        await firebaseApi.user.unfollowUser(userId)
       } else {
-        await firebaseApi.user.followUser(userId);
+        await firebaseApi.user.followUser(userId)
         // Remove from suggestions after following
-        setSuggestedUsers(prev => prev.filter(u => u.id !== userId));
+        setSuggestedUsers((prev) => prev.filter((u) => u.id !== userId))
       }
     } catch {
       // Revert on error
-      setFollowingUsers(prev => {
-        const next = new Set(prev);
+      setFollowingUsers((prev) => {
+        const next = new Set(prev)
         if (isFollowing) {
-          next.add(userId);
+          next.add(userId)
         } else {
-          next.delete(userId);
+          next.delete(userId)
         }
-        return next;
-      });
+        return next
+      })
     }
-  };
+  }
 
   return (
     <aside
@@ -135,14 +134,12 @@ function RightSidebar() {
         {/* Suggested Friends - Redesigned */}
         <div className="px-2">
           <div className="flex items-center justify-between mb-3 px-2">
-            <h3 className="text-lg font-semibold text-gray-900">
-              Suggested for you
-            </h3>
+            <h3 className="text-lg font-semibold text-gray-900">Suggested for you</h3>
           </div>
 
           {isLoadingUsers ? (
             <div className="space-y-2">
-              {[1, 2, 3, 4, 5].map(i => (
+              {[1, 2, 3, 4, 5].map((i) => (
                 <div
                   key={i}
                   className="flex items-center gap-3 animate-pulse p-3 bg-white rounded-lg"
@@ -161,7 +158,7 @@ function RightSidebar() {
             </div>
           ) : (
             <div className="space-y-1">
-              {suggestedUsers.map(suggestedUser => (
+              {suggestedUsers.map((suggestedUser) => (
                 <Link
                   key={suggestedUser.id}
                   href={`/profile/${suggestedUser.username}`}
@@ -183,7 +180,7 @@ function RightSidebar() {
                         <span className="text-gray-600 font-semibold text-sm">
                           {suggestedUser.name
                             .split(' ')
-                            .map(n => n[0])
+                            .map((n) => n[0])
                             .join('')
                             .slice(0, 2)
                             .toUpperCase()}
@@ -194,15 +191,13 @@ function RightSidebar() {
                       <p className="font-semibold text-sm text-gray-900 hover:text-[#0066CC] truncate mb-0.5">
                         {suggestedUser.name}
                       </p>
-                      <p className="text-xs text-gray-500 truncate">
-                        @{suggestedUser.username}
-                      </p>
+                      <p className="text-xs text-gray-500 truncate">@{suggestedUser.username}</p>
                     </div>
                     <button
-                      onClick={e => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        handleFollowToggle(suggestedUser.id);
+                      onClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        handleFollowToggle(suggestedUser.id)
                       }}
                       className={`text-sm font-semibold transition-colors duration-200 whitespace-nowrap flex-shrink-0 ${
                         followingUsers.has(suggestedUser.id)
@@ -216,9 +211,7 @@ function RightSidebar() {
                       }
                       aria-pressed={followingUsers.has(suggestedUser.id)}
                     >
-                      {followingUsers.has(suggestedUser.id)
-                        ? 'Following'
-                        : 'Follow'}
+                      {followingUsers.has(suggestedUser.id) ? 'Following' : 'Follow'}
                     </button>
                   </div>
                 </Link>
@@ -230,14 +223,12 @@ function RightSidebar() {
         {/* Clubs - Redesigned */}
         <div className="px-2">
           <div className="flex items-center justify-between mb-3 px-2">
-            <h3 className="text-lg font-semibold text-gray-900">
-              Suggested Groups
-            </h3>
+            <h3 className="text-lg font-semibold text-gray-900">Suggested Groups</h3>
           </div>
 
           {isLoadingGroups ? (
             <div className="space-y-2">
-              {[1, 2, 3, 4, 5].map(i => (
+              {[1, 2, 3, 4, 5].map((i) => (
                 <div
                   key={i}
                   className="flex items-center gap-3 animate-pulse p-3 bg-white rounded-lg"
@@ -256,35 +247,30 @@ function RightSidebar() {
             </div>
           ) : (
             <div className="space-y-1">
-              {fetchedSuggestedGroups.map(group => (
+              {fetchedSuggestedGroups.map((group) => (
                 <Link
                   key={group.id}
                   href={`/groups/${group.id}`}
                   className="block px-3 py-3 bg-white hover:bg-gray-50 rounded-lg transition-colors duration-200"
                 >
                   <div className="flex items-center gap-3">
-                    <GroupAvatar
-                      imageUrl={group.imageUrl}
-                      name={group.name}
-                      size="md"
-                    />
+                    <GroupAvatar imageUrl={group.imageUrl} name={group.name} size="md" />
                     <div className="flex-1 min-w-0">
                       <p className="font-semibold text-sm text-gray-900 hover:text-[#0066CC] truncate mb-0.5">
                         {group.name}
                       </p>
                       <div className="text-xs text-gray-500">
-                        {group.memberCount || 0}{' '}
-                        {group.memberCount === 1 ? 'member' : 'members'}
+                        {group.memberCount || 0} {group.memberCount === 1 ? 'member' : 'members'}
                       </div>
                     </div>
                     <button
-                      onClick={e => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        if (!user || joinedGroupIds.has(group.id)) return;
+                      onClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        if (!user || joinedGroupIds.has(group.id)) return
 
                         // Immediately mark as joined for instant UI feedback
-                        setJoinedGroupIds(prev => new Set(prev).add(group.id));
+                        setJoinedGroupIds((prev) => new Set(prev).add(group.id))
 
                         // Fire mutation with proper error handling
                         joinGroupMutation.mutate(
@@ -293,19 +279,19 @@ function RightSidebar() {
                             userId: user.id,
                           },
                           {
-                            onError: error => {
-                              console.error('Failed to join group:', error);
+                            onError: (error) => {
+                              debug.error('Failed to join group:', error)
                               // Rollback optimistic update on error
-                              setJoinedGroupIds(prev => {
-                                const next = new Set(prev);
-                                next.delete(group.id);
-                                return next;
-                              });
+                              setJoinedGroupIds((prev) => {
+                                const next = new Set(prev)
+                                next.delete(group.id)
+                                return next
+                              })
                             },
                             // The mutation will automatically invalidate the cache
                             // and the suggested groups hook will refetch and filter out this group
                           }
-                        );
+                        )
                       }}
                       className={`text-sm font-semibold transition-colors duration-200 whitespace-nowrap flex-shrink-0 ${
                         joinedGroupIds.has(group.id)
@@ -325,16 +311,10 @@ function RightSidebar() {
       </div>
 
       {/* Modals */}
-      <SuggestedPeopleModal
-        isOpen={showPeopleModal}
-        onClose={() => setShowPeopleModal(false)}
-      />
-      <SuggestedGroupsModal
-        isOpen={showGroupsModal}
-        onClose={() => setShowGroupsModal(false)}
-      />
+      <SuggestedPeopleModal isOpen={showPeopleModal} onClose={() => setShowPeopleModal(false)} />
+      <SuggestedGroupsModal isOpen={showGroupsModal} onClose={() => setShowGroupsModal(false)} />
     </aside>
-  );
+  )
 }
 
-export default RightSidebar;
+export default RightSidebar

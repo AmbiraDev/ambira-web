@@ -61,11 +61,7 @@ The file input is visually hidden but lacks an accessible label. Screen readers 
   className="hidden"
   disabled={disabled || isUploading}
   id="image-upload-input"
-  aria-label={
-    singleImage
-      ? 'Upload profile picture'
-      : `Add up to ${effectiveMaxImages} images`
-  }
+  aria-label={singleImage ? 'Upload profile picture' : `Add up to ${effectiveMaxImages} images`}
 />
 ```
 
@@ -150,18 +146,8 @@ For meaningful images:
 
 ```tsx
 <button className="text-gray-400 hover:text-gray-600">
-  <svg
-    className="w-5 h-5"
-    fill="none"
-    stroke="currentColor"
-    viewBox="0 0 24 24"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M19 9l-7 7-7-7"
-    />
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
   </svg>
 </button>
 ```
@@ -171,23 +157,9 @@ Icon-only buttons lack aria-label or sr-only text.
 **Recommended Fix:**
 
 ```tsx
-<button
-  className="text-gray-400 hover:text-gray-600"
-  aria-label="Expand post options"
->
-  <svg
-    className="w-5 h-5"
-    fill="none"
-    stroke="currentColor"
-    viewBox="0 0 24 24"
-    aria-hidden="true"
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      strokeWidth={2}
-      d="M19 9l-7 7-7-7"
-    />
+<button className="text-gray-400 hover:text-gray-600" aria-label="Expand post options">
+  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
   </svg>
 </button>
 ```
@@ -222,13 +194,13 @@ Modals handle ESC key but don't trap focus within the dialog.
 Use a focus trap library or implement manually:
 
 ```tsx
-import FocusTrap from 'focus-trap-react';
+import FocusTrap from 'focus-trap-react'
 
-<FocusTrap active={isOpen}>
+;<FocusTrap active={isOpen}>
   <div role="dialog" aria-modal="true" aria-labelledby="modal-title">
     {/* Modal content */}
   </div>
-</FocusTrap>;
+</FocusTrap>
 ```
 
 ---
@@ -309,7 +281,7 @@ No skip link to main content for keyboard users.
 
 ```tsx
 // button.tsx has proper focus-visible styles
-'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2';
+'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2'
 ```
 
 **Problem Areas:**
@@ -352,10 +324,10 @@ Menu opens on hover but clicking the ChevronDown doesn't work consistently for k
 <div className="relative">
   <button
     onClick={handleToggle}
-    onKeyDown={e => {
+    onKeyDown={(e) => {
       if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        handleToggle();
+        e.preventDefault()
+        handleToggle()
       }
     }}
     className="flex items-center gap-1"
@@ -419,7 +391,7 @@ Missing:
   aria-activedescendant={focusedOptionId}
   onKeyDown={handleKeyDown}
 >
-  {activities.map(activity => (
+  {activities.map((activity) => (
     <button
       key={activity.id}
       role="option"
@@ -439,20 +411,20 @@ Add keyboard navigation:
 const handleKeyDown = (e: React.KeyboardEvent) => {
   switch (e.key) {
     case 'ArrowDown':
-      e.preventDefault();
-      focusNextOption();
-      break;
+      e.preventDefault()
+      focusNextOption()
+      break
     case 'ArrowUp':
-      e.preventDefault();
-      focusPreviousOption();
-      break;
+      e.preventDefault()
+      focusPreviousOption()
+      break
     case 'Enter':
     case ' ':
-      e.preventDefault();
-      selectFocusedOption();
-      break;
+      e.preventDefault()
+      selectFocusedOption()
+      break
   }
-};
+}
 ```
 
 ---
@@ -471,7 +443,7 @@ const handleKeyDown = (e: React.KeyboardEvent) => {
 <input
   type="time"
   value={formatTimeForInput(startTime)}
-  onChange={e => onStartTimeChange(e.target.value)}
+  onChange={(e) => onStartTimeChange(e.target.value)}
   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] text-sm"
 />
 ```
@@ -573,7 +545,7 @@ Verify rc-slider keyboard support or replace with accessible alternative:
   max={getElapsedTime()}
   step={900}
   value={adjustedDuration}
-  onChange={e => onDurationChange(Number(e.target.value))}
+  onChange={(e) => onDurationChange(Number(e.target.value))}
   aria-label="Adjust session duration"
   aria-valuemin={0}
   aria-valuemax={getElapsedTime()}
@@ -635,11 +607,7 @@ Verify rc-slider keyboard support or replace with accessible alternative:
 **Recommended Fix:**
 
 ```tsx
-<div
-  className="p-6 text-center bg-white rounded-lg"
-  role="status"
-  aria-live="polite"
->
+<div className="p-6 text-center bg-white rounded-lg" role="status" aria-live="polite">
   <p className="text-sm text-gray-500">No suggestions available</p>
 </div>
 ```
@@ -662,7 +630,7 @@ Verify rc-slider keyboard support or replace with accessible alternative:
     <div className="absolute -top-1 -right-1 bg-[#FF2D55] text-white text-xs font-semibold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">
       {unreadCount > 99 ? '99+' : unreadCount}
     </div>
-  );
+  )
 }
 ```
 
@@ -688,7 +656,7 @@ Uses color (red) to convey information, but also includes text badge with count.
       <AlertCircle className="w-4 h-4 flex-shrink-0" />
       <span>{error}</span>
     </div>
-  );
+  )
 }
 ```
 
@@ -707,7 +675,7 @@ Missing `role="alert"` for immediate announcement.
       <AlertCircle className="w-4 h-4 flex-shrink-0" aria-hidden="true" />
       <span>{error}</span>
     </div>
-  );
+  )
 }
 ```
 
@@ -758,10 +726,7 @@ size: {
   aria-labelledby="comments-modal-title"
 >
   {/* ... */}
-  <h1
-    id="comments-modal-title"
-    className="text-base font-semibold text-gray-900"
-  >
+  <h1 id="comments-modal-title" className="text-base font-semibold text-gray-900">
     Comments
   </h1>
 </div>
@@ -898,7 +863,7 @@ Check `/src/components/header/MobileMenu.tsx` for:
         />
       </div>
     </div>
-  );
+  )
 }
 ```
 
@@ -910,9 +875,7 @@ Check `/src/components/header/MobileMenu.tsx` for:
     <div className="space-y-2" role="status" aria-live="polite">
       <div className="flex items-center justify-between text-sm text-gray-600">
         <span id="upload-status">Uploading...</span>
-        <span aria-label={`${uploadProgress} percent complete`}>
-          {uploadProgress}%
-        </span>
+        <span aria-label={`${uploadProgress} percent complete`}>{uploadProgress}%</span>
       </div>
       <div
         className="h-2 bg-gray-200 rounded-full overflow-hidden"
@@ -928,7 +891,7 @@ Check `/src/components/header/MobileMenu.tsx` for:
         />
       </div>
     </div>
-  );
+  )
 }
 ```
 
@@ -986,10 +949,10 @@ Consider adding:
 
 ```tsx
 // button.tsx
-'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2';
+'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0066CC] focus-visible:ring-offset-2'
 
 // input.tsx
-'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2';
+'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2'
 ```
 
 **Status:** ✅ PASSED - Consistent focus ring implementation
@@ -1077,19 +1040,18 @@ Ensure all custom interactive elements use the same pattern.
 1. **Input component** (`/src/components/ui/input.tsx`):
 
 ```tsx
-const Input = React.forwardRef<
-  HTMLInputElement,
-  React.InputHTMLAttributes<HTMLInputElement>
->(({ className, type, ...props }, ref) => {
-  return (
-    <input
-      type={type}
-      className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-      ref={ref}
-      {...props}
-    />
-  );
-});
+const Input = React.forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLInputElement>>(
+  ({ className, type, ...props }, ref) => {
+    return (
+      <input
+        type={type}
+        className="focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        ref={ref}
+        {...props}
+      />
+    )
+  }
+)
 ```
 
 ✅ Accepts all standard input attributes including id for label association
@@ -1112,7 +1074,7 @@ const Input = React.forwardRef<
       <AlertCircle className="w-4 h-4 flex-shrink-0" />
       <span>{error}</span>
     </div>
-  );
+  )
 }
 ```
 
@@ -1321,7 +1283,7 @@ export default function Header() {
         {/* Existing header content */}
       </header>
     </>
-  );
+  )
 }
 ```
 
@@ -1400,7 +1362,7 @@ export default function Header() {
 The `asChild` prop changes component to `<span>` which is not keyboard accessible:
 
 ```tsx
-const Comp = asChild ? 'span' : 'button';
+const Comp = asChild ? 'span' : 'button'
 ```
 
 **Recommendation:**
@@ -1445,8 +1407,8 @@ const Input = React.forwardRef<
       ref={ref}
       {...props}
     />
-  );
-});
+  )
+})
 ```
 
 ---
@@ -1575,7 +1537,7 @@ const Input = React.forwardRef<
 **Recommended Fix:**
 
 ```tsx
-<button
+;<button
   onClick={() => setShowMenu(!showMenu)}
   className="..."
   aria-label="Session options"
@@ -1583,7 +1545,7 @@ const Input = React.forwardRef<
   aria-expanded={showMenu}
 >
   <MoreVertical className="w-5 h-5" aria-hidden="true" />
-</button>;
+</button>
 
 {
   showMenu && (
@@ -1595,7 +1557,7 @@ const Input = React.forwardRef<
         Delete
       </button>
     </div>
-  );
+  )
 }
 ```
 
@@ -1616,21 +1578,21 @@ const Input = React.forwardRef<
 // tests/e2e/feed-accessibility.spec.ts
 test.describe('Feed Accessibility', () => {
   test('should pass WCAG 2.1 AA audit', async ({ page, makeAxeBuilder }) => {
-    await page.goto('/');
+    await page.goto('/')
     const results = await makeAxeBuilder()
       .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
-      .analyze();
-    expect(results.violations).toHaveLength(0);
-  });
+      .analyze()
+    expect(results.violations).toHaveLength(0)
+  })
 
   test('should have proper heading hierarchy', async ({ page }) => {
     // ...
-  });
+  })
 
   test('should support keyboard navigation through posts', async ({ page }) => {
     // ...
-  });
-});
+  })
+})
 
 // tests/e2e/modals-accessibility.spec.ts
 test.describe('Modal Accessibility', () => {
@@ -1638,15 +1600,15 @@ test.describe('Modal Accessibility', () => {
     // Open modal
     // Tab through elements
     // Verify focus stays in modal
-  });
+  })
 
   test('should return focus after closing modal', async ({ page }) => {
     // Remember focused element
     // Open modal
     // Close modal
     // Verify focus returned
-  });
-});
+  })
+})
 ```
 
 ---
@@ -1728,12 +1690,9 @@ jobs:
 **Tag accessibility tests:**
 
 ```typescript
-test('should pass WCAG 2.1 AA audit @accessibility', async ({
-  page,
-  makeAxeBuilder,
-}) => {
+test('should pass WCAG 2.1 AA audit @accessibility', async ({ page, makeAxeBuilder }) => {
   // ...
-});
+})
 ```
 
 ---
@@ -1955,49 +1914,44 @@ test('should pass WCAG 2.1 AA audit @accessibility', async ({
 ### 11.1 Accessible Modal Pattern
 
 ```tsx
-import { useEffect, useRef } from 'react';
-import FocusTrap from 'focus-trap-react';
+import { useEffect, useRef } from 'react'
+import FocusTrap from 'focus-trap-react'
 
 interface ModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  title: string;
-  children: React.ReactNode;
+  isOpen: boolean
+  onClose: () => void
+  title: string
+  children: React.ReactNode
 }
 
-export function AccessibleModal({
-  isOpen,
-  onClose,
-  title,
-  children,
-}: ModalProps) {
-  const closeButtonRef = useRef<HTMLButtonElement>(null);
+export function AccessibleModal({ isOpen, onClose, title, children }: ModalProps) {
+  const closeButtonRef = useRef<HTMLButtonElement>(null)
 
   // ESC key handler
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && isOpen) {
-        onClose();
+        onClose()
       }
-    };
+    }
 
     if (isOpen) {
-      document.addEventListener('keydown', handleEscape);
+      document.addEventListener('keydown', handleEscape)
     }
 
     return () => {
-      document.removeEventListener('keydown', handleEscape);
-    };
-  }, [isOpen, onClose]);
+      document.removeEventListener('keydown', handleEscape)
+    }
+  }, [isOpen, onClose])
 
   // Focus first element when opening
   useEffect(() => {
     if (isOpen) {
-      closeButtonRef.current?.focus();
+      closeButtonRef.current?.focus()
     }
-  }, [isOpen]);
+  }, [isOpen])
 
-  if (!isOpen) return null;
+  if (!isOpen) return null
 
   return (
     <FocusTrap active={isOpen}>
@@ -2010,7 +1964,7 @@ export function AccessibleModal({
       >
         <div
           className="bg-white rounded-2xl max-w-2xl w-full p-6"
-          onClick={e => e.stopPropagation()}
+          onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
           <div className="flex items-center justify-between mb-4">
@@ -2032,7 +1986,7 @@ export function AccessibleModal({
         </div>
       </div>
     </FocusTrap>
-  );
+  )
 }
 ```
 
@@ -2041,44 +1995,41 @@ export function AccessibleModal({
 ### 11.2 Accessible Form Pattern
 
 ```tsx
-import { useState } from 'react';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
+import { useState } from 'react'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
 
 interface FormField {
-  id: string;
-  label: string;
-  type: string;
-  required: boolean;
-  autoComplete?: string;
-  error?: string;
+  id: string
+  label: string
+  type: string
+  required: boolean
+  autoComplete?: string
+  error?: string
 }
 
 export function AccessibleForm() {
-  const [email, setEmail] = useState('');
-  const [emailError, setEmailError] = useState('');
+  const [email, setEmail] = useState('')
+  const [emailError, setEmailError] = useState('')
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
 
     // Validation
     if (!email.includes('@')) {
-      setEmailError('Please enter a valid email address');
-      return;
+      setEmailError('Please enter a valid email address')
+      return
     }
 
     // Submit logic
-  };
+  }
 
   return (
     <form onSubmit={handleSubmit} noValidate>
       <div className="space-y-4">
         {/* Email Field */}
         <div>
-          <label
-            htmlFor="email-input"
-            className="block text-sm font-medium mb-1"
-          >
+          <label htmlFor="email-input" className="block text-sm font-medium mb-1">
             Email{' '}
             <span className="text-red-600" aria-label="required">
               *
@@ -2088,9 +2039,9 @@ export function AccessibleForm() {
             id="email-input"
             type="email"
             value={email}
-            onChange={e => {
-              setEmail(e.target.value);
-              setEmailError(''); // Clear error on change
+            onChange={(e) => {
+              setEmail(e.target.value)
+              setEmailError('') // Clear error on change
             }}
             required
             aria-required="true"
@@ -2100,11 +2051,7 @@ export function AccessibleForm() {
             className={emailError ? 'border-red-500' : ''}
           />
           {emailError && (
-            <div
-              id="email-error"
-              role="alert"
-              className="text-red-600 text-sm mt-1"
-            >
+            <div id="email-error" role="alert" className="text-red-600 text-sm mt-1">
               {emailError}
             </div>
           )}
@@ -2116,7 +2063,7 @@ export function AccessibleForm() {
         </Button>
       </div>
     </form>
-  );
+  )
 }
 ```
 
@@ -2138,7 +2085,7 @@ export function LoadingState({ message = 'Loading...' }: { message?: string }) {
       />
       <span className="mt-2 text-gray-600">{message}</span>
     </div>
-  );
+  )
 }
 
 export function SkeletonLoader({ count = 3 }: { count?: number }) {
@@ -2154,7 +2101,7 @@ export function SkeletonLoader({ count = 3 }: { count?: number }) {
         ))}
       </div>
     </div>
-  );
+  )
 }
 ```
 
@@ -2163,67 +2110,62 @@ export function SkeletonLoader({ count = 3 }: { count?: number }) {
 ### 11.4 Accessible Listbox Pattern
 
 ```tsx
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react'
 
 interface Option {
-  id: string;
-  label: string;
+  id: string
+  label: string
 }
 
 interface ListboxProps {
-  options: Option[];
-  value: string;
-  onChange: (value: string) => void;
-  label: string;
+  options: Option[]
+  value: string
+  onChange: (value: string) => void
+  label: string
 }
 
-export function AccessibleListbox({
-  options,
-  value,
-  onChange,
-  label,
-}: ListboxProps) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [focusedIndex, setFocusedIndex] = useState(0);
-  const buttonRef = useRef<HTMLButtonElement>(null);
-  const listboxRef = useRef<HTMLDivElement>(null);
+export function AccessibleListbox({ options, value, onChange, label }: ListboxProps) {
+  const [isOpen, setIsOpen] = useState(false)
+  const [focusedIndex, setFocusedIndex] = useState(0)
+  const buttonRef = useRef<HTMLButtonElement>(null)
+  const listboxRef = useRef<HTMLDivElement>(null)
 
-  const selectedOption = options.find(opt => opt.id === value);
+  const selectedOption = options.find((opt) => opt.id === value)
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     switch (e.key) {
       case 'ArrowDown':
-        e.preventDefault();
+        e.preventDefault()
         if (!isOpen) {
-          setIsOpen(true);
+          setIsOpen(true)
         } else {
-          setFocusedIndex(prev => Math.min(prev + 1, options.length - 1));
+          setFocusedIndex((prev) => Math.min(prev + 1, options.length - 1))
         }
-        break;
+        break
       case 'ArrowUp':
-        e.preventDefault();
+        e.preventDefault()
         if (isOpen) {
-          setFocusedIndex(prev => Math.max(prev - 1, 0));
+          setFocusedIndex((prev) => Math.max(prev - 1, 0))
         }
-        break;
+        break
       case 'Enter':
       case ' ':
-        e.preventDefault();
+        e.preventDefault()
         if (isOpen) {
-          onChange(options[focusedIndex].id);
-          setIsOpen(false);
-          buttonRef.current?.focus();
+          onChange(options[focusedIndex].id)
+          setIsOpen(false)
+          buttonRef.current?.focus()
         } else {
-          setIsOpen(true);
+          setIsOpen(true)
         }
-        break;
+        break
       case 'Escape':
-        e.preventDefault();
-        setIsOpen(false);
-        buttonRef.current?.focus();
-        break;
+        e.preventDefault()
+        setIsOpen(false)
+        buttonRef.current?.focus()
+        break
     }
-  };
+  }
 
   // Close on click outside
   useEffect(() => {
@@ -2234,13 +2176,13 @@ export function AccessibleListbox({
         buttonRef.current &&
         !buttonRef.current.contains(e.target as Node)
       ) {
-        setIsOpen(false);
+        setIsOpen(false)
       }
-    };
+    }
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
 
   return (
     <div className="relative">
@@ -2281,24 +2223,21 @@ export function AccessibleListbox({
                 index === focusedIndex ? 'bg-blue-50' : 'hover:bg-gray-50'
               } ${option.id === value ? 'font-semibold' : ''}`}
               onClick={() => {
-                onChange(option.id);
-                setIsOpen(false);
-                buttonRef.current?.focus();
+                onChange(option.id)
+                setIsOpen(false)
+                buttonRef.current?.focus()
               }}
             >
               {option.label}
               {option.id === value && (
-                <Check
-                  className="w-4 h-4 ml-auto text-blue-500"
-                  aria-hidden="true"
-                />
+                <Check className="w-4 h-4 ml-auto text-blue-500" aria-hidden="true" />
               )}
             </div>
           ))}
         </div>
       )}
     </div>
-  );
+  )
 }
 ```
 
