@@ -265,6 +265,52 @@ Invoke the `@agent-design-review` subagent for thorough design validation when:
 
 ## Development Notes
 
+### Specialized Agents
+
+This project includes 15 specialized agents for comprehensive software development support. Agents are organized in `.claude/agents/` and can be invoked using the Task tool.
+
+**Complete Agent Documentation**: See [.claude/AGENTS.md](./.claude/AGENTS.md) for detailed information on all agents.
+
+**Quick Reference - Software Development Lifecycle (8 agents)**:
+
+- `analyst` - Market research, competitive analysis, brainstorming
+- `architect` - System architecture design and technology selection
+- `developer` - Implementation, debugging, code review, testing
+- `product-manager` - PRDs and project documentation
+- `product-owner` - Backlog management and sprint planning
+- `qa-engineer` - Code review, refactoring, test strategy
+- `scrum-master` - Story creation, agile ceremonies
+- `ux-expert` - UI/UX design and AI-optimized prompts
+
+**Quick Reference - Domain Specialists (7 agents)**:
+
+- `backend-api-architect` - API design, database schemas, authentication
+- `code-refactoring-architect` - Code structure improvements and patterns
+- `nextjs-project-bootstrapper` - Next.js project setup and configuration
+- `project-orchestrator` - Complex project coordination and task routing
+- `qa-test-engineer` - Automated testing and coverage analysis
+- `security-audit-specialist` - Security audits and vulnerability detection
+- `swiftui-architect` - iOS/macOS development (for native mobile projects)
+
+**Usage Example**:
+
+```
+Use the backend-api-architect agent to design the API for our notification system
+Use the qa-engineer agent to review our test coverage
+Use the project-orchestrator agent to coordinate implementation of the challenge system
+```
+
+**Agent Coordination**:
+
+- **Sequential**: Use for dependent tasks (analyst → architect → developer → qa-engineer)
+- **Parallel**: Use for independent tasks (backend-api-architect + ux-expert)
+- **Orchestrated**: Use project-orchestrator for complex multi-agent coordination
+
+**Sources**:
+
+- valllabh/claude-agents: https://github.com/valllabh/claude-agents
+- Dimillian/Claude: https://github.com/Dimillian/Claude
+
 ### Cursor Rules (from `.cursor/rules/`)
 
 **General Rules**:
@@ -318,7 +364,7 @@ Indexes auto-suggest on first query attempt. If you see a Firestore index error 
 TypeScript configured with path alias:
 
 ```typescript
-import { Something } from '@/components/Something';
+import { Something } from '@/components/Something'
 // Resolves to: src/components/Something
 ```
 
