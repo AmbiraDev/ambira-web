@@ -11,6 +11,11 @@ import { useAuth } from '@/hooks/useAuth'
 import ConfirmDialog from './ConfirmDialog'
 import { useQueryClient } from '@tanstack/react-query'
 import { AlertTriangle, Users, Search, ChevronUp } from 'lucide-react'
+import {
+  getLastViewedFeedTime,
+  updateLastViewedFeedTime,
+  countNewSessions,
+} from '@/lib/hooks/useFeedViewedState'
 
 // Session Card Skeleton Component
 const SessionCardSkeleton: React.FC = () => (
@@ -109,6 +114,8 @@ export const Feed: React.FC<FeedProps> = ({
   const refreshSessions = useCallback(() => {
     setHasNewSessions(false)
     setNewSessionsCount(0)
+    // Update localStorage to mark these sessions as viewed
+    updateLastViewedFeedTime()
     // Invalidate all feed caches to force refetch
     queryClient.invalidateQueries({ queryKey: ['feed'] })
     refetch()
@@ -152,13 +159,19 @@ export const Feed: React.FC<FeedProps> = ({
           response = await firebaseApi.post.getFeedSessions(5, undefined, filters)
         }
 
-        const newSessionIds = response.sessions.map((s) => s.id)
-        const currentSessionIds = allSessions.slice(0, 5).map((s) => s.id)
+        // Get the last viewed time from localStorage
+        const lastViewedTime = getLastViewedFeedTime()
 
-        const newCount = newSessionIds.filter((id) => !currentSessionIds.includes(id)).length
+        // Count sessions that are actually new (created after lastViewedTime)
+        const newCount = countNewSessions(response.sessions, lastViewedTime)
+
         if (newCount > 0) {
           setHasNewSessions(true)
           setNewSessionsCount(newCount)
+        } else {
+          // No new sessions since last view
+          setHasNewSessions(false)
+          setNewSessionsCount(0)
         }
       } catch {
         // Silently fail
@@ -408,10 +421,10 @@ export const Feed: React.FC<FeedProps> = ({
   }
 
   return (
-    <div className={className}>
+    <main role="main" aria-label="Activity feed" className={className}>
       {/* New sessions indicator */}
       {hasNewSessions && (
-        <div className="mb-4 sticky top-0 z-10">
+        <div className="mb-4 sticky top-0 z-10" role="status" aria-live="polite">
           <button
             onClick={refreshSessions}
             className="w-full py-3 px-3 sm:px-4 bg-gradient-to-r from-[#0066CC] to-[#0051D5] text-white rounded-lg shadow-lg hover:shadow-xl transition-colors duration-200 flex items-center justify-center gap-2 font-medium text-sm sm:text-base"
@@ -427,30 +440,38 @@ export const Feed: React.FC<FeedProps> = ({
       )}
 
       {/* Sessions */}
-      <div className="space-y-0 md:space-y-0">
+      <ul aria-label="Activity sessions" role="feed" className="space-y-0 md:space-y-0">
         {allSessions.map((session, index) => {
           const isOwnSession = user && session.userId === user.id
           // First 2 sessions are above the fold on most screens
           const isAboveFold = index < 2
 
           return (
-            <SessionCard
+            <li
               key={session.id}
-              session={session}
-              onSupport={handleSupport}
-              onRemoveSupport={handleRemoveSupport}
-              onShare={handleShare}
-              onEdit={
-                isOwnSession ? (sessionId) => router.push(`/sessions/${sessionId}/edit`) : undefined
-              }
-              onDelete={isOwnSession ? handleDelete : undefined}
-              showGroupInfo={showGroupInfo}
-              isAboveFold={isAboveFold}
-              priority={isAboveFold}
-            />
+              role="article"
+              aria-posinset={index + 1}
+              aria-setsize={allSessions.length}
+            >
+              <SessionCard
+                session={session}
+                onSupport={handleSupport}
+                onRemoveSupport={handleRemoveSupport}
+                onShare={handleShare}
+                onEdit={
+                  isOwnSession
+                    ? (sessionId) => router.push(`/sessions/${sessionId}/edit`)
+                    : undefined
+                }
+                onDelete={isOwnSession ? handleDelete : undefined}
+                showGroupInfo={showGroupInfo}
+                isAboveFold={isAboveFold}
+                priority={isAboveFold}
+              />
+            </li>
           )
         })}
-      </div>
+      </ul>
 
       {/* Infinite scroll trigger element */}
       {hasMore && !isLoadingMore && (
@@ -485,11 +506,11 @@ export const Feed: React.FC<FeedProps> = ({
 
       {/* End of feed */}
       {showEndMessage && !hasMore && allSessions.length > 0 && (
-        <div className="text-center py-4 text-gray-500 text-sm">
+        <div role="status" aria-live="polite" className="text-center py-4 text-gray-500 text-sm">
           You've reached the end of the feed
         </div>
       )}
-    </div>
+    </main>
   )
 }
 

@@ -88,7 +88,7 @@ export const LoginForm: React.FC = () => {
       const redirectTo = searchParams.get('redirect') || '/'
       router.push(redirectTo)
     } catch (_error) {
-      setSubmitError(error instanceof Error ? error.message : 'Login failed. Please try again.')
+      setSubmitError(_error instanceof Error ? _error.message : 'Login failed. Please try again.')
     } finally {
       setIsSubmitting(false)
     }

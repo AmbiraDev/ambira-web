@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import Link from 'next/link'
-import { ManualEntry } from './ManualEntry'
+import { ManualEntry } from '@/features/sessions/components/ManualEntry'
 import { firebaseApi } from '@/lib/api'
 import { SessionFormData } from '@/types'
 

@@ -82,6 +82,7 @@ export interface User {
     github?: string
     linkedin?: string
   }
+  isAdmin?: boolean // Admin role for privileged operations
   createdAt: Date
   updatedAt: Date
   // New friendship counts
@@ -818,6 +819,7 @@ export interface AuthUser {
     github?: string
     linkedin?: string
   }
+  isAdmin?: boolean // Admin role for privileged operations
   createdAt: Date
   updatedAt: Date
 }

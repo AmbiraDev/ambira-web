@@ -169,19 +169,30 @@ export const SaveSession: React.FC<SaveSessionProps> = ({
   return (
     <div className="w-full max-w-3xl mx-auto">
       <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-2xl font-bold mb-6">Save Session</h2>
+        <h2 id="save-session-title" className="text-2xl font-bold mb-6">
+          Save Session
+        </h2>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} aria-labelledby="save-session-title" className="space-y-6">
           {/* Project Selection */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Project *</label>
+            <label
+              htmlFor="project-select"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
+              Project *
+            </label>
             <select
+              id="project-select"
               value={formData.projectId}
               onChange={(e) => handleInputChange('projectId', e.target.value)}
               className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                 errors.projectId ? 'border-red-500' : 'border-gray-300'
               }`}
               disabled={isLoading}
+              aria-required="true"
+              aria-invalid={!!errors.projectId}
+              aria-describedby={errors.projectId ? 'project-error' : undefined}
             >
               <option value="">Select a project...</option>
               {projects.map((project) => (
@@ -190,13 +201,20 @@ export const SaveSession: React.FC<SaveSessionProps> = ({
                 </option>
               ))}
             </select>
-            {errors.projectId && <p className="text-red-500 text-sm mt-1">{errors.projectId}</p>}
+            {errors.projectId && (
+              <p id="project-error" role="alert" className="text-red-500 text-sm mt-1">
+                {errors.projectId}
+              </p>
+            )}
           </div>
 
           {/* Session Title */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Session Title *</label>
+            <label htmlFor="session-title" className="block text-sm font-medium text-gray-700 mb-2">
+              Session Title *
+            </label>
             <input
+              id="session-title"
               type="text"
               value={formData.title}
               onChange={(e) => handleInputChange('title', e.target.value)}
@@ -205,8 +223,15 @@ export const SaveSession: React.FC<SaveSessionProps> = ({
               }`}
               placeholder="What did you work on?"
               disabled={isLoading}
+              aria-required="true"
+              aria-invalid={!!errors.title}
+              aria-describedby={errors.title ? 'title-error' : undefined}
             />
-            {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title}</p>}
+            {errors.title && (
+              <p id="title-error" role="alert" className="text-red-500 text-sm mt-1">
+                {errors.title}
+              </p>
+            )}
           </div>
 
           {/* Duration Display */}
@@ -226,21 +251,30 @@ export const SaveSession: React.FC<SaveSessionProps> = ({
 
           {/* Description */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+            <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-2">
+              Description
+            </label>
             <textarea
+              id="description"
               value={formData.description || ''}
               onChange={(e) => handleInputChange('description', e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               rows={3}
               placeholder="What did you accomplish?"
               disabled={isLoading}
+              aria-describedby="description-hint"
             />
+            <p id="description-hint" className="text-sm text-gray-500 mt-1">
+              Optional: Add details about your session
+            </p>
           </div>
 
           {/* Tags */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Tags</label>
-            <div className="flex flex-wrap gap-2">
+            <label id="tags-label" className="block text-sm font-medium text-gray-700 mb-2">
+              Tags
+            </label>
+            <div className="flex flex-wrap gap-2" role="group" aria-labelledby="tags-label">
               {TAGS.map((tag) => (
                 <button
                   key={tag}
@@ -252,6 +286,8 @@ export const SaveSession: React.FC<SaveSessionProps> = ({
                       : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                   }`}
                   disabled={isLoading}
+                  aria-pressed={(formData.tags || []).includes(tag)}
+                  aria-label={`${tag} tag`}
                 >
                   {tag}
                 </button>
@@ -261,8 +297,14 @@ export const SaveSession: React.FC<SaveSessionProps> = ({
 
           {/* Privacy Settings */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Privacy</label>
+            <label
+              htmlFor="privacy-select"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
+              Privacy
+            </label>
             <select
+              id="privacy-select"
               value={formData.visibility}
               onChange={(e) =>
                 handleInputChange(
@@ -272,6 +314,7 @@ export const SaveSession: React.FC<SaveSessionProps> = ({
               }
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               disabled={isLoading}
+              aria-describedby="privacy-hint"
             >
               {PRIVACY_OPTIONS.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -279,25 +322,39 @@ export const SaveSession: React.FC<SaveSessionProps> = ({
                 </option>
               ))}
             </select>
+            <p id="privacy-hint" className="text-sm text-gray-500 mt-1">
+              Choose who can see this session
+            </p>
           </div>
 
           {/* Removed howFelt per requirements */}
 
           {/* Private Notes */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Private Notes</label>
+            <label htmlFor="private-notes" className="block text-sm font-medium text-gray-700 mb-2">
+              Private Notes
+            </label>
             <textarea
+              id="private-notes"
               value={formData.privateNotes || ''}
               onChange={(e) => handleInputChange('privateNotes', e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
               rows={2}
               placeholder="Any private notes about this session..."
               disabled={isLoading}
+              aria-describedby="private-notes-hint"
             />
+            <p id="private-notes-hint" className="text-sm text-gray-500 mt-1">
+              These notes are only visible to you
+            </p>
           </div>
 
           {/* Error Messages */}
-          {errors.submit && <div className="text-red-500 text-sm">{errors.submit}</div>}
+          {errors.submit && (
+            <div role="alert" className="text-red-500 text-sm">
+              {errors.submit}
+            </div>
+          )}
 
           {/* Action Buttons */}
           <div className="flex justify-end space-x-3 pt-4 border-t">
@@ -306,6 +363,7 @@ export const SaveSession: React.FC<SaveSessionProps> = ({
               onClick={onCancel}
               className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
               disabled={isLoading}
+              aria-label="Cancel and discard session"
             >
               Cancel
             </button>
@@ -313,6 +371,7 @@ export const SaveSession: React.FC<SaveSessionProps> = ({
               type="submit"
               disabled={isLoading}
               className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-300 transition-colors"
+              aria-label={isLoading ? 'Saving session' : 'Save session'}
             >
               {isLoading ? 'Saving...' : 'Save Session'}
             </button>

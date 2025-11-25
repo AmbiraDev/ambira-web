@@ -14,6 +14,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
 import { firebaseAuthApi } from '@/lib/api/auth'
+import { clearFeedViewedState } from '@/lib/hooks/useFeedViewedState'
 import type { AuthUser, LoginCredentials, SignupCredentials } from '@/types'
 
 /**
@@ -155,6 +156,9 @@ export function useLogout() {
       // Ensure auth cache is null
       queryClient.setQueryData(AUTH_KEYS.session(), null)
 
+      // Clear feed viewed state (localStorage)
+      clearFeedViewedState()
+
       // Navigate to landing page
       router.push('/')
     },
@@ -162,6 +166,10 @@ export function useLogout() {
       // Still navigate and clear cache even on error
       queryClient.clear()
       queryClient.setQueryData(AUTH_KEYS.session(), null)
+
+      // Clear feed viewed state (localStorage)
+      clearFeedViewedState()
+
       router.push('/')
     },
   })

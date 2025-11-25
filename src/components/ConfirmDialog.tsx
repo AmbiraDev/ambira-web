@@ -46,30 +46,41 @@ export default function ConfirmDialog({
   const styles = variantStyles[variant]
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="confirm-dialog-title"
+      aria-describedby="confirm-dialog-description"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200"
+    >
       <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full animate-in zoom-in-95 duration-200">
         {/* Header */}
         <div className="flex items-start justify-between p-6 pb-4">
           <div className="flex items-start gap-4">
-            <div className={`p-3 rounded-full ${styles.icon}`}>
-              <AlertTriangle className="w-6 h-6" />
+            <div className={`p-3 rounded-full ${styles.icon}`} aria-hidden="true">
+              <AlertTriangle className="w-6 h-6" aria-hidden="true" />
             </div>
             <div>
-              <h3 className="text-xl font-semibold text-gray-900">{title}</h3>
+              <h3 id="confirm-dialog-title" className="text-xl font-semibold text-gray-900">
+                {title}
+              </h3>
             </div>
           </div>
           <button
             onClick={onClose}
             disabled={isLoading}
             className="p-1 rounded-lg hover:bg-gray-100 transition-colors disabled:opacity-50"
+            aria-label="Close dialog"
           >
-            <X className="w-5 h-5 text-gray-500" />
+            <X className="w-5 h-5 text-gray-500" aria-hidden="true" />
           </button>
         </div>
 
         {/* Content */}
         <div className="px-6 pb-6">
-          <p className="text-gray-600 leading-relaxed">{message}</p>
+          <p id="confirm-dialog-description" className="text-gray-600 leading-relaxed">
+            {message}
+          </p>
         </div>
 
         {/* Actions */}
@@ -78,6 +89,7 @@ export default function ConfirmDialog({
             onClick={onClose}
             disabled={isLoading}
             className="flex-1 px-4 py-2.5 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            aria-label={`Cancel ${title.toLowerCase()}`}
           >
             {cancelText}
           </button>
@@ -85,10 +97,11 @@ export default function ConfirmDialog({
             onClick={onConfirm}
             disabled={isLoading}
             className={`flex-1 px-4 py-2.5 rounded-xl font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${styles.button}`}
+            aria-label={isLoading ? 'Processing...' : confirmText}
           >
             {isLoading ? (
               <span className="flex items-center justify-center gap-2">
-                <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
                   <circle
                     className="opacity-25"
                     cx="12"
@@ -104,7 +117,7 @@ export default function ConfirmDialog({
                     d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
                   />
                 </svg>
-                Loading...
+                <span>Loading...</span>
               </span>
             ) : (
               confirmText

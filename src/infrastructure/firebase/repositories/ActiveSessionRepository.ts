@@ -46,7 +46,7 @@ export class ActiveSessionRepository {
       return this.mapper.toDomain(doc)
     } catch (_error) {
       throw new Error(
-        `Failed to get active session: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Failed to get active session: ${_error instanceof Error ? _error.message : 'Unknown error'}`
       )
     }
   }
@@ -62,7 +62,7 @@ export class ActiveSessionRepository {
       await setDoc(docRef, data)
     } catch (_error) {
       throw new Error(
-        `Failed to save active session: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Failed to save active session: ${_error instanceof Error ? _error.message : 'Unknown error'}`
       )
     }
   }
@@ -76,7 +76,7 @@ export class ActiveSessionRepository {
       await deleteDoc(docRef)
     } catch (_error) {
       throw new Error(
-        `Failed to delete active session: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Failed to delete active session: ${_error instanceof Error ? _error.message : 'Unknown error'}`
       )
     }
   }
@@ -94,7 +94,7 @@ export class ActiveSessionRepository {
       await Promise.all(deletePromises)
     } catch (_error) {
       throw new Error(
-        `Failed to clear active sessions: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Failed to clear active sessions: ${_error instanceof Error ? _error.message : 'Unknown error'}`
       )
     }
   }

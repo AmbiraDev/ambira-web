@@ -8,7 +8,7 @@ import Header from '@/components/HeaderComponent'
 import MobileHeader from '@/components/MobileHeader'
 import BottomNavigation from '@/components/BottomNavigation'
 import Footer from '@/components/Footer'
-import ChallengeCard from '@/components/ChallengeCard'
+import ChallengeCard from '@/features/challenges/components/ChallengeCard'
 import { Button } from '@/components/ui/button'
 import { Trophy, Target, Search, TrendingUp, Zap, Timer } from 'lucide-react'
 

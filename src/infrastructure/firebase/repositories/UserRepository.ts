@@ -45,7 +45,7 @@ export class UserRepository {
       return this.mapper.toDomain(docSnap)
     } catch (_error) {
       throw new Error(
-        `Failed to find user: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Failed to find user: ${_error instanceof Error ? _error.message : 'Unknown error'}`
       )
     }
   }
@@ -74,7 +74,7 @@ export class UserRepository {
       return this.mapper.toDomain(doc)
     } catch (_error) {
       throw new Error(
-        `Failed to find user: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Failed to find user: ${_error instanceof Error ? _error.message : 'Unknown error'}`
       )
     }
   }
@@ -103,7 +103,7 @@ export class UserRepository {
       return results.flat()
     } catch (_error) {
       throw new Error(
-        `Failed to find users: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Failed to find users: ${_error instanceof Error ? _error.message : 'Unknown error'}`
       )
     }
   }
@@ -137,7 +137,7 @@ export class UserRepository {
       return this.mapper.toDomainList(snapshot.docs)
     } catch (_error) {
       throw new Error(
-        `Failed to search users: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Failed to search users: ${_error instanceof Error ? _error.message : 'Unknown error'}`
       )
     }
   }
@@ -153,7 +153,7 @@ export class UserRepository {
       await setDoc(docRef, data, { merge: true })
     } catch (_error) {
       throw new Error(
-        `Failed to save user: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Failed to save user: ${_error instanceof Error ? _error.message : 'Unknown error'}`
       )
     }
   }
@@ -169,7 +169,7 @@ export class UserRepository {
       })
     } catch (_error) {
       throw new Error(
-        `Failed to update follower count: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Failed to update follower count: ${_error instanceof Error ? _error.message : 'Unknown error'}`
       )
     }
   }
@@ -185,7 +185,7 @@ export class UserRepository {
       })
     } catch (_error) {
       throw new Error(
-        `Failed to update following count: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Failed to update following count: ${_error instanceof Error ? _error.message : 'Unknown error'}`
       )
     }
   }

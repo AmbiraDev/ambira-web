@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useMemo } from 'react'
+import { useRouter } from 'next/navigation'
 import { useTimer } from '@/features/timer/hooks'
 import { useAuth } from '@/hooks/useAuth'
 import { useAllActivityTypes } from '@/hooks/useActivityTypes'
@@ -19,6 +20,7 @@ interface SessionTimerEnhancedProps {
 }
 
 export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
+  const router = useRouter()
   const [showFinishModal, setShowFinishModal] = useState(false)
   const { showToast } = useToast()
 
@@ -326,11 +328,9 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
       setSelectedImages([])
       setImagePreviewUrls([])
 
-      // Wait a moment to ensure state is cleared, then navigate
-      await new Promise((resolve) => setTimeout(resolve, 100))
-
-      // Navigate to home feed with refresh parameter to trigger immediate refresh
-      window.location.href = '/?refresh=true'
+      // Navigate immediately after resetTimer() completes - no delay
+      router.push('/')
+      router.refresh()
     } catch (_error) {
       const errorMessage =
         _error instanceof Error ? _error.message : 'Failed to save session. Please try again.'

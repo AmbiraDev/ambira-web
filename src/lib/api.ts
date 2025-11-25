@@ -68,28 +68,24 @@ api.interceptors.response.use(
 // Auth API methods
 export const authApi = {
   // Set token for authenticated requests
+  // NOTE: Firebase Auth SDK handles token management automatically
+  // This is kept for backward compatibility but should not be used
   setToken: (token: string) => {
     authToken = token
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('auth_token', token)
-    }
   },
 
   // Clear token
+  // NOTE: Firebase Auth SDK handles token management automatically
+  // This is kept for backward compatibility but should not be used
   clearToken: () => {
     authToken = null
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('auth_token')
-    }
   },
 
   // Get current token
+  // NOTE: Firebase Auth SDK handles token management automatically
+  // This is kept for backward compatibility but should not be used
   getToken: () => {
-    if (authToken) return authToken
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('auth_token')
-    }
-    return null
+    return authToken
   },
 
   // Login

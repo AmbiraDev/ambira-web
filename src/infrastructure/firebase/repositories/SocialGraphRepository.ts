@@ -41,7 +41,7 @@ export class SocialGraphRepository {
       return followingIds
     } catch (_error) {
       throw new Error(
-        `Failed to get following IDs: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Failed to get following IDs: ${_error instanceof Error ? _error.message : 'Unknown error'}`
       )
     }
   }
@@ -78,7 +78,7 @@ export class SocialGraphRepository {
       return followerIds
     } catch (_error) {
       throw new Error(
-        `Failed to get follower IDs: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Failed to get follower IDs: ${_error instanceof Error ? _error.message : 'Unknown error'}`
       )
     }
   }
@@ -127,7 +127,7 @@ export class SocialGraphRepository {
       return Array.from(allMemberIds)
     } catch (_error) {
       throw new Error(
-        `Failed to get group member IDs: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Failed to get group member IDs: ${_error instanceof Error ? _error.message : 'Unknown error'}`
       )
     }
   }

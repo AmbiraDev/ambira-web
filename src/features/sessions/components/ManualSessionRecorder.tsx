@@ -6,6 +6,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { Project, CreateSessionData } from '@/types'
 import { firebaseApi } from '@/lib/api'
 import { useAuth } from '@/hooks/useAuth'
+import { useToast } from '@/components/ui/toast'
 import { Image as ImageIcon, X } from 'lucide-react'
 import Image from 'next/image'
 import { uploadImages } from '@/lib/imageUpload'
@@ -65,6 +66,7 @@ const DeleteConfirm: React.FC<DeleteConfirmProps> = ({ isOpen, onClose, onDelete
 export default function ManualSessionRecorder() {
   const router = useRouter()
   const { user } = useAuth()
+  const { showToast } = useToast()
   const queryClient = useQueryClient()
 
   const [projects, setProjects] = useState<Project[]>([])
@@ -133,7 +135,7 @@ export default function ManualSessionRecorder() {
     const files = Array.from(e.target.files || [])
 
     if (files.length + selectedImages.length > 3) {
-      alert('Maximum 3 images allowed')
+      showToast('Maximum 3 images allowed', 'warning')
       return
     }
 
@@ -177,20 +179,21 @@ export default function ManualSessionRecorder() {
           } catch (_error) {
             debug.error('ManualSessionRecorder - Error converting HEIC')
             // More helpful error message
-            alert(
-              `HEIC conversion is currently unavailable. Please convert ${file.name} to JPG or PNG before uploading, or try refreshing the page.`
+            showToast(
+              `HEIC conversion is currently unavailable. Please convert ${file.name} to JPG or PNG before uploading, or try refreshing the page.`,
+              'error'
             )
             continue
           }
         }
 
         if (!processedFile.type.startsWith('image/')) {
-          alert(`${file.name} is not an image file`)
+          showToast(`${file.name} is not an image file`, 'warning')
           continue
         }
 
         if (processedFile.size > 10 * 1024 * 1024) {
-          alert(`${file.name} is too large. Maximum size is 10MB`)
+          showToast(`${file.name} is too large. Maximum size is 10MB`, 'warning')
           continue
         }
 
@@ -199,7 +202,7 @@ export default function ManualSessionRecorder() {
         previewUrls.push(previewUrl)
       } catch (_error) {
         debug.error('ManualSessionRecorder - Error processing image')
-        alert(`Failed to process ${file.name}`)
+        showToast(`Failed to process ${file.name}`, 'error')
       }
     }
 
@@ -303,6 +306,9 @@ export default function ManualSessionRecorder() {
       // Create session with post
       await firebaseApi.session.createSessionWithPost(formData, description, visibility)
 
+      // Show success notification
+      showToast('Session created successfully!', 'success')
+
       // Invalidate caches to refresh UI immediately
       if (user) {
         queryClient.invalidateQueries({
@@ -318,6 +324,7 @@ export default function ManualSessionRecorder() {
       router.push('/')
     } catch (_error) {
       debug.error('ManualSessionRecorder - Failed to create manual session')
+      showToast('Failed to create session. Please try again.', 'error')
       setErrors({ submit: 'Failed to create session. Please try again.' })
     } finally {
       setIsLoading(false)

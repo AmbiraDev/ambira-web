@@ -158,6 +158,9 @@ export const CommentsModal: React.FC<CommentsModalProps> = ({
 
   return (
     <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="comments-modal-title"
       className="fixed inset-0 z-50 bg-white sm:bg-black/60 sm:flex sm:items-center sm:justify-center sm:p-4"
       onClick={(e) => {
         // Only close on backdrop click for desktop
@@ -178,7 +181,10 @@ export const CommentsModal: React.FC<CommentsModalProps> = ({
             <ChevronLeft className="w-6 h-6 text-gray-900" aria-hidden="true" />
             <span className="text-base font-medium text-gray-900">Home</span>
           </button>
-          <h1 className="text-base font-semibold text-gray-900 absolute left-1/2 transform -translate-x-1/2">
+          <h1
+            id="comments-modal-title"
+            className="text-base font-semibold text-gray-900 absolute left-1/2 transform -translate-x-1/2"
+          >
             Comments
           </h1>
           <div className="w-20"></div> {/* Spacer for centering */}
@@ -230,15 +236,23 @@ export const CommentsModal: React.FC<CommentsModalProps> = ({
         <div className="flex-1 overflow-y-auto overscroll-contain">
           <div className="p-4">
             {isLoading ? (
-              <div className="flex items-center justify-center py-8">
-                <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+              <div
+                role="status"
+                aria-live="polite"
+                className="flex items-center justify-center py-8"
+              >
+                <div
+                  className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"
+                  aria-hidden="true"
+                />
+                <span className="sr-only">Loading comments...</span>
               </div>
             ) : comments.length === 0 ? (
-              <div className="text-center py-8 text-gray-500 text-sm">
+              <div role="status" className="text-center py-8 text-gray-500 text-sm">
                 No comments yet. Be the first to comment!
               </div>
             ) : (
-              <div className="space-y-2 sm:space-y-4">
+              <div className="space-y-2 sm:space-y-4" role="list" aria-label="Comments">
                 {comments.map((comment) => (
                   <CommentItem
                     key={comment.id}

@@ -4,7 +4,9 @@ Welcome to the Ambira documentation hub. This guide will help you navigate all p
 
 ## Quick Start
 
-- **New to the project?** Start with [README.md](../README.md)
+- **New user learning Ambira?** See [User Guide](./USER_GUIDE.md)
+- **Want to know what features are available?** Check [Features Overview](./FEATURES.md)
+- **New developer to the project?** Start with [README.md](../README.md)
 - **Setting up Firebase?** See [Firebase Setup Guide](./setup/FIREBASE_SETUP.md)
 - **Development guidelines?** See [CLAUDE.md](../CLAUDE.md)
 - **Setting up testing?** Check [Testing Quickstart](./testing/QUICKSTART.md)
@@ -16,6 +18,13 @@ Welcome to the Ambira documentation hub. This guide will help you navigate all p
 - **[Documentation Gaps Summary](./DOCUMENTATION_GAPS_SUMMARY.md)** - Quick reference for critical gaps and action plan
 
 ## Core Documentation
+
+### User Documentation
+
+Documentation for end users of Ambira.
+
+- **[User Guide](./USER_GUIDE.md)** - Complete guide to using Ambira (getting started, features, FAQ, troubleshooting)
+- **[Features Overview](./FEATURES.md)** - Comprehensive list of all available features with descriptions and status
 
 ### Setup & Configuration
 
@@ -133,6 +142,9 @@ ambira-web/
 │
 └── docs/
     ├── index.md              # This file - central navigation
+    │
+    ├── USER_GUIDE.md         # User documentation (end users)
+    ├── FEATURES.md           # Features overview (end users)
     │
     ├── setup/                # Setup and configuration
     │   ├── FIREBASE_SETUP.md

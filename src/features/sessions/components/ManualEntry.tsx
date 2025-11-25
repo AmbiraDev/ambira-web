@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react'
-import { SessionFormData, Project } from '@/types'
+import { SessionFormData } from '@/types'
 import { parseLocalDateTime } from '@/lib/utils'
 import { ERROR_MESSAGES } from '@/config/errorMessages'
 
@@ -50,7 +50,6 @@ export const ManualEntry: React.FC<ManualEntryProps> = ({
     privateNotes: '',
   })
 
-  const [projects, setProjects] = useState<Project[]>([])
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   // Time inputs
@@ -59,27 +58,6 @@ export const ManualEntry: React.FC<ManualEntryProps> = ({
   const [durationSeconds, setDurationSeconds] = useState(0)
   const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0])
   const [startTime, setStartTime] = useState('12:00')
-
-  // TODO: Implement Firebase API calls
-  // Helper function to get auth token
-  const getAuthToken = (): string => {
-    // For now, return empty string since we're not using Firebase sessions yet
-    return ''
-  }
-
-  // Load projects on mount
-  useEffect(() => {
-    const loadProjects = async () => {
-      try {
-        getAuthToken()
-        // TODO: Load projects from Firebase
-        const projectList: Project[] = [] // await mockProjectApiLocal.getProjects(token);
-        setProjects(projectList)
-      } catch (_error) {}
-    }
-
-    loadProjects()
-  }, [])
 
   // Update duration when time inputs change
   useEffect(() => {
@@ -93,24 +71,6 @@ export const ManualEntry: React.FC<ManualEntryProps> = ({
     const dateTime = parseLocalDateTime(startDate || '', startTime || '00:00')
     setFormData((prev) => ({ ...prev, startTime: dateTime }))
   }, [startDate, startTime])
-
-  // Generate smart title based on time of day and project
-  useEffect(() => {
-    if (!formData.title && formData.projectId) {
-      const project = projects.find((p) => p.id === formData.projectId)
-      const hour = new Date().getHours()
-
-      let timeOfDay = ''
-      if (hour < 12) timeOfDay = 'Morning'
-      else if (hour < 17) timeOfDay = 'Afternoon'
-      else timeOfDay = 'Evening'
-
-      const smartTitle = project
-        ? `${timeOfDay} ${project.name} Session`
-        : `${timeOfDay} Work Session`
-      setFormData((prev) => ({ ...prev, title: smartTitle }))
-    }
-  }, [formData.projectId, formData.title, projects])
 
   const handleInputChange = (
     field: keyof SessionFormData,
@@ -134,10 +94,6 @@ export const ManualEntry: React.FC<ManualEntryProps> = ({
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {}
-
-    if (!formData.projectId) {
-      newErrors.projectId = 'Please select a project'
-    }
 
     if (!formData.title.trim()) {
       newErrors.title = 'Please enter a session title'
@@ -194,27 +150,6 @@ export const ManualEntry: React.FC<ManualEntryProps> = ({
           <h2 className="text-2xl font-bold mb-6">Add Manual Session</h2>
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Project Selection */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Project *</label>
-              <select
-                value={formData.projectId}
-                onChange={(e) => handleInputChange('projectId', e.target.value)}
-                className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  errors.projectId ? 'border-red-500' : 'border-gray-300'
-                }`}
-                disabled={isLoading}
-              >
-                <option value="">Select a project...</option>
-                {projects.map((project) => (
-                  <option key={project.id} value={project.id}>
-                    {project.name}
-                  </option>
-                ))}
-              </select>
-              {errors.projectId && <p className="text-red-500 text-sm mt-1">{errors.projectId}</p>}
-            </div>
-
             {/* Session Title */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">

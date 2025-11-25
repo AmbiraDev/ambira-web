@@ -1,11 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { firebaseUserApi } from '@/lib/api'
 import { useAuth } from '@/hooks/useAuth'
+import { useRouter } from 'next/navigation'
 
 export default function MigrateUsersPage() {
-  const { user } = useAuth()
+  const { user, isLoading } = useAuth()
+  const router = useRouter()
   const [isRunning, setIsRunning] = useState(false)
   const [result, setResult] = useState<{
     success: number
@@ -14,9 +16,16 @@ export default function MigrateUsersPage() {
   } | null>(null)
   const [error, setError] = useState<string | null>(null)
 
+  // Redirect non-admin users
+  useEffect(() => {
+    if (!isLoading && (!user || !user.isAdmin)) {
+      router.push('/')
+    }
+  }, [user, isLoading, router])
+
   const runMigration = async () => {
-    if (!user) {
-      setError('You must be logged in to run migration')
+    if (!user || !user.isAdmin) {
+      setError('You must be an admin to run migration')
       return
     }
 
@@ -34,6 +43,27 @@ export default function MigrateUsersPage() {
     }
   }
 
+  // Show loading state while checking authentication
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-8 flex items-center justify-center">
+        <div className="text-gray-600">Loading...</div>
+      </div>
+    )
+  }
+
+  // Show access denied if not admin
+  if (!user || !user.isAdmin) {
+    return (
+      <div className="min-h-screen bg-gray-50 p-8 flex items-center justify-center">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 max-w-md">
+          <h1 className="text-2xl font-bold text-red-600 mb-4">Access Denied</h1>
+          <p className="text-gray-600">You do not have permission to access this page.</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 p-8">
       <div className="max-w-2xl mx-auto">
@@ -46,17 +76,15 @@ export default function MigrateUsersPage() {
 
           <button
             onClick={runMigration}
-            disabled={isRunning || !user}
+            disabled={isRunning}
             className={`px-6 py-3 rounded-lg font-medium ${
-              isRunning || !user
+              isRunning
                 ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                 : 'bg-[#0066CC] text-white hover:bg-[#0051D5]'
             }`}
           >
             {isRunning ? 'Running Migration...' : 'Run Migration'}
           </button>
-
-          {!user && <p className="mt-4 text-red-600">Please log in to run the migration.</p>}
 
           {error && (
             <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg">

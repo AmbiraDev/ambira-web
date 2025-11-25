@@ -15,6 +15,49 @@ const nextConfig: NextConfig = {
             key: 'Cross-Origin-Opener-Policy',
             value: 'unsafe-none',
           },
+          {
+            // Content Security Policy - Restrict resource loading to trusted sources
+            // Allows Firebase, Google APIs, and Sentry while blocking XSS attacks
+            key: 'Content-Security-Policy',
+            value: [
+              "default-src 'self'",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://apis.google.com https://www.gstatic.com https://*.firebaseapp.com",
+              "style-src 'self' 'unsafe-inline'",
+              "img-src 'self' data: https: blob:",
+              "font-src 'self' data:",
+              "connect-src 'self' https://*.googleapis.com https://*.firebaseio.com wss://*.firebaseio.com https://*.sentry.io",
+              'frame-src https://accounts.google.com https://*.firebaseapp.com',
+              "object-src 'none'",
+              "base-uri 'self'",
+              "form-action 'self'",
+            ].join('; '),
+          },
+          {
+            // Prevent clickjacking attacks by controlling iframe embedding
+            key: 'X-Frame-Options',
+            value: 'SAMEORIGIN',
+          },
+          {
+            // Prevent MIME type sniffing that could lead to XSS attacks
+            key: 'X-Content-Type-Options',
+            value: 'nosniff',
+          },
+          {
+            // Enforce HTTPS connections for security
+            // max-age: 2 years, includeSubDomains, preload for Chrome HSTS list
+            key: 'Strict-Transport-Security',
+            value: 'max-age=63072000; includeSubDomains; preload',
+          },
+          {
+            // Control referrer information sent with requests
+            key: 'Referrer-Policy',
+            value: 'strict-origin-when-cross-origin',
+          },
+          {
+            // Restrict browser features and APIs to enhance privacy
+            key: 'Permissions-Policy',
+            value: 'camera=(), microphone=(), geolocation=(), interest-cohort=()',
+          },
         ],
       },
     ]

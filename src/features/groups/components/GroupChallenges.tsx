@@ -75,7 +75,7 @@ export default function GroupChallenges({ group, isAdmin }: GroupChallengesProps
       await loadGroupChallenges()
       setShowCreateModal(false)
     } catch (_error) {
-      throw error
+      throw _error
     }
   }
 

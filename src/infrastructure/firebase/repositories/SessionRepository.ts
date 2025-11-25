@@ -47,7 +47,7 @@ export class SessionRepository {
       return this.mapper.toDomain(docSnap)
     } catch (_error) {
       throw new Error(
-        `Failed to find session: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Failed to find session: ${_error instanceof Error ? _error.message : 'Unknown error'}`
       )
     }
   }
@@ -68,7 +68,7 @@ export class SessionRepository {
       return this.mapper.toDomainListEnriched(snapshot.docs)
     } catch (_error) {
       throw new Error(
-        `Failed to find sessions: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Failed to find sessions: ${_error instanceof Error ? _error.message : 'Unknown error'}`
       )
     }
   }
@@ -92,7 +92,7 @@ export class SessionRepository {
       return this.mapper.toDomainList(snapshot.docs)
     } catch (_error) {
       throw new Error(
-        `Failed to find sessions: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Failed to find sessions: ${_error instanceof Error ? _error.message : 'Unknown error'}`
       )
     }
   }
@@ -113,7 +113,7 @@ export class SessionRepository {
       return this.mapper.toDomainListEnriched(snapshot.docs)
     } catch (_error) {
       throw new Error(
-        `Failed to find sessions: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Failed to find sessions: ${_error instanceof Error ? _error.message : 'Unknown error'}`
       )
     }
   }
@@ -150,7 +150,7 @@ export class SessionRepository {
       return results.flat()
     } catch (_error) {
       throw new Error(
-        `Failed to find sessions: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Failed to find sessions: ${_error instanceof Error ? _error.message : 'Unknown error'}`
       )
     }
   }
@@ -209,7 +209,7 @@ export class SessionRepository {
       return this.mapper.toDomainList(snapshot.docs)
     } catch (_error) {
       throw new Error(
-        `Failed to find public sessions: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Failed to find public sessions: ${_error instanceof Error ? _error.message : 'Unknown error'}`
       )
     }
   }
@@ -225,7 +225,7 @@ export class SessionRepository {
       await setDoc(docRef, data, { merge: true })
     } catch (_error) {
       throw new Error(
-        `Failed to save session: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Failed to save session: ${_error instanceof Error ? _error.message : 'Unknown error'}`
       )
     }
   }
@@ -241,7 +241,7 @@ export class SessionRepository {
       })
     } catch (_error) {
       throw new Error(
-        `Failed to update support count: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Failed to update support count: ${_error instanceof Error ? _error.message : 'Unknown error'}`
       )
     }
   }
@@ -257,7 +257,7 @@ export class SessionRepository {
       })
     } catch (_error) {
       throw new Error(
-        `Failed to update comment count: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Failed to update comment count: ${_error instanceof Error ? _error.message : 'Unknown error'}`
       )
     }
   }
@@ -271,7 +271,7 @@ export class SessionRepository {
       await deleteDoc(docRef)
     } catch (_error) {
       throw new Error(
-        `Failed to delete session: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Failed to delete session: ${_error instanceof Error ? _error.message : 'Unknown error'}`
       )
     }
   }

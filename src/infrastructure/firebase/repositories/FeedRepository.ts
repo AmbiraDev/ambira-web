@@ -88,9 +88,9 @@ export class FeedRepository {
       const nextCursor = hasMore ? limitedDocs[limit - 1]?.id : undefined
 
       return { sessions, hasMore, nextCursor }
-    } catch (error) {
+    } catch (_error) {
       throw new Error(
-        `Failed to get following feed: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Failed to get following feed: ${_error instanceof Error ? _error.message : 'Unknown error'}`
       )
     }
   }
@@ -120,9 +120,9 @@ export class FeedRepository {
       const nextCursor = hasMore ? snapshot.docs[limit - 1]?.id : undefined
 
       return { sessions, hasMore, nextCursor }
-    } catch (error) {
+    } catch (_error) {
       throw new Error(
-        `Failed to get public feed: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Failed to get public feed: ${_error instanceof Error ? _error.message : 'Unknown error'}`
       )
     }
   }
@@ -185,9 +185,9 @@ export class FeedRepository {
       const nextCursor = hasMore ? limitedDocs[limit - 1]?.id : undefined
 
       return { sessions, hasMore, nextCursor }
-    } catch (error) {
+    } catch (_error) {
       throw new Error(
-        `Failed to get group members feed: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Failed to get group members feed: ${_error instanceof Error ? _error.message : 'Unknown error'}`
       )
     }
   }

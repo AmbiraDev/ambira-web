@@ -13,7 +13,7 @@
 
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import Header from '@/components/HeaderComponent'
 import MobileHeader from '@/components/MobileHeader'
 import BottomNavigation from '@/components/BottomNavigation'
@@ -265,6 +265,50 @@ export function SettingsPageContent() {
     }
   }
 
+  // Memoized change handlers to prevent re-renders on every keystroke
+  const handleNameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData((prev) => ({ ...prev, name: e.target.value }))
+  }, [])
+
+  const handleTaglineChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData((prev) => ({ ...prev, tagline: e.target.value }))
+  }, [])
+
+  const handlePronounsChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData((prev) => ({ ...prev, pronouns: e.target.value }))
+  }, [])
+
+  const handleBioChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setFormData((prev) => ({ ...prev, bio: e.target.value }))
+  }, [])
+
+  const handleLocationChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData((prev) => ({ ...prev, location: e.target.value }))
+  }, [])
+
+  const handleWebsiteChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData((prev) => ({ ...prev, website: e.target.value }))
+  }, [])
+
+  const handleTwitterChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData((prev) => ({ ...prev, twitter: e.target.value }))
+  }, [])
+
+  const handleGithubChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData((prev) => ({ ...prev, github: e.target.value }))
+  }, [])
+
+  const handleLinkedinChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData((prev) => ({ ...prev, linkedin: e.target.value }))
+  }, [])
+
+  const handleProfileVisibilityChange = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
+    setFormData((prev) => ({
+      ...prev,
+      profileVisibility: e.target.value as 'everyone' | 'followers' | 'private',
+    }))
+  }, [])
+
   // Profile Form Component (reusable for both desktop and mobile)
   const ProfileForm = ({ idPrefix = '' }: { idPrefix?: string }) => (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -331,7 +375,7 @@ export function SettingsPageContent() {
           type="text"
           id={`name${idPrefix}`}
           value={formData.name}
-          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+          onChange={handleNameChange}
           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none"
         />
       </div>
@@ -372,7 +416,7 @@ export function SettingsPageContent() {
           type="text"
           id={`tagline${idPrefix}`}
           value={formData.tagline}
-          onChange={(e) => setFormData({ ...formData, tagline: e.target.value })}
+          onChange={handleTaglineChange}
           maxLength={60}
           placeholder="Your headline or current status..."
           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none"
@@ -394,7 +438,7 @@ export function SettingsPageContent() {
           type="text"
           id={`pronouns${idPrefix}`}
           value={formData.pronouns}
-          onChange={(e) => setFormData({ ...formData, pronouns: e.target.value })}
+          onChange={handlePronounsChange}
           maxLength={20}
           placeholder="e.g., she/her, he/him, they/them"
           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none"
@@ -412,7 +456,7 @@ export function SettingsPageContent() {
         <textarea
           id={`bio${idPrefix}`}
           value={formData.bio}
-          onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+          onChange={handleBioChange}
           rows={4}
           maxLength={160}
           placeholder="Tell us about yourself..."
@@ -434,7 +478,7 @@ export function SettingsPageContent() {
           type="text"
           id={`location${idPrefix}`}
           value={formData.location}
-          onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+          onChange={handleLocationChange}
           placeholder="City, Country"
           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none"
         />
@@ -457,7 +501,7 @@ export function SettingsPageContent() {
             type="url"
             id={`website${idPrefix}`}
             value={formData.website}
-            onChange={(e) => setFormData({ ...formData, website: e.target.value })}
+            onChange={handleWebsiteChange}
             onBlur={(e) => {
               const isValid = validateURL(e.target.value)
               setUrlError(
@@ -495,7 +539,7 @@ export function SettingsPageContent() {
                 type="text"
                 id={`twitter${idPrefix}`}
                 value={formData.twitter}
-                onChange={(e) => setFormData({ ...formData, twitter: e.target.value })}
+                onChange={handleTwitterChange}
                 placeholder="username"
                 className="w-full pl-8 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none"
               />
@@ -514,7 +558,7 @@ export function SettingsPageContent() {
               type="text"
               id={`github${idPrefix}`}
               value={formData.github}
-              onChange={(e) => setFormData({ ...formData, github: e.target.value })}
+              onChange={handleGithubChange}
               placeholder="username"
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none"
             />
@@ -532,7 +576,7 @@ export function SettingsPageContent() {
               type="text"
               id={`linkedin${idPrefix}`}
               value={formData.linkedin}
-              onChange={(e) => setFormData({ ...formData, linkedin: e.target.value })}
+              onChange={handleLinkedinChange}
               placeholder="username"
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none"
             />
@@ -578,12 +622,7 @@ export function SettingsPageContent() {
         <select
           id={`profileVisibility${idPrefix}`}
           value={formData.profileVisibility}
-          onChange={(e) =>
-            setFormData({
-              ...formData,
-              profileVisibility: e.target.value as 'everyone' | 'followers' | 'private',
-            })
-          }
+          onChange={handleProfileVisibilityChange}
           className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#0066CC] focus:border-[#0066CC] outline-none"
         >
           <option value="everyone">

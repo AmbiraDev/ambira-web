@@ -1,8 +1,12 @@
 import { firebaseStreakApi } from '@/lib/api/streaks'
 
+const mockAuth = {
+  currentUser: { uid: 'user-auth' },
+}
+
 jest.mock('@/lib/firebase', () => ({
   db: {},
-  auth: { currentUser: { uid: 'user-auth' } },
+  auth: mockAuth,
 }))
 
 jest.mock('firebase/firestore', () => {

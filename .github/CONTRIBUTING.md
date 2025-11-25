@@ -18,7 +18,9 @@ Thank you for your interest in contributing to Ambira! This document provides gu
 
 ## Code of Conduct
 
-By participating in this project, you agree to maintain a respectful, inclusive, and collaborative environment. We expect all contributors to:
+This project and everyone participating in it is governed by our [Code of Conduct](../CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code. Please report unacceptable behavior through GitHub issues or by contacting the project maintainers.
+
+We expect all contributors to:
 
 - Be respectful and constructive in discussions
 - Welcome newcomers and help them get started

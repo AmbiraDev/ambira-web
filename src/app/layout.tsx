@@ -7,6 +7,7 @@ import { QueryProvider } from '@/providers/QueryProvider'
 import { ThemeColorProvider } from '@/providers/ThemeColorProvider'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import PWAInstaller from '@/components/PWAInstaller'
+import { ToastProvider } from '@/components/ui/toast'
 import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 
@@ -73,15 +74,17 @@ export default function RootLayout({
       <body className={`${dmSans.variable} antialiased`} suppressHydrationWarning>
         <ErrorBoundary>
           <ThemeColorProvider>
-            <PWAInstaller />
-            <QueryProvider>
-              <AuthInitializer>
-                <DataPrefetcher />
-                {children}
-              </AuthInitializer>
-            </QueryProvider>
-            <Analytics />
-            <SpeedInsights />
+            <ToastProvider>
+              <PWAInstaller />
+              <QueryProvider>
+                <AuthInitializer>
+                  <DataPrefetcher />
+                  {children}
+                </AuthInitializer>
+              </QueryProvider>
+              <Analytics />
+              <SpeedInsights />
+            </ToastProvider>
           </ThemeColorProvider>
         </ErrorBoundary>
       </body>

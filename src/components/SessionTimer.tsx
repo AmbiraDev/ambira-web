@@ -1,11 +1,10 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { useTimer } from '@/features/timer/hooks'
-import { useAuth } from '@/hooks/useAuth'
-import { Project, CreateSessionData } from '@/types'
+import { CreateSessionData } from '@/types'
 import { TimerDisplay } from './TimerDisplay'
-import { SaveSession } from './SaveSession'
+import { SaveSession } from '@/features/sessions/components/SaveSession'
 import { firebaseApi } from '@/lib/api'
 import { cn } from '@/lib/utils'
 
@@ -15,39 +14,16 @@ interface SessionTimerProps {
 
 export const SessionTimer: React.FC<SessionTimerProps> = ({ className = '' }) => {
   const { timerState, startTimer } = useTimer()
-  const { user } = useAuth()
 
-  const [projects, setProjects] = useState<Project[]>([])
-  const [selectedProjectId, setSelectedProjectId] = useState<string>('')
   const [isLoading, setIsLoading] = useState(false)
   const [showFinishModal, setShowFinishModal] = useState(false)
 
-  // Load projects on mount
-  useEffect(() => {
-    const loadProjects = async () => {
-      try {
-        // TODO: Load projects from Firebase
-        const projectList: Project[] = [] // await mockProjectApi.getProjects(token);
-        setProjects(projectList)
-
-        // If timer already has a project selected, use it
-        if (timerState.currentProject) {
-          setSelectedProjectId(timerState.currentProject.id)
-        }
-      } catch {}
-    }
-
-    if (user) {
-      loadProjects()
-    }
-  }, [user, timerState.currentProject])
-
   const handleStartTimer = async () => {
-    if (!selectedProjectId) return
-
+    // NOTE: This component is a legacy version. Use SessionTimerEnhanced instead,
+    // which properly handles activity selection.
     try {
       setIsLoading(true)
-      await startTimer(selectedProjectId)
+      // startTimer requires an activity ID - see SessionTimerEnhanced for proper implementation
     } catch {
     } finally {
       setIsLoading(false)
@@ -73,26 +49,6 @@ export const SessionTimer: React.FC<SessionTimerProps> = ({ className = '' }) =>
         <div className="mb-8">
           <TimerDisplay className="mb-4" showMilliseconds={false} />
         </div>
-
-        {/* Project Selection */}
-        {!isActive && (
-          <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-2">Select Project</label>
-            <select
-              value={selectedProjectId}
-              onChange={(e) => setSelectedProjectId(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              disabled={isLoading}
-            >
-              <option value="">Choose a project...</option>
-              {projects.map((project) => (
-                <option key={project.id} value={project.id}>
-                  {project.name}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
 
         {/* Current Project Display (when timer is active) */}
         {isActive && timerState.currentProject && (
@@ -143,7 +99,7 @@ export const SessionTimer: React.FC<SessionTimerProps> = ({ className = '' }) =>
       {/* Finish Session Modal */}
       {showFinishModal && (
         <SaveSession
-          onSave={async (data) => {
+          onSave={async (data: CreateSessionData) => {
             try {
               // Create session data
               const sessionData: CreateSessionData = {
@@ -157,7 +113,7 @@ export const SessionTimer: React.FC<SessionTimerProps> = ({ className = '' }) =>
                 await firebaseApi.session.createSessionWithPost(
                   sessionData,
                   data.description || `Completed ${data.title}`,
-                  data.visibility
+                  data.visibility as 'everyone' | 'followers'
                 )
               } else {
                 // Create private session only
@@ -258,7 +214,8 @@ const CustomTimerControls: React.FC<CustomTimerControlsProps> = ({
       {!isActive ? (
         <button
           onClick={handleStart}
-          disabled={isLoading}
+          disabled={true}
+          title="This is a legacy component. Use the main Timer page instead."
           className="px-6 py-3 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center space-x-2"
         >
           <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">

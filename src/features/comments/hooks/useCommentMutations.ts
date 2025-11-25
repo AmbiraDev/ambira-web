@@ -401,11 +401,15 @@ export function useDeleteComment(
 
     onMutate: async ({ commentId, sessionId }) => {
       await queryClient.cancelQueries({
-        queryKey: COMMENT_KEYS.session(sessionId),
+        queryKey: COMMENT_KEYS.lists(),
+        predicate: (query) => {
+          const key = query.queryKey as readonly unknown[]
+          return key.length >= 3 && key[2] === sessionId
+        },
       })
 
       const previousComments = queryClient.getQueryData<CommentsResponse>(
-        COMMENT_KEYS.session(sessionId)
+        COMMENT_KEYS.list(sessionId)
       )
 
       // Optimistically remove from ALL matching comment list caches
@@ -448,7 +452,11 @@ export function useDeleteComment(
     onSuccess: (_, { sessionId }) => {
       // Invalidate comments
       queryClient.invalidateQueries({
-        queryKey: COMMENT_KEYS.session(sessionId),
+        queryKey: COMMENT_KEYS.lists(),
+        predicate: (query) => {
+          const key = query.queryKey as readonly unknown[]
+          return key.length >= 3 && key[2] === sessionId
+        },
       })
 
       // Update comment count in session cache and feed
@@ -550,11 +558,15 @@ export function useCommentLike(
 
     onMutate: async ({ commentId, action }) => {
       await queryClient.cancelQueries({
-        queryKey: COMMENT_KEYS.session(sessionId),
+        queryKey: COMMENT_KEYS.lists(),
+        predicate: (query) => {
+          const key = query.queryKey as readonly unknown[]
+          return key.length >= 3 && key[2] === sessionId
+        },
       })
 
       const previousComments = queryClient.getQueryData<CommentsResponse>(
-        COMMENT_KEYS.session(sessionId)
+        COMMENT_KEYS.list(sessionId)
       )
 
       const increment = action === 'like' ? 1 : -1
@@ -607,7 +619,11 @@ export function useCommentLike(
     onSuccess: () => {
       // Refetch to ensure consistency
       queryClient.invalidateQueries({
-        queryKey: COMMENT_KEYS.session(sessionId),
+        queryKey: COMMENT_KEYS.lists(),
+        predicate: (query) => {
+          const key = query.queryKey as readonly unknown[]
+          return key.length >= 3 && key[2] === sessionId
+        },
       })
     },
 

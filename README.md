@@ -129,11 +129,21 @@ A social productivity tracking application built with Next.js, TypeScript, and T
 
 **Before running the app, you must configure Firebase:**
 
-Ambira uses Firebase for authentication and database. Follow our comprehensive setup guide:
+Ambira uses Firebase for authentication and database. Our comprehensive setup guide covers everything you need:
 
-**[Complete Firebase Setup Guide](./docs/setup/FIREBASE_SETUP.md)** - Step-by-step instructions with screenshots
+**[Complete Firebase Setup Guide](./docs/setup/FIREBASE_SETUP.md)** - Step-by-step instructions
 
-**Quick Setup**:
+This guide includes:
+
+- Firebase project creation and configuration
+- Authentication setup (Email/Password + Google Sign-In)
+- Firestore database and security rules deployment
+- Environment variable configuration
+- Connection testing and verification
+- Firebase Emulators for local development (optional)
+- Comprehensive troubleshooting
+
+**Quick Setup Summary**:
 
 1. **Create Firebase Project** at [console.firebase.google.com](https://console.firebase.google.com)
 2. **Enable Authentication** (Email/Password and Google providers)
@@ -150,8 +160,12 @@ Ambira uses Firebase for authentication and database. Follow our comprehensive s
    npx firebase-tools init firestore
    npx firebase-tools deploy --only firestore:rules --non-interactive
    ```
+7. **Test Your Setup** (see guide for detailed testing steps)
 
-See [FIREBASE_SETUP.md](./docs/setup/FIREBASE_SETUP.md) for detailed instructions and troubleshooting.
+For detailed instructions, troubleshooting, and optional emulator setup, see:
+
+- **[FIREBASE_SETUP.md](./docs/setup/FIREBASE_SETUP.md)** - Complete setup guide
+- **[FIREBASE_INDEXES.md](./docs/setup/FIREBASE_INDEXES.md)** - Required Firestore indexes
 
 ### Installation
 
@@ -285,7 +299,16 @@ See the [complete index guide](./docs/setup/FIREBASE_INDEXES.md) for all require
 
 ## Documentation
 
-For comprehensive documentation, see:
+### User Documentation
+
+For end users learning how to use Ambira:
+
+- **[User Guide](./docs/USER_GUIDE.md)** - Complete guide to using Ambira, from getting started to advanced features
+- **[Features Overview](./docs/FEATURES.md)** - Comprehensive list of all available features with descriptions
+
+### Developer Documentation
+
+For developers working on the Ambira codebase:
 
 - **[Documentation Hub](./docs/index.md)** - Central navigation for all documentation
 - **[CLAUDE.md](./CLAUDE.md)** - AI assistant guidelines and project instructions
@@ -302,15 +325,17 @@ For comprehensive documentation, see:
 
 ## Contributing
 
-This project follows a structured development approach with clear separation of concerns and TypeScript for type safety. When adding new features:
+We welcome contributions from the community! Please read our [Contributing Guidelines](CONTRIBUTING.md) for details on our development process, coding standards, and how to submit pull requests.
 
-1. Define types in `src/types/`
-2. Create components in `src/components/`
-3. Add pages in `src/app/`
-4. Follow the established design system
-5. Write tests for new functionality
-6. Consult the [Architecture Documentation](./docs/architecture/README.md) for patterns
-7. See [Testing Documentation](./docs/testing/README.md) for testing requirements
+**Quick Start for Contributors**:
+
+1. Read the [Code of Conduct](CODE_OF_CONDUCT.md)
+2. Review the [Contributing Guidelines](CONTRIBUTING.md)
+3. Check out the [Architecture Documentation](./docs/architecture/README.md)
+4. See [Testing Documentation](./docs/testing/README.md) for testing requirements
+5. Browse [open issues](https://github.com/your-org/ambira/issues) or create a new one
+
+This project follows a structured development approach with clear separation of concerns and TypeScript for type safety.
 
 ## License
 

@@ -408,20 +408,29 @@ export const firebaseStreakApi = {
 
   /**
    * Admin function: Restore a user's streak to a specific value
-   * TODO: Add admin permission check
+   * Restricted to system admins only
    *
    * @param userId - The user ID whose streak to restore
    * @param streakValue - The streak value to restore to
    * @returns Promise that resolves when the streak is restored
-   * @throws Error if user is not authenticated or restore fails
+   * @throws Error if user is not authenticated, not admin, or restore fails
    */
   restoreStreak: async (userId: string, streakValue: number): Promise<void> => {
     try {
       if (!auth.currentUser) {
-        throw new Error('Unauthorized')
+        throw new Error('Unauthorized: User not authenticated')
       }
 
-      // TODO: Add admin check
+      // Fetch current user to check admin status
+      const currentUserDoc = await getDoc(doc(db, 'users', auth.currentUser.uid))
+      if (!currentUserDoc.exists()) {
+        throw new Error('Unauthorized: User profile not found')
+      }
+
+      const currentUserData = currentUserDoc.data()
+      if (!currentUserData.isAdmin) {
+        throw new Error('Unauthorized: Admin access required')
+      }
 
       await updateDoc(doc(db, 'streaks', userId), {
         currentStreak: streakValue,

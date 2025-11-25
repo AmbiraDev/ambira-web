@@ -253,9 +253,80 @@ Firestore security rules control who can read/write data. Ambira includes pre-co
 
    > **Note**: Composite indexes will auto-create when you first run queries that need them. See [FIREBASE_INDEXES.md](./FIREBASE_INDEXES.md) for details.
 
-## Step 7: Verify Setup
+## Step 7: Test Firebase Connection
 
-Test that everything is configured correctly.
+Before starting the app, verify your Firebase configuration is correct.
+
+### Quick Connection Test
+
+1. **Check Environment Variables**
+
+   ```bash
+   # Verify .env.local exists
+   cat .env.local | grep NEXT_PUBLIC_FIREBASE
+   ```
+
+   You should see all Firebase variables with actual values (not placeholders).
+
+2. **Validate Configuration**
+
+   Create a test file `test-firebase-connection.js` in the project root:
+
+   ```javascript
+   // test-firebase-connection.js
+   require('dotenv').config({ path: '.env.local' })
+
+   const config = {
+     apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+     authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+     projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+     storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+     messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+     appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+   }
+
+   console.log('Firebase Configuration:')
+   console.log('✓ API Key:', config.apiKey ? 'Set' : '❌ Missing')
+   console.log('✓ Auth Domain:', config.authDomain || '❌ Missing')
+   console.log('✓ Project ID:', config.projectId || '❌ Missing')
+   console.log('✓ Storage Bucket:', config.storageBucket || '❌ Missing')
+   console.log('✓ Messaging Sender ID:', config.messagingSenderId || '❌ Missing')
+   console.log('✓ App ID:', config.appId ? 'Set' : '❌ Missing')
+
+   const allSet = Object.values(config).every((val) => val)
+   console.log('\nStatus:', allSet ? '✅ All required variables set' : '❌ Missing variables')
+   ```
+
+   Run the test:
+
+   ```bash
+   npm install dotenv
+   node test-firebase-connection.js
+   ```
+
+   Expected output:
+
+   ```
+   Firebase Configuration:
+   ✓ API Key: Set
+   ✓ Auth Domain: your-project.firebaseapp.com
+   ✓ Project ID: your-project-id
+   ✓ Storage Bucket: your-project.firebasestorage.app
+   ✓ Messaging Sender ID: 123456789
+   ✓ App ID: Set
+
+   Status: ✅ All required variables set
+   ```
+
+3. **Clean up**
+
+   ```bash
+   rm test-firebase-connection.js
+   ```
+
+## Step 8: Verify Setup
+
+Test that everything works end-to-end.
 
 ### Install Dependencies
 
@@ -274,34 +345,307 @@ npm run dev
 1. **Navigate to App**
    - Open [http://localhost:3000](http://localhost:3000) in your browser
 
-2. **Sign Up**
+2. **Check Console First**
+   - Open browser DevTools (F12 or Right-click > Inspect)
+   - Go to Console tab
+   - Look for Firebase initialization messages
+   - Should NOT see "Firebase not configured" errors
+
+3. **Sign Up with Email/Password**
    - Click "Sign Up" or "Get Started"
-   - Create a new account with email/password
-   - Or click "Continue with Google"
+   - Enter email: `test@example.com`
+   - Enter password: `TestPassword123!`
+   - Fill in username and other required fields
+   - Click "Sign Up"
+
+4. **Verify Success**
+   - You should be redirected to the app (feed or dashboard)
+   - No errors in browser console
+   - Header shows your profile/username
+
+5. **Check Firebase Console**
+   - Go to [Firebase Console](https://console.firebase.google.com)
+   - Navigate to Authentication > Users
+   - Your test user should appear with the email you entered
+   - Note the User UID for reference
+
+### Test Google Sign-In
+
+1. **Sign Out**
+   - Click your profile in header > Log Out
+
+2. **Sign In with Google**
+   - Click "Continue with Google" on login page
+   - Select your Google account
+   - Grant permissions if prompted
 
 3. **Verify Success**
-   - You should be logged in without errors
-   - Check browser console (F12) for any errors
+   - Should be logged in
    - Check Firebase Console > Authentication > Users
-   - Your new user should appear in the list
+   - New user with Google provider should appear
 
-### Test Firestore
+### Test Firestore Database
 
 1. **Create Some Data**
-   - Try logging a work session (if timer is available)
-   - Or navigate to profile settings and update your profile
+   - Try these actions to create data in Firestore:
+     - Update your profile: Go to Settings > My Profile > Update name/bio
+     - Log a work session (if timer feature is available)
+     - Follow another user (if user discovery is available)
 
 2. **Check Firestore Console**
    - Go to Firebase Console > Firestore Database > Data
-   - You should see collections created (e.g., `users`, `sessions`)
-   - Click into collections to verify data is saved
+   - You should see collections created:
+     - `users` - Your user document
+     - `sessions` - If you logged a session
+     - `follows` - If you followed someone
+   - Click into collections to verify data structure
+
+3. **Test Read Permissions**
+   - Open a new incognito/private browser window
+   - Try to access your profile URL: `http://localhost:3000/profile/yourusername`
+   - Should redirect to login (privacy rules working correctly)
 
 ### Common Success Indicators
 
-- No errors in browser console
-- User appears in Firebase Authentication console
-- Data appears in Firestore console
-- App loads without "Firebase not configured" errors
+All green means you're ready to develop:
+
+- ✅ No errors in browser console
+- ✅ User appears in Firebase Authentication console after signup
+- ✅ Data appears in Firestore console after profile updates
+- ✅ App loads without "Firebase not configured" errors
+- ✅ Can sign in with email/password
+- ✅ Can sign in with Google
+- ✅ Profile updates persist after page reload
+
+## Firebase Emulators for Local Development (Optional)
+
+Firebase Emulators allow you to develop and test locally without affecting your production Firebase project. This is especially useful for:
+
+- Testing without consuming Firebase quota
+- Developing offline
+- Running integration tests in CI/CD
+- Experimenting with data structures
+
+### Prerequisites
+
+- Firebase CLI installed (from Step 6)
+- Java JDK 11+ installed ([download here](https://adoptium.net/))
+
+### Setup Firebase Emulators
+
+1. **Install Emulator Suite**
+
+   ```bash
+   npx firebase-tools init emulators
+   ```
+
+   Or if already initialized:
+
+   ```bash
+   npx firebase-tools setup:emulators:firestore
+   npx firebase-tools setup:emulators:auth
+   ```
+
+2. **Configure Which Emulators to Use**
+
+   When prompted, select:
+   - ✅ Authentication Emulator
+   - ✅ Firestore Emulator
+   - ⬜ Functions Emulator (optional, not needed for basic development)
+   - ⬜ Hosting Emulator (optional)
+   - ⬜ Storage Emulator (optional, for profile pictures)
+
+3. **Set Emulator Ports** (or accept defaults)
+
+   Default ports:
+   - **Authentication**: 9099
+   - **Firestore**: 8080
+   - **Emulator UI**: 4000
+
+4. **Create Emulator Config**
+
+   This creates/updates `firebase.json` in your project root:
+
+   ```json
+   {
+     "firestore": {
+       "rules": "firestore.rules",
+       "indexes": "firestore.indexes.json"
+     },
+     "emulators": {
+       "auth": {
+         "port": 9099
+       },
+       "firestore": {
+         "port": 8080
+       },
+       "ui": {
+         "enabled": true,
+         "port": 4000
+       }
+     }
+   }
+   ```
+
+### Start Emulators
+
+1. **Start the Emulator Suite**
+
+   ```bash
+   npx firebase-tools emulators:start
+   ```
+
+   You should see output like:
+
+   ```
+   ┌─────────────────────────────────────────────────────────────┐
+   │ ✔  All emulators ready! It is now safe to connect your app. │
+   │ i  View Emulator UI at http://127.0.0.1:4000                │
+   └─────────────────────────────────────────────────────────────┘
+
+   ┌────────────────┬────────────────┬─────────────────────────────────┐
+   │ Emulator       │ Host:Port      │ View in Emulator UI             │
+   ├────────────────┼────────────────┼─────────────────────────────────┤
+   │ Authentication │ 127.0.0.1:9099 │ http://127.0.0.1:4000/auth      │
+   │ Firestore      │ 127.0.0.1:8080 │ http://127.0.0.1:4000/firestore │
+   └────────────────┴────────────────┴─────────────────────────────────┘
+   ```
+
+2. **Open Emulator UI**
+
+   Navigate to [http://localhost:4000](http://localhost:4000) to see:
+   - Firestore data viewer and editor
+   - Authentication users list
+   - Logs and exports
+
+### Connect App to Emulators
+
+1. **Update Firebase Configuration**
+
+   Modify `src/lib/firebase.ts` to detect and use emulators in development:
+
+   ```typescript
+   // Add this after initializing Firebase app
+   if (typeof window !== 'undefined' && process.env.NODE_ENV === 'development') {
+     // Check if emulators should be used (add to .env.local)
+     if (process.env.NEXT_PUBLIC_USE_FIREBASE_EMULATOR === 'true') {
+       const { connectAuthEmulator } = require('firebase/auth')
+       const { connectFirestoreEmulator } = require('firebase/firestore')
+
+       connectAuthEmulator(auth, 'http://127.0.0.1:9099', {
+         disableWarnings: true,
+       })
+
+       connectFirestoreEmulator(db, '127.0.0.1', 8080)
+
+       console.log('🔧 Using Firebase Emulators')
+     }
+   }
+   ```
+
+2. **Add Environment Variable**
+
+   Add to `.env.local`:
+
+   ```bash
+   # Set to 'true' to use Firebase Emulators for local development
+   # Set to 'false' or comment out to use production Firebase
+   NEXT_PUBLIC_USE_FIREBASE_EMULATOR=true
+   ```
+
+3. **Start Development Server**
+
+   In a new terminal (keep emulators running):
+
+   ```bash
+   npm run dev
+   ```
+
+4. **Verify Emulator Connection**
+   - Open [http://localhost:3000](http://localhost:3000)
+   - Check browser console for "🔧 Using Firebase Emulators"
+   - Sign up for a new account
+   - Check [http://localhost:4000/auth](http://localhost:4000/auth) - user should appear
+   - Create some data (update profile)
+   - Check [http://localhost:4000/firestore](http://localhost:4000/firestore) - data should appear
+
+### Emulator Data Persistence
+
+By default, emulator data is cleared when you stop the emulators. To persist data:
+
+1. **Export Data**
+
+   ```bash
+   npx firebase-tools emulators:export ./firebase-emulator-data
+   ```
+
+2. **Import Data on Start**
+
+   ```bash
+   npx firebase-tools emulators:start --import ./firebase-emulator-data
+   ```
+
+3. **Auto-Export on Exit**
+
+   ```bash
+   npx firebase-tools emulators:start --import ./firebase-emulator-data --export-on-exit
+   ```
+
+4. **Add to .gitignore**
+
+   ```bash
+   echo "firebase-emulator-data/" >> .gitignore
+   ```
+
+### Emulator Best Practices
+
+1. **Use for Testing**
+   - Run automated tests against emulators
+   - No quota consumption
+   - Fast test execution
+
+2. **Seed Test Data**
+   - Create test users and data
+   - Export for consistent test environment
+   - Share with team via version control (careful with sensitive data)
+
+3. **Switch Between Emulator and Production**
+   - Use `NEXT_PUBLIC_USE_FIREBASE_EMULATOR` to toggle
+   - Test against production occasionally to verify parity
+   - Never point production builds at emulators
+
+4. **Security Rules Testing**
+   - Emulators enforce your `firestore.rules` file
+   - Test rule changes before deploying
+   - Use Emulator UI Rules Playground for debugging
+
+### Emulator Limitations
+
+- No Cloud Functions triggers (requires Functions emulator)
+- No Firebase Extensions
+- No Firebase Storage (requires Storage emulator)
+- Google Sign-In uses test accounts (not real Google auth)
+
+### Troubleshooting Emulators
+
+**Emulators won't start**
+
+- Check if ports 4000, 8080, 9099 are available
+- Close any apps using those ports
+- Try different ports in `firebase.json`
+
+**App not connecting to emulators**
+
+- Check `NEXT_PUBLIC_USE_FIREBASE_EMULATOR=true` in `.env.local`
+- Verify emulators are running (`http://localhost:4000` should open)
+- Check browser console for connection messages
+- Restart development server after starting emulators
+
+**Data not persisting**
+
+- Use `--export-on-exit` flag
+- Check export directory exists and is writable
+- Don't kill emulators with SIGKILL (use Ctrl+C)
 
 ## Troubleshooting
 

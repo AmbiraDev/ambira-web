@@ -67,6 +67,8 @@ export default function BottomNavigation() {
   return (
     <>
       <nav
+        role="navigation"
+        aria-label="Main navigation"
         className={`fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 md:hidden transition-transform duration-200 ${isKeyboardOpen ? 'translate-y-full' : 'translate-y-0'}`}
       >
         <div

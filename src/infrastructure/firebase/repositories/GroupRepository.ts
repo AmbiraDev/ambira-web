@@ -45,7 +45,7 @@ export class GroupRepository {
       return this.mapper.toDomain(docSnap)
     } catch (_error) {
       throw new Error(
-        `Failed to find group: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Failed to find group: ${_error instanceof Error ? _error.message : 'Unknown error'}`
       )
     }
   }
@@ -66,7 +66,7 @@ export class GroupRepository {
       return this.mapper.toDomainList(snapshot.docs)
     } catch (_error) {
       throw new Error(
-        `Failed to find groups: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Failed to find groups: ${_error instanceof Error ? _error.message : 'Unknown error'}`
       )
     }
   }
@@ -87,7 +87,7 @@ export class GroupRepository {
       return this.mapper.toDomainList(snapshot.docs)
     } catch (_error) {
       throw new Error(
-        `Failed to find public groups: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Failed to find public groups: ${_error instanceof Error ? _error.message : 'Unknown error'}`
       )
     }
   }
@@ -103,7 +103,7 @@ export class GroupRepository {
       await setDoc(docRef, data, { merge: true })
     } catch (_error) {
       throw new Error(
-        `Failed to save group: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Failed to save group: ${_error instanceof Error ? _error.message : 'Unknown error'}`
       )
     }
   }
@@ -124,7 +124,7 @@ export class GroupRepository {
       await this.save(updatedGroup)
     } catch (_error) {
       throw new Error(
-        `Failed to add member: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Failed to add member: ${_error instanceof Error ? _error.message : 'Unknown error'}`
       )
     }
   }
@@ -151,7 +151,7 @@ export class GroupRepository {
       await batch.commit()
     } catch (_error) {
       throw new Error(
-        `Failed to remove member: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Failed to remove member: ${_error instanceof Error ? _error.message : 'Unknown error'}`
       )
     }
   }
@@ -165,7 +165,7 @@ export class GroupRepository {
       await deleteDoc(docRef)
     } catch (_error) {
       throw new Error(
-        `Failed to delete group: ${error instanceof Error ? error.message : 'Unknown error'}`
+        `Failed to delete group: ${_error instanceof Error ? _error.message : 'Unknown error'}`
       )
     }
   }

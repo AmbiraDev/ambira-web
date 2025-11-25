@@ -119,6 +119,9 @@ export const LikesModal: React.FC<LikesModalProps> = ({ isOpen, onClose, userIds
 
   return (
     <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="likes-modal-title"
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
       onClick={onClose}
     >
@@ -128,7 +131,9 @@ export const LikesModal: React.FC<LikesModalProps> = ({ isOpen, onClose, userIds
       >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
-          <h2 className="text-gray-900 font-semibold text-center flex-1">Likes</h2>
+          <h2 id="likes-modal-title" className="text-gray-900 font-semibold text-center flex-1">
+            Likes
+          </h2>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-900 transition-colors"
@@ -141,19 +146,29 @@ export const LikesModal: React.FC<LikesModalProps> = ({ isOpen, onClose, userIds
         {/* Users list */}
         <div className="flex-1 overflow-y-auto">
           {isLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+            <div role="status" aria-live="polite" className="flex items-center justify-center py-8">
+              <div
+                className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"
+                aria-hidden="true"
+              />
+              <span className="sr-only">Loading users...</span>
             </div>
           ) : users.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">No likes yet</div>
+            <div role="status" className="text-center py-8 text-gray-500">
+              No likes yet
+            </div>
           ) : (
-            <div className="divide-y divide-gray-100">
+            <ul
+              className="divide-y divide-gray-100"
+              role="list"
+              aria-label="Users who liked this session"
+            >
               {users.map((user) => {
                 const isOwnProfile = currentUser?.id === user.id
                 const isFollowing = followingStates[user.id] ?? false
 
                 return (
-                  <div
+                  <li
                     key={user.id}
                     className="flex items-center gap-3 p-4 hover:bg-gray-50 transition-colors"
                   >
@@ -187,14 +202,18 @@ export const LikesModal: React.FC<LikesModalProps> = ({ isOpen, onClose, userIds
                             ? 'bg-gray-200 hover:bg-gray-300 text-gray-900'
                             : 'bg-blue-600 hover:bg-blue-700 text-white'
                         }`}
+                        aria-label={
+                          isFollowing ? `Unfollow ${user.username}` : `Follow ${user.username}`
+                        }
+                        aria-pressed={isFollowing}
                       >
                         {isFollowing ? 'Following' : 'Follow'}
                       </button>
                     )}
-                  </div>
+                  </li>
                 )
               })}
-            </div>
+            </ul>
           )}
         </div>
       </div>
