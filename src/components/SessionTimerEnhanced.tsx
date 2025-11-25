@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo } from 'react'
 import { useTimer } from '@/features/timer/hooks'
 import { useAuth } from '@/hooks/useAuth'
 import { useAllActivityTypes } from '@/hooks/useActivityTypes'
+import { useToast } from '@/components/ui/toast'
 import { Play, Pause, ChevronDown, Check, Flag, Edit3, ArrowLeft } from 'lucide-react'
 import Slider from 'rc-slider'
 import 'rc-slider/assets/index.css'
@@ -19,6 +20,7 @@ interface SessionTimerEnhancedProps {
 
 export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
   const [showFinishModal, setShowFinishModal] = useState(false)
+  const { showToast } = useToast()
 
   // Pause polling when finish modal is shown to prevent timer updates
   const {
@@ -187,8 +189,9 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
       // Reset custom start time after starting
       setCustomStartTime(null)
       setShowTimePickerModal(false)
+      showToast('Timer started successfully!', 'success')
     } catch (_error) {
-      alert('Failed to start timer. Please try again.')
+      showToast('Failed to start timer. Please try again.', 'error')
     }
   }
 
@@ -260,7 +263,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
     try {
       // Validate required fields
       if (!sessionTitle.trim()) {
-        alert('Please enter a session title')
+        showToast('Please enter a session title', 'warning')
         return
       }
 
@@ -269,7 +272,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
 
       // Validate activity selection
       if (!activityToSave) {
-        alert('Please select an activity before saving')
+        showToast('Please select an activity before saving', 'warning')
         setShowActivityPicker(true)
         return
       }
@@ -282,7 +285,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
           const uploadResults = await uploadImages(selectedImages)
           imageUrls = uploadResults.map((result) => result.url)
         } catch {
-          alert('Failed to upload images. Session will be saved without images.')
+          showToast('Failed to upload images. Session will be saved without images.', 'warning')
         } finally {
           setIsUploadingImages(false)
         }
@@ -305,6 +308,15 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
         }
       )
 
+      // CRITICAL FIX: Explicitly clear the active timer state after finishing
+      // This ensures the timer intervals are stopped immediately and the component
+      // ceases all timer updates. Without this, the timer can continue running
+      // for a brief moment before the page navigation completes.
+      await resetTimer()
+
+      // Show success notification
+      showToast('Session saved successfully!', 'success')
+
       // Reset modal and form state
       setShowFinishModal(false)
       setSessionTitle('')
@@ -322,7 +334,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
     } catch (_error) {
       const errorMessage =
         _error instanceof Error ? _error.message : 'Failed to save session. Please try again.'
-      alert(errorMessage)
+      showToast(errorMessage, 'error')
     }
   }
 
@@ -341,7 +353,7 @@ export const SessionTimerEnhanced: React.FC<SessionTimerEnhancedProps> = () => {
       // Route to feed page
       window.location.href = '/'
     } catch {
-      alert('Failed to cancel session. Please try again.')
+      showToast('Failed to cancel session. Please try again.', 'error')
     }
   }
 
