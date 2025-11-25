@@ -166,9 +166,28 @@ export const firebaseAuthApi = {
       )
       const firebaseUser = userCredential.user
 
-      // Get user profile from Firestore
-      const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid))
-      let userData = userDoc.data()
+      // Force token refresh to ensure auth state is propagated
+      await firebaseUser.getIdToken(true)
+
+      // Retry logic for Firestore read (auth token propagation delay)
+      let userData
+      let retries = 0
+      const maxRetries = 3
+
+      while (retries < maxRetries) {
+        try {
+          const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid))
+          userData = userDoc.data()
+          break // Success - exit retry loop
+        } catch (err) {
+          retries++
+          if (retries >= maxRetries) {
+            throw err // Re-throw on final retry
+          }
+          // Wait before retrying (exponential backoff)
+          await new Promise((resolve) => setTimeout(resolve, 100 * retries))
+        }
+      }
 
       // If user profile doesn't exist, create it
       if (!userData) {
