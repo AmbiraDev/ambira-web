@@ -9,10 +9,11 @@ const nextConfig: NextConfig = {
         source: '/:path*',
         headers: [
           {
-            // Allow Firebase Auth popups to work by using same-origin-allow-popups
-            // This is required for Google Sign-In popup flow
+            // Disable COOP to allow Firebase Auth popups to work properly
+            // Google Sign-In requires access to popup window properties
+            // Note: Using 'unsafe-none' is necessary for OAuth flows
             key: 'Cross-Origin-Opener-Policy',
-            value: 'same-origin-allow-popups',
+            value: 'unsafe-none',
           },
         ],
       },
