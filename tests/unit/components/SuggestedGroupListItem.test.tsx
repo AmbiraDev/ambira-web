@@ -5,7 +5,7 @@
 
 import React from 'react'
 import { render, screen, fireEvent } from '@testing-library/react'
-import { SuggestedGroupListItem } from '@/components/SuggestedGroupListItem'
+import { SuggestedGroupListItem } from '@/features/groups/components/SuggestedGroupListItem'
 import { Group } from '@/types'
 
 // Mock Next.js Link component

@@ -14,9 +14,9 @@ import LeftSidebar from '@/components/LeftSidebar'
 import RightSidebar from '@/components/RightSidebar'
 import BottomNavigation from '@/components/BottomNavigation'
 import Footer from '@/components/Footer'
-import Feed from '@/components/Feed'
-import { FeedFilterDropdown, FeedFilterOption } from '@/components/FeedFilterDropdown'
-import { StreakCard } from '@/components/StreakCard'
+import Feed from '@/features/feed/components/Feed'
+import { FeedFilterDropdown, FeedFilterOption } from '@/features/feed/components/FeedFilterDropdown'
+import { StreakCard } from '@/features/streaks/components/StreakCard'
 import React, { useState, Suspense } from 'react'
 
 export function FeedPageContent() {

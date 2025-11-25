@@ -3,7 +3,7 @@
 import React from 'react'
 import { useRouter } from 'next/navigation'
 import { Group, GroupStats } from '@/types'
-import GroupAvatar from '@/components/GroupAvatar'
+import GroupAvatar from '@/features/groups/components/GroupAvatar'
 import {
   Users,
   MapPin,

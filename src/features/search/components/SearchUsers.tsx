@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react'
 import { UserSearchResult } from '@/types'
 import { firebaseUserApi } from '@/lib/api'
-import { UserCard, UserCardCompact } from './UserCard'
+import { UserCard, UserCardCompact } from '@/features/social/components/UserCard'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Search, Users, X, Loader2 } from 'lucide-react'

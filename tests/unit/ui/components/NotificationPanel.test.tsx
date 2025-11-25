@@ -1,6 +1,6 @@
 import React from 'react'
 import { render, screen, fireEvent, waitFor, within } from '@testing-library/react'
-import NotificationsPanel from '@/components/NotificationsPanel'
+import NotificationsPanel from '@/features/notifications/components/NotificationsPanel'
 import type { Notification } from '@/types'
 
 const pushMock = jest.fn()

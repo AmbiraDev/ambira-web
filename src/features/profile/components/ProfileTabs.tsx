@@ -5,8 +5,8 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { firebaseSessionApi, firebaseUserApi, firebasePostApi } from '@/lib/api'
 import { User, SessionWithDetails } from '@/types'
-import SessionCard from './SessionCard'
-import ConfirmDialog from './ConfirmDialog'
+import SessionCard from '@/features/sessions/components/SessionCard'
+import ConfirmDialog from '@/components/ConfirmDialog'
 import {
   BarChart3,
   Trophy,

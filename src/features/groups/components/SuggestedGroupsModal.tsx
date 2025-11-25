@@ -5,7 +5,7 @@ import { X, Users, ChevronLeft, ChevronRight, MapPin } from 'lucide-react'
 import Link from 'next/link'
 import { firebaseApi } from '@/lib/api'
 import { useAuth } from '@/hooks/useAuth'
-import GroupAvatar from '@/components/GroupAvatar'
+import GroupAvatar from '@/features/groups/components/GroupAvatar'
 import type { Group } from '@/types'
 
 interface SuggestedGroupsModalProps {

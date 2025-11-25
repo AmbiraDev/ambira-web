@@ -2,7 +2,7 @@
 
 import { useAuth } from '@/hooks/useAuth'
 import DailyGoals from './DailyGoals'
-import { StreakCard } from './StreakCard'
+import { StreakCard } from '@/features/streaks/components/StreakCard'
 
 function LeftSidebar() {
   const { user } = useAuth()

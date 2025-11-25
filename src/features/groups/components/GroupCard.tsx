@@ -3,7 +3,7 @@
 import React from 'react'
 import Link from 'next/link'
 import { Group } from '@/types'
-import GroupAvatar from '@/components/GroupAvatar'
+import GroupAvatar from '@/features/groups/components/GroupAvatar'
 
 interface GroupCardProps {
   group: Group

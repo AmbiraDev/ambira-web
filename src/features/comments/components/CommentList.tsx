@@ -8,8 +8,8 @@ import {
   useDeleteComment,
   useCommentLike,
 } from '@/features/comments/hooks'
-import CommentInput from './CommentInput'
-import CommentItem from './CommentItem'
+import CommentInput from '@/features/comments/components/CommentInput'
+import CommentItem from '@/features/comments/components/CommentItem'
 
 interface CommentListProps {
   sessionId: string

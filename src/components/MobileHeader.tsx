@@ -6,7 +6,7 @@ import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { Search, Settings, ChevronLeft } from 'lucide-react'
-import NotificationIcon from './NotificationIcon'
+import NotificationIcon from '@/features/notifications/components/NotificationIcon'
 
 interface MobileHeaderProps {
   title: string

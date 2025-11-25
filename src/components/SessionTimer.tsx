@@ -13,9 +13,9 @@ interface SessionTimerProps {
 }
 
 export const SessionTimer: React.FC<SessionTimerProps> = ({ className = '' }) => {
-  const { timerState, startTimer } = useTimer()
+  const { timerState, startTimer: _startTimer } = useTimer()
 
-  const [isLoading, setIsLoading] = useState(false)
+  const [_isLoading, setIsLoading] = useState(false)
   const [showFinishModal, setShowFinishModal] = useState(false)
 
   const handleStartTimer = async () => {

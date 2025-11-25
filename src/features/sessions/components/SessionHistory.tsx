@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Session, Project, SessionFilters, SessionSort } from '@/types'
 import { firebaseProjectApi, firebaseSessionApi } from '@/lib/api'
 import { MoreVertical } from 'lucide-react'
-import ConfirmDialog from './ConfirmDialog'
+import ConfirmDialog from '@/components/ConfirmDialog'
 
 export const SessionHistory: React.FC = () => {
   const router = useRouter()

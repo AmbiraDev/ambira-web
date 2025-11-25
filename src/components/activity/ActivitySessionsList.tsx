@@ -2,7 +2,7 @@
 
 import React from 'react'
 import { Clock } from 'lucide-react'
-import { SessionCard } from '@/components/SessionCard'
+import { SessionCard } from '@/features/sessions/components/SessionCard'
 import { SessionWithDetails } from '@/types'
 
 interface ActivitySessionsListProps {

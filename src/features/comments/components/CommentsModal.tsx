@@ -10,8 +10,8 @@ import {
   useDeleteComment,
   useCommentLike,
 } from '@/features/comments/hooks'
-import CommentItem from './CommentItem'
-import CommentInput from './CommentInput'
+import CommentItem from '@/features/comments/components/CommentItem'
+import CommentInput from '@/features/comments/components/CommentInput'
 import Link from 'next/link'
 import Image from 'next/image'
 import { debug } from '@/lib/debug'

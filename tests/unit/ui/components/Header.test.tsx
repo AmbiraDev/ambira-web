@@ -18,7 +18,7 @@ jest.mock('@/components/header/Logo', () => {
   return LogoMock
 })
 
-jest.mock('@/components/NotificationIcon', () => {
+jest.mock('@/features/notifications/components/NotificationIcon', () => {
   const NotificationIconMock: React.FC = () => (
     <div data-testid="notification-icon">Notifications</div>
   )

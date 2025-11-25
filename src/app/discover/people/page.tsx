@@ -7,7 +7,7 @@ import MobileHeader from '@/components/MobileHeader'
 import BottomNavigation from '@/components/BottomNavigation'
 import { firebaseUserApi } from '@/lib/api'
 import { useAuth } from '@/hooks/useAuth'
-import { UserCardCompact } from '@/components/UserCard'
+import { UserCardCompact } from '@/features/social/components/UserCard'
 import { ArrowLeft, Users as UsersIcon } from 'lucide-react'
 import type { SuggestedUser } from '@/types'
 

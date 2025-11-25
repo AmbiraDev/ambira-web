@@ -1,12 +1,11 @@
 import { firebaseStreakApi } from '@/lib/api/streaks'
 
-const mockAuth = {
-  currentUser: { uid: 'user-auth' },
-}
-
 jest.mock('@/lib/firebase', () => ({
   db: {},
-  auth: mockAuth,
+  auth: {
+    currentUser: { uid: 'user-auth' },
+  },
+  storage: {},
 }))
 
 jest.mock('firebase/firestore', () => {
@@ -65,9 +64,37 @@ jest.mock('@/lib/api/shared/utils', () => ({
   },
 }))
 
+jest.mock('@/lib/errorHandler', () => ({
+  handleError: (error: unknown, _context: string, options: { defaultMessage: string }) => {
+    // In tests, return the original error message if it's an Unauthorized error
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    if (errorMessage.includes('Unauthorized') || errorMessage.includes('Admin')) {
+      return {
+        userMessage: errorMessage,
+      }
+    }
+    return {
+      userMessage: options.defaultMessage,
+    }
+  },
+  isPermissionError: (error: unknown) => {
+    // Check for Firebase permission error code
+    if (error && typeof error === 'object' && 'code' in error) {
+      return (error as { code: string }).code === 'permission-denied'
+    }
+    const errorMessage = String(error)
+    return errorMessage.includes('permission') || errorMessage.includes('Unauthorized')
+  },
+  isNotFoundError: () => false,
+  ErrorSeverity: { WARNING: 'WARNING', ERROR: 'ERROR' },
+}))
+
 describe('firebaseStreakApi', () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    // Setup default mocks for firebase
+    const { auth } = jest.requireMock('@/lib/firebase')
+    auth.currentUser = { uid: 'user-auth' }
   })
 
   it('initialises empty streaks when no record exists', async () => {
@@ -152,5 +179,98 @@ describe('firebaseStreakApi', () => {
     expect(stats.longestStreak).toBeGreaterThanOrEqual(stats.currentStreak)
 
     jest.useRealTimers()
+  })
+
+  describe('restoreStreak', () => {
+    const updateDocMock = streakFirestoreMocks.updateDoc
+
+    it('allows admin users to restore streaks', async () => {
+      // Mock: current user is an admin
+      getDocMock.mockResolvedValueOnce({
+        exists: () => true,
+        data: () => ({
+          id: 'user-auth',
+          isAdmin: true,
+        }),
+      })
+      updateDocMock.mockResolvedValueOnce(undefined)
+
+      await firebaseStreakApi.restoreStreak('target-user', 42)
+
+      expect(getDocMock).toHaveBeenCalled()
+      expect(updateDocMock).toHaveBeenCalled()
+    })
+
+    it('denies non-admin users from restoring streaks', async () => {
+      // Mock: current user is not an admin
+      getDocMock.mockResolvedValueOnce({
+        exists: () => true,
+        data: () => ({
+          id: 'user-auth',
+          isAdmin: false,
+        }),
+      })
+
+      await expect(firebaseStreakApi.restoreStreak('target-user', 42)).rejects.toThrow(
+        'Unauthorized: Admin access required'
+      )
+
+      expect(updateDocMock).not.toHaveBeenCalled()
+    })
+
+    it('throws error when user is not authenticated', async () => {
+      // Mock: no current user
+      const { auth } = jest.requireMock('@/lib/firebase')
+      auth.currentUser = null
+
+      await expect(firebaseStreakApi.restoreStreak('target-user', 42)).rejects.toThrow(
+        'Unauthorized: User not authenticated'
+      )
+
+      expect(updateDocMock).not.toHaveBeenCalled()
+
+      // Restore mock auth (this will be reset in beforeEach anyway)
+      auth.currentUser = { uid: 'user-auth' }
+    })
+
+    it('throws error when user profile not found', async () => {
+      // Mock: user profile doesn't exist
+      getDocMock.mockResolvedValueOnce({
+        exists: () => false,
+      })
+
+      await expect(firebaseStreakApi.restoreStreak('target-user', 42)).rejects.toThrow(
+        'Unauthorized: User profile not found'
+      )
+
+      expect(updateDocMock).not.toHaveBeenCalled()
+    })
+
+    it('updates streak with provided value when authorized', async () => {
+      // Mock: current user is an admin
+      getDocMock.mockResolvedValueOnce({
+        exists: () => true,
+        data: () => ({
+          id: 'user-auth',
+          isAdmin: true,
+        }),
+      })
+      updateDocMock.mockResolvedValueOnce(undefined)
+
+      jest.useFakeTimers()
+      jest.setSystemTime(new Date('2024-01-15T10:00:00Z'))
+
+      await firebaseStreakApi.restoreStreak('target-user', 100)
+
+      expect(updateDocMock).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({
+          currentStreak: 100,
+          lastActivityDate: expect.anything(),
+        })
+      )
+
+      jest.useRealTimers()
+    })
   })
 })

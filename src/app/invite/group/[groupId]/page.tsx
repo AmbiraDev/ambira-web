@@ -1,5 +1,5 @@
 import { Metadata } from 'next'
-import GroupInviteLanding from '@/components/GroupInviteLanding'
+import GroupInviteLanding from '@/features/groups/components/GroupInviteLanding'
 
 type Props = {
   params: Promise<{ groupId: string }>

@@ -3,9 +3,9 @@
 import { useAuth } from '@/hooks/useAuth'
 import LeftSidebar from '@/components/LeftSidebar'
 import RightSidebar from '@/components/RightSidebar'
-import Feed from '@/components/Feed'
-import { FeedFilterDropdown, FeedFilterOption } from '@/components/FeedFilterDropdown'
-import { StreakCard } from '@/components/StreakCard'
+import Feed from '@/features/feed/components/Feed'
+import { FeedFilterDropdown, FeedFilterOption } from '@/features/feed/components/FeedFilterDropdown'
+import { StreakCard } from '@/features/streaks/components/StreakCard'
 import React, { useState, Suspense } from 'react'
 
 export default function FeedPageContent() {

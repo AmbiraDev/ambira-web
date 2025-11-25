@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
-import NotificationIcon from '../NotificationIcon'
+import NotificationIcon from '@/features/notifications/components/NotificationIcon'
 import Logo from './Logo'
 import SearchBar from './SearchBar'
 import Navigation from './Navigation'

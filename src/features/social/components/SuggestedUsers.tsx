@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { SuggestedUser } from '@/types'
 import { firebaseUserApi } from '@/lib/api'
-import { UserCard } from './UserCard'
+import { UserCard } from '@/features/social/components/UserCard'
 import { Button } from '@/components/ui/button'
 import { RefreshCw, Users, Sparkles, TrendingUp } from 'lucide-react'
 

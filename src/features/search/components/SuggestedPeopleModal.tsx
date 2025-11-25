@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { X, ChevronLeft, ChevronRight } from 'lucide-react'
 import { firebaseUserApi } from '@/lib/api'
 import { useAuth } from '@/hooks/useAuth'
-import { UserCardCompact } from '@/components/UserCard'
+import { UserCardCompact } from '@/features/social/components/UserCard'
 import type { SuggestedUser } from '@/types'
 
 interface SuggestedPeopleModalProps {

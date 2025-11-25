@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { PersonalAnalyticsDashboard } from './PersonalAnalyticsDashboard'
+import { PersonalAnalyticsDashboard } from '@/components/PersonalAnalyticsDashboard'
 import { useAuth } from '@/hooks/useAuth'
 
 interface ProjectAnalyticsDashboardProps {

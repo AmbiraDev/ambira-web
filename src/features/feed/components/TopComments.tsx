@@ -8,8 +8,8 @@ import {
   useDeleteComment,
   useCommentLike,
 } from '@/features/comments/hooks'
-import CommentItem from './CommentItem'
-import CommentInput from './CommentInput'
+import CommentItem from '@/features/comments/components/CommentItem'
+import CommentInput from '@/features/comments/components/CommentInput'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 
 interface TopCommentsProps {

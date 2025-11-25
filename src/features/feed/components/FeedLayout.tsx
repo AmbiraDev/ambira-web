@@ -5,7 +5,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { firebaseApi } from '@/lib/api'
 import { UserStats, FeedFilters } from '@/types'
 import Feed from './Feed'
-import SuggestedUsers from './SuggestedUsers'
+import SuggestedUsers from '@/features/social/components/SuggestedUsers'
 
 type FeedType = 'recent' | 'following' | 'trending'
 

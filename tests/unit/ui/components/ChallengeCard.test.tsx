@@ -1,6 +1,6 @@
 import React from 'react'
 import { render, screen, fireEvent } from '@testing-library/react'
-import ChallengeCard from '@/components/ChallengeCard'
+import ChallengeCard from '@/features/challenges/components/ChallengeCard'
 import type { Challenge, ChallengeStats } from '@/types'
 
 jest.mock('next/link', () => {

@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect, useCallback } from 'react'
 import { Clock, Target, TrendingUp, BarChart3 } from 'lucide-react'
-import { ActivityChart } from './ActivityChart'
-import { ProgressRing } from './ProgressRing'
+import { ActivityChart } from '@/components/ActivityChart'
+import { ProgressRing } from '@/components/ProgressRing'
 import { AnalyticsPeriod } from '@/types'
 import { useAuth } from '@/hooks/useAuth'
 import { debug } from '@/lib/debug'

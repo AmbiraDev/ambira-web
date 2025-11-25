@@ -6,7 +6,7 @@ import { ArrowLeft } from 'lucide-react'
 import { Session } from '@/types'
 import { firebaseApi } from '@/lib/api'
 import { useAuth } from '@/hooks/useAuth'
-import { EditSessionModal } from '@/components/EditSessionModal'
+import { EditSessionModal } from '@/features/sessions/components/EditSessionModal'
 import Header from '@/components/HeaderComponent'
 import MobileHeader from '@/components/MobileHeader'
 
