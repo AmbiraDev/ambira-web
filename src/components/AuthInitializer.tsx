@@ -16,72 +16,75 @@
  * - Auth state lives in React Query cache
  */
 
-'use client';
+'use client'
 
-import { useEffect, useState, useRef, useCallback, ReactNode } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
-import { useQueryClient } from '@tanstack/react-query';
-import { firebaseAuthApi } from '@/lib/api/auth';
-import { isFirebaseInitialized } from '@/lib/firebase';
-import { AUTH_KEYS } from '@/lib/react-query/auth.queries';
-import { LoadingScreen } from '@/components/LoadingScreen';
+import { useEffect, useState, useRef, useCallback, ReactNode } from 'react'
+import { useRouter, usePathname } from 'next/navigation'
+import { useQueryClient } from '@tanstack/react-query'
+import { firebaseAuthApi } from '@/lib/api/auth'
+import { isFirebaseInitialized } from '@/lib/firebase'
+import { AUTH_KEYS } from '@/lib/react-query/auth.queries'
+import { LoadingScreen } from '@/components/LoadingScreen'
 
 interface AuthInitializerProps {
-  children: ReactNode;
+  children: ReactNode
 }
 
 export function AuthInitializer({ children }: AuthInitializerProps) {
-  const queryClient = useQueryClient();
-  const router = useRouter();
-  const pathname = usePathname();
-  const redirectHandledRef = useRef(false);
+  const queryClient = useQueryClient()
+  const router = useRouter()
+  const pathname = usePathname()
+  const redirectHandledRef = useRef(false)
 
   // Check if this is a public page
   // pathname is available both on server and client in Next.js App Router
-  const isPublicPage =
-    pathname === '/login' || pathname === '/signup' || pathname === '/auth';
+  const isPublicPage = pathname === '/login' || pathname === '/signup' || pathname === '/auth'
 
   // For public pages, skip the loading state entirely
-  const [isInitializing, setIsInitializing] = useState(() => !isPublicPage);
+  const [isInitializing, setIsInitializing] = useState(() => !isPublicPage)
 
   // Memoize navigation to avoid re-renders
   const navigateToHome = useCallback(() => {
-    router.push('/');
-  }, [router]);
+    router.push('/')
+  }, [router])
 
   useEffect(() => {
     // Public pages should render immediately without waiting for auth
     if (isPublicPage) {
       // Ensure we're not initializing
-      setIsInitializing(false);
+      setIsInitializing(false)
 
       // Still set up auth listener in background, but don't block rendering
       if (isFirebaseInitialized) {
-        firebaseAuthApi.onAuthStateChanged(async firebaseUser => {
+        firebaseAuthApi.onAuthStateChanged(async (firebaseUser) => {
           try {
             if (firebaseUser) {
-              const userData = await firebaseAuthApi.getCurrentUser();
-              queryClient.setQueryData(AUTH_KEYS.session(), userData);
+              // Add small delay to allow Firestore to create user document
+              await new Promise((resolve) => setTimeout(resolve, 100))
+              const userData = await firebaseAuthApi.getCurrentUser()
+              queryClient.setQueryData(AUTH_KEYS.session(), userData)
             } else {
-              queryClient.setQueryData(AUTH_KEYS.session(), null);
+              queryClient.setQueryData(AUTH_KEYS.session(), null)
             }
           } catch (_err) {
-            queryClient.setQueryData(AUTH_KEYS.session(), null);
+            // Silently handle permission errors during auth state changes
+            // This is expected when user is signing in/out
+            queryClient.setQueryData(AUTH_KEYS.session(), null)
           }
-        });
+        })
       }
-      return;
+      return
     }
 
     if (!isFirebaseInitialized) {
       // Firebase is disabled (missing env vars) - treat as signed out
-      queryClient.setQueryData(AUTH_KEYS.session(), null);
-      setIsInitializing(false);
-      return;
+      queryClient.setQueryData(AUTH_KEYS.session(), null)
+      setIsInitializing(false)
+      return
     }
 
-    let authUnsubscribe: (() => void) | null = null;
-    let timeoutId: NodeJS.Timeout | null = null;
+    let authUnsubscribe: (() => void) | null = null
+    let timeoutId: NodeJS.Timeout | null = null
 
     const initializeAuth = async () => {
       // STEP 1: Check for Google OAuth redirect result
@@ -90,105 +93,102 @@ export function AuthInitializer({ children }: AuthInitializerProps) {
 
       // Set timeout FIRST to ensure we don't hang if redirect check hangs
       timeoutId = setTimeout(() => {
-        queryClient.setQueryData(AUTH_KEYS.session(), null);
-        setIsInitializing(false);
-      }, 5000);
+        queryClient.setQueryData(AUTH_KEYS.session(), null)
+        setIsInitializing(false)
+      }, 5000)
 
       try {
-        const redirectResult =
-          await firebaseAuthApi.handleGoogleRedirectResult();
+        const redirectResult = await firebaseAuthApi.handleGoogleRedirectResult()
 
         if (redirectResult) {
-          redirectHandledRef.current = true;
+          redirectHandledRef.current = true
 
           // Clear timeout since we're done initializing
-          if (timeoutId) clearTimeout(timeoutId);
+          if (timeoutId) clearTimeout(timeoutId)
 
           // Update React Query cache immediately
-          queryClient.setQueryData(AUTH_KEYS.session(), redirectResult.user);
+          queryClient.setQueryData(AUTH_KEYS.session(), redirectResult.user)
 
           // Stop loading
-          setIsInitializing(false);
+          setIsInitializing(false)
 
           // Navigate to home after successful redirect
-          navigateToHome();
-          return; // Exit early - redirect handled
+          navigateToHome()
+          return // Exit early - redirect handled
         }
       } catch (err) {
         // Clear timeout since we're done initializing
-        if (timeoutId) clearTimeout(timeoutId);
+        if (timeoutId) clearTimeout(timeoutId)
         // Continue with normal auth flow even if redirect check fails
-        setIsInitializing(false);
+        setIsInitializing(false)
       }
 
       // STEP 2: Set up Firebase auth state listener
       try {
-        authUnsubscribe = firebaseAuthApi.onAuthStateChanged(
-          async firebaseUser => {
-            // Skip if we already handled redirect
-            if (redirectHandledRef.current) {
-              redirectHandledRef.current = false; // Reset for next time
-              return;
-            }
-
-            try {
-              if (firebaseUser) {
-                // User is signed in - fetch full user data from Firestore
-                const userData = await firebaseAuthApi.getCurrentUser();
-
-                // Update React Query cache
-                queryClient.setQueryData(AUTH_KEYS.session(), userData);
-              } else {
-                // User is signed out
-                // Clear React Query cache
-                queryClient.setQueryData(AUTH_KEYS.session(), null);
-              }
-            } catch (err) {
-              // On error, assume user is not authenticated
-              queryClient.setQueryData(AUTH_KEYS.session(), null);
-            } finally {
-              // Clear timeout since we're done initializing
-              if (timeoutId) clearTimeout(timeoutId);
-              setIsInitializing(false);
-            }
+        authUnsubscribe = firebaseAuthApi.onAuthStateChanged(async (firebaseUser) => {
+          // Skip if we already handled redirect
+          if (redirectHandledRef.current) {
+            redirectHandledRef.current = false // Reset for next time
+            return
           }
-        );
+
+          try {
+            if (firebaseUser) {
+              // User is signed in - fetch full user data from Firestore
+              const userData = await firebaseAuthApi.getCurrentUser()
+
+              // Update React Query cache
+              queryClient.setQueryData(AUTH_KEYS.session(), userData)
+            } else {
+              // User is signed out
+              // Clear React Query cache
+              queryClient.setQueryData(AUTH_KEYS.session(), null)
+            }
+          } catch (err) {
+            // On error, assume user is not authenticated
+            queryClient.setQueryData(AUTH_KEYS.session(), null)
+          } finally {
+            // Clear timeout since we're done initializing
+            if (timeoutId) clearTimeout(timeoutId)
+            setIsInitializing(false)
+          }
+        })
       } catch (err) {
         // Clear timeout since we're done initializing
-        if (timeoutId) clearTimeout(timeoutId);
+        if (timeoutId) clearTimeout(timeoutId)
 
         // Firebase failed to initialize - clear auth state and continue
-        queryClient.setQueryData(AUTH_KEYS.session(), null);
-        setIsInitializing(false);
+        queryClient.setQueryData(AUTH_KEYS.session(), null)
+        setIsInitializing(false)
       }
-    };
+    }
 
     // Start initialization
-    initializeAuth();
+    initializeAuth()
 
     // Cleanup: Unsubscribe from Firebase listener on unmount
     return () => {
       if (timeoutId) {
-        clearTimeout(timeoutId);
+        clearTimeout(timeoutId)
       }
       if (authUnsubscribe) {
-        authUnsubscribe();
+        authUnsubscribe()
       }
-    };
-  }, [queryClient, navigateToHome, pathname]);
+    }
+  }, [queryClient, navigateToHome, pathname])
 
   // Public pages should render immediately without loading screen
   // This prevents test timeouts and provides better UX
   if (isPublicPage) {
-    return <>{children}</>;
+    return <>{children}</>
   }
 
   // Show loading state during initial auth check for protected pages
   // This prevents flash of unauthenticated content
   if (isInitializing) {
-    return <LoadingScreen />;
+    return <LoadingScreen />
   }
 
   // Auth initialized - render app
-  return <>{children}</>;
+  return <>{children}</>
 }
