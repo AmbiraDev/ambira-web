@@ -53,55 +53,34 @@ export const LandingFooter: React.FC<LandingFooterProps> = ({ className = '' }) 
           </div>
 
           {/* Link Columns */}
-          <div className="md:col-span-3 grid grid-cols-2 md:grid-cols-4 gap-8">
-            <div>
-              <h3 className="font-semibold text-gray-900 mb-3">Product</h3>
-              <ul className="space-y-2 text-sm">
-                <li>
-                  <Link href="/features" className="text-gray-600 hover:text-[#0066CC]">
-                    Features
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/activities" className="text-gray-600 hover:text-[#0066CC]">
-                    Activities
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/groups" className="text-gray-600 hover:text-[#0066CC]">
-                    Groups
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/challenges" className="text-gray-600 hover:text-[#0066CC]">
-                    Challenges
-                  </Link>
-                </li>
-              </ul>
-            </div>
-
+          <div className="md:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-8">
             <div>
               <h3 className="font-semibold text-gray-900 mb-3">Resources</h3>
               <ul className="space-y-2 text-sm">
                 <li>
-                  <Link href="/about" className="text-gray-600 hover:text-[#0066CC]">
+                  <Link href="/landing" className="text-gray-600 hover:text-[#0066CC]">
                     About
                   </Link>
                 </li>
                 <li>
-                  <Link href="/feed" className="text-gray-600 hover:text-[#0066CC]">
+                  <a
+                    href="https://discord.gg/wFMeNmCpdQ"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-gray-600 hover:text-[#0066CC]"
+                  >
                     Community
-                  </Link>
+                  </a>
                 </li>
                 <li>
-                  <Link href="/sessions" className="text-gray-600 hover:text-[#0066CC]">
-                    Sessions
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/tasks" className="text-gray-600 hover:text-[#0066CC]">
-                    Tasks
-                  </Link>
+                  <a
+                    href="https://github.com/Ambira-Inc/ambira"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-gray-600 hover:text-[#0066CC]"
+                  >
+                    GitHub
+                  </a>
                 </li>
               </ul>
             </div>
@@ -110,40 +89,22 @@ export const LandingFooter: React.FC<LandingFooterProps> = ({ className = '' }) 
               <h3 className="font-semibold text-gray-900 mb-3">Support</h3>
               <ul className="space-y-2 text-sm">
                 <li>
-                  <Link href="/help" className="text-gray-600 hover:text-[#0066CC]">
-                    Help Center
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/contact" className="text-gray-600 hover:text-[#0066CC]">
+                  <a
+                    href="mailto:hughgramelspacher@gmail.com"
+                    className="text-gray-600 hover:text-[#0066CC]"
+                  >
                     Contact
-                  </Link>
+                  </a>
                 </li>
                 <li>
-                  <Link href="/status" className="text-gray-600 hover:text-[#0066CC]">
-                    Status
-                  </Link>
-                </li>
-              </ul>
-            </div>
-
-            <div>
-              <h3 className="font-semibold text-gray-900 mb-3">Legal</h3>
-              <ul className="space-y-2 text-sm">
-                <li>
-                  <Link href="/privacy" className="text-gray-600 hover:text-[#0066CC]">
-                    Privacy
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/terms" className="text-gray-600 hover:text-[#0066CC]">
-                    Terms
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/cookies" className="text-gray-600 hover:text-[#0066CC]">
-                    Cookie Policy
-                  </Link>
+                  <a
+                    href="https://github.com/Ambira-Inc/ambira/issues"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-gray-600 hover:text-[#0066CC]"
+                  >
+                    Report Issue
+                  </a>
                 </li>
               </ul>
             </div>
@@ -151,19 +112,8 @@ export const LandingFooter: React.FC<LandingFooterProps> = ({ className = '' }) 
         </div>
 
         {/* Bottom row */}
-        <div className="mt-10 pt-6 border-t border-gray-200 flex flex-col md:flex-row items-center justify-between text-sm text-gray-500">
-          <span>&copy; {new Date().getFullYear()} Ambira, Inc.</span>
-          <div className="space-x-4 mt-2 md:mt-0">
-            <Link href="/privacy" className="hover:text-[#0066CC]">
-              Privacy
-            </Link>
-            <Link href="/terms" className="hover:text-[#0066CC]">
-              Terms
-            </Link>
-            <Link href="/contact" className="hover:text-[#0066CC]">
-              Contact
-            </Link>
-          </div>
+        <div className="mt-10 pt-6 border-t border-gray-200 flex flex-col md:flex-row items-center justify-center text-sm text-gray-500">
+          <span>&copy; {new Date().getFullYear()} Ambira</span>
         </div>
       </div>
     </footer>

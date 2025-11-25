@@ -1,7 +1,6 @@
 'use client'
 
-import React, { useState, useEffect, useMemo } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import React, { useState, useMemo } from 'react'
 import Image from 'next/image'
 import { useAuth } from '@/hooks/useAuth'
 import { Button } from '@/components/ui/button'
@@ -28,11 +27,7 @@ import {
 } from '@/features/profile/hooks'
 import { useUserSessions } from '@/features/sessions/hooks'
 import { useProjects } from '@/features/projects/hooks'
-import Feed from '@/components/Feed'
-import { FollowersList } from '@/features/social/components/FollowersList'
-import { FollowingList } from '@/features/social/components/FollowingList'
 
-type YouTab = 'progress' | 'sessions' | 'followers' | 'following'
 type TimePeriod = '7D' | '2W' | '4W' | '3M' | '1Y'
 type ChartType = 'bar' | 'line'
 
@@ -48,20 +43,8 @@ interface ProfilePageContentProps {
 }
 
 export default function ProfilePageContent({ username }: ProfilePageContentProps) {
-  const router = useRouter()
-  const searchParams = useSearchParams()
   const { user: currentUser } = useAuth()
-  const tabParam = searchParams?.get('tab') as YouTab | null
 
-  const [activeTab, setActiveTab] = useState<YouTab>(
-    tabParam === 'sessions'
-      ? 'sessions'
-      : tabParam === 'followers'
-        ? 'followers'
-        : tabParam === 'following'
-          ? 'following'
-          : 'progress'
-  )
   const [timePeriod, setTimePeriod] = useState<TimePeriod>('7D')
   const [chartType, setChartType] = useState<ChartType>('line')
   const [showChartTypeDropdown, setShowChartTypeDropdown] = useState(false)
@@ -196,24 +179,6 @@ export default function ProfilePageContent({ username }: ProfilePageContentProps
       (s) => s.activityId === selectedActivityId || s.projectId === selectedActivityId
     )
   }, [sessions, selectedActivityId])
-
-  // Update tab when URL changes
-  useEffect(() => {
-    if (
-      tabParam === 'sessions' ||
-      tabParam === 'progress' ||
-      tabParam === 'followers' ||
-      tabParam === 'following'
-    ) {
-      setActiveTab(tabParam)
-    }
-  }, [tabParam])
-
-  // Show error toast when profile fails to load
-  useEffect(() => {
-    if (error && profileError) {
-    }
-  }, [error, profileError])
 
   // Calculate chart data using useMemo to prevent infinite loop
   const chartData = useMemo(() => {
@@ -697,529 +662,495 @@ export default function ProfilePageContent({ username }: ProfilePageContentProps
 
                 {/* Follower/Following Counts */}
                 <div className="flex gap-4 md:gap-6 mb-4 md:mb-0">
-                  <button
-                    onClick={() => {
-                      setActiveTab('followers')
-                      router.push(`/profile/${username}?tab=followers`)
-                    }}
-                    className="hover:underline"
-                  >
+                  <div>
                     <span className="font-bold text-gray-900 text-sm md:text-base">
                       {followers.length}
                     </span>{' '}
                     <span className="text-gray-600 text-xs md:text-sm">Followers</span>
-                  </button>
-                  <button
-                    onClick={() => {
-                      setActiveTab('following')
-                      router.push(`/profile/${username}?tab=following`)
-                    }}
-                    className="hover:underline"
-                  >
+                  </div>
+                  <div>
                     <span className="font-bold text-gray-900 text-sm md:text-base">
                       {following.length}
                     </span>{' '}
                     <span className="text-gray-600 text-xs md:text-sm">Following</span>
-                  </button>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Tab Content */}
+          {/* Progress Content */}
           <div className="mt-6">
-            {activeTab === 'progress' && (
-              <div className="space-y-4">
-                {/* Controls */}
-                <div className="space-y-3">
-                  {/* Row 1: Activity Selector & Chart Type */}
-                  <div className="flex items-center gap-2">
-                    {/* Activity Selector */}
-                    <div className="relative flex-shrink-0">
-                      <button
-                        onClick={() => setShowActivityDropdown(!showActivityDropdown)}
-                        className="flex items-center gap-2 px-3 md:px-4 py-2 text-xs md:text-sm font-semibold border border-gray-300 rounded-lg hover:bg-gray-50 min-w-[140px] max-w-[200px]"
-                      >
-                        <span className="truncate">
-                          {selectedActivityId === 'all'
-                            ? 'All activities'
-                            : activities?.find((p) => p.id === selectedActivityId)?.name ||
-                              'All activities'}
-                        </span>
-                        <ChevronDown className="w-3.5 h-3.5 md:w-4 md:h-4 flex-shrink-0" />
-                      </button>
-                      {showActivityDropdown && (
-                        <>
-                          <div
-                            className="fixed inset-0 z-40"
-                            onClick={() => setShowActivityDropdown(false)}
-                          />
-                          <div className="absolute left-0 top-full mt-2 w-full max-w-xs bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50 max-h-64 overflow-y-auto">
+            <div className="space-y-4">
+              {/* Controls */}
+              <div className="space-y-3">
+                {/* Row 1: Activity Selector & Chart Type */}
+                <div className="flex items-center gap-2">
+                  {/* Activity Selector */}
+                  <div className="relative flex-shrink-0">
+                    <button
+                      onClick={() => setShowActivityDropdown(!showActivityDropdown)}
+                      className="flex items-center gap-2 px-3 md:px-4 py-2 text-xs md:text-sm font-semibold border border-gray-300 rounded-lg hover:bg-gray-50 min-w-[140px] max-w-[200px]"
+                    >
+                      <span className="truncate">
+                        {selectedActivityId === 'all'
+                          ? 'All activities'
+                          : activities?.find((p) => p.id === selectedActivityId)?.name ||
+                            'All activities'}
+                      </span>
+                      <ChevronDown className="w-3.5 h-3.5 md:w-4 md:h-4 flex-shrink-0" />
+                    </button>
+                    {showActivityDropdown && (
+                      <>
+                        <div
+                          className="fixed inset-0 z-40"
+                          onClick={() => setShowActivityDropdown(false)}
+                        />
+                        <div className="absolute left-0 top-full mt-2 w-full max-w-xs bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50 max-h-64 overflow-y-auto">
+                          <button
+                            onClick={() => {
+                              setSelectedActivityId('all')
+                              setShowActivityDropdown(false)
+                            }}
+                            className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${selectedActivityId === 'all' ? 'bg-blue-50 text-blue-600' : ''}`}
+                          >
+                            All
+                          </button>
+                          {(!activities || activities.length === 0) && (
+                            <div className="px-4 py-2 text-xs text-gray-400">No activities yet</div>
+                          )}
+                          {activities?.map((activity) => (
                             <button
+                              key={activity.id}
                               onClick={() => {
-                                setSelectedActivityId('all')
+                                setSelectedActivityId(activity.id)
                                 setShowActivityDropdown(false)
                               }}
-                              className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 ${selectedActivityId === 'all' ? 'bg-blue-50 text-blue-600' : ''}`}
+                              className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-3 ${selectedActivityId === activity.id ? 'bg-blue-50 text-blue-600' : ''}`}
                             >
-                              All
-                            </button>
-                            {(!activities || activities.length === 0) && (
-                              <div className="px-4 py-2 text-xs text-gray-400">
-                                No activities yet
-                              </div>
-                            )}
-                            {activities?.map((activity) => (
-                              <button
-                                key={activity.id}
-                                onClick={() => {
-                                  setSelectedActivityId(activity.id)
-                                  setShowActivityDropdown(false)
+                              <div
+                                className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
+                                style={{
+                                  backgroundColor: activity.color + '20',
                                 }}
-                                className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-3 ${selectedActivityId === activity.id ? 'bg-blue-50 text-blue-600' : ''}`}
                               >
-                                <div
-                                  className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0"
-                                  style={{
-                                    backgroundColor: activity.color + '20',
-                                  }}
-                                >
-                                  <span style={{ color: activity.color }}>●</span>
-                                </div>
-                                <span className="truncate">{activity.name}</span>
-                              </button>
-                            ))}
-                          </div>
-                        </>
-                      )}
-                    </div>
+                                <span style={{ color: activity.color }}>●</span>
+                              </div>
+                              <span className="truncate">{activity.name}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </div>
 
-                    {/* Chart Type Selector */}
-                    <div className="relative flex-shrink-0">
-                      <button
-                        onClick={() => setShowChartTypeDropdown(!showChartTypeDropdown)}
-                        className="flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-2 text-xs md:text-sm font-semibold border border-gray-300 rounded-lg hover:bg-gray-50"
+                  {/* Chart Type Selector */}
+                  <div className="relative flex-shrink-0">
+                    <button
+                      onClick={() => setShowChartTypeDropdown(!showChartTypeDropdown)}
+                      className="flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-2 text-xs md:text-sm font-semibold border border-gray-300 rounded-lg hover:bg-gray-50"
+                    >
+                      <svg
+                        className="w-3.5 h-3.5 md:w-4 md:h-4"
+                        viewBox="0 0 16 16"
+                        fill="currentColor"
                       >
-                        <svg
-                          className="w-3.5 h-3.5 md:w-4 md:h-4"
-                          viewBox="0 0 16 16"
-                          fill="currentColor"
-                        >
-                          {chartType === 'bar' ? (
-                            <>
+                        {chartType === 'bar' ? (
+                          <>
+                            <rect x="2" y="8" width="3" height="6" rx="0.5" />
+                            <rect x="6.5" y="4" width="3" height="10" rx="0.5" />
+                            <rect x="11" y="6" width="3" height="8" rx="0.5" />
+                          </>
+                        ) : (
+                          <path
+                            d="M2 12 L5 8 L8 10 L11 4 L14 6"
+                            stroke="currentColor"
+                            strokeWidth="1.5"
+                            fill="none"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          />
+                        )}
+                      </svg>
+                      <span className="capitalize">{chartType}</span>
+                      <ChevronDown className="w-3 h-3 md:w-4 md:h-4" />
+                    </button>
+                    {showChartTypeDropdown && (
+                      <>
+                        <div
+                          className="fixed inset-0 z-40"
+                          onClick={() => setShowChartTypeDropdown(false)}
+                        />
+                        <div className="absolute right-0 top-full mt-2 w-32 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
+                          <button
+                            onClick={() => {
+                              setChartType('bar')
+                              setShowChartTypeDropdown(false)
+                            }}
+                            className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2 ${chartType === 'bar' ? 'bg-blue-50 text-blue-600' : ''}`}
+                          >
+                            <svg className="w-4 h-4" viewBox="0 0 16 16" fill="currentColor">
                               <rect x="2" y="8" width="3" height="6" rx="0.5" />
                               <rect x="6.5" y="4" width="3" height="10" rx="0.5" />
                               <rect x="11" y="6" width="3" height="8" rx="0.5" />
-                            </>
-                          ) : (
-                            <path
-                              d="M2 12 L5 8 L8 10 L11 4 L14 6"
-                              stroke="currentColor"
-                              strokeWidth="1.5"
+                            </svg>
+                            Bar
+                          </button>
+                          <button
+                            onClick={() => {
+                              setChartType('line')
+                              setShowChartTypeDropdown(false)
+                            }}
+                            className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2 ${chartType === 'line' ? 'bg-blue-50 text-blue-600' : ''}`}
+                          >
+                            <svg
+                              className="w-4 h-4"
+                              viewBox="0 0 16 16"
                               fill="none"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
-                          )}
-                        </svg>
-                        <span className="capitalize">{chartType}</span>
-                        <ChevronDown className="w-3 h-3 md:w-4 md:h-4" />
-                      </button>
-                      {showChartTypeDropdown && (
-                        <>
-                          <div
-                            className="fixed inset-0 z-40"
-                            onClick={() => setShowChartTypeDropdown(false)}
-                          />
-                          <div className="absolute right-0 top-full mt-2 w-32 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-50">
-                            <button
-                              onClick={() => {
-                                setChartType('bar')
-                                setShowChartTypeDropdown(false)
-                              }}
-                              className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2 ${chartType === 'bar' ? 'bg-blue-50 text-blue-600' : ''}`}
+                              stroke="currentColor"
                             >
-                              <svg className="w-4 h-4" viewBox="0 0 16 16" fill="currentColor">
-                                <rect x="2" y="8" width="3" height="6" rx="0.5" />
-                                <rect x="6.5" y="4" width="3" height="10" rx="0.5" />
-                                <rect x="11" y="6" width="3" height="8" rx="0.5" />
-                              </svg>
-                              Bar
-                            </button>
-                            <button
-                              onClick={() => {
-                                setChartType('line')
-                                setShowChartTypeDropdown(false)
-                              }}
-                              className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 flex items-center gap-2 ${chartType === 'line' ? 'bg-blue-50 text-blue-600' : ''}`}
-                            >
-                              <svg
-                                className="w-4 h-4"
-                                viewBox="0 0 16 16"
-                                fill="none"
-                                stroke="currentColor"
-                              >
-                                <path
-                                  d="M2 12 L5 8 L8 10 L11 4 L14 6"
-                                  strokeWidth="1.5"
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                />
-                              </svg>
-                              Line
-                            </button>
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Row 2: Time Period Buttons - Scrollable on mobile */}
-                  <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
-                    {(['7D', '2W', '4W', '3M', '1Y'] as TimePeriod[]).map((period) => (
-                      <button
-                        key={period}
-                        onClick={() => setTimePeriod(period)}
-                        className={`flex-shrink-0 px-4 md:px-5 py-2 text-xs md:text-sm font-semibold rounded-lg transition-colors ${
-                          timePeriod === period
-                            ? 'bg-gray-900 text-white'
-                            : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
-                        }`}
-                      >
-                        {period}
-                      </button>
-                    ))}
+                              <path
+                                d="M2 12 L5 8 L8 10 L11 4 L14 6"
+                                strokeWidth="1.5"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              />
+                            </svg>
+                            Line
+                          </button>
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
 
-                <div className="space-y-4">
-                  {/* Main Chart */}
+                {/* Row 2: Time Period Buttons - Scrollable on mobile */}
+                <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
+                  {(['7D', '2W', '4W', '3M', '1Y'] as TimePeriod[]).map((period) => (
+                    <button
+                      key={period}
+                      onClick={() => setTimePeriod(period)}
+                      className={`flex-shrink-0 px-4 md:px-5 py-2 text-xs md:text-sm font-semibold rounded-lg transition-colors ${
+                        timePeriod === period
+                          ? 'bg-gray-900 text-white'
+                          : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-300'
+                      }`}
+                    >
+                      {period}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                {/* Main Chart */}
+                <div className="bg-white border border-gray-200 rounded-xl p-6">
+                  <div className="mb-4">
+                    <h3 className="font-semibold text-gray-900">Hours completed</h3>
+                  </div>
+                  <div className="h-72">
+                    {isLoading ? (
+                      <div className="h-full bg-gray-50 rounded animate-pulse" />
+                    ) : (
+                      <ResponsiveContainer width="100%" height="100%">
+                        {chartType === 'bar' ? (
+                          <BarChart
+                            data={chartData}
+                            margin={{
+                              top: 10,
+                              right: 10,
+                              left: -20,
+                              bottom: 0,
+                            }}
+                          >
+                            <XAxis
+                              dataKey="name"
+                              tick={{ fontSize: 12, fill: '#666' }}
+                              axisLine={false}
+                              tickLine={false}
+                            />
+                            <YAxis
+                              tick={{ fontSize: 12, fill: '#666' }}
+                              axisLine={false}
+                              tickLine={false}
+                              width={40}
+                            />
+                            <Tooltip content={<CustomTooltip />} />
+                            <Bar
+                              dataKey="hours"
+                              fill="#0066CC"
+                              radius={[4, 4, 0, 0]}
+                              name="Hours"
+                            />
+                          </BarChart>
+                        ) : (
+                          <ComposedChart
+                            data={chartData}
+                            margin={{
+                              top: 10,
+                              right: 10,
+                              left: -20,
+                              bottom: 0,
+                            }}
+                          >
+                            <defs>
+                              <linearGradient id="colorHours" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="#0066CC" stopOpacity={0.3} />
+                                <stop offset="95%" stopColor="#0066CC" stopOpacity={0} />
+                              </linearGradient>
+                            </defs>
+                            <XAxis
+                              dataKey="name"
+                              tick={{ fontSize: 12, fill: '#666' }}
+                              axisLine={false}
+                              tickLine={false}
+                            />
+                            <YAxis
+                              tick={{ fontSize: 12, fill: '#666' }}
+                              axisLine={false}
+                              tickLine={false}
+                              width={40}
+                            />
+                            <Tooltip content={<CustomTooltip />} />
+                            <Area
+                              type="monotone"
+                              dataKey="hours"
+                              stroke="#0066CC"
+                              strokeWidth={2}
+                              fill="url(#colorHours)"
+                              name="Hours"
+                            />
+                          </ComposedChart>
+                        )}
+                      </ResponsiveContainer>
+                    )}
+                  </div>
+                </div>
+
+                {/* Second Row - Two Charts */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  {/* Average Session Duration */}
                   <div className="bg-white border border-gray-200 rounded-xl p-6">
                     <div className="mb-4">
-                      <h3 className="font-semibold text-gray-900">Hours completed</h3>
+                      <h3 className="font-semibold text-gray-900">Average session duration</h3>
                     </div>
-                    <div className="h-72">
-                      {isLoading ? (
-                        <div className="h-full bg-gray-50 rounded animate-pulse" />
-                      ) : (
-                        <ResponsiveContainer width="100%" height="100%">
-                          {chartType === 'bar' ? (
-                            <BarChart
-                              data={chartData}
-                              margin={{
-                                top: 10,
-                                right: 10,
-                                left: -20,
-                                bottom: 0,
-                              }}
-                            >
-                              <XAxis
-                                dataKey="name"
-                                tick={{ fontSize: 12, fill: '#666' }}
-                                axisLine={false}
-                                tickLine={false}
-                              />
-                              <YAxis
-                                tick={{ fontSize: 12, fill: '#666' }}
-                                axisLine={false}
-                                tickLine={false}
-                                width={40}
-                              />
-                              <Tooltip content={<CustomTooltip />} />
-                              <Bar
-                                dataKey="hours"
-                                fill="#0066CC"
-                                radius={[4, 4, 0, 0]}
-                                name="Hours"
-                              />
-                            </BarChart>
-                          ) : (
-                            <ComposedChart
-                              data={chartData}
-                              margin={{
-                                top: 10,
-                                right: 10,
-                                left: -20,
-                                bottom: 0,
-                              }}
-                            >
-                              <defs>
-                                <linearGradient id="colorHours" x1="0" y1="0" x2="0" y2="1">
-                                  <stop offset="5%" stopColor="#0066CC" stopOpacity={0.3} />
-                                  <stop offset="95%" stopColor="#0066CC" stopOpacity={0} />
-                                </linearGradient>
-                              </defs>
-                              <XAxis
-                                dataKey="name"
-                                tick={{ fontSize: 12, fill: '#666' }}
-                                axisLine={false}
-                                tickLine={false}
-                              />
-                              <YAxis
-                                tick={{ fontSize: 12, fill: '#666' }}
-                                axisLine={false}
-                                tickLine={false}
-                                width={40}
-                              />
-                              <Tooltip content={<CustomTooltip />} />
-                              <Area
-                                type="monotone"
-                                dataKey="hours"
-                                stroke="#0066CC"
-                                strokeWidth={2}
-                                fill="url(#colorHours)"
-                                name="Hours"
-                              />
-                            </ComposedChart>
-                          )}
-                        </ResponsiveContainer>
-                      )}
+                    <div className="h-48">
+                      <ResponsiveContainer width="100%" height="100%">
+                        {chartType === 'bar' ? (
+                          <BarChart
+                            data={avgDurationData}
+                            margin={{
+                              top: 5,
+                              right: 5,
+                              left: -30,
+                              bottom: 0,
+                            }}
+                          >
+                            <XAxis
+                              dataKey="name"
+                              tick={{ fontSize: 11, fill: '#666' }}
+                              axisLine={false}
+                              tickLine={false}
+                            />
+                            <YAxis
+                              tick={{ fontSize: 11, fill: '#666' }}
+                              axisLine={false}
+                              tickLine={false}
+                            />
+                            <Tooltip content={<CustomTooltip />} />
+                            <Bar
+                              dataKey="value"
+                              fill="#34C759"
+                              radius={[4, 4, 0, 0]}
+                              name="Minutes"
+                            />
+                          </BarChart>
+                        ) : (
+                          <ComposedChart
+                            data={avgDurationData}
+                            margin={{
+                              top: 5,
+                              right: 5,
+                              left: -30,
+                              bottom: 0,
+                            }}
+                          >
+                            <defs>
+                              <linearGradient id="colorAvgDuration" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="#34C759" stopOpacity={0.3} />
+                                <stop offset="95%" stopColor="#34C759" stopOpacity={0} />
+                              </linearGradient>
+                            </defs>
+                            <XAxis
+                              dataKey="name"
+                              tick={{ fontSize: 11, fill: '#666' }}
+                              axisLine={false}
+                              tickLine={false}
+                            />
+                            <YAxis
+                              tick={{ fontSize: 11, fill: '#666' }}
+                              axisLine={false}
+                              tickLine={false}
+                            />
+                            <Tooltip content={<CustomTooltip />} />
+                            <Area
+                              type="monotone"
+                              dataKey="value"
+                              stroke="#34C759"
+                              strokeWidth={2}
+                              fill="url(#colorAvgDuration)"
+                              name="Minutes"
+                            />
+                          </ComposedChart>
+                        )}
+                      </ResponsiveContainer>
                     </div>
                   </div>
 
-                  {/* Second Row - Two Charts */}
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    {/* Average Session Duration */}
-                    <div className="bg-white border border-gray-200 rounded-xl p-6">
-                      <div className="mb-4">
-                        <h3 className="font-semibold text-gray-900">Average session duration</h3>
-                      </div>
-                      <div className="h-48">
-                        <ResponsiveContainer width="100%" height="100%">
-                          {chartType === 'bar' ? (
-                            <BarChart
-                              data={avgDurationData}
-                              margin={{
-                                top: 5,
-                                right: 5,
-                                left: -30,
-                                bottom: 0,
-                              }}
-                            >
-                              <XAxis
-                                dataKey="name"
-                                tick={{ fontSize: 11, fill: '#666' }}
-                                axisLine={false}
-                                tickLine={false}
-                              />
-                              <YAxis
-                                tick={{ fontSize: 11, fill: '#666' }}
-                                axisLine={false}
-                                tickLine={false}
-                              />
-                              <Tooltip content={<CustomTooltip />} />
-                              <Bar
-                                dataKey="value"
-                                fill="#34C759"
-                                radius={[4, 4, 0, 0]}
-                                name="Minutes"
-                              />
-                            </BarChart>
-                          ) : (
-                            <ComposedChart
-                              data={avgDurationData}
-                              margin={{
-                                top: 5,
-                                right: 5,
-                                left: -30,
-                                bottom: 0,
-                              }}
-                            >
-                              <defs>
-                                <linearGradient id="colorAvgDuration" x1="0" y1="0" x2="0" y2="1">
-                                  <stop offset="5%" stopColor="#34C759" stopOpacity={0.3} />
-                                  <stop offset="95%" stopColor="#34C759" stopOpacity={0} />
-                                </linearGradient>
-                              </defs>
-                              <XAxis
-                                dataKey="name"
-                                tick={{ fontSize: 11, fill: '#666' }}
-                                axisLine={false}
-                                tickLine={false}
-                              />
-                              <YAxis
-                                tick={{ fontSize: 11, fill: '#666' }}
-                                axisLine={false}
-                                tickLine={false}
-                              />
-                              <Tooltip content={<CustomTooltip />} />
-                              <Area
-                                type="monotone"
-                                dataKey="value"
-                                stroke="#34C759"
-                                strokeWidth={2}
-                                fill="url(#colorAvgDuration)"
-                                name="Minutes"
-                              />
-                            </ComposedChart>
-                          )}
-                        </ResponsiveContainer>
-                      </div>
+                  {/* Sessions */}
+                  <div className="bg-white border border-gray-200 rounded-xl p-6">
+                    <div className="mb-4">
+                      <h3 className="font-semibold text-gray-900">Sessions completed</h3>
                     </div>
-
-                    {/* Sessions */}
-                    <div className="bg-white border border-gray-200 rounded-xl p-6">
-                      <div className="mb-4">
-                        <h3 className="font-semibold text-gray-900">Sessions completed</h3>
-                      </div>
-                      <div className="h-48">
-                        <ResponsiveContainer width="100%" height="100%">
-                          {chartType === 'bar' ? (
-                            <BarChart
-                              data={chartData}
-                              margin={{
-                                top: 5,
-                                right: 5,
-                                left: -30,
-                                bottom: 0,
-                              }}
-                            >
-                              <XAxis
-                                dataKey="name"
-                                tick={{ fontSize: 11, fill: '#666' }}
-                                axisLine={false}
-                                tickLine={false}
-                              />
-                              <YAxis
-                                tick={{ fontSize: 11, fill: '#666' }}
-                                axisLine={false}
-                                tickLine={false}
-                              />
-                              <Tooltip content={<CustomTooltip />} />
-                              <Bar
-                                dataKey="sessions"
-                                fill="#34C759"
-                                radius={[4, 4, 0, 0]}
-                                name="Sessions"
-                              />
-                            </BarChart>
-                          ) : (
-                            <ComposedChart
-                              data={chartData}
-                              margin={{
-                                top: 5,
-                                right: 5,
-                                left: -30,
-                                bottom: 0,
-                              }}
-                            >
-                              <defs>
-                                <linearGradient id="colorSessionsSmall" x1="0" y1="0" x2="0" y2="1">
-                                  <stop offset="5%" stopColor="#34C759" stopOpacity={0.3} />
-                                  <stop offset="95%" stopColor="#34C759" stopOpacity={0} />
-                                </linearGradient>
-                              </defs>
-                              <XAxis
-                                dataKey="name"
-                                tick={{ fontSize: 11, fill: '#666' }}
-                                axisLine={false}
-                                tickLine={false}
-                              />
-                              <YAxis
-                                tick={{ fontSize: 11, fill: '#666' }}
-                                axisLine={false}
-                                tickLine={false}
-                              />
-                              <Tooltip content={<CustomTooltip />} />
-                              <Area
-                                type="monotone"
-                                dataKey="sessions"
-                                stroke="#34C759"
-                                strokeWidth={2}
-                                fill="url(#colorSessionsSmall)"
-                                name="Sessions"
-                              />
-                            </ComposedChart>
-                          )}
-                        </ResponsiveContainer>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Stats Grid - 5 columns */}
-                  <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                    <div className="bg-white border border-gray-200 rounded-xl p-4">
-                      <div className="text-sm text-gray-600 mb-2 uppercase tracking-wide">
-                        Total Hours
-                      </div>
-                      <div className="text-2xl font-bold mb-1">
-                        {calculatedStats.totalHours.toFixed(1)}
-                      </div>
-                      {renderPercentageChange(calculatedStats.hoursChange)}
-                    </div>
-
-                    <div className="bg-white border border-gray-200 rounded-xl p-4">
-                      <div className="text-sm text-gray-600 mb-2 uppercase tracking-wide">
-                        Avg Duration
-                      </div>
-                      <div className="text-2xl font-bold mb-1">{calculatedStats.avgDuration}m</div>
-                      {renderPercentageChange(calculatedStats.avgDurationChange)}
-                    </div>
-
-                    <div className="bg-white border border-gray-200 rounded-xl p-4">
-                      <div className="text-sm text-gray-600 mb-2 uppercase tracking-wide">
-                        Sessions
-                      </div>
-                      <div className="text-2xl font-bold mb-1">{calculatedStats.sessions}</div>
-                      {renderPercentageChange(calculatedStats.sessionsChange)}
-                    </div>
-
-                    <div className="bg-white border border-gray-200 rounded-xl p-4">
-                      <div className="text-sm text-gray-600 mb-2 uppercase tracking-wide">
-                        Active Days
-                      </div>
-                      <div className="text-2xl font-bold mb-1">{calculatedStats.activeDays}</div>
-                      {renderPercentageChange(calculatedStats.activeDaysChange)}
-                    </div>
-
-                    <div className="bg-white border border-gray-200 rounded-xl p-4">
-                      <div className="text-sm text-gray-600 mb-2 uppercase tracking-wide">
-                        Activities
-                      </div>
-                      <div className="text-2xl font-bold mb-1">{calculatedStats.activities}</div>
-                      {renderPercentageChange(calculatedStats.activitiesChange)}
-                    </div>
-                  </div>
-
-                  {/* Secondary Stats Grid - Streaks */}
-                  <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                    <div className="bg-white border border-gray-200 rounded-xl p-4">
-                      <div className="text-sm text-gray-600 mb-2 uppercase tracking-wide">
-                        Current Streak
-                      </div>
-                      <div className="text-2xl font-bold mb-1">{calculatedStats.currentStreak}</div>
-                      {renderPercentageChange(calculatedStats.streakChange)}
-                    </div>
-
-                    <div className="bg-white border border-gray-200 rounded-xl p-4">
-                      <div className="text-sm text-gray-600 mb-2 uppercase tracking-wide">
-                        Longest Streak
-                      </div>
-                      <div className="text-2xl font-bold mb-1">{calculatedStats.longestStreak}</div>
-                      {renderPercentageChange(calculatedStats.streakChange)}
+                    <div className="h-48">
+                      <ResponsiveContainer width="100%" height="100%">
+                        {chartType === 'bar' ? (
+                          <BarChart
+                            data={chartData}
+                            margin={{
+                              top: 5,
+                              right: 5,
+                              left: -30,
+                              bottom: 0,
+                            }}
+                          >
+                            <XAxis
+                              dataKey="name"
+                              tick={{ fontSize: 11, fill: '#666' }}
+                              axisLine={false}
+                              tickLine={false}
+                            />
+                            <YAxis
+                              tick={{ fontSize: 11, fill: '#666' }}
+                              axisLine={false}
+                              tickLine={false}
+                            />
+                            <Tooltip content={<CustomTooltip />} />
+                            <Bar
+                              dataKey="sessions"
+                              fill="#34C759"
+                              radius={[4, 4, 0, 0]}
+                              name="Sessions"
+                            />
+                          </BarChart>
+                        ) : (
+                          <ComposedChart
+                            data={chartData}
+                            margin={{
+                              top: 5,
+                              right: 5,
+                              left: -30,
+                              bottom: 0,
+                            }}
+                          >
+                            <defs>
+                              <linearGradient id="colorSessionsSmall" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="5%" stopColor="#34C759" stopOpacity={0.3} />
+                                <stop offset="95%" stopColor="#34C759" stopOpacity={0} />
+                              </linearGradient>
+                            </defs>
+                            <XAxis
+                              dataKey="name"
+                              tick={{ fontSize: 11, fill: '#666' }}
+                              axisLine={false}
+                              tickLine={false}
+                            />
+                            <YAxis
+                              tick={{ fontSize: 11, fill: '#666' }}
+                              axisLine={false}
+                              tickLine={false}
+                            />
+                            <Tooltip content={<CustomTooltip />} />
+                            <Area
+                              type="monotone"
+                              dataKey="sessions"
+                              stroke="#34C759"
+                              strokeWidth={2}
+                              fill="url(#colorSessionsSmall)"
+                              name="Sessions"
+                            />
+                          </ComposedChart>
+                        )}
+                      </ResponsiveContainer>
                     </div>
                   </div>
                 </div>
-              </div>
-            )}
 
-            {activeTab === 'sessions' && (
-              <div className="max-w-4xl mx-auto">
-                <Feed filters={{ type: 'user', userId: profile.id }} showEndMessage={true} />
-              </div>
-            )}
+                {/* Stats Grid - 5 columns */}
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                  <div className="bg-white border border-gray-200 rounded-xl p-4">
+                    <div className="text-sm text-gray-600 mb-2 uppercase tracking-wide">
+                      Total Hours
+                    </div>
+                    <div className="text-2xl font-bold mb-1">
+                      {calculatedStats.totalHours.toFixed(1)}
+                    </div>
+                    {renderPercentageChange(calculatedStats.hoursChange)}
+                  </div>
 
-            {activeTab === 'followers' && (
-              <div>
-                <FollowersList userId={profile.id} />
-              </div>
-            )}
+                  <div className="bg-white border border-gray-200 rounded-xl p-4">
+                    <div className="text-sm text-gray-600 mb-2 uppercase tracking-wide">
+                      Avg Duration
+                    </div>
+                    <div className="text-2xl font-bold mb-1">{calculatedStats.avgDuration}m</div>
+                    {renderPercentageChange(calculatedStats.avgDurationChange)}
+                  </div>
 
-            {activeTab === 'following' && (
-              <div>
-                <FollowingList userId={profile.id} />
+                  <div className="bg-white border border-gray-200 rounded-xl p-4">
+                    <div className="text-sm text-gray-600 mb-2 uppercase tracking-wide">
+                      Sessions
+                    </div>
+                    <div className="text-2xl font-bold mb-1">{calculatedStats.sessions}</div>
+                    {renderPercentageChange(calculatedStats.sessionsChange)}
+                  </div>
+
+                  <div className="bg-white border border-gray-200 rounded-xl p-4">
+                    <div className="text-sm text-gray-600 mb-2 uppercase tracking-wide">
+                      Active Days
+                    </div>
+                    <div className="text-2xl font-bold mb-1">{calculatedStats.activeDays}</div>
+                    {renderPercentageChange(calculatedStats.activeDaysChange)}
+                  </div>
+
+                  <div className="bg-white border border-gray-200 rounded-xl p-4">
+                    <div className="text-sm text-gray-600 mb-2 uppercase tracking-wide">
+                      Activities
+                    </div>
+                    <div className="text-2xl font-bold mb-1">{calculatedStats.activities}</div>
+                    {renderPercentageChange(calculatedStats.activitiesChange)}
+                  </div>
+                </div>
+
+                {/* Secondary Stats Grid - Streaks */}
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                  <div className="bg-white border border-gray-200 rounded-xl p-4">
+                    <div className="text-sm text-gray-600 mb-2 uppercase tracking-wide">
+                      Current Streak
+                    </div>
+                    <div className="text-2xl font-bold mb-1">{calculatedStats.currentStreak}</div>
+                    {renderPercentageChange(calculatedStats.streakChange)}
+                  </div>
+
+                  <div className="bg-white border border-gray-200 rounded-xl p-4">
+                    <div className="text-sm text-gray-600 mb-2 uppercase tracking-wide">
+                      Longest Streak
+                    </div>
+                    <div className="text-2xl font-bold mb-1">{calculatedStats.longestStreak}</div>
+                    {renderPercentageChange(calculatedStats.streakChange)}
+                  </div>
+                </div>
               </div>
-            )}
+            </div>
           </div>
         </div>
       </div>
